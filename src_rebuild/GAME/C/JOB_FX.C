@@ -202,7 +202,7 @@ void HandleExplosion(void)
 					ExplosionCollisionCheck(cp, &explosion[i]);
 
 				cp++;
-			} while (cp < &car_data[MAX_CARS]);
+			} while (cp < &car_data[MAX_CARS + 1]); // + TANNER_COLLIDER_CARID
 		}
 
 		i++;

@@ -633,7 +633,7 @@ void ExplosionCollisionCheck(CAR_DATA *cp, EXOBJECT *pE)
 	LONGVECTOR reaction;
 	LONGVECTOR lever;
 
-	isCar = (cp != &car_data[CAMERA_COLLIDER_CARID]);
+	isCar = (cp != &car_data[TANNER_COLLIDER_CARID]);
 
 	if (player[0].playerType == 2 || isCar)
 	{
@@ -753,7 +753,8 @@ void ExplosionCollisionCheck(CAR_DATA *cp, EXOBJECT *pE)
 					}
 				}
 
-				DamageCar(cp, cd, &collisionResult, strikeVel);
+				if(isCar)
+					DamageCar(cp, cd, &collisionResult, strikeVel);
 
 				displacement = FIXEDH(lever[0] * collisionResult.surfNormal.vx + lever[1] * collisionResult.surfNormal.vy + lever[2] * collisionResult.surfNormal.vz);
 				displacement = FIXEDH(((lever[0] * lever[0] + lever[2] * lever[2]) - displacement * displacement) * car_cosmetics[cp->ap.model].twistRateY) + 0x1000;

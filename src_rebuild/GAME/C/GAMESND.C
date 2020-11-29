@@ -2195,11 +2195,12 @@ void ExplosionSound(VECTOR* pos, int type)
 		sc1 = 3;
 		sc2 = 1;
 	}
-	else if (type == HEY_MOMMA)
+	else // HEY_MOMMA
 	{
 		sc1 = 1;
 		sc2 = 3;
 	}
+	
 
 	P.vx = pos->vx * sc1 + player[0].cameraPos.vx * sc2;
 	P.vy = pos->vy * sc1 + player[0].cameraPos.vy * sc2;
