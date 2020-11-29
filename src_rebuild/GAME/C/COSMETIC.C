@@ -24,9 +24,6 @@ char* CosmeticFiles[] = {
 
 CAR_COSMETICS car_cosmetics[MAX_CAR_MODELS];
 
-// [A] temporary hardcoded bug fix
-CAR_COSMETICS gVegasLimoCosmetic;
-
 // decompiled code
 // original method signature: 
 // void /*$ra*/ LoadCosmetics(int level /*$a0*/)
@@ -53,13 +50,11 @@ CAR_COSMETICS gVegasLimoCosmetic;
 	/* end block 4 */
 	// End Line: 2382
 
-char _cosmeticBuffer[3120];
-
 // [D] [T]
 void LoadCosmetics(int level)
 {
-	LoadfileSeg(CosmeticFiles[level], _cosmeticBuffer, 0, sizeof(_cosmeticBuffer));
-	ProcessCosmeticsLump(_cosmeticBuffer, 0);
+	LoadfileSeg(CosmeticFiles[level], _other_buffer, 0, 3120);
+	ProcessCosmeticsLump(_other_buffer, 0);
 }
 
 
@@ -132,18 +127,6 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 
 		i++;
 	} while (i < MAX_CAR_MODELS);
-
-	// [A] fix vegas limo cosmetic bug in advance
-	if(GameLevel == 2)
-	{
-		model = 8;
-		offset = *(int*)(lump_ptr + model * sizeof(int));
-
-		ptr = (lump_ptr + offset);
-		memcpy(&gVegasLimoCosmetic, ptr, sizeof(CAR_COSMETICS));
-		
-		FixCarCos(&gVegasLimoCosmetic, model);
-	}
 }
 
 
@@ -242,14 +225,24 @@ void AddReverseLight(CAR_DATA *cp)
 // [D] [T]
 void SetupSpecCosmetics(char *loadbuffer)
 {
-	// [A] this is better
-	if(GameLevel == 2 && MissionHeader->residentModels[4] == 8)
-	{
-		memcpy(&car_cosmetics[4], &gVegasLimoCosmetic, sizeof(CAR_COSMETICS));
-		return;
-	}
+#ifndef PSX
+	int model;
+	int offset;
 
+	// [A] always load cosmetics from file
+	// fixes limo cosmetics as well
+	LoadfileSeg(CosmeticFiles[GameLevel], _other_buffer, 0, 3120);
+
+	model = MissionHeader->residentModels[4];
+	offset = *(int*)(_other_buffer + model * sizeof(int));
+
+	memcpy(&car_cosmetics[4], _other_buffer + offset, sizeof(CAR_COSMETICS));
+#else
 	memcpy(&car_cosmetics[4], loadbuffer, sizeof(CAR_COSMETICS));
+#endif
+
+	// [A] don't forget
+	FixCarCos(&car_cosmetics[4], model);
 }
 
 
