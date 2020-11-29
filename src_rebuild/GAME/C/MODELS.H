@@ -1,6 +1,13 @@
 #ifndef MODELS_H
 #define MODELS_H
 
+enum CarModelType
+{
+	CAR_MODEL_CLEAN = 1,
+	CAR_MODEL_DAMAGED,
+	CAR_MODEL_LOWDETAIL
+};
+
 extern MODEL dummyModel;
 
 extern char* modelname_buffer;
@@ -25,5 +32,10 @@ extern MODEL * GetCarModel(char *src, char **dest, int KeepNormals, int modelNum
 extern MODEL * FindModelPtrWithName(char *name); // 0x0005D40C
 
 extern int FindModelIdxWithName(char *name); // 0x0005D4C4
+
+#ifndef PSX
+// [A] loads car model from file
+char* LoadCarModelFromFile(char* dest, int modelNumber, int type);
+#endif
 
 #endif

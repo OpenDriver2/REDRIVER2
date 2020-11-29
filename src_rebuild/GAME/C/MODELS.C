@@ -20,14 +20,6 @@ int num_models_in_pack = 0;
 unsigned short *Low2HighDetailTable = NULL;
 unsigned short *Low2LowerDetailTable = NULL;
 
-enum CarModelType
-{
-	CAR_MODEL_CLEAN = 1,
-	CAR_MODEL_DAMAGED,
-	CAR_MODEL_LOWDETAIL
-};
-
-
 // decompiled code
 // original method signature: 
 // void /*$ra*/ ProcessMDSLump(char *lump_file /*$a0*/, int lump_size /*$a1*/)
@@ -378,6 +370,27 @@ char* CarModelTypeNames[] = {
 	"LOW",
 };
 
+#ifndef PSX
+// [A] loads car model from file
+char* LoadCarModelFromFile(char* dest, int modelNumber, int type)
+{
+	char* mem;
+	char filename[64];
+
+	sprintf(filename, "LEVELS\\%s\\CARMODEL_%d_%s.DMODEL", LevelNames[GameLevel], modelNumber, CarModelTypeNames[type-1]);
+	if(FileExists(filename))
+	{
+		mem = dest ? dest : (_other_buffer + modelNumber * 0x10000 + (type-1) * 0x4000);
+
+		// get model from file
+		Loadfile(filename, mem);
+		return mem;
+	}
+
+	return NULL;
+}
+#endif
+
 // [D] [T]
 MODEL* GetCarModel(char *src, char **dest, int KeepNormals, int modelNumber, int type)
 {
@@ -385,22 +398,14 @@ MODEL* GetCarModel(char *src, char **dest, int KeepNormals, int modelNumber, int
 	MODEL *model;
 	char* mem;
 
-	mem = src;
-	
 #ifndef PSX
-	char filename[64];
+	mem = LoadCarModelFromFile(NULL, modelNumber, type);
 
-	sprintf(filename, "LEVELS\\%s\\CARMODEL_%d_%s.DMODEL", LevelNames[GameLevel], modelNumber, CarModelTypeNames[type-1]);
-	if(FileExists(filename))
-	{
-		mem = _other_buffer + modelNumber * 0x10000 + (type-1) * 0x4000;
-		
-		// get model from file
-		Loadfile(filename, mem);
-	}
+	if (!mem) // fallback to lump
+		mem = src;
+#else
+	mem = src;
 #endif
-
-	
 	
 	model = (MODEL *)*dest;
 	

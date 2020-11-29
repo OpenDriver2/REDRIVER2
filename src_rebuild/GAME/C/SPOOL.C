@@ -3347,7 +3347,7 @@ void CleanModelSpooled(void)
 	int *mem;
 
 	loadaddr = (int *)specLoadBuffer;
-
+	
 	if (specBlocksToLoad == lastCleanBlock-1) 
 	{
 		loadaddr = (int *)(specLoadBuffer + 12);
@@ -3357,13 +3357,18 @@ void CleanModelSpooled(void)
 	}
 
 	// memcpy
-	while (loadaddr < (int*)(specLoadBuffer + 0x800))
+	while (loadaddr < (int*)(specLoadBuffer + 2048))
 		*modelMemory++ = *loadaddr++;
 
 	mem = (int*)((int)gCarCleanModelPtr[4] + gCarCleanModelPtr[4]->poly_block);	// [A] pls check, might be invalid
 
-	if ((specBlocksToLoad == 0) || (mem < modelMemory))
+	if (specBlocksToLoad == 0 || mem < modelMemory)
 	{
+#ifndef PSX
+		// [A] vertices
+		LoadCarModelFromFile((char*)gCarCleanModelPtr[4], MissionHeader->residentModels[4], CAR_MODEL_CLEAN);
+#endif
+		
 		specBlocksToLoad = 0;
 		modelMemory = mem;
 
@@ -3441,15 +3446,20 @@ void DamagedModelSpooled(void)
 
 		gCarDamModelPtr[4] = (MODEL *)modelMemory;
 	}
-
+	
 	// memcpy
-	while (loadaddr < (int*)(specLoadBuffer + 0x800))
+	while (loadaddr < (int*)(specLoadBuffer + 2048))
 		*modelMemory++ = *loadaddr++;
 
 	mem = (int*)((int)gCarDamModelPtr[4] + gCarDamModelPtr[4]->poly_block);	// [A] pls check, might be invalid
 
-	if ((specBlocksToLoad == 0) || (mem < modelMemory))
+	if (specBlocksToLoad == 0 || mem < modelMemory)
 	{
+#ifndef PSX
+		// [A] vertices
+		LoadCarModelFromFile((char*)gCarDamModelPtr[4], MissionHeader->residentModels[4], CAR_MODEL_DAMAGED);
+#endif
+		
 		specBlocksToLoad = 0;
 		modelMemory = mem;
 
@@ -3525,15 +3535,20 @@ void LowModelSpooled(void)
 
 		gCarLowModelPtr[4] = (MODEL *)modelMemory;
 	}
-
+	
 	// memcpy
-	while (loadaddr < (int*)(specLoadBuffer + 0x800))
+	while (loadaddr < (int*)(specLoadBuffer + 2048))
 		*modelMemory++ = *loadaddr++;
 
 	mem = (int*)((int)gCarLowModelPtr[4] + gCarLowModelPtr[4]->poly_block);	// [A] pls check, might be invalid
 
-	if ((specBlocksToLoad == 0) || (mem < modelMemory))
+	if (specBlocksToLoad == 0 || mem < modelMemory)
 	{
+#ifndef PSX
+		// [A] vertices
+		LoadCarModelFromFile((char*)gCarLowModelPtr[4], MissionHeader->residentModels[4], CAR_MODEL_LOWDETAIL);
+#endif
+		
 		specBlocksToLoad = 0;
 		modelMemory = mem;
 
@@ -3635,6 +3650,11 @@ void CleanSpooled(void)
 
 	if (specBlocksToLoad == 7-lastCleanBlock) 
 	{
+#ifndef PSX
+		// [A] polygons
+		LoadCarModelFromFile((char*)model, MissionHeader->residentModels[4], CAR_MODEL_CLEAN);
+#endif
+		
 		model->vertices += (int)model;
 		model->poly_block += (int)model;
 		model->normals += (int)model;
@@ -3700,6 +3720,11 @@ void LowSpooled(void)
 	{
 		model = (MODEL *)(specmallocptr + lowOffset);
 
+#ifndef PSX
+		// [A] loads car model from file
+		LoadCarModelFromFile((char*)model, MissionHeader->residentModels[4], CAR_MODEL_LOWDETAIL);
+#endif
+		
 		model->vertices += (int)model;
 		model->normals += (int)model;
 		model->poly_block += (int)model;
