@@ -7,6 +7,8 @@
 
 #include <string.h>
 
+#include "CARS.H"
+
 SXYPAIR tpagepos[20] =
 {
 	{ 640, 0 },
@@ -245,6 +247,61 @@ int LoadTPageAndCluts(RECT16 *tpage, RECT16 *cluts, int tpage2send, char *tpagea
 
 	unpackTexture(_other_buffer, tpageaddress);
 	LoadImage(&temptpage, (u_long *)_other_buffer);
+
+#ifndef PSX
+	char filename[64];
+	TEXINF* details = tpage_ids[tpage2send];
+
+	// try loading TIMs directly
+	for(i = 0; i < tpage_texamts[tpage2send]; i++)
+	{
+		TIMIMAGEHDR* timClut;
+		TIMIMAGEHDR* timData;
+		char* textureName;
+		int j;
+
+		textureName = texturename_buffer + details[i].nameoffset;
+
+		sprintf(filename, "LEVELS\\%s\\PAGE_%d\\%s.TIM", LevelNames[GameLevel], tpage2send, textureName);
+
+		if(FileExists(filename))
+		{
+			Loadfile(filename, _other_buffer);
+
+			// get TIM data
+			timClut = (TIMIMAGEHDR*)(_other_buffer + sizeof(TIMHDR));
+			timData = (TIMIMAGEHDR*)((char*)timClut + timClut->len);
+
+			// replace tpage
+			// upload it to ram
+			temptpage.x = tpage->x + timData->origin_x / 4;
+			temptpage.y = tpage->y + timData->origin_y;
+			temptpage.w = timData->width;
+			temptpage.h = timData->height;
+
+			LoadImage(&temptpage, (u_long *)((char*)timData + sizeof(TIMIMAGEHDR)));
+
+			// get through all it's CLUTs
+			// and replace
+			for (j = 0; j < timClut->height; j++)
+			{
+				int clut;
+
+				if (j > 0)
+					clut = civ_clut[GetCarPalIndex(tpage2send)][i][j];
+				else
+					clut = texture_cluts[tpage2send][i];
+				
+				temptpage.x = (clut & 0x3f) << 4;
+				temptpage.y = (clut >> 6);
+				temptpage.w = 16;
+				temptpage.h = 1;
+				
+				LoadImage(&temptpage, (u_long *)((char*)timClut + sizeof(TIMIMAGEHDR) + j * 32));
+			}
+		}
+	}
+#endif
 
 	texture_pages[tpage2send] = GetTPage(0, 0, tpage->x, tpage->y);
 	IncrementTPageNum(tpage);
