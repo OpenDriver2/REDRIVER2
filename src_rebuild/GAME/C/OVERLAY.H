@@ -10,6 +10,9 @@ extern PERCENTAGE_BAR ProxyBar;
 extern int gDoOverlays;
 extern int gWidescreenOverlayAlign;
 
+extern int gOverlayXPos;
+extern int gOverlayXOppPos;
+
 extern char OverlayFlashValue;
 
 extern void InitOverlays(); // 0x00014A58

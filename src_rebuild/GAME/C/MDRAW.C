@@ -14,6 +14,7 @@
 #include "DR2ROADS.H"
 #include "CARS.H"
 #include "TARGETS.H"
+#include "OVERLAY.H"
 
 // decompiled code
 // original method signature: 
@@ -109,7 +110,7 @@ void DrawMission(void)
 		if (gOutOfTape)
 		{
 			SetTextColour(128, 128, 64);
-			PrintString("Out of tape", 20, 236);
+			PrintString("Out of tape", gOverlayXPos, 236);
 		}
 	}
 }

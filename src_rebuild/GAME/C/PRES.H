@@ -9,7 +9,7 @@ extern int StringWidth(char *pString); // 0x00074A24
 
 extern int OutputString(char *pString, int formatting, int x, int y, int xw, int r, int g, int b); // 0x00074AB0
 
-extern void PrintStringRightAligned(char *pString, int x, int y); // 0x00074B8C
+extern int PrintStringRightAligned(char *pString, int x, int y); // 0x00074B8C
 
 extern void PrintStringCentred(char *pString, short y); // 0x00074BD8
 

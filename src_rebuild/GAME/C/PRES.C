@@ -211,9 +211,9 @@ int OutputString(char *pString, int formatting, int x, int y, int xw, int r, int
 	// End Line: 1526
 
 // [D] [T]
-void PrintStringRightAligned(char *pString, int x, int y)
+int PrintStringRightAligned(char *pString, int x, int y)
 {
-	PrintString(pString, x - StringWidth(pString), y);
+	return PrintString(pString, x - StringWidth(pString), y);
 }
 
 
