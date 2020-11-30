@@ -30,6 +30,8 @@
 #define PATH_NODE_CYCLE		0x80000001	// cycle nodes with interpolation
 #define PATH_NODE_STATION	0x80000002	// stop point
 
+#define PATH_NODE_REVERSE	0x80000003
+
 // TODO: put more meaning into those arrays
 
 int ElTrainData[83] = {
@@ -65,11 +67,18 @@ int ElTrainData[83] = {
 };
 
 int VegasTrainData[7] = {
-	0, 123, 32768, 982000, -68855, 762717, PATH_NODE_WRAP
+	0, 123, 0x8000,
+	982000, -68855, 762717, PATH_NODE_WRAP
 };
 
 int VegasParkedTrains[3] = {
 	-68855, 975520, 792317
+};
+
+// [A] monorail
+int VegasMonorailData[] = {
+	20, 70, 0x18000, // cycle flag. Cannot be used for event itself
+	-70500, -67510, -111000, PATH_NODE_REVERSE, -70500, PATH_NODE_WRAP,
 };
 
 int HavanaFerryData[12] = {
@@ -876,8 +885,16 @@ void InitTrain(EVENT* ev, int count, int type)
 	}
 	else if (type == 1)
 	{
-		height = -734;
-		length = 3700;
+		if(ev->data == VegasMonorailData) // [A]
+		{
+			length = 1850;
+			height = -1100;
+		}
+		else
+		{
+			length = 3700;
+			height = -734;
+		}
 
 		ev->rotation = 0;
 	}
@@ -886,7 +903,7 @@ void InitTrain(EVENT* ev, int count, int type)
 
 	ev->flags &= ~0x7000;
 
-	if (ev->node[3] != PATH_NODE_WRAP)
+	if (ev->node[3] != PATH_NODE_WRAP && ev->node[3] != PATH_NODE_REVERSE)
 		ev->flags |= 0x3000;
 
 	to = ev->node;
@@ -1471,6 +1488,41 @@ void SetUpEvents(int full)
 				vegasDoor[i].model = FindModelIdxWithName(vegasDoor[i].modelName);
 		}
 
+		// [A] Init cut Vegas monorail
+		if (full)
+			trainModel = FindModelIdxWithName("MONORAIL");
+
+		evt = &event[cEvents];
+		
+		// [A] add monorail. More than two for some unknown reason are not visible
+		cCarriages = 2;
+
+		for (i = 0; i < cCarriages; i++)
+		{
+			evt[i].radius = EVENT_RADIUS;
+			evt[i].position.vx = VegasMonorailData[4];
+			evt[i].position.vz = VegasMonorailData[3];
+			evt[i].data = VegasMonorailData;
+
+			InitTrain(&evt[i], i, 1);
+
+			VisibilityLists(VIS_ADD, cEvents+i);
+
+			if (full)
+				evt[i].model = trainModel;
+
+			*e = &evt[i];
+			e = &(*e)->next;
+		}
+
+		evt->flags |= 0x500;
+
+		// zero first and last train links
+		evt[cCarriages - 1].next = NULL;
+		evt[1].next = NULL;
+
+		cEvents += cCarriages;
+
 		if (gCurrentMissionNumber == 30)
 		{
 			// Destroy the yard
@@ -2002,7 +2054,7 @@ void EventCollisions(CAR_DATA* cp, int type)
 // [D] [T]
 void NextNode(EVENT* ev)
 {
-	if (ev->node[2] == PATH_NODE_STATION)
+	if (ev->node[2] == PATH_NODE_STATION || ev->node[2] == PATH_NODE_REVERSE)
 	{
 		ev->node = &ev->node[2];
 	}
@@ -2016,7 +2068,7 @@ void NextNode(EVENT* ev)
 	{
 		ev->node = &ev->data[3];
 	}
-	else if (ev->node[3] == PATH_NODE_WRAP)
+	else if (ev->node[3] == PATH_NODE_WRAP || ev->node[3] == PATH_NODE_REVERSE)
 	{
 		ev->flags &= ~0x7000;
 		return;
@@ -2246,7 +2298,9 @@ void StepPathEvent(EVENT* ev)
 
 			do
 			{
-				NextNode(ev);
+				if(!(ev->data[2] & 0x10000))
+					NextNode(ev);
+				
 				flags = ev->flags;
 
 				ev = ev->next;
@@ -2274,9 +2328,84 @@ void StepPathEvent(EVENT* ev)
 	if (speed == 0 && (flags & 0x400) == 0)
 		return;
 
+	
+
+	//
+	// [A] completely custom code because OG code for handling trains SUCKS!!!
+	if(ev->data[2] & 0x10000)
+	{
+		from = ev->node;
+		to = &from[2];
+		
+		if (flags & 0x8000)
+			curr = &ev->position.vz;
+		else
+			curr = &ev->position.vx;
+
+		i = &from[0];
+		d = *to - *curr;
+
+		if (d < 0)
+			dir = -1;
+		else
+			dir = 1;
+
+		d = ABS(d);
+		d1 = ABS(*curr - *i);
+
+		if (d1 > d)
+			d1 = d;
+
+		d = ABS(*curr - *i);
+
+		if (d <= d1)
+			d1 = d;
+
+		if (ev->flags & 0x400)
+			speed = ev->data[1];
+
+		if ((d1 < 6000 && d1 < 8048) && (ev->flags & 0x400))
+		{
+			speed = ev->data[0] + (speed - ev->data[0]) * rcossin_tbl[(((d1 - 2048) * 1024) / 8048 & 0xfffU) * 2] / 4096;
+		}
+
+		*curr += speed * dir;
+
+		int dist = (*to - *curr) * dir;
+
+		if(dist < (-dir)*2048 && ev->flags & 0x400)
+		{
+			EVENT* _evit = ev;
+
+			do
+			{
+				_evit->flags &= ~0x100;
+				_evit->timer = 300;
+
+				// manually advance node
+				do
+				{
+					_evit->node += 1;
+
+					if (_evit->node[2] == PATH_NODE_WRAP)
+					{
+						// reinitialize if we reached WRAP
+						_evit->node = &ev->data[3];
+						break;
+					}
+				} while (_evit->node[2] == PATH_NODE_WRAP || _evit->node[2] == PATH_NODE_REVERSE);
+
+				_evit = _evit->next;
+			} while (_evit);
+		
+		}
+
+		return;
+	}
+	
 	from = ev->node;
 	to = &from[2];
-
+	
 	if (*from == PATH_NODE_STATION)
 	{
 		station = EVENT_LEAVING;
@@ -2469,9 +2598,11 @@ void StepPathEvent(EVENT* ev)
 
 	*curr += speed * dir;
 
+	int dist = (*to - *curr) * dir;
+	
 	if (station == EVENT_NO_STATION && (ev->flags & 0x7000))
 	{
-		if ((*to - *curr) * dir < 2048)
+		if (dist < 2048)
 		{
 			if ((ev->flags & 0x7000) == 0x3000)
 			{
@@ -2483,7 +2614,7 @@ void StepPathEvent(EVENT* ev)
 		return;
 	}
 
-	if ((*to - *curr) * dir < 0)
+	if (dist < 0)
 	{
 		if (station == EVENT_NO_STATION)
 		{
@@ -2491,7 +2622,7 @@ void StepPathEvent(EVENT* ev)
 			// i might have been decompiled it wrong but now it works
 			dir = ev->flags & 0x400;
 			
-			InitTrain(ev, 0, 0);
+			InitTrain(ev, 0, GameLevel == 0 ? 0 : 1);
 
 			if (dir)
 				ev->flags |= 0x400;
