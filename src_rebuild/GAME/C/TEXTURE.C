@@ -4,7 +4,7 @@
 #include "OVERMAP.H"
 #include "MISSION.H"
 #include "DRAW.H"
-
+#include "SYSTEM.H"
 #include <string.h>
 
 #include "CARS.H"
@@ -244,11 +244,31 @@ void LoadTPageFromTIMs(int tpage2send)
 		TIMIMAGEHDR* timClut;
 		TIMIMAGEHDR* timData;
 		char* textureName;
+		char* citytypeStr;
 		int j;
+
+		switch (GetCityType())
+		{
+			case CITYTYPE_NIGHT:
+				citytypeStr = "N";
+				break;
+			case CITYTYPE_MULTI_DAY:
+				citytypeStr = "M";
+				break;
+			case CITYTYPE_MULTI_NIGHT:
+				citytypeStr = "MN";
+				break;
+			default:
+				citytypeStr = "D";
+				break;
+			}
 
 		textureName = texturename_buffer + details[i].nameoffset;
 
-		sprintf(filename, "LEVELS\\%s\\PAGE_%d\\%s_%d.TIM", LevelNames[GameLevel], tpage2send, textureName, i);
+		sprintf(filename, "LEVELS\\%s\\%sPAGE_%d\\%s_%d.TIM", LevelNames[GameLevel], citytypeStr, tpage2send, textureName, i);
+
+		if (!FileExists(filename))
+			sprintf(filename, "LEVELS\\%s\\PAGE_%d\\%s_%d.TIM", LevelNames[GameLevel], tpage2send, textureName, i);
 
 		if(FileExists(filename))
 		{

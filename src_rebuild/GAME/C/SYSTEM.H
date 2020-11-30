@@ -155,6 +155,8 @@ extern void ResetCityType(); // 0x0007F5B4
 
 extern void SetCityType(CITYTYPE type); // 0x0007F118
 
+extern CITYTYPE GetCityType();
+
 extern int FileExists(char *filename); // 0x0007F5C8
 
 extern CDTYPE DiscSwapped(char *filename); // 0x0007F640

@@ -1315,6 +1315,11 @@ void ResetCityType(void)
 	lastcity = -1;
 }
 
+// [A]
+CITYTYPE GetCityType()
+{
+	return lasttype;
+}
 
 
 // decompiled code
