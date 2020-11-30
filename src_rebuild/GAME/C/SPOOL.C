@@ -1317,6 +1317,11 @@ void SendTPage(void)
 				tsetcounter = 0;
 				tsetpos = 0;
 			}
+
+#ifndef PSX
+			// [A] try override
+			LoadTPageFromTIMs(tpage2send);
+#endif
 		}
 	}
 
