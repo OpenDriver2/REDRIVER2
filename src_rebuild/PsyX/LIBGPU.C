@@ -325,13 +325,13 @@ int MoveImage(RECT16* rect, int x, int y)
 
 int ResetGraph(int mode)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 int SetGraphDebug(int level)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
@@ -398,7 +398,7 @@ void SetDispMask(int mask)
 
 int FntPrint(char* text, ...)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
@@ -437,7 +437,7 @@ DISPENV* SetDefDispEnv(DISPENV* env, int x, int y, int w, int h)//(F)
 
 DRAWENV* GetDrawEnv(DRAWENV* env)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return NULL;
 }
 
@@ -616,9 +616,14 @@ void DrawAggregatedSplits()
 			vert->b = 0;
 
 			eprintf("==========================================\n");
-			eprintf("POLYGON: %d\n", i);
+			eprintf("POLYGON: %d\n", g_polygonSelected);
+#ifdef PGXP
+			eprintf("X: %.2f Y: %.2f\n", vert->x, vert->y);
+			eprintf("U: %.2f V: %.2f\n", vert->u, vert->v);
+#else
 			eprintf("X: %d Y: %d\n", vert->x, vert->y);
 			eprintf("U: %d V: %d\n", vert->u, vert->v);
+#endif
 			eprintf("TP: %d CLT: %d\n", vert->page, vert->clut);
 			eprintf("==========================================\n");
 		}
@@ -682,49 +687,51 @@ void AggregatePTAGsToSplits(u_long* p, bool singlePrimitive)
 
 void DrawOTagEnv(u_long* p, DRAWENV* env)
 {
-	do
-	{
-		PutDrawEnv(env);
-		DrawOTag(p);
-	} while (g_emulatorPaused);
+	PutDrawEnv(env);
+	DrawOTag(p);
 }
 
 void DrawOTag(u_long* p)
 {
-	if (g_GPUDisabledState)
+	do
 	{
-		ClearVBO();
-		ResetPolyState();
+		if (g_GPUDisabledState)
+		{
+			ClearVBO();
+			ResetPolyState();
 
 #ifdef PGXP
-		PGXP_ClearCache();
+			PGXP_ClearCache();
 #endif
-		return;
-	}
+			return;
+		}
 
-	if (Emulator_BeginScene())
-	{
-		ClearVBO();
-		ResetPolyState();
-	}
+		if (Emulator_BeginScene())
+		{
+			ClearVBO();
+			ResetPolyState();
+		}
 
 #if defined(DEBUG_POLY_COUNT)
-	polygon_count = 0;
+		polygon_count = 0;
 #endif
 
-	if (activeDrawEnv.isbg)
-	{
-		ClearImage(&activeDrawEnv.clip, activeDrawEnv.r0, activeDrawEnv.g0, activeDrawEnv.b0);
-	}
-	else
-	{
-		Emulator_BlitVRAM();
-	}
+		if (activeDrawEnv.isbg)
+		{
+			ClearImage(&activeDrawEnv.clip, activeDrawEnv.r0, activeDrawEnv.g0, activeDrawEnv.b0);
+		}
+		else
+		{
+			Emulator_BlitVRAM();
+		}
 
-	AggregatePTAGsToSplits(p, false);
-	
-	Emulator_SetStencilMode(0);
-	DrawAggregatedSplits();
+		AggregatePTAGsToSplits(p, false);
+
+		Emulator_SetStencilMode(0);
+		DrawAggregatedSplits();
+
+		
+	} while (g_emulatorPaused);
 }
 
 void DrawPrim(void* p)
@@ -1431,7 +1438,7 @@ void SetSprt(SPRT* p)
 
 void SetDumpFnt(int id)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 void SetLineF3(LINE_F3* p)
@@ -1441,7 +1448,7 @@ void SetLineF3(LINE_F3* p)
 
 void FntLoad(int tx, int ty)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 void AddPrim(void* ot, void* p)
@@ -1535,25 +1542,25 @@ u_short LoadClut2(u_long* clut, int x, int y)
 
 u_long* KanjiFntFlush(int id)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 u_long* FntFlush(int id)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 int KanjiFntOpen(int x, int y, int w, int h, int dx, int dy, int cx, int cy, int isbg, int n)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 int FntOpen(int x, int y, int w, int h, int isbg, int n)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 

@@ -16,6 +16,7 @@
 #include "MAIN.H"
 #include "PAD.H"
 #include "DRAW.H"
+#include "PAUSE.H"
 #include "STRINGS.H"
 #include "PLATFORM.H"
 
@@ -101,6 +102,13 @@ const char* mallocptr_start = g_allocatedMem;
 int leadAIRequired = 0;
 int leadAILoaded = 0;
 int pathAILoaded = 0;
+
+char* LevelNames[] = {
+	"CHICAGO",
+	"HAVANA",
+	"VEGAS",
+	"RIO",
+};
 
 char* LevelFiles[] = {
 	"LEVELS\\CHICAGO.LEV",
@@ -1047,11 +1055,16 @@ short padd;
 
 // [D] [T]
 void UpdatePadData(void)
-{
+{	
 	ReadControllers();
 
 	paddp = Pads[0].mapnew;
 	padd = Pads[0].mapped;
+
+#ifndef PSX
+	extern void SwitchMappings(int menu);
+	SwitchMappings(pauseflag || CurrentGameMode == GAMEMODE_DIRECTOR);
+#endif
 }
 
 
@@ -1302,6 +1315,11 @@ void ResetCityType(void)
 	lastcity = -1;
 }
 
+// [A]
+CITYTYPE GetCityType()
+{
+	return lasttype;
+}
 
 
 // decompiled code

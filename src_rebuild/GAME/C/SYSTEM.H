@@ -65,6 +65,7 @@ extern int leadAIRequired;
 extern int leadAILoaded;
 extern int pathAILoaded;
 
+extern char* LevelNames[];
 extern char* LoadingScreenNames[];
 
 struct DB
@@ -100,7 +101,7 @@ extern DB* current;
 extern int citystart[8];
 extern XYPAIR citylumps[8][4];
 
-#ifdef PAL
+#ifdef PAL_VERSION
 #define draw_mode draw_mode_pal
 #define video_mode MODE_PAL
 #else
@@ -153,6 +154,8 @@ extern void InitaliseDrawEnv(DB *pBuff, int x, int y, int w, int h); // 0x0007F7
 extern void ResetCityType(); // 0x0007F5B4
 
 extern void SetCityType(CITYTYPE type); // 0x0007F118
+
+extern CITYTYPE GetCityType();
 
 extern int FileExists(char *filename); // 0x0007F5C8
 

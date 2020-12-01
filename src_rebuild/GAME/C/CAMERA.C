@@ -443,8 +443,8 @@ int CameraCollisionCheck(void)
 	sphere = scr_z * 3 - 382;
 
 	do {
-		cellx = camera_position.vx + (count % 3) * MAP_REGION_SIZE*MAP_REGION_SIZE - MAP_REGION_SIZE*MAP_REGION_SIZE + units_across_halved >> 11;
-		cellz = camera_position.vz + (count / 3) * MAP_REGION_SIZE*MAP_REGION_SIZE - MAP_REGION_SIZE*MAP_REGION_SIZE + units_down_halved >> 11;
+		cellx = (camera_position.vx + (count % 3) * MAP_REGION_SIZE*MAP_REGION_SIZE - MAP_REGION_SIZE*MAP_REGION_SIZE + units_across_halved) / MAP_CELL_SIZE;
+		cellz = (camera_position.vz + (count / 3) * MAP_REGION_SIZE*MAP_REGION_SIZE - MAP_REGION_SIZE*MAP_REGION_SIZE + units_down_halved) / MAP_CELL_SIZE;
 
 		if (gCameraDistance > 0)
 		{

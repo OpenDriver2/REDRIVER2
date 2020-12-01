@@ -7,6 +7,7 @@
 #include "CRASHHANDLER.H"
 
 #include "LIBETC.H"
+#include "LIBGPU.H"
 
 //#include <stdio.h>
 //#include <string.h>
@@ -15,11 +16,8 @@
 #endif
 #include <assert.h>
 
-#if defined(NTSC_VERSION)
-#define FIXED_TIME_STEP		(1.0/60.0)		// 60 FPS clock
-#else
-#define FIXED_TIME_STEP		(1.0/50.0)		// 50 FPS clock
-#endif
+#define FIXED_TIME_STEP_NTSC		(1.0/60.0)		// 60 FPS clock
+#define FIXED_TIME_STEP_PAL			(1.0/50.0)		// 50 FPS clock
 
 #define SWAP_INTERVAL		1
 
@@ -33,6 +31,10 @@
 
 SDL_Window* g_window = NULL;
 TextureID vramTexture;
+
+TextureID vramTextures[2];
+int curVramTexture = 0;
+
 TextureID whiteTexture;
 
 GLuint dynamic_vertex_buffer;
@@ -58,6 +60,7 @@ int g_pgxpTextureCorrection = 1;
 int g_pgxpZBuffer = 1;
 int g_bilinearFiltering = 0;
 TextureID g_lastBoundTexture;
+KeyboardMapping g_keyboard_mapping;
 
 // Remap a value in the range [A,B] to [C,D].
 #define RemapVal( val, A, B, C, D) \
@@ -84,7 +87,9 @@ inline void ScreenCoordsToEmulator(Vertex* vertex, int count)
 
 void Emulator_ResetDevice()
 {
+#if defined(OGL)
 	SDL_GL_SetSwapInterval(g_swapInterval);
+#endif
 }
 
 
@@ -340,12 +345,15 @@ int Emulator_DoVSyncCallback()
 int vblankThreadMain(void* data)
 {
 	Emulator_InitHPCTimer(&g_vblankTimer);
-
+	
 	do
 	{
+		const long vmode = GetVideoMode();
+		const double timestep = vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;
+		
 		double delta = Emulator_GetHPCTime(&g_vblankTimer, 0);
 		
-		if (delta > FIXED_TIME_STEP)
+		if (delta > timestep)
 		{
 			// do vblank events
 			SDL_LockMutex(g_vblankMutex);
@@ -387,6 +395,30 @@ static int Emulator_InitialiseCore()
 	return TRUE;
 }
 
+static void Emulator_InitialiseInput()
+{
+	g_keyboard_mapping.kc_square = SDL_SCANCODE_X;
+	g_keyboard_mapping.kc_circle = SDL_SCANCODE_V;
+	g_keyboard_mapping.kc_triangle = SDL_SCANCODE_Z;
+	g_keyboard_mapping.kc_cross = SDL_SCANCODE_C;
+
+	g_keyboard_mapping.kc_l1 = SDL_SCANCODE_LSHIFT;
+	g_keyboard_mapping.kc_l2 = SDL_SCANCODE_LCTRL;
+	g_keyboard_mapping.kc_l3 = SDL_SCANCODE_LEFTBRACKET;
+
+	g_keyboard_mapping.kc_r1 = SDL_SCANCODE_RSHIFT;
+	g_keyboard_mapping.kc_r2 = SDL_SCANCODE_RCTRL;
+	g_keyboard_mapping.kc_r3 = SDL_SCANCODE_RIGHTBRACKET;
+
+	g_keyboard_mapping.kc_dpad_up = SDL_SCANCODE_UP;
+	g_keyboard_mapping.kc_dpad_down = SDL_SCANCODE_DOWN;
+	g_keyboard_mapping.kc_dpad_left = SDL_SCANCODE_LEFT;
+	g_keyboard_mapping.kc_dpad_right = SDL_SCANCODE_RIGHT;
+
+	g_keyboard_mapping.kc_select = SDL_SCANCODE_SPACE;
+	g_keyboard_mapping.kc_start = SDL_SCANCODE_RETURN;
+}
+
 void Emulator_Initialise(char* windowName, int width, int height, int fullscreen)
 {
 	eprintf("Initialising Psy-X %d.%d\n", EMULATOR_MAJOR_VERSION, EMULATOR_MINOR_VERSION);
@@ -418,6 +450,7 @@ void Emulator_Initialise(char* windowName, int width, int height, int fullscreen
 		Emulator_ShutDown();
 	}
 
+	Emulator_InitialiseInput();
 }
 
 void Emulator_GetScreenSize(int& screenWidth, int& screenHeight)
@@ -1261,11 +1294,16 @@ int Emulator_Initialise()
 	glEnable(GL_STENCIL_TEST);
 	glBlendColor(0.5f, 0.5f, 0.5f, 0.25f);
 
-	glGenTextures(1, &vramTexture);
-	glBindTexture(GL_TEXTURE_2D, vramTexture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D, 0, VRAM_INTERNAL_FORMAT, VRAM_WIDTH, VRAM_HEIGHT, 0, VRAM_FORMAT, GL_UNSIGNED_BYTE, NULL);
+	glGenTextures(2, vramTextures);
+	vramTexture = vramTextures[0];
+	curVramTexture = 0;
+	for(int i = 0; i < 2; i++)
+	{
+		glBindTexture(GL_TEXTURE_2D, vramTextures[i]);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexImage2D(GL_TEXTURE_2D, 0, VRAM_INTERNAL_FORMAT, VRAM_WIDTH, VRAM_HEIGHT, 0, VRAM_FORMAT, GL_UNSIGNED_BYTE, NULL);
+	}
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -1396,22 +1434,22 @@ void Emulator_SetupClipMode(const RECT16& rect)
 #endif
 }
 
-void Emulator_GetPSXWidescreenMappedViewport(RECT16& rect)
+void Emulator_GetPSXWidescreenMappedViewport(RECT16* rect)
 {
 	float emuScreenAspect = float(windowWidth) / float(windowHeight);
 
 	float psxScreenW = activeDispEnv.disp.w;
 	float psxScreenH = activeDispEnv.disp.h;
 
-	rect.x = activeDispEnv.screen.x;
-	rect.y = activeDispEnv.screen.y;
+	rect->x = activeDispEnv.screen.x;
+	rect->y = activeDispEnv.screen.y;
 
-	rect.w = psxScreenW * emuScreenAspect * PSX_SCREEN_ASPECT; // windowWidth;
-	rect.h = psxScreenH; // windowHeight;
+	rect->w = psxScreenW * emuScreenAspect * PSX_SCREEN_ASPECT; // windowWidth;
+	rect->h = psxScreenH; // windowHeight;
 
-	rect.x -= (rect.w - activeDispEnv.disp.w) / 2;
+	rect->x -= (rect->w - activeDispEnv.disp.w) / 2;
 
-	rect.w += rect.x;
+	rect->w += rect->x;
 }
 
 void Emulator_SetShader(const ShaderID &shader)
@@ -1613,8 +1651,13 @@ void Emulator_UpdateVRAM()
 	vram_need_update = false;
 
 #if defined(OGL) || defined(OGLES)
+	vramTexture = vramTextures[curVramTexture];
+	
 	glBindTexture(GL_TEXTURE_2D, vramTexture);
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, VRAM_WIDTH, VRAM_HEIGHT, VRAM_FORMAT, GL_UNSIGNED_BYTE, vram);
+
+	curVramTexture++;
+	curVramTexture &= 1;
 #endif
 }
 
@@ -1806,37 +1849,39 @@ void Emulator_DoDebugKeys(int nKey, bool down)
 		switch (nKey)
 		{
 #ifdef _DEBUG
-			case SDL_SCANCODE_1:
+			case SDL_SCANCODE_F1:
 				g_wireframeMode ^= 1;
 				eprintf("wireframe mode: %d\n", g_wireframeMode);
 				break;
 
-			case SDL_SCANCODE_2:
+			case SDL_SCANCODE_F2:
 				g_texturelessMode ^= 1;
 				eprintf("textureless mode: %d\n", g_texturelessMode);
 				break;
 
-			case SDL_SCANCODE_3:
+			case SDL_SCANCODE_F3:
 				g_emulatorPaused ^= 1;
 				break;
 
 			case SDL_SCANCODE_UP:
 			case SDL_SCANCODE_DOWN:
 				if (g_emulatorPaused)
+				{
 					g_polygonSelected += (nKey == SDL_SCANCODE_UP) ? 3 : -3;
+				}
 				break;
-#endif
-#if !defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
-			case SDL_SCANCODE_4:
-				eprintf("saving screenshot\n");
-				Emulator_TakeScreenshot();
-				break;
-#endif
-			case SDL_SCANCODE_5:
+			case SDL_SCANCODE_F10:
 				eprintf("saving VRAM.TGA\n");
 				Emulator_SaveVRAM("VRAM.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, TRUE);
 				break;
-			case SDL_SCANCODE_6:
+#endif
+#if !defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
+			case SDL_SCANCODE_F12:
+				eprintf("Saving screenshot\n");
+				Emulator_TakeScreenshot();
+				break;
+#endif
+			case SDL_SCANCODE_F4:
 
 				activeControllers++;
 				activeControllers = activeControllers % 4;
@@ -1846,10 +1891,10 @@ void Emulator_DoDebugKeys(int nKey, bool down)
 
 				eprintf("Active keyboard controller: %d\n", activeControllers);
 				break;
-			case SDL_SCANCODE_7:
+			case SDL_SCANCODE_F5:
 				g_pgxpTextureCorrection ^= 1;
 				break;
-			case SDL_SCANCODE_8:
+			case SDL_SCANCODE_F6:
 				g_pgxpZBuffer ^= 1;
 				break;
 				
@@ -1901,6 +1946,9 @@ void Emulator_SwapWindow()
 
 void Emulator_WaitForTimestep(int count)
 {
+	const long vmode = GetVideoMode();
+	const double timestep = vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;
+	
 	// additional wait for swap
 	if (g_swapInterval > 0)
 	{
@@ -1909,7 +1957,7 @@ void Emulator_WaitForTimestep(int count)
 		{
 			SDL_Delay(0); // yield
 			delta = Emulator_GetHPCTime(&g_swapTimer, 0);
-		} while (delta < FIXED_TIME_STEP * count);
+		} while (delta < timestep * count);
 
 		Emulator_GetHPCTime(&g_swapTimer, 1);
 	}
@@ -1951,7 +1999,9 @@ void Emulator_ShutDown()
 		SDL_DestroyMutex(g_vblankMutex);
 
 #if defined(OGL) || defined(OGLES)
-	Emulator_DestroyTexture(vramTexture);
+	vramTexture = 0;
+	Emulator_DestroyTexture(vramTextures[0]);
+	Emulator_DestroyTexture(vramTextures[1]);
 	Emulator_DestroyTexture(whiteTexture);
 #endif
 

@@ -2,12 +2,13 @@
 #define LOADVIEW_H
 
 extern int FadingScreen;
+extern int gFastLoadingScreens;
 
 extern void ShowLoading(); // 0x0005816C
 
 extern void SetupScreenFade(int start, int end, int speed); // 0x000589B0
 
-extern void FadeGameScreen(int flag, int speed); // 0x000582AC
+extern void FadeGameScreen(int flag); // 0x000582AC
 
 extern void ShowLoadingScreen(char *screen_name, int effect, int loading_steps); // 0x000583F4
 

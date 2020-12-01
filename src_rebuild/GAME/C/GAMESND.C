@@ -2195,11 +2195,12 @@ void ExplosionSound(VECTOR* pos, int type)
 		sc1 = 3;
 		sc2 = 1;
 	}
-	else if (type == HEY_MOMMA)
+	else // HEY_MOMMA
 	{
 		sc1 = 1;
 		sc2 = 3;
 	}
+	
 
 	P.vx = pos->vx * sc1 + player[0].cameraPos.vx * sc2;
 	P.vy = pos->vy * sc1 + player[0].cameraPos.vy * sc2;
@@ -2207,7 +2208,7 @@ void ExplosionSound(VECTOR* pos, int type)
 
 	Start3DSoundVolPitch(-1, SOUND_BANK_MISSION,
 		bang, P.vx / 4, P.vy / 4, P.vz / 4,
-		0, ((FrameCnt * pos->vx ^ rnd * pos->vz) & 0x3ffU) + 0xe00);
+		0, ((FrameCnt * pos->vx ^ rnd * pos->vz) & 0x3ffU) + 3584);
 }
 
 
@@ -3685,7 +3686,7 @@ void LeadHorn(CAR_DATA* cp)
 	dx = cp->hd.where.t[0] - camera_position.vx >> 8;
 	dz = cp->hd.where.t[2] - camera_position.vz >> 8;
 
-	if (ABS(dx) < 64 && ABS(dz) > 64)
+	if (ABS(dx) > 64 || ABS(dz) > 64)
 		return;
 
 	if (horn_time == 0)

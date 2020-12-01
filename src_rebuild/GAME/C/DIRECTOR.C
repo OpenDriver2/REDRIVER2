@@ -698,7 +698,6 @@ int IsMovingCamera(PLAYBACKCAMERA* lastcam, PLAYBACKCAMERA* nextcam, int camerac
 	int xangle;
 	int yangle;
 	int zangle;
-	int iVar14;
 	PLAYBACKCAMERA cam;
 
 	if (lastcam == NULL)

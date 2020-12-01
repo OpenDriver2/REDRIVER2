@@ -270,6 +270,7 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 	plotContext.ptexture_cluts = (ushort(*)[128][32])texture_cluts;
 	plotContext.lastTexInfo = 0x18273472;
 	plotContext.flags = 0;
+	plotContext.polySizes = PolySizes;
 
 	tilePointers = (PACKED_CELL_OBJECT **)tiles;
 
@@ -917,7 +918,6 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 
 	polys = (unsigned char *)model->poly_block;
 	plotContext.verts = (SVECTOR *)model->vertices;
-	plotContext.polySizes = PolySizes;
 
 	// tile types comes right after model header it seems
 	tileTypes = *(uint *)(model + 1) >> 2;

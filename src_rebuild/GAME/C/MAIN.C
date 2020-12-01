@@ -136,6 +136,9 @@ int gDieWithFade = 0;
 
 int FrameCnt = 0;
 
+static int WantPause = 0;
+static PAUSEMODE PauseMode = PAUSEMODE_PAUSE;
+
 unsigned char defaultPlayerModel[2] = { 0 }; // offset 0xAA604
 unsigned char defaultPlayerPalette = 0; // offset 0xAA606
 
@@ -278,7 +281,13 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 		else if (lump_type == LUMP_TEXTURENAMES)
 		{
 			printf("LUMP_TEXTURENAMES: size: %d\n", seg_size);
+#ifndef PSX
+			// we need to copy texture names
+			texturename_buffer = D_MALLOC(seg_size);
+			memcpy(texturename_buffer, ptr, seg_size);
+#else
 			texturename_buffer = (char*)ptr;
+#endif
 		}
 		else if (lump_type == LUMP_PALLET)
 		{
@@ -2190,9 +2199,6 @@ void DrawGame(void)
 	/* end block 3 */
 	// End Line: 10830
 
-static int WantPause = 0;
-static PAUSEMODE PauseMode = PAUSEMODE_PAUSE;
-
 // [D] [T]
 void EndGame(GAMEMODE mode)
 {
@@ -2268,7 +2274,7 @@ void CheckForPause(void)
 		WantPause = 1;
 	}
 
-	if (WantPause != 0)
+	if (WantPause)
 	{
 		WantPause = 0;
 		pauseflag = 1;
@@ -2365,6 +2371,7 @@ void PrintCommandLineArguments()
 	const char* argumentsMessage =
 		"Example: REDRIVER2 <command> [arguments]\n\n"
 #ifdef DEBUG_OPTIONS
+		"  -exportxasubtitles: Exports strings from XA WAV files to SBN\n"
 		"  -startpos <x> <z>: Set player start position\n"
 		"  -players <count> : Set player count (1 or 2)\n"
 		"  -playercar <number>, -player2car <number> : set player wanted car\n"
@@ -2475,8 +2482,21 @@ int redriver2_main(int argc, char** argv)
 
 	for (int i = 1; i < argc; i++)
 	{
+		if (!_stricmp(argv[i], "-nofmv"))
+		{
+			gNoFMV = 1;
+		}
+		else if (!_stricmp(argv[i], "-nointro"))
+		{
+			// do nothing. All command line features use it
+		}
 #ifdef DEBUG_OPTIONS
-		if (!_stricmp(argv[i], "-startpos"))
+		else if (!_stricmp(argv[i], "-exportxasubtitles"))
+		{
+			extern void StoreXASubtitles();
+			StoreXASubtitles();
+		}
+		else if (!_stricmp(argv[i], "-startpos"))
 		{
 			if (argc - i < 3)
 			{
@@ -2549,84 +2569,75 @@ int redriver2_main(int argc, char** argv)
 			GameType = GAME_TAKEADRIVE;
 			LaunchGame();
 		}
-		else
 #endif // _DEBUG_OPTIONS
-			if (!_stricmp(argv[i], "-nofmv"))
+		else if (!_stricmp(argv[i], "-replay"))
+		{
+			if (argc - i < 2)
 			{
-				gNoFMV = 1;
+				printError("-replay missing argument!");
+				return -1;
 			}
-			else if (!_stricmp(argv[i], "-nointro"))
+
+			SetFEDrawMode();
+
+			gInFrontend = 0;
+			AttractMode = 0;
+
+			char nameStr[512];
+			sprintf(nameStr, "%s", argv[i + 1]);
+
+			FILE* fp = fopen(nameStr, "rb");
+			if (fp)
 			{
-				// do nothing. All command line features use it
-			}
-			else if (!_stricmp(argv[i], "-replay"))
-			{
-				if (argc - i < 2)
+				int replay_size = 0;
+				fseek(fp, 0, SEEK_END);
+				replay_size = ftell(fp);
+				fseek(fp, 0, SEEK_SET);
+
+				fread(_other_buffer, replay_size, 1, fp);
+				fclose(fp);
+
+				if (LoadReplayFromBuffer(_other_buffer))
 				{
-					printError("-replay missing argument!");
-					return -1;
-				}
+					CurrentGameMode = GAMEMODE_REPLAY;
+					gLoadedReplay = 1;
 
-				SetFEDrawMode();
+					LaunchGame();
 
-				gInFrontend = 0;
-				AttractMode = 0;
-
-				char nameStr[512];
-				sprintf(nameStr, "%s", argv[i + 1]);
-
-				FILE* fp = fopen(nameStr, "rb");
-				if (fp)
-				{
-					int replay_size = 0;
-					fseek(fp, 0, SEEK_END);
-					replay_size = ftell(fp);
-					fseek(fp, 0, SEEK_SET);
-
-					fread(_other_buffer, replay_size, 1, fp);
-					fclose(fp);
-
-					if (LoadReplayFromBuffer(_other_buffer))
-					{
-						CurrentGameMode = GAMEMODE_REPLAY;
-						gLoadedReplay = 1;
-
-						LaunchGame();
-
-						gLoadedReplay = 0;
-					}
-					else
-					{
-						printError("Error loading replay file '%s'!\n", nameStr);
-					}
+					gLoadedReplay = 0;
 				}
 				else
 				{
-					printError("Cannot open replay '%s'!\n", nameStr);
-					return -1;
+					printError("Error loading replay file '%s'!\n", nameStr);
 				}
-				i++;
 			}
-#ifdef CUTSCENE_RECORDER
-			else if (!_stricmp(argv[i], "-recordcutscene"))
-			{
-				SetFEDrawMode();
-
-				gInFrontend = 0;
-				AttractMode = 0;
-
-				extern void LoadCutsceneRecorder(char* filename);
-				
-				LoadCutsceneRecorder(argv[i+1]);
-				i++;
-			}
-#endif
 			else
 			{
-				if (!commandLinePropsShown)
-					PrintCommandLineArguments();
-				commandLinePropsShown = 1;
+				printError("Cannot open replay '%s'!\n", nameStr);
+				return -1;
 			}
+			i++;
+		}
+#ifdef CUTSCENE_RECORDER
+		else if (!_stricmp(argv[i], "-recordcutscene"))
+		{
+			SetFEDrawMode();
+
+			gInFrontend = 0;
+			AttractMode = 0;
+
+			extern void LoadCutsceneRecorder(char* filename);
+			
+			LoadCutsceneRecorder(argv[i+1]);
+			i++;
+		}
+#endif
+		else
+		{
+			if (!commandLinePropsShown)
+				PrintCommandLineArguments();
+			commandLinePropsShown = 1;
+		}
 	}
 #endif // PSX
 
@@ -2662,10 +2673,12 @@ int redriver2_main(int argc, char** argv)
 // [D] [T]
 void FadeScreen(int end_value)
 {
-	int tmp2 = pauseflag;
+	int tmp2;
+
+	tmp2 = pauseflag;
 
 	pauseflag = 1;
-	SetupScreenFade(-32, end_value, 1);
+	SetupScreenFade(-32, end_value, gFastLoadingScreens ? 128 : 8);
 	FadingScreen = 1;
 
 	do {
@@ -3117,7 +3130,7 @@ void RenderGame(void)
 
 	DrawGame(); // [A] was inline
 
-	FadeGameScreen(0, 8);
+	FadeGameScreen(0);
 }
 
 // decompiled code

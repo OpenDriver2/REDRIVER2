@@ -91,229 +91,229 @@ long StopRCnt(long spec)//TODO
 #undef OpenEvent
 long OpenEvent(unsigned long unk00, long unk01, long unk02, long(*func)())
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long CloseEvent(long unk00)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long WaitEvent(long unk00)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long TestEvent(long unk00)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long EnableEvent(long unk00)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long DisableEvent(long unk00)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 void DeliverEvent(unsigned long unk00, unsigned long unk01)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 void UnDeliverEvent(unsigned long unk00, unsigned long unk01)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 long OpenTh(long(*func)(), unsigned long unk01, unsigned long unk02)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 int CloseTh(long unk00)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 int ChangeTh(long unk00)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long open(char* unk00, unsigned long unk01)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long close(long unk00)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long lseek(long unk00, long unk01, long unk02)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long read(long unk00, void* unk01, long unk02)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long write(long unk00, void* unk01, long unk02)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long ioctl(long unk00, long unk01, long unk02)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 struct DIRENTRY* firstfile(char* unk00, struct DIRENTRY* unk01)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 struct DIRENTRY* nextfile(struct DIRENTRY* unk00)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long erase(char* unk00)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long undelete(char* unk00)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long format(char* unk00)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 long rename(char* unk00, char* unk01)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long cd(char* unk00)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long LoadTest(char*  unk00, struct EXEC* unk01)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long Load(char * unk00, struct EXEC* unk01)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long Exec(struct EXEC * unk00, long unk01, char** unk02)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long LoadExec(char * unk00, unsigned long unk01, unsigned long unk02)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long InitPAD(char * unk00, long unk01, char* unk02, long unk03)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long StartPAD()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 void StopPAD()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 void EnablePAD()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 void DisablePAD()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 void FlushCache()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 void ReturnFromException()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 int EnterCriticalSection()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 void ExitCriticalSection()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 void Exception()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 void SwEnterCriticalSection()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 void SwExitCriticalSection()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 unsigned long SetSp(unsigned long newsp)//(F)
@@ -325,182 +325,182 @@ unsigned long SetSp(unsigned long newsp)//(F)
 
 unsigned long GetSp()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 unsigned long GetGp()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 unsigned long GetCr()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 unsigned long GetSr()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 unsigned long GetSysSp()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long SetConf(unsigned long unk00, unsigned long unk01, unsigned long unk02)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 void GetConf(unsigned long* unk00, unsigned long* unk01, unsigned long* unk02)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 long _get_errno(void)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long _get_error(long unk00)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 void SystemError(char unk00, long unk01)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 void SetMem(long unk00)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 long Krom2RawAdd(unsigned long unk00)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long Krom2RawAdd2(unsigned short unk00)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 void _96_init(void)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 void _96_remove(void)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 void _boot(void)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 void ChangeClearPAD(long unk00)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 void InitCARD(long val)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 long StartCARD()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long StopCARD()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 void _bu_init()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 long _card_info(long chan)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long _card_clear(long chan)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long _card_load(long chan)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long _card_auto(long val)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 void _new_card()
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 }
 
 long _card_status(long drv)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long _card_wait(long drv)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 unsigned long _card_chan(void)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long _card_write(long chan, long block, unsigned char *buf)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long _card_read(long chan, long block, unsigned char *buf)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 long _card_format(long chan)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }

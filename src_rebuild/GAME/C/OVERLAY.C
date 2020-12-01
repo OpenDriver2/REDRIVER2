@@ -16,10 +16,6 @@
 #include "FELONY.H"
 #include "SCORES.H"
 
-#ifndef PSX
-#include "EMULATOR.H"
-#endif
-
 COLOUR_BAND felonyColour[3] =
 {
   { { 0, 0, 255, 0 }, 0, 0 },
@@ -177,7 +173,7 @@ void DisplayOverlays(void)
 		{
 			// align to PSX-mapped screen coordinates
 			RECT16 emuViewport;
-			Emulator_GetPSXWidescreenMappedViewport(emuViewport);
+			Emulator_GetPSXWidescreenMappedViewport(&emuViewport);
 
 			// recalc pos
 			gOverlayXPos = 16 + emuViewport.x;
@@ -960,7 +956,7 @@ void DrawDrivingGameOverlays(void)
 		case GAME_GETAWAY:
 			table = &ScoreTables.GetawayTable[GameLevel][gSubGameNumber][0];
 
-			x = PrintString("Best: ", 16, 60);
+			x = PrintString("Best: ", gOverlayXPos, 60);
 			PrintScoreTableTime(x + 3, 60, table->time);
 			break;
 		case GAME_GATERACE:
@@ -968,15 +964,15 @@ void DrawDrivingGameOverlays(void)
 			if (NumPlayers == 1) 
 			{
 				table = &ScoreTables.GateRaceTable[GameLevel][gSubGameNumber][0];
-				PrintStringRightAligned("Gate:", 270, 16);
+				x = PrintStringRightAligned("Gate:", gOverlayXOppPos + 50, 16);
 
 				sprintf(string, "%d / %d", gPlayerScore.items, 100);
-				PrintString(string, 273, 16);
+				PrintString(string, x + 3, 16);
 
-				x = PrintString("Best:", 16, 36);
+				x = PrintString("Best:", gOverlayXPos, 36);
 				PrintScoreTableTime(x + 3, 36, table->time);
 
-				x = PrintString("Gate:", 16, 0x34);
+				x = PrintString("Gate:", gOverlayXPos, 52);
 
 				if (table->items == -1)
 					sprintf(string, "-");
@@ -987,11 +983,11 @@ void DrawDrivingGameOverlays(void)
 			}
 			else
 			{
-				x = PrintString("Gate:", 16, 36);
+				x = PrintString("Gate:", gOverlayXPos, 36);
 				sprintf(string, "%d / %d", gPlayerScore.items, 100);
 				
 				PrintString(string, x + 3, 36);
-				x = PrintString("Gate:", 16, 150);
+				x = PrintString("Gate:", gOverlayXPos, 150);
 				
 				sprintf(string, "%d / %d", gPlayerScore.P2items, 100);
 				PrintString(string, x + 3, 150);
@@ -1001,12 +997,12 @@ void DrawDrivingGameOverlays(void)
 
 			if (NumPlayers > 1) 
 			{
-				x = PrintString("Checks", 16, 36);
+				x = PrintString("Checks", gOverlayXPos, 36);
 				
 				sprintf(string, "%d/5", gPlayerScore.items);
 				PrintString(string, x + 3, 36);
 				
-				x = PrintString("Checks", 16, 150);
+				x = PrintString("Checks", gOverlayXPos, 150);
 				
 				sprintf(string, "%d/5", gPlayerScore.P2items);
 				PrintString(string, x + 3, 150);
@@ -1014,12 +1010,12 @@ void DrawDrivingGameOverlays(void)
 			else
 			{
 				table = &ScoreTables.CheckpointTable[GameLevel][gSubGameNumber][0];
-				PrintStringRightAligned("Checks", 270, 16);
+				x = PrintStringRightAligned("Checks", gOverlayXOppPos + 70, 16);
 
 				sprintf(string, "%d/5", gPlayerScore.items);
-				PrintString(string, 273, 16);
+				PrintString(string, x + 3, 16);
 
-				x = PrintString("Best:", 16, 36);
+				x = PrintString("Best:", gOverlayXPos, 36);
 				PrintScoreTableTime(x + 3, 36, table->time);
 			}
 		
@@ -1027,14 +1023,14 @@ void DrawDrivingGameOverlays(void)
 		case GAME_TRAILBLAZER:
 			
 			table = &ScoreTables.TrailblazerTable[GameLevel][gSubGameNumber][0];
-			PrintStringRightAligned("Cones:", 250, 16);
+			x = PrintStringRightAligned("Cones:", gOverlayXOppPos + 55, 16);
 		
 			sprintf(string, "%d / %d", gPlayerScore.items, 100);
-			PrintString(string, 253, 16);
+			PrintString(string, x + 3, 16);
 		
-			x = PrintString("Best", 16, 36);
+			x = PrintString("Best", gOverlayXPos, 36);
 			PrintScoreTableTime(x + 3, 36, table->time);
-			x = PrintString("Cones:", 16, 52);
+			x = PrintString("Cones:", gOverlayXPos, 52);
 
 			if (table->items != -1)
 				sprintf(string, "%d", table->items);
@@ -1046,15 +1042,15 @@ void DrawDrivingGameOverlays(void)
 			break;
 		case GAME_SURVIVAL:
 			table = &ScoreTables.SurvivalTable[GameLevel][gSubGameNumber][0];
-			x = PrintString("Best:", 16, 36);
+			x = PrintString("Best:", gOverlayXPos, 36);
 			PrintScoreTableTime(x + 3, 36, table->time);
 			break;
 		case GAME_CAPTURETHEFLAG:
-			x = PrintString("Flags:", 16, 16);
+			x = PrintString("Flags:", gOverlayXPos, 16);
 			sprintf(string, "%d", gPlayerScore.items);
 			PrintString(string, x + 3, 16);
 		
-			x = PrintString("Flags:", 16, 132);
+			x = PrintString("Flags:", gOverlayXPos, 132);
 			sprintf(string, "%d", gPlayerScore.P2items);
 			PrintString(string, x + 3, 132);
 			break;
@@ -1066,7 +1062,7 @@ void DrawDrivingGameOverlays(void)
 			{
 				sprintf(string, "%s %d:", "Lap", i+1);
 				
-				x = PrintString(string, 0x10, y);
+				x = PrintString(string, gOverlayXPos, y);
 				PrintScoreTableTime(x + 3, y, gLapTimes[0][i]);
 				
 				y += 16;
@@ -1083,7 +1079,7 @@ void DrawDrivingGameOverlays(void)
 				{
 					sprintf(string, "%s %d:", "Lap", i+1);
 
-					x = PrintString(string, 0x10, y);
+					x = PrintString(string, gOverlayXPos, y);
 					PrintScoreTableTime(x + 3, y, gLapTimes[1][i]);
 
 					y += 16;

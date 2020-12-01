@@ -1,22 +1,25 @@
 #include "LIBETC.H"
 
-#include "EMULATOR_PRIVATE.H"
+
 #include "EMULATOR.H"
+#include "EMULATOR_PRIVATE.H"
 
 #include <SDL_timer.h>
 
+int vmode = MODE_NTSC;
 void(*vsync_callback)(void) = NULL;
 
 int StopCallback(void)
 {
-	UNIMPLEMENTED();
+	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
 int ResetCallback(void)
 {
+	int old = (int)vsync_callback;
 	vsync_callback = NULL;
-	return 0;
+	return old;
 }
 
 extern unsigned int g_swapTime;
@@ -44,26 +47,19 @@ int VSync(int mode)
 
 int VSyncCallback(void(*f)(void))
 {
+	int old = (int)vsync_callback;
 	vsync_callback = f;
-	return 0;
-}
-
-long GetVideoMode(void)
-{
-#ifdef NTSC_VERSION
-	return MODE_NTSC;
-#else
-	return MODE_PAL;
-#endif
+	return old;
 }
 
 long SetVideoMode(long mode)
 {
-	UNIMPLEMENTED();
+	int old = vmode;
+	vmode = mode;
+	return old;
+}
 
-#ifdef NTSC_VERSION
-	return MODE_NTSC;
-#else
-	return MODE_PAL;
-#endif
+long GetVideoMode()
+{
+	return vmode;
 }

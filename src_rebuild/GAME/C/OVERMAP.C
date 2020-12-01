@@ -16,7 +16,6 @@
 #include "CAMERA.H"
 #include "FELONY.H"
 #include "PAD.H"
-#include "MAIN.H"
 #include "../ASM/RNC_2.H"
 
 #include "STRINGS.H"
@@ -1440,6 +1439,11 @@ void DrawFullscreenMap(void)
 	px = MapSegmentPos[0].x * 4;
 	py = MapSegmentPos[0].y;
 
+#ifndef PSX
+	RECT16 emuViewport;
+	Emulator_GetPSXWidescreenMappedViewport(&emuViewport);
+#endif
+
 	for(x = 0; x < width; x++)
 	{
 		for(y = 0; y < height; y++)
@@ -1467,8 +1471,19 @@ void DrawFullscreenMap(void)
 				meshO[count].vx += map_x_offset;
 				meshO[count].vz += map_z_offset;
 
-				if (meshO[count].vx > 320 || meshO[count].vz > 256)
+#ifndef PSX
+				if (meshO[count].vx > emuViewport.w || meshO[count].vz > emuViewport.w ||
+					meshO[count].vx < emuViewport.x || meshO[count].vz < emuViewport.y)
+				{
 					clipped++;
+				}
+#else
+				if (meshO[count].vx > 320 || meshO[count].vz > 256 ||
+					meshO[count].vx < 0 || meshO[count].vz < 0)
+				{
+					clipped++;
+				}
+#endif
 			}
 
 			if(clipped == 4)
@@ -1496,14 +1511,14 @@ void DrawFullscreenMap(void)
 			back->u0 = px;
 			back->v0 = py;
 			
-			back->u1 = px + 31;
+			back->u1 = px + 32;
 			back->v1 = py;
 			
 			back->u2 = px;
-			back->v2 = py + 31;
+			back->v2 = py + 32;
 			
-			back->u3 = px + 31;
-			back->v3 = py + 31;
+			back->u3 = px + 32;
+			back->v3 = py + 32;
 			
 			back->clut = MapClut;
 			back->tpage = MapTPage;
@@ -1896,43 +1911,6 @@ void WorldToMultiplayerMap(VECTOR *in, VECTOR *out)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ProcessPalletLump(char *lump_ptr /*$a0*/, int lump_size /*$a1*/)
- // line 1970, offset 0x00019f44
-	/* begin block 1 */
-		// Start line: 1971
-		// Start offset: 0x00019F44
-		// Variables:
-	// 		int total_cluts; // $v0
-	// 		int clutValue; // $s1
-	// 		int tpageindex; // $s2
-	// 		int texnum; // $s3
-	// 		int palette; // $s4
-	// 		int clut_number; // $v1
-	// 		unsigned short clutTable[320]; // stack offset -680
-	// 		char *buffPtr; // $s0
-
-		/* begin block 1.1 */
-			// Start line: 2013
-			// Start offset: 0x00019FD0
-		/* end block 1.1 */
-		// End offset: 0x00019FD0
-		// End Line: 2013
-	/* end block 1 */
-	// End offset: 0x0001A094
-	// End Line: 2034
-
-	/* begin block 2 */
-		// Start line: 8209
-	/* end block 2 */
-	// End Line: 8210
-
-	/* begin block 3 */
-		// Start line: 3940
-	/* end block 3 */
-	// End Line: 3941
 
 
 
@@ -3006,8 +2984,8 @@ void WorldToFullscreenMap2(VECTOR *in, VECTOR *out)
 	long flag;
 
 	pos.vy = 0;
-	pos.vx = (overlaidmaps[GameLevel].x_offset + (in->vx / overlaidmaps[GameLevel].scale) + 49) - player_position.vx;
-	pos.vz = (overlaidmaps[GameLevel].y_offset - ((in->vz / overlaidmaps[GameLevel].scale) - 49)) - player_position.vz;
+	pos.vx = overlaidmaps[GameLevel].x_offset + (in->vx / overlaidmaps[GameLevel].scale + 49) - player_position.vx;
+	pos.vz = overlaidmaps[GameLevel].y_offset - (in->vz / overlaidmaps[GameLevel].scale - 49) - player_position.vz;
 
 	RotTrans(&pos, out, &flag);
 }

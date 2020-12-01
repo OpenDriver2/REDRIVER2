@@ -47,7 +47,7 @@
 #if defined(__EMSCRIPTEN__)
 #define UNIMPLEMENTED() 0;
 #else
-#define UNIMPLEMENTED() eprinterr("Unimplemented!\n");
+#define PSYX_UNIMPLEMENTED() eprinterr("Unimplemented!\n");
 #endif
 
 #if defined(OGL)
@@ -178,12 +178,6 @@ typedef GLuint RenderTargetID;
 #error
 #endif
 
-typedef void(*GameDebugKeysHandlerFunc)(int nKey, bool down);
-extern GameDebugKeysHandlerFunc gameDebugKeys;
-
-typedef void(*GameDebugMouseHandlerFunc)(int x, int y);
-extern GameDebugMouseHandlerFunc gameDebugMouse;
-
 extern int  Emulator_Initialise();
 extern void Emulator_ShutDown();
 
@@ -200,8 +194,6 @@ extern void Emulator_SetBlendMode(BlendMode blendMode);
 extern void Emulator_SetPolygonOffset(float ofs);
 extern void Emulator_SetStencilMode(int drawPrim);
 extern void Emulator_EnableDepth(int enable);
-
-extern void Emulator_GetPSXWidescreenMappedViewport(RECT16& rect);
 
 extern void Emulator_LineSwapSourceVerts(VERTTYPE* &p0, VERTTYPE* &p1, unsigned char* &c0, unsigned char* &c1);
 extern void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, ushort gteidx);

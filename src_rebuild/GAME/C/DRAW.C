@@ -881,8 +881,6 @@ void DrawMapPSX(int* comp_val)
 			cellx = cellxpos + hloop;
 			cellz = cellzpos + vloop;
 
-			
-
 			if (rightPlane < 0 &&
 				leftPlane > 0 &&
 				backPlane < farClipLimit &&  // check planes
@@ -1864,7 +1862,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 		// with skipping
 		ptype = polys->id & 0x1f;
 
-		if ((ptype & 1) == 0 && ptype != 8) // is FT3 triangle?
+		if ((ptype & 0x1) == 0 && ptype != 8) // is FT3 triangle?
 		{
 			temp = polys->uv2.v;
 			polys->uv3.u = polys->uv2.u;
@@ -1876,7 +1874,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 			ptype |= 1;
 		}
 
-		if (ptype != 11 && ptype != 21)
+		if (ptype != 11 && ptype != 21 && ptype != 23)
 		{
 			polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
 			i--;
@@ -1942,7 +1940,26 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 			if (maxZ < pc->scribble[0])
 				diff = pc->scribble[0] - minZ;
 
-			if ((n == 0) || ((diff << 2) <= minZ - 350))
+			ushort uv0, uv1, uv2, uv3;
+
+			// [A] special case
+			if(ptype == 23)
+			{
+				POLYGT4* pgt4 = (POLYGT4*)polys;
+				uv0 = *(ushort*)&pgt4->uv0;
+				uv1 = *(ushort*)&pgt4->uv1;
+				uv2 = *(ushort*)&pgt4->uv2;
+				uv3 = *(ushort*)&pgt4->uv3;
+			}
+			else
+			{
+				uv0 = *(ushort*)&polys->uv0;
+				uv1 = *(ushort*)&polys->uv1;
+				uv2 = *(ushort*)&polys->uv2;
+				uv3 = *(ushort*)&polys->uv3;
+			}
+
+			if (n == 0 || diff << 2 <= minZ - 350)
 			{
 				prims = (POLY_FT4*)pc->primptr;
 
@@ -1964,10 +1981,10 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 				prims->tpage = pc->tpage >> 0x10;
 				prims->clut = pc->clut >> 0x10;
 
-				*(ushort*)&prims->u0 = *(ushort*)&polys->uv0;
-				*(ushort*)&prims->u1 = *(ushort*)&polys->uv1;
-				*(ushort*)&prims->u2 = *(ushort*)&polys->uv3;
-				*(ushort*)&prims->u3 = *(ushort*)&polys->uv2;
+				*(ushort*)&prims->u0 = uv0;
+				*(ushort*)&prims->u1 = uv1;
+				*(ushort*)&prims->u2 = uv3;
+				*(ushort*)&prims->u3 = uv2;
 
 				addPrim(pc->ot + (Z >> 1), prims);
 
@@ -1985,16 +2002,16 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 				}
 
 				copyVector(&subdiVerts[0][0], &srcVerts[polys->v0]);
-				subdiVerts[0][0].uv.val = *(ushort*)&polys->uv0;
+				subdiVerts[0][0].uv.val = uv0;
 
 				copyVector(&subdiVerts[0][1], &srcVerts[polys->v1]);
-				subdiVerts[0][1].uv.val = *(ushort*)&polys->uv1;
+				subdiVerts[0][1].uv.val = uv1;
 
 				copyVector(&subdiVerts[0][2], &srcVerts[polys->v3]);
-				subdiVerts[0][2].uv.val = *(ushort*)&polys->uv3;
+				subdiVerts[0][2].uv.val = uv3;
 
 				copyVector(&subdiVerts[0][3], &srcVerts[polys->v2]);
-				subdiVerts[0][3].uv.val = *(ushort*)&polys->uv2;
+				subdiVerts[0][3].uv.val = uv2;
 
 				makeMesh((MVERTEX(*)[5][5])subdiVerts, r, r);
 				drawMesh((MVERTEX(*)[5][5])subdiVerts, r, r, pc);

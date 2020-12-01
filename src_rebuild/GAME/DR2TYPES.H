@@ -35,6 +35,23 @@ struct SVECTOR_NOPAD
 	short vz;
 };
 
+// TODO: image types
+
+struct TIMHDR
+{
+	int magic;
+	int flags;
+};
+
+struct TIMIMAGEHDR
+{
+	int len;
+	short origin_x;
+	short origin_y;
+	short width;
+	short height;
+};
+
 // TODO: DR2TYPES
 
 struct BOX

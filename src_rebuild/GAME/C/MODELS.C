@@ -20,7 +20,6 @@ int num_models_in_pack = 0;
 unsigned short *Low2HighDetailTable = NULL;
 unsigned short *Low2LowerDetailTable = NULL;
 
-
 // decompiled code
 // original method signature: 
 // void /*$ra*/ ProcessMDSLump(char *lump_file /*$a0*/, int lump_size /*$a1*/)
@@ -298,7 +297,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 			if (cleanOfs != -1)
 			{
 				MALLOC_BEGIN();
-				model = GetCarModel(models_offset + cleanOfs, &mallocptr, 1);
+				model = GetCarModel(models_offset + cleanOfs, &mallocptr, 1, model_number, CAR_MODEL_CLEAN);
 				gCarCleanModelPtr[i] = model;
 				MALLOC_END();
 			}
@@ -306,7 +305,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 			if (damOfs != -1)
 			{
 				MALLOC_BEGIN();
-				model = GetCarModel(models_offset + damOfs, &mallocptr, 0);
+				model = GetCarModel(models_offset + damOfs, &mallocptr, 0, model_number, CAR_MODEL_DAMAGED);
 				gCarDamModelPtr[i] = model;
 				MALLOC_END();
 			}
@@ -314,7 +313,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 			if (lowOfs != -1)
 			{
 				MALLOC_BEGIN();
-				model = GetCarModel(models_offset + lowOfs, &mallocptr, 1);
+				model = GetCarModel(models_offset + lowOfs, &mallocptr, 1, model_number, CAR_MODEL_LOWDETAIL);
 				gCarLowModelPtr[i] = model;
 				MALLOC_END();
 			}
@@ -365,21 +364,57 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 	/* end block 3 */
 	// End Line: 1175
 
+char* CarModelTypeNames[] = {
+	"CLEAN",
+	"DAMAGED",
+	"LOW",
+};
+
+#ifndef PSX
+// [A] loads car model from file
+char* LoadCarModelFromFile(char* dest, int modelNumber, int type)
+{
+	char* mem;
+	char filename[64];
+
+	sprintf(filename, "LEVELS\\%s\\CARMODEL_%d_%s.DMODEL", LevelNames[GameLevel], modelNumber, CarModelTypeNames[type-1]);
+	if(FileExists(filename))
+	{
+		mem = dest ? dest : (_other_buffer + modelNumber * 0x10000 + (type-1) * 0x4000);
+
+		// get model from file
+		Loadfile(filename, mem);
+		return mem;
+	}
+
+	return NULL;
+}
+#endif
+
 // [D] [T]
-MODEL* GetCarModel(char *src, char **dest, int KeepNormals)
+MODEL* GetCarModel(char *src, char **dest, int KeepNormals, int modelNumber, int type)
 {
 	int size;
 	MODEL *model;
+	char* mem;
 
+#ifndef PSX
+	mem = LoadCarModelFromFile(NULL, modelNumber, type);
+
+	if (!mem) // fallback to lump
+		mem = src;
+#else
+	mem = src;
+#endif
+	
 	model = (MODEL *)*dest;
-
-	char* mem = src;
-
+	
 	if (KeepNormals == 0)
 		size = ((MODEL*)mem)->normals;
 	else 
 		size = ((MODEL*)mem)->poly_block;
 
+	// if loaded externally don't copy from source lump
 	memcpy(*dest, mem, size);
 
 	if (KeepNormals == 0)
@@ -402,6 +437,121 @@ MODEL* GetCarModel(char *src, char **dest, int KeepNormals)
 }
 
 
+// decompiled code
+// original method signature: 
+// MODEL * /*$ra*/ FindModelPtrWithName(char *name /*$s4*/)
+ // line 289, offset 0x0005d40c
+	/* begin block 1 */
+		// Start line: 290
+		// Start offset: 0x0005D40C
+		// Variables:
+	// 		int dummy; // stack offset -32
+
+		/* begin block 1.1 */
+			// Start line: 290
+			// Start offset: 0x0005D40C
+			// Variables:
+		// 		char *name; // $s4
+		// 		int *num; // $s2
+
+			/* begin block 1.1.1 */
+				// Start line: 290
+				// Start offset: 0x0005D40C
+				// Variables:
+			// 		int count; // $s1
+			// 		char *temp; // $s0
+			/* end block 1.1.1 */
+			// End offset: 0x0005D4A4
+			// End Line: 290
+		/* end block 1.1 */
+		// End offset: 0x0005D4A4
+		// End Line: 290
+	/* end block 1 */
+	// End offset: 0x0005D4C4
+	// End Line: 293
+
+	/* begin block 2 */
+		// Start line: 1545
+	/* end block 2 */
+	// End Line: 1546
+
+	/* begin block 3 */
+		// Start line: 578
+	/* end block 3 */
+	// End Line: 579
+
+// [D] [T]
+MODEL* FindModelPtrWithName(char *name)
+{
+	int idx;
+	idx = FindModelIdxWithName(name);
+
+	return idx >= 0 ? modelpointers[idx] : NULL;
+}
 
 
 
+// decompiled code
+// original method signature: 
+// int /*$ra*/ FindModelIdxWithName(char *name /*$s3*/)
+ // line 295, offset 0x0005d4c4
+	/* begin block 1 */
+		// Start line: 296
+		// Start offset: 0x0005D4C4
+		// Variables:
+	// 		int i; // stack offset -32
+
+		/* begin block 1.1 */
+			// Start line: 296
+			// Start offset: 0x0005D4C4
+			// Variables:
+		// 		char *name; // $s3
+		// 		int *num; // $s2
+
+			/* begin block 1.1.1 */
+				// Start line: 296
+				// Start offset: 0x0005D4C4
+				// Variables:
+			// 		int count; // $s1
+			// 		char *temp; // $s0
+			/* end block 1.1.1 */
+			// End offset: 0x0005D540
+			// End Line: 296
+		/* end block 1.1 */
+		// End offset: 0x0005D540
+		// End Line: 296
+	/* end block 1 */
+	// End offset: 0x0005D560
+	// End Line: 300
+
+	/* begin block 2 */
+		// Start line: 1554
+	/* end block 2 */
+	// End Line: 1555
+
+	/* begin block 3 */
+		// Start line: 1557
+	/* end block 3 */
+	// End Line: 1558
+
+// [D] [T]
+int FindModelIdxWithName(char *name)
+{
+	char *str;
+	int i;
+
+	i = 0;
+	str = modelname_buffer;
+
+	while (i < num_models_in_pack)
+	{
+		if (!strcmp(str, name))
+			return i;
+
+		while (*str++) {} // go to next string
+
+		i++;
+	}
+
+	return -1;
+}
