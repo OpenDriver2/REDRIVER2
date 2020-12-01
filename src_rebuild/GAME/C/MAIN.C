@@ -2482,8 +2482,16 @@ int redriver2_main(int argc, char** argv)
 
 	for (int i = 1; i < argc; i++)
 	{
+		if (!_stricmp(argv[i], "-nofmv"))
+		{
+			gNoFMV = 1;
+		}
+		else if (!_stricmp(argv[i], "-nointro"))
+		{
+			// do nothing. All command line features use it
+		}
 #ifdef DEBUG_OPTIONS
-		if (!_stricmp(argv[i], "-exportxasubtitles"))
+		else if (!_stricmp(argv[i], "-exportxasubtitles"))
 		{
 			extern void StoreXASubtitles();
 			StoreXASubtitles();
@@ -2562,14 +2570,6 @@ int redriver2_main(int argc, char** argv)
 			LaunchGame();
 		}
 #endif // _DEBUG_OPTIONS
-		else if (!_stricmp(argv[i], "-nofmv"))
-		{
-			gNoFMV = 1;
-		}
-		else if (!_stricmp(argv[i], "-nointro"))
-		{
-			// do nothing. All command line features use it
-		}
 		else if (!_stricmp(argv[i], "-replay"))
 		{
 			if (argc - i < 2)
