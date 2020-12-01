@@ -2386,7 +2386,7 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 			lay_down_tracks = true;
 		}
 
-		tracks_and_smoke = (player_id < 2);
+		tracks_and_smoke = (player_id < 2) && !(cp->hd.wheel[1].surface & 0x8) && !(cp->hd.wheel[3].surface & 0x8);
 	}
 
 	desired_skid = -1;

@@ -885,17 +885,21 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 					wheel->surface = 0;
 			}
 
+			// [A] indication of Event surface which means we can't add tyre tracks for that wheel
+			if (SurfacePtr->surface - 16U < 16)
+				wheel->surface |= 0x8;
+
 			switch (SurfacePtr->surface)
 			{
 				case 8:
-					wheel->surface |= 2;
+					wheel->surface |= 0x2;
 					break;
 				case 6:
 				case 9:
-					wheel->surface |= 1;
+					wheel->surface |= 0x1;
 					break;
 				case 11:
-					wheel->surface |= 3;
+					wheel->surface |= 0x3;
 					break;
 			}
 		}
