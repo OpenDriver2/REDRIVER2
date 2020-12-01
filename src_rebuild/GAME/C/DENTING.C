@@ -612,10 +612,10 @@ void MoveHubcap()
 
 			CurrentMapHeight = MapHeight(&gHubcap.Position);
 
-			if (-60 - CurrentMapHeight <= gHubcap.Position.vy)
+			if (gHubcap.Position.vy >= -40 - CurrentMapHeight)
 			{
 				gHubcap.Direction.vy = -(gHubcap.Direction.vy / 2);
-				gHubcap.Position.vy = -60 - CurrentMapHeight;
+				gHubcap.Position.vy = -40 - CurrentMapHeight;
 			}
 		}
 
