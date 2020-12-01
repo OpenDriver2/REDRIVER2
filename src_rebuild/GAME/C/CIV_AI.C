@@ -292,9 +292,9 @@ int NotTravellingAlongCurve(int x, int z, int dir, DRIVER2_CURVE* cv)
 	int cvDiff;
 
 	curveDir = ratan2(x - cv->Midx, z - cv->Midz);
-	cvDiff = ((dir - curveDir) + 0x800U & 0xfff) - 0x800U;
+	cvDiff = ((dir - curveDir) + 2048U & 0xfff) - 2048U;
 
-	return (cvDiff < 1) << 0xb;
+	return (cvDiff < 1) * 2048;
 }
 
 // decompiled code
@@ -570,8 +570,6 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 	int newExit = 0;
 	int tmpNewLane[2];
 	int laneFit[2];
-	DRIVER2_STRAIGHT* tmpStr[2];
-	DRIVER2_CURVE* tmpCrv[2];
 	short validExitIdx[4];
 
 	int newLane;
@@ -600,7 +598,7 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 
 		if (currentRoadInfo.straight)
 		{
-			oldOppDir = (currentRoadInfo.straight->angle - oldNode->dir) + 0x400U & 0x800;
+			oldOppDir = (currentRoadInfo.straight->angle - oldNode->dir) + 1024U & 2048;
 		}
 		else
 		{
@@ -608,8 +606,8 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 			dx = oldNode->x - currentRoadInfo.curve->Midx;
 			dz = oldNode->z - currentRoadInfo.curve->Midz;
 
-			oldOppDir = (((oldNode->dir - ratan2(dx, dz)) + 0x800U & 0xfff) - 0x800);
-			oldOppDir = (oldOppDir < 1) << 0xb;
+			oldOppDir = (((oldNode->dir - ratan2(dx, dz)) + 2048U & 0xfff) - 2048);
+			oldOppDir = (oldOppDir < 1) * 2048;
 		}
 
 		// first road is picked from road direction
@@ -746,7 +744,7 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 
 					if(roadInfo.straight)
 					{
-						oppDir = (roadInfo.straight->angle - turnDir) + 1024U & 0x800;
+						oppDir = (roadInfo.straight->angle - turnDir) + 1024U & 2048;
 					}
 					else
 					{
@@ -754,7 +752,7 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 						dz = oldNode->z - roadInfo.curve->Midz;
 
 						oppDir = ((turnDir - ratan2(dx, dz)) + 2048U & 0xfff) - 2048; // [A]
-						oppDir = (oppDir < 1) << 0xb;
+						oppDir = (oppDir < 1) * 2048;
 					}
 
 					turnAng = *turnAngle;
@@ -826,7 +824,7 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 					}
 
 					// validate lane
-					if (newLane > -1 && newLane < laneCount)
+					if (newLane >= 0 && newLane <= laneCount)
 					{
 						valid = ROAD_IS_AI_LANE(&roadInfo, newLane) && !ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, newLane);
 					}
@@ -876,7 +874,7 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 			}
 		}
 
-		if (numExits < 1)
+		if (numExits == 0)
 		{
 			CIV_STATE_SET_CONFUSED(cp);
 			return 0;
@@ -942,23 +940,23 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 
 				if (junctionFlags & 2)
 				{
-					cp->ai.c.ctrlState = 4;
-
-					if (yield)
+					if (yield || *turnAngle != 0)
+					{
 						cp->ai.c.ctrlNode = oldNode;
-					else if (*turnAngle != 0)
-						cp->ai.c.ctrlNode = oldNode;
+						cp->ai.c.ctrlState = 4;
+					}
 					else
 						cp->ai.c.ctrlState = 6;
 				}
 				else
 				{
-					cp->ai.c.ctrlState = 4;
+					
 
-					if (!yield)
+					if (!yield || *turnAngle != 0)
+					{
 						cp->ai.c.ctrlNode = oldNode;
-					else if (*turnAngle != 0)
-						cp->ai.c.ctrlNode = oldNode;
+						cp->ai.c.ctrlState = 4;
+					}
 					else
 						cp->ai.c.ctrlState = 6;
 				}
@@ -982,7 +980,7 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 
 			if (roadInfo.straight)
 			{
-				oppDir = (turnDir - roadInfo.straight->angle) + 1024 & 0x800;
+				oppDir = (turnDir - roadInfo.straight->angle) + 1024 & 2048;
 			}
 			else
 			{
@@ -990,8 +988,8 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 				dx = oldNode->x - roadInfo.curve->Midx;
 				dz = oldNode->z - roadInfo.curve->Midz;
 
-				oppDir = (((turnDir - ratan2(dx, dz)) + 0x800U & 0xfff) - 0x800);
-				oppDir = (oppDir < 1) << 0xb;
+				oppDir = (((turnDir - ratan2(dx, dz)) + 2048U & 0xfff) - 2048);
+				oppDir = (oppDir < 1) * 2048;
 			}
 
 			if (turnAng == 0)
@@ -999,16 +997,9 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 				//printWarning("car %d check forward lane\n", cp->id);
 				
 				if (oppDir == oldOppDir)
-				{
 					newLane = cp->ai.c.currentLane;
-				}
 				else
-				{
 					newLane = numLanes - (cp->ai.c.currentLane + 1);
-
-					//if (newLane == 0)// [A] temporary hack
-					//	newLane++;
-				}
 
 				if (ROAD_LANE_DIR(&roadInfo, newLane))
 				{
@@ -1055,7 +1046,7 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 					newLane = numLanes;
 				}
 
-				//printWarning("car %d check left lane, chosen %d\n", cp->id, newLane);
+				printWarning("car %d check left lane, chosen %d\n", cp->id, newLane);
 			}
 			else if (turnAng == 1024)
 			{
@@ -1085,7 +1076,7 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 					count--;
 				} while (count >= 0);
 
-				//printWarning("car %d check right lane, chosen %d\n", cp->id, newLane);
+				printWarning("car %d check right lane, chosen %d\n", cp->id, newLane);
 			}
 
 			if (*turnAngle != 0)
@@ -1099,7 +1090,7 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 				else if (newLane == 0)
 				{
 					// [A] might be incorrect
-					if (ROAD_LANE_DIR(&roadInfo, 1) == ROAD_LANE_DIR(&roadInfo, newLane + 1))
+					if (ROAD_LANE_DIR(&roadInfo, 0) == ROAD_LANE_DIR(&roadInfo, newLane + 1))
 						newLane = newLane + 1;
 				}
 			}
@@ -1147,7 +1138,6 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 						dx = (oldNode->x - roadInfo.straight->Midx);
 						dz = (oldNode->z - roadInfo.straight->Midz);
 
-						tmpStr[roadCnt] = roadInfo.straight;
 						tmpNewLane[roadCnt] = ROAD_LANES_COUNT(&roadInfo) - (FIXEDH(dx * rcossin_tbl[(roadInfo.straight->angle & 0xfff) * 2 + 1] - dz * rcossin_tbl[(roadInfo.straight->angle & 0xfff) * 2]) + 512 >> 9);
 
 					}
@@ -1156,7 +1146,6 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 						dx = oldNode->x - roadInfo.curve->Midx;
 						dz = oldNode->z - roadInfo.curve->Midz;
 
-						tmpCrv[roadCnt] = roadInfo.curve;
 						tmpNewLane[roadCnt] = (SquareRoot0(dx * dx + dz * dz) >> 9) - roadInfo.curve->inside * 2;
 					}
 				}
@@ -1167,9 +1156,9 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 					if (tmpNewLane[roadCnt] < 0 || tmpNewLane[roadCnt] >= numLanes)
 					{
 						laneFit[roadCnt] = 666;
+						numExits--;	// there has to be one exit
 						continue;
 					}
-					numExits--;	// there has to be one exit
 				}
 
 				// fit new lane
@@ -1360,7 +1349,7 @@ void InitNodeList(CAR_DATA* cp, EXTRA_CIV_DATA* extraData)
 		if (ROAD_LANE_DIR(straight, cp->ai.c.currentLane) == 0)
 			cr->dir = straight->angle;
 		else
-			cr->dir = straight->angle + 0x800U & 0xfff;
+			cr->dir = straight->angle + 2048U & 0xfff;
 	}
 	else if (IS_CURVED_SURFACE(surfInd))
 	{
@@ -1701,7 +1690,7 @@ int CheckChangeLanes(DRIVER2_STRAIGHT* straight, DRIVER2_CURVE* curve, int distA
 
 		if (canProceed)
 		{
-			cp->ai.c.changeLaneIndicateCount = 0xa1;
+			cp->ai.c.changeLaneIndicateCount = 161;
 			cp->ai.c.oldLane = oldLane;
 			cp->ai.c.changeLaneCount = 4;
 			cp->ai.c.changeLane = turnRight;
@@ -2241,7 +2230,7 @@ int CreateNewNode(CAR_DATA * cp)
 						dz = tempNode.z - start->z;
 
 						segLength = (SquareRoot0(dx * dx + dz * dz) - (cp->hd.wheel_speed / 170));
-						cornerAngle = ((ratan2(dx, dz) - start->dir) + 0x800U & 0xfff) - 2048;
+						cornerAngle = ((ratan2(dx, dz) - start->dir) + 2048U & 0xfff) - 2048;
 
 						tmp = FIXEDH(segLength * rcossin_tbl[(cornerAngle & 0xfffU) * 2 + 1]);
 
@@ -3640,7 +3629,7 @@ int PingInCivCar(int minPingInDist)
 		if (ROAD_LANE_DIR(roadInfo.straight, lane) == 0)
 			dir = roadInfo.straight->angle;
 		else
-			dir = roadInfo.straight->angle + 0x800U & 0xfff;
+			dir = roadInfo.straight->angle + 2048U & 0xfff;
 	}
 	else if (IS_CURVED_SURFACE(roadSeg))
 	{
@@ -3676,9 +3665,9 @@ int PingInCivCar(int minPingInDist)
 			civDat.distAlongSegment = segmentLen;
 
 		if (ROAD_LANE_DIR(roadInfo.curve, lane) == 0)
-			dir = civDat.distAlongSegment + roadInfo.curve->start + 0x400;
+			dir = civDat.distAlongSegment + roadInfo.curve->start + 1024;
 		else
-			dir = civDat.distAlongSegment + roadInfo.curve->start - 0x400;
+			dir = civDat.distAlongSegment + roadInfo.curve->start - 1024;
 
 		curveLength = ((roadInfo.curve->end - roadInfo.curve->start & 0xfffU) * roadInfo.curve->inside * 11) / 7;
 
@@ -3713,7 +3702,7 @@ int PingInCivCar(int minPingInDist)
 		if (carCnt->controlType != CONTROL_TYPE_NONE)
 		{
 			int dx, dy, dz;
-			int sqDist;
+			uint sqDist;
 
 			dy = randomLoc.vy - carCnt->hd.where.t[1];
 			dy = ABS(dy);
@@ -3725,7 +3714,7 @@ int PingInCivCar(int minPingInDist)
 
 				sqDist = (dx * dx + dz * dz);
 
-				if (ABS(dx) < 0x1000 && ABS(dz) < 0x1000 && sqDist < retDistSq)
+				if (ABS(dx) < 4096 && ABS(dz) < 4096 && sqDist < retDistSq)
 				{
 					retDistSq = sqDist;
 				}
@@ -3910,7 +3899,7 @@ int CivControl(CAR_DATA * cp)
 
 #if 0
 		{
-			//maxCivCars = 2;
+			//maxCivCars = 5;
 			//maxCopCars = 0;
 
 			extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
@@ -5183,7 +5172,7 @@ int CivSteerAngle(CAR_DATA * cp)
 					dx = pathPoint.vx - cp->hd.where.t[0];
 					dz = pathPoint.vz - cp->hd.where.t[2];
 
-					ret = ((ratan2(dx, dz) - cp->hd.direction) + 0x800U & 0xfff) - 2048;
+					ret = ((ratan2(dx, dz) - cp->hd.direction) + 2048U & 0xfff) - 2048;
 
 					if (ret < -maxSteer)
 						ret = -maxSteer;
@@ -5778,7 +5767,7 @@ void CreateRoadblock(void)
 		else
 			dv = rcossin_tbl[(dir + angle & 0xfffU) * 2] * 10;
 
-		roadblockLoc.vx = baseLoc.vx + FIXEDH(dv) * 0x800;
+		roadblockLoc.vx = baseLoc.vx + FIXEDH(dv) * 2048;
 
 		if (requestCopCar == 0)
 			dv = rcossin_tbl[(dir + angle & 0xfffU) * 2 + 1] << 3;
