@@ -1439,6 +1439,11 @@ void DrawFullscreenMap(void)
 	px = MapSegmentPos[0].x * 4;
 	py = MapSegmentPos[0].y;
 
+#ifndef PSX
+	RECT16 emuViewport;
+	Emulator_GetPSXWidescreenMappedViewport(&emuViewport);
+#endif
+
 	for(x = 0; x < width; x++)
 	{
 		for(y = 0; y < height; y++)
@@ -1466,8 +1471,19 @@ void DrawFullscreenMap(void)
 				meshO[count].vx += map_x_offset;
 				meshO[count].vz += map_z_offset;
 
-				if (meshO[count].vx > 320 || meshO[count].vz > 256)
+#ifndef PSX
+				if (meshO[count].vx > emuViewport.w || meshO[count].vz > emuViewport.w ||
+					meshO[count].vx < emuViewport.x || meshO[count].vz < emuViewport.y)
+				{
 					clipped++;
+				}
+#else
+				if (meshO[count].vx > 320 || meshO[count].vz > 256 ||
+					meshO[count].vx < 0 || meshO[count].vz < 0)
+				{
+					clipped++;
+				}
+#endif
 			}
 
 			if(clipped == 4)
@@ -2968,8 +2984,8 @@ void WorldToFullscreenMap2(VECTOR *in, VECTOR *out)
 	long flag;
 
 	pos.vy = 0;
-	pos.vx = (overlaidmaps[GameLevel].x_offset + (in->vx / overlaidmaps[GameLevel].scale) + 49) - player_position.vx;
-	pos.vz = (overlaidmaps[GameLevel].y_offset - ((in->vz / overlaidmaps[GameLevel].scale) - 49)) - player_position.vz;
+	pos.vx = overlaidmaps[GameLevel].x_offset + (in->vx / overlaidmaps[GameLevel].scale + 49) - player_position.vx;
+	pos.vz = overlaidmaps[GameLevel].y_offset - (in->vz / overlaidmaps[GameLevel].scale - 49) - player_position.vz;
 
 	RotTrans(&pos, out, &flag);
 }

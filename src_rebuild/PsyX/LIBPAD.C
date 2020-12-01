@@ -2,6 +2,7 @@
 #include "LIBETC.H"
 
 #include "EMULATOR.H"
+#include "EMULATOR_PRIVATE.H"
 
 #include <SDL.h>
 

@@ -16,10 +16,6 @@
 #include "FELONY.H"
 #include "SCORES.H"
 
-#ifndef PSX
-#include "EMULATOR.H"
-#endif
-
 COLOUR_BAND felonyColour[3] =
 {
   { { 0, 0, 255, 0 }, 0, 0 },
@@ -177,7 +173,7 @@ void DisplayOverlays(void)
 		{
 			// align to PSX-mapped screen coordinates
 			RECT16 emuViewport;
-			Emulator_GetPSXWidescreenMappedViewport(emuViewport);
+			Emulator_GetPSXWidescreenMappedViewport(&emuViewport);
 
 			// recalc pos
 			gOverlayXPos = 16 + emuViewport.x;

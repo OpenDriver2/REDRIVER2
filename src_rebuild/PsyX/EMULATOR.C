@@ -7,6 +7,7 @@
 #include "CRASHHANDLER.H"
 
 #include "LIBETC.H"
+#include "LIBGPU.H"
 
 //#include <stdio.h>
 //#include <string.h>
@@ -30,6 +31,10 @@
 
 SDL_Window* g_window = NULL;
 TextureID vramTexture;
+
+TextureID vramTextures[2];
+int curVramTexture = 0;
+
 TextureID whiteTexture;
 
 GLuint dynamic_vertex_buffer;
@@ -1289,11 +1294,16 @@ int Emulator_Initialise()
 	glEnable(GL_STENCIL_TEST);
 	glBlendColor(0.5f, 0.5f, 0.5f, 0.25f);
 
-	glGenTextures(1, &vramTexture);
-	glBindTexture(GL_TEXTURE_2D, vramTexture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D, 0, VRAM_INTERNAL_FORMAT, VRAM_WIDTH, VRAM_HEIGHT, 0, VRAM_FORMAT, GL_UNSIGNED_BYTE, NULL);
+	glGenTextures(2, vramTextures);
+	vramTexture = vramTextures[0];
+	curVramTexture = 0;
+	for(int i = 0; i < 2; i++)
+	{
+		glBindTexture(GL_TEXTURE_2D, vramTextures[i]);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexImage2D(GL_TEXTURE_2D, 0, VRAM_INTERNAL_FORMAT, VRAM_WIDTH, VRAM_HEIGHT, 0, VRAM_FORMAT, GL_UNSIGNED_BYTE, NULL);
+	}
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -1424,22 +1434,22 @@ void Emulator_SetupClipMode(const RECT16& rect)
 #endif
 }
 
-void Emulator_GetPSXWidescreenMappedViewport(RECT16& rect)
+void Emulator_GetPSXWidescreenMappedViewport(RECT16* rect)
 {
 	float emuScreenAspect = float(windowWidth) / float(windowHeight);
 
 	float psxScreenW = activeDispEnv.disp.w;
 	float psxScreenH = activeDispEnv.disp.h;
 
-	rect.x = activeDispEnv.screen.x;
-	rect.y = activeDispEnv.screen.y;
+	rect->x = activeDispEnv.screen.x;
+	rect->y = activeDispEnv.screen.y;
 
-	rect.w = psxScreenW * emuScreenAspect * PSX_SCREEN_ASPECT; // windowWidth;
-	rect.h = psxScreenH; // windowHeight;
+	rect->w = psxScreenW * emuScreenAspect * PSX_SCREEN_ASPECT; // windowWidth;
+	rect->h = psxScreenH; // windowHeight;
 
-	rect.x -= (rect.w - activeDispEnv.disp.w) / 2;
+	rect->x -= (rect->w - activeDispEnv.disp.w) / 2;
 
-	rect.w += rect.x;
+	rect->w += rect->x;
 }
 
 void Emulator_SetShader(const ShaderID &shader)
@@ -1641,8 +1651,13 @@ void Emulator_UpdateVRAM()
 	vram_need_update = false;
 
 #if defined(OGL) || defined(OGLES)
+	vramTexture = vramTextures[curVramTexture];
+	
 	glBindTexture(GL_TEXTURE_2D, vramTexture);
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, VRAM_WIDTH, VRAM_HEIGHT, VRAM_FORMAT, GL_UNSIGNED_BYTE, vram);
+
+	curVramTexture++;
+	curVramTexture &= 1;
 #endif
 }
 
@@ -1984,7 +1999,9 @@ void Emulator_ShutDown()
 		SDL_DestroyMutex(g_vblankMutex);
 
 #if defined(OGL) || defined(OGLES)
-	Emulator_DestroyTexture(vramTexture);
+	vramTexture = 0;
+	Emulator_DestroyTexture(vramTextures[0]);
+	Emulator_DestroyTexture(vramTextures[1]);
 	Emulator_DestroyTexture(whiteTexture);
 #endif
 

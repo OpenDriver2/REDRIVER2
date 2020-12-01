@@ -167,32 +167,6 @@ enum TexFormat
 	TF_16_BIT
 };
 
-struct KeyboardMapping
-{
-	int id;
-	
-	int kc_square;
-	int kc_circle;
-	int kc_triangle;
-	int kc_cross;
-
-	int kc_l1;
-	int kc_l2;
-	int kc_l3;
-	
-	int kc_r1;
-	int kc_r2;
-	int kc_r3;
-
-	int kc_start;
-	int kc_select;
-
-	int kc_dpad_left;
-	int kc_dpad_right;
-	int kc_dpad_up;
-	int kc_dpad_down;
-};
-
 #define MAX_NUM_POLY_BUFFER_VERTICES (32768)
 #define MAX_NUM_INDEX_BUFFERS        (4096)
 
@@ -203,12 +177,6 @@ typedef GLuint RenderTargetID;
 #else
 #error
 #endif
-
-typedef void(*GameDebugKeysHandlerFunc)(int nKey, bool down);
-extern GameDebugKeysHandlerFunc gameDebugKeys;
-
-typedef void(*GameDebugMouseHandlerFunc)(int x, int y);
-extern GameDebugMouseHandlerFunc gameDebugMouse;
 
 extern int  Emulator_Initialise();
 extern void Emulator_ShutDown();
@@ -226,8 +194,6 @@ extern void Emulator_SetBlendMode(BlendMode blendMode);
 extern void Emulator_SetPolygonOffset(float ofs);
 extern void Emulator_SetStencilMode(int drawPrim);
 extern void Emulator_EnableDepth(int enable);
-
-extern void Emulator_GetPSXWidescreenMappedViewport(RECT16& rect);
 
 extern void Emulator_LineSwapSourceVerts(VERTTYPE* &p0, VERTTYPE* &p1, unsigned char* &c0, unsigned char* &c1);
 extern void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, ushort gteidx);

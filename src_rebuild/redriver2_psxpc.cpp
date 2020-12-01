@@ -14,7 +14,7 @@
 #include "C/CIV_AI.H"
 #include "C/MISSION.H"
 
-#include "EMULATOR.H"
+#include "EMULATOR_PRIVATE.H"
 
 #include "utils/ini.h"
 

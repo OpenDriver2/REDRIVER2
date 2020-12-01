@@ -1,7 +1,8 @@
 #include "LIBETC.H"
 
-#include "EMULATOR_PRIVATE.H"
+
 #include "EMULATOR.H"
+#include "EMULATOR_PRIVATE.H"
 
 #include <SDL_timer.h>
 
