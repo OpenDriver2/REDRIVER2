@@ -1046,7 +1046,7 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 					newLane = numLanes;
 				}
 
-				printWarning("car %d check left lane, chosen %d\n", cp->id, newLane);
+				//printWarning("car %d check left lane, chosen %d\n", cp->id, newLane);
 			}
 			else if (turnAng == 1024)
 			{
@@ -1076,7 +1076,7 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 					count--;
 				} while (count >= 0);
 
-				printWarning("car %d check right lane, chosen %d\n", cp->id, newLane);
+				//printWarning("car %d check right lane, chosen %d\n", cp->id, newLane);
 			}
 
 			if (*turnAngle != 0)
