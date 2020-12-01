@@ -710,7 +710,6 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 			int valid;
 			
 			valid = 0;
-
 			exitSurfId = jn->ExitIdx[exitIdx];
 			
 			if (exitSurfId != -1)
@@ -824,7 +823,7 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 					}
 
 					// validate lane
-					if (newLane >= 0 && newLane <= laneCount)
+					if (newLane >= 0 && newLane < laneCount)
 					{
 						valid = ROAD_IS_AI_LANE(&roadInfo, newLane) && !ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, newLane);
 					}
@@ -1569,19 +1568,31 @@ int CheckChangeLanes(DRIVER2_STRAIGHT* straight, DRIVER2_CURVE* curve, int distA
 	if (cp->ai.c.ctrlState != 8 && cp->ai.c.changeLaneIndicateCount == 0)
 	{
 		int roadWidthInLanes;
+		int segLen;
 
 		if (straight == NULL)
+		{
 			roadWidthInLanes = ROAD_WIDTH_IN_LANES(curve);
+			segLen = curve->end - curve->start & 0xfff;
+		}
 		else
+		{
 			roadWidthInLanes = ROAD_WIDTH_IN_LANES(straight);
+			segLen = straight->length;
+		}
 
 		newLane = currentLane + (Random2((int)straight) >> 7 & 2U) + 0xff & 0xff;
-		if (tryToPark != 0)
+		
+		if (tryToPark)
 		{
 			if (oldLane == 1)
 				newLane = 0;
 			else if (roadWidthInLanes - 2 == currentLane)
 				newLane = roadWidthInLanes - 1;
+
+			// [A] don't park near the road ends
+			if(distAlongSegment < 1024 && distAlongSegment > segLen - 1024)
+				return currentLane;
 		}
 
 		for (trials = 0; trials < 2; trials++)
@@ -1598,7 +1609,15 @@ int CheckChangeLanes(DRIVER2_STRAIGHT* straight, DRIVER2_CURVE* curve, int distA
 			{
 				// bypass checks
 			}
-			else if (tryToPark == 0)
+			else if (tryToPark)
+			{
+				int allowedToDrive;
+				allowedToDrive = straight && ROAD_IS_AI_LANE(straight, newLane) || curve && ROAD_IS_AI_LANE(curve, newLane);
+
+				if (!allowedToDrive)
+					continue;
+			}
+			else
 			{
 				int allowedToPark;
 				int allowedToDrive;
@@ -1608,14 +1627,6 @@ int CheckChangeLanes(DRIVER2_STRAIGHT* straight, DRIVER2_CURVE* curve, int distA
 				allowedToDrive = straight && ROAD_IS_AI_LANE(straight, newLane) || curve && ROAD_IS_AI_LANE(curve, newLane);
 
 				if (!allowedToDrive || allowedToPark)
-					continue;
-			}
-			else
-			{
-				int allowedToDrive;
-				allowedToDrive = straight && ROAD_IS_AI_LANE(straight, newLane) || curve && ROAD_IS_AI_LANE(curve, newLane);
-
-				if (!allowedToDrive)
 					continue;
 			}
 
@@ -2203,7 +2214,7 @@ int CreateNewNode(CAR_DATA * cp)
 									makeNextNodeCtrlNode = cp->id;
 
 									cp->ai.c.ctrlState = 8;
-									cp->ai.c.ctrlNode = newNode;
+									cp->ai.c.ctrlNode = newNode; // [A]
 									cp->ai.c.changeLaneCount = 0;
 								}
 							}
@@ -3897,9 +3908,9 @@ int CivControl(CAR_DATA * cp)
 		if (cp->ai.c.thrustState != 3)
 			cp->wheel_angle = CivSteerAngle(cp);
 
-#if 0
+#if 1
 		{
-			//maxCivCars = 5;
+			//maxCivCars = 2;
 			//maxCopCars = 0;
 
 			extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
@@ -4243,9 +4254,7 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 					return newAccel;
 				}
 
-				
-
-				if (*distToNode < distToEnd)
+				if (*distToNode < distToEnd + 32) // [A] add some number to make Havana cops not getting stuck while yielding
 				{
 					if (cp->ai.c.ctrlState == 6)
 					{
@@ -4277,7 +4286,7 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 					accelRatio = ((properVel - cp->hd.wheel_speed) * newAccel) / 15;
 				}
 
-				if (IS_NODE_VALID(cp, cp->ai.c.ctrlNode))	// [A] Weird.
+				if (IS_NODE_VALID(cp, cp->ai.c.ctrlNode))
 				{
 					if (accelRatio <= newAccel)
 					{
@@ -4319,7 +4328,10 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 			lcp = &car_data[MAX_CARS-1];
 			while (lcp >= car_data)
 			{
-				if (lcp->ai.c.thrustState != 3 && lcp != cp && lcp->controlType != CONTROL_TYPE_NONE)
+				if (lcp->ai.c.thrustState != 3 &&
+					lcp->ai.c.ctrlState != 4 &&		// [A] don't check cars that are yielding
+					lcp != cp && 
+					lcp->controlType != CONTROL_TYPE_NONE)
 				{
 					dx = lcp->hd.where.t[0] - cp->hd.where.t[0];
 					dz = lcp->hd.where.t[2] - cp->hd.where.t[2];
@@ -4329,7 +4341,8 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 
 					if (tangent > 0)
 					{
-						if (ABS(normal) < wbody * sideMul * 6 && tangent < distToObstacle)
+						// [A] removed constant 
+						if (ABS(normal) < wbody * sideMul && tangent < distToObstacle)
 						{
 							distToObstacle = tangent;
 						}
