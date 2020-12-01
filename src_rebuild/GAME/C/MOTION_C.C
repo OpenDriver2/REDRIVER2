@@ -707,6 +707,12 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 		dy1 = FIXED(dy1) + 2;
 		dy2 = FIXED(dy2) - 2;
 
+		if(bone == HEAD)
+		{
+			dx1 >>= 1;
+			dx2 >>= 1;
+		}
+		
 		if(bone == JOINT_1)
 		{
 			dx1 -= 5;
@@ -755,6 +761,13 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 			if (pal != 0)
 				clut = civ_clut[0][body_texture->texture_number][pal];
 		}
+		else if(bone == HEAD)
+		{
+			pal = (pDrawingPed->pallet & 0xf);
+
+			if (pal != 0)
+				clut = civ_clut[0][body_texture->texture_number][pal];
+		}
 	}
 	else
 	{
@@ -769,7 +782,7 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	{
 		if (bone == HEAD)
 		{
-			x = (camera_angle.vy + pDrawingPed->dir.vy & 0xfffU) >> 7;
+			x = (-camera_angle.vy - pDrawingPed->dir.vy & 0xfffU) >> 7;
 
 			prims->u0 = body_texture->coords.u0 + x;
 			prims->v0 = body_texture->coords.v0;
