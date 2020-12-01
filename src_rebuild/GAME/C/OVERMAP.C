@@ -16,7 +16,6 @@
 #include "CAMERA.H"
 #include "FELONY.H"
 #include "PAD.H"
-#include "MAIN.H"
 #include "../ASM/RNC_2.H"
 
 #include "STRINGS.H"
@@ -1496,14 +1495,14 @@ void DrawFullscreenMap(void)
 			back->u0 = px;
 			back->v0 = py;
 			
-			back->u1 = px + 31;
+			back->u1 = px + 32;
 			back->v1 = py;
 			
 			back->u2 = px;
-			back->v2 = py + 31;
+			back->v2 = py + 32;
 			
-			back->u3 = px + 31;
-			back->v3 = py + 31;
+			back->u3 = px + 32;
+			back->v3 = py + 32;
 			
 			back->clut = MapClut;
 			back->tpage = MapTPage;
