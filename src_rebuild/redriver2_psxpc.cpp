@@ -628,6 +628,7 @@ int main(int argc, char** argv)
 	extern int g_pgxpTextureCorrection;
 	extern int g_pgxpZBuffer;
 	extern int g_bilinearFiltering;
+	extern int g_enableSwapInterval;
 
 	if (config)
 	{
@@ -648,7 +649,6 @@ int main(int argc, char** argv)
 		ini_sget(config, "game", "widescreenOverlays", "%d", &gWidescreenOverlayAlign);
 		ini_sget(config, "game", "fastLoadingScreens", "%d", &gFastLoadingScreens);
 		
-
 		if (dataFolderStr)
 		{
 			strcpy(gDataFolder, dataFolderStr);
