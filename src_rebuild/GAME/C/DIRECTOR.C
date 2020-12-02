@@ -1400,7 +1400,7 @@ void ShowReplayOptions(void)
 	else if(PlayMode != 2 && PlayMode != 3)
 		UnPauseSound();
 	
-	if (!gDoOverlays && !DirectorMenuActive)
+	if (!gDoOverlays && (!DirectorMenuActive || EditMode > 0))
 		return;
 
 	ShowReplayMenu();
@@ -1754,7 +1754,14 @@ void ControlReplay(void)
 		debounce = 1;
 	}
 
-	if ((padd & 0x8000) == 0 && (padd & 0x7040) == 0)
+	if ((padd & 0x100) && debounce == 0)
+	{
+		// Retro: Press Select to toggle overlays
+		gDoOverlays ^= 1;
+		debounce = 1;
+	}
+	
+	if ((padd & 0x8000) == 0 && (padd & 0x7140) == 0)
 	{
 		debounce = 0;
 	}
