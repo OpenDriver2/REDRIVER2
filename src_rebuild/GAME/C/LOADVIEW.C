@@ -284,6 +284,9 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 
 	load_draw.dfe = 1;
 #ifndef PSX
+	extern int g_enableSwapInterval; // Psy-X var
+	g_enableSwapInterval = (gFastLoadingScreens == 0);
+
 	load_draw.clip.x = 0;
 	load_draw.clip.y = 0;
 	load_draw.clip.w = 320;

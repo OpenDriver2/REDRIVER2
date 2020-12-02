@@ -51,6 +51,7 @@ SysCounter counters[3] = { 0 };
 
 timerCtx_t g_swapTimer;
 int g_swapInterval = SWAP_INTERVAL;
+int g_enableSwapInterval = 1;
 
 int g_wireframeMode = 0;
 int g_texturelessMode = 0;
@@ -88,7 +89,7 @@ inline void ScreenCoordsToEmulator(Vertex* vertex, int count)
 void Emulator_ResetDevice()
 {
 #if defined(OGL)
-	SDL_GL_SetSwapInterval(g_swapInterval);
+	SDL_GL_SetSwapInterval(g_enableSwapInterval ? g_swapInterval : 0);
 #endif
 }
 

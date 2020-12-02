@@ -2135,6 +2135,11 @@ void DrawGame(void)
 		return;
 	}
 
+#ifndef PSX
+	extern int g_enableSwapInterval; // Psy-X var
+	g_enableSwapInterval = 1;
+#endif
+
 	static unsigned long frame = 0;
 
 	if (NumPlayers == 1 || NoPlayerControl != 0)
