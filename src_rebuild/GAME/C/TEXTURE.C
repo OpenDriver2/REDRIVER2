@@ -280,8 +280,8 @@ void LoadTPageFromTIMs(int tpage2send)
 
 			// replace tpage
 			// upload it to ram
-			temptpage.x = tpage.x + timData->origin_x / 4;
-			temptpage.y = tpage.y + timData->origin_y;
+			temptpage.x = tpage.x + details[i].x / 4;
+			temptpage.y = tpage.y + details[i].y;
 			temptpage.w = timData->width;
 			temptpage.h = timData->height;
 
