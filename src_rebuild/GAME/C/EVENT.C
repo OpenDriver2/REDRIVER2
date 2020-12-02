@@ -1522,41 +1522,42 @@ void SetUpEvents(int full)
 		evt[1].next = NULL;
 
 		cEvents += cCarriages;
+		evt = &event[cEvents];
 
 		if (gCurrentMissionNumber == 30)
 		{
 			// Destroy the yard
-			evt[cEvents].position.vx = -12283;
-			evt[cEvents].position.vy = -275;
-			evt[cEvents].position.vz = 841243;
+			evt[0].position.vx = -12283;
+			evt[0].position.vy = -275;
+			evt[0].position.vz = 841243;
 
-			evt[cEvents + 1].position.vx = -13482;
-			evt[cEvents + 1].position.vy = -250;
-			evt[cEvents + 1].position.vz = 841184;
+			evt[1].position.vx = -13482;
+			evt[1].position.vy = -250;
+			evt[1].position.vz = 841184;
 
-			evt[cEvents + 2].position.vx = -14380;
-			evt[cEvents + 2].position.vy = -276;
-			evt[cEvents + 2].position.vz = 840579;
+			evt[2].position.vx = -14380;
+			evt[2].position.vy = -276;
+			evt[2].position.vz = 840579;
 
 			i = 0;
 			for (i = 0; i < 3; i++)
 			{
 				if (i == 2)
-					evt[cEvents + i].rotation = 0;
+					evt[i].rotation = 0;
 				else
-					evt[cEvents + i].rotation = 2048;
+					evt[i].rotation = 2048;
 
-				evt[cEvents + i].flags = 0x400;
-				evt[cEvents + i].radius = 0;
+				evt[i].flags = 0x400;
+				evt[i].radius = 0;
 			}
 
 			if (full)
 			{
 				detonatorModel = FindModelIdxWithName("DETONATOR");
 
-				evt[cEvents].model = detonatorModel;
-				evt[cEvents + 1].model = detonatorModel;
-				evt[cEvents + 2].model = detonatorModel;
+				evt[0].model = detonatorModel;
+				evt[1].model = detonatorModel;
+				evt[2].model = detonatorModel;
 			}
 
 			firstMissionEvent = &event[cEvents];
