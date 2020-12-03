@@ -14,9 +14,14 @@
 #include "DRAW.H"
 #include "MODELS.H"
 #include "MAIN.H"
+#include "PAD.H"
+
+#define NUM_STATES 17
+#define NUM_ITERATIONS 40
 
 static int randIndex;
-static int randState[17];
+static int randState[NUM_STATES];
+
 LEAD_PARAMETERS LeadValues;
 
 static int pathParams[5] = {
@@ -42,11 +47,12 @@ int road_c = 0;
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-// [D]
+// [D] [T]
 int leadRand(void)
 {
-	randIndex = (randIndex + 1) % 0x11;
-	return randState[randIndex] = randState[randIndex] + randState[(randIndex + 0xc) % 0x11];
+	randIndex = (randIndex + 1) % NUM_STATES;
+
+	return randState[randIndex] += randState[(randIndex + 12) % NUM_STATES];
 }
 
 
@@ -82,23 +88,9 @@ int leadRand(void)
 	/* end block 2 */
 	// End Line: 560
 
-// [D]
-void InitLead(CAR_DATA *cp)
+// [D] [T]
+void InitLead(CAR_DATA* cp)
 {
-	int iVar1;
-	int iVar2;
-	int iVar3;
-	int x;
-	int iVar4;
-	int z;
-	int uVar5;
-	DRIVER2_STRAIGHT* st;
-	DRIVER2_CURVE* cr;
-	int iVar6;
-
-	x = cp->hd.where.t[0];
-	z = cp->hd.where.t[2];
-
 	cp->hndType = 5;
 	cp->controlType = CONTROL_TYPE_LEAD_AI;
 	cp->ai.l.roadPosition = 512;
@@ -108,77 +100,66 @@ void InitLead(CAR_DATA *cp)
 	cp->ai.l.roadForward = 5120;
 	cp->ai.l.takeDamage = 0;
 
-	if (valid_region(x, z) == 0)
+	int x = cp->hd.where.t[0];
+	int z = cp->hd.where.t[2];
+
+	if (valid_region(x, z))
 	{
-		z = -1;
-
-		iVar1 = 0;
-
-		if (0 < NumDriver2Straights)
-		{
-			iVar6 = (cp->hd).where.t[0];
-			st = Driver2StraightsPtr;
-
-			do {
-				iVar4 = iVar6 - st->Midx;
-
-				iVar2 = (cp->hd).where.t[2] - st->Midz;
-				iVar4 = iVar4 >> 10;
-
-				iVar2 = iVar2 >> 10;
-				iVar3 = iVar4 * iVar4 + iVar2 * iVar2;
-
-				if (((iVar4 < 0x3e9) && (iVar2 < 0x3e9)) && ((iVar3 < z || (z == -1))))
-				{
-					cp->ai.l.currentRoad = iVar1;
-					z = iVar3;
-				}
-
-				iVar1 = iVar1 + 1;
-				st = st + 1;
-			} while (iVar1 < NumDriver2Straights);
-		}
-
-		uVar5 = 0;
-
-		if (0 < NumDriver2Curves) 
-		{
-			cr = Driver2CurvesPtr;
-			iVar1 = (cp->hd).where.t[0];
-			do {
-				iVar6 = iVar1 - cr->Midx;
-
-				iVar4 = (cp->hd).where.t[2] - cr->Midz;
-				iVar6 = iVar6 >> 10;
-
-				iVar4 = iVar4 >> 10;
-				iVar2 = iVar6 * iVar6 + iVar4 * iVar4;
-
-				if (((iVar6 < 0x3e9) && (iVar4 < 0x3e9)) && ((iVar2 < z || (z == -1)))) 
-				{
-					cp->ai.l.currentRoad = uVar5 & 0x4000;
-					z = iVar2;
-				}
-
-				uVar5 = uVar5 + 1;
-				cr = cr + 1;
-			} while ((int)uVar5 < NumDriver2Curves);
-		}
+		cp->ai.l.currentRoad = GetSurfaceIndex((VECTOR*)cp->hd.where.t);
 	}
 	else
 	{
-		x = GetSurfaceIndex((VECTOR*)cp->hd.where.t);
-		cp->ai.l.currentRoad = x;
+		DRIVER2_STRAIGHT* straight;
+		DRIVER2_CURVE* curve;
+		int i;
+		int dx;
+		int dz;
+		int sqrdist;
+		int min;
+
+		min = -1;
+
+		for (i = 0; i < NumDriver2Straights; i++)
+		{
+			straight = &Driver2StraightsPtr[i];
+
+			dx = (x - straight->Midx) >> 10;
+			dz = (z - straight->Midz) >> 10;
+
+			sqrdist = dx * dx + dz * dz;
+
+			if ((dx < 1001 && dz < 1001) && (sqrdist < min || min == -1))
+			{
+				cp->ai.l.currentRoad = i;
+				min = sqrdist;
+			}
+		}
+
+		for (i = 0; i < NumDriver2Curves; i++)
+		{
+			curve = &Driver2CurvesPtr[i];
+
+			dx = (x - curve->Midx) >> 10;
+			dz = (z - curve->Midz) >> 10;
+
+			sqrdist = dx * dx + dz * dz;
+
+			if ((dx < 1001 && dz < 1001) && (sqrdist < min || min == -1))
+			{
+				cp->ai.l.currentRoad = i & 0x4000;
+				min = sqrdist;
+			}
+		}
 	}
 
 	randState[0] = 0x27a2a;
-	randState[2] = 0x38b0;
-	randState[5] = 0xe;
-	randState[7] = 0x8748;
 	randState[1] = 0x717d58;
+	randState[2] = 0x38b0;
 	randState[3] = 0x701ced;
 	randState[4] = 0xbdfda3;
+	randState[5] = 0xe;
 	randState[6] = 0x268833;
+	randState[7] = 0x8748;
 	randState[8] = 0x180d85;
 	randState[9] = 0x127fba;
 	randState[10] = 0x1678874;
@@ -247,207 +228,178 @@ void InitLead(CAR_DATA *cp)
 	/* end block 3 */
 	// End Line: 871
 
-// [D]
-void LeadUpdateState(CAR_DATA *cp)
+// [D] [T] - needless to say, the AI isn't very smart :D
+void LeadUpdateState(CAR_DATA* cp)
 {
-	bool bVar1;
-	int iVar2;
-	int iVar3;
-	uint uVar4;
-	int iVar5;
-	int iVar6;
-	uint uVar7;
+	int dif;
+	int avel;
+	int end;
+	int dist;
+	int dx;
+	int dz;
 	VECTOR tmpStart;
 	VECTOR pos;
 
-	if (valid_region(cp->hd.where.t[0], cp->hd.where.t[2]) == 0)
+	int x = cp->hd.where.t[0];
+	int z = cp->hd.where.t[2];
+
+	// is he spooled in?
+	if (!valid_region(x, z)
+		|| ABS(x - player[0].pos[0]) > 15900
+		|| ABS(z - player[0].pos[2]) > 15900)
 	{
-	LAB_LEAD__000e7480:
+		// request that we spool him in
 		cp->ai.l.dstate = 8;
 		return;
 	}
 
-	iVar3 = cp->hd.where.t[0];
-	iVar2 = iVar3 - player[0].pos[0];
-
-	if (iVar2 < 0)
-		iVar2 = player[0].pos[0] - iVar3;
-
-	if (0x3e1c < iVar2) 
-		goto LAB_LEAD__000e7480;
-
-	iVar5 = cp->hd.where.t[2];
-	iVar2 = iVar5 - player[0].pos[2];
-
-	if (iVar2 < 0)
-		iVar2 = player[0].pos[2] - iVar5;
-
-	if (0x3e1c < iVar2)
-		goto LAB_LEAD__000e7480;
-
 	if (cp->ai.l.dstate == 8)
 	{
-		if (spoolactive != 0) 
-		{
-			cp->ai.l.dstate = 8;
+		// don't spool him in until everything is loaded
+		if (spoolactive)
 			return;
-		}
 
-		tmpStart.vz = cp->hd.where.t[2];
-		tmpStart.vx = iVar3;
-		tmpStart.vy = MapHeight(&tmpStart);
-		tmpStart.vy = tmpStart.vy - ((cp->ap).carCos)->wheelDisp[0].vy;
+		tmpStart.vx = x;
+		tmpStart.vz = z;
+		tmpStart.vy = MapHeight(&tmpStart) - cp->ap.carCos->wheelDisp[0].vy;
 
-		InitCarPhysics(cp, (LONGVECTOR *)&tmpStart, (int)cp->ai.l.targetDir);
+		InitCarPhysics(cp, (LONGVECTOR*)&tmpStart, cp->ai.l.targetDir);
 
+		// start him up
 		cp->ai.l.dstate = 3;
 	}
 
-	iVar2 = cp->ai.l.panicCount;
-
-	if (iVar2 < 0)
-		iVar2 = -iVar2;
-
-	iVar3 = FIXEDH(cp->st.n.angularVelocity[1]);
-
-	if (0 < iVar2)
+	if (ABS(cp->ai.l.panicCount) > 0)
 		cp->ai.l.dstate = 5;
 
 	if (cp->ai.l.dstate == 6)
 		cp->ai.l.dstate = 3;
 
 	if (cp->hd.speed < 10)
-		cp->ai.l.stuckCount++;
+		++cp->ai.l.stuckCount;
 	else
 		cp->ai.l.stuckCount = 0;
 
 	if (cp->ai.l.dstate == 4)
 	{
-		if (0x14 < cp->ai.l.stuckCount)
+		if (cp->ai.l.stuckCount > 20)
 		{
-			cp->ai.l.recoverTime = 1;
 			cp->ai.l.stuckCount = 0;
+			cp->ai.l.recoverTime = 1;
 			cp->ai.l.roadForward = -cp->ai.l.roadForward;
 		}
 	}
 	else
 	{
-		if (10 < cp->ai.l.stuckCount)
+		if (cp->ai.l.stuckCount > 10)
 		{
-			cp->ai.l.dstate = 4;
-			cp->ai.l.recoverTime = 0;
 			cp->ai.l.stuckCount = 0;
+			cp->ai.l.recoverTime = 0;
+			cp->ai.l.dstate = 4;
 		}
 	}
+
+	dif = cp->hd.direction - cp->ai.l.targetDir;
+	avel = FIXEDH(cp->st.n.angularVelocity[1]);
+
+	end = (dif + 2048u & 0xfff) - 2048;
 
 	switch (cp->ai.l.dstate)
 	{
 		case 0:
 			CheckCurrentRoad(cp);
-			iVar2 = ((cp->hd.direction - (int)cp->ai.l.targetDir) + 0x800U & 0xfff) - 0x800;
 
 			if (cp->hd.speed < 20)
-				cp->ai.l.dstate =3;
+				cp->ai.l.dstate = 3;
 
-			if (iVar2 < 0)
-				iVar2 = -iVar2;
-
-			if (iVar2 < LeadValues.hEnd) 
+			if (ABS(end) < LeadValues.hEnd)
 			{
-				if (iVar3 < 0)
-					iVar3 = -iVar3;
-
-				if (0x96 < iVar3)
+				if (ABS(avel) > 150)
 					cp->ai.l.dstate = 1;
-
 			}
+
 			break;
 		case 1:
 			CheckCurrentRoad(cp);
-			iVar2 = ((cp->hd.direction - (int)cp->ai.l.targetDir) + 0x800U & 0xfff) - 0x800;
 
-			if (iVar2 < 0)
-				iVar2 = -iVar2;
+			if (ABS(end) < LeadValues.dEnd)
+			{
+				if (ABS(avel) < 24)
+				{
+					cp->ai.l.dstate = 3;
+				}
+				else
+				{
+					cp->ai.l.dstate = 2;
+				}
+			}
 
-			if (iVar2 < LeadValues.dEnd)
-				cp->ai.l.dstate = 2;
-
-			goto LAB_LEAD__000e7748;
+			break;
 		case 2:
 			CheckCurrentRoad(cp);
-		LAB_LEAD__000e7748:
-			if (iVar3 < 0)
-				iVar3 = -iVar3;
 
-			if (iVar3 < 0x18) 
+			if (ABS(avel) < 24)
 				cp->ai.l.dstate = 3;
 
 			break;
 		case 3:
-			iVar2 = cp->ai.l.recoverTime;
-
-			if (0x28 < iVar2)
-				cp->ai.l.recoverTime = iVar2 + -1;
+			if (cp->ai.l.recoverTime > 40)
+				--cp->ai.l.recoverTime;
 
 			CheckCurrentRoad(cp);
-			uVar7 = cp->hd.direction;
-			uVar4 = uVar7 & 0xfff;
-			iVar3 = cp->hd.speed;
-			iVar2 = ((uVar7 - (int)cp->ai.l.targetDir) + 0x800 & 0xfff) - 0x800;
-			iVar5 = FIXEDH((cp->ai.l.targetX - cp->hd.where.t[0]) * (int)rcossin_tbl[uVar4 * 2] + (cp->ai.l.targetZ - cp->hd.where.t[2]) * (int)rcossin_tbl[uVar4 * 2 + 1]);
-			if (100 < iVar3) 
+
+			dx = (cp->ai.l.targetX - x) * rcossin_tbl[(cp->hd.direction & 0xfff) * 2];
+			dz = (cp->ai.l.targetZ - z) * rcossin_tbl[(cp->hd.direction & 0xfff) * 2 + 1];
+
+			dist = FIXEDH(dx + dz);
+
+			if (cp->hd.speed > 100 || (cp->hd.speed > 30 && ABS(end) > 1024))
 			{
-			LAB_LEAD__000e7824:
-				if (iVar2 < 0)
-					iVar2 = -iVar2;
-
-				iVar6 = iVar2;
-
-				if (iVar2 <= LeadValues.hEnd) 
-					goto LAB_LEAD__000e78ac;
-
-				if (100 < iVar3)
+				if (ABS(end) > LeadValues.hEnd)
 				{
-					if (LeadValues.hDist + (iVar3 + -100) * LeadValues.hDistMul <= iVar5)
+					if (cp->hd.speed > 100)
 					{
-						cp->ai.l.dstate = 6;
-						return;
+						int hDist = LeadValues.hDist + (cp->hd.speed - 100) * LeadValues.hDistMul;
+
+						if (dist < hDist)
+						{
+							cp->ai.l.dstate = 6;
+						}
+						else
+						{
+							cp->ai.l.dstate = 0;
+						}
+
+						break;
 					}
-				LAB_LEAD__000e78a4:
-					cp->ai.l.dstate = 0;
-					return;
-				}
+					else
+					{
+						int tDist = LeadValues.tDist + cp->hd.speed * LeadValues.tDistMul;
 
-				if (iVar5 < LeadValues.tDist + iVar3 * LeadValues.tDistMul) 
-					goto LAB_LEAD__000e78a4;
+						if (dist < tDist)
+						{
+							cp->ai.l.dstate = 0;
+							break;
+						}
+					}
+				}
 			}
-			else 
+
+			if (ABS(end) > cp->hd.speed + LeadValues.tEnd)
 			{
-				iVar6 = iVar2;
-				if (iVar2 < 0)
-					iVar6 = -iVar2;
+				int lDist;
 
-				if ((0x1e < iVar3) && (0x400 < iVar6))
-					goto LAB_LEAD__000e7824;
-
-			LAB_LEAD__000e78ac:
-				iVar2 = cp->hd.speed;
-				if (iVar6 <= iVar2 + LeadValues.tEnd)
-					return;
-
-				if (iVar2 < 0x65)
-					iVar2 = LeadValues.tDist + iVar2 * LeadValues.tDistMul;
+				if (cp->hd.speed > 100)
+					lDist = LeadValues.hDist + (cp->hd.speed - 100) * LeadValues.hDistMul;
 				else
-					iVar2 = LeadValues.hDist + (iVar2 + -100) * LeadValues.hDistMul;
+					lDist = LeadValues.tDist + cp->hd.speed * LeadValues.tDistMul;
 
-				if (iVar5 < iVar2) 
-				{
+				if (dist < lDist)
 					cp->ai.l.dstate = 7;
-					return;
-				}
+				else
+					cp->ai.l.dstate = 6;
 			}
 
-			cp->ai.l.dstate = 6;
 			break;
 		case 4:
 			pos.vx = cp->hd.where.t[0];
@@ -458,7 +410,7 @@ void LeadUpdateState(CAR_DATA *cp)
 
 			cp->ai.l.recoverTime++;
 
-			if (cp->ai.l.roadForward == 0) 
+			if (cp->ai.l.roadForward == 0)
 			{
 				cp->ai.l.dstate = 3;
 				cp->ai.l.stuckCount = 0;
@@ -467,31 +419,18 @@ void LeadUpdateState(CAR_DATA *cp)
 			break;
 		case 5:
 			CheckCurrentRoad(cp);
-			iVar2 = ((cp->hd.direction - cp->ai.l.targetDir) + 0x800U & 0xfff) - 0x800;
 
-			if (cp->ai.l.panicCount != 0)
-				return;
-
-			if (iVar2 < 0)
-				iVar2 = -iVar2;
-	
-			bVar1 = iVar2 < 200;
-
-			if (bVar1)
-				cp->ai.l.dstate = 2;
+			if (cp->ai.l.panicCount == 0)
+			{
+				if (ABS(end) < 200)
+					cp->ai.l.dstate = 2;
+			}
 
 			break;
 		case 7:
 			CheckCurrentRoad(cp);
 
-			iVar2 = ((cp->hd.direction - cp->ai.l.targetDir) + 0x800U & 0xfff) - 0x800;
-
-			if (iVar2 < 0)
-				iVar2 = -iVar2;
-
-			bVar1 = iVar2 < cp->hd.speed + LeadValues.tEnd;
-
-			if (bVar1) 
+			if (ABS(end) < cp->hd.speed + LeadValues.tEnd)
 				cp->ai.l.dstate = 2;
 
 			break;
@@ -549,214 +488,200 @@ void LeadUpdateState(CAR_DATA *cp)
 	/* end block 2 */
 	// End Line: 1283
 
-// [D]
-ulong LeadPadResponse(CAR_DATA *cp)
+// [D] [T]
+ulong LeadPadResponse(CAR_DATA* cp)
 {
-	int iVar1;
-	int iVar2;
-	int steerDelta;
-	int iVar3;
+	int dif;
 	int avel;
+	ulong t0;
+	int deltaVel;
+	int deltaAVel;
+	int deltaPos;
 	int deltaTh;
-	long t0;
-	uint uVar4;
+	int steerDelta;
+	int dx;
+	int dz;
+	int dist;
+	int diff;
+	int maxDist;
 
 	t0 = 0;
-	deltaTh = ((cp->hd.direction - cp->ai.l.targetDir) + 0x800U & 0xfff) - 0x800;
+
+	dif = cp->hd.direction - cp->ai.l.targetDir;
+
+	deltaTh = (dif + 2048U & 0xfff) - 2048;
 	avel = FIXEDH(cp->st.n.angularVelocity[1]);
+
+#ifdef COLLISION_DEBUG
+	extern int gShowCollisionDebug;
+	//if (gShowCollisionDebug == 3)
+	{
+		extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
+		extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
+
+		CVECTOR ggcv = { 0, 250, 0 };
+		CVECTOR bbcv = { 0, 0, 250 };
+		CVECTOR rrcv = { 250, 0, 0 };
+
+		VECTOR _zero = { 0 };
+		VECTOR _up = { 0, 1000, 0 };
+
+		VECTOR pos = { cp->ai.l.targetX, cp->hd.where.t[1], cp->ai.l.targetZ };
+
+		Debug_AddLineOfs(_zero, _up, pos, rrcv);
+	}
+#endif
+
 	switch (cp->ai.l.dstate)
 	{
 		case 0:
-			t0 = 0x8010;
-			if (deltaTh < 0) {
-				t0 = 0x2010;
-			}
+			// [A] check angular velocity when making this maneuver with handbrake
+			deltaAVel = ABS(avel);
+		
+			t0 = (deltaAVel < 100 ? CAR_PAD_HANDBRAKE : 0) | ((deltaTh < 0) ? CAR_PAD_RIGHT : CAR_PAD_LEFT);
 			break;
-
 		case 1:
-			t0 = 0x40;
+			t0 = CAR_PAD_ACCEL;
 			break;
-
 		case 2:
-			if (avel < 0) 
-			{
-				if (avel < 0)
-					avel = -avel;
+			t0 = CAR_PAD_ACCEL | ((avel < 0) ? CAR_PAD_RIGHT : CAR_PAD_LEFT);
 
-				t0 = 0x2040;
-				if (0x28 < avel)
-					t0 = 0x2044;
+			if (ABS(avel) > 40)
+				t0 |= CAR_PAD_FASTSTEER;
 
-			}
-			else 
-			{
-				if (avel < 0)
-					avel = -avel;
-
-				t0 = 0x8040;
-
-				if (0x28 < avel)
-					t0 = 0x8044;
-
-			}
 			break;
 		case 3:
+			dx = -rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2 + 1] * (cp->hd.where.t[0] - cp->ai.l.targetX);
+			dz = rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2] * (cp->hd.where.t[2] - cp->ai.l.targetZ);
 
-			uVar4 = cp->ai.l.targetDir & 0xfff;
-			iVar2 = FIXEDH(-rcossin_tbl[uVar4 * 2 + 1] * ((cp->hd).where.t[0] - cp->ai.l.targetX) + rcossin_tbl[uVar4 * 2] * ((cp->hd).where.t[2] - cp->ai.l.targetZ));
-			iVar3 = pathParams[4];
+			deltaPos = FIXEDH(dx + dz);
 
-			if ((pathParams[4] < iVar2) || (iVar3 = -pathParams[4], iVar2 < -pathParams[4])) 
+			maxDist = pathParams[4];
+
+			if (deltaPos > maxDist || (maxDist = -maxDist, deltaPos < maxDist))
+				deltaPos = maxDist;
+
+			deltaVel = FIXEDH(
+				-rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2 + 1] * FIXEDH(cp->st.n.linearVelocity[0])
+				+ rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2] * FIXEDH(cp->st.n.linearVelocity[2]));
+
+			steerDelta = FIXEDH(
+					pathParams[0] * deltaVel
+					+ pathParams[1] * avel
+					+ pathParams[2] * deltaPos
+					+ pathParams[3] * deltaTh) - cp->wheel_angle;
+
+
+			t0 = CAR_PAD_ACCEL;
+		
+			if (steerDelta > 32)
+				t0 |= CAR_PAD_RIGHT;
+			else if (steerDelta < -32)
+				t0 |= CAR_PAD_LEFT;
+
+			if (ABS(steerDelta) > 64)
+				t0 |= CAR_PAD_FASTSTEER;
+		
+			if (steerDelta + 31U <= 62) 
 			{
-				iVar2 = iVar3;
+				if (ABS(avel) <= 5)
+				{
+					if (t0 & CAR_PAD_ACCEL)
+						t0 |= CAR_PAD_WHEELSPIN;
+				}
 			}
 
-			steerDelta = FIXEDH(pathParams[0] * FIXEDH(-rcossin_tbl[uVar4 * 2 + 1] * FIXEDH((cp->st).n.linearVelocity[0]) + rcossin_tbl[uVar4 * 2] * FIXEDH((cp->st).n.linearVelocity[2])) + pathParams[1] * avel + pathParams[2] * iVar2 + pathParams[3] * deltaTh) - cp->wheel_angle;
-
-			t0 = 0x40;
-
-			if (0x20 < steerDelta)
-				t0 = 0x2040;
-
-			if (0x40 < steerDelta)
-				t0 = t0 | 4;
-
-			if (steerDelta < -0x20)
-				t0 = t0 | 0x8000;
-
-			if (steerDelta < -0x40)
-				t0 = t0 | 4;
-
-			if (0x3e < steerDelta + 0x1fU)
-				return t0;
-
-			if (avel < 0)
-				avel = -avel;
-
-			if (5 < avel)
-				return t0;
-
-			if ((t0 & 0x40U) == 0)
-				return t0;
-
-			goto LAB_LEAD__000e7d50;
+			break;
 		case 4:
+			t0 = CAR_PAD_WHEELSPIN;
 
-			uVar4 = 0x20;
-			iVar2 = cp->ai.l.roadForward;
-			iVar3 = ((cp->ai.l.roadPosition - (cp->hd).direction) + 0x800U & 0xfff) - 0x800;
+			diff = cp->ai.l.roadPosition - cp->hd.direction;
 
-			if (iVar2 < 0)
-				uVar4 = 0x80;
+			deltaPos = (diff + 2048u & 0xfff) - 2048;
 
-			if (iVar3 * iVar2 < 1)
-				t0 = uVar4 | 0x8000;
+			if (cp->ai.l.roadForward < 0)
+				t0 = CAR_PAD_BRAKE;
+
+			if (deltaPos * cp->ai.l.roadForward < 1)
+				t0 |= CAR_PAD_LEFT;
 			else
-				t0 = uVar4 | 0x2000;
+				t0 |= CAR_PAD_RIGHT;
 
-			if (iVar3 < 0)
-				iVar3 = -iVar3;
-
-			if (200 < iVar3) 
+			if (ABS(deltaPos) > 200 && ABS(deltaTh) < 1848)
 			{
-				if (deltaTh < 0)
-					deltaTh = -deltaTh;
-
-				if (deltaTh < 0x738)
-					t0 = t0 | 4;
+				t0 |= CAR_PAD_FASTSTEER;
 			}
 
 			break;
 		case 5:
+			deltaAVel = ABS(avel);
 
-			iVar2 = cp->ai.l.panicCount;
-			iVar3 = avel;
-
-			if (avel < 0)
-				iVar3 = -avel;
-
-			iVar1 = iVar2;
-
-			if (iVar2 < 0) 
-				iVar1 = -iVar2;
-
-			if ((iVar1 < 2) || (0x96 < iVar3))
+			if (ABS(cp->ai.l.panicCount) < 2 || deltaAVel > 150)
 			{
-				t0 = ((cp->hd).speed < 0x65) << 6;
+				if (cp->hd.speed <= 100)
+					t0 |= CAR_PAD_ACCEL;
 			}
-			else 
+			else
 			{
-				t0 = 0x20;
-
-				if (100 < (cp->hd).speed)
-					t0 = 0x10;
-
+				t0 = (cp->hd.speed > 100) ? CAR_PAD_HANDBRAKE : CAR_PAD_WHEELSPIN;
 			}
 
-			if (iVar3 < 0x50) 
-			{
-				t0 = t0 | 4;
-			}
+			if (deltaAVel < 80)
+				t0 |= CAR_PAD_FASTSTEER;
 
-			if (iVar2 < 1) 
+			if (cp->ai.l.panicCount == 0)
 			{
-				if (iVar2 < 0) 
+				// already straight ahead?
+				if (deltaTh == 0)
+					break;
+
+				// straighten up if needed
+				if (deltaTh > 0)
 				{
-					if ((0x95 < iVar3) && (avel < 1)) 
-						return t0;
-
-					return t0 | 0x8000;
+					if (deltaAVel < 150 || avel > 0)
+						t0 |= CAR_PAD_LEFT;
 				}
-
-				if ((0 < deltaTh) && ((iVar3 < 0x96 || (0 < avel)))) 
-					t0 = t0 | 0x8000;
-
-
-				if (-1 < deltaTh)
-					return t0;
+				else
+				{
+					if (deltaAVel < 150 || avel < 0)
+						t0 |= CAR_PAD_RIGHT;
+				}
 			}
-
-			if ((iVar3 < 0x96) || (avel < 0)) 
-				t0 = t0 | 0x2000;
+			else if (cp->ai.l.panicCount < 0)
+			{
+				// panick to the left?
+				if (deltaAVel < 150 || avel > 0)
+					t0 |= CAR_PAD_LEFT;
+			}
+			else
+			{
+				// panick to the right?
+				if (deltaAVel < 150 || avel < 0)
+					t0 |= CAR_PAD_RIGHT;
+			}
 
 			break;
 		case 6:
-			uVar4 = 0x8000;
-			if (avel < 0)
-				uVar4 = 0x2000;
+			t0 = (avel < 0) ? CAR_PAD_RIGHT : CAR_PAD_LEFT;
 
-			if ((cp->ai.l.roadForward < 0) && (100 < (cp->hd).speed))
-				t0 = uVar4 | 0x80;
+			if (cp->ai.l.roadForward < 0 && cp->hd.speed > 100)
+				t0 |= CAR_PAD_BRAKE;
 			else
-				t0 = uVar4 | 0x40;
+				t0 |= CAR_PAD_ACCEL;
 
 			break;
 		case 7:
-			if (avel < 0)
-				avel = -avel;
-
-			if (LeadValues.tAvelLimit <= avel) 
+			if (ABS(avel) > LeadValues.tAvelLimit)
 			{
-				iVar3 = deltaTh;
-				if (deltaTh < 0)
-					iVar3 = -deltaTh;
-
-				if (iVar3 < 0x401)
-					goto LAB_LEAD__000e7d50;
+				if (ABS(deltaTh) > 1024)
+					t0 = CAR_PAD_FASTSTEER | ((deltaTh < 0) ? CAR_PAD_RIGHT : CAR_PAD_LEFT);
 			}
 
-			t0 = 0x8004;
-
-			if (deltaTh < 0)
-				t0 = 0x2004;
-
-		LAB_LEAD__000e7d50:
-			t0 = t0 | 0x20;
+			t0 |= CAR_PAD_WHEELSPIN;
 			break;
 
 		case 8:
 			FakeMotion(cp);
-			t0 = 0;
 			break;
 	}
 
@@ -854,192 +779,162 @@ ulong LeadPadResponse(CAR_DATA *cp)
 	/* end block 3 */
 	// End Line: 1645
 
-// [D]
-void FakeMotion(CAR_DATA *cp)
+// [D] [T]
+// FakeMotion: when car is too far from the player it just moves, not drives
+void FakeMotion(CAR_DATA* cp)
 {
 	static int d; // offset 0x0
 	static int toGo; // offset 0x4
- 	static int angle; // offset 0x8
- 	static int s; // offset 0xc
- 	static int c; // offset 0x10
+	static int angle; // offset 0x8
+	static int s; // offset 0xc
+	static int c; // offset 0x10
 
-	short sVar1;
-	int iVar2;
-	long lVar3;
-	short uVar4;
-	int iVar5;
-	int uVar6;
-	int iVar7;
-	int iVar8;
-	int uVar9;
-	int iVar10;
 	DRIVER2_STRAIGHT* straight;
 	DRIVER2_CURVE* curve;
 	DRIVER2_JUNCTION* junction;
+	int currentRoad;
+	int nextJunction;
+	int temp;
 
-	junction = Driver2JunctionsPtr;
-	uVar9 = cp->ai.l.currentRoad;
-	uVar6 = uVar9 & 0xffffe000;
+	currentRoad = cp->ai.l.currentRoad;
 
-	if (uVar6 == 0x2000) 
+	if (IS_JUNCTION_SURFACE(currentRoad))
 	{
-		cp->ai.l.lastRoad = uVar9;
-		SelectExit(cp, junction + (uVar9 - 0x2000));
-		iVar5 = cp->ai.l.nextExit;
-		sVar1 = junction[uVar9 - 0x2000].ExitIdx[iVar5];
-		cp->ai.l.targetDir = (short)(iVar5 << 10);
-		cp->ai.l.direction = 0;
-		cp->ai.l.currentRoad = (int)sVar1;
-		return;
+		// straight away
+		// select next exit and proceed
+		nextJunction = currentRoad;
 	}
-
-	if (uVar6 < 0x2001) 
+	else if (IS_STRAIGHT_SURFACE(currentRoad))
 	{
-		if (uVar6 != 0) 
-			return;
+		int dx, dz;		
+		straight = GET_STRAIGHT(currentRoad);
 
+		dx = cp->hd.where.t[0] - straight->Midx;
+		dz = cp->hd.where.t[2] - straight->Midz;
 
-		iVar10 = (cp->hd).where.t[0];
-		iVar8 = (cp->hd).where.t[2];
-		straight = Driver2StraightsPtr + uVar9;
-		iVar7 = straight->Midx;
-		iVar5 = straight->Midz;
 		angle = straight->angle & 0xfff;
-		uVar6 = (straight->ConnectIdx[1]);
+		
+		nextJunction = (straight->ConnectIdx[1]);
 
-		if (uVar6 == -1)
-			uVar6 = (straight->ConnectIdx[0]);
+		if (nextJunction == -1)
+			nextJunction = (straight->ConnectIdx[0]);
 
 		if (cp->ai.l.direction == 0)
 		{
-			iVar2 = -1;
-
-			if (((cp->ai.l.targetDir - angle) + 0x400U & 0x800) == 0) 
-				iVar2 = 1;
-
-			cp->ai.l.direction = iVar2;
+			if (cp->ai.l.targetDir - angle + 1024U & 0x800)
+				cp->ai.l.direction = -1;
+			else
+				cp->ai.l.direction = 1;
 		}
 
 		if (cp->ai.l.direction == -1)
 		{
-			uVar6 = (straight->ConnectIdx[3]);
-			angle = angle ^ 0x800;
+			angle ^= 2048;
 
-			if (uVar6 == -1)
-				uVar6 = (straight->ConnectIdx[2]);
+			nextJunction = (straight->ConnectIdx[3]);
+			if (nextJunction == -1)
+				nextJunction = (straight->ConnectIdx[2]);
 		}
 
-		c = rcossin_tbl[(angle & 0xfffU) * 2];
-		s = rcossin_tbl[(angle & 0xfffU) * 2 + 1];
-		d = FIXEDH(c * (iVar10 - iVar7) + s * (iVar8 - iVar5));
-		toGo = (straight->length >> 1) - d;
+		c = rcossin_tbl[(angle & 0xfff) * 2];
+		s = rcossin_tbl[(angle & 0xfff) * 2 + 1];
 
-		if (-1 < toGo)
+		d = FIXEDH(c * dx + s * dz);
+		
+		toGo = (straight->length / 2) - d;
+
+		if (toGo > -1)
 		{
-			d = d + 0x78;
+			d += 120;
 
-			(cp->hd).where.t[0] = FIXEDH(c * d) + straight->Midx;
-			(cp->hd).where.t[2] = FIXEDH(s * d) + straight->Midz;
+			cp->hd.where.t[0] = FIXEDH(c * d) + straight->Midx;
+			cp->hd.where.t[2] = FIXEDH(s * d) + straight->Midz;
 			return;
 		}
 
-		if ((((uVar6 & 0xffffe000) != 0x2000) || (NumDriver2Junctions <= (uVar6 & 0x1fff))) || (uVar6 < 0)) 
+		if (!IS_JUNCTION_SURFACE(nextJunction))
 		{
-			cp->ai.l.currentRoad = uVar6;
-			goto LAB_LEAD__000e824c;
+			cp->ai.l.currentRoad = nextJunction;
+			cp->ai.l.direction = 0;
+			return;
 		}
 	}
-	else 
+	else if (IS_CURVED_SURFACE(currentRoad))
 	{
-		if (uVar6 != 0x4000)
-			return;
+		int dx, dz;
+		int radius;
+		int dir;
 
-		curve = Driver2CurvesPtr + (uVar9 - 0x4000);
-		lVar3 = ratan2((cp->hd).where.t[0] - curve->Midx, (cp->hd).where.t[2] - curve->Midz);
-		iVar5 = curve->inside * 2 + ((uint)(u_char)curve->NumLanes & 0xf);
-		iVar7 = iVar5 * 0x200;
+		curve = GET_CURVE(currentRoad);
 
+		dx = cp->hd.where.t[0] - curve->Midx;
+		dz = cp->hd.where.t[2] - curve->Midz;
+		
+		angle = ratan2(dx, dz);
+		
 		if (cp->ai.l.direction == 0)
 		{
-			iVar8 = 1;
-
-			if ((lVar3 - cp->ai.l.targetDir & 0x800U) == 0)
-				iVar8 = -1;
-
-			cp->ai.l.direction = iVar8;
+			if (angle - cp->ai.l.targetDir & 0x800U)
+				cp->ai.l.direction = 1;
+			else
+				cp->ai.l.direction = -1;
 		}
 
+		radius = (curve->inside * 2 + ROAD_LANES_COUNT(curve)) * 512;
+
+		// move car in desired direction
 		if (cp->ai.l.direction == 1)
 		{
-			if (-1 < (int)(((curve->end - lVar3 & 0xfffU) + 0x800 & 0xfff) - 0x800)) {
+			if (((curve->end - angle & 0xfff) + 2048 & 0xfff) - 2048 > -1) 
+			{
+				dir = angle + 0x13193 / radius;
 
-				uVar9 = lVar3 + 0x13193 / iVar7;
-				uVar6 = uVar9 & 0xfff;
-				sVar1 = rcossin_tbl[uVar6 * 2 + 1];
-				(cp->hd).where.t[0] = FIXEDH(rcossin_tbl[uVar6 * 2] * iVar7) + curve->Midx;
-				iVar5 = curve->Midz;
-				uVar4 = (short)uVar9 + 0x400;
-			LAB_LEAD__000e82cc:
-				cp->ai.l.targetDir = uVar4 & 0xfff;
-				(cp->hd).where.t[2] = FIXEDH(sVar1 * iVar7) + iVar5;
-
-				cp->st.n.fposition[0] = cp->hd.where.t[0] << 4;
-				cp->st.n.fposition[2] = cp->hd.where.t[2] << 4;
+				cp->ai.l.targetDir = (dir + 1024) & 0xfff;
+				
+				cp->hd.where.t[0] = FIXEDH(rcossin_tbl[(dir & 0xfff) * 2] * radius) + curve->Midx;
+				cp->hd.where.t[2] = FIXEDH(rcossin_tbl[(dir & 0xfff) * 2 + 1] * radius) + curve->Midz;
 				return;
 			}
 
-			uVar6 = (curve->ConnectIdx[1]);
-			if (uVar6 == -1)
-				uVar6 = (curve->ConnectIdx[0]);
-
-			if (((uVar6 & 0xffffe000) != 0x2000) || (NumDriver2Junctions <= (int)(uVar6 & 0x1fff))) 
-			{
-			LAB_LEAD__000e8248:
-				cp->ai.l.currentRoad = uVar6;
-				goto LAB_LEAD__000e824c;
-			}
-
-			if (uVar6 < 0) 
-			{
-				cp->ai.l.currentRoad = uVar6;
-				goto LAB_LEAD__000e824c;
-			}
+			nextJunction = curve->ConnectIdx[1];
+			if (nextJunction == -1)
+				nextJunction = curve->ConnectIdx[0];
 		}
-		else 
+		else
 		{
-			if (-1 < (int)(((lVar3 - curve->start & 0xfffU) + 0x800 & 0xfff) - 0x800)) 
+			if (((angle - curve->start & 0xfff) + 2048 & 0xfff) - 2048 > -1)
 			{
+				dir = angle - 0x13193 / radius;
 
-				uVar9 = lVar3 - 0x13193 / iVar7;
-				uVar6 = uVar9 & 0xfff;
-				sVar1 = rcossin_tbl[uVar6 * 2 + 1];
-				(cp->hd).where.t[0] = FIXEDH(rcossin_tbl[uVar6 * 2] * iVar7) + curve->Midx;
-				iVar5 = curve->Midz;
-				uVar4 = (short)uVar9 - 0x400;
-				goto LAB_LEAD__000e82cc;
+				cp->ai.l.targetDir = (dir - 1024) & 0xfff;
+				
+				cp->hd.where.t[0] = FIXEDH(rcossin_tbl[(dir & 0xfff) * 2] * radius) + curve->Midx;
+				cp->hd.where.t[2] = FIXEDH(rcossin_tbl[(dir & 0xfff) * 2 + 1] * radius) + curve->Midz;
+				return;
 			}
-			uVar6 = (curve->ConnectIdx[3]);
 
-			if (uVar6 == -1)
-				uVar6 = (curve->ConnectIdx[2]);
-
-			if ((((uVar6 & 0xffffe000) != 0x2000) || (NumDriver2Junctions <= (int)(uVar6 & 0x1fff))) ||
-				((int)uVar6 < 0)) goto LAB_LEAD__000e8248;
+			nextJunction = curve->ConnectIdx[3];
+			if (nextJunction == -1)
+				nextJunction = (curve->ConnectIdx[2]);
+		}
+		
+		if(!IS_JUNCTION_SURFACE(nextJunction))
+		{
+			cp->ai.l.currentRoad = nextJunction;
+			cp->ai.l.direction = 0;
+			return;
 		}
 	}
 
-	junction = Driver2JunctionsPtr + (uVar6 - 0x2000);
+	junction = GET_JUNCTION(nextJunction);
 	cp->ai.l.lastRoad = cp->ai.l.currentRoad;
 
 	SelectExit(cp, junction);
 
-	iVar5 = cp->ai.l.nextExit;
-	sVar1 = junction->ExitIdx[iVar5];
+	temp = cp->ai.l.nextExit;
 
-	cp->ai.l.targetDir = (short)(iVar5 << 10);
-	cp->ai.l.currentRoad = (int)sVar1;
-
-LAB_LEAD__000e824c:
+	cp->ai.l.targetDir = (temp << 10);
+	cp->ai.l.currentRoad = junction->ExitIdx[temp];
 	cp->ai.l.direction = 0;
 }
 
@@ -1107,134 +1002,128 @@ LAB_LEAD__000e824c:
 	/* end block 2 */
 	// End Line: 2159
 
-// [D]
-void PosToIndex(int *normal, int *tangent, int intention, CAR_DATA *cp)
+// [D] [T]
+void PosToIndex(int* normal, int* tangent, int intention, CAR_DATA* cp)
 {
-	int uVar1;
-	int iVar2;
-	int uVar3;
-	int iVar4;
-	int iVar5;
-	int iVar6;
-	int iVar7;
+	int w;
+	int w80;
+	int t;
+	int t80;
+	int dist;
 
-	if (intention - 4U < 3) 
-	{
-		uVar3 = (*normal + 0x800U & 0xfff) - 0x800;
-		*normal = uVar3;
+	if (intention - 4U < 3)
+	{ 
+		*normal = (*normal + 2048U & 0xfff) - 2048;
 
 		if (intention == 6)
 		{
-			uVar1 = uVar3;
-			if (uVar3 < 0)
-				uVar1 = -uVar3;
-
-			if (uVar1 < 0xf0)
+			if (ABS(*normal) < 240)
 			{
-				iVar6 = FIXEDH(*tangent * (int)rcossin_tbl[(uVar3 & 0xfff) * 2]);
-				if (0x7d < iVar6) 
+				dist = FIXEDH(*tangent * rcossin_tbl[(*normal & 0xfff) * 2]);
+				
+				if (dist > 125)
 				{
-					*normal = 0x17;
+					*normal = 23;
 					return;
 				}
 
-				if (0x32 < iVar6) 
+				if (dist > 50)
 				{
-					*normal = 0x16;
+					*normal = 22;
 					return;
 				}
 
-				if (-0x32 < iVar6) 
+				if (dist > -50)
 				{
-					*normal = 0x15;
+					*normal = 21;
 					return;
 				}
 
-				if (iVar6 < -0x7c)
+				if (dist < -124)
 				{
-					*normal = 0x13;
+					*normal = 19;
 					return;
 				}
 
-				*normal = 0x14;
+				*normal = 20;
 				return;
 			}
 		}
-		iVar6 = *normal * 0x15;
-		*normal = iVar6;
+	
+		*normal *= 21;
 
-		if (intention == 4) 
-			iVar6 = (iVar6 / 6 + (iVar6 >> 0x1f) >> 8) - (iVar6 >> 0x1f);
+		if (intention == 4)
+			*normal /= 1536; // [A] (*normal / 6 + (*normal >> 0x1f) >> 8) - (*normal >> 0x1f);
 		else if (intention == 5)
-			iVar6 = iVar6 >> 0xb;
+			*normal /= 2048;
 		else
-			iVar6 = iVar6 >> 10;
+			*normal /= 1024;
 
-		*normal = iVar6;
-		iVar6 = *normal;
+		t80 = *normal;
 	}
-	else 
+	else
 	{
-		if (1 < intention) 
+		if (intention > 1)
 		{
-			iVar2 = (cp->hd).speed;
-			iVar7 = LeadValues.tWidth;
-			iVar6 = LeadValues.tWidthMul;
-
-			if (100 < iVar2) 
+			int myspeed;
+			
+			myspeed = cp->hd.speed;
+			w = LeadValues.tWidth;
+			t80 = LeadValues.tWidthMul;
+			
+			if (myspeed > 100)
 			{
-				iVar7 = LeadValues.hWidth;
-				iVar6 = LeadValues.hWidthMul;
+				w = LeadValues.hWidth;
+				t80 = LeadValues.hWidthMul;
 			}
-
-			iVar7 = iVar7 + iVar2 * iVar6;
-
-			if (iVar2 < 0x65) 
-			{
-				iVar6 = LeadValues.tWidth80 + iVar2 / LeadValues.tWidth80Mul;
-			}
-			else 
-			{
-				iVar6 = LeadValues.hWidth80 + iVar2 * LeadValues.hWidth80Mul;
-			}
-
-			if (iVar2 < 0x65)
-				iVar2 = LeadValues.tDist + iVar2 * LeadValues.tDistMul;
+			
+			w = w + myspeed * t80;
+			
+			if (myspeed > 100)
+				w80 = LeadValues.hWidth80 + myspeed * LeadValues.hWidth80Mul;
 			else
-				iVar2 = LeadValues.hDist + (iVar2 + -100) * LeadValues.hDistMul;
+				w80 = LeadValues.tWidth80 + myspeed / LeadValues.tWidth80Mul;
+			
+			if (myspeed > 100)
+				t = LeadValues.hDist + (myspeed + -100) * LeadValues.hDistMul;
+			else
+				t = LeadValues.tDist + myspeed * LeadValues.tDistMul;
 
-			iVar5 = (iVar2 << 3) / 10;
+			t80 = (t << 3) / 10;
 
 			if (intention == 2)
 				*normal = -*normal;
 
-			iVar4 = *normal;
-
-			if (iVar7 < iVar4)
+			if (w < *normal)
 			{
-				iVar6 = *tangent;
-				*tangent = (iVar2 + iVar4) - iVar7;
-				*normal = iVar2 - iVar6;
+				int temp;
+				temp = *tangent;
+				
+				*tangent = (t + *normal) - w;
+				*normal = t - temp;
 			}
-			else if (iVar6 < iVar4)
+			else if (w80 < *normal)
 			{
-				iVar5 = ((iVar4 - iVar6) * (iVar2 - iVar5)) / (iVar7 - iVar6) + iVar5;
-				*normal = iVar5 - *tangent;
-				*tangent = iVar5;
+				int temp;
+				temp = ((*normal - w80) * (t - t80)) / (w - w80) + t80;
+				
+				*normal = temp - *tangent;
+				*tangent = temp;
 			}
-			else if (0 < iVar4)
+			else if (*normal > 0)
 			{
-				iVar6 = (iVar5 * iVar6) / iVar4;
+				int temp;
+				temp = (t80 * w80) / *normal;
 
-				*normal = iVar6 - *tangent;
-				*tangent = iVar6;
+				*normal = temp - *tangent;
+				*tangent = temp;
 			}
 		}
 
-		iVar6 = *normal / 100;
+		t80 = *normal / 100;
 	}
 
-	*normal = iVar6 + 0x15;
+	*normal = t80 + 21;
 }
 
 
@@ -1428,8 +1317,8 @@ void PosToIndex(int *normal, int *tangent, int intention, CAR_DATA *cp)
 
 /* WARNING: Type propagation algorithm not settling */
 
-// [D]
-void BlockToMap(MAP_DATA *data)
+// [D] [T] - seems to be working as expected
+void BlockToMap(MAP_DATA* data)
 {
 	static int carLength; // offset 0x14
 	static int carWidth; // offset 0x18
@@ -1441,34 +1330,21 @@ void BlockToMap(MAP_DATA *data)
 	static int rdist; // offset 0x28
 	static MAP_DATA newdata; // offset 0x30
 
+	static int someVar;
 	static int offx;
 
-	int someTempVar;
+	bool overlap;
 
-	bool bVar1;
-	long uVar2;
-	long lVar3;
-	ulong uVar4;
-	VECTOR* pVVar5;
-	CAR_COSMETICS* pCVar6;
-	VECTOR* pVVar7;
-	CAR_DATA* cp;
-	int x;
-	int iVar8;
-	int iVar9;
-	int x_00;
-	long* plVar10;
-	int* tangent;
 	DRIVER2_CURVE* curve;
-	int* tangent_00;
-	int iVar11;
+
+	int x;
 	int y;
-	int* normal;
-	int iVar12;
-	int* normal_00;
-	int uVar13;
-	int iVar14;
-	int iVar15;
+
+	int* ndist;
+	int* fdist;
+	int* nearest;
+	int* furthest;
+
 	int corners[4][3];
 	int temp;
 	int tdist;
@@ -1477,204 +1353,48 @@ void BlockToMap(MAP_DATA *data)
 	int localr;
 	int localrd;
 
-	pCVar6 = (data->cp->ap).carCos;
-	carLength = (int)(pCVar6->colBox).vz;
-	carWidth = (int)(pCVar6->colBox).vx;
+	int dx;
+	int dy;
+	int dz;
+	int v;
+	int angle;
+	int s;
+	int c;
+	int tangent;
+	int normal;
+
+	CAR_COSMETICS* pCarCos = data->cp->ap.carCos;
+
+	carLength = pCarCos->colBox.vz;
+	carWidth = pCarCos->colBox.vx;
 
 	switch (data->intention)
 	{
 		case 0:
 		case 2:
 		case 3:
-			pVVar7 = data->pos;
-			pVVar5 = data->base;
-			y = pVVar7->vx - pVVar5->vx;
-			x = pVVar5->vy - pVVar7->vy;
-			x_00 = pVVar7->vz - pVVar5->vz;
+			dx = data->pos->vx - data->base->vx;
+			dy = data->base->vy - data->pos->vy;
+			dz = data->pos->vz - data->base->vz;
 
-			if (x < 1)
-				iVar15 = (int)(((data->cp->ap).carCos)->colBox).vy;
+			if (dy < 1)
+				v = pCarCos->colBox.vy;
 			else
-				iVar15 = data->size->vy;
+				v = data->size->vy;
 
-			if (iVar15 < x)
+			if (dy > v)
 				return;
 
-			x = data->size->vx * road_s;
-			iVar15 = data->size->vz * road_c;
-			iVar9 = FIXEDH(y * road_s + x_00 * road_c);
+			normal = FIXEDH(dx * road_c - dz * road_s);
+			tangent = FIXEDH(dx * road_s + dz * road_c);
 
-			if (x < 0)
-				x = -x;
+			someVar = FIXEDH(ABS(data->size->vx * road_s) + ABS(data->size->vz * road_c));
 
-			if (iVar15 < 0)
-				iVar15 = -iVar15;
-
-			someTempVar = FIXEDH(x + iVar15);
-			x = FIXEDH(y * road_c - x_00 * road_s);
-
-			if ((data->intention == 0) || ((data->cp->ai.l).dstate == 3)) 
+			if (data->intention == 0 || data->cp->ai.l.dstate == 3)
 			{
-				x_00 = iVar9;
-				if (iVar9 < 0)
-					x_00 = -iVar9;
+				v = (data->cp->hd.speed + 100) * 10;
 
-				y = ((data->cp->hd).speed + 100) * 10;
-
-				if (x_00 < y) 
-				{
-					x_00 = x;
-
-					if (x < 0) 
-						x_00 = -x;
-
-					if (x_00 < y) 
-					{
-						newdata.base = data->base;
-						newdata.pos = data->pos;
-						newdata.vel = data->vel;
-						newdata.size = data->size;
-						newdata.intention = 6;
-						newdata.map = data->local;
-						newdata.local = NULL;
-						newdata.cp = data->cp;
-						BlockToMap(&newdata);
-					}
-				}
-			}
-
-			if (iVar9 + someTempVar < 0)
-				return;
-
-			x_00 = data->size->vx * road_c;
-			y = data->size->vz * road_s;
-
-			if (x_00 < 0)
-				x_00 = -x_00;
-
-			if (y < 0)
-				y = -y;
-
-			pVVar5 = data->vel;
-			offx = FIXEDH(x_00 + y) + carWidth * 2;
-
-			if (pVVar5 != NULL) 
-			{
-				x_00 = pVVar5->vx * road_s + pVVar5->vz * road_c + 0x800;
-				y = FIXEDH(x_00) - (x_00 >> 0x1f) >> 1;
-				iVar9 = iVar9 + y;
-				x_00 = y;
-
-				if (y < 0)
-					x_00 = -y;
-
-				someTempVar = someTempVar + x_00;
-
-				if ((y < 0) && (data->intention == 0))
-					iVar9 = iVar9 / 2;
-	
-			}
-			rdist = (iVar9 - someTempVar) - carLength;
-
-			if (rdist < 0)
-				rdist = 0;
-
-			pVVar5 = data->vel;
-			left = x - offx;
-			x = x + offx;
-			right = x;
-			if (pVVar5 != NULL) 
-			{
-				x_00 = FIXEDH(pVVar5->vx * road_c + pVVar5->vz * road_s);
-				right = x + x_00;
-
-				if (x_00 < 1) 
-				{
-					left = left - x_00;
-					right = x;
-				}
-			}
-			break;
-		case 1:
-			pVVar5 = data->pos;
-			curve = Driver2CurvesPtr + (data->cp->ai.l).currentRoad + -0x4000;
-			y = pVVar5->vx - curve->Midx;
-			x = data->base->vy - pVVar5->vy;
-			x_00 = pVVar5->vz - curve->Midz;
-
-			if (x < 1)
-				iVar15 = (int)(((data->cp->ap).carCos)->colBox).vy;
-			else
-				iVar15 = data->size->vy;
-
-			if (iVar15 < x)
-				return;
-
-			lVar3 = ratan2(y, x_00);
-			iVar9 = data->size->vx;
-			uVar13 = lVar3 + 0x400U & 0xfff;
-			iVar12 = (int)rcossin_tbl[uVar13 * 2];
-			x = iVar9 * iVar12;
-			iVar8 = data->size->vz;
-			iVar11 = (int)rcossin_tbl[uVar13 * 2 + 1];
-			iVar15 = iVar8 * iVar11;
-			iVar14 = (((lVar3 - (data->cp->ai.l).base_Angle) + 0x800U & 0xfff) - 0x800) *
-				(data->cp->ai.l).base_Dir * ((int)(curve->inside * 0xb000) / 0x7000);
-			if (x < 0)
-				x = -x;
-
-			if (iVar15 < 0)
-				iVar15 = -iVar15;
-
-			someTempVar = FIXEDH(x + iVar15);
-
-			if (iVar14 + someTempVar < 0)
-				return;
-
-			iVar9 = iVar9 * iVar11;
-			iVar8 = iVar8 * iVar12;
-			if (iVar9 < 0)
-				iVar9 = -iVar9;
-
-			if (iVar8 < 0)
-				iVar8 = -iVar8;
-
-			pVVar5 = data->vel;
-			offx = FIXEDH(iVar9 + iVar8) + carWidth;
-
-			if (pVVar5 != NULL) 
-			{
-				x = pVVar5->vx * iVar12 + pVVar5->vz * iVar11 + 0x800;
-				iVar15 = FIXEDH(x) - (x >> 0x1f) >> 1;
-				iVar14 = iVar14 + iVar15;
-				x = iVar15;
-
-				if (iVar15 < 0)
-					x = -iVar15;
-
-				someTempVar = someTempVar + x;
-				if (iVar15 < 0)
-					iVar14 = iVar14 / 2;
-
-			}
-			x = (iVar14 - someTempVar) - carLength;
-
-			if (x < 0)
-				x = 0;
-
-			iVar15 = (data->cp->ai.l).base_Normal;
-			uVar2 = hypot(y, x_00);
-			cp = data->cp;
-			y = (iVar15 - uVar2) * cp->ai.l.base_Dir;
-			x_00 = ((cp->hd).speed + 100) * 10;
-			if (x < x_00)
-			{
-				iVar15 = y;
-
-				if (y < 0) 
-					iVar15 = -y;
-
-				if (iVar15 < x_00) 
+				if (v > ABS(tangent) && v > ABS(normal))
 				{
 					newdata.base = data->base;
 					newdata.pos = data->pos;
@@ -1683,212 +1403,301 @@ void BlockToMap(MAP_DATA *data)
 					newdata.intention = 6;
 					newdata.map = data->local;
 					newdata.local = NULL;
-					newdata.cp = cp;
+					newdata.cp = data->cp;
+
 					BlockToMap(&newdata);
 				}
 			}
 
-			pVVar5 = data->vel;
-			left = y - offx;
-			y = y + offx;
-			right = y;
-			rdist = x;
+			if (tangent + someVar < 0)
+				return;
 
-			if (pVVar5 != NULL)
+			if (data->vel != NULL)
 			{
-				x = FIXEDH(pVVar5->vx * iVar11 + pVVar5->vz * iVar12);
-				right = y + x;
-				if (x < 1) 
+				v = (data->vel->vx * road_s) + (data->vel->vz * road_c) + 2048;
+				v = FIXEDH(v) - (v >> 31) >> 1;
+
+				tangent += v;
+				someVar += ABS(v);
+
+				if (v < 0 && data->intention == 0)
+					tangent /= 2;
+			}
+
+			rdist = (tangent - someVar) - carLength;
+
+			if (rdist < 0)
+				rdist = 0;
+
+			offx = FIXEDH(ABS(data->size->vx * road_c) + ABS(data->size->vz * road_s)) + carWidth * 2;
+
+			left = normal - offx;
+			right = normal + offx;
+
+			if (data->vel != NULL)
+			{
+				v = FIXEDH(data->vel->vx * road_c + data->vel->vz * road_s);
+
+				if (v < 1)
 				{
-					left = left - x;
-					right = y;
+					left -= v;
+				}
+				else
+				{
+					right += v;
 				}
 			}
 
+			ldist = rdist;
+			break;
+		case 1:
+			curve = GET_CURVE(data->cp->ai.l.currentRoad);
+
+			dx = data->pos->vx - curve->Midx;
+			dy = data->base->vy - data->pos->vy;
+			dz = data->pos->vz - curve->Midz;
+
+			if (dy < 1)
+				v = pCarCos->colBox.vy;
+			else
+				v = data->size->vy;
+
+			if (dy > v)
+				return;
+
+			tangent = ratan2(dx, dz);
+
+			s = rcossin_tbl[((tangent + 1024u) & 0xfff) * 2];
+			c = rcossin_tbl[((tangent + 1024u) & 0xfff) * 2 + 1];
+
+			tangent = (((tangent - data->cp->ai.l.base_Angle) + 2048u & 0xfff) - 2048) *
+				data->cp->ai.l.base_Dir * ((curve->inside * 0xb000) / 0x7000);
+
+			someVar = FIXEDH(ABS(data->size->vx * s) + ABS(data->size->vz * c));
+
+			if (tangent + someVar < 0)
+				return;
+
+			if (data->vel != NULL)
+			{
+				v = (data->vel->vx * s) + (data->vel->vz * c) + 2048;
+				v = FIXEDH(v) - (v >> 31) >> 1;
+
+				tangent += v;
+				someVar += ABS(v);
+
+				if (v < 0)
+					tangent /= 2;
+
+			}
+
+			rdist = (tangent - someVar) - carLength;
+
+			if (rdist < 0)
+				rdist = 0;
+
+			normal = (data->cp->ai.l.base_Normal - hypot(dx, dz)) * data->cp->ai.l.base_Dir;
+			v = (data->cp->hd.speed + 100) * 10;
+
+			if (v > rdist && v > ABS(normal))
+			{
+				newdata.base = data->base;
+				newdata.pos = data->pos;
+				newdata.vel = data->vel;
+				newdata.size = data->size;
+				newdata.intention = 6;
+				newdata.map = data->local;
+				newdata.local = NULL;
+				newdata.cp = data->cp;
+
+				BlockToMap(&newdata);
+			}
+
+			offx = FIXEDH(ABS(data->size->vx * c) + ABS(data->size->vy * s)) + carWidth;
+
+			left = normal - offx;
+			right = normal + offx;
+
+			if (data->vel != NULL)
+			{
+				v = FIXEDH(data->vel->vx * c + data->vel->vz * s);
+
+				if (v < 1)
+					left -= v;
+				else
+					right += v;
+			}
+
+			ldist = rdist;
 			break;
 		case 4:
 		case 5:
 		case 6:
-			pVVar7 = data->pos;
-			pVVar5 = data->base;
-			x_00 = pVVar7->vx - pVVar5->vx;
-			x = pVVar5->vy - pVVar7->vy;
-			y = pVVar7->vz - pVVar5->vz;
+			dx = data->pos->vx - data->base->vx;
+			dy = data->base->vy - data->pos->vy;
+			dz = data->pos->vz - data->base->vz;
 
-			if (x < 1)
-				iVar15 = (int)(((data->cp->ap).carCos)->colBox).vy;
+			if (dy < 1)
+				v = pCarCos->colBox.vy;
 			else
-				iVar15 = data->size->vy;
-	
-			if (iVar15 < x)
+				v = data->size->vy;
+
+			if (dy > v)
 				return;
-	
-			uVar2 = hypot(x_00, y);
-			lVar3 = ratan2(x_00, y);
-			uVar13 = (lVar3 + 0x800U & 0xfff) - 0x800;
-			pVVar5 = data->size;
-			iVar9 = pVVar5->vx;
-			x = iVar9 * (int)rcossin_tbl[(uVar13 & 0xfff) * 2];
-			iVar15 = pVVar5->vz * (int)rcossin_tbl[(uVar13 & 0xfff) * 2 + 1];
 
-			if (x < 0)
-				x = -x;
+			angle = (ratan2(dx, dz) + 2048u & 0xfff) - 2048;
 
-			if (iVar15 < 0)
-				iVar15 = -iVar15;
-	
-			someTempVar = FIXEDH(x + iVar15);
-			x = (uVar2 - someTempVar) - carLength;
+			s = rcossin_tbl[(angle & 0xfff) * 2];
+			c = rcossin_tbl[(angle & 0xfff) * 2 + 1];
 
-			if ((x < 2000) ||
-				(iVar15 = iVar9 * (int)rcossin_tbl[(uVar13 & 0xfff) * 2 + 1], data->intention == 6)) 
+			someVar = FIXEDH(ABS(data->size->vx * s) + ABS(data->size->vz * c));
+
+			tangent = (hypot(dx, dz) - someVar) - carLength;
+
+			if (tangent < 2000 || data->intention == 6)
 			{
-				corners[0][0] = x_00 + iVar9;
-				corners[2][0] = x_00 - pVVar5->vx;
-				corners[0][1] = y + pVVar5->vz;
-				corners[1][1] = y - pVVar5->vz;
+				corners[0][0] = dx + data->size->vx;
+				corners[0][1] = dz + data->size->vz;
+				corners[2][0] = dx - data->size->vx;
+				corners[1][1] = dz - data->size->vz;
+
 				corners[1][0] = corners[0][0];
 				corners[2][1] = corners[0][1];
 				corners[3][0] = corners[2][0];
 				corners[3][1] = corners[1][1];
+
 				corners[0][2] = ratan2(corners[0][0], corners[0][1]);
 				corners[1][2] = ratan2(corners[1][0], corners[1][1]);
 				corners[2][2] = ratan2(corners[2][0], corners[2][1]);
 				corners[3][2] = ratan2(corners[3][0], corners[3][1]);
 
-				bVar1 = false;
-				x_00 = 1;
+				overlap = false;
+
 				left = 0;
 				right = 0;
-				x = corners[0][2] + 0x800 >> 10;
-				//tangent = corners + 5;	// corners[1][2] = 5
 
-				do {
-					y = corners[x_00][2];
+				int quad1 = corners[0][2] + 2048 >> 10;
+				//fdist = corners + 5;	// corners[1][2] = 5
 
-					if (0 < (int)(((corners[left][2] - y) + 0x800U & 0xfff) - 0x800)) 
-						left = x_00;
-
-					if (0 < (int)(((y - corners[right][2]) + 0x800U & 0xfff) - 0x800))
-						right = x_00;
-
-					iVar15 = y + 0x800 >> 10;
-					if ((x != iVar15) && (x + (x - (corners[0][2] + 0x800 >> 0x1f) >> 1) * -2 == iVar15 + (iVar15 - (y + 0x800 >> 0x1f) >> 1) * -2))
-						bVar1 = true;
-
-					x_00 = x_00 + 1;
-					//tangent = tangent + 3;
-				} while (x_00 < 4);
-
-				if (bVar1) 
+				for (int i = 1; i < 4; i++)
 				{
+					y = corners[i][2];
+
+					if (0 < (int)(((corners[left][2] - y) + 2048u & 0xfff) - 2048))
+						left = i;
+
+					if (0 < (int)(((y - corners[right][2]) + 2048u & 0xfff) - 2048))
+						right = i;
+
+					int quad2 = y + 2048 >> 10;
+
+					if ((quad1 != quad2) && (quad1 + (quad1 - (corners[0][2] + 2048 >> 0x1f) >> 1) * -2 == quad2 + (quad2 - (y + 2048 >> 0x1f) >> 1) * -2))
+						overlap = true;
+
+					//fdist = fdist + 3;
+				};
+
+				if (overlap)
+				{
+					temp = angle - data->cp->hd.direction;
+
+					left = temp - 512;
+					right = temp + 512;
+
 					rdist = 0;
-					right = uVar13 - (data->cp->hd).direction;
-					left = right + -0x200;
-					right = right + 0x200;
 				}
 				else if (left + right == 3)
 				{
-					uVar2 = 0xffffffff;
-					x = 0;
-					do {
+					tangent = -1;
 
-						if (((x != left) && (x != right)) && ((uVar4 = hypot(corners[x][0], corners[x][1]), uVar4 < uVar2 || (uVar2 == 0xffffffff))))
+					for (int i = 0; i < 4; i++)
+					{
+						if (i != left && i != right)
 						{
-							uVar2 = uVar4;
+							temp = hypot(corners[i][0], corners[i][1]);
+
+							if (tangent < temp || tangent == -1)
+								tangent = temp;
 						}
+					}
 
-						x = x + 1;
+					left = corners[left][2] - data->cp->hd.direction;
+					right = corners[right][2] - data->cp->hd.direction;
 
-					} while (x < 4);
-
-					x = (data->cp->hd).direction;
-					left = corners[left][2] - x;
-					right = corners[right][2] - x;
-					rdist = uVar2;
+					rdist = tangent;
 				}
 				else
 				{
-					lVar3 = ratan2(corners[left][0] - corners[right][0], corners[left][1] - corners[right][1]);
-					uVar13 = (lVar3 + 0xc00U & 0xfff) - 0x800 & 0xfff;
+					dx = corners[left][1] - corners[right][1];
+					dy = corners[left][0] - corners[right][0];
 
-					y = (data->cp->hd).direction;
+					int theta = (ratan2(dy, dx) + 3072u & 0xfff) - 2048;
 
-					rdist = FIXEDH(rcossin_tbl[uVar13 * 2] * corners[left][0] + rcossin_tbl[uVar13 * 2 + 1] * corners[left][1]);
+					int vx = rcossin_tbl[(theta & 0xfff) * 2] * corners[left][0];
+					int vz = rcossin_tbl[(theta & 0xfff) * 2 + 1] * corners[left][1];
 
-					left = corners[left][2] - y;
-					right = corners[right][2] - y;
+					left = corners[left][2] - data->cp->hd.direction;
+					right = corners[right][2] - data->cp->hd.direction;
 
-					if (rdist < 0)
-						rdist = -rdist;
-
+					rdist = ABS(FIXEDH(vx + vz));
 				}
 
-				left = (left + 0x800U & 0xfff) - 0x800;
-				right = (right + 0x800U & 0xfff) - 0x800;
+				left = (left + 2048u & 0xfff) - 2048;
+				right = (right + 2048u & 0xfff) - 2048;
 			}
 			else
 			{
-				x_00 = pVVar5->vz * (int)rcossin_tbl[(uVar13 & 0xfff) * 2];
-				y = ((uVar13 - (data->cp->hd).direction) + 0x800 & 0xfff) - 0x800;
+				normal = ((angle - data->cp->hd.direction) + 2048 & 0xfff) - 2048;
 
-				if (iVar15 < 0)
-					iVar15 = -iVar15;
+				offx = ratan2(FIXEDH(ABS(data->size->vx * c) + ABS(data->size->vz * s)) + carWidth, tangent);
 
-				if (x_00 < 0)
-					x_00 = -x_00;
+				left = normal - offx;
+				right = normal + offx;
 
-				offx = ratan2(FIXEDH(iVar15 + x_00) + carWidth, x);
-				left = y - offx;
-				right = y + offx;
-				rdist = x;
+				rdist = tangent;
 			}
 
+			ldist = rdist;
 			break;
-		default:
-			goto LAB_LEAD__000e97b4;
 	}
-
-	ldist = rdist;
 
 	switch (data->intention)
 	{
 		case 2:
 		case 3:
-			tangent = &rdist;
-			tangent_00 = &ldist;
-			normal = &left;
-			normal_00 = &right;
-
-			if (data->intention != 2)
+			if (data->intention == 2)
 			{
-				normal_00 = &left;
-				tangent = &ldist;
-				tangent_00 = &rdist;
-				normal = &right;
+				nearest = &left;
+				furthest = &right;
+				ndist = &ldist;
+				fdist = &rdist;
+			}
+			else
+			{
+				nearest = &right;
+				furthest = &left;
+				ndist = &rdist;
+				fdist = &ldist;
 			}
 
-			x = LeadValues.hWidth + (data->cp->hd).speed * LeadValues.hWidthMul;
+			x = LeadValues.hWidth + data->cp->hd.speed * LeadValues.hWidthMul;
 
-			if ((x < ldist) && (x < rdist))  // [A] was rdist; ghidra bug?
+			if (x < ldist && x < rdist)
 			{
-				*tangent_00 = *tangent_00 + carLength * 2;
-				x = *tangent + carLength * -2;
-				*tangent = x;
+				*ndist += carLength * 2;
+				*fdist = ABS(*fdist + carLength * -2);
 
-				if (x < 0)
-					*tangent = 0;
+				left -= carWidth;
+				right -= carWidth;
 
-				left = left - carWidth;
-				right = right + carWidth;
-				temp = *normal;
-				tdist = *tangent_00 + someTempVar * 2;
+				temp = *nearest;
+				tdist = *ndist + someVar * 2;
 
 				PosToIndex(&temp, &tdist, data->intention, data->cp);
-				PosToIndex(normal, tangent_00, data->intention, data->cp);
-				PosToIndex(normal_00, tangent, data->intention, data->cp);
+				PosToIndex(nearest, ndist, data->intention, data->cp);
+				PosToIndex(furthest, fdist, data->intention, data->cp);
 
-				*normal = temp;
+				*nearest = temp;
 				break;
 			}
 		case 0:
@@ -1899,82 +1708,67 @@ void BlockToMap(MAP_DATA *data)
 		case 4:
 			locall = left;
 			localr = right;
-			localld = rdist;
+			localld = ldist;
 			localrd = rdist;
+
 			PosToIndex(&locall, &localld, 6, data->cp);
 			PosToIndex(&localr, &localrd, 6, data->cp);
 
-			uVar13 = locall;
-
-			if (localr < locall) 
+			if (localr < locall)
 			{
-				while ((int)uVar13 < 0x29) 
+				for (int i = locall; i <= 40; i++)
 				{
-					if ((uVar13 < 0x29) && (localld < data->local[uVar13])) 
-						data->local[uVar13] = localld;
-
-					uVar13 = uVar13 + 1;
+					if (i <= 40 && localld < data->local[i])
+						data->local[i] = localld;
 				}
 
-				left = -0x800;
+				left = -2048;
 				PosToIndex(&locall, &localld, 6, data->cp);
-				uVar13 = locall;
-
-				if (localr < locall)
-					goto LAB_LEAD__000e96f0;
-
 			}
-			while ((int)uVar13 <= localr) 
+
+			for (int i = locall; i <= localr; i++)
 			{
-				if ((uVar13 < 0x29) && (localld < data->local[uVar13]))
-					data->local[uVar13] = localld;
-
-				uVar13 = uVar13 + 1;
+				if (i <= 40 && localld < data->local[i])
+					data->local[i] = localld;
 			}
+			/*
+			*
+			* FALLTHROUGH
+			*
+			*/
 		case 5:
 		case 6:
-		LAB_LEAD__000e96f0:
 			PosToIndex(&left, &ldist, data->intention, data->cp);
 			PosToIndex(&right, &rdist, data->intention, data->cp);
-			x = ldist;
 
-			if (right < left) 
+			if (right < left)
 			{
-				while (left < 0x29)
+				for (int i = left; i <= 40; i++)
 				{
-					if (((-1 < left) && (left < 0x29)) && (x < data->map[left])) 
-						data->map[left] = x;
-
-					left = left + 1;
+					if ((i >= 0 && i <= 40) && ldist < data->map[i])
+						data->map[i] = ldist;
 				}
 
-				left = -0x800;
+				left = -2048;
 				PosToIndex(&left, &ldist, data->intention, data->cp);
 			}
 
 			break;
-		default:
-			break;
 	}
-LAB_LEAD__000e97b4:
-	y = right;
-	x = left;
-	x_00 = ldist;
+
+	tangent = ldist;
+
+	int dtan = 0;
 
 	if (left < right)
-		iVar15 = (rdist - ldist) / (right - left);
-	else 
-		iVar15 = 0;
+		dtan = (rdist - ldist) / (right - left);
 
-	while (x <= y) 
+	for (int i = left; i <= right; i++)
 	{
-		if (((-1 < x) && (x < 0x29)) && (x_00 < data->map[x]))
-		{
-			data->map[x] = x_00;
-		}
+		if ((i >= 0 && i <= 40) && tangent < data->map[i])
+			data->map[i] = tangent;
 
-		x = x + 1;
-		x_00 = x_00 + iVar15;
+		tangent += dtan;
 	}
 }
 
@@ -2037,8 +1831,8 @@ LAB_LEAD__000e97b4:
 
 /* WARNING: Type propagation algorithm not settling */
 
-// [D]
-int IsOnMap(int x, int z, VECTOR *basePos, int intention, CAR_DATA *cp)
+// [D] [T]
+int IsOnMap(int x, int z, VECTOR* basePos, int intention, CAR_DATA* cp)
 {
 	DRIVER2_CURVE* curve;
 	int dx;
@@ -2046,46 +1840,37 @@ int IsOnMap(int x, int z, VECTOR *basePos, int intention, CAR_DATA *cp)
 	int normal;
 	int tangent;
 
-	dx = x - basePos->vx;
+	dx = ABS(x - basePos->vx);
+	dz = ABS(z - basePos->vz);
 
-	if (dx < 0)
-		dx = -dx;
+	if (dz < 3000)
+		return 1;
 
-	dz = z - basePos->vz;
-
-	if (dx < 3000)
-	{
-		if (dz < 0)
-			dz = -dz;
-
-		if (dz < 3000)
-			return 1;
-	}
-
-	switch (intention) 
+	switch (intention)
 	{
 		case 0:
 		case 2:
 		case 3:
 			tangent = FIXEDH(dx * road_s + dz * road_c);
 			normal = FIXEDH(dx * road_c - dz * road_s);
+
 			PosToIndex(&normal, &tangent, intention, cp);
 			break;
 		case 1:
-			curve = Driver2CurvesPtr + cp->ai.l.currentRoad - 0x4000;
+			curve = GET_CURVE(cp->ai.l.currentRoad);
 
-			x = x - curve->Midx;
-			z = z - curve->Midz;
+			dx = x - curve->Midx;
+			dz = z - curve->Midz;
 
-			tangent = (((ratan2(x, z) - cp->ai.l.base_Angle) + 0x800U & 0xfff) - 0x800) * cp->ai.l.base_Dir *(((int)curve->inside * 0xb000) / 0x7000);
-			normal = (cp->ai.l.base_Normal - hypot(x, z)) * cp->ai.l.base_Dir;
+			tangent = (((ratan2(dx, dz) - cp->ai.l.base_Angle) + 2048u & 0xfff) - 2048) * cp->ai.l.base_Dir * ((curve->inside * 0xb000) / 0x7000);
+			normal = (cp->ai.l.base_Normal - hypot(dx, dz)) * cp->ai.l.base_Dir;
 
 			PosToIndex(&normal, &tangent, intention, cp);
 			break;
 		case 4:
 		case 5:
 			tangent = hypot(dx, dz);
-			normal = ((ratan2(dx, dz) - (cp->hd).direction) + 0x800U & 0xfff) - 0x800;
+			normal = ((ratan2(dx, dz) - cp->hd.direction) + 2048u & 0xfff) - 2048;
 
 			PosToIndex(&normal, &tangent, intention, cp);
 
@@ -2094,18 +1879,17 @@ int IsOnMap(int x, int z, VECTOR *basePos, int intention, CAR_DATA *cp)
 
 			if (normal > -1 && normal < 42)
 				return 1;
-
 		default:
 			return 0;
 	}
 
-	if (0x5800 < tangent + 0x800U)
+	if ((tangent + 2048) > 0x5800)
 		return 0;
 
 	if (normal < -4)
 		return 0;
 
-	if (normal < 0x2e)
+	if (normal <= 45)
 		return 1;
 
 	return 0;
@@ -2333,7 +2117,7 @@ int roadAhead[41]; // offset 0x000ecde8
 int localMap[41]; // offset 0x000ecd40
 
 // [D] [A] overlapping stack variables - might be incorrect (i've tried to resolve them so far)
-void UpdateRoadPosition(CAR_DATA *cp, VECTOR *basePos, int intention)
+void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 {
 	short* psVar1;
 	short* psVar2;
@@ -2374,7 +2158,7 @@ void UpdateRoadPosition(CAR_DATA *cp, VECTOR *basePos, int intention)
 	int laneAvoid;
 	CELL_ITERATOR ci;
 
-	iVar16 = 0x28;
+	iVar16 = 40;
 	laneAvoid = -1;
 	piVar7 = roadAhead + 0x28;
 
@@ -2415,21 +2199,21 @@ void UpdateRoadPosition(CAR_DATA *cp, VECTOR *basePos, int intention)
 			iVar11 = IsOnMap((cellx * 0x800 - units_across_halved) + 0x400, (cellz * 0x800 - units_down_halved) + 0x400, basePos, intention, cp);
 			iVar13 = iVar13 + 1;
 
-			if (iVar11 != 0) 
+			if (iVar11 != 0)
 			{
 				iVar11 = cells_across;
 
-				if (RoadMapRegions[(cellx >> 5 & 1) + (cellz >> 5 & 1) * 2] == (cellx >> 5) + (cellz >> 5) * (iVar11 >> 5)) 
+				if (RoadMapRegions[(cellx >> 5 & 1) + (cellz >> 5 & 1) * 2] == (cellx >> 5) + (cellz >> 5) * (iVar11 >> 5))
 				{
 					ppco = GetFirstPackedCop(cellx, cellz, &ci, 1);
 
 					while (cop = UnpackCellObject(ppco, &ci.nearCell), cop != NULL)
 					{
 						model = modelpointers[cop->type];
-						if (((((uint)model->num_vertices - 3 < 300) && (model->num_point_normals < 300)) &&
+						if ((((model->num_vertices - 3 < 300) && (model->num_point_normals < 300)) &&
 							(model->num_polys < 300)) &&
 							((piVar7 = (int*)model->collision_block, piVar7 != NULL &&
-							((model->flags2 & 0x800) == 0)))) 
+								((model->flags2 & 0x800) == 0))))
 						{
 							iVar11 = *piVar7;
 							collide = (COLLISION_PACKET*)(piVar7 + 1);
@@ -2437,7 +2221,7 @@ void UpdateRoadPosition(CAR_DATA *cp, VECTOR *basePos, int intention)
 								do {
 									uVar6 = -cop->yang & 0x3f;
 
-									if (collide->type == 0) 
+									if (collide->type == 0)
 									{
 										iVar9 = collide->zsize << 0x10;
 										uVar17 = (cop->yang + collide->yang) * 0x100 & 0x3f00;
@@ -2465,7 +2249,7 @@ void UpdateRoadPosition(CAR_DATA *cp, VECTOR *basePos, int intention)
 
 										if (iVar8 < 0)
 											iVar8 = -iVar8;
-	
+
 										size.vz = FIXEDH(iVar14 - iVar8);
 									}
 									offset.vx = FIXEDH(collide->xpos * matrixtable[uVar6].m[0][0] + collide->zpos * matrixtable[uVar6].m[2][0]) + (cop->pos).vx;
@@ -2479,7 +2263,7 @@ void UpdateRoadPosition(CAR_DATA *cp, VECTOR *basePos, int intention)
 									data.size = &size;
 									data.map = roadAhead;
 									data.local = localMap;
-									
+
 									data.cp = cp;
 									data.base = basePos;
 									data.intention = intention;
@@ -2500,7 +2284,7 @@ void UpdateRoadPosition(CAR_DATA *cp, VECTOR *basePos, int intention)
 
 		cellx = cellx + 1;
 
-	} while (iVar16 < 0xb);
+	} while (iVar16 < 11);
 
 	lcp = &car_data[MAX_CARS - 1];
 
@@ -2557,20 +2341,23 @@ void UpdateRoadPosition(CAR_DATA *cp, VECTOR *basePos, int intention)
 		lcp--;
 	}
 
-	if ((cp->ai.l.dstate != 4) && (((iVar16 = ((cp->hd).speed + 100) * 8, localMap[20] < iVar16 || (localMap[21] < iVar16)) || (localMap[22] < iVar16))))
+	if (cp->ai.l.dstate != 4 && 
+		(localMap[20] < (cp->hd.speed + 100) * 8 || 
+		 localMap[21] < (cp->hd.speed + 100) * 8 || 
+		 localMap[22] < (cp->hd.speed + 100) * 8))
 	{
 		iVar16 = 1;
-		piVar7 = localMap + 0x17;
-		piVar5 = localMap + 0x13;
+		piVar7 = localMap + 23;
+		piVar5 = localMap + 19;
 
-		while (true) 
+		while (true)
 		{
-			iVar11 = *piVar5 + localMap[0x15 - iVar16] + localMap[0x16 - iVar16];
+			iVar11 = *piVar5 + localMap[21 - iVar16] + localMap[22 - iVar16];
 			iVar13 = piVar7[-2] + piVar7[-1] + *piVar7;
 
-			if ((iVar11 < iVar13) && (((cp->hd).speed + 100) * 0x18 < iVar13 * 2))
+			if (iVar11 < iVar13 && (cp->hd.speed + 100) * 24 < iVar13 * 2)
 			{
-				if (0xd < iVar16) 
+				if (iVar16 > 13)
 				{
 					cp->ai.l.panicCount = 2;
 					return;
@@ -2580,79 +2367,78 @@ void UpdateRoadPosition(CAR_DATA *cp, VECTOR *basePos, int intention)
 				return;
 			}
 
-			if ((iVar11 > iVar13) && (((cp->hd).speed + 100) * 0x18 < iVar11 * 2))
+			if (iVar11 > iVar13 && (cp->hd.speed + 100) * 24 < iVar11 * 2)
 				break;
 
-			if (iVar16 == 0x14) 
+			if (iVar16 == 20)
 			{
-				if (iVar11 <= iVar13) 
-					cp->ai.l.panicCount = 2;
-				else 
+				if (iVar11 > iVar13)
 					cp->ai.l.panicCount = -2;
+				else
+					cp->ai.l.panicCount = 2;
 			}
 
 			piVar7 = piVar7 + 1;
 			iVar16 = iVar16 + 1;
 			piVar5 = piVar5 + -1;
 
-			if (0x14 < iVar16) 
+			if (iVar16 > 20)
 				return;
 		}
-		if (0xd < iVar16)
-		{
-			cp->ai.l.panicCount = -2;
-			return;
-		}
 
-		cp->ai.l.panicCount = -1;
+		if (iVar16 > 13)
+			cp->ai.l.panicCount = -2;
+		else
+			cp->ai.l.panicCount = -1;
+	
 		return;
 	}
 
 	cp->ai.l.panicCount = 0;
-	bVar3 = intention < 2;
-	cellx = intention - 2;
 
-	if (bVar3) 
+	if (intention < 2)
 	{
-		iVar13 = 0x18;
-		piVar7 = roadAhead + 0x18;
+		
+		piVar7 = roadAhead + 24;
 		iVar16 = roadAhead[24];
 
+		i = 24;
 		do {
 			if (*piVar7 < iVar16)
 				iVar16 = *piVar7;
 
-			lVar4 = SquareRoot0(iVar13 + -0x15);
+			lVar4 = SquareRoot0(i - 21);
 
-			if (iVar16 < ((cp->hd).speed + 100) * lVar4)
+			if (iVar16 < (cp->hd.speed + 100) * lVar4)
 				*piVar7 = 0;
 
-			iVar13 = iVar13 + 1;
-			piVar7 = piVar7 + 1;
-		} while (iVar13 < 0x29);
+			i++;
+			piVar7++;
+		} while (i < 41);
 
-		iVar13 = 0x12;
-		piVar7 = roadAhead + 0x12;
+		
+		piVar7 = roadAhead + 18;
 		iVar16 = roadAhead[18];
 
+		i = 18;
 		do {
 			if (*piVar7 < iVar16)
 				iVar16 = *piVar7;
 
-			lVar4 = SquareRoot0(0x15 - iVar13);
+			lVar4 = SquareRoot0(21 - i);
 
-			if (iVar16 < ((cp->hd).speed + 100) * lVar4)
+			if (iVar16 < (cp->hd.speed + 100) * lVar4)
 				*piVar7 = 0;
 
-			iVar13 = iVar13 + -1;
-			piVar7 = piVar7 + -1;
-		} while (-1 < iVar13);
+			i--;
+			piVar7--;
+		} while (i > -1);
 	}
 
-	if (cellx < 2)
+	if (intention - 2U < 2)
 	{
 		piVar5 = roadAhead;
-		iVar16 = 0x28;
+		iVar16 = 40;
 		piVar7 = tmpMap;
 
 		do {
@@ -2671,62 +2457,58 @@ void UpdateRoadPosition(CAR_DATA *cp, VECTOR *basePos, int intention)
 			cellz = iVar16 - 3;
 			iVar11 = iVar16 + 1;
 
-			if ((int)cellz < iVar16 + 4) 
+			if (cellz < iVar16 + 4)
 			{
 				piVar7 = tmpMap + cellz;
 				do {
-					if (cellz < 0x29) {
+					if (cellz < 41)
+					{
 						roadAhead[iVar16] = roadAhead[iVar16] + *piVar7;
 					}
-					piVar7 = piVar7 + 1;
-					cellz = cellz + 1;
-					iVar13 = iVar13 + 1;
-				} while ((int)cellz < iVar16 + 4);
+					piVar7++;
+					cellz++;
+					iVar13++;
+				} while (cellz < iVar16 + 4);
 			}
-			if (iVar13 == 0) {
-				trap(7);
-			}
+
 			roadAhead[iVar16] = roadAhead[iVar16] / iVar13;
 			iVar16 = iVar11;
-		} while (iVar11 < 0x29);
+		} while (iVar11 < 41);
 	}
 
-	if (intention == 4) 
+	if (intention == 4)
 	{
 		iVar11 = 0;
-		iVar13 = 0x3f;
-		iVar16 = -0x15;
+		iVar13 = 63;
+		iVar16 = -21;
 		piVar7 = roadAhead;
 		do {
-			iVar9 = *piVar7 * 0x15;
+			iVar9 = *piVar7 * 21;
 			*piVar7 = iVar9;
 
-			if (iVar11 + -0x15 < 0)
+			if (iVar11 - 21 < 0)
 				*piVar7 = iVar9 / iVar13;
-			else 
+			else
 				*piVar7 = iVar9 / iVar16;
 
-			iVar13 = iVar13 + -2;
-			iVar16 = iVar16 + 2;
-			iVar11 = iVar11 + 1;
-			piVar7 = piVar7 + 1;
-		} while (iVar11 < 0x29);
+			iVar13 -= 2;
+			iVar16 += 2;
+			iVar11++;
+			piVar7++;
+		} while (iVar11 < 41);
 	}
 
-	if ((bVar3) && (cp->ai.l.nextTurn < 10))
+	if (intention < 2 && cp->ai.l.nextTurn < 10)
 	{
 		iVar16 = cp->ai.l.boringness;
 
-		if (iVar16 < 0x1f) 
+		if (iVar16 < 31)
 		{
 			iVar9 = cp->ai.l.width;
 			iVar11 = cp->ai.l.roadPosition;
 			iVar10 = iVar9 - cp->ai.l.d;
-			iVar13 = iVar11 - iVar10;
-			if (iVar13 < 0)
-				iVar13 = iVar10 - iVar11;
 
-			if ((iVar13 < iVar9 / 3) && (iVar16 < 0x1f))
+			if (ABS(iVar11 - iVar10) < iVar9 / 3 && iVar16 < 31)
 				cp->ai.l.boringness = iVar16 + 1;
 
 		}
@@ -2735,12 +2517,8 @@ void UpdateRoadPosition(CAR_DATA *cp, VECTOR *basePos, int intention)
 			iVar11 = cp->ai.l.width;
 			iVar13 = cp->ai.l.roadPosition;
 			iVar9 = iVar11 - cp->ai.l.d;
-			iVar16 = iVar13 - iVar9;
 
-			if (iVar16 < 0)
-				iVar16 = iVar9 - iVar13;
-
-			if (iVar16 < iVar11 / 3) 
+			if (ABS(iVar13 - iVar9) < iVar11 / 3)
 			{
 				cp->ai.l.avoid = cp->ai.l.width - cp->ai.l.d;
 				cp->ai.l.boringness = cp->ai.l.boringness + 1;
@@ -2748,88 +2526,81 @@ void UpdateRoadPosition(CAR_DATA *cp, VECTOR *basePos, int intention)
 
 			iVar11 = 0;
 			piVar7 = roadAhead;
-			laneAvoid = ((cp->ai.l.avoid + cp->ai.l.d) - cp->ai.l.width) / 100 + 0x15;
+			laneAvoid = (cp->ai.l.avoid + cp->ai.l.d - cp->ai.l.width) / 100 + 21;
+			
 			iVar13 = laneAvoid * 100;
 			iVar16 = laneAvoid * -100;
 
 			do {
 				iVar9 = iVar16;
 
-				if (-1 < laneAvoid - iVar11)
+				if (laneAvoid - iVar11 > -1)
 					iVar9 = iVar13;
 
 				if (iVar9 < cp->ai.l.width / 3)
 					*piVar7 = *piVar7 + cp->ai.l.boringness * -100;
 
-				piVar7 = piVar7 + 1;
-				iVar16 = iVar16 + 100;
-				iVar11 = iVar11 + 1;
-				iVar13 = iVar13 + -100;
-			} while (iVar11 < 0x29);
+				piVar7++;
+				iVar16 += 100;
+				iVar11++;
+				iVar13 -= 100;
+			} while (iVar11 < 41);
 
 			iVar9 = cp->ai.l.width;
 			iVar16 = iVar9 / 3;
 			iVar11 = cp->ai.l.avoid;
 			iVar9 = iVar9 - cp->ai.l.d;
-			iVar13 = iVar9 - iVar11;
-
-			if (iVar13 < 0) 
+			
+			if (ABS(iVar9 - iVar11) > iVar16)
 			{
-				if (iVar16 < iVar11 - iVar9)
-					cp->ai.l.boringness = 0;
-			}
-			else
-			{
-				if (iVar16 < iVar13) 
-					goto LAB_LEAD__000ea89c;
+				cp->ai.l.boringness = 0;
 			}
 		}
 	}
-	else 
+	else
 	{
-	LAB_LEAD__000ea89c:
 		cp->ai.l.boringness = 0;
 	}
 
-	if (1 < intention - 4U) 
+	if (intention - 4U > 1)
 	{
 		centre = cp->ai.l.d;
 		right = cp->ai.l.width;
-		i = 0;
+		
 		left = centre - right;
 		right = right + centre;
 
+		i = 0;
 		PosToIndex(&left, &i, intention, cp);
 		PosToIndex(&right, &i, intention, cp);
 		PosToIndex(&centre, &i, intention, cp);
 
-		if ((left < centre) && (centre < right)) 
+		if (left < centre && centre < right)
 		{
-			iVar16 = cp->ai.l.nextTurn;
-			if (((iVar16 == 0xf) || (iVar16 == 0x11)) && (1 < cellx)) 
+			if (intention - 2U > 1 && (cp->ai.l.nextTurn == 15 || cp->ai.l.nextTurn == 17))
 			{
-				cp->ai.l.nextTurn = iVar16 + -0x10;
+				cp->ai.l.nextTurn -= 16;
+				
 				i = left;
 				while (i <= right)
 				{
-					iVar16 = 2000;
-
-					if (0 < (i - centre) * cp->ai.l.nextTurn)
+					if ((i - centre) * cp->ai.l.nextTurn > 0)
 						iVar16 = -2000;
+					else
+						iVar16 = 2000;
 
-					if (i < 0x29) 
+					if (i < 41)
 					{
 						iVar13 = roadAhead[i];
 
-						if (0 < iVar13)
+						if (iVar13 > 0)
 							roadAhead[i] = iVar13 + iVar16;
-
 					}
-					i = i + 1;
+					
+					i++;
 				}
 			}
-			iVar16 = 0;
-
+			
 			// [A] bug fix
 			if (left < 0)
 				left = 0;
@@ -2837,7 +2608,8 @@ void UpdateRoadPosition(CAR_DATA *cp, VECTOR *basePos, int intention)
 			if (right < 0)
 				right = 0;
 
-			while (left < 0x29)
+			iVar16 = 0;
+			while (left < 41)
 			{
 				roadAhead[left] = roadAhead[left] - iVar16;
 
@@ -2845,12 +2617,11 @@ void UpdateRoadPosition(CAR_DATA *cp, VECTOR *basePos, int intention)
 					roadAhead[left] = 0;
 
 				left++;
-				iVar16 = iVar16 + 500;
+				iVar16 += 500;
 			}
 
 			iVar16 = 0;
-
-			while (right < 0x29) 
+			while (right < 41)
 			{
 				roadAhead[right] = roadAhead[right] - iVar16;
 
@@ -2858,197 +2629,112 @@ void UpdateRoadPosition(CAR_DATA *cp, VECTOR *basePos, int intention)
 					roadAhead[right] = 0;
 
 				right++;
-				iVar16 = iVar16 + 500;
+				iVar16 += 500;
 			}
 		}
 	}
 
-	if (cellx < 3)
+	if (intention - 2U < 3)
 	{
 	LAB_LEAD__000ead84:
-		cellz = 0x15;
-		uVar17 = 0x15;
+		cellz = 21;
+		uVar17 = 21;
 		uVar6 = 0;
-		iVar13 = 0x54;
+		iVar13 = 84;
 		iVar16 = roadAhead[21];
+		
 		do {
-			if (iVar16 < *(int*)((int)roadAhead + iVar13)) 
+			if (iVar16 < *(int*)((int)roadAhead + iVar13))
 			{
 				iVar16 = *(int*)((int)roadAhead + iVar13);
 				cellz = uVar17;
 			}
 
-			if ((int)uVar6 < 0)
+			if (uVar6 < 0)
 				uVar6 = -uVar6;
 
 			uVar6 = uVar6 + 1;
-			if ((uVar6 & 1) == 0) {
+			
+			if ((uVar6 & 1) == 0)
 				uVar6 = -uVar6;
-			}
+
 			uVar17 = uVar17 + uVar6;
 			iVar13 = uVar17 * 4;
-		} while (uVar17 < 0x29);
+		} while (uVar17 < 41);
 
-		if (cellx < 2) 
+		if (intention - 2U < 2)
 		{
-			iVar13 = (cp->hd).speed;
-
-			if (iVar13 < 0x65) 
-				iVar13 = LeadValues.tDist + iVar13 * LeadValues.tDistMul;
+			if (cp->hd.speed > 100)
+				cp->ai.l.roadForward = LeadValues.hDist + (cp->hd.speed - 100) * LeadValues.hDistMul;
 			else
-				iVar13 = LeadValues.hDist + (iVar13 + -100) * LeadValues.hDistMul;
-
-
-			if (iVar16 < iVar13) 
+				cp->ai.l.roadForward = LeadValues.tDist + cp->hd.speed * LeadValues.tDistMul;
+			
+			if (cp->ai.l.roadForward > iVar16)
 			{
-				iVar16 = cp->ai.l.roadForward;
-				iVar13 = iVar16 + -1;
-
-				if (-1 < iVar16)
-					iVar13 = -1;
-
-				cp->ai.l.roadForward = iVar13;
-				local_v0_4816 = 0x4e20;
-
+				if (cp->ai.l.roadForward > -1)
+					cp->ai.l.roadForward = -1;
+				else
+					cp->ai.l.roadForward -= 1;
+				
 				if (intention == 3)
-					local_v0_4816 = 0xffffb1e0;
-
-				cp->ai.l.roadPosition = local_v0_4816;
-
-				if (-0x15 < cp->ai.l.roadForward)
+					cp->ai.l.roadPosition = -20000;
+				else
+					cp->ai.l.roadPosition = 20000;
+				
+				if (cp->ai.l.roadForward > -21)
 					return;
 
-				SelectExit(cp, Driver2JunctionsPtr + cp->ai.l.nextJunction + -0x2000);
+				SelectExit(cp, GET_JUNCTION(cp->ai.l.nextJunction));
 				return;
 			}
 		}
 	}
-	else 
+	else
 	{
 		iVar16 = cp->ai.l.boringness;
 		cellz = cp->ai.l.lastTarget;
 
-		if (iVar16 < 0x1f) 
+		if (cp->ai.l.boringness < 31)
 		{
-		LAB_LEAD__000eac54:
-			iVar16 = cellz - 1;
-			if (iVar16 < 0) 
+			int spdThresh;
+
+			spdThresh = ((cp->hd.speed + 100) / 50) * 1024;
+
+			if(	roadAhead[MAX(0, MIN(40, cellz - 1))] <= spdThresh &&
+				roadAhead[MAX(0, MIN(40, cellz))] <= spdThresh &&
+				roadAhead[MAX(0, MIN(40, cellz + 1))] <= spdThresh)
 			{
-				iVar13 = 0;
-			}
-			else 
-			{
-				iVar13 = iVar16 * 4;
-
-				if (0x28 < iVar16) 
-					iVar13 = 0xa0;
-			}
-
-			iVar16 = (cp->hd).speed;
-			if (*(int*)((int)roadAhead + iVar13) <= ((iVar16 + 100) / 0x32) * 0x400)
-			{
-				if ((int)cellz < 0)
-				{
-					iVar13 = 0;
-				}
-				else 
-				{
-					uVar6 = cellz;
-					if (0x28 < (int)cellz)
-					{
-						uVar6 = 0x28;
-					}
-					iVar13 = uVar6 << 2;
-				}
-
-				if (*(int*)((int)roadAhead + iVar13) <= ((iVar16 + 100) / 0x32) * 0x400)
-				{
-					iVar13 = cellz + 1;
-					if (iVar13 < 0) 
-					{
-						iVar11 = 0;
-					}
-					else 
-					{
-						iVar11 = iVar13 * 4;
-						if (0x28 < iVar13)
-							iVar11 = 0xa0;
-					}
-
-					if (*(int*)((int)roadAhead + iVar11) <= ((iVar16 + 100) / 0x32) * 0x400)
-						goto LAB_LEAD__000ead84;
-				}
-			}
-		}
-		else 
-		{
-			iVar13 = (cellz - laneAvoid) * 100;
-			if (iVar13 < 0)
-				iVar13 = (cellz - laneAvoid) * -100;
-
-
-			if (iVar13 < cp->ai.l.width / 3)
 				goto LAB_LEAD__000ead84;
-
-			iVar13 = cellz - 1;
-			if (iVar13 < 0) 
-			{
-				iVar11 = 0;
 			}
-			else
-			{
-				iVar11 = iVar13 * 4;
-				if (0x28 < iVar13)
-					iVar11 = 0xa0;
-
-			}
-
-			iVar13 = (cp->hd).speed;
-
-			if (*(int*)((int)roadAhead + iVar11) <= ((iVar13 + 100) / 0x32) * 0x400) 
-			{
-				if ((int)cellz < 0) 
-				{
-					iVar11 = 0;
-				}
-				else 
-				{
-					uVar6 = cellz;
-
-					if (0x28 < (int)cellz)
-						uVar6 = 0x28;
-
-					iVar11 = uVar6 << 2;
-				}
-				if (*(int*)((int)roadAhead + iVar11) <= ((iVar13 + 100) / 0x32) * 0x400)
-				{
-					iVar11 = cellz + 1;
-					if (iVar11 < 0) 
-					{
-						iVar9 = 0;
-					}
-					else 
-					{
-						iVar9 = iVar11 * 4;
-						if (0x28 < iVar11)
-							iVar9 = 0xa0;
-
-					}
-					if (*(int*)((int)roadAhead + iVar9) <= ((iVar13 + 100) / 0x32) * 0x400)
-						goto LAB_LEAD__000ead84;
-				}
-			}
-			if (iVar16 < 0x1f) goto LAB_LEAD__000eac54;
 		}
+		else
+		{
+			if (ABS((cellz - laneAvoid) * 100) < cp->ai.l.width / 3)
+			{
+				goto LAB_LEAD__000ead84;
+			}
+
+			int spdThresh;
+
+			spdThresh = ((cp->hd.speed + 100) / 50) * 1024;
+
+			if(	roadAhead[MAX(0, MIN(40, cellz - 1))] <= spdThresh &&
+				roadAhead[MAX(0, MIN(40, cellz))] <= spdThresh &&
+				roadAhead[MAX(0, MIN(40, cellz + 1))] <= spdThresh)
+			{
+				goto LAB_LEAD__000ead84;
+			}
+		}
+		
 		iVar16 = roadAhead[cellz];
 		uVar6 = cellz - 2;
 		iVar13 = cellz + 2;
 
-		if ((int)uVar6 < iVar13)
+		if (uVar6 < iVar13)
 		{
 			piVar7 = roadAhead + uVar6;
 			do {
-				if ((uVar6 < 0x29) && (iVar16 < *piVar7)) 
+				if ((uVar6 < 41) && (iVar16 < *piVar7))
 				{
 					iVar16 = *piVar7;
 					cellz = uVar6;
@@ -3056,112 +2742,106 @@ void UpdateRoadPosition(CAR_DATA *cp, VECTOR *basePos, int intention)
 
 				uVar6 = uVar6 + 1;
 				piVar7 = piVar7 + 1;
-			} while ((int)uVar6 < iVar13);
+			} while (uVar6 < iVar13);
 		}
 	}
 
-	if ((bVar3) || (intention == 4)) 
+	if (intention < 2 || intention == 4)
 	{
-		cp->ai.l.roadForward = 0x1400;
-		iVar16 = 1;
+		cp->ai.l.roadForward = 5120;
 
-		if (0x15 < (int)cellz) 
+		if (cellz > 21)
 			iVar16 = -1;
+		else
+			iVar16 = 1;
 
-		if (cellz != 0x15) 
+		if (cellz == 21)
 		{
-			piVar7 = roadAhead + cellz;
+			cp->ai.l.lastTarget = cellz;
+		}
+		else
+		{
+			piVar7 = &roadAhead[cellz];
 			uVar6 = cellz;
 
 			do {
-				if (*piVar7 < cp->ai.l.roadForward)
+				if (cp->ai.l.roadForward > *piVar7)
 					cp->ai.l.roadForward = *piVar7;
 
 				uVar6 = uVar6 + iVar16;
 				piVar7 = piVar7 + iVar16;
-			} while (uVar6 != 0x15);
+			} while (uVar6 != 21);
 
 			cp->ai.l.lastTarget = cellz;
-			goto LAB_LEAD__000eb0c8;
 		}
 	}
-	else 
+	else if (intention == 5)
 	{
-		if (intention == 5)
+		if (cp->ai.l.recoverTime == 0 ||
+			cp->ai.l.recoverTime > 20)
 		{
-			iVar16 = cp->ai.l.recoverTime;
+			cp->ai.l.recoverTime = 0;
+	
+			piVar7 = &roadAhead[20];
+			iVar16 = roadAhead[19];
 
-			if ((iVar16 == 0) || (0x14 < iVar16))
-			{
-				piVar7 = roadAhead + 0x14;
-				iVar13 = 3;
-				cp->ai.l.recoverTime = 0;
-				iVar16 = roadAhead[19];
+			i = 0;
+			do {
+				if (*piVar7 < iVar16)
+					iVar16 = *piVar7;
+				
+				piVar7++;
+				i++;
+			} while (i < 4);
 
-				do {
-					if (*piVar7 < iVar16)
-						iVar16 = *piVar7;
-
-					iVar13 = iVar13 + -1;
-					piVar7 = piVar7 + 1;
-				} while (-1 < iVar13);
-
-				iVar13 = -1;
-
-				if (roadAhead[38] <= iVar16)
-					iVar13 = 1;
-
-				cp->ai.l.roadForward = iVar13;
-			}
-
-			if ((((0x5dc < roadAhead[21]) && (0x5dc < roadAhead[22])) && (0x5dc < roadAhead[20])) && (0x28 < (cp->hd).speed)) 
-			{
-				cp->ai.l.roadForward = 0;
-			}
+			if (roadAhead[38] > iVar16)
+				cp->ai.l.roadForward = -1;
+			else
+				cp->ai.l.roadForward = 1;
 		}
-		else
+
+		if (roadAhead[21] > 1500 && 
+			roadAhead[22] > 1500 && 
+			roadAhead[20] > 1500 && 
+			cp->hd.speed > 40)
 		{
 			cp->ai.l.roadForward = 0;
 		}
 	}
+	else
+	{
+		cp->ai.l.roadForward = 0;
+	}
 
-	cp->ai.l.lastTarget = cellz;
+	iVar16 = cellz - 21;
 
-LAB_LEAD__000eb0c8:
-	iVar16 = cellz - 0x15;
-
-	if (intention == 6) 
+	if (intention == 6)
 	{
 		while (FrameCnt != 0x78654321) {
 			trap(0x400);
 		}
 	}
 
-	if (intention - 4U < 2) 
+	if (intention - 4U < 2)
 	{
 		if (intention == 4)
-			iVar16 = iVar16 * 0x600;
+			iVar16 *= 1536;
 		else
-			iVar16 = iVar16 * 0x800;
+			iVar16 *= 2048;
 
-		iVar16 = ((iVar16 / 0x15 + 0x800U & 0xfff) + (cp->hd).direction & 0xfff) - 0x800;
+		cp->ai.l.roadPosition = ((iVar16 / 21 + 2048U & 0xfff) + cp->hd.direction & 4095) - 2048;
 	}
-	else 
+	else if (intention < 2)
 	{
-		if (bVar3) 
-		{
-			iVar16 = (iVar16 * 200 + cp->ai.l.width) - cp->ai.l.d;
-		}
-		else 
-		{
-			if (1 < cellx)
-				return;
-
-			iVar16 = iVar16 * 100 + cp->ai.l.width;
-		}
+		cp->ai.l.roadPosition = (iVar16 * 200 + cp->ai.l.width) - cp->ai.l.d;
 	}
+	else
+	{
+		if (intention - 2U > 1)
+			return;
 
-	cp->ai.l.roadPosition = iVar16;
+		cp->ai.l.roadPosition = iVar16 * 100 + cp->ai.l.width;
+	}
 }
 
 
@@ -3295,307 +2975,296 @@ LAB_LEAD__000eb0c8:
 	/* end block 2 */
 	// End Line: 5779
 
-// [D]
-void CheckCurrentRoad(CAR_DATA *cp)
+// [D] [T]
+void CheckCurrentRoad(CAR_DATA* cp)
 {
 	static int heading; // offset 0x1c
 	static int nextJunction; // offset 0x50
 	static VECTOR basePosition; // offset 0x60
 
-	bool bVar1;
-	int iVar2;
-	long lVar3;
-	long uVar4;
-	int cr;
-	int iVar5;
+	int checkNext;
+	int currentRoad;
 	DRIVER2_STRAIGHT* straight;
 	DRIVER2_JUNCTION* junction;
 	DRIVER2_CURVE* curve;
-	int iVar6;
-	int cr_00;
 
-	bVar1 = false;
+	checkNext = 0;
 
-	if ((((cp->hd).wheel[1].surface & 7) == 3) || (((cp->hd).wheel[3].surface & 7) == 3))
-		cr_00 = cp->ai.l.currentRoad;
+	// check if on grass
+	if ((cp->hd.wheel[1].surface & 7) == 3 || (cp->hd.wheel[3].surface & 7) == 3)
+		currentRoad = cp->ai.l.currentRoad;
 	else
-		cr_00 = GetSurfaceIndex((VECTOR*)(cp->hd).where.t);
+		currentRoad = GetSurfaceIndex((VECTOR*)cp->hd.where.t);
 
-	cr = cr_00 & 0xffffe000;
-	if (((cr == 0) || (cr == 0x4000)) || (cr == 0x2000)) 
+	if (IS_STRAIGHT_SURFACE(currentRoad) || IS_CURVED_SURFACE(currentRoad) || IS_JUNCTION_SURFACE(currentRoad))
 	{
 		cp->ai.l.offRoad = 0;
-		if ((cr_00 != cp->ai.l.lastRoad) && (cr_00 != cp->ai.l.currentRoad))
+
+		if (currentRoad != cp->ai.l.lastRoad && 
+			currentRoad != cp->ai.l.currentRoad)
 		{
 			cp->ai.l.direction = 0;
 		}
 	}
 	else
 	{
-		cr_00 = cp->ai.l.lastRoad;
+		currentRoad = cp->ai.l.lastRoad;
 		cp->ai.l.direction = cp->ai.l.lastDirection;
 	}
 
-	cr = cr_00 & 0xffffe000;
-
-	if (cr == 0x2000) 
+	if (IS_JUNCTION_SURFACE(currentRoad))
 	{
-		bVar1 = true;
-		nextJunction = cr_00;
-		goto LAB_LEAD__000eb96c;
+		checkNext = 1;
+		nextJunction = currentRoad;
 	}
-
-	if (cr < 0x2001) 
+	else if (IS_STRAIGHT_SURFACE(currentRoad))
 	{
-		if (cr == 0)
+		static int d; // offset 0x70
+		static int toGo; // offset 0x74
+		static int angle; // offset 0x78
+		static int s; // offset 0x7c
+		static int c; // offset 0x80
+		int fixedThresh;
+		int dx, dz;
+
+		straight = GET_STRAIGHT(currentRoad);
+		angle = straight->angle & 0xfff;
+
+		dx = cp->hd.where.t[0] - straight->Midx;
+		dz = cp->hd.where.t[2] - straight->Midz;
+		
+		if (straight->ConnectIdx[1] == -1)
+			nextJunction = straight->ConnectIdx[0];
+		else
+			nextJunction = straight->ConnectIdx[1];
+
+		if (cp->ai.l.direction == 0)
 		{
- 			static int d; // offset 0x70
- 			static int toGo; // offset 0x74
- 			static int angle; // offset 0x78
- 			static int s; // offset 0x7c
- 			static int c; // offset 0x80
-
-			straight = Driver2StraightsPtr + cr_00;
-			angle = (uint)(ushort)straight->angle & 0xfff;
-			iVar5 = (cp->hd).where.t[2] - straight->Midz;
-			nextJunction = (int)straight->ConnectIdx[1];
-			iVar6 = (cp->hd).where.t[0] - straight->Midx;
-
-			if (nextJunction == -1)
-				nextJunction = (int)straight->ConnectIdx[0];
-
-			if (cp->ai.l.direction == 0)
-			{
-				iVar2 = -1;
-				if ((((cp->hd).direction - angle) + 0x400 & 0x800) == 0) {
-					iVar2 = 1;
-				}
-				cp->ai.l.direction = iVar2;
-			}
-
-			if (cp->ai.l.direction == -1)
-			{
-				angle = angle ^ 0x800;
-				nextJunction = (int)straight->ConnectIdx[3];
-				if (nextJunction == -1) {
-					nextJunction = (int)straight->ConnectIdx[2];
-				}
-			}
-
-			s = (int)rcossin_tbl[(angle & 0xfff) * 2];
-			c = (int)rcossin_tbl[(angle & 0xfff) * 2 + 1];
-			d = FIXEDH(s * iVar6 + c * iVar5);
-			iVar2 = (cp->hd).speed;
-			toGo = (uint)(straight->length >> 1) - d;
-
-			if (iVar2 < 0x65)
-				iVar2 = LeadValues.tDist + iVar2 * LeadValues.tDistMul;
+			if (cp->hd.direction - angle + 1024 & 2048)
+				cp->ai.l.direction = -1;
 			else
-				iVar2 = LeadValues.hDist + (iVar2 + -100) * LeadValues.hDistMul;
-	
-			if (((toGo < iVar2) && (cp->ai.l.offRoad == 0)) && (cp->ai.l.dstate != 5))
+				cp->ai.l.direction = 1;
+		}
+
+		if (cp->ai.l.direction == -1)
+		{
+			angle ^= 2048;
+			
+			if (straight->ConnectIdx[3] == -1)
+				nextJunction = straight->ConnectIdx[2];
+			else
+				nextJunction = straight->ConnectIdx[3];
+		}
+
+		s = rcossin_tbl[(angle & 0xfff) * 2];
+		c = rcossin_tbl[(angle & 0xfff) * 2 + 1];
+		
+		d = FIXEDH(s * dx + c * dz);
+
+		toGo = (straight->length / 2) - d;
+		
+		if (cp->hd.speed > 100)
+			fixedThresh = LeadValues.hDist + (cp->hd.speed - 100) * LeadValues.hDistMul;
+		else
+			fixedThresh = LeadValues.tDist + cp->hd.speed * LeadValues.tDistMul;
+
+		if (toGo < fixedThresh && cp->ai.l.offRoad == 0 && cp->ai.l.dstate != 5)
+		{
+			checkNext = 1;
+			cp->ai.l.direction = 0;
+		}
+		else
+		{
+			if (cp->hd.speed > 100)
+				fixedThresh = LeadValues.hDist + (cp->hd.speed - 100) * LeadValues.hDistMul;
+			else
+				fixedThresh = LeadValues.tDist + cp->hd.speed * LeadValues.tDistMul;
+
+			if (toGo < fixedThresh * 3)
+				cp->ai.l.nextTurn += 16;
+
+			cp->ai.l.d = FIXEDH(-c * dx + s * dz);
+			cp->ai.l.width = ROAD_LANES_COUNT(straight) * 512;
+		}
+	}
+	else if (IS_CURVED_SURFACE(currentRoad))
+	{
+		static int angle; // offset 0x84
+		static int radius; // offset 0x88
+		static int dx; // offset 0x8c
+		static int dz; // offset 0x90
+		static int fixedThresh; // offset 0x94
+
+		curve = GET_CURVE(currentRoad);
+		dx = cp->hd.where.t[0] - curve->Midx;
+		dz = cp->hd.where.t[2] - curve->Midz;
+		angle = ratan2(dx, dz);
+
+		if (cp->ai.l.direction == 0)
+		{
+
+			if (angle - cp->hd.direction & 2048U)
+				cp->ai.l.direction = 1;
+			else
+				cp->ai.l.direction = -1;
+		}
+
+		if (cp->ai.l.direction == 1)
+		{
+			radius = (curve->inside + ROAD_LANES_COUNT(curve)) * 1024 - cp->ai.l.roadPosition;
+
+			if (cp->hd.speed > 100)
+				fixedThresh = (LeadValues.hDist + (cp->hd.speed - 100) * LeadValues.hDistMul) / radius;
+			else
+				fixedThresh = (LeadValues.tDist + cp->hd.speed * LeadValues.tDistMul) / radius;
+
+			if (fixedThresh >= 4096 && (curve->end - angle & 1U) != 0)
 			{
-				bVar1 = true;
+				if (curve->ConnectIdx[1] == -1)
+					nextJunction = curve->ConnectIdx[0];
+				else
+					nextJunction = curve->ConnectIdx[1];
+
+				checkNext = 1;
 				cp->ai.l.direction = 0;
 			}
-			else 
+			else
 			{
-				iVar2 = (cp->hd).speed;
-				if (iVar2 < 0x65)
-					iVar2 = LeadValues.tDist + iVar2 * LeadValues.tDistMul;
-				else
-					iVar2 = LeadValues.hDist + (iVar2 + -100) * LeadValues.hDistMul;
+				if (fixedThresh * 3 >= 4096 && (curve->end - angle & 1U))
+				{
+					cp->ai.l.nextTurn += 16;
+				}
 
-				if (toGo < iVar2 * 3)
-					cp->ai.l.nextTurn = cp->ai.l.nextTurn + 0x10;
-
-				cp->ai.l.d = FIXEDH(-c * iVar6 + s * iVar5);
-				cp->ai.l.width = ((uint)(u_char)straight->NumLanes & 0xf) << 9;
+				cp->ai.l.base_Normal = cp->ai.l.d = hypot(dx, dz);
+				cp->ai.l.base_Dir = 1;
+				cp->ai.l.base_Angle = angle;
+				cp->ai.l.d = cp->ai.l.d - (curve->inside * 1024 + ROAD_LANES_COUNT(curve) * 512);
+				cp->ai.l.width = ROAD_LANES_COUNT(curve) * 512;
 			}
-			goto LAB_LEAD__000eb96c;
 		}
-	}
-	else 
-	{
-		if (cr == 0x4000) 
+		else
 		{
- 			static int angle; // offset 0x84
- 			static int radius; // offset 0x88
- 			static int dx; // offset 0x8c
- 			static int dz; // offset 0x90
- 			static int fixedThresh; // offset 0x94
+			radius = curve->inside * 1024 + cp->ai.l.roadPosition;
 
-			curve = Driver2CurvesPtr + (cr_00 - 0x4000);
-			dx = (cp->hd).where.t[0] - curve->Midx;
-			dz = (cp->hd).where.t[2] - curve->Midz;
-			angle = ratan2(dx, dz);
+			if (cp->hd.speed > 100)
+				fixedThresh = (LeadValues.hDist + (cp->hd.speed - 100) * LeadValues.hDistMul) / radius;
+			else
+				fixedThresh = (LeadValues.tDist + cp->hd.speed * LeadValues.tDistMul) / radius;
 
-			if (cp->ai.l.direction == 0)
+			if (fixedThresh >= 4096 && (angle - curve->start & 1U))
 			{
-				iVar6 = 1;
-				if ((angle - (cp->hd).direction & 0x800U) == 0)
-					iVar6 = -1;
-
-				cp->ai.l.direction = iVar6;
-			}
-
-			if (cp->ai.l.direction == 1)
-			{
-				radius = ((uint)curve->inside + ((uint)(u_char)curve->NumLanes & 0xf)) * 0x400 - cp->ai.l.roadPosition;
-				iVar6 = (cp->hd).speed;
-				if (iVar6 < 0x65)
-				{
-					iVar6 = iVar6 * LeadValues.tDistMul;
-					iVar5 = LeadValues.tDist;
-				}
+				if (curve->ConnectIdx[3] == -1)
+					nextJunction = curve->ConnectIdx[2];
 				else
-				{
-					iVar6 = (iVar6 + -100) * LeadValues.hDistMul;
-					iVar5 = LeadValues.hDist;
-				}
+					nextJunction = curve->ConnectIdx[3];
 
-				fixedThresh = (iVar5 + iVar6) / radius;
-
-				if ((fixedThresh < 0x1000) || ((curve->end - angle & 1U) == 0)) 
-				{
-					if ((0xfff < fixedThresh * 3) && ((curve->end - angle & 1U) != 0)) 
-					{
-						cp->ai.l.nextTurn = cp->ai.l.nextTurn + 0x10;
-					}
-
-					uVar4 = hypot(dx, dz);
-					iVar6 = angle;
-					cp->ai.l.d = uVar4;
-					cp->ai.l.base_Normal = uVar4;
-					cp->ai.l.base_Dir = 1;
-					cp->ai.l.base_Angle = iVar6;
-					cp->ai.l.d = uVar4 - ((uint)curve->inside * 0x400 + ((uint)(u_char)curve->NumLanes & 0xf) * 0x200);
-				LAB_LEAD__000eb940:
-					cp->ai.l.width = ((u_char)curve->NumLanes & 0xf) << 9;
-					goto LAB_LEAD__000eb96c;
-				}
-
-				nextJunction = (int)curve->ConnectIdx[1];
-
-				if (nextJunction == -1)
-					nextJunction = (int)curve->ConnectIdx[0];
-
+				checkNext = 1;
+				cp->ai.l.direction = 0;
 			}
-			else 
+			else
 			{
-				iVar6 = (cp->hd).speed;
-				radius = curve->inside * 0x400 + cp->ai.l.roadPosition;
+				if (fixedThresh * 3 >= 4096 && (angle - curve->start & 1U))
+					cp->ai.l.nextTurn += 16;
 
-				if (iVar6 < 0x65)
-				{
-					iVar6 = iVar6 * LeadValues.tDistMul;
-					iVar5 = LeadValues.tDist;
-				}
-				else 
-				{
-					iVar6 = (iVar6 + -100) * LeadValues.hDistMul;
-					iVar5 = LeadValues.hDist;
-				}
-
-				fixedThresh = (iVar5 + iVar6) / radius;
-
-				if ((fixedThresh < 0x1000) || ((angle - curve->start & 1U) == 0)) 
-				{
-					if ((0xfff < fixedThresh * 3) && ((angle - curve->start & 1U) != 0))
-						cp->ai.l.nextTurn = cp->ai.l.nextTurn + 0x10;
-	
-					uVar4 = hypot(dx, dz);
-					iVar6 = angle;
-					cp->ai.l.d = uVar4;
-					cp->ai.l.base_Normal = uVar4;
-					cp->ai.l.base_Dir = -1;
-					cp->ai.l.base_Angle = iVar6;
-					cp->ai.l.d = ((uint)curve->inside * 0x400 + ((uint)(u_char)curve->NumLanes & 0xf) * 0x200) - uVar4;
-					goto LAB_LEAD__000eb940;
-				}
-				nextJunction = (int)curve->ConnectIdx[3];
-				if (nextJunction == -1)
-					nextJunction = (int)curve->ConnectIdx[2];
-
+				cp->ai.l.base_Normal = cp->ai.l.d = hypot(dx, dz);
+				cp->ai.l.base_Dir = -1;
+				cp->ai.l.base_Angle = angle;
+				cp->ai.l.d = curve->inside * 1024 + ROAD_LANES_COUNT(curve) * 512 - cp->ai.l.d;
+				cp->ai.l.width = ROAD_LANES_COUNT(curve) * 512;
 			}
-
-			bVar1 = true;
-			cp->ai.l.direction = 0;
-			goto LAB_LEAD__000eb96c;
 		}
 	}
-	cr_00 = cp->ai.l.lastRoad;
-LAB_LEAD__000eb96c:
-	cr = nextJunction;
-	if (bVar1) 
+	else
 	{
+		// continue
+		currentRoad = cp->ai.l.lastRoad;
+	}
+
+	if (checkNext)
+	{
+		currentRoad = nextJunction;
+		
 		static int diff;
-		cr_00 = nextJunction & 0xffffe000;
-		if (cr_00 == 0x2000) 
+
+		if (IS_JUNCTION_SURFACE(nextJunction))
 		{
-			junction = Driver2JunctionsPtr + nextJunction + -0x2000;
+			junction = GET_JUNCTION(nextJunction);
+			
 			if (nextJunction != cp->ai.l.nextJunction)
 			{
 				SelectExit(cp, junction);
 				cp->ai.l.nextJunction = nextJunction;
 			}
-
-			cr_00 = cp->ai.l.nextExit;
-			cr = (junction->ExitIdx[cr_00]);
-			heading = (cr_00 & 3) << 10;
+			
+			currentRoad = junction->ExitIdx[cp->ai.l.nextExit];
+			heading = (cp->ai.l.nextExit & 3) << 10;
 		}
-		else 
+		else
 		{
-			if (cr_00 == 0)
+			if (IS_STRAIGHT_SURFACE(nextJunction))
 			{
-				heading = (uint)(ushort)Driver2StraightsPtr[nextJunction].angle & 0xfff;
+				straight = GET_STRAIGHT(nextJunction);
+				heading = straight->angle & 0xfff;
 
-				if ((((cp->hd).direction - heading) + 0x400 & 0x800) != 0) 
+				if ((cp->hd.direction - heading + 0x400 & 0x800) != 0)
 				{
-					heading = heading ^ 0x800;
+					heading ^= 2048;
 				}
 			}
-			else if (cr_00 == 0x4000)
+			else if (IS_CURVED_SURFACE(nextJunction))
 			{
+				int angle;
 				static int dx; // offset 0x9c
 				static int dz; // offset 0xa0
 
-				dx = (cp->hd).where.t[0] - Driver2CurvesPtr[nextJunction + -0x4000].Midx;
-				dz = (cp->hd).where.t[2] - Driver2CurvesPtr[nextJunction + -0x4000].Midz;
-				lVar3 = ratan2(dx, dz);
+				curve = GET_CURVE(nextJunction);
 
-				if ((lVar3 - (cp->hd).direction & 0x800U) == 0)
-					heading = lVar3 - 0x400U & 0xfff;
+				dx = cp->hd.where.t[0] - curve->Midx;
+				dz = cp->hd.where.t[2] - curve->Midz;
+				
+				angle = ratan2(dx, dz);
+
+				if ((angle - cp->hd.direction & 2048U) != 0)
+					heading = angle + 1024U & 0xfff;
 				else
-					heading = lVar3 + 0x400U & 0xfff;
+					heading = angle - 1024U & 0xfff;
 			}
 		}
-		diff = ((heading - (cp->hd).direction) + 0x800 & 0xfff) - 0x800;
 
-		if ((cr & 0xffffe000) == 0)
+		diff = (heading - cp->hd.direction + 2048 & 0xfff) - 2048;
+
+		if (IS_STRAIGHT_SURFACE(currentRoad))
 		{
+			int cs, sn;
 			static int dx; // offset 0xa4
 			static int dz; // offset 0xa8
 			static int dist; // offset 0xac
 			static int offx; // offset 0xb0
 			static int offz; // offset 0xb4
 
-			straight = Driver2StraightsPtr + cr;
-			iVar5 = (int)rcossin_tbl[(heading & 0xfff) * 2 + 1];
-			offx = straight->Midx - (cp->hd).where.t[0];
-			iVar6 = (int)rcossin_tbl[(heading & 0xfff) * 2];
-			offz = straight->Midz - (cp->hd).where.t[2];
-			dist = -FIXEDH(offx * iVar6 + offz * iVar5);
-			cp->ai.l.d = FIXEDH(iVar5 * offx - iVar6 * offz);
-			cp->ai.l.width = ((uint)(u_char)straight->NumLanes & 0xf) << 9;
-			dx = FIXEDH(iVar6 * dist);
+			straight = GET_STRAIGHT(currentRoad);
+
+			sn = rcossin_tbl[(heading & 0xfff) * 2];
+			cs = rcossin_tbl[(heading & 0xfff) * 2 + 1];
+			
+			offx = straight->Midx - cp->hd.where.t[0];
+			offz = straight->Midz - cp->hd.where.t[2];
+			
+			dist = -FIXEDH(offx * sn + offz * cs);
+			
+			cp->ai.l.d = FIXEDH(cs * offx - sn * offz);
+			cp->ai.l.width = ROAD_LANES_COUNT(straight) * 512;
+			
+			dx = FIXEDH(sn * dist);
+			dz = FIXEDH(cs * dist);
+			
 			basePosition.vx = straight->Midx + dx;
-			basePosition.vy = (cp->hd).where.t[1];
-			dz = FIXEDH(iVar5 * dist);
+			basePosition.vy = cp->hd.where.t[1];
 			basePosition.vz = straight->Midz + dz;
 		}
-		else if ((cr & 0xffffe000) == 0x4000)
+		else if (IS_CURVED_SURFACE(currentRoad))
 		{
+			int radius;
 			static int angle; // offset 0xb8
 			static int dx; // offset 0xbc
 			static int dz; // offset 0xc0
@@ -3605,132 +3274,115 @@ LAB_LEAD__000eb96c:
 			static int offx; // offset 0xd0
 			static int offz; // offset 0xd4
 
-			curve = Driver2CurvesPtr + (cr - 0x4000);
-			dx = (cp->hd).where.t[0] - curve->Midx;
-			dz = (cp->hd).where.t[2] - curve->Midz;
-			iVar6 = (uint)curve->inside * 0x400 + ((uint)(u_char)curve->NumLanes & 0xf) * 0x200;
+			curve = GET_CURVE(currentRoad);
+			dx = cp->hd.where.t[0] - curve->Midx;
+			dz = cp->hd.where.t[2] - curve->Midz;
+			
+			radius = curve->inside * 1024 + ROAD_LANES_COUNT(curve) * 512;
 			angle = ratan2(dx, dz);
 
-			if ((angle - heading & 0x800) == 0)
+			// check directions
+			if (angle - heading & 0x800)
 			{
-				cr_00 = (uint)(ushort)curve->end & 0xfff;
-				basex = FIXEDH(rcossin_tbl[cr_00 * 2] * iVar6);
-				basez = FIXEDH(rcossin_tbl[cr_00 * 2 + 1] * iVar6);
-				uVar4 = hypot(dx, dz);
-				lVar3 = angle;
-				cp->ai.l.d = uVar4;
-				cp->ai.l.base_Normal = uVar4;
-				cp->ai.l.base_Dir = -1;
-				cp->ai.l.base_Angle = lVar3;
-				cp->ai.l.d = ((uint)curve->inside * 0x400 + ((uint)(u_char)curve->NumLanes & 0xf) * 0x200) - uVar4;
-			}
-			else 
-			{
-				cr_00 = (uint)(ushort)curve->start & 0xfff;
-				basex = FIXEDH(rcossin_tbl[cr_00 * 2] * iVar6);
-				basez = FIXEDH(rcossin_tbl[cr_00 * 2 + 1] * iVar6);
-				uVar4 = hypot(dx, dz);
-				lVar3 = angle;
-				cp->ai.l.d = uVar4;
-				cp->ai.l.base_Normal = uVar4;
+				basex = FIXEDH(rcossin_tbl[(curve->start & 0xfff) * 2] * radius);
+				basez = FIXEDH(rcossin_tbl[(curve->start & 0xfff) * 2 + 1] * radius);
+
+				cp->ai.l.base_Normal = cp->ai.l.d = hypot(dx, dz);
 				cp->ai.l.base_Dir = 1;
-				cp->ai.l.base_Angle = lVar3;
-				cp->ai.l.d = uVar4 - ((uint)curve->inside * 0x400 + ((uint)(u_char)curve->NumLanes & 0xf) * 0x200);
+				cp->ai.l.base_Angle = angle;
+				cp->ai.l.d = cp->ai.l.d - radius;
+			}
+			else
+			{
+				basex = FIXEDH(rcossin_tbl[(curve->end & 0xfff) * 2] * radius);
+				basez = FIXEDH(rcossin_tbl[(curve->end & 0xfff) * 2 + 1] * radius);
+
+				cp->ai.l.base_Normal = cp->ai.l.d = hypot(dx, dz);
+				cp->ai.l.base_Dir = -1;
+				cp->ai.l.base_Angle = angle;
+				cp->ai.l.d = radius - cp->ai.l.d;
 			}
 
-			cp->ai.l.width = ((uint)(u_char)curve->NumLanes & 0xf) << 9;
-			offx = basex - (cp->hd).where.t[0];
-			offz = basez - (cp->hd).where.t[2];
+			cp->ai.l.width = ROAD_LANES_COUNT(curve) * 512;
+			offx = basex - cp->hd.where.t[0];
+			offz = basez - cp->hd.where.t[2];
+			
 			dist = -FIXEDH(offx * rcossin_tbl[(heading & 0xfff) * 2] + offz * rcossin_tbl[(heading & 0xfff) * 2 + 1]);
 			dx = FIXEDH(rcossin_tbl[(heading & 0xfff) * 2] * dist);
-			basePosition.vx = basex + dx;
-			basePosition.vy = (cp->hd).where.t[1];
 			dz = FIXEDH(rcossin_tbl[(heading & 0xfff) * 2 + 1] * dist);
+			
+			basePosition.vx = basex + dx;
+			basePosition.vy = cp->hd.where.t[1];
 			basePosition.vz = basez + dz;
 		}
 		else
 		{
-			basePosition.vx = (cp->hd).where.t[0];
-			basePosition.vy = (cp->hd).where.t[1];
-			basePosition.vz = (cp->hd).where.t[2];
+			basePosition.vx = cp->hd.where.t[0];
+			basePosition.vy = cp->hd.where.t[1];
+			basePosition.vz = cp->hd.where.t[2];
 		}
 
-		iVar5 = diff;
-		iVar6 = diff;
+		cp->ai.l.currentRoad = currentRoad;
 
-		if (diff < 0)
-			iVar6 = -diff;
-
-		cp->ai.l.currentRoad = cr;
-
-		if (iVar6 < 0x200)
+		if (ABS(diff) < 512)
 		{
-			basePosition.vx = (cp->hd).where.t[0];
-			basePosition.vy = (cp->hd).where.t[1];
-			basePosition.vz = (cp->hd).where.t[2];
+			basePosition.vx = cp->hd.where.t[0];
+			basePosition.vy = cp->hd.where.t[1];
+			basePosition.vz = cp->hd.where.t[2];
 
 			UpdateRoadPosition(cp, &basePosition, 0);
 		}
-		else if (iVar5 < 1)
+		else if (diff < 1)
 		{
 			UpdateRoadPosition(cp, &basePosition, 2);
 		}
-		else 
+		else
 		{
 			UpdateRoadPosition(cp, &basePosition, 3);
 		}
 
-		SetTarget(cp, cr, heading, &nextJunction);
+		SetTarget(cp, currentRoad, heading, &nextJunction);
 	}
-	else 
+	else
 	{
-		basePosition.vx = (cp->hd).where.t[0];
-		basePosition.vy = (cp->hd).where.t[1];
-		basePosition.vz = (cp->hd).where.t[2];
-		iVar6 = cp->ai.l.d;
+		basePosition.vx = cp->hd.where.t[0];
+		basePosition.vy = cp->hd.where.t[1];
+		basePosition.vz = cp->hd.where.t[2];
 
-		if (iVar6 < 0)
-			iVar6 = -iVar6;
-	
-		if (((cp->ai.l.width + 0x800 < iVar6) && (((cp->hd).wheel[1].surface & 7) != 3)) && (((cp->hd).wheel[3].surface & 7) != 3)) 
+		// check for grass surface
+		// or if AI is too far from road
+		if (cp->ai.l.width + 2048 >= ABS(cp->ai.l.d) || 
+			(cp->hd.wheel[1].surface & 7) == 3 || 
+			(cp->hd.wheel[3].surface & 7) == 3)
 		{
-			cp->ai.l.offRoad = 1;
-			cp->ai.l.nextJunction = -1;
-			UpdateRoadPosition(cp, &basePosition, 4);
-			heading = (cp->hd).direction;
-			SetTarget(cp, cr_00, heading, &nextJunction);
-		}
-		else
-		{
-			cp->ai.l.currentRoad = cr_00;
-			cp->ai.l.lastRoad = cr_00;
+			cp->ai.l.currentRoad = currentRoad;
+			cp->ai.l.lastRoad = currentRoad;
 			cp->ai.l.lastDirection = cp->ai.l.direction;
 
-			if ((((cr_00 & 0xffffe000) == 0x4000) && ((int)(cr_00 & 0x1fff) < NumDriver2Curves)) && (-1 < (int)cr_00))
-			{
-				UpdateRoadPosition(cp, &basePosition, 1);
-			}
-			else 
-			{
-				UpdateRoadPosition(cp, &basePosition, 0);
-			}
+			UpdateRoadPosition(cp, &basePosition, IS_CURVED_SURFACE(currentRoad) ? 1 : 0);
 
-			heading = (cp->hd).direction;
-			SetTarget(cp, cr_00, heading, &nextJunction);
+			SetTarget(cp, currentRoad, cp->hd.direction, &nextJunction);
 
-			if ((((nextJunction & 0xffffe000U) == 0x2000) &&
-				((int)(nextJunction & 0x1fffU) < NumDriver2Junctions)) && (-1 < nextJunction)) 
+			if (IS_JUNCTION_SURFACE(nextJunction))
 			{
 				if (nextJunction != cp->ai.l.nextJunction)
 				{
-					SelectExit(cp, Driver2JunctionsPtr + nextJunction + -0x2000);
+					SelectExit(cp, GET_JUNCTION(nextJunction));
 					cp->ai.l.nextJunction = nextJunction;
 				}
 			}
-			else 
+			else
 			{
 				cp->ai.l.nextJunction = -1;
 			}
+		}
+		else
+		{
+			cp->ai.l.offRoad = 1;
+			cp->ai.l.nextJunction = -1;
+			
+			UpdateRoadPosition(cp, &basePosition, 4);
+			SetTarget(cp, currentRoad, cp->hd.direction, &nextJunction);
 		}
 	}
 }
@@ -3792,124 +3444,120 @@ LAB_LEAD__000eb96c:
 	/* end block 2 */
 	// End Line: 6938
 
-// [D]
-void SetTarget(CAR_DATA *cp, int cr, int heading, int *nextJunction)
+// [D] [T]
+void SetTarget(CAR_DATA* cp, int curRoad, int heading, int* nextJunction)
 {
 	static int dx = 0; // offset 0xd8
 	static int dz = 0; // offset 0xdc
 
-	short sVar1;
-	short sVar2;
-	ushort uVar3;
-	uint uVar4;
-	uint uVar5;
-	long lVar6;
-	int iVar7;
-	int iVar8;
-	int iVar9;
-	int iVar10;
 	DRIVER2_STRAIGHT* straight;
 	DRIVER2_CURVE* curve;
 
 	if (cp->ai.l.offRoad == 1)
 	{
-		uVar3 = *(ushort*)&cp->ai.l.roadPosition;
-		iVar8 = cp->ai.l.roadForward;
-		cp->ai.l.targetDir = uVar3;
-		uVar4 = (uint)uVar3 & 0xfff;
+		cp->ai.l.targetDir = cp->ai.l.roadPosition;
 
-		dx = FIXEDH(rcossin_tbl[uVar4 * 2 + 1] * iVar8);
-		dz = FIXEDH(rcossin_tbl[uVar4 * 2] * iVar8);
+		// get the road
+		dx = FIXEDH(rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2 + 1] * cp->ai.l.roadForward);
+		dz = FIXEDH(rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2] * cp->ai.l.roadForward);
 
-		cp->ai.l.targetX = (cp->hd).where.t[0] + dx;
-		cp->ai.l.targetZ = (cp->hd).where.t[2] + dz;
+		cp->ai.l.targetX = cp->hd.where.t[0] + dx;
+		cp->ai.l.targetZ = cp->hd.where.t[2] + dz;
 
 		return;
 	}
 
-	if ((cr & 0xffffe000U) == 0) 
+	if (IS_STRAIGHT_SURFACE(curRoad))
 	{
-		straight = Driver2StraightsPtr + cr;
+		int dx;
+		int dz;
+		int rx;
+		int rz;
+		int ux;
+		int uz;
+		int d;
+		int angle;
+		int mul;
+		
+		straight = GET_STRAIGHT(curRoad);
 		cp->ai.l.targetDir = straight->angle & 0xfff;
 
-		iVar8 = (int)straight->ConnectIdx[1];
+		if (straight->ConnectIdx[1] == -1)
+			*nextJunction = straight->ConnectIdx[0];
+		else
+			*nextJunction = straight->ConnectIdx[1];
 
-		if (iVar8 == -1)
-			iVar8 = (int)straight->ConnectIdx[0];
-
-		*nextJunction = iVar8;
-		iVar8 = cp->ai.l.direction;
-
-		if ((iVar8 == -1) || ((iVar8 == 0 && (((heading - cp->ai.l.targetDir) + 0x400U & 0x800) != 0))))
+		if (cp->ai.l.direction == -1 || 
+			cp->ai.l.direction == 0 && (heading - cp->ai.l.targetDir + 1024U & 2048) != 0)
 		{
-			cp->ai.l.targetDir = cp->ai.l.targetDir ^ 0x800;
-
-			iVar8 = (int)straight->ConnectIdx[3];
-
-			if (iVar8 == -1) 
-				iVar8 = (int)straight->ConnectIdx[2];
-
-			*nextJunction = iVar8;
+			cp->ai.l.targetDir ^= 2048;
+			
+			if (straight->ConnectIdx[3] == -1)
+				*nextJunction = straight->ConnectIdx[2];
+			else
+				*nextJunction = straight->ConnectIdx[3];
 		}
 
-		iVar10 = (cp->hd).where.t[0];
-		uVar4 = (int)cp->ai.l.targetDir + 0x400U & 0xfff;
-		iVar9 = (cp->hd).where.t[2];
-		sVar1 = rcossin_tbl[uVar4 * 2 + 1];
-		iVar7 = cp->ai.l.roadForward;
-		uVar5 = (uint)(ushort)cp->ai.l.targetDir & 0xfff;
-		sVar2 = rcossin_tbl[uVar5 * 2 + 1];
-		iVar8 = FIXEDH(rcossin_tbl[uVar4 * 2] * (straight->Midx - iVar10) + sVar1 * (straight->Midz - iVar9)) +
-				((uint)(u_char)straight->NumLanes & 0xf) * -0x200 + cp->ai.l.roadPosition;
+		angle = cp->ai.l.targetDir + 1024U & 0xfff;
+		d = cp->ai.l.targetDir & 0xfff;
+		
+		dx = straight->Midx - cp->hd.where.t[0];
+		dz = straight->Midz - cp->hd.where.t[2];
 
-		cp->ai.l.targetX = iVar10 + FIXEDH(rcossin_tbl[uVar5 * 2] * iVar7) + FIXEDH(iVar8 * rcossin_tbl[uVar4 * 2]);
-		cp->ai.l.targetZ = iVar9 + FIXEDH(sVar2 * iVar7) + FIXEDH(iVar8 * sVar1);
+		rx = FIXEDH(rcossin_tbl[d * 2] * cp->ai.l.roadForward);
+		rz = FIXEDH(rcossin_tbl[d * 2 + 1] * cp->ai.l.roadForward);
 
-		return;
+		ux = rcossin_tbl[angle * 2];
+		uz = rcossin_tbl[angle * 2 + 1];
+
+		// l.roadPosition gives the lane offset
+		// [A] it's obviously bugged somewhere as car always tends to be on left lanes
+		// on curves it's even WORSE
+		mul = FIXEDH(ux * dx + uz * dz) - ROAD_LANES_COUNT(straight) * 512 + cp->ai.l.roadPosition;
+		
+		ux = FIXEDH(mul * ux);
+		uz = FIXEDH(mul * uz);
+		
+		cp->ai.l.targetX = cp->hd.where.t[0] + rx + ux;
+		cp->ai.l.targetZ = cp->hd.where.t[2] + rz + uz;
 	}
-
-	if ((cr & 0xffffe000U) != 0x4000)
+	else if (IS_CURVED_SURFACE(curRoad))
 	{
-		return;
-	}
+		int angle;
+		int radius;
+		
+		curve = GET_CURVE(curRoad);
+		angle = ratan2(cp->hd.where.t[0] - curve->Midx, cp->hd.where.t[2] - curve->Midz);
 
-	curve = Driver2CurvesPtr + cr + -0x4000;
-	lVar6 = ratan2((cp->hd).where.t[0] - curve->Midx, (cp->hd).where.t[2] - curve->Midz);
-	iVar8 = cp->ai.l.direction;
+		if (cp->ai.l.direction == 1 || 
+			cp->ai.l.direction == 0 && (angle - heading & 2048U) != 0)
+		{
+			radius = (curve->inside + ROAD_LANES_COUNT(curve)) * 1024 - cp->ai.l.roadPosition + cp->hd.speed * 2;
 
-	if ((iVar8 == 1) || ((iVar8 == 0 && ((lVar6 - heading & 0x800U) != 0))))
-	{
-		iVar8 = (((uint)(u_char)curve->inside + ((uint)(u_char)curve->NumLanes & 0xf)) * 0x400 -
-			cp->ai.l.roadPosition) + (cp->hd).speed * 2;
+			angle += cp->ai.l.roadForward / radius;
+			cp->ai.l.targetDir = angle + 1024;
 
-		uVar4 = lVar6 + cp->ai.l.roadForward / iVar8;
-		cp->ai.l.targetDir = (short)uVar4 + 0x400;
-
-		iVar7 = (int)curve->ConnectIdx[1];
-
-		if (iVar7 != -1) 
-			*nextJunction = iVar7;
+			if (curve->ConnectIdx[1] != -1)
+				*nextJunction = curve->ConnectIdx[1];
+			else
+				*nextJunction = curve->ConnectIdx[0];
+		}
 		else
-			*nextJunction = (int)curve->ConnectIdx[0];
+		{
+			radius = curve->inside * 1024 + cp->ai.l.roadPosition - cp->hd.speed * 2;
+
+			angle -= cp->ai.l.roadForward / radius;
+			cp->ai.l.targetDir = angle - 1024;
+
+			if (curve->ConnectIdx[3] == -1)
+				*nextJunction = curve->ConnectIdx[2];
+			else
+				*nextJunction = curve->ConnectIdx[3];
+		}
+
+		cp->ai.l.targetX = curve->Midx + FIXEDH(radius * rcossin_tbl[(angle & 0xfff) * 2]);
+		cp->ai.l.targetZ = curve->Midz + FIXEDH(radius * rcossin_tbl[(angle & 0xfff) * 2 + 1]);
 	}
-	else 
-	{
-		iVar8 = (uint)(u_char)curve->inside * 0x400 + cp->ai.l.roadPosition + (cp->hd).speed * -2;
-
-		uVar4 = lVar6 - cp->ai.l.roadForward / iVar8;
-		cp->ai.l.targetDir = (short)uVar4 + -0x400;
-
-		iVar7 = (int)curve->ConnectIdx[3];
-
-		if (iVar7 == -1)
-			iVar7 = (int)curve->ConnectIdx[2];
-
-		*nextJunction = iVar7;
-	}
-
-	cp->ai.l.targetX = curve->Midx + FIXEDH(iVar8 * rcossin_tbl[(uVar4 & 0xfff) * 2]);
-	cp->ai.l.targetZ = curve->Midz + FIXEDH(iVar8 * rcossin_tbl[(uVar4 & 0xfff) * 2 + 1]);
-
 }
 
 
@@ -3963,141 +3611,78 @@ void SetTarget(CAR_DATA *cp, int cr, int heading, int *nextJunction)
 	/* end block 3 */
 	// End Line: 7242
 
-// [D]
-void SelectExit(CAR_DATA *cp, DRIVER2_JUNCTION *junction)
+// [D] [T]
+void SelectExit(CAR_DATA* cp, DRIVER2_JUNCTION* junction)
 {
-	int uVar1;
-	int uVar2;
-	int iVar3;
-	short* psVar4;
-	int iVar5;
-	int uVar6;
-	int iVar7;
-	int iVar8;
-	int uVar9;
-	int iVar10;
 	int el[4][2];
+	int rnd;
+	int onward; // $s1
+	int numExits; // $s2
+	int tmp; // $a1
+	int i; // $a2
+	int total; // $s0
 
-	iVar10 = 0;
-	uVar6 = 0;
-	iVar3 = cp->ai.l.lastRoad;
-	iVar8 = 0;
+	numExits = 0;
+	total = 0;
 
-	if (junction->ExitIdx[0] != iVar3) 
+	onward = (cp->ai.l.targetDir + 512U & 0xfff) >> 10;
+
+	// [A] was weird loop
+	for(i = 0; i < 4; i++)
 	{
-		psVar4 = junction->ExitIdx;
-
-		do {
-			psVar4 = psVar4 + 1;
-			iVar8 = iVar8 + 1;
-
-			if ((int)*psVar4 == iVar3)
-				goto LAB_LEAD__000ec664;
-
-		} while (iVar8 < 4);
-
-		if (junction->ExitIdx[iVar8] != iVar3)
+		if(junction->ExitIdx[i] == cp->ai.l.lastRoad)
 		{
-			uVar9 = (cp->ai.l.targetDir + 0x200U & 0xfff) >> 10;
-			goto LAB_LEAD__000ec684;
+			onward = i + 2U & 3;
+			break;
 		}
 	}
 
-LAB_LEAD__000ec664:
-	uVar9 = iVar8 + 2U & 3;
-LAB_LEAD__000ec684:
-
-	uVar1 = junction->ExitIdx[uVar9];
-	if (((((uVar1 & 0xe000) == 0) && ((int)((uint)uVar1 & 0x1fff) < NumDriver2Straights)) ||
-		(((uVar1 & 0xe000) == 0x4000 && ((int)((uint)uVar1 & 0x1fff) < NumDriver2Curves)))) &&
-		(-1 < junction->ExitIdx[uVar9]))
+	// [A] seems was unrolled loopp
+	for(i = -1; i < 2; i++)
 	{
-		iVar10 = 1;
-		el[0][0] = 0;
-		uVar6 = junction->flags >> (uVar9 << 3) & 0xf;
-		el[0][1] = uVar6;
-	}
+		int road;
 
-	uVar2 = uVar9 + 1;
-	uVar1 = junction->ExitIdx[uVar2 & 3];
-	iVar3 = iVar10;
-
-	if (((((uVar1 & 0xe000) == 0) && ((int)((uint)uVar1 & 0x1fff) < NumDriver2Straights)) ||
-		(((uVar1 & 0xe000) == 0x4000 && ((int)((uint)uVar1 & 0x1fff) < NumDriver2Curves)))) &&
-		(-1 < junction->ExitIdx[uVar2 & 3]))
-	{
-		iVar3 = iVar10 + 1;
-		el[iVar10][0] = 1;
-		uVar2 = junction->flags >> ((uVar2 & 3) << 3) & 0xf;
-		uVar6 = uVar6 + uVar2;
-		el[iVar10][1] = uVar2;
-	}
-
-	uVar2 = uVar9 - 1;
-	uVar1 = junction->ExitIdx[uVar2 & 3];
-	iVar8 = iVar3;
-
-	if (((((uVar1 & 0xe000) == 0) && ((int)((uint)uVar1 & 0x1fff) < NumDriver2Straights)) ||
-		(((uVar1 & 0xe000) == 0x4000 && ((int)((uint)uVar1 & 0x1fff) < NumDriver2Curves)))) &&
-		(-1 < junction->ExitIdx[uVar2 & 3]))
-	{
-		iVar8 = iVar3 + 1;
-		el[iVar3][0] = -1;
-		uVar2 = junction->flags >> ((uVar2 & 3) << 3) & 0xf;
-		uVar6 = uVar6 + uVar2;
-		el[iVar3][1] = uVar2;
-	}
-
-	iVar3 = iVar8;
-
-	if (uVar6 == 0)
-	{
-		iVar3 = iVar8 + 1;
-		uVar6 = 1;
-		el[iVar8][0] = 2;
-		el[iVar8][1] = 1;
-	}
-
-	iVar8 = leadRand();
-
-	if (iVar8 < 0)
-		iVar8 = -iVar8;
-
-	if (iVar3 != 0) 
-	{
-		iVar10 = 1;
-		iVar7 = el[0][1];
-
-		if (iVar8 % uVar6 < el[0][1]) 
+		tmp = (onward + i) & 3;
+		road = junction->ExitIdx[tmp];
+		
+		if(IS_CURVED_SURFACE(road) || IS_STRAIGHT_SURFACE(road))
 		{
-			cp->ai.l.nextTurn = el[0][0];
-		}
-		else
-		{
-			do {
-				iVar5 = iVar10;
+			el[numExits][0] = i;
+			el[numExits][1] = junction->flags >> (tmp << 3) & 0xf;
 
-				if (iVar3 <= iVar5)
-					goto LAB_LEAD__000ec924;
-
-				iVar7 = iVar7 + el[iVar5][1];
-				iVar10 = iVar5 + 1;
-			} while (iVar7 <= iVar8 % uVar6);
-
-			cp->ai.l.nextTurn = el[iVar5][0];
+			total += el[numExits][1];
+			numExits++;
 		}
 	}
 
-LAB_LEAD__000ec924:
+	if (total == 0)
+	{
+		el[numExits][0] = 2;
+		el[numExits][1] = 1;
+		numExits++;
+		total = 1;
+	}
 
-	cp->ai.l.nextExit = uVar9 + cp->ai.l.nextTurn & 3;
+	rnd = ABS(leadRand());
 
-	iVar3 = leadRand();
+	// [A] again, was a strange loop. Hope it works
+	tmp = 0;
+	for(i = 0; i < numExits; i++)
+	{
+		if(tmp + el[i][1] > rnd % total)
+		{
+			cp->ai.l.nextTurn = el[i][0];
+			break;
+		}
 
-	if (iVar3 < 0)
-		iVar3 = -iVar3;
+		tmp += el[i][1];
+	}
 
-	if (iVar3 == (iVar3 / 3) * 3)
+	cp->ai.l.nextExit = onward + cp->ai.l.nextTurn & 3;
+
+	rnd = ABS(leadRand());
+
+	if (rnd == (rnd / 3) * 3)
 		cp->ai.l.nextTurn = -cp->ai.l.nextTurn;
 
 }
@@ -4152,22 +3737,17 @@ LAB_LEAD__000ec924:
 	/* end block 3 */
 	// End Line: 7436
 
-// [D]
-ulong FreeRoamer(CAR_DATA *cp)
-{	
-	int i;
-	int playerCarId;
-	int seed;
-	int* piVar5;
-
+// [D] [T]
+ulong FreeRoamer(CAR_DATA* cp)
+{
 	LeadHorn(cp);
 	DamageBar.position = cp->totalDamage;
 
-	if ((((cp->hd).where.m[1][1] < 100) ||
-		((((cp->hd).wheel[1].surface & 7) == 1 && (((cp->hd).wheel[3].surface & 7) == 1)))) &&
-		(cp->ai.l.dstate != 8))
+	if (cp->ai.l.dstate != 8)
 	{
-		cp->totalDamage += 100;
+		// falling out of the world/sinking in water?
+		if (cp->hd.where.m[1][1] < 100 || ((cp->hd.wheel[1].surface & 7) == 1 && ((cp->hd.wheel[3].surface & 7) == 1)))
+			cp->totalDamage += 100;
 	}
 
 	cp->ai.l.ctt++;
@@ -4177,27 +3757,22 @@ ulong FreeRoamer(CAR_DATA *cp)
 
 	if (CameraCnt == 100)
 	{
-		playerCarId = player[0].playerCarId;
+		CAR_DATA* pCar = &car_data[player[0].playerCarId];
 
-		if (playerCarId >= 0) // [A] bug fix
+		if (CAR_INDEX(pCar) >= 0) // [A] bug fix
 		{
-			seed = (car_data[playerCarId].hd.where.t[0] + car_data[playerCarId].hd.where.t[2]) / (car_data[playerCarId].hd.speed + 1);
-
-			piVar5 = randState;
+			int seed = (pCar->hd.where.t[0] + pCar->hd.where.t[2]) / (pCar->hd.speed + 1);
 
 			randIndex = 0;
 
-			i = 16;
-			do {
-				randState[i--] = seed;
+			for (int i = NUM_STATES - 1; i > -1; i--)
+			{
+				randState[i] = seed;
 				seed = seed * 0x751 + 0x10cc2af;
-			} while (-1 < i);
+			}
 
-			i = 39;
-			do {
-				i--;
+			for (int i = NUM_ITERATIONS - 1; i > -1; i--)
 				leadRand();
-			} while (-1 < i);
 		}
 	}
 
@@ -4245,40 +3820,31 @@ ulong FreeRoamer(CAR_DATA *cp)
 	/* end block 3 */
 	// End Line: 10453
 
-// [D]
+// [D] [T]
 ulong hypot(long x, long y)
 {
-	bool bVar1;
-	int iVar2;
-	ulong uVar3;
-	int iVar4;
+	int t;
 
-	if (x < 0) {
-		x = -x;
-	}
-	bVar1 = x < y;
-	if (y < 0) {
-		y = -y;
-		bVar1 = x < y;
-	}
-	iVar2 = y;
-	if (bVar1) {
-		iVar2 = x;
+	x = ABS(x);
+	y = ABS(y);
+
+	if (x < y)
+	{
+		y = x;
 		x = y;
 	}
-	iVar4 = x >> 0xc;
 
-	if (x < 0x8000) 
+	if (x < 0x8000)
 	{
-		uVar3 = SquareRoot0(x * x + iVar2 * iVar2);
+		t = SquareRoot0(x * x + y * y);
 	}
-	else 
+	else
 	{
-		iVar2 = SquareRoot0((iVar2 / iVar4) * (iVar2 / iVar4) + 0x1000800);
-		uVar3 = x + iVar4 * (iVar2 + -0x1000);
+		t = FIXED(x);
+		t = x + t * (SquareRoot0((y / t) * (y / t) + 0x1000800) - 4096);
 	}
 
-	return uVar3;
+	return t;
 }
 
 
