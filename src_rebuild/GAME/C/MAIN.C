@@ -2637,6 +2637,63 @@ int redriver2_main(int argc, char** argv)
 			i++;
 		}
 #endif
+		else if (!_stricmp(argv[i], "-dump_missions"))
+		{
+			char input[32] = { NULL };
+
+			// load from BLK
+			sprintf(input, "MISSIONS\\MISSIONS.BLK");
+
+			if (FileExists(input))
+			{
+				for (int i = 0; i < 512; i++)
+				{
+					ulong header, length, offset;
+
+					char output[32] = { NULL };
+
+					LoadfileSeg(input, (char*)&header, i * 4, sizeof(long));
+
+					// skip empty missions
+					if (header == 0)
+					{
+						printInfo("- mission slot %d is empty\n", i);
+						continue;
+					}
+
+					offset = header & 0x7ffff;
+					length = header >> 19;
+
+					sprintf(output, "%sMISSIONS\\M%d.D2MS", gDataFolder, i);
+
+					if (!FileExists(output))
+					{
+						printInfo("- dumping mission %d to file '%s'\n", i, output);
+
+						FILE *f = fopen(output, "wb");
+
+						if (f == NULL)
+						{
+							printError("**** could not open '%s' for writing!\n", output);
+							continue;
+						}
+
+						char *tmp = (char *)malloc(length);
+
+						LoadfileSeg(input, tmp, offset, length);
+
+						fwrite(tmp, 1, length, f);
+						free(tmp);
+
+						fclose(f);
+					}
+					else
+					{
+						printWarning("- skipping mission %d ('%s' already exists)\n", i, output);
+					}
+				}
+			}
+		}
 		else
 		{
 			if (!commandLinePropsShown)
