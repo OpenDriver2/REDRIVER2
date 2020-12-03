@@ -41,5 +41,12 @@
 #define MAX_SIREN_NOISES		2
 #define MAX_CAR_NOISES			4
 
+// misc. limits
+#ifndef PSX
+#define NUM_START_POINTS 4
+#else
+// no additional spawn points
+#define NUM_START_POINTS 0
+#endif
 
 #endif // DRLIMITS_H

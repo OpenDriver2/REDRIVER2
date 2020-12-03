@@ -72,16 +72,197 @@
 
 int scr_z = 0;
 
-int levelstartpos[8][4] = {
-	{ 0x12B1, 0xFFFFFC00, 0xFFFC9794, 0},
-	{ 0xFFFC74AC, 0x800, 0xFFFC6961, 0},
-	{ 0x383CB, 0xFFFFFC00, 0xABE1E, 0},
-	{ 0x165EF, 0xFFFFFC00, 0xFFFAB3D9, 0},
-	{ 0x24548, 0x1813, 0xFFFE4A80, 0},
-	{ 0xFFFD67F0, 0x1813, 0x58228, 0},
-	{ 0xFFFFD6FC, 0xFFFFE7ED, 0xFFFFA980, 0},
-	{ 0xFFFFDCDD, 0xFFFFE7ED, 0xF8A7, 0},
+#ifndef PSX
+char *levelstartnames[8][NUM_START_POINTS] = {
+	//
+	// Chicago
+	//
+	{
+		"Downtown",
+		"Greektown",
+		"Chinatown",
+		"Safehouse",
+	},
+	//
+	// Havana
+	//
+	{
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+	},
+	//
+	// Vegas
+	//
+	{
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+	},
+	//
+	// Rio
+	//
+	{
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+	},
+	//
+	// ???
+	//
+	{
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+	},
+	//
+	// ???
+	//
+	{
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+	},
+	//
+	// ???
+	//
+	{
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+	},
+	//
+	// ???
+	//
+	{
+		NULL,
+		NULL,
+		NULL,
+		NULL,
+	},
 };
+#endif
+
+#ifndef PSX
+#define BEGIN_SPAWN_POINTS {
+#define END_SPAWN_POINTS },
+#define SPAWN_POINT(...) { __VA_ARGS__ },
+#define DEFAULT_SPAWN(...) SPAWN_POINT(__VA_ARGS__)
+#else
+#define BEGIN_SPAWN_POINTS
+#define END_SPAWN_POINTS
+#define SPAWN_POINT(...)
+#define DEFAULT_SPAWN(...) { __VA_ARGS__ },
+#endif
+LONGVECTOR levelstartpos[8][NUM_START_POINTS + 1] = {
+	//
+	// Chicago
+	//
+	BEGIN_SPAWN_POINTS
+		//SPAWN_POINT(-64840, -1024, -161500, 0) // Downtown car park
+		//SPAWN_POINT(6216, 0, -222456, 0) // Grant Park (default)
+
+		SPAWN_POINT(-95500, 1024, -40225, 0) // Downtown
+		SPAWN_POINT(-299895, 1024, -122195, 0) // Greektown
+		SPAWN_POINT(-95980, 0, -501540, 0) // Chinatown
+		SPAWN_POINT(16800, -1144, 142075, 0) // Safehouse
+
+		DEFAULT_SPAWN(4785, -1024, -223340, 0)
+	END_SPAWN_POINTS
+	//
+	// Havana
+	//
+	BEGIN_SPAWN_POINTS
+		SPAWN_POINT(-232276, 2048, -235167, 0) // TODO
+		SPAWN_POINT(-232276, 2048, -235167, 0) // TODO
+		SPAWN_POINT(-232276, 2048, -235167, 0) // TODO
+		SPAWN_POINT(-232276, 2048, -235167, 0) // TODO
+
+		DEFAULT_SPAWN(-232276, 2048, -235167, 0)
+	END_SPAWN_POINTS
+	//
+	// Vegas
+	//
+	BEGIN_SPAWN_POINTS
+		SPAWN_POINT(230347, -1024, 704030, 0) // TODO
+		SPAWN_POINT(230347, -1024, 704030, 0) // TODO
+		SPAWN_POINT(230347, -1024, 704030, 0) // TODO
+		SPAWN_POINT(230347, -1024, 704030, 0) // TODO
+
+		DEFAULT_SPAWN(230347, -1024, 704030, 0)
+	END_SPAWN_POINTS
+	//
+	// Rio
+	//
+	BEGIN_SPAWN_POINTS
+		SPAWN_POINT(91631, -1024, -347175, 0) // TODO
+		SPAWN_POINT(91631, -1024, -347175, 0) // TODO
+		SPAWN_POINT(91631, -1024, -347175, 0) // TODO
+		SPAWN_POINT(91631, -1024, -347175, 0) // TODO
+
+		DEFAULT_SPAWN(91631, -1024, -347175, 0)
+	END_SPAWN_POINTS
+	//
+	// ???
+	//
+	BEGIN_SPAWN_POINTS
+		SPAWN_POINT(148808, 6163, -112000, 0) // TODO
+		SPAWN_POINT(148808, 6163, -112000, 0) // TODO
+		SPAWN_POINT(148808, 6163, -112000, 0) // TODO
+		SPAWN_POINT(148808, 6163, -112000, 0) // TODO
+
+		DEFAULT_SPAWN(148808, 6163, -112000, 0)
+	END_SPAWN_POINTS
+	//
+	// ???
+	//
+	BEGIN_SPAWN_POINTS
+		SPAWN_POINT(-170000, 6163, 361000, 0) // TODO
+		SPAWN_POINT(-170000, 6163, 361000, 0) // TODO
+		SPAWN_POINT(-170000, 6163, 361000, 0) // TODO
+		SPAWN_POINT(-170000, 6163, 361000, 0) // TODO
+
+		DEFAULT_SPAWN(-170000, 6163, 361000, 0)
+	END_SPAWN_POINTS
+	//
+	// ???
+	//
+	BEGIN_SPAWN_POINTS
+		SPAWN_POINT(-10500, -6163, -22144, 0) // TODO
+		SPAWN_POINT(-10500, -6163, -22144, 0) // TODO
+		SPAWN_POINT(-10500, -6163, -22144, 0) // TODO
+		SPAWN_POINT(-10500, -6163, -22144, 0) // TODO
+
+		DEFAULT_SPAWN(-10500, -6163, -22144, 0)
+	END_SPAWN_POINTS
+	//
+	// ???
+	//
+	BEGIN_SPAWN_POINTS
+		SPAWN_POINT(-8995, -6163, 63655, 0) // TODO
+		SPAWN_POINT(-8995, -6163, 63655, 0) // TODO
+		SPAWN_POINT(-8995, -6163, 63655, 0) // TODO
+		SPAWN_POINT(-8995, -6163, 63655, 0) // TODO
+
+		DEFAULT_SPAWN(-8995, -6163, 63655, 0)
+	END_SPAWN_POINTS
+};
+
+#ifndef PSX
+char * GetLevelStartName(int level, int startpos)
+{
+	if (startpos == -1)
+		return "Default";
+
+	return (startpos < NUM_START_POINTS) ? levelstartnames[level][startpos] : NULL;
+}
+#endif
 
 XZPAIR gStartPos = { 0 };
 
@@ -3262,6 +3443,13 @@ void InitGameVariables(void)
 
 	ClearMem((char*)&lightsOnDelay, sizeof(lightsOnDelay));
 
+	int startpos = 0;
+
+	if (NumPlayers == 2)
+		startpos = NUM_START_POINTS; // fallback to default
+	else if (wantedStartPos != -1)
+		startpos = wantedStartPos;
+
 	PlayerStartInfo[0] = &ReplayStreams[0].SourceType;
 
 #ifdef CUTSCENE_RECORDER
@@ -3277,11 +3465,11 @@ void InitGameVariables(void)
 		PlayerStartInfo[0]->controlType = CONTROL_TYPE_PLAYER;
 		PlayerStartInfo[0]->flags = 0;
 
-		PlayerStartInfo[0]->rotation = levelstartpos[GameLevel][1];
+		PlayerStartInfo[0]->rotation = levelstartpos[GameLevel][startpos][1];
 
 		PlayerStartInfo[0]->position.vy = 0;
-		PlayerStartInfo[0]->position.vx = levelstartpos[GameLevel][0];
-		PlayerStartInfo[0]->position.vz = levelstartpos[GameLevel][2];
+		PlayerStartInfo[0]->position.vx = levelstartpos[GameLevel][startpos][0];
+		PlayerStartInfo[0]->position.vz = levelstartpos[GameLevel][startpos][2];
 
 		numPlayersToCreate = 1;
 
@@ -3296,11 +3484,11 @@ void InitGameVariables(void)
 			PlayerStartInfo[1]->controlType = CONTROL_TYPE_PLAYER;
 			PlayerStartInfo[1]->flags = 0;
 
-			PlayerStartInfo[1]->rotation = levelstartpos[GameLevel][1];
+			PlayerStartInfo[1]->rotation = levelstartpos[GameLevel][startpos][1];
 
 			PlayerStartInfo[1]->position.vy = 0;
-			PlayerStartInfo[1]->position.vx = levelstartpos[GameLevel][0] + 600;
-			PlayerStartInfo[1]->position.vz = levelstartpos[GameLevel][2];
+			PlayerStartInfo[1]->position.vx = levelstartpos[GameLevel][startpos][0] + 600;
+			PlayerStartInfo[1]->position.vz = levelstartpos[GameLevel][startpos][2];
 
 			numPlayersToCreate = NumPlayers;
 		}

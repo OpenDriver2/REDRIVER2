@@ -249,7 +249,47 @@ int SaveReplayToBuffer(char *buffer)
 		header->HaveStoredData = 0x91827364;	// -0x6e7d8c9c
 		memcpy(pt, &MissionStartData, sizeof(MISSION_DATA));
 	}
+#ifndef PSX
+	REPLAY_EXTRA_DATA extraData;
+	int extras = 0;
 
+	// set default values (-1 = disabled)
+	// if no overrides are set, the replay will contain junk data instead
+	memset(&extraData, -1, sizeof(REPLAY_EXTRA_DATA));
+
+	if (wantedTimeOfDay != -1)
+	{
+		extraData.wantedTimeOfDay = wantedTimeOfDay;
+		extras++;
+	}
+
+	if (wantedWeather != -1)
+	{
+		extraData.wantedWeather = wantedWeather;
+		extras++;
+	}
+
+	if (wantedStartPos != -1)
+	{
+		extraData.wantedStartPos = wantedStartPos;
+		extras++;
+	}
+
+	//
+	// TODO: max civ cars, max cops?
+	//
+
+	if (extras > 0)
+	{
+		// copy our overrides over
+		memcpy(&header->extraData, &extraData, sizeof(REPLAY_EXTRA_DATA));
+
+		// inform the use of one or more overrides
+		// once set, the game uses ALL known overrides!
+		header->HaveExtraData = 0xF12EB12D;
+	}
+
+#endif
 #ifdef PSX
 	return 0x3644;		// size?
 #else
@@ -592,6 +632,16 @@ int LoadReplayFromBuffer(char *buffer)
 		memcpy(&MissionStartData, pt, sizeof(MISSION_DATA));
 		gHaveStoredData = 1;
 	}
+#ifndef PSX
+	if (header->HaveExtraData == 0xF12EB12D)
+	{
+		wantedStartPos = header->extraData.wantedStartPos;
+		wantedTimeOfDay = header->extraData.wantedTimeOfDay;
+		wantedWeather = header->extraData.wantedWeather;
+		//
+		// TODO: max civ cars, max cops?
+	}
+#endif
 
 	return 1;
 }
