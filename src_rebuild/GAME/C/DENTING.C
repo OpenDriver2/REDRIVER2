@@ -680,7 +680,7 @@ void MoveHubcap()
 // [D] [T]
 void LoadDenting(int level)
 {
-	LoadfileSeg(DentingFiles[level], _other_buffer, 0, 0x31b7);
+	LoadfileSeg(DentingFiles[level], _other_buffer, 0, 12727);
 	ProcessDentLump(_other_buffer, 0);
 }
 
@@ -724,20 +724,16 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 			model = 10 - (MissionHeader->residentModels[0] + MissionHeader->residentModels[1] + MissionHeader->residentModels[2]);
 
 			if (model < 1) 
-			{
 				model = 1;
-			}
 			else if(model > 4)
-			{
 				model = 4;
-			}
 		}
 
 		if (model != -1) 
 		{
 			offset = *(int *)(lump_ptr + model * 4);
 
-			memcpy(gCarDamageZoneVerts[i], lump_ptr+offset, 300);
+			memcpy(gCarDamageZoneVerts[i], lump_ptr + offset, 300);
 			memcpy(gHDCarDamageZonePolys[i], lump_ptr + offset + 300, 420);
 			memcpy(gHDCarDamageLevels[i], lump_ptr + offset + 300 + 420, 255);
 		}

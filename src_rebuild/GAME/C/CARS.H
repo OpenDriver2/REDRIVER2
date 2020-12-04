@@ -1,6 +1,17 @@
 #ifndef CARS_H
 #define CARS_H
 
+#ifndef PSX
+#define MAX_DENTING_VERTS		256
+#define MAX_DENTING_UVS			256
+#define MAX_DENTING_LOD_UVS		256
+#else
+#define MAX_DENTING_VERTS		132
+#define MAX_DENTING_UVS			255
+#define MAX_DENTING_LOD_UVS		134
+#endif
+
+
 #define CAR_INDEX(cp)  (int)(cp-car_data)
 
 #define IS_ROADBLOCK_CAR(cp) (cp->controlType == CONTROL_TYPE_CIV_AI && (cp->controlFlags & CONTROL_FLAG_COP_SLEEPING))
@@ -23,9 +34,9 @@ extern MODEL* gCarCleanModelPtr[MAX_CAR_MODELS];
 extern int whichCP;		// car poly counter
 extern int baseSpecCP;	// special car poly counter
 
-extern DENTUVS gTempHDCarUVDump[MAX_CARS][255];
-extern SVECTOR gTempCarVertDump[MAX_CARS][132];
-extern DENTUVS gTempLDCarUVDump[MAX_CARS][134];
+extern SVECTOR gTempCarVertDump[MAX_CARS][MAX_DENTING_VERTS];
+extern DENTUVS gTempHDCarUVDump[MAX_CARS][MAX_DENTING_UVS];
+extern DENTUVS gTempLDCarUVDump[MAX_CARS][MAX_DENTING_LOD_UVS];
 
 extern MODEL *gHubcapModelPtr;
 extern MODEL *gCleanWheelModelPtr;
