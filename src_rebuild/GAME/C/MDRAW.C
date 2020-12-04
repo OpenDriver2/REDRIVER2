@@ -202,6 +202,12 @@ void DisplayPlayerPosition(void)
 
 	sprintf(string, "X: %d, Y: %d, Z: %d", player[0].pos[0], player[0].pos[1], player[0].pos[2]);
 	PrintString(string, 20, 210);
+
+	if (player[0].playerCarId != -1)
+	{
+		sprintf(string, "Rotation: %d", car_data[player[0].playerCarId].hd.direction);
+		PrintString(string, 20, 220);
+	}
 }
 
 

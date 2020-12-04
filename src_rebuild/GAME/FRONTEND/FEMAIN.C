@@ -20,6 +20,7 @@
 #include "C/FMVPLAY.H"
 #include "C/SCORES.H"
 #include "C/LOADSAVE.H"
+#include "C/MAIN.H"
 
 #include "MEMCARD/MAIN.H"
 
@@ -1159,7 +1160,33 @@ void DisplayOnScreenText(void)
 
 			FEPrintStringSized(ScreenTitle, 40, 400, 0xc00, 1, 64, 64, 64);
 		}
+#ifndef PSX
+		else if (bDoingCarSelect)
+		{
+			if (NumPlayers == 2)
+			{
+				if (currPlayer != 1)
+					FEPrintStringSized("Player 2", 400, 260, 0xc00, 0, 128, 128, 128);
+			}
+			else
+			{
+				char startPos[32];
+				char *posname = GetLevelStartName(GameLevel, wantedStartPos);
 
+				if (posname != NULL)
+				{
+					sprintf(startPos, "Location: %s", posname);
+				}
+				else
+				{
+					sprintf(startPos, "Location: %d", wantedStartPos + 1);
+				}
+
+				FEPrintStringSized(startPos, 400, 260, 0xc00, 0, 128, 128, 128);
+			}
+		}
+		else
+#endif
 		if (bInCutSelect) {
 			text = CutSceneNames[cutSelection + CutAmountsTotal[currCity]];
 
@@ -2551,9 +2578,10 @@ int CarSelectScreen(int bSetup)
 		}
 
 		if (currPlayer != 1) {
+#ifdef PSX
 			if (NumPlayers == 2)
 				FEPrintStringSized("Player 2", 400, 260, 0xc00, 0, 128, 128, 128);
-
+#endif
 			return 0;
 		}
 
@@ -2587,6 +2615,9 @@ int CarSelectScreen(int bSetup)
 		feVariableSave[2] = -1;
 		feVariableSave[3] = -1;
 
+#ifndef PSX
+		wantedStartPos = -1;
+#endif
 		lastCutCity = -1;
 		currSelIndex = 1;
 
@@ -2617,6 +2648,8 @@ int CarSelectScreen(int bSetup)
 			LoadImage(&rect, (u_long*)(_frontend_buffer + currCity * 0x8000));
 			DrawSync(0);
 		}
+
+		wantedStartPos = -1;
 #endif
 		currPlayer = 1;
 		bDoingCarSelect = 0;
@@ -2690,7 +2723,24 @@ int CarSelectScreen(int bSetup)
 	{
 		currSelIndex = pCurrButton->d - 1;
 	}
-
+#ifndef PSX
+#define LAST_START_POINT NUM_START_POINTS-1
+	else if (NumPlayers == 1)
+	{
+		if (fePad & 0x4)
+		{
+			FESound(2);
+			if (--wantedStartPos < -1)
+				wantedStartPos = LAST_START_POINT;
+		}
+		else if (fePad & 0x8)
+		{
+			FESound(2);
+			if (++wantedStartPos > LAST_START_POINT)
+				wantedStartPos = -1;
+		}
+	}
+#endif
 	return 0;
 }
 

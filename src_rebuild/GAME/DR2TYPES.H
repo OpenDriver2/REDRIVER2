@@ -964,6 +964,16 @@ struct REPLAY_PARAMETER_BLOCK
 	unsigned char weather;
 };
 
+struct REPLAY_EXTRA_DATA
+{
+	char wantedTimeOfDay;
+	char wantedWeather;
+	char wantedStartPos;
+	char reserved1;
+
+	int reserved2[4];
+};
+
 struct REPLAY_SAVE_HEADER
 {
 	unsigned long magic;
@@ -980,7 +990,14 @@ struct REPLAY_SAVE_HEADER
 	int wantedCar[2];
 	int MissionNumber;
 	int HaveStoredData;
+#ifndef PSX
+	// only valid if HaveExtraData is correct;
+	// otherwise, this is all junk data
+	REPLAY_EXTRA_DATA extraData;
+	int HaveExtraData;
+#else
 	int reserved2[6];
+#endif
 };
 
 struct REPLAY_STREAM_HEADER

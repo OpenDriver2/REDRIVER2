@@ -193,6 +193,7 @@ int wantedCar[2] = { -1, -1 };
 // [A]
 int wantedTimeOfDay = -1;
 int wantedWeather = -1;
+int wantedStartPos = -1;
 
 MS_TARGET* MissionTargets;
 unsigned long* MissionScript;
@@ -502,11 +503,14 @@ void LoadMission(int missionnum)
 	if (gCutsceneAsReplay == 0)
 #endif
 	{
-		PlayerStartInfo[0]->rotation = MissionHeader->playerStartRotation;
+		if (wantedStartPos == -1)
+		{
+			PlayerStartInfo[0]->rotation = MissionHeader->playerStartRotation;
 
-		PlayerStartInfo[0]->position.vx = MissionHeader->playerStartPosition.x;
-		PlayerStartInfo[0]->position.vz = MissionHeader->playerStartPosition.y;
-	
+			PlayerStartInfo[0]->position.vx = MissionHeader->playerStartPosition.x;
+			PlayerStartInfo[0]->position.vz = MissionHeader->playerStartPosition.y;
+		}
+		
 #ifdef DEBUG_OPTIONS
 		if(gStartPos.x != 0 && gStartPos.z != 0)
 		{
@@ -3592,15 +3596,15 @@ void PreProcessTargets(void)
 		{
 			PlayerStartInfo[1] = &ReplayStreams[1].SourceType;
 
-			ReplayStreams[1].SourceType.type = 1;
-			ReplayStreams[1].SourceType.position.vx = target->data[3];
-			ReplayStreams[1].SourceType.position.vy = 0;
-			ReplayStreams[1].SourceType.position.vz = target->data[4];
-			ReplayStreams[1].SourceType.rotation = target->data[5];
-			ReplayStreams[1].SourceType.model = target->data[7];
-			ReplayStreams[1].SourceType.palette = target->data[8];
-			ReplayStreams[1].SourceType.controlType = CONTROL_TYPE_PLAYER;
-			ReplayStreams[1].SourceType.flags = 0;
+			PlayerStartInfo[1]->type = 1;
+			PlayerStartInfo[1]->position.vx = target->data[3];
+			PlayerStartInfo[1]->position.vy = 0;
+			PlayerStartInfo[1]->position.vz = target->data[4];
+			PlayerStartInfo[1]->rotation = target->data[5];
+			PlayerStartInfo[1]->model = target->data[7];
+			PlayerStartInfo[1]->palette = target->data[8];
+			PlayerStartInfo[1]->controlType = CONTROL_TYPE_PLAYER;
+			PlayerStartInfo[1]->flags = 0;
 
 			if (target->data[9] & 3)
 				target->data[11] = -1;

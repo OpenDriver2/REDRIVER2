@@ -307,6 +307,7 @@ void GameStart(void)
 	// [A]
 	wantedWeather = -1;
 	wantedTimeOfDay = -1;
+	wantedStartPos = -1;
 
 	gHaveStoredData = 0;
 
