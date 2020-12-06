@@ -107,7 +107,7 @@ void IncrementClutNum(RECT16 *clut)
 {
 	clut->x += 16;
 
-	if (clut->x == 1024) 
+	if (clut->x >= 1024) 
 	{
 		clut->x = 960;
 		clut->y += 1;
@@ -226,7 +226,8 @@ char* unpackTexture(char *dest, char *src)
 void LoadTPageFromTIMs(int tpage2send)
 {
 	int i, j;
-	RECT16 temptpage;
+	RECT16 tmptpage;
+	RECT16 tmpclut;
 	SXYPAIR tpage;
 	int tpn;
 	
@@ -270,41 +271,53 @@ void LoadTPageFromTIMs(int tpage2send)
 		if (!FileExists(filename))
 			sprintf(filename, "LEVELS\\%s\\PAGE_%d\\%s_%d.TIM", LevelNames[GameLevel], tpage2send, textureName, i);
 
-		if(FileExists(filename))
+		if(!FileExists(filename))
+			continue;
+		
+		Loadfile(filename, _other_buffer);
+
+		// get TIM data
+		timClut = (TIMIMAGEHDR*)(_other_buffer + sizeof(TIMHDR));
+		timData = (TIMIMAGEHDR*)((char*)timClut + timClut->len);
+
+		// replace tpage
+		// upload it to ram
+		tmptpage.x = tpage.x + (details[i].x >> 2);
+		tmptpage.y = tpage.y + details[i].y;
+		tmptpage.w = timData->width;
+		tmptpage.h = timData->height;
+
+		LoadImage(&tmptpage, (u_long *)((char*)timData + sizeof(TIMIMAGEHDR)));
+
+		// get through all it's CLUTs
+		// and replace
+		for (j = 0; j < timClut->height; j++)
 		{
-			Loadfile(filename, _other_buffer);
+			int cpal = GetCarPalIndex(tpage2send);
+			int clutN;
 
-			// get TIM data
-			timClut = (TIMIMAGEHDR*)(_other_buffer + sizeof(TIMHDR));
-			timData = (TIMIMAGEHDR*)((char*)timClut + timClut->len);
+			if (j > 0 && cpal > 0)
+				clutN = civ_clut[cpal][i][j];
+			else
+				clutN = texture_cluts[tpage2send][i];
 
-			// replace tpage
-			// upload it to ram
-			temptpage.x = tpage.x + details[i].x / 4;
-			temptpage.y = tpage.y + details[i].y;
-			temptpage.w = timData->width;
-			temptpage.h = timData->height;
-
-			LoadImage(&temptpage, (u_long *)((char*)timData + sizeof(TIMIMAGEHDR)));
-
-			// get through all it's CLUTs
-			// and replace
-			for (j = 0; j < timClut->height; j++)
+			// FIXME:
+			// this is a wasteful way handling multiple palettes
+			// we just allocate new palettes to ensure that it would not glitch
+			if(clutN == 0 || j > 0 && cpal > 0)
 			{
-				int clut;
-
-				if (j > 0)
-					clut = civ_clut[GetCarPalIndex(tpage2send)][i][j];
-				else
-					clut = texture_cluts[tpage2send][i];
-
-				temptpage.x = (clut & 0x3f) << 4;
-				temptpage.y = (clut >> 6);
-				temptpage.w = 16;
-				temptpage.h = 1;
-
-				LoadImage(&temptpage, (u_long *)((char*)timClut + sizeof(TIMIMAGEHDR) + j * 32));
+				// add new CLUT
+				clutN = GetClut(clutpos.x, clutpos.y);
+				IncrementClutNum(&clutpos);
+				civ_clut[cpal][i][j] = clutN;
 			}
+			
+			tmpclut.x = (clutN & 0x3f) << 4;
+			tmpclut.y = (clutN >> 6);
+			tmpclut.w = 16;
+			tmpclut.h = 1;
+
+			LoadImage(&tmpclut, (u_long *)((char*)timClut + sizeof(TIMIMAGEHDR) + j * 32));
 		}
 	}
 }
@@ -326,6 +339,7 @@ int LoadTPageAndCluts(RECT16 *tpage, RECT16 *cluts, int tpage2send, char *tpagea
 		tpageaddress += 32;
 
 		texture_cluts[tpage2send][i] = GetClut(cluts->x, cluts->y);
+		
 		IncrementClutNum(cluts);
 	}
 
@@ -339,11 +353,6 @@ int LoadTPageAndCluts(RECT16 *tpage, RECT16 *cluts, int tpage2send, char *tpagea
 
 	texture_pages[tpage2send] = GetTPage(0, 0, tpage->x, tpage->y);
 	IncrementTPageNum(tpage);
-
-#ifndef PSX
-	// [A] try override
-	LoadTPageFromTIMs(tpage2send);
-#endif
 
 	return 1;
 }
@@ -697,6 +706,38 @@ void ProcessTextureInfo(char *lump_ptr)
 
 #ifndef PSX
 extern char g_CurrentLevelFileName[64];
+
+// [A] one-shot texture replacement
+void LoadPermanentTPagesFromTIM()
+{
+	int slot;
+
+	for (slot = 0; slot < 19; slot++)
+	{
+		if(tpageslots[slot] != 0xFF)
+		{
+			int tpage = tpageslots[slot];
+			LoadTPageFromTIMs(tpage);
+
+			// initialize ALL texture palettes
+			// this makes damaged textures appear properly
+			int pal = GetCarPalIndex(tpage);
+			
+			if (pal)
+			{
+				int carpal = GetCarPalIndex(tpage);
+
+				if(carpal > 0)
+				{
+					for (int i = 0; i < 32; i++)
+						civ_clut[carpal][i][0] = texture_cluts[tpage][i];
+				}
+
+			}
+		}
+	}
+}
+
 #endif // !PSX
 
 // [D]

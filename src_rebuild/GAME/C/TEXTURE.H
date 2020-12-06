@@ -59,6 +59,7 @@ extern void GetTextureDetails(char *name, TEXTURE_DETAILS *info); // 0x00080BB0
 #ifndef PSX
  // [A] - loads TIM files as level textures
 void LoadTPageFromTIMs(int tpage2send);
+void LoadPermanentTPagesFromTIM();
 #endif
 
 #endif

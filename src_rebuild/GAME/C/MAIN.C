@@ -527,6 +527,11 @@ void LoadGameLevel(void)
 	InitShadow();
 	//InitTextureNames();			// [A] I know that this is obsolete and used NOWHERE
 
+#ifndef PSX
+	// [A] override textures
+	LoadPermanentTPagesFromTIM();
+#endif
+	
 	ReportMode(1);
 }
 
