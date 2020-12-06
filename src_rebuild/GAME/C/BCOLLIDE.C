@@ -779,12 +779,12 @@ void DamageCar(CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVel
 				region = 3;
 		}
 		
-		if (0x1f4000 < strikeVel) 
+		if (strikeVel > 0x1f4000) 
 			strikeVel = 0x1f4000;
 
 		value = ((strikeVel / 300) * 1024) / 1500;
-		if (0x800 < value)
-			value = 0x800;
+		if (value > 2048)
+			value = 2048;
 	
 		value -= (value * cp->ap.damage[region] >> 0xd);
 

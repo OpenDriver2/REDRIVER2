@@ -184,6 +184,7 @@ void DentCar(CAR_DATA *cp)
 	{
 		dentptr = gTempHDCarUVDump[cp->id];
 
+		// reset UV coordinates
 		Poly = 0;
 		while (Poly < pCleanModel->num_polys)
 		{
@@ -200,8 +201,11 @@ void DentCar(CAR_DATA *cp)
 			while (Poly < MAX_DAMAGE_ZONE_POLYS && gHDCarDamageZonePolys[cp->ap.model][Zone][Poly] != 0xFF)
 			{
 				dentptr = gTempHDCarUVDump[cp->id] + gHDCarDamageZonePolys[cp->ap.model][Zone][Poly];
-				dentptr->u3 += (Damage >> 0xA);//(Damage << 0x10) >> 0x1a;
 
+				// add a damage level
+				dentptr->u3 += (Damage >> 0xA);
+
+				// clamp level
 				if (dentptr->u3 > 2)
 					dentptr->u3 = 2;
 
@@ -218,8 +222,12 @@ void DentCar(CAR_DATA *cp)
 
 		while (Poly < pCleanModel->num_polys)
 		{
-			dentptr->u3 = ((*DamPtr ^ 1 ^ (*DamPtr ^ 1 | dentptr->u3)) << 6);
+			// calculate the UV offset with strange XORs
+			if(dentptr->u3 > 0)
+				dentptr->u3 = (*DamPtr ^ 1 ^ (*DamPtr ^ 1 | dentptr->u3)) * 64;
+
 			dentptr++;
+			
 			DamPtr++;
 			Poly++;
 		}
@@ -689,8 +697,6 @@ void LoadDenting(int level)
 	ProcessDentLump(_other_buffer, 0);
 }
 
-
-
 // decompiled code
 // original method signature: 
 // void /*$ra*/ ProcessDentLump(char *lump_ptr /*$t2*/, int lump_size /*$a1*/)
@@ -711,12 +717,34 @@ void LoadDenting(int level)
 	/* end block 2 */
 	// End Line: 2048
 
+#ifndef PSX
+	// [A] loads car model from file
+char* LoadCarDentingFromFile(char* dest, int modelNumber)
+{
+	char* mem;
+	char filename[64];
+
+	sprintf(filename, "LEVELS\\%s\\CARMODEL_%d.DEN", LevelNames[GameLevel], modelNumber);
+	if(FileExists(filename))
+	{
+		mem = dest ? dest : (_other_buffer2 + modelNumber * 0x1000);
+
+		// get model from file
+		Loadfile(filename, mem);
+		return mem;
+	}
+
+	return NULL;
+}
+#endif
+
 // [D] [T]
 void ProcessDentLump(char *lump_ptr, int lump_size)
 {
 	int model;
 	int i;
 	int offset;
+	char* mem;
 
 	i = 0;
 
@@ -737,18 +765,27 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 		if (model != -1) 
 		{
 			offset = *(int *)(lump_ptr + model * 4);
+			mem = lump_ptr;
+#ifndef PSX
+			char* newDenting = LoadCarDentingFromFile(NULL, model);
+			if(newDenting)
+			{
+				mem = newDenting;
+				offset = 0;
+			}
+#endif
 
-			memcpy(gCarDamageZoneVerts[i], lump_ptr + offset, NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_VERTS);
+			memcpy(gCarDamageZoneVerts[i], mem + offset, NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_VERTS);
 			offset += NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_VERTS;
 			
-			memcpy(gHDCarDamageZonePolys[i], lump_ptr + offset, NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_POLYS);
+			memcpy(gHDCarDamageZonePolys[i], mem + offset, NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_POLYS);
 			offset += NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_POLYS;
 			
-			memcpy(gHDCarDamageLevels[i], lump_ptr + offset, MAX_DAMAGE_LEVELS);
+			memcpy(gHDCarDamageLevels[i], mem + offset, MAX_FILE_DAMAGE_LEVELS);
 		}
 
 		i++;
-	};
+	}
 }
 
 
