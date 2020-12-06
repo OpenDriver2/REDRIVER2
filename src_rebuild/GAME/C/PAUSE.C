@@ -909,7 +909,11 @@ void InitaliseMenu(PAUSEMODE mode)
 					if (NumPlayers == 1)
 					{
 						pNewMenu = &DrivingGameFinishedHeader;
-						allownameentry = 0;
+						gMissionCompletionState = mode;
+					}
+					else
+					{
+						pNewMenu = &MultiplayerFinishedHeader;
 						gMissionCompletionState = mode;
 					}
 					break;
@@ -920,13 +924,23 @@ void InitaliseMenu(PAUSEMODE mode)
 					{
 						pNewMenu = &DrivingGameFinishedHeader;
 						gMissionCompletionState = mode;
-						allownameentry = NumPlayers;
+						allownameentry = 1;
+					}
+					else
+					{
+						pNewMenu = &MultiplayerFinishedHeader;
+						gMissionCompletionState = mode;
 					}
 					break;
 				default:
 					if (NumPlayers == 1)
 					{
 						pNewMenu = &TakeARideFinishedHeader;
+						gMissionCompletionState = mode;
+					}
+					else
+					{
+						pNewMenu = &MultiplayerFinishedHeader;
 						gMissionCompletionState = mode;
 					}
 					break;
@@ -951,7 +965,7 @@ void InitaliseMenu(PAUSEMODE mode)
 					{
 						pNewMenu = &DrivingGameFinishedHeader;
 						gMissionCompletionState = mode;
-						allownameentry = NumPlayers;
+						allownameentry = 1;
 					}
 					else
 					{
@@ -962,6 +976,18 @@ void InitaliseMenu(PAUSEMODE mode)
 				case GAME_PURSUIT:
 					pNewMenu = &ChaseGameFinishedHeader;
 					gMissionCompletionState = mode;
+					break;
+				default:
+					if (NumPlayers == 1)
+					{
+						pNewMenu = &TakeARideFinishedHeader;
+						gMissionCompletionState = mode;
+					}
+					else
+					{
+						pNewMenu = &MultiplayerFinishedHeader;
+						gMissionCompletionState = mode;
+					}
 					break;
 			}
 			break;
@@ -997,7 +1023,8 @@ void InitaliseMenu(PAUSEMODE mode)
 	if(pNewMenu)
 	{
 		VisibleMenu = 0;
-		VisibleMenus[0] = pNewMenu;
+		VisibleMenus[VisibleMenu] = pNewMenu;
+
 		SetupMenu(pNewMenu, 0);
 	}
 	else
