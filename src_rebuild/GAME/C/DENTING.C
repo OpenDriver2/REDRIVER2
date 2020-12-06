@@ -22,9 +22,15 @@ char* DentingFiles[] =
 	"LEVELS\\RIO.DEN",
 };
 
-unsigned char gCarDamageZoneVerts[MAX_CAR_MODELS][6][50];
-unsigned char gHDCarDamageZonePolys[MAX_CAR_MODELS][6][70];
-unsigned char gHDCarDamageLevels[MAX_CAR_MODELS][255];
+// DO NOT CHANGE THIS!
+#define NUM_DAMAGE_ZONES			6
+#define MAX_FILE_DAMAGE_ZONE_VERTS	50
+#define MAX_FILE_DAMAGE_ZONE_POLYS	70
+#define MAX_FILE_DAMAGE_LEVELS		255
+
+unsigned char gCarDamageZoneVerts[MAX_CAR_MODELS][NUM_DAMAGE_ZONES][MAX_DAMAGE_ZONE_VERTS];
+unsigned char gHDCarDamageZonePolys[MAX_CAR_MODELS][NUM_DAMAGE_ZONES][MAX_DAMAGE_ZONE_POLYS];
+unsigned char gHDCarDamageLevels[MAX_CAR_MODELS][MAX_DAMAGE_LEVELS];
 
 // decompiled code
 // original method signature: 
@@ -112,7 +118,6 @@ void DentCar(CAR_DATA *cp)
 	short tempDamage[512];
 	memset(tempDamage, 0, sizeof(tempDamage));
 
-
 	MaxDamage = 0;
 	model = cp->ap.model;
 	cp->lowDetail = -1;
@@ -138,7 +143,7 @@ void DentCar(CAR_DATA *cp)
 			DamPtr = gCarDamageZoneVerts[cp->ap.model][Zone];
 
 			VertNo = 0;
-			while (VertNo < 50 && *DamPtr != 0xff)
+			while (VertNo < MAX_DAMAGE_ZONE_VERTS && *DamPtr != 0xFF)
 			{
 				if (tempDamage[*DamPtr] == 0)
 					tempDamage[*DamPtr] += Damage;
@@ -151,7 +156,7 @@ void DentCar(CAR_DATA *cp)
 			}
 
 			Zone++;
-		} while (Zone < 6);
+		} while (Zone < NUM_DAMAGE_ZONES);
 	}
 
 	// update vertices positon
@@ -192,10 +197,10 @@ void DentCar(CAR_DATA *cp)
 			Damage = cp->ap.damage[Zone];
 
 			Poly = 0;
-			while (Poly < 70 && gHDCarDamageZonePolys[cp->ap.model][Zone][Poly] != 0xFF)
+			while (Poly < MAX_DAMAGE_ZONE_POLYS && gHDCarDamageZonePolys[cp->ap.model][Zone][Poly] != 0xFF)
 			{
 				dentptr = gTempHDCarUVDump[cp->id] + gHDCarDamageZonePolys[cp->ap.model][Zone][Poly];
-				dentptr->u3 += ((uint)Damage << 0x10) >> 0x1a;
+				dentptr->u3 += (Damage >> 0xA);//(Damage << 0x10) >> 0x1a;
 
 				if (dentptr->u3 > 2)
 					dentptr->u3 = 2;
@@ -204,7 +209,7 @@ void DentCar(CAR_DATA *cp)
 			}
 
 			Zone++;
-		} while (Zone < 6);
+		} while (Zone < NUM_DAMAGE_ZONES);
 
 		Poly = 0;
 
@@ -322,7 +327,7 @@ void CreateDentableCar(CAR_DATA *cp)
 	if (gDontResetCarDamage == 0) 
 	{
 		count = 0;
-		while (count < 6)
+		while (count < NUM_DAMAGE_ZONES)
 		{
 			cp->ap.damage[count] = 0;
 			count++;
@@ -733,9 +738,13 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 		{
 			offset = *(int *)(lump_ptr + model * 4);
 
-			memcpy(gCarDamageZoneVerts[i], lump_ptr + offset, 300);
-			memcpy(gHDCarDamageZonePolys[i], lump_ptr + offset + 300, 420);
-			memcpy(gHDCarDamageLevels[i], lump_ptr + offset + 300 + 420, 255);
+			memcpy(gCarDamageZoneVerts[i], lump_ptr + offset, NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_VERTS);
+			offset += NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_VERTS;
+			
+			memcpy(gHDCarDamageZonePolys[i], lump_ptr + offset, NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_POLYS);
+			offset += NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_POLYS;
+			
+			memcpy(gHDCarDamageLevels[i], lump_ptr + offset, MAX_DAMAGE_LEVELS);
 		}
 
 		i++;
@@ -777,10 +786,16 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 // [D] [T]
 void SetupSpecDenting(char *loadbuffer)
 {
+	int offset;
+
 	// [A] this is better
-	memcpy(gCarDamageZoneVerts[4], loadbuffer, 300);
-	memcpy(gHDCarDamageZonePolys[4], loadbuffer + 300, 420);
-	memcpy(gHDCarDamageLevels[4], loadbuffer + 300 + 420, 255);
+	memcpy(gCarDamageZoneVerts[4], loadbuffer, NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_VERTS);
+	offset = NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_VERTS;
+
+	memcpy(gHDCarDamageZonePolys[4], loadbuffer + offset, NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_POLYS);
+	offset += NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_POLYS;
+
+	memcpy(gHDCarDamageLevels[4], loadbuffer + offset, MAX_FILE_DAMAGE_LEVELS);
 }
 
 

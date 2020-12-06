@@ -1,16 +1,6 @@
 #ifndef CARS_H
 #define CARS_H
 
-#ifndef PSX
-#define MAX_DENTING_VERTS		256
-#define MAX_DENTING_UVS			256
-#define MAX_DENTING_LOD_UVS		256
-#else
-#define MAX_DENTING_VERTS		132
-#define MAX_DENTING_UVS			255
-#define MAX_DENTING_LOD_UVS		134
-#endif
-
 
 #define CAR_INDEX(cp)  (int)(cp-car_data)
 

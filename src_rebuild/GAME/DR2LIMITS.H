@@ -16,6 +16,21 @@
 #define MAX_THROWN_BOMBS		5
 #define MAX_MOTION_CAPTURE		24
 
+// denting
+#define MAX_DAMAGE_ZONE_VERTS	50
+#define MAX_DAMAGE_ZONE_POLYS	70
+#define MAX_DAMAGE_LEVELS		255
+
+#ifndef PSX
+#define MAX_DENTING_VERTS		256
+#define MAX_DENTING_UVS			256
+#define MAX_DENTING_LOD_UVS		256
+#else
+#define MAX_DENTING_VERTS		132
+#define MAX_DENTING_UVS			255
+#define MAX_DENTING_LOD_UVS		134
+#endif
+
 // replay definitions.
 // DO NOT EDIT, breaks compatibility!
 #define MAX_REPLAY_CAMERAS		60
