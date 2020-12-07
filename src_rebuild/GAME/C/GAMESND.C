@@ -1627,7 +1627,10 @@ void DoDopplerSFX(void)
 
 		// play car music
 		// vans in 'Caine's Compound' should not listen to it
-		if (gCurrentMissionNumber != 7 && car_ptr->controlType == CONTROL_TYPE_CIV_AI && car_ptr->ap.model <= 2 && indexlist[i] == 1)
+		if (gCurrentMissionNumber != 7 && 
+			car_ptr->controlType == CONTROL_TYPE_CIV_AI && 
+			car_ptr->ap.model > 0 && car_ptr->ap.model < 3 &&
+			indexlist[i] == 1)
 		{
 			siren = 1;
 		}
