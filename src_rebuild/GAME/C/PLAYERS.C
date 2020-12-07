@@ -63,7 +63,7 @@ void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction
 
 		InitCar(cp, direction, startPos, carCtrlType, model, palette & 0xff, &locPlayer->padid);
 
-		cp->controlFlags |= CONTROL_FLAG_WAS_PARKED;
+		cp->controlFlags |= CONTROL_FLAG_WAS_PARKED | CONTROL_FLAG_PLAYER_START_CAR; // [A] car is owned by player
 		
 		locPlayer->worldCentreCarId = cp->id;
 		locPlayer->cameraView = 0;// (NumPlayers == 2) << 1; // [A]
@@ -254,7 +254,8 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 	newCar->ai.padid = &lPlayer->padid;
 	newCar->hndType = 0;
 
-	if (playerID == 0)
+	if (playerID == 0 && 
+		!(newCar->controlFlags & CONTROL_FLAG_PLAYER_START_CAR))	// [A] bug fix: don't give felony if player owns his cop car
 	{
 		if (gCurrentMissionNumber != 32 && MissionHeader->residentModels[newCar->ap.model] == 0)
 		{

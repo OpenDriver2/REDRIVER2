@@ -401,9 +401,10 @@ enum ECarControlType
 
 enum ECarControlFlags
 {
-	CONTROL_FLAG_COP = (1 << 0),		// civ car is a cop car
+	CONTROL_FLAG_COP = (1 << 0),				// civ car is a cop car
 	CONTROL_FLAG_COP_SLEEPING = (1 << 1),		// passive cop flag (roadblocks). Hitting car with that flag results it's activation
-	CONTROL_FLAG_WAS_PARKED = (1 << 2)		// car pinged in as parked. Really nothing to do with it
+	CONTROL_FLAG_WAS_PARKED = (1 << 2),			// car pinged in as parked. Really nothing to do with it
+	CONTROL_FLAG_PLAYER_START_CAR = (1 << 3),	// car owned by player
 };
 
 typedef struct _CAR_DATA

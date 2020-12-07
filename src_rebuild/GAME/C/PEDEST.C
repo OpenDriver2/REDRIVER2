@@ -2400,12 +2400,12 @@ void SetupGetInCar(PEDESTRIAN* pPed)
 	sn = rsin(carToGetIn->hd.direction);
 	cs = rcos(carToGetIn->hd.direction);
 
-	entrySide = cs * (carToGetIn->hd.where.t[0] - pPed->position.vx) - FIXED(sn * 0x1000) * (carToGetIn->hd.where.t[2] - pPed->position.vz) + 0x800 < 0;
+	entrySide = cs * (carToGetIn->hd.where.t[0] - pPed->position.vx) - FIXED(sn * ONE) * (carToGetIn->hd.where.t[2] - pPed->position.vz) + 2048 < 0;
 
 	if (entrySide)
-		pPed->dir.vy = carToGetIn->hd.direction + 0x400;
+		pPed->dir.vy = carToGetIn->hd.direction + 1024;
 	else
-		pPed->dir.vy = carToGetIn->hd.direction - 0x400;
+		pPed->dir.vy = carToGetIn->hd.direction - 1024;
 
 	if (pPed->dir.vy > carToGetIn->hd.direction)
 		xOfs = -400;
