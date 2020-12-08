@@ -30,7 +30,7 @@ char *ReplayStart;
 char *replayptr = NULL;
 int ReplaySize = 0;
 
-unsigned long PingBufferPos = 0;
+int PingBufferPos = 0;
 PING_PACKET *PingBuffer = NULL;
 
 SXYPAIR *PlayerWayRecordPtr = NULL;

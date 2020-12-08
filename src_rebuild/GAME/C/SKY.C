@@ -706,7 +706,7 @@ void DrawLensFlare(void)
 	static short buffer[160];
 
 	int flarez;
-	long distance_to_sun;
+	int distance_to_sun;
 	int bufferY;
 	int bufferX;
 	POLY_FT4 *poly;
@@ -967,9 +967,8 @@ void DrawLensFlare(void)
 
 int gTunnelNum = -1;
 int skyFade;
-static long skyred = 128;
-static long skygreen = 128;
-static long skyblue = 128;
+
+CVECTOR skycolor = { 128,128,128 };
 
 int tunnelDir[3][2] =
 {
@@ -1079,32 +1078,32 @@ void calc_sky_brightness(void)
 	{
 		if (gTimeOfDay == 0)
 		{
-			skyred = dawn + 41;
-			skyblue = dawn + 28;
+			skycolor.r = dawn + 41;
+			skycolor.b = dawn + 28;
 		}
 		else if (gTimeOfDay == 2)
 		{
-			skyred = 143 - dawn;
-			skyblue = 128 - dawn;
+			skycolor.r = 143 - dawn;
+			skycolor.b = 128 - dawn;
 		}
 
-		if (skyred < 26)
-			skyred = 26;
-		else if (skyred > 128)
-			skyred = 128;
+		if (skycolor.r < 26)
+			skycolor.r = 26;
+		else if (skycolor.r > 128)
+			skycolor.r = 128;
 
-		if (skyblue < 26)
-			skyblue = 26;
-		else if (skyblue > 128)
-			skyblue = 128;
+		if (skycolor.b < 26)
+			skycolor.b = 26;
+		else if (skycolor.b > 128)
+			skycolor.b = 128;
 
-		skygreen = skyblue;
+		skycolor.g = skycolor.b;
 	}
 	else
 	{
-		skyblue = 128;
-		skygreen = 128;
-		skyred = 128;
+		skycolor.b = 128;
+		skycolor.g = 128;
+		skycolor.r = 128;
 	}
 	
 	if (gTunnelNum == -1 || 
@@ -1116,14 +1115,14 @@ void calc_sky_brightness(void)
 
 	TunnelSkyFade();
 
-	if (skyred > skyFade)
-		skyred = skyFade;
+	if (skycolor.r > skyFade)
+		skycolor.r = skyFade;
 
-	if (skygreen > skyFade)
-		skygreen = skyFade;
+	if (skycolor.g > skyFade)
+		skycolor.g = skyFade;
 
-	if (skyblue > skyFade)
-		skyblue = skyFade;
+	if (skycolor.b > skyFade)
+		skycolor.b = skyFade;
 }
 
 
@@ -1339,9 +1338,9 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 	{
 		polys = (unsigned char*)model->poly_block;
 
-		red = skyred;
-		green = skygreen;
-		blue = skyblue;
+		red = skycolor.r;
+		green = skycolor.g;
+		blue = skycolor.b;
 		
 		count = 0;
 

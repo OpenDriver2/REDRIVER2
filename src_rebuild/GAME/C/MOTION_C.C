@@ -1876,8 +1876,8 @@ void DrawCiv(PEDESTRIAN* pPed)
 	VECTOR ppos;
 	int bHeadModel;
 
-	long sxyList[40];
-	long szList[40];
+	DVECTOR sxyList[40];
+	int szList[40];
 	SVECTOR srLerpData[40];
 
 	bHeadModel = 0;

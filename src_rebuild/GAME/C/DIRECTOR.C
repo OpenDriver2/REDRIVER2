@@ -2678,7 +2678,7 @@ void ControlReplay(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-long* savemapinfo = NULL;
+int* savemapinfo = NULL;
 static int mapstuff = 0;
 static int cammapht2 = 0;
 

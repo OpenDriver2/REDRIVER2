@@ -131,17 +131,17 @@ extern int MRStopThread(MR_THREAD *thread); // 0x00064690
 
 extern void MRCommitThreadGenocide(); // 0x0006469C
 
-extern int MRJump(MR_THREAD *thread, long jump); // 0x000646E0
+extern int MRJump(MR_THREAD *thread, int jump); // 0x000646E0
 
-extern void MRPush(MR_THREAD *thread, long value); // 0x0006472C
+extern void MRPush(MR_THREAD *thread, int value); // 0x0006472C
 
-extern long MRPop(MR_THREAD *thread); // 0x00064744
+extern int MRPop(MR_THREAD *thread); // 0x00064744
 
-extern long MRGetParam(MR_THREAD *thread); // 0x00064760
+extern int MRGetParam(MR_THREAD *thread); // 0x00064760
 
-extern long MRGetVariable(MR_THREAD *thread, u_int var); // 0x000647CC
+extern int MRGetVariable(MR_THREAD *thread, u_int var); // 0x000647CC
 
-extern void MRSetVariable(MR_THREAD *thread, u_int var, long value); // 0x000648B0
+extern void MRSetVariable(MR_THREAD *thread, u_int var, int value); // 0x000648B0
 
 extern int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target); // 0x00062470
 

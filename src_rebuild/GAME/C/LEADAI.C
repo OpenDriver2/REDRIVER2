@@ -2125,7 +2125,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	int cellx;
 	PACKED_CELL_OBJECT* ppco;
 	CELL_OBJECT* cop;
-	long lVar4;
+	int lVar4;
 	int local_v0_4816;
 	int* piVar5;
 	int uVar6;

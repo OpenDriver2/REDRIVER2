@@ -2146,9 +2146,9 @@ void StepFromToEvent(EVENT* ev)
 	else if (direction <= 16384)
 	{
 		if (direction != 0)
-			curr = (long*)&ev->position.vx;
+			curr = &ev->position.vx;
 		else
-			curr = (long*)&ev->position.vz;
+			curr = &ev->position.vz;
 	}
 	else if (direction == 32768)
 	{

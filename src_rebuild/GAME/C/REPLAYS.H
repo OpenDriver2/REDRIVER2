@@ -10,7 +10,7 @@ extern int NumReplayStreams;
 extern char *ReplayStart;
 extern char *replayptr;
 
-extern unsigned long PingBufferPos;
+extern int PingBufferPos;
 extern PING_PACKET *PingBuffer;
 
 extern int TimeToWay;

@@ -413,7 +413,7 @@ void LoadMission(int missionnum)
 		if (FileExists(filename) == 0)
 			return;
 
-		LoadfileSeg(filename, (char*)&header, missionnum * 4, sizeof(long));
+		LoadfileSeg(filename, (char*)&header, missionnum * 4, sizeof(int));
 		offset = header & 0x7ffff;
 		length = header >> 19;
 	}
@@ -774,13 +774,13 @@ void LoadMission(int missionnum)
 #if 0
 	{
 		// MISSION SCRIPT DUMP
-		u_long* script = MissionScript;
+		u_int* script = MissionScript;
 
 		while (true)
 		{
-			u_long* value = script;
+			u_int* value = script;
 
-			long val1, val2;
+			int val1, val2;
 			val1 = 0;
 			val2 = 0;
 
@@ -1875,8 +1875,8 @@ void HandleMissionThreads(void)
 // [D] [T]
 int MRCommand(MR_THREAD *thread, u_int cmd)
 {
-	long val1;
-	long val2;
+	int val1;
+	int val2;
 
 	if (cmd == 0x1000051)				// PlayCutscene
 	{
@@ -2127,8 +2127,8 @@ int MRCommand(MR_THREAD *thread, u_int cmd)
 // [D] [T]
 int MROperator(MR_THREAD *thread, u_int op)
 {
-    long val1;
-    long val2;
+	int val1;
+	int val2;
     int result;
     
     result = 0;
@@ -2204,7 +2204,7 @@ int MROperator(MR_THREAD *thread, u_int op)
 // [D] [T]
 int MRFunction(MR_THREAD *thread, u_int fnc)
 {
-	long value;
+	int value;
 
 	if (fnc == 0x4000020) 
 	{
@@ -2368,7 +2368,7 @@ void MRCommitThreadGenocide(void)
 	// End Line: 7645
 
 // [D] [T]
-int MRJump(MR_THREAD *thread, long jump)
+int MRJump(MR_THREAD *thread, int jump)
 {
 	if ((jump + 2U) < 3)
 		return MRStopThread(thread);
@@ -2399,7 +2399,7 @@ int MRJump(MR_THREAD *thread, long jump)
 	// End Line: 7689
 
 // [D] [T]
-void MRPush(MR_THREAD *thread, long value)
+void MRPush(MR_THREAD *thread, int value)
 {
 	*thread->sp = value;
 	thread->sp++;
@@ -2429,7 +2429,7 @@ void MRPush(MR_THREAD *thread, long value)
 	// End Line: 7706
 
 // [D] [T]
-long MRPop(MR_THREAD *thread)
+int MRPop(MR_THREAD *thread)
 {
 	thread->sp--;
 	return *thread->sp;
@@ -2461,9 +2461,9 @@ long MRPop(MR_THREAD *thread)
 	// End Line: 7733
 
 // [D] [T]
-long MRGetParam(MR_THREAD *thread)
+int MRGetParam(MR_THREAD *thread)
 {
-	long value;
+	int value;
 
 	value = MRPop(thread);
 
@@ -2501,7 +2501,7 @@ long MRGetParam(MR_THREAD *thread)
 	// End Line: 7778
 
 // [D] [T]
-long MRGetVariable(MR_THREAD *thread, u_int var)
+int MRGetVariable(MR_THREAD *thread, u_int var)
 {
 	switch (var)
 	{
@@ -2537,7 +2537,7 @@ long MRGetVariable(MR_THREAD *thread, u_int var)
 	// End Line: 7830
 
 // [D] [T]
-void MRSetVariable(MR_THREAD *thread, u_int var, long value)
+void MRSetVariable(MR_THREAD *thread, u_int var, int value)
 {
 	switch (var)
 	{

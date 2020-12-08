@@ -108,7 +108,7 @@ __xa_request xa_data[26] = {
 };
 
 int cutscene_timer = 0;
-long pos[3];
+static LONGVECTOR3 pos;
 static int bodgevar = 0;
 
 // decompiled code
@@ -951,7 +951,7 @@ void DoMissionSound(void)
 			else
 			{
 				int dx, dz;
-				long* C = (long*)bodgevar; // Ahhh, Reflections...
+				long* C = (long*)bodgevar; // Ahhh, Reflections...	// LONGVECTOR3
 
 				dx = C[0] - car_data[player[0].playerCarId].hd.where.t[0];
 				dz = C[2] - car_data[player[0].playerCarId].hd.where.t[2];

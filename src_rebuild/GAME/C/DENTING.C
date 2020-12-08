@@ -376,7 +376,7 @@ void CreateDentableCar(CAR_DATA *cp)
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
 extern HUBCAP gHubcap;
-long gHubcapTime = 0;
+int gHubcapTime = 0;
 
 // [D] [T]
 void InitHubcap(void)

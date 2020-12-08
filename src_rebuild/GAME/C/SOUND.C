@@ -22,8 +22,8 @@
 
 LONGVECTOR3 dummylong = { 0, 0, 0 };
 
-long bankaddr[2] = { 0 };
-long banksize[2] = { 88064, 412672 };
+int bankaddr[2] = { 0 };
+int banksize[2] = { 88064, 412672 };
 
 char banks[24] = { 0 };
 

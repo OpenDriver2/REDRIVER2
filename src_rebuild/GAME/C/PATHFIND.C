@@ -15,7 +15,7 @@
 
 ushort distanceCache[16384];
 char omap[128][16];				// obstacle map
-long dunyet[32][2];				// scanned cell map
+int dunyet[32][2];				// scanned cell map
 int pathIterations;
 
 int pathFrames;
@@ -154,7 +154,7 @@ void DebugDisplayObstacleMap()
 			//local_v0_152 = dunyet[(bPos.vx >> 10 & 0x1fU)][((bPos.vz >> 10) & 1)];
 
 			// NEW METHOD
-			// long val = dunyet[px >> 2 & 0x1f][pz >> 6 & 1]; // dunyet[px >> 2 & 0x1f][pz >> 2 & 1];
+			// int val = dunyet[px >> 2 & 0x1f][pz >> 6 & 1]; // dunyet[px >> 2 & 0x1f][pz >> 2 & 1];
 			// val = val >> (pz >> 2 & 0x1f) & 1;
 
 			n.vx = px << 8;
@@ -163,7 +163,7 @@ void DebugDisplayObstacleMap()
 
 			int dist = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (n.vy & 1U) * 0x2040 ^ (n.vy & 2U) << 0xc];// distanceCache[((pos_x+i & 127) * 128) + (j + pos_z & 127)];
 
-			long prev = DONEMAP_V(px >> 2, pz >> 2);
+			int prev = DONEMAP_V(px >> 2, pz >> 2);
 			int val = DONEMAP_GETVALUE(px >> 2, pz >> 2, prev, 0);
 
 			if (val != 0)
@@ -430,7 +430,7 @@ void WunCell(VECTOR* pbase)
 void InvalidateMapEnds()
 {
 	int x, z;
-	long tile;
+	int tile;
 	int i;
 	XZPAIR pos;
 	pos.x = (player[0].pos[0] & 0xfffffc00) >> 10;
@@ -461,7 +461,7 @@ void InvalidateMap(void)
 	int count;
 	int px, pz;
 	VECTOR bPos;
-	long tile, i;
+	int tile, i;
 
 	q = 0;
 	p = 0;
@@ -587,7 +587,7 @@ void BloodyHell(void)
 	uint howMany;
 	int count;
 	VECTOR bPos;
-	long tile, i;
+	int tile, i;
 
 	cellsThisFrame = 0;
 	
@@ -2067,7 +2067,7 @@ void addCivs(void)
 void UpdateCopMap(void)
 {
 	int d;
-	long dist;
+	int dist;
 	int dx, dy, dz;
 	int i, maxret;
 	int res;

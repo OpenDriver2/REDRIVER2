@@ -1219,18 +1219,18 @@ void SetupDrawBufferData(int num_players)
 		for (j = 0; j < num_players; j++)
 		{
 			u_long* otpt;
-			unsigned char* primpt;
-			unsigned char* PRIMpt;
+			u_char* primpt;
+			u_char* PRIMpt;
 
 			if (toggle)
 			{
 				otpt = (u_long*)_OT2;
-				primpt = PRIMpt = (unsigned char*)_primTab2;
+				primpt = PRIMpt = (u_char*)_primTab2;
 			}
 			else
 			{
 				otpt = (u_long*)_OT1;
-				primpt = PRIMpt = (unsigned char*)_primTab1;
+				primpt = PRIMpt = (u_char*)_primTab1;
 			}
 
 			toggle ^= 1;

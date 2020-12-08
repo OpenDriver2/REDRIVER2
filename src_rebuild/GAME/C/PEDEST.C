@@ -899,8 +899,8 @@ int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVEC
 	int playerId;
 	VECTOR* pos;
 	VECTOR v;
-	long y;
-	long d;
+	int y;
+	int d;
 	PLAYER* lp;
 	int x, z;
 
@@ -3105,7 +3105,7 @@ void PingInPedestrians(void)
 {
 	int bFound;
 	PEDESTRIAN* pPed;
-	long rnd;
+	int rnd;
 	int pingInDist;
 	int i;
 	int dx, dz;
@@ -4549,7 +4549,7 @@ SEATED_PEDESTRIANS* FindTannerASeat(PEDESTRIAN* pPed)
 void add_seated(SEATED_PEDESTRIANS* seatedptr, int seat_index)
 {
 	PEDESTRIAN* pedptr;
-	long rnd;
+	int rnd;
 
 	if (num_pedestrians < MAX_SEATED_PEDS)
 	{

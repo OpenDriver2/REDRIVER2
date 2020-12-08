@@ -256,7 +256,7 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 
 	if (gWeather - 1U < 2)
 	{
-		ulong col;
+		u_int col;
 		col = plotContext.colour >> 2 & 0x3f;
 		plotContext.colour = col * 0x30000 | col * 0x300 | col * 3 | 0x2c000000;
 	}

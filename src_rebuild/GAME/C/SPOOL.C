@@ -1913,13 +1913,13 @@ void CheckLoadAreaData(int cellx, int cellz)
 // [D] [T]
 void ClearRegion(int target_region)
 {
-	long *pvsptr;
+	int *pvsptr;
 	ushort *cell_ptrs_s;
 	int loop;
 
 	loop = 1024;
 	cell_ptrs_s = cell_ptrs + target_region * 1024;
-	pvsptr = (long *)PVS_Buffers[target_region];
+	pvsptr = (int *)PVS_Buffers[target_region];
 
 	do {
 		*cell_ptrs_s++ = 0xffff;

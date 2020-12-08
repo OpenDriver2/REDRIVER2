@@ -47,7 +47,7 @@ static unsigned short CurrentChannel;
 static unsigned short ID;
 static int StartPos;
 static CdlLOC pause_loc;
-static unsigned long buffer[8];
+static uint buffer[8];
 XA_TRACK XAMissionMessages[4];
 
 #ifndef PSX
