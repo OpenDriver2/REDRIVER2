@@ -263,7 +263,7 @@ void LeadUpdateState(CAR_DATA* cp)
 		tmpStart.vz = z;
 		tmpStart.vy = MapHeight(&tmpStart) - cp->ap.carCos->wheelDisp[0].vy;
 
-		InitCarPhysics(cp, (LONGVECTOR*)&tmpStart, cp->ai.l.targetDir);
+		InitCarPhysics(cp, (LONGVECTOR4*)&tmpStart, cp->ai.l.targetDir);
 
 		// start him up
 		cp->ai.l.dstate = 3;
@@ -489,11 +489,11 @@ void LeadUpdateState(CAR_DATA* cp)
 	// End Line: 1283
 
 // [D] [T]
-ulong LeadPadResponse(CAR_DATA* cp)
+u_int LeadPadResponse(CAR_DATA* cp)
 {
 	int dif;
 	int avel;
-	ulong t0;
+	u_int t0;
 	int deltaVel;
 	int deltaAVel;
 	int deltaPos;
@@ -3738,7 +3738,7 @@ void SelectExit(CAR_DATA* cp, DRIVER2_JUNCTION* junction)
 	// End Line: 7436
 
 // [D] [T]
-ulong FreeRoamer(CAR_DATA* cp)
+u_int FreeRoamer(CAR_DATA* cp)
 {
 	LeadHorn(cp);
 	DamageBar.position = cp->totalDamage;
@@ -3821,7 +3821,7 @@ ulong FreeRoamer(CAR_DATA* cp)
 	// End Line: 10453
 
 // [D] [T]
-ulong hypot(long x, long y)
+u_int hypot(int x, int y)
 {
 	int t;
 

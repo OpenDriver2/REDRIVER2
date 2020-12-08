@@ -10,15 +10,15 @@ extern int gMapYOffset;
 extern int map_x_shift;
 extern int map_z_shift;
 
-extern void DrawTargetBlip(VECTOR *pos, unsigned char r, unsigned char g, unsigned char b, unsigned long flags); // 0x00016280
+extern void DrawTargetBlip(VECTOR *pos, u_char r, u_char g, u_char b, int flags); // 0x00016280
 
-extern void DrawTargetArrow(VECTOR *pos, unsigned long flags); // 0x00016578
+extern void DrawTargetArrow(VECTOR *pos, int flags); // 0x00016578
 
-extern void DrawPlayerDot(VECTOR *pos, short rot, unsigned char r, unsigned char g, int b, unsigned long flags); // 0x00016814
+extern void DrawPlayerDot(VECTOR *pos, short rot, u_char r, u_char g, u_char b, int flags); // 0x00016814
 
 extern void ProcessOverlayLump(char *lump_ptr, int lump_size); // 0x00016AE8
 
-extern unsigned long Long2DDistance(VECTOR *pPoint1, VECTOR *pPoint2); // 0x00016C0C
+extern u_int Long2DDistance(VECTOR *pPoint1, VECTOR *pPoint2); // 0x00016C0C
 
 extern void InitOverheadMap(); // 0x000197BC
 

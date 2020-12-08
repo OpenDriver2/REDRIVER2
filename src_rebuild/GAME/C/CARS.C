@@ -93,8 +93,8 @@ CAR_POLY carPolyBuffer[2001];
 void plotNewCarModel(CAR_MODEL *car, int palette)
 {
 	plotCarGlobals _pg;
-	ulong lightlevel;
-	ulong underIntensity;
+	u_int lightlevel;
+	u_int underIntensity;
 	SVECTOR v = { 0, -4096, 0 };
 
 	lightlevel = combointensity | 0x3000000;
@@ -194,7 +194,7 @@ void plotCarPolyB3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *p
 {
 	int Z;
 	int indices;
-	ulong FT3rgb;
+	u_int FT3rgb;
 	SVECTOR *v2;
 	SVECTOR *v1;
 	SVECTOR *v0;
@@ -301,7 +301,7 @@ void plotCarPolyFT3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *
 	int Z;
 	POLY_FT3 *prim;
 	OTTYPE *ot;
-	long FT3rgb;
+	int FT3rgb;
 	int reg;
 
 	prim = (POLY_FT3 *)pg->primptr;
@@ -419,7 +419,7 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 
 	prim = (POLY_GT3 *)pg->primptr;
 
-	long GT3rgb = pg->intensity | 0x34000000;
+	int GT3rgb = pg->intensity | 0x34000000;
 	gte_ldrgb(&GT3rgb);
 
 	while (numTris > 0)
@@ -538,7 +538,7 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 
 	prim = (POLY_FT3*)pg->primptr;
 
-	long GT3rgb = pg->intensity | 0x34000000;
+	int GT3rgb = pg->intensity | 0x34000000;
 	gte_ldrgb(&GT3rgb);
 
 	while (numTris > 0)
@@ -1028,6 +1028,7 @@ void DrawCar(CAR_DATA *cp, int view)
 void DrawCarObject(CAR_MODEL *car, MATRIX *matrix, VECTOR *pos, int palette, CAR_DATA *cp, int detail)
 {
 	static unsigned long savedSP;
+
 	VECTOR modelLocation;
 	SVECTOR cog;
 
@@ -1420,8 +1421,8 @@ void DrawWheelObject(MODEL *model, SVECTOR *verts, int transparent, int wheelnum
 	int combo;
 	POLY_FT4 *poly;
 	POLYFT4 *src;
-	ulong dim;
-	ulong bright;
+	u_int dim;
+	u_int bright;
 
 	src = (POLYFT4*)model->poly_block;
 	poly = (POLY_FT4 *)current->primptr;
@@ -1637,7 +1638,7 @@ void ComputeCarLightingLevels(CAR_DATA *cp, char detail)
 	CVECTOR c0;
 	CVECTOR c1;
 	CVECTOR c2;
-	long GT3rgb;
+	int GT3rgb;
 
 	if (gTimeOfDay > -1)
 	{

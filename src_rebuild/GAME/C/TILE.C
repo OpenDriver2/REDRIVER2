@@ -845,7 +845,7 @@ void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 // [A] custom implemented function
-void SubdivNxM(char *polys, ulong n, ulong m, int ofse)
+void SubdivNxM(char *polys, int n, int m, int ofse)
 {
 	MVERTEX subdivVerts[5][5];
 

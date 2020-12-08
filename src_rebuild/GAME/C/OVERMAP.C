@@ -128,7 +128,7 @@ int gMapYOffset = 181;
 /* WARNING: Could not reconcile some variable overlaps */
 
 // [D] [T]
-void DrawTargetBlip(VECTOR *pos, unsigned char r, unsigned char g, unsigned char b, ulong flags)
+void DrawTargetBlip(VECTOR *pos, u_char r, u_char g, u_char b, int flags)
 {
 	int ysize;
 	POLY_FT4 *poly;
@@ -254,7 +254,7 @@ void DrawTargetBlip(VECTOR *pos, unsigned char r, unsigned char g, unsigned char
 /* WARNING: Could not reconcile some variable overlaps */
 
 // [D] [T]
-void DrawTargetArrow(VECTOR *pos, ulong flags)
+void DrawTargetArrow(VECTOR *pos, int flags)
 {
 	int dy;
 	int dx;
@@ -375,7 +375,7 @@ void DrawTargetArrow(VECTOR *pos, ulong flags)
 	// End Line: 1822
 
 // [D] [T]
-void DrawPlayerDot(VECTOR *pos, short rot, unsigned char r, unsigned char g, int b, ulong flags)
+void DrawPlayerDot(VECTOR *pos, short rot, u_char r, u_char g, u_char b, int flags)
 {
 	int sn;
 	int cs;
@@ -575,11 +575,11 @@ void ProcessOverlayLump(char *lump_ptr, int lump_size)
 	// End Line: 2100
 
 // [D] [T]
-ulong Long2DDistance(VECTOR *pPoint1, VECTOR *pPoint2)
+u_int Long2DDistance(VECTOR *pPoint1, VECTOR *pPoint2)
 {
 	int tempTheta;
 	int theta;
-	ulong result;
+	u_int result;
 	VECTOR delta;
 
 	delta.vx = ABS(pPoint1->vx - pPoint2->vx);

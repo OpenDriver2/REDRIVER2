@@ -38,7 +38,7 @@ PEDESTRIAN *pPlayerPed = NULL;
 PLAYER player[8];
 
 // [D] [T]
-void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction, LONGVECTOR* startPos, int externModel, int palette, char *padid)
+void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction, LONGVECTOR4* startPos, int externModel, int palette, char *padid)
 {
 	int model;
 	uint playerType;

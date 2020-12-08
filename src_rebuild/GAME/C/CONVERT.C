@@ -366,17 +366,17 @@ void Getlong(char *dest, char *source)
 	/* end block 4 */
 	// End Line: 953
 
-static long rseed[17]; // offset 0xBD510
+static int rseed[17]; // offset 0xBD510
 static int randomindex = 0;
 static int randomcounter = 0;
 
 // [D] [T]
-void RandomInit(long i1, long i2)
+void RandomInit(int i1, int i2)
 {
 	int step;
 	int count;
 
-	long *sd;
+	int*sd;
 
 	step = 0x3b1cb49;
 	
@@ -432,7 +432,7 @@ void RandomInit(long i1, long i2)
 extern int frameStart;
 
 // [D] [T]
-long Random2(int step)
+int Random2(int step)
 {
 	return (CameraCnt - frameStart) * (CameraCnt - frameStart) * 0x19660d + 0x3c6ef35fU >> 8 & 0xffff;
 }

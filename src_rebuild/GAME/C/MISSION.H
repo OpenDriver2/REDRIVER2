@@ -72,7 +72,7 @@ extern int MaxPlayerDamage[2];
 extern COP_DATA gCopData;
 
 extern MS_TARGET *MissionTargets;
-extern unsigned long *MissionScript;
+extern u_int*MissionScript;
 extern char *MissionStrings;
 
 extern char *gMissionTitle;
@@ -117,15 +117,15 @@ extern void SetConfusedCar(int slot); // 0x0006444C
 
 extern void HandleMissionThreads(); // 0x00061C5C
 
-extern int MRCommand(MR_THREAD *thread, unsigned long cmd); // 0x00061E3C
+extern int MRCommand(MR_THREAD *thread, u_int cmd); // 0x00061E3C
 
-extern int MROperator(MR_THREAD *thread, unsigned long op); // 0x00064498
+extern int MROperator(MR_THREAD *thread, u_int op); // 0x00064498
 
-extern int MRFunction(MR_THREAD *thread, unsigned long fnc); // 0x000645AC
+extern int MRFunction(MR_THREAD *thread, u_int fnc); // 0x000645AC
 
-extern void MRInitialiseThread(MR_THREAD *thread, unsigned long *pc, unsigned char player); // 0x00064614
+extern void MRInitialiseThread(MR_THREAD *thread, u_int *pc, u_char player); // 0x00064614
 
-extern void MRStartThread(MR_THREAD *callingthread, unsigned long addr, unsigned char player); // 0x00064630
+extern void MRStartThread(MR_THREAD *callingthread, u_int addr, u_char player); // 0x00064630
 
 extern int MRStopThread(MR_THREAD *thread); // 0x00064690
 
@@ -139,9 +139,9 @@ extern long MRPop(MR_THREAD *thread); // 0x00064744
 
 extern long MRGetParam(MR_THREAD *thread); // 0x00064760
 
-extern long MRGetVariable(MR_THREAD *thread, unsigned long var); // 0x000647CC
+extern long MRGetVariable(MR_THREAD *thread, u_int var); // 0x000647CC
 
-extern void MRSetVariable(MR_THREAD *thread, unsigned long var, long value); // 0x000648B0
+extern void MRSetVariable(MR_THREAD *thread, u_int var, long value); // 0x000648B0
 
 extern int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target); // 0x00062470
 

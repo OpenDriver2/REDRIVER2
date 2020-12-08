@@ -58,7 +58,7 @@ extern void addSubdivSpriteShadow(POLYFT4*src, SVECTOR *verts, int z); // 0x0003
 
 extern void DrawMapPSX(int *comp_val); // 0x0003F6B0
 
-extern void SetupPlaneColours(unsigned long ambient); // 0x00040218
+extern void SetupPlaneColours(uint ambient); // 0x00040218
 
 extern void SetupDrawMapPSX(); // 0x00040408
 
@@ -80,7 +80,7 @@ extern void PlotBuildingModelSubdivNxN(MODEL *model, int rot, _pct *pc, int n); 
 
 extern void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags, int subdiv, int nrot); // 0x0004143C
 
-extern unsigned long normalIndex(SVECTOR *verts, unsigned int vidx); // 0x000415E4
+extern u_int normalIndex(SVECTOR *verts, unsigned int vidx); // 0x000415E4
 
 
 #endif

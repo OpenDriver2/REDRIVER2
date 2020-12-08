@@ -95,7 +95,7 @@ void* model_tile_ptrs[MAX_DRAWN_TILES];
 void* anim_obj_buffer[MAX_DRAWN_ANIMATING];
 void* spriteList[MAX_DRAWN_SPRITES];
 
-unsigned long planeColours[8];
+u_int planeColours[8];
 
 MATRIX inv_camera_matrix;
 MATRIX face_camera;
@@ -1115,11 +1115,11 @@ void DrawMapPSX(int* comp_val)
 	// End Line: 2710
 
 // [D] [T]
-void SetupPlaneColours(ulong ambient)
+void SetupPlaneColours(uint ambient)
 {
-	unsigned long r;
-	unsigned long g;
-	unsigned long b;
+	uint r;
+	uint g;
+	uint b;
 
 	if ((gWeather - 1U > 1) && gTimeOfDay != 0 && gTimeOfDay != 2)
 	{
@@ -1964,7 +1964,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 				prims = (POLY_FT4*)pc->primptr;
 
 				setPolyFT4(prims);
-				*(ulong*)&prims->r0 = pc->colour;
+				*(uint*)&prims->r0 = pc->colour;
 
 				// retrieve first three verts
 				gte_stsxy3(&prims->x0, &prims->x1, &prims->x2);
@@ -2162,7 +2162,7 @@ void RenderModel(MODEL* model, MATRIX* matrix, VECTOR* pos, int zBias, int flags
 	// End Line: 5772
 
 // [D] [T]
-ulong normalIndex(SVECTOR* verts, uint vidx)
+u_int normalIndex(SVECTOR* verts, uint vidx)
 {
 	SVECTOR* v0;
 	SVECTOR* v1;

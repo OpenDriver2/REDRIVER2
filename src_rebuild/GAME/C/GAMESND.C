@@ -1358,10 +1358,10 @@ void MissionSay(int phrase)
 	// End Line: 5495
 
 // [D] [T]
-long jsqrt(ulong a)
+int jsqrt(u_int a)
 {
-	long b0;
-	long b1;
+	int b0;
+	int b1;
 
 	if (a < 2)
 		return a;
@@ -1532,12 +1532,12 @@ void DoDopplerSFX(void)
 	int num_noisy_cars;
 	int sirens;
 
-	ulong car_dist[MAX_CARS];
+	uint car_dist[MAX_CARS];
 	ushort indexlist[MAX_CARS];
 
 	CAR_DATA* car_ptr;
 	int dx, dz;
-	ulong dist;
+	uint dist;
 
 	num_noisy_cars = 0;
 
@@ -1688,14 +1688,14 @@ void DoDopplerSFX(void)
 
 					siren_noise[j].chan = Start3DTrackingSound(-1, (siren & 0xff00) >> 8, siren & 0xff,
 						(VECTOR*)car_data[car].hd.where.t,
-						car_data[car].st.n.linearVelocity);
+						(LONGVECTOR3*)car_data[car].st.n.linearVelocity);
 				}
 				else
 				{
 					// play music
 					siren_noise[j].chan = Start3DTrackingSound(-1, SOUND_BANK_ENVIRONMENT, 5,
 						(VECTOR*)car_data[car].hd.where.t,
-						car_data[car].st.n.linearVelocity);
+						(LONGVECTOR3*)car_data[car].st.n.linearVelocity);
 				}
 
 				LockChannel(siren_noise[j].chan);
@@ -1719,7 +1719,7 @@ void DoDopplerSFX(void)
 
 		SetChannelPosition3(siren_noise[j].chan,
 			(VECTOR*)car_data[car].hd.where.t,
-			car_data[car].st.n.linearVelocity,
+			(LONGVECTOR3*)car_data[car].st.n.linearVelocity,
 			pitch * -30 - 3000, j * 4 - (pitch * 48 - 4096), 0);
 	}
 
@@ -1801,7 +1801,9 @@ void DoDopplerSFX(void)
 				else
 					sample = bank * 3;
 
-				car_noise[j].chan = Start3DTrackingSound(-1, SOUND_BANK_CARS, sample, (VECTOR*)car_data[car].hd.where.t, car_data[car].st.n.linearVelocity);
+				car_noise[j].chan = Start3DTrackingSound(-1, SOUND_BANK_CARS, sample, 
+					(VECTOR*)car_data[car].hd.where.t, 
+					(LONGVECTOR3*)car_data[car].st.n.linearVelocity);
 
 				LockChannel(car_noise[j].chan);
 				break;
@@ -1853,7 +1855,10 @@ void DoDopplerSFX(void)
 			else
 				sample = bank * 3;
 
-			car_noise[j].chan = Start3DTrackingSound(-1, SOUND_BANK_CARS, sample, (VECTOR*)car_data[car].hd.where.t, car_data[car].st.n.linearVelocity);
+			car_noise[j].chan = Start3DTrackingSound(-1, SOUND_BANK_CARS, sample, 
+				(VECTOR*)car_data[car].hd.where.t,
+				(LONGVECTOR3*)car_data[car].st.n.linearVelocity);
+			
 			LockChannel(car_noise[j].chan);
 		}
 
@@ -1871,7 +1876,10 @@ void DoDopplerSFX(void)
 
 		car_noise[j].in_use = 1;
 
-		SetChannelPosition3(car_noise[j].chan, (VECTOR*)car_data[car].hd.where.t, car_data[car].st.n.linearVelocity, volume, pitch, 0);
+		SetChannelPosition3(car_noise[j].chan, 
+			(VECTOR*)car_data[car].hd.where.t,
+			(LONGVECTOR3*)car_data[car].st.n.linearVelocity, 
+			volume, pitch, 0);
 	}
 
 	// bark on player
@@ -1935,9 +1943,9 @@ void DoDopplerSFX(void)
 	// End Line: 2219
 
 // [D] [T]
-void DoPoliceLoudhailer(int cars, ushort* indexlist, ulong* dist)
+void DoPoliceLoudhailer(int cars, ushort* indexlist, uint* dist)
 {
-	long rnd;
+	int rnd;
 	int carId;
 	int i;
 	int time;
@@ -1968,7 +1976,10 @@ void DoPoliceLoudhailer(int cars, ushort* indexlist, ulong* dist)
 		if (car_ptr->controlType == CONTROL_TYPE_PURSUER_AI && car_ptr->ai.p.dying == 0 &&
 			time < loudhail_time && rnd == (rnd / 31) * 31)
 		{
-			Start3DTrackingSound(-1, SOUND_BANK_VOICES, rnd % 2 + 13, (VECTOR*)car_ptr->hd.where.t, car_ptr->st.n.linearVelocity);
+			Start3DTrackingSound(-1, SOUND_BANK_VOICES, rnd % 2 + 13, 
+				(VECTOR*)car_ptr->hd.where.t, 
+				(LONGVECTOR3*)car_ptr->st.n.linearVelocity);
+			
 			loudhail_time = 0;
 			break;
 		}
@@ -2031,7 +2042,7 @@ void DoPoliceLoudhailer(int cars, ushort* indexlist, ulong* dist)
 void CollisionSound(char player_id, CAR_DATA* cp, int impact, int car_car)
 {
 	int chan;
-	long rnd;
+	int rnd;
 	int playerid;
 	int phrase;
 	int sample;
@@ -2045,8 +2056,8 @@ void CollisionSound(char player_id, CAR_DATA* cp, int impact, int car_car)
 	if (NumPlayers > 1 && NoPlayerControl == 0)
 	{
 		int dx, dz;
-		unsigned long p0dst;
-		unsigned long p1dst;
+		u_int p0dst;
+		u_int p1dst;
 
 		dx = cp->hd.where.t[0] - player[0].pos[0];
 		dz = cp->hd.where.t[2] - player[0].pos[2];
@@ -2167,7 +2178,7 @@ void CollisionSound(char player_id, CAR_DATA* cp, int impact, int car_car)
 // [D] [T]
 void ExplosionSound(VECTOR* pos, int type)
 {
-	long rnd;
+	int rnd;
 	int sc2;
 	int sc1;
 	int bang;
@@ -2245,8 +2256,8 @@ void ExplosionSound(VECTOR* pos, int type)
 // [D] [T]
 void JerichoSpeak(void)
 {
-	static unsigned int j_said = 0;
-	long rnd;
+	static u_int j_said = 0;
+	int rnd;
 	short* playerFelony;
 
 	rnd = Random2(3);
@@ -2354,7 +2365,7 @@ void SoundTasks(void)
 	int chan;
 	int vol;
 	VECTOR* position;
-	long* velocity;
+	LONGVECTOR3* velocity;
 
 	PLAYER* lcp;
 	CAR_DATA* cp;
@@ -2402,7 +2413,7 @@ void SoundTasks(void)
 		if (cp)
 		{
 			position = (VECTOR*)cp->hd.where.t;
-			velocity = cp->st.n.linearVelocity;
+			velocity = (LONGVECTOR3*)cp->st.n.linearVelocity;
 
 			if (lcp->car_is_sounding < 2)
 				vol = lcp->revsvol;
@@ -2660,7 +2671,7 @@ void InitTunnels(char n)
 	// End Line: 6756
 
 // [D] [T]
-int AddTunnel(long x1, long y1, long z1, long x2, long y2, long z2)
+int AddTunnel(int x1, int y1, int z1, int x2, int y2, int z2)
 {
 	if (tunnels.tunnel_cnt >= tunnels.num_tunnels)
 		return -1;
@@ -2946,7 +2957,7 @@ int SetEnvSndVol(int snd, int vol)
 	// End Line: 7206
 
 // [D] [T]
-void SetEnvSndPos(int snd, long px, long pz)
+void SetEnvSndPos(int snd, int px, int pz)
 {
 	if (envsnd[snd].type != 3)
 		return;
@@ -2981,7 +2992,7 @@ void SetEnvSndPos(int snd, long px, long pz)
 	// End Line: 3578
 
 // [D] [T]
-int AddEnvSnd(int type, char flags, int bank, int sample, int vol, long px, long pz, long px2, long pz2)
+int AddEnvSnd(int type, char flags, int bank, int sample, int vol, int px, int pz, int px2, int pz2)
 {
 	envsound* ep;
 
@@ -3573,7 +3584,7 @@ void CalcEffPos2(envsound* ep, envsoundinfo* E, int pl)
 void UpdateEnvSnd(envsound* ep, envsoundinfo* E, int pl)
 {
 	int channel;
-	long* velocity;
+	LONGVECTOR3* velocity;
 	int i;
 	int snd;
 
@@ -3598,7 +3609,7 @@ void UpdateEnvSnd(envsound* ep, envsoundinfo* E, int pl)
 			}
 
 			if (ep[snd].flags & 0x10)
-				velocity = player[pl].camera_vel;
+				velocity = (LONGVECTOR3*)player[pl].camera_vel;
 			else
 				velocity = NULL;
 
@@ -3706,7 +3717,9 @@ void LeadHorn(CAR_DATA* cp)
 		else
 			carBank = cp->ap.model - 1;
 
-		Start3DTrackingSound(-1, SOUND_BANK_CARS, carBank * 3 + 2, (VECTOR*)cp->hd.where.t, cp->st.n.linearVelocity);
+		Start3DTrackingSound(-1, SOUND_BANK_CARS, carBank * 3 + 2, 
+			(VECTOR*)cp->hd.where.t, 
+			(LONGVECTOR3*)cp->st.n.linearVelocity);
 
 		horn_time = 0;
 	}

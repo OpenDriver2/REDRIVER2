@@ -51,7 +51,7 @@ extern ROAD_MAP_LUMP_DATA roadMapLumpData;
 
 extern int NumTempJunctions;
 extern DRIVER2_JUNCTION *Driver2JunctionsPtr;
-extern ulong *Driver2TempJunctionsPtr;
+extern u_int* Driver2TempJunctionsPtr;
 extern int NumDriver2Junctions;
 
 extern int NumDriver2Straights;

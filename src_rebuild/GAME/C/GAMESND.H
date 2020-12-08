@@ -54,13 +54,13 @@ extern void BodSay(int phrase); // 0x00052694
 
 extern void MissionSay(int phrase); // 0x000526D0
 
-extern long jsqrt(unsigned long a); // 0x0005270C
+extern int jsqrt(u_int a); // 0x0005270C
 
 extern void InitDopplerSFX(); // 0x0004E710
 
 extern void DoDopplerSFX(); // 0x0004E790
 
-extern void DoPoliceLoudhailer(int cars, unsigned short *indexlist, unsigned long *dist); // 0x0004F4A0
+extern void DoPoliceLoudhailer(int cars, unsigned short *indexlist, uint* dist); // 0x0004F4A0
 
 extern void CollisionSound(char player_id, CAR_DATA *cp, int impact, int car_car); // 0x0004F668
 
@@ -76,7 +76,7 @@ extern void InitMusic(int musicnum); // 0x000500E4
 
 extern void InitTunnels(char n); // 0x0005243C
 
-extern int AddTunnel(long x1, long y1, long z1, long x2, long y2, long z2); // 0x00052848
+extern int AddTunnel(int x1, int y1, int z1, int x2, int y2, int z2); // 0x00052848
 
 extern void Tunnels(tunnelinfo *T); // 0x0005027C
 
@@ -86,9 +86,9 @@ extern void InitEnvSnd(int num_envsnds); // 0x00052388
 
 extern int SetEnvSndVol(int snd, int vol); // 0x00052168
 
-extern void SetEnvSndPos(int snd, long px, long pz); // 0x00052904
+extern void SetEnvSndPos(int snd, int px, int pz); // 0x00052904
 
-extern int AddEnvSnd(int type, char flags, int bank, int sample, int vol, long px, long pz, long px2, long pz2); // 0x00050C08
+extern int AddEnvSnd(int type, char flags, int bank, int sample, int vol, int px, int pz, int px2, int pz2); // 0x00050C08
 
 extern void IdentifyZone(envsound *ep, envsoundinfo *E, int pl); // 0x00050E08
 

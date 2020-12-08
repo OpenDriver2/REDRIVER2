@@ -730,7 +730,7 @@ void SaveReplay(int direction)
 	}
 	else
 	{
-		sprintf(filename, "CHASE.D2RP", gCurrentMissionNumber);
+		sprintf(filename, "CHASE.D2RP");// , gCurrentMissionNumber);
 	}
 #else
 	sprintf(filename, "CHASE.D2RP", gCurrentMissionNumber);

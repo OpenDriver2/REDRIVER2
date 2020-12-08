@@ -592,7 +592,7 @@ void ApplyDamage(CAR_DATA *cp, char region, int value, char fakeDamage)
 	// End Line: 1169
 
 // [D] [T]
-int DamageCar3D(CAR_DATA *cp, LONGVECTOR* delta, int strikeVel, CAR_DATA *pOtherCar)
+int DamageCar3D(CAR_DATA *cp, LONGVECTOR4* delta, int strikeVel, CAR_DATA *pOtherCar)
 {
 	char region;
 	int value;
@@ -949,9 +949,9 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 	VECTOR tempwhere;
 	SVECTOR boxDisp;
 	VECTOR velocity;
-	LONGVECTOR pointVel;
-	LONGVECTOR reaction;
-	LONGVECTOR lever;
+	LONGVECTOR4 pointVel;
+	LONGVECTOR4 reaction;
+	LONGVECTOR4 lever;
 	VECTOR LeafPosition;
 	VECTOR lamp_velocity;
 	int debris_colour;

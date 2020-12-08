@@ -195,7 +195,7 @@ int wantedTimeOfDay = -1;
 int wantedWeather = -1;
 
 MS_TARGET* MissionTargets;
-unsigned long* MissionScript;
+u_int* MissionScript;
 char* MissionStrings;
 char* gMissionTitle = NULL;
 
@@ -210,7 +210,7 @@ static char NewLeadDelay = 0;
 #define MISSIOH_IDENT (('D' << 24) | ('2' << 16) | ('M' << 8) | 'S' )
 
 MR_MISSION Mission;
-u_long MissionStack[16][16];
+u_int MissionStack[16][16];
 MR_THREAD MissionThreads[16];
 
 unsigned char playercollected[2] = { 0, 0 };
@@ -283,7 +283,7 @@ void InitialiseMissionDefaults(void)
 		Mission.message_string[i] = NULL;
 	}
 
-	Driver2TempJunctionsPtr = (ulong *)_overlay_buffer;
+	Driver2TempJunctionsPtr = (uint*)_overlay_buffer;
 	NumTempJunctions = 0;
 	gPlayerWithTheFlag = -1;
 	last_flag = -1;
@@ -388,9 +388,9 @@ void LoadMission(int missionnum)
 	int *routedata;
 	uint loadsize;
 	char filename[32];
-	unsigned long header;
-	unsigned long length;
-	unsigned long offset;
+	u_int header;
+	u_int length;
+	u_int offset;
 
 	InitialiseMissionDefaults();
 
@@ -440,7 +440,7 @@ void LoadMission(int missionnum)
 
 	MissionHeader = MissionLoadAddress;
 	MissionTargets = (MS_TARGET *)((int)&MissionLoadAddress->id + MissionLoadAddress->size);
-	MissionScript = (ulong *)(MissionTargets + 16);
+	MissionScript = (u_int *)(MissionTargets + 16);
 	MissionStrings = (char *)(((MS_TARGET *)MissionScript)->data + MissionLoadAddress->strings);
 
 	if (MissionLoadAddress->route && !NewLevel)
@@ -1476,7 +1476,7 @@ void SetPlayerMessage(int player, char *message, int priority, int seconds)
 // [D] [T]
 int TargetComplete(MS_TARGET *target, int player)
 {
-	unsigned long complete;
+	u_int complete;
 
 	if (player == 0) 
 	{
@@ -1534,7 +1534,7 @@ int TargetComplete(MS_TARGET *target, int player)
 // [D] [T]
 int TargetActive(MS_TARGET *target, int player)
 {
-	unsigned long active;
+	u_int active;
 
 	if (player == 0) 
 	{
@@ -1801,7 +1801,7 @@ void HandleMissionThreads(void)
 	int i;
 	MR_THREAD* thread;
 	int running;
-	unsigned long value;
+	u_int value;
 
 	for (i = 0; i < 16; i++)
 		MissionTargets[i].data[1] &= ~0x600;
@@ -1873,7 +1873,7 @@ void HandleMissionThreads(void)
 	// End Line: 5061
 
 // [D] [T]
-int MRCommand(MR_THREAD *thread, ulong cmd)
+int MRCommand(MR_THREAD *thread, u_int cmd)
 {
 	long val1;
 	long val2;
@@ -2125,7 +2125,7 @@ int MRCommand(MR_THREAD *thread, ulong cmd)
 	// End Line: 7384
 
 // [D] [T]
-int MROperator(MR_THREAD *thread, ulong op)
+int MROperator(MR_THREAD *thread, u_int op)
 {
     long val1;
     long val2;
@@ -2202,7 +2202,7 @@ int MROperator(MR_THREAD *thread, ulong op)
 	// End Line: 7496
 
 // [D] [T]
-int MRFunction(MR_THREAD *thread, ulong fnc)
+int MRFunction(MR_THREAD *thread, u_int fnc)
 {
 	long value;
 
@@ -2241,7 +2241,7 @@ int MRFunction(MR_THREAD *thread, ulong fnc)
 	// End Line: 7546
 
 // [D] [T]
-void MRInitialiseThread(MR_THREAD *thread, ulong *pc, unsigned char player)
+void MRInitialiseThread(MR_THREAD *thread, u_int *pc, u_char player)
 {
 	thread->active = 1;
 	thread->pc = pc;
@@ -2275,7 +2275,7 @@ void MRInitialiseThread(MR_THREAD *thread, ulong *pc, unsigned char player)
 	// End Line: 7570
 
 // [D] [T]
-void MRStartThread(MR_THREAD *callingthread, ulong addr, unsigned char player)
+void MRStartThread(MR_THREAD *callingthread, u_int addr, unsigned char player)
 {
 	int i;
 	for (i = 0; i < 16; i++)
@@ -2501,7 +2501,7 @@ long MRGetParam(MR_THREAD *thread)
 	// End Line: 7778
 
 // [D] [T]
-long MRGetVariable(MR_THREAD *thread, ulong var)
+long MRGetVariable(MR_THREAD *thread, u_int var)
 {
 	switch (var)
 	{
@@ -2537,7 +2537,7 @@ long MRGetVariable(MR_THREAD *thread, ulong var)
 	// End Line: 7830
 
 // [D] [T]
-void MRSetVariable(MR_THREAD *thread, ulong var, long value)
+void MRSetVariable(MR_THREAD *thread, u_int var, long value)
 {
 	switch (var)
 	{
@@ -2678,12 +2678,12 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 {
 	int phrase;
 	int playerId;
-	unsigned long dist;
+	u_int dist;
 	char *message;
 	int ret;
 	VECTOR tv;
 	VECTOR pv;
-	LONGVECTOR pos;
+	LONGVECTOR4 pos;
 	int slot;
 
 	ret = 0;
@@ -3443,7 +3443,7 @@ int MRCreateCar(MS_TARGET *target)
 {
 	int curslot;
 	int newslot;
-	LONGVECTOR pos;
+	LONGVECTOR4 pos;
 	char playerid;
 
 	pos[0] = target->data[3];

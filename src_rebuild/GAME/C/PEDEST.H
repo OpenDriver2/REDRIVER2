@@ -16,7 +16,7 @@ extern PEDESTRIAN *pUsedPeds;
 
 extern void IHaveThePower(); // 0x0006DD34
 
-extern void ProcessTannerPad(PEDESTRIAN *pPed, unsigned long pad, char PadSteer, char use_analogue); // 0x0006DF54
+extern void ProcessTannerPad(PEDESTRIAN *pPed, u_int pad, char PadSteer, char use_analogue); // 0x0006DF54
 
 extern void InitTanner(); // 0x0006E408
 
@@ -30,13 +30,13 @@ extern void DestroyCivPedestrians(); // 0x00072FD0
 
 extern void DestroyPedestrian(PEDESTRIAN *pPed); // 0x00071FB4
 
-extern int ActivatePlayerPedestrian(CAR_DATA *pCar, char *padId, int direction, LONGVECTOR* position, PED_MODEL_TYPES playerType); // 0x0006E6C4
+extern int ActivatePlayerPedestrian(CAR_DATA *pCar, char *padId, int direction, LONGVECTOR4* position, PED_MODEL_TYPES playerType); // 0x0006E6C4
 
 extern PEDESTRIAN * CreatePedestrian(); // 0x000720AC
 
 extern void PlaceRoadBlockCops(); // 0x0006EC88
 
-extern int CreatePedAtLocation(LONGVECTOR* pPos, int pedType); // 0x0006F00C
+extern int CreatePedAtLocation(LONGVECTOR4* pPos, int pedType); // 0x0006F00C
 
 extern void DrawAllPedestrians(); // 0x00072290
 

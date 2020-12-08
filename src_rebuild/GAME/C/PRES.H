@@ -15,7 +15,7 @@ extern void PrintStringCentred(char *pString, short y); // 0x00074BD8
 
 extern void LoadFont(char *buffer); // 0x00073CC8
 
-extern void StoreClut2(unsigned long *pDest, int x, int y); // 0x00074C28
+extern void StoreClut2(u_long *pDest, int x, int y); // 0x00074C28
 
 extern void SetCLUT16Flags(unsigned short clutID, unsigned short mask, char transparent); // 0x00074C64
 

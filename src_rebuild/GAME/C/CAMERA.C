@@ -47,8 +47,8 @@ unsigned short paddCamera;
 char cameraview = 0;
 int CameraCnt = 0;
 
-static LONGVECTOR basePos; // [A]
-static long baseDir = 0;
+static LONGVECTOR4 basePos; // [A]
+static int baseDir = 0;
 
 char tracking_car = 0;
 

@@ -1,12 +1,30 @@
 #ifndef DR2TYPES_H
 #define DR2TYPES_H
 
+// Platform types
+typedef unsigned char u_char;
+typedef unsigned short u_short;
+typedef unsigned int u_int;
+typedef unsigned long u_long;
+
+typedef char schar;
+typedef unsigned char uchar;
+typedef unsigned short ushort;
+typedef unsigned int uint;
+typedef unsigned long ulong;
+
+#ifndef __GNUC__
+typedef unsigned short uid_t;
+typedef unsigned short gid_t;
+#endif
+
 // Driver 2 system types
+typedef short	SHORTVECTOR4[4];
 
-typedef short SHORTVECTOR[4];
+typedef long	LONGVECTOR3[3];
+typedef long	LONGVECTOR4[4];
 
-typedef long LONGVECTOR[4];
-typedef long LONGQUATERNION[4];
+typedef long	LONGQUATERNION[4];
 
 struct VECTOR2
 {
@@ -16,16 +34,16 @@ struct VECTOR2
 
 struct USVECTOR_NOPAD
 {
-	unsigned short vx;
-	unsigned short vy;
-	unsigned short vz;
+	u_short vx;
+	u_short vy;
+	u_short vz;
 };
 
 struct VECTOR_NOPAD
 {
-	long vx;
-	long vy;
-	long vz;
+	int vx;
+	int vy;
+	int vz;
 };
 
 struct SVECTOR_NOPAD
@@ -72,16 +90,16 @@ struct BSPHERE
 
 struct RGB
 {
-	unsigned char r;
-	unsigned char g;
-	unsigned char b;
-	unsigned char pad;
+	u_char r;
+	u_char g;
+	u_char b;
+	u_char pad;
 };
 
 struct UV_INFO
 {
-	unsigned char u;
-	unsigned char v;
+	u_char u;
+	u_char v;
 };
 
 struct XYPAIR
@@ -106,9 +124,9 @@ struct GAP_INFO
 
 struct PADRECORD
 {
-	unsigned char pad;
-	unsigned char analogue;
-	unsigned char run;
+	u_char pad;
+	u_char analogue;
+	u_char run;
 };
 
 struct ARC_ENTRY
@@ -136,7 +154,7 @@ struct DRIVER2_STRAIGHT
 {
 	int Midx;
 	int Midz;
-	unsigned short length;
+	u_short length;
 	short bing;
 	short angle;
 	short ConnectIdx[4];
@@ -154,13 +172,13 @@ struct OLD_DRIVER2_JUNCTION
 	short width;
 	short angle;
 	short ExitIdx[4];
-	unsigned short flags;
+	u_short flags;
 };
 
 struct DRIVER2_JUNCTION
 {
 	short ExitIdx[4];
-	unsigned long flags;
+	u_int flags;
 };
 
 typedef struct _sdPlane
@@ -191,7 +209,7 @@ struct WHEEL
 	char susCompression;
 	char locked;
 	char onGrass;
-	unsigned char surface;
+	u_char surface;
 };
 
 struct OrientedBox
@@ -205,8 +223,8 @@ typedef struct _HANDLING_DATA
 {
 	MATRIX where;
 	MATRIX drawCarMat;
-	long acc[4];
-	long aacc[4];
+	LONGVECTOR4 acc;
+	LONGVECTOR4 aacc;
 	int wheel_speed;
 	int speed;
 	int direction;
@@ -226,10 +244,10 @@ union RigidBodyState
 {
 	long v[13];
 	struct {
-		long fposition[3];
+		LONGVECTOR3 fposition;
 		LONGQUATERNION orientation;
-		long linearVelocity[3];
-		long angularVelocity[3];
+		LONGVECTOR3 linearVelocity;
+		LONGVECTOR3 angularVelocity;
 	} n;
 };
 
@@ -304,7 +322,7 @@ typedef struct _APPEARANCE_DATA
 struct CIV_ROUTE_ENTRY
 {
 	short dir;
-	unsigned short pathType;
+	u_short pathType;
 	int distAlongSegment;
 	int x;
 	int z;
@@ -315,24 +333,24 @@ struct CIV_STATE
 	int currentRoad;
 	int currentNode;
 	CIV_ROUTE_ENTRY* ctrlNode;
-	unsigned char ctrlState;
-	unsigned char trafficLightPhaseId;
-	unsigned char changeLane;
-	unsigned char turnDir;
+	u_char ctrlState;
+	u_char trafficLightPhaseId;
+	u_char changeLane;
+	u_char turnDir;
 	char brakeLight;
-	unsigned char oldLane;
-	unsigned char changeLaneCount;
-	unsigned char pad3;
+	u_char oldLane;
+	u_char changeLaneCount;
+	u_char pad3;
 	int turnNode;
 	int changeLaneIndicateCount;
 	int carPauseCnt;
 	int velRatio;
 	CIV_ROUTE_ENTRY targetRoute[13];
 	CIV_ROUTE_ENTRY* pnode;
-	unsigned char maxSpeed;
-	unsigned char thrustState;
-	unsigned char carMustDie;
-	unsigned char currentLane;
+	u_char maxSpeed;
+	u_char thrustState;
+	u_char carMustDie;
+	u_char currentLane;
 };
 
 struct COP
@@ -342,7 +360,7 @@ struct COP
 	char justPinged;
 	char close_pursuit;
 	char dying;
-	unsigned short DistanceToPlayer;
+	u_short DistanceToPlayer;
 	short desiredSpeed;
 	short recalcTimer;
 	short stuckTimer;
@@ -412,9 +430,9 @@ typedef struct _CAR_DATA
 	HANDLING_DATA hd;
 	RigidBodyState st;
 	APPEARANCE_DATA ap;
-	unsigned char hndType;
-	unsigned char controlType;
-	unsigned char controlFlags;
+	u_char hndType;
+	u_char controlType;
+	u_char controlFlags;
 	char id;
 	union {
 		char* padid;
@@ -430,8 +448,8 @@ typedef struct _CAR_DATA
 	char wasOnGround;
 	char lowDetail;
 	short wheel_angle;
-	unsigned short totalDamage;
-	long lastPad;
+	u_short totalDamage;
+	int lastPad;
 } CAR_DATA;
 
 typedef struct _COP_DATA
@@ -482,10 +500,10 @@ struct FixedEvent
 	VECTOR position;
 	short rotation;
 	short active;
-	unsigned short initialRotation;
-	unsigned short finalRotation;
-	unsigned short minSpeed;
-	unsigned short maxSpeed;
+	u_short initialRotation;
+	u_short finalRotation;
+	u_short minSpeed;
+	u_short maxSpeed;
 	short flags;
 	short radius;
 	int model;
@@ -495,34 +513,34 @@ struct FixedEvent
 
 typedef struct MAPPING
 {
-	unsigned short button_lookup[16];
-	unsigned short swap_analog;
-	unsigned short reserved1;
+	u_short button_lookup[16];
+	u_short swap_analog;
+	u_short reserved1;
 } *LPMAPPING;
 
 struct SAVED_PLAYER_POS
 {
-	unsigned short type;
+	u_short type;
 	short direction;
-	long vx;
-	long vy;
-	long vz;
-	unsigned long felony;
-	unsigned short totaldamage;
+	int vx;
+	int vy;
+	int vz;
+	u_int felony;
+	u_short totaldamage;
 	short damage[6];
 };
 
 struct SAVED_CAR_POS
 {
 	char active;
-	unsigned char model;
-	unsigned char palette;
-	unsigned short totaldamage;
-	unsigned short damage[6];
+	u_char model;
+	u_char palette;
+	u_short totaldamage;
+	u_short damage[6];
 	short direction;
-	long vx;
-	long vy;
-	long vz;
+	int vx;
+	int vy;
+	int vz;
 };
 
 struct MISSION_DATA
@@ -549,69 +567,50 @@ struct SCORE_TABLES
 
 struct ACTIVE_CHEATS
 {
-	unsigned char cheat1 : 1;
-	unsigned char cheat2 : 1;
-	unsigned char cheat3 : 1;
-	unsigned char cheat4 : 1;
-	unsigned char cheat5 : 1;
-	unsigned char cheat6 : 1;
-	unsigned char cheat7 : 1;
-	unsigned char cheat8 : 1;
-	unsigned char cheat9 : 1;
-	unsigned char cheat10 : 1;
-	unsigned char cheat11 : 1;
-	unsigned char cheat12 : 1;
-	unsigned char cheat13 : 1;
-	unsigned char cheat14 : 1;
-	unsigned char cheat15 : 1;
-	unsigned char cheat16 : 1;
-	unsigned char reserved1;
-	unsigned char reserved2;
+	u_char cheat1 : 1;
+	u_char cheat2 : 1;
+	u_char cheat3 : 1;
+	u_char cheat4 : 1;
+	u_char cheat5 : 1;
+	u_char cheat6 : 1;
+	u_char cheat7 : 1;
+	u_char cheat8 : 1;
+	u_char cheat9 : 1;
+	u_char cheat10 : 1;
+	u_char cheat11 : 1;
+	u_char cheat12 : 1;
+	u_char cheat13 : 1;
+	u_char cheat14 : 1;
+	u_char cheat15 : 1;
+	u_char cheat16 : 1;
+	u_char reserved1;
+	u_char reserved2;
 };
 
 struct STREAM_SOURCE
 {
-	unsigned char type;
-	unsigned char model;
-	unsigned char palette;
+	u_char type;
+	u_char model;
+	u_char palette;
 	char controlType;
-	unsigned short flags;
-	unsigned short rotation;
+	u_short flags;
+	u_short rotation;
 	VECTOR_NOPAD position;
 	int totaldamage;
 	int damage[6];
 };
 
-typedef unsigned char u_char;
-typedef unsigned short u_short;
-typedef unsigned int u_int;
-typedef unsigned long u_long;
-
-typedef char schar;
-typedef unsigned char uchar;
-typedef unsigned short ushort;
-typedef unsigned int uint;
-typedef unsigned long ulong;
-
-#ifndef __GNUC__
-typedef unsigned short uid_t;
-
-typedef unsigned short gid_t;
-#endif
-
-typedef void (*SsMarkCallbackProc)();
-
 struct MODEL
 {
-	unsigned short shape_flags;
-	unsigned short flags2;
+	u_short shape_flags;
+	u_short flags2;
 	short instance_number;
-	unsigned char tri_verts;
+	u_char tri_verts;
 	unsigned char zBias;
 	short bounding_sphere;
-	unsigned short num_point_normals;
-	unsigned short num_vertices;
-	unsigned short num_polys;
+	u_short num_point_normals;
+	u_short num_vertices;
+	u_short num_polys;
 	int vertices;
 	int poly_block;
 	int normals;
@@ -631,21 +630,21 @@ typedef enum PAUSEMODE
 
 struct UV
 {
-	unsigned char u0;
-	unsigned char v0;
-	unsigned char u1;
-	unsigned char v1;
-	unsigned char u2;
-	unsigned char v2;
-	unsigned char u3;
-	unsigned char v3;
+	u_char u0;
+	u_char v0;
+	u_char u1;
+	u_char v1;
+	u_char u2;
+	u_char v2;
+	u_char u3;
+	u_char v3;
 };
 
 struct TEXTURE_DETAILS
 {
 	UV coords;
-	unsigned short tpageid;
-	unsigned short clutid;
+	u_short tpageid;
+	u_short clutid;
 	char texture_number;
 	char texture_page;
 };
@@ -653,9 +652,9 @@ struct TEXTURE_DETAILS
 struct CELL_OBJECT
 {
 	VECTOR_NOPAD pos;
-	unsigned char pad;
-	unsigned char yang;
-	unsigned short type;
+	u_char pad;
+	u_char yang;
+	u_short type;
 };
 
 struct ANIMATED_OBJECT
@@ -818,11 +817,11 @@ struct MR_TIMER
 {
 	short x;
 	short y;
-	unsigned char flags;
-	unsigned char min;
-	unsigned char sec;
-	unsigned char frac;
-	long count;
+	u_char flags;
+	u_char min;
+	u_char sec;
+	u_char frac;
+	int count;
 };
 
 enum PED_ACTION_TYPE : char
@@ -879,7 +878,7 @@ typedef struct PEDESTRIAN
 	char doing_turn;
 	char finished_turn;
 	char seat_index;
-	unsigned char pallet;
+	u_char pallet;
 	PED_ACTION_TYPE type;
 } *LPPEDESTRIAN;
 
@@ -923,8 +922,8 @@ typedef struct _PERCENTAGE_BAR
 	short ypos;
 	short width;
 	short height;
-	unsigned short position;
-	unsigned short max;
+	u_short position;
+	u_short max;
 	COLOUR_BAND* pColourBand;
 	int flags;
 	int active;
@@ -951,8 +950,8 @@ struct OVERMAP
 	int y_offset;
 	int width;
 	int height;
-	unsigned char toptile;
-	unsigned char dummy;
+	u_char toptile;
+	u_char dummy;
 	int scale;
 };
 
@@ -961,21 +960,21 @@ struct REPLAY_PARAMETER_BLOCK
 	int RecordingEnd;
 	VECTOR_NOPAD lead_car_start;
 	short Lead_car_dir;
-	unsigned char timeofday;
-	unsigned char weather;
+	u_char timeofday;
+	u_char weather;
 };
 
 struct REPLAY_SAVE_HEADER
 {
-	unsigned long magic;
-	unsigned char GameLevel;
-	unsigned char GameType;
-	unsigned char reserved1;
-	unsigned char NumReplayStreams;
-	unsigned char NumPlayers;
-	unsigned char RandomChase;
-	unsigned char CutsceneEvent;
-	unsigned char gCopDifficultyLevel;
+	u_int magic;
+	u_char GameLevel;
+	u_char GameType;
+	u_char reserved1;
+	u_char NumReplayStreams;
+	u_char NumPlayers;
+	u_char RandomChase;
+	u_char CutsceneEvent;
+	u_char gCopDifficultyLevel;
 	MISSION_DATA SavedData;
 	ACTIVE_CHEATS ActiveCheats;
 	int wantedCar[2];
@@ -997,14 +996,14 @@ struct REPLAY_STREAM
 	PADRECORD* InitialPadRecordBuffer;
 	PADRECORD* PadRecordBuffer;
 	PADRECORD* PadRecordBufferEnd;
-	unsigned char playbackrun;
+	u_char playbackrun;
 	int length;
 	int padCount;
 };
 
 typedef struct _PING_PACKET
 {
-	unsigned short frame;
+	u_short frame;
 	char carId;
 	char cookieCount;
 } PING_PACKET;
@@ -1095,8 +1094,8 @@ typedef struct _ExOBJECT
 
 struct BOMB
 {
-	unsigned char flags;
-	unsigned char active;
+	u_char flags;
+	u_char active;
 	short rot_speed;
 	VECTOR position;
 	VECTOR velocity;
@@ -1118,7 +1117,7 @@ struct COLLISION_PACKET
 
 typedef struct _PLAYER
 {
-	long pos[4];
+	LONGVECTOR4 pos;
 	int dir;
 	VECTOR* spoolXZ;
 	VECTOR cameraPos;
@@ -1128,19 +1127,19 @@ typedef struct _PLAYER
 	int headPos;
 	int headTarget;
 	int viewChange;
-	unsigned char dying;
-	unsigned char upsideDown;
+	u_char dying;
+	u_char upsideDown;
 	char onGrass;
 	char targetCarId;
 	char cameraView;
-	unsigned char headTimer;
+	u_char headTimer;
 	char playerType;
 	char worldCentreCarId;
 	char playerCarId;
 	char cameraCarId;
 	char padid;
 	char car_is_sounding;
-	long camera_vel[3];
+	LONGVECTOR3 camera_vel;
 	int snd_cam_ang;
 	skidinfo skidding;
 	skidinfo wheelnoise;
@@ -1160,40 +1159,40 @@ struct XZPAIR
 
 struct CELL_DATA
 {
-	unsigned short num;
+	u_short num;
 };
 
 struct PACKED_CELL_OBJECT
 {
 	USVECTOR_NOPAD pos;
-	unsigned short value;
+	u_short value;
 };
 
 typedef struct PAD
 {
-	unsigned char active;
-	unsigned char type;
-	unsigned char dualshock;
-	unsigned char reserved1;
-	unsigned short direct;
-	unsigned short dirnew;
+	u_char active;
+	u_char type;
+	u_char dualshock;
+	u_char reserved1;
+	u_short direct;
+	u_short dirnew;
 	char diranalog[4];
-	unsigned short mapped;
-	unsigned short mapnew;
+	u_short mapped;
+	u_short mapnew;
 	char mapanalog[4];
 	MAPPING mappings;
-	unsigned char alarmShakeCounter;
-	unsigned char asd;
-	unsigned char sdf;
-	unsigned char dfg;
-	unsigned char delay;
-	unsigned char port;
-	unsigned char state;
-	unsigned char dsactive;
-	unsigned char* shakeptr;
-	unsigned char motors[2];
-	unsigned char shake_type;
-	unsigned char vibrate;
+	u_char alarmShakeCounter;
+	u_char asd;
+	u_char sdf;
+	u_char dfg;
+	u_char delay;
+	u_char port;
+	u_char state;
+	u_char dsactive;
+	u_char* shakeptr;
+	u_char motors[2];
+	u_char shake_type;
+	u_char vibrate;
 } *LPPAD;
 
 struct CELL_ITERATOR
@@ -1221,14 +1220,14 @@ struct TEXTURE_LOOKUP
 
 struct plotCarGlobals
 {
-	unsigned char* primptr;
+	u_char* primptr;
 	OTTYPE* ot;
-	unsigned long intensity;
-	unsigned short* pciv_clut;
-	unsigned long ShineyTPageASL16;
-	unsigned long ShineyClutASL16;
-	unsigned char* damageLevel;
-	unsigned char* shineyTable;
+	u_int intensity;
+	u_short* pciv_clut;
+	u_int ShineyTPageASL16;
+	u_int ShineyClutASL16;
+	u_char* damageLevel;
+	u_char* shineyTable;
 	int ghost;
 };
 
@@ -1237,10 +1236,10 @@ typedef struct _EXTRA_CIV_DATA
 	int surfInd;
 	int distAlongSegment;
 	short angle;
-	unsigned short ctrlState;
+	u_short ctrlState;
 	int thrustState;
-	unsigned char palette;
-	unsigned char controlFlags;
+	u_char palette;
+	u_char controlFlags;
 } EXTRA_CIV_DATA;
 
 struct COP_DATA
@@ -1287,16 +1286,16 @@ struct PLAYBACKCAMERA
 	short scr_z;
 	short gCameraMaxDistance;
 	short gCameraAngle;
-	unsigned char cameraview;
-	unsigned char next;
-	unsigned char prev;
-	unsigned char idx;
+	u_char cameraview;
+	u_char next;
+	u_char prev;
+	u_char idx;
 };
 
 struct CUTSCENE_BUFFER
 {
 	int numResident;
-	unsigned char residentCutscenes[4];
+	u_char residentCutscenes[4];
 	char(*residentPointers[4]);
 	char* currentPointer;
 	int bytesFree;
@@ -1305,8 +1304,8 @@ struct CUTSCENE_BUFFER
 
 struct CUTSCENE_INFO
 {
-	unsigned short offset;
-	unsigned short size;
+	u_short offset;
+	u_short size;
 };
 
 struct CUTSCENE_HEADER
@@ -1317,20 +1316,20 @@ struct CUTSCENE_HEADER
 
 struct TPAN
 {
-	unsigned char texture_page;
-	unsigned char texture_number;
+	u_char texture_page;
+	u_char texture_number;
 };
 
 struct POLYFT4
 {
-	unsigned char id;
-	unsigned char texture_set;
-	unsigned char texture_id;
-	unsigned char spare;
-	unsigned char v0;
-	unsigned char v1;
-	unsigned char v2;
-	unsigned char v3;
+	u_char id;
+	u_char texture_set;
+	u_char texture_id;
+	u_char spare;
+	u_char v0;
+	u_char v1;
+	u_char v2;
+	u_char v3;
 	UV_INFO uv0;
 	UV_INFO uv1;
 	UV_INFO uv2;
@@ -1340,18 +1339,18 @@ struct POLYFT4
 
 struct POLYGT4
 {
-	unsigned char id;
-	unsigned char texture_set;
-	unsigned char texture_id;
-	unsigned char spare;
-	unsigned char v0;
-	unsigned char v1;
-	unsigned char v2;
-	unsigned char v3;
-	unsigned char n0;
-	unsigned char n1;
-	unsigned char n2;
-	unsigned char n3;
+	u_char id;
+	u_char texture_set;
+	u_char texture_id;
+	u_char spare;
+	u_char v0;
+	u_char v1;
+	u_char v2;
+	u_char v3;
+	u_char n0;
+	u_char n1;
+	u_char n2;
+	u_char n3;
 	UV_INFO uv0;
 	UV_INFO uv1;
 	UV_INFO uv2;
@@ -1365,15 +1364,15 @@ struct SMOKE
 	UnpaddedCharVector drift;
 	UnpaddedCharVector drift_change;
 	UnpaddedHackVector final_tail_pos;
-	unsigned char step;
-	unsigned char pos;
+	u_char step;
+	u_char pos;
 	short start_w;
 	short final_w;
 	char life;
 	char halflife;
-	unsigned short flags;
-	unsigned char num;
-	unsigned char t_step;
+	u_short flags;
+	u_char num;
+	u_char t_step;
 	short transparency;
 };
 
@@ -1381,10 +1380,10 @@ struct DEBRIS
 {
 	VECTOR position;
 	SVECTOR direction;
-	unsigned short life;
-	unsigned short flags;
-	unsigned short num;
-	unsigned short pos;
+	u_short life;
+	u_short flags;
+	u_short num;
+	u_short pos;
 	RGB rgb;
 	char step;
 	char type;
@@ -1394,10 +1393,10 @@ struct LEAF
 {
 	VECTOR position;
 	SVECTOR direction;
-	unsigned short life;
-	unsigned short flags;
-	unsigned short num;
-	unsigned short pos;
+	u_short life;
+	u_short flags;
+	u_short num;
+	u_short pos;
 	RGB rgb;
 	char step;
 	char type;
@@ -1485,21 +1484,22 @@ struct REPLAY_ICON
 	short ty;
 };
 
+// Primitive plot context used in scratchpad
 struct _pct
 {
 	struct DB* current;
-	unsigned short(*ptexture_pages)[128];
-	unsigned short(*ptexture_cluts)[128][32];
-	long f4colourTable[32];
+	u_short(*ptexture_pages)[128];
+	u_short(*ptexture_cluts)[128][32];
+	int f4colourTable[32];
 	int* polySizes;
 	char* primptr;
 	OTTYPE* ot;
-	unsigned long clut;
-	unsigned long tpage;
-	unsigned long colour;
+	u_int clut;
+	u_int tpage;
+	u_int colour;
 	int flags;
 	SVECTOR* verts;
-	unsigned long lastTexInfo;
+	u_int lastTexInfo;
 	int scribble[8];
 	int model;
 };
@@ -1513,37 +1513,37 @@ struct MATRIX2
 
 struct Spool
 {
-	unsigned short offset;
-	unsigned char connected_areas[2];
-	unsigned char pvs_size;
-	unsigned char cell_data_size[3];
-	unsigned char super_region;
-	unsigned char num_connected_areas;
-	unsigned char roadm_size;
-	unsigned char roadh_size;
+	u_short offset;
+	u_char connected_areas[2];
+	u_char pvs_size;
+	u_char cell_data_size[3];
+	u_char super_region;
+	u_char num_connected_areas;
+	u_char roadm_size;
+	u_char roadh_size;
 };
 
 union VERT_INDEX
 {
 	struct {
-		unsigned char v0;
-		unsigned char v1;
-		unsigned char v2;
-		unsigned char v3;
+		u_char v0;
+		u_char v1;
+		u_char v2;
+		u_char v3;
 	};
 	uint value;
 };
 
 struct PL_POLYFT4
 {
-	unsigned char id;
-	unsigned char texture_set;
-	unsigned char texture_id;
-	unsigned char th;
-	unsigned char v0;
-	unsigned char v1;
-	unsigned char v2;
-	unsigned char v3;
+	u_char id;
+	u_char texture_set;
+	u_char texture_id;
+	u_char th;
+	u_char v0;
+	u_char v1;
+	u_char v2;
+	u_char v3;
 	UV_INFO uv0;
 	UV_INFO uv1;
 	UV_INFO uv2;
@@ -1558,8 +1558,8 @@ struct MVERTEX
 	union {
 		short val;
 		struct {
-			unsigned char u0;
-			unsigned char v0;
+			u_char u0;
+			u_char v0;
 		};
 	}uv;
 };
@@ -1568,7 +1568,7 @@ struct VERTEX
 {
 	DVECTOR coord;
 	UV_INFO uv_coord;
-	unsigned char pad[2];
+	u_char pad[2];
 };
 
 struct TRAILBLAZER_DATA
@@ -1582,8 +1582,8 @@ struct TRAILBLAZER_DATA
 struct SMASHED_CONE
 {
 	char cone;
-	unsigned char active : 7;
-	unsigned char side : 1;
+	u_char active : 7;
+	u_char side : 1;
 	short rot_speed;
 	VECTOR velocity;
 };
@@ -1698,22 +1698,22 @@ struct MULTICAR_DATA
 {
 	int x;
 	int z;
-	unsigned char palette;
-	unsigned char model;
+	u_char palette;
+	u_char model;
 	short rot;
 };
 
 struct RENDER_ARG
 {
-	unsigned char render;
-	unsigned char credits;
-	unsigned short recap;
+	u_char render;
+	u_char credits;
+	u_short recap;
 };
 
 struct RENDER_ARGS
 {
-	unsigned char nRenders;
-	unsigned char subtitle;
+	u_char nRenders;
+	u_char subtitle;
 	char screenx;
 	char screeny;
 	RENDER_ARG Args[4];
@@ -1721,8 +1721,8 @@ struct RENDER_ARGS
 
 typedef struct __envsound
 {
-	unsigned char type;
-	unsigned char flags;
+	u_char type;
+	u_char flags;
 	VECTOR pos;
 	VECTOR pos2;
 	int bank;
@@ -1746,7 +1746,7 @@ typedef struct __envsoundinfo
 	int thisS[4];
 	int playing_sound[4];
 	int chan[4];
-	unsigned long flags;
+	u_int flags;
 } envsoundinfo;
 
 struct SPEECH_QUEUE
@@ -1770,8 +1770,8 @@ typedef struct __othercarsound
 
 typedef struct __bitfield64
 {
-	long h;
-	long l;
+	int h;
+	int l;
 } bitfield64;
 
 struct GEAR_DESC
@@ -1796,10 +1796,10 @@ enum GAMEMODE
 
 struct MISSION_STEP
 {
-	unsigned char flags : 3;
-	unsigned char recap : 5;
-	unsigned char data : 7;
-	unsigned char disc : 1;
+	u_char flags : 3;
+	u_char recap : 5;
+	u_char data : 7;
+	u_char disc : 1;
 };
 
 struct BOUND_BOX
@@ -1857,18 +1857,18 @@ struct MAP_DATA
 
 struct GAME_SAVE_HEADER
 {
-	unsigned long magic;
-	unsigned char gMissionLadderPos;
-	unsigned char pad1;
-	unsigned char pad2;
-	unsigned char pad3;
+	u_int magic;
+	u_char gMissionLadderPos;
+	u_char pad1;
+	u_char pad2;
+	u_char pad3;
 	MISSION_DATA SavedData;
 	int reserved[8];
 };
 
 struct CONFIG_SAVE_HEADER
 {
-	unsigned long magic;
+	u_int magic;
 	int gMasterVolume;
 	int gMusicVolume;
 	int gSoundMode;
@@ -1947,8 +1947,8 @@ struct MENU_HEADER;
 struct MENU_ITEM
 {
 	char* Text;
-	unsigned char Type;
-	unsigned char Justify;
+	u_char Type;
+	u_char Justify;
 	pauseFunc func;
 	EXIT_VALUE ExitValue;
 	MENU_HEADER* SubMenu;
@@ -1958,7 +1958,7 @@ struct MENU_HEADER
 {
 	char* Title;
 	XYWH Bound;
-	unsigned char NumItems;
+	u_char NumItems;
 	MENU_ITEM* MenuItems;
 };
 
@@ -2061,23 +2061,23 @@ enum FAIL_REASON
 
 struct MR_THREAD
 {
-	unsigned char active;
-	unsigned char player;
-	unsigned long* initial_sp;
-	unsigned long* pc;
-	unsigned long* sp;
+	u_char active;
+	u_char player;
+	u_int* initial_sp;
+	u_int* pc;
+	u_int* sp;
 };
 
 struct POLYFT3
 {
-	unsigned char id;
-	unsigned char texture_set;
-	unsigned char texture_id;
-	unsigned char spare;
-	unsigned char v0;
-	unsigned char v1;
-	unsigned char v2;
-	unsigned char pad;
+	u_char id;
+	u_char texture_set;
+	u_char texture_id;
+	u_char spare;
+	u_char v0;
+	u_char v1;
+	u_char v2;
+	u_char pad;
 	UV_INFO uv0;
 	UV_INFO uv1;
 	UV_INFO uv2;
@@ -2087,18 +2087,18 @@ struct POLYFT3
 
 struct POLYGT3
 {
-	unsigned char id;
-	unsigned char texture_set;
-	unsigned char texture_id;
-	unsigned char spare;
-	unsigned char v0;
-	unsigned char v1;
-	unsigned char v2;
-	unsigned char pad;
-	unsigned char n0;
-	unsigned char n1;
-	unsigned char n2;
-	unsigned char pad2;
+	u_char id;
+	u_char texture_set;
+	u_char texture_id;
+	u_char spare;
+	u_char v0;
+	u_char v1;
+	u_char v2;
+	u_char pad;
+	u_char n0;
+	u_char n1;
+	u_char n2;
+	u_char pad2;
 	UV_INFO uv0;
 	UV_INFO uv1;
 	UV_INFO uv2;
@@ -2157,15 +2157,15 @@ enum TEXTURE_PALS
 struct PED_DATA
 {
 	char cWidth;
-	unsigned char cAdj;
+	u_char cAdj;
 	TEXTURE_DETAILS* ptd;
 	TEXTURE_PALS texPal;
 };
 
 struct tRay
 {
-	long org[4];
-	long dir[4];
+	LONGVECTOR4 org;
+	LONGVECTOR4 dir;
 };
 
 struct tRange
@@ -2190,8 +2190,8 @@ struct tNode
 	int vx;
 	int vy;
 	int vz;
-	unsigned short dist;
-	unsigned short ptoey;
+	u_short dist;
+	u_short ptoey;
 };
 
 struct PATHFIND_237fake
@@ -2243,13 +2243,13 @@ typedef struct PEDESTRIAN_ROADS
 
 struct OUT_FONTINFO
 {
-	unsigned char x;
-	unsigned char y;
+	u_char x;
+	u_char y;
 	char offx;
 	char offy;
-	unsigned char width;
-	unsigned char height;
-	unsigned short pad;
+	u_char width;
+	u_char height;
+	u_short pad;
 };
 
 struct FONT_DIGIT
@@ -2260,23 +2260,23 @@ struct FONT_DIGIT
 
 struct TEXINF
 {
-	unsigned short id;
-	unsigned short nameoffset;
-	unsigned char x;
-	unsigned char y;
-	unsigned char width;
-	unsigned char height;
+	u_short id;
+	u_short nameoffset;
+	u_char x;
+	u_char y;
+	u_char width;
+	u_char height;
 };
 
 struct SHADOWHDR
 {
-	unsigned long num_common_verts;
-	unsigned short num_verts_total;
-	unsigned short num_polys_total;
-	unsigned short vert_offsets[4];
-	unsigned short nverts[4];
-	unsigned short npolys[4];
-	unsigned long(*poly_block[4]);
+	u_int num_common_verts;
+	u_short num_verts_total;
+	u_short num_polys_total;
+	u_short vert_offsets[4];
+	u_short nverts[4];
+	u_short npolys[4];
+	u_int(*poly_block[4]);
 	SVECTOR* vertices;
 };
 
@@ -2318,45 +2318,45 @@ struct __LSBDinfo
 struct CHANNEL_DATA
 {
 	SpuVoiceAttr attr;
-	unsigned char loop;
-	unsigned char locked;
-	unsigned short time;
-	long samplerate;
+	u_char loop;
+	u_char locked;
+	u_short time;
+	int samplerate;
 	char player;
-	long srcvolume;
-	long volumeScale;
-	unsigned short srcpitch;
-	unsigned short dopplerScale;
-	long cameradist;
-	long lastcameradist;
+	int srcvolume;
+	int volumeScale;
+	u_short srcpitch;
+	u_short dopplerScale;
+	int cameradist;
+	int lastcameradist;
 	VECTOR* srcposition;
 	VECTOR position;
-	long* srcvelocity;
+	LONGVECTOR3* srcvelocity;
 };
 
 struct SAMPLE_DATA
 {
-	unsigned long address;
-	unsigned long length;
-	unsigned long loop;
-	unsigned long samplerate;
+	u_int address;
+	u_int length;
+	u_int loop;
+	u_int samplerate;
 };
 
 struct __pauseinfo
 {
-	unsigned short pitch[16];
-	unsigned short voll[16];
-	unsigned short volr[16];
-	unsigned short max;
-	unsigned short lev;
+	u_short pitch[16];
+	u_short voll[16];
+	u_short volr[16];
+	u_short max;
+	u_short lev;
 };
 
 struct SPOOLQ
 {
-	unsigned char type;
-	unsigned char data;
-	unsigned short nsectors;
-	unsigned long sector;
+	u_char type;
+	u_char data;
+	u_short nsectors;
+	u_int sector;
 	char* addr;
 	void (*func)();
 #ifdef _DEBUG
@@ -2367,8 +2367,8 @@ struct SPOOLQ
 
 struct SPL_REGIONINFO
 {
-	unsigned short region_to_unpack;
-	unsigned short target_barrel_region;
+	u_short region_to_unpack;
+	u_short target_barrel_region;
 	int nsectors;
 	char* cell_addr;
 	char* roadm_addr;
@@ -2376,18 +2376,18 @@ struct SPL_REGIONINFO
 
 struct AreaDataStr
 {
-	unsigned short gfx_offset;
-	unsigned short model_offset;
-	unsigned short music_offset;
-	unsigned short ambient_offset;
-	unsigned char model_size;
-	unsigned char pad;
-	unsigned char num_tpages;
-	unsigned char ambient_size;
-	unsigned char music_size;
-	unsigned char music_samples_size;
-	unsigned char music_id;
-	unsigned char ambient_id;
+	u_short gfx_offset;
+	u_short model_offset;
+	u_short music_offset;
+	u_short ambient_offset;
+	u_char model_size;
+	u_char pad;
+	u_char num_tpages;
+	u_char ambient_size;
+	u_char music_size;
+	u_char music_samples_size;
+	u_char music_id;
+	u_char ambient_id;
 };
 
 struct DRAW_MODE
@@ -2428,14 +2428,14 @@ struct TARGET_ARROW_MODEL
 
 struct TP
 {
-	unsigned long flags;
-	unsigned long offset;
+	u_int flags;
+	u_int offset;
 };
 
 struct CAR_LOCALS
 {
-	long vel[4];
-	long avel[4];
+	LONGVECTOR4 vel;
+	LONGVECTOR4 avel;
 	int extraangulardamping;
 	int aggressive;
 };
@@ -2448,10 +2448,10 @@ struct XA_TRACK
 
 struct FE_CHARDATA
 {
-	unsigned char u;
-	unsigned char v;
-	unsigned char w;
-	unsigned char h;
+	u_char u;
+	u_char v;
+	u_char w;
+	u_char h;
 };
 
 struct FE_FONT

@@ -4,7 +4,7 @@
 extern PLAYER player[8];
 extern PEDESTRIAN *pPlayerPed;
 
-extern void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction, LONGVECTOR* startPos, int externModel, int palette, char *padid); // 0x000739D8
+extern void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction, LONGVECTOR4* startPos, int externModel, int palette, char *padid); // 0x000739D8
 
 extern void ChangeCarPlayerToPed(int playerID); // 0x00073334
 

@@ -9,7 +9,7 @@ extern void makeMesh(MVERTEX (*VSP)[5][5], int m, int n); // 0x000420B0
 
 extern void drawMesh(MVERTEX (*VSP)[5][5], int m, int n, _pct *pc); // 0x00042650
 
-extern void SubdivNxM(char *polys, unsigned long n, unsigned long m, int ofse); // 0x00042AEC
+extern void SubdivNxM(char *polys, int n, int m, int ofse); // 0x00042AEC
 
 extern void TileNxN(MODEL *model, int levels, int Dofse); // 0x00042F40
 

@@ -104,7 +104,7 @@ int test555 = 0;
 	// End Line: 1435
 
 // [D] [T]
-int InitCar(CAR_DATA* cp, int direction, LONGVECTOR* startPos, unsigned char control, int model, int palette, char* extraData)
+int InitCar(CAR_DATA* cp, int direction, LONGVECTOR4* startPos, unsigned char control, int model, int palette, char* extraData)
 {
 	VECTOR tmpStart;
 
@@ -132,7 +132,7 @@ int InitCar(CAR_DATA* cp, int direction, LONGVECTOR* startPos, unsigned char con
 	if (control == CONTROL_TYPE_NONE)
 		return 1;
 
-	InitCarPhysics(cp, (LONGVECTOR *)&tmpStart, direction);
+	InitCarPhysics(cp, (LONGVECTOR4 *)&tmpStart, direction);
 	cp->ap.palette = palette;
 
 	cp->controlType = control;
@@ -559,7 +559,7 @@ void CivCarFX(CAR_DATA* cp)
 // BUGS: sometimes not getting right lane when road direction switched
 int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist, CIV_ROUTE_ENTRY* oldNode)
 {
-	unsigned long junctionFlags;
+	u_int junctionFlags;
 	DRIVER2_JUNCTION* jn;
 
 	DRIVER2_ROAD_INFO currentRoadInfo;
@@ -2829,7 +2829,7 @@ const int EVENT_CAR_SPEED = 60;
 const int DistanceTriggerCarMoves = 700; // 5000;
 
 // [D] [T] [A]
-int CreateCivCarWotDrivesABitThenStops(int direction, LONGVECTOR* startPos, LONGVECTOR* stopPos, unsigned char internalModel, int palette)
+int CreateCivCarWotDrivesABitThenStops(int direction, LONGVECTOR4* startPos, LONGVECTOR4* stopPos, unsigned char internalModel, int palette)
 {
 	unsigned char* slot;
 	CAR_DATA* carCnt;
@@ -2947,14 +2947,14 @@ int CreateCivCarWotDrivesABitThenStops(int direction, LONGVECTOR* startPos, LONG
 	// End Line: 5132
 
 // [D] [T]
-int CreateStationaryCivCar(int direction, long orientX, long orientZ, LONGVECTOR* startPos, int externalModel, int palette, int controlFlags)
+int CreateStationaryCivCar(int direction, long orientX, long orientZ, LONGVECTOR4* startPos, int externalModel, int palette, int controlFlags)
 {
 	unsigned char* slot;
 	CAR_DATA* newCar;
 	CAR_DATA* carCnt;
 	int model;
 	EXTRA_CIV_DATA civDat;
-	long tmpQ[4];
+	LONGQUATERNION tmpQ;
 
 	model = -1;
 	
@@ -3258,9 +3258,9 @@ int PingInCivCar(int minPingInDist)
 	DRIVER2_ROAD_INFO roadInfo;
 	
 	EXTRA_CIV_DATA civDat;
-	unsigned char possibleLanes[12];
+	u_char possibleLanes[12];
 	// carDistLanes removed as it's unused
-	long pos[4];
+	LONGVECTOR4 pos;
 	int distSq;
 	int dir;
 	int curveLength;
@@ -5900,7 +5900,7 @@ void CreateRoadblock(void)
 		if((str && ROAD_IS_AI_LANE(str, laneNo) || crv && ROAD_IS_AI_LANE(crv, laneNo)) && 
 			CellEmpty(&currentPos, lbody))
 		{
-			newSlot = CreateStationaryCivCar(dir2NextRow + (Random2(0) * 0x10001 >> (laneNo) & 0x3ffU) - 512, 0, 0, (LONGVECTOR *)&currentPos, externalCopModel, 0, 2);
+			newSlot = CreateStationaryCivCar(dir2NextRow + (Random2(0) * 0x10001 >> (laneNo) & 0x3ffU) - 512, 0, 0, (LONGVECTOR4 *)&currentPos, externalCopModel, 0, 2);
 
 			if (newSlot == -1)
 				break;
@@ -5977,7 +5977,7 @@ void CreateRoadblock(void)
 
 			test42 = delta;
 
-			newSlot = CreateStationaryCivCar(faceDir + (Random2(0) * 0x10001 >> (delta >> 9 & 0x1fU) & 0x3ffU) - 512, 0, 0, (LONGVECTOR *)&currentPos, externalCopModel, 0, 2);
+			newSlot = CreateStationaryCivCar(faceDir + (Random2(0) * 0x10001 >> (delta >> 9 & 0x1fU) & 0x3ffU) - 512, 0, 0, (LONGVECTOR4 *)&currentPos, externalCopModel, 0, 2);
 
 			if (newSlot == -1)
 				break;

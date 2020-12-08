@@ -27,7 +27,7 @@ short* RoadMapDataRegions[4];
 
 int NumTempJunctions = 0;
 DRIVER2_JUNCTION *Driver2JunctionsPtr = NULL;
-ulong *Driver2TempJunctionsPtr = NULL;
+u_int* Driver2TempJunctionsPtr = NULL;
 
 DRIVER2_CURVE *Driver2CurvesPtr = NULL;
 int NumDriver2Curves = 0;
@@ -423,7 +423,7 @@ int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, sdPlane **plane)
 // [D] [T]
 int sdHeightOnPlane(VECTOR *pos, sdPlane *plane)
 {
-	long angle;
+	int angle;
 	int i, d;
 	DRIVER2_CURVE *curve;
 	int lx;

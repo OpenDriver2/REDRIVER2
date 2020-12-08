@@ -5071,7 +5071,7 @@ void DrawRainDrops(void)
 // [D] [T]
 void AddRainDrops(void)
 {
-	static unsigned long rand;
+	static u_int rand;
 
 	int first;
 	int RainIndex;
@@ -5187,7 +5187,7 @@ void AddRainDrops(void)
 // [D] [T]
 void DisplaySplashes(void)
 {
-	static unsigned long rand;
+	static u_int rand;
 
 	int d1;
 	int d2;

@@ -352,7 +352,7 @@ void LoadFont(char *buffer)
 	// End Line: 1697
 
 // [D] [T]
-void StoreClut2(ulong *pDest, int x, int y)
+void StoreClut2(u_long *pDest, int x, int y)
 {
 	RECT16 rect;
 

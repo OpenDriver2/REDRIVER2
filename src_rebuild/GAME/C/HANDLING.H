@@ -6,7 +6,7 @@ extern int playerghost;
 extern int playerhitcopsanyway;
 extern char continuous_track;
 
-extern void InitCarPhysics(CAR_DATA *cp, LONGVECTOR* startpos, int direction); // 0x0005381C
+extern void InitCarPhysics(CAR_DATA *cp, LONGVECTOR4* startpos, int direction); // 0x0005381C
 
 extern void TempBuildHandlingMatrix(CAR_DATA *cp, int init); // 0x000539E8
 
@@ -30,7 +30,7 @@ extern void InitialiseCarHandling(); // 0x00056A6C
 
 extern void CheckCarToCarCollisions(); // 0x000556E0
 
-extern void ProcessCarPad(CAR_DATA *cp, unsigned long pad, char PadSteer, char use_analogue); // 0x00055A9C
+extern void ProcessCarPad(CAR_DATA *cp, u_int pad, char PadSteer, char use_analogue); // 0x00055A9C
 
 extern void InitSkidding(); // 0x00056CB8
 

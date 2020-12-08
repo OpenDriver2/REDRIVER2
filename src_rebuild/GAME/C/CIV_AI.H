@@ -12,7 +12,7 @@ extern char makeLimoPullOver;
 
 extern char junctionLightsPhase[2];
 
-extern int InitCar(CAR_DATA *cp, int direction, LONGVECTOR* startPos, unsigned char control, int model, int palette, char *extraData); // 0x00023DE8
+extern int InitCar(CAR_DATA *cp, int direction, LONGVECTOR4* startPos, unsigned char control, int model, int palette, char *extraData); // 0x00023DE8
 
 extern CAR_DATA * FindClosestCar(int x, int y, int z, int *distToCarSq); // 0x0002D11C
 
@@ -46,9 +46,9 @@ extern int TrafficLightCycle(int exit); // 0x0002CF18
 
 extern void InitCivCars(); // 0x0002CDA4
 
-extern int CreateCivCarWotDrivesABitThenStops(int direction, LONGVECTOR* startPos, LONGVECTOR* stopPos, unsigned char internalModel, int palette); // 0x000286E0
+extern int CreateCivCarWotDrivesABitThenStops(int direction, LONGVECTOR4* startPos, LONGVECTOR4* stopPos, unsigned char internalModel, int palette); // 0x000286E0
 
-extern int CreateStationaryCivCar(int direction, long orientX, long orientZ, LONGVECTOR* startPos, int externalModel, int palette, int controlFlags); // 0x00028960
+extern int CreateStationaryCivCar(int direction, long orientX, long orientZ, LONGVECTOR4* startPos, int externalModel, int palette, int controlFlags); // 0x00028960
 
 extern int PingInCivCar(int minPingInDist); // 0x00028DB4
 

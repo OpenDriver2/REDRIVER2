@@ -497,7 +497,10 @@ void DoCutsceneSound(void)
 
 				if (cutscene_timer == 180)
 				{
-					Start3DTrackingSound(-1, SOUND_BANK_MISSION, GetMissionSound(26), (VECTOR*)car_data[2].hd.where.t, car_data[2].st.n.linearVelocity);
+					Start3DTrackingSound(-1, SOUND_BANK_MISSION,
+						GetMissionSound(26), 
+						(VECTOR*)car_data[2].hd.where.t,
+						(LONGVECTOR3*)car_data[2].st.n.linearVelocity);
 				}
 
 				if (cutscene_timer < 641)
@@ -719,7 +722,7 @@ void InitializeMissionSound(void)
 void DoMissionSound(void)
 {
 	int chan;
-	LONGVECTOR V;
+	LONGVECTOR4 V;
 	VECTOR* P;
 	int i;
 	static int channel = 0;
@@ -784,7 +787,10 @@ void DoMissionSound(void)
 						chan = GetFreeChannel();
 
 						StartSound(chan, SOUND_BANK_MISSION, GetMissionSound(20), -1500, 4096);
-						SetChannelPosition3(chan, (VECTOR*)car_data[carId].hd.where.t, car_data[carId].st.n.linearVelocity, -1500, 4096 - Mission.timer[0].count / 750, 0);
+						SetChannelPosition3(chan, 
+							(VECTOR*)car_data[carId].hd.where.t, 
+							(LONGVECTOR3*)car_data[carId].st.n.linearVelocity, 
+							-1500, 4096 - Mission.timer[0].count / 750, 0);
 					}
 				}
 			}
@@ -956,7 +962,7 @@ void DoMissionSound(void)
 					V[1] = pos[1] - C[1];
 					V[2] = pos[2] - C[2];
 
-					SetChannelPosition3(holdall, (VECTOR*)C, (long*)V, 0, 4096, 0);
+					SetChannelPosition3(holdall, (VECTOR*)C, (LONGVECTOR3*)V, 0, 4096, 0);
 
 					pos[0] = C[0];
 					pos[1] = C[1];

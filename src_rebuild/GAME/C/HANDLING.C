@@ -63,7 +63,7 @@
 
 
 // [D] [T]
-void InitCarPhysics(CAR_DATA* cp, long(*startpos)[4], int direction)
+void InitCarPhysics(CAR_DATA* cp, LONGVECTOR4* startpos, int direction)
 {
 	int ty;
 	int odz;
@@ -690,7 +690,7 @@ void GlobalTimeStep(void)
 	static RigidBodyState _d1[MAX_CARS]; // offset 0x820
 
 	int howHard;
-	long tmp;
+	int tmp;
 	RigidBodyState* thisState_i;
 	RigidBodyState* thisState_j;
 	RigidBodyState* thisDelta;
@@ -702,14 +702,14 @@ void GlobalTimeStep(void)
 	RigidBodyState* tp;
 	RigidBodyState* d0;
 	RigidBodyState* d1;
-	LONGVECTOR AV;
+	LONGVECTOR4 AV;
 	LONGQUATERNION delta_orientation;
-	LONGVECTOR normal;
-	LONGVECTOR collisionpoint;
-	LONGVECTOR lever0;
-	LONGVECTOR lever1;
-	LONGVECTOR torque;
-	LONGVECTOR pointVel0;
+	LONGVECTOR4 normal;
+	LONGVECTOR4 collisionpoint;
+	LONGVECTOR4 lever0;
+	LONGVECTOR4 lever1;
+	LONGVECTOR4 torque;
+	LONGVECTOR4 pointVel0;
 	VECTOR velocity;
 	int depth;
 	int RKstep;
@@ -794,7 +794,7 @@ void GlobalTimeStep(void)
 
 		if (cp->hd.mayBeColliding == 0)
 		{
-			long* orient = st->n.orientation;
+			long* orient = st->n.orientation;	// LONGQUATERNION
 
 			st->n.fposition[0] += st->n.linearVelocity[0] >> 8;
 			st->n.fposition[1] += st->n.linearVelocity[1] >> 8;
@@ -854,7 +854,7 @@ void GlobalTimeStep(void)
 						thisDelta = _d1;
 					}
 
-					long* orient = thisState_i->n.orientation;
+					long* orient = thisState_i->n.orientation;	// LONGQUATERNION
 
 					thisDelta[i].n.fposition[0] = thisState_i->n.linearVelocity[0] >> 8;
 					thisDelta[i].n.fposition[1] = thisState_i->n.linearVelocity[1] >> 8;
@@ -1906,7 +1906,7 @@ void CheckCarToCarCollisions(void)
 // End Line: 5532
 
 // [D] [T]
-void ProcessCarPad(CAR_DATA* cp, ulong pad, char PadSteer, char use_analogue)
+void ProcessCarPad(CAR_DATA* cp, u_int pad, char PadSteer, char use_analogue)
 {
 	int player_id;
 	int int_steer;
@@ -2430,7 +2430,7 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 	{
 		SetChannelPosition3(player[player_id].skidding.chan,
 			(VECTOR*)cp->hd.where.t,
-			cp->st.n.linearVelocity,
+			(LONGVECTOR3*)cp->st.n.linearVelocity,
 			(skidsound - 10000) * 3 / 4 - 5000,
 			skidsound * 1024 / 13000 + 3072 + player_id * 8, 0);
 	}
@@ -2499,7 +2499,8 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 			pitch = 3584;
 
 		SetChannelPosition3(player[player_id].wheelnoise.chan,
-			(VECTOR*)cp->hd.where.t, cp->st.n.linearVelocity,
+			(VECTOR*)cp->hd.where.t, 
+			(LONGVECTOR3*)cp->st.n.linearVelocity,
 			spd * 50 - 10000,
 			pitch + player_id * 8, 0);
 	}

@@ -142,7 +142,7 @@ static PAUSEMODE PauseMode = PAUSEMODE_PAUSE;
 unsigned char defaultPlayerModel[2] = { 0 }; // offset 0xAA604
 unsigned char defaultPlayerPalette = 0; // offset 0xAA606
 
-ulong* transparent_buffer;
+uint* transparent_buffer;
 
 // system?
 int gameinit = 0;
@@ -888,7 +888,7 @@ void GameInit(void)
 
 		gStartOnFoot = (plStart->type == 2);
 
-		InitPlayer(&player[i], &car_data[i], plStart->controlType, plStart->rotation, (LONGVECTOR *)&plStart->position, plStart->model, plStart->palette, &padid);
+		InitPlayer(&player[i], &car_data[i], plStart->controlType, plStart->rotation, (LONGVECTOR4 *)&plStart->position, plStart->model, plStart->palette, &padid);
 
 		if (gStartOnFoot == 0)
 		{
@@ -1151,7 +1151,7 @@ char paused = 0;
 char gRightWayUp = 0;	// cheat
 
 int num_active_cars = 0;
-unsigned long lead_pad = 0;
+u_int lead_pad = 0;
 
 int numInactiveCars = 0;
 int leadCarId = 0;
@@ -1161,7 +1161,7 @@ VECTOR leadcar_pos;
 // [D]
 void StepSim(void)
 {
-	static unsigned long t0; // offset 0x0
+	static u_int t0; // offset 0x0
 	static char t1; // offset 0x4
 	static char t2; // offset 0x5
 	static int oldsp; // offset 0x8
@@ -1197,7 +1197,7 @@ void StepSim(void)
 
 	oldsp = SetSp(0x1f8003e8); // i don't know what this does
 
-	lead_pad = (ulong)controller_bits;
+	lead_pad = (uint)controller_bits;
 
 	if (player[0].playerCarId < 0)
 		playerFelony = &pedestrianFelony;
@@ -2145,7 +2145,7 @@ void DrawGame(void)
 	g_enableSwapInterval = 1;
 #endif
 
-	static unsigned long frame = 0;
+	static int frame = 0;
 
 	if (NumPlayers == 1 || NoPlayerControl != 0)
 	{
@@ -3346,7 +3346,10 @@ void DealWithHorn(char* hr, int i)
 
 		channel = i != 0 ? 5 : 2;
 
-		SetChannelPosition3(channel, (VECTOR*)car->hd.where.t, car->st.n.linearVelocity, -2000, i * 8 + 4096, 0);
+		SetChannelPosition3(channel, 
+			(VECTOR*)car->hd.where.t, 
+			(LONGVECTOR3*)car->st.n.linearVelocity, 
+			-2000, i * 8 + 4096, 0);
 	}
 
 	*hr = (*hr + 1) % 3;

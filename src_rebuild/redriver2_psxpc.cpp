@@ -388,7 +388,7 @@ void GameDebugKeys(int nKey, bool down)
 
 		CAR_DATA *pCar = &car_data[player[0].playerCarId];
 
-		LONGVECTOR startpos = {
+		LONGVECTOR4 startpos = {
 			pCar->hd.where.t[0],
 			pCar->hd.where.t[1],
 			pCar->hd.where.t[2],

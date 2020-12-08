@@ -629,9 +629,9 @@ void ExplosionCollisionCheck(CAR_DATA *cp, EXOBJECT *pE)
 	int carLength[2];
 	CRET2D collisionResult;
 	VECTOR velocity;
-	LONGVECTOR pointVel;
-	LONGVECTOR reaction;
-	LONGVECTOR lever;
+	LONGVECTOR4 pointVel;
+	LONGVECTOR4 reaction;
+	LONGVECTOR4 lever;
 
 	isCar = (cp != &car_data[TANNER_COLLIDER_CARID]);
 

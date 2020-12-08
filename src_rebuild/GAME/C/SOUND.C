@@ -20,7 +20,7 @@
 
 #define SPU_CHANNEL_COUNT 24
 
-LONGVECTOR dummylong = { 0, 0, 0, 0 };
+LONGVECTOR3 dummylong = { 0, 0, 0 };
 
 long bankaddr[2] = { 0 };
 long banksize[2] = { 88064, 412672 };
@@ -138,7 +138,7 @@ void ClearChannelFields(int channel)
 	channels[channel].position.vx = 0;
 	channels[channel].position.vy = 0;
 	channels[channel].position.vz = 0;
-	channels[channel].srcvelocity = dummylong;
+	channels[channel].srcvelocity = (LONGVECTOR3*)dummylong;
 	channels[channel].player = 0;
 }
 
@@ -278,7 +278,7 @@ void SetReverbState(int on)
 // [D] [T]
 void SetReverbInGameState(int on)
 {
-	long cl;
+	int cl;
 
 	cl = 0xffff;
 
@@ -319,7 +319,7 @@ void SetReverbInGameState(int on)
 // [D] [T]
 int SetReverbChannelState(int ch, int on)
 {
-	long cl;
+	int cl;
 	int prev;
 
 	cl = SPU_KEYCH(ch);
@@ -438,7 +438,7 @@ int StartSound(int channel, int bank, int sample, int volume, int pitch)
 	// End Line: 685
 
 // [D] [T]
-int Start3DTrackingSound(int channel, int bank, int sample, VECTOR *position, long *velocity)
+int Start3DTrackingSound(int channel, int bank, int sample, VECTOR *position, LONGVECTOR3* velocity)
 {
 	if (channel < 0)
 		channel = GetFreeChannel();
@@ -447,7 +447,7 @@ int Start3DTrackingSound(int channel, int bank, int sample, VECTOR *position, lo
 		return -1;
 
 	channels[channel].srcposition = position;
-	channels[channel].srcvelocity = velocity ? velocity : dummylong;
+	channels[channel].srcvelocity = velocity ? velocity : (LONGVECTOR3*)dummylong;
 	channels[channel].srcpitch = 4096;
 	channels[channel].srcvolume = 0;
 
@@ -480,7 +480,7 @@ int Start3DSoundVolPitch(int channel, int bank, int sample, int x, int y, int z,
 		return -1;
 
 	channels[channel].srcposition = &channels[channel].position;
-	channels[channel].srcvelocity = dummylong;
+	channels[channel].srcvelocity = (LONGVECTOR3*)dummylong;
 	channels[channel].position.vx = x;
 	channels[channel].position.vy = y;
 	channels[channel].position.vz = z;
@@ -600,7 +600,7 @@ int CompleteSoundSetup(int channel, int bank, int sample, int pitch, int proximi
 // [D] [T]
 void SetChannelPitch(int channel, int pitch)
 {
-	long rate;
+	int rate;
 
 	if (channel < 0 || channel >= MAX_SFX_CHANNELS)	// [A]
 		return;
@@ -684,11 +684,11 @@ void SetChannelVolume(int channel, int volume, int proximity)
 // [D] [T]
 void ComputeDoppler(CHANNEL_DATA *ch)
 {
-	long dist;
-	long seperationrate;
+	int dist;
+	int seperationrate;
 
 	VECTOR *srcPos;
-	long *srcVel;
+	long* srcVel; // LONGVECTOR3
 
 	PLAYER *pl;
 	int dx, dy, dz;
@@ -701,7 +701,7 @@ void ComputeDoppler(CHANNEL_DATA *ch)
 		return;
 	}
 
-	srcVel = ch->srcvelocity;
+	srcVel = (long*)ch->srcvelocity;
 
 	pl = &player[ch->player];
 
@@ -748,7 +748,7 @@ void ComputeDoppler(CHANNEL_DATA *ch)
 	// End Line: 3578
 
 // [D] [T]
-void SetChannelPosition3(int channel, VECTOR *position, long *velocity, int volume, int pitch, int proximity)
+void SetChannelPosition3(int channel, VECTOR *position, LONGVECTOR3* velocity, int volume, int pitch, int proximity)
 {
 	if (channel < 0 || channel >= MAX_SFX_CHANNELS)
 		return;
@@ -756,7 +756,7 @@ void SetChannelPosition3(int channel, VECTOR *position, long *velocity, int volu
 	if (camera_change != 1 && old_camera_change != 1 && sound_paused == 0)
 	{
 		channels[channel].srcposition = position;
-		channels[channel].srcvelocity = velocity ? velocity : dummylong;
+		channels[channel].srcvelocity = velocity ? velocity : (LONGVECTOR3*)dummylong;
 		channels[channel].srcvolume = volume;
 
 		if (gSoundMode == 1)
@@ -1288,7 +1288,7 @@ void UnlockChannel(int c)
 void SoundHandler(void)
 {
 	int ct;
-	long off;
+	int off;
 
 	off = 0;
 
@@ -1765,9 +1765,9 @@ void UpdateVolumeAttributesS(int channel, int proximity)
 	int player_id;
 	VECTOR *pos;
 	VECTOR *cam_pos;
-	long dist;
+	int dist;
 	int cam_ang, ang;
-	long damp;
+	int damp;
 	
 
 	player_id = channels[channel].player;
@@ -2082,7 +2082,7 @@ int FESound(int sample)
 		return -1;
 
 	channels[channel].srcposition = NULL;
-	channels[channel].srcvelocity = dummylong;
+	channels[channel].srcvelocity = (LONGVECTOR3*)dummylong;
 	channels[channel].srcvolume = 4096;
 
 	return CompleteSoundSetup(channel, 1, sample, 2048, -1);

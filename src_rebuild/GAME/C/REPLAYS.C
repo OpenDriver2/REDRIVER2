@@ -866,11 +866,11 @@ int valid_region(int x, int z)
 	// End Line: 2932
 
 // [D] [T]
-int cjpPlay(int stream, ulong *ppad, char *psteer, char *ptype)
+int cjpPlay(int stream, u_int *ppad, char *psteer, char *ptype)
 {
 	int ret;
 	int t1;
-	ulong t0;
+	u_int t0;
 
 #ifdef CUTSCENE_RECORDER
 	if (stream < 0)
@@ -926,11 +926,11 @@ int cjpPlay(int stream, ulong *ppad, char *psteer, char *ptype)
 char ReplayMode = 0;
 
 // [D] [T]
-void cjpRecord(int stream, ulong *ppad, char *psteer, char *ptype)
+void cjpRecord(int stream, u_int *ppad, char *psteer, char *ptype)
 {
 	int tmp;
 	int t1;
-	ulong t0;
+	u_int t0;
 
 	if (stream > -1 && stream < NumReplayStreams) 
 	{
@@ -1068,7 +1068,7 @@ void AllocateReplayStream(REPLAY_STREAM *stream, int maxpad)
 	// End Line: 3467
 
 // [D] [T]
-int Get(int stream, ulong *pt0)
+int Get(int stream, u_int *pt0)
 {
 	REPLAY_STREAM* rstream;
 
@@ -1078,7 +1078,7 @@ int Get(int stream, ulong *pt0)
 
 		if (rstream->PadRecordBuffer+1 <= rstream->PadRecordBufferEnd)
 		{
-			ulong t0 = (rstream->PadRecordBuffer->pad << 8) | rstream->PadRecordBuffer->analogue;
+			uint t0 = (rstream->PadRecordBuffer->pad << 8) | rstream->PadRecordBuffer->analogue;
 			*pt0 = t0;
 
 			if (rstream->playbackrun < rstream->PadRecordBuffer->run)
@@ -1138,10 +1138,10 @@ int Get(int stream, ulong *pt0)
 	// End Line: 3545
 
 // [D] [T]
-int Put(int stream, ulong *pt0)
+int Put(int stream, u_int*pt0)
 {
 	REPLAY_STREAM *rstream;
-	ulong t0;
+	u_int t0;
 	PADRECORD *padbuf;
 
 	rstream = &ReplayStreams[stream];

@@ -1241,7 +1241,7 @@ int tsetinfo[32];
 void SendTPage(void)
 {
 	unsigned char old;
-	ulong *clutptr;
+	uint*clutptr;
 	int slot;
 	int npalettes;
 	int tpage2send;
@@ -1274,7 +1274,7 @@ void SendTPage(void)
 
 			LoadImage(&cluts, (u_long *)(model_spool_buffer + 0xE000 + 4));
 
-			clutptr = (ulong *)(texture_cluts[tpage2send]);
+			clutptr = (uint*)(texture_cluts[tpage2send]);
 			i = 0;
 
 			while (i < npalettes)
@@ -1282,7 +1282,7 @@ void SendTPage(void)
 				clutptr[0] = getClut(cluts.x + 16, cluts.y) << 0x10 | getClut(cluts.x, cluts.y);
 				clutptr[1] = getClut(cluts.x + 48, cluts.y) << 0x10 | getClut(cluts.x + 32, cluts.y);
 
-				clutptr+=2;
+				clutptr += 2;
 
 				cluts.y++;
 

@@ -36,15 +36,15 @@ extern int IsPingInfoAvailable();
 
 extern int valid_region(int x, int z); // 0x0001AF34
 
-extern int cjpPlay(int stream, unsigned long *ppad, char *psteer, char *ptype); // 0x0001AFFC
+extern int cjpPlay(int stream, u_int*ppad, char *psteer, char *ptype); // 0x0001AFFC
 
-extern void cjpRecord(int stream, unsigned long *ppad, char *psteer, char *ptype); // 0x0001AD50
+extern void cjpRecord(int stream, u_int*ppad, char *psteer, char *ptype); // 0x0001AD50
 
 extern void AllocateReplayStream(REPLAY_STREAM *stream, int maxpad); // 0x0001B17C
 
-extern int Get(int stream, unsigned long *pt0); // 0x0001B1F0
+extern int Get(int stream, u_int* pt0); // 0x0001B1F0
 
-extern int Put(int stream, unsigned long *pt0); // 0x0001B280
+extern int Put(int stream, u_int* pt0); // 0x0001B280
 
 extern void RecordWaypoint(); // 0x0001B364
 

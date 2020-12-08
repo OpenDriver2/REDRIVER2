@@ -249,14 +249,14 @@ void StepOneCar(CAR_DATA* cp)
 	int a, b, speed;
 	int count, i;
 	CAR_LOCALS _cl;
-	LONGVECTOR deepestNormal;
-	LONGVECTOR deepestLever;
-	LONGVECTOR deepestPoint;
-	LONGVECTOR pointPos;
-	LONGVECTOR surfacePoint;
-	LONGVECTOR surfaceNormal;
-	LONGVECTOR lever;
-	LONGVECTOR reaction;
+	LONGVECTOR4 deepestNormal;
+	LONGVECTOR4 deepestLever;
+	LONGVECTOR4 deepestPoint;
+	LONGVECTOR4 pointPos;
+	LONGVECTOR4 surfacePoint;
+	LONGVECTOR4 surfaceNormal;
+	LONGVECTOR4 lever;
+	LONGVECTOR4 reaction;
 	VECTOR direction;
 	sdPlane* SurfacePtr;
 
@@ -813,11 +813,11 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 	int friction_coef;
 	int oldSpeed;
 	int wheelspd;
-	LONGVECTOR wheelPos;
-	LONGVECTOR surfacePoint;
-	LONGVECTOR surfaceNormal;
+	LONGVECTOR4 wheelPos;
+	LONGVECTOR4 surfacePoint;
+	LONGVECTOR4 surfaceNormal;
 	VECTOR force;
-	LONGVECTOR pointVel;
+	LONGVECTOR4 pointVel;
 	int frontFS;
 	int rearFS;
 	sdPlane* SurfacePtr;

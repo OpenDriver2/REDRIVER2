@@ -98,7 +98,7 @@ int bKilled = 0;
 
 PEDESTRIAN_ROADS pedestrian_roads;
 
-unsigned long tannerPad;
+u_int tannerPad;
 extern short padd;
 SVECTOR camAngle;
 static int oldCamView;
@@ -144,8 +144,8 @@ int powerCounter = 0;
 void IHaveThePower(void)
 {
 	CAR_DATA* cp;
-	LONGVECTOR force = { 0x9000, 0, 0, 0 };
-	LONGVECTOR point = { 0, 0, 90, 0 };
+	LONGVECTOR4 force = { 0x9000, 0, 0, 0 };
+	LONGVECTOR4 point = { 0, 0, 90, 0 };
 
 	if (GameLevel != 1)
 		return;
@@ -254,7 +254,7 @@ void IHaveThePower(void)
 	// End Line: 2398
 
 // [D] [T]
-void ProcessTannerPad(PEDESTRIAN* pPed, ulong pad, char PadSteer, char use_analogue)
+void ProcessTannerPad(PEDESTRIAN* pPed, uint pad, char PadSteer, char use_analogue)
 {
 	sdPlane* SurfacePtr;
 	int direction;
@@ -890,7 +890,7 @@ void DestroyPedestrian(PEDESTRIAN* pPed)
 /* WARNING: Type propagation algorithm not settling */
 
 // [D] [T]
-int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVECTOR* position, PED_MODEL_TYPES playerType)
+int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVECTOR4* position, PED_MODEL_TYPES playerType)
 {
 	int wbody;
 	int side;
@@ -1227,7 +1227,7 @@ void PlaceRoadBlockCops(void)
 	int i;
 	int numCops;
 	CAR_DATA* pCopCars[16];
-	LONGVECTOR disp;
+	LONGVECTOR4 disp;
 
 	if (numCopPeds >= 8)
 		return;
@@ -1306,7 +1306,7 @@ void PlaceRoadBlockCops(void)
 	// End Line: 4496
 
 // [D] [T]
-int CreatePedAtLocation(LONGVECTOR* pPos, int pedType)
+int CreatePedAtLocation(LONGVECTOR4* pPos, int pedType)
 {
 	PEDESTRIAN* pPed;
 
@@ -2389,7 +2389,7 @@ void SetupGetInCar(PEDESTRIAN* pPed)
 	int playerId;
 	int entrySide;
 
-	LONGVECTOR pos;
+	LONGVECTOR4 pos;
 
 	pPed->flags &= ~4;
 	pPed->speed = 0;
@@ -3492,9 +3492,9 @@ int FindPointOfCollision(CAR_DATA* pCar, PEDESTRIAN* pPed)
 int TannerCarCollisionCheck(VECTOR* pPos, int dir, int bQuick)
 {
 	CAR_DATA* cp1;
-	LONGVECTOR pointVel;
-	LONGVECTOR reaction;
-	LONGVECTOR lever;
+	LONGVECTOR4 pointVel;
+	LONGVECTOR4 reaction;
+	LONGVECTOR4 lever;
 	int strikeVel;
 	SVECTOR boxDisp;
 	CAR_COSMETICS* car_cos;
@@ -3696,7 +3696,7 @@ void SetupCivJump(PEDESTRIAN* pPed, CAR_DATA* cp)
 	short scale;
 	int dx;
 	short angle;
-	LONGVECTOR dir;
+	LONGVECTOR4 dir;
 
 	if (pPed->type != PED_ACTION_JUMP)
 	{

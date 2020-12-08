@@ -54,9 +54,9 @@ int texture_is_icon = 0;
 char* texturename_buffer = NULL;
 int NoTextureMemory = 0;
 
-unsigned short texture_pages[128];
-unsigned short texture_cluts[128][32];
-unsigned char tpageloaded[128];
+u_short texture_pages[128];
+u_short texture_cluts[128][32];
+u_char tpageloaded[128];
 
 int MaxSpecCluts;
 int slotsused;
@@ -66,7 +66,7 @@ RECT16 fontclutpos;
 RECT16 mapclutpos;
 DVECTOR slot_clutpos[19];
 DVECTOR slot_tpagepos[19];
-unsigned char tpageslots[19];
+u_char tpageslots[19];
 
 TP *tpage_position = NULL;
 TEXINF* tpage_ids[128] = { 0 };
