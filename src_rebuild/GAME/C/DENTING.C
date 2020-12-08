@@ -662,41 +662,6 @@ void MoveHubcap()
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ LoadDenting(int level /*$a0*/)
- // line 815, offset 0x0003b1f0
-	/* begin block 1 */
-		// Start line: 817
-		// Start offset: 0x0003B1F0
-	/* end block 1 */
-	// End offset: 0x0003B240
-	// End Line: 830
-
-	/* begin block 2 */
-		// Start line: 2602
-	/* end block 2 */
-	// End Line: 2603
-
-	/* begin block 3 */
-		// Start line: 2603
-	/* end block 3 */
-	// End Line: 2604
-
-	/* begin block 4 */
-		// Start line: 2610
-	/* end block 4 */
-	// End Line: 2611
-
-// [D] [T]
-void LoadDenting(int level)
-{
-	LoadfileSeg(DentingFiles[level], _other_buffer, 0, 12727);
-	ProcessDentLump(_other_buffer, 0);
-}
-
 // decompiled code
 // original method signature: 
 // void /*$ra*/ ProcessDentLump(char *lump_ptr /*$t2*/, int lump_size /*$a1*/)
@@ -836,6 +801,38 @@ void SetupSpecDenting(char *loadbuffer)
 }
 
 
+// decompiled code
+// original method signature: 
+// void /*$ra*/ LoadDenting(int level /*$a0*/)
+ // line 815, offset 0x0003b1f0
+	/* begin block 1 */
+		// Start line: 817
+		// Start offset: 0x0003B1F0
+	/* end block 1 */
+	// End offset: 0x0003B240
+	// End Line: 830
+
+	/* begin block 2 */
+		// Start line: 2602
+	/* end block 2 */
+	// End Line: 2603
+
+	/* begin block 3 */
+		// Start line: 2603
+	/* end block 3 */
+	// End Line: 2604
+
+	/* begin block 4 */
+		// Start line: 2610
+	/* end block 4 */
+	// End Line: 2611
+
+// [D] [T]
+void LoadDenting(int level)
+{
+	LoadfileSeg(DentingFiles[level], _other_buffer, 0, 12727);
+	ProcessDentLump(_other_buffer, 0);
+}
 
 
 

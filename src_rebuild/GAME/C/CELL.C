@@ -2,34 +2,11 @@
 #include "CELL.H"
 #include "SYSTEM.H"
 #include "MAP.H"
-#include "MISSION.H"
 #include "EVENT.H"
 #include "SPOOL.H"
-#include "DRAW.H"
 
 int cell_object_index = 0;
 CELL_OBJECT cell_object_buffer[1024];
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ClearCopUsage()
- // line 57, offset 0x00023dc0
-	/* begin block 1 */
-		// Start line: 254
-	/* end block 1 */
-	// End Line: 255
-
-	/* begin block 2 */
-		// Start line: 114
-	/* end block 2 */
-	// End Line: 115
-
-	/* begin block 3 */
-		// Start line: 256
-	/* end block 3 */
-	// End Line: 257
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 unsigned char cell_object_computed_values[2048];
 
@@ -38,41 +15,6 @@ void ClearCopUsage(void)
 {
 	ClearMem((char *)cell_object_computed_values, sizeof_cell_object_computed_values);
 }
-
-// decompiled code
-// original method signature: 
-// PACKED_CELL_OBJECT * /*$ra*/ GetFirstPackedCop(int cellx /*$t3*/, int cellz /*$a1*/, CELL_ITERATOR *pci /*$a2*/, int use_computed /*$a3*/)
- // line 67, offset 0x00023bac
-	/* begin block 1 */
-		// Start line: 68
-		// Start offset: 0x00023BAC
-		// Variables:
-	// 		PACKED_CELL_OBJECT *ppco; // $a1
-	// 		unsigned short index; // $a0
-	// 		unsigned short num; // $t0
-	// 		int cbrx; // $t0
-	// 		int cbrz; // $t1
-	// 		int xoff; // $a0
-	// 		int yoff; // $v0
-	// 		int cbr; // $t2
-
-		/* begin block 1.1 */
-			// Start line: 101
-			// Start offset: 0x00023C84
-			// Variables:
-		// 		int event; // $t0
-		/* end block 1.1 */
-		// End offset: 0x00023CC8
-		// End Line: 110
-	/* end block 1 */
-	// End offset: 0x00023DC0
-	// End Line: 142
-
-	/* begin block 2 */
-		// Start line: 134
-	/* end block 2 */
-	// End Line: 135
-
 
 // [D] [T]
 PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci, int use_computed)
@@ -163,35 +105,6 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 }
 
 
-// decompiled code
-// original method signature: 
-// PACKED_CELL_OBJECT * /*$ra*/ GetNextPackedCop(CELL_ITERATOR *pci /*$a0*/)
- // line 813, offset 0x0003f5f0
-	/* begin block 1 */
-		// Start line: 814
-		// Start offset: 0x0003F5F0
-		// Variables:
-	// 		PACKED_CELL_OBJECT *ppco; // $a3
-	// 		unsigned short num; // $a1
-	/* end block 1 */
-	// End offset: 0x0003F6B0
-	// End Line: 853
-
-	/* begin block 2 */
-		// Start line: 1812
-	/* end block 2 */
-	// End Line: 1813
-
-	/* begin block 3 */
-		// Start line: 1817
-	/* end block 3 */
-	// End Line: 1818
-
-	/* begin block 4 */
-		// Start line: 1821
-	/* end block 4 */
-	// End Line: 1822
-
 // [D] [T]
 PACKED_CELL_OBJECT* GetNextPackedCop(CELL_ITERATOR* pci)
 {
@@ -230,31 +143,6 @@ PACKED_CELL_OBJECT* GetNextPackedCop(CELL_ITERATOR* pci)
 	pci->ppco = ppco;
 	return ppco;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// CELL_OBJECT * /*$ra*/ UnpackCellObject(PACKED_CELL_OBJECT *ppco /*$a3*/, XZPAIR *near /*$t0*/)
- // line 854, offset 0x000418e8
-	/* begin block 1 */
-		// Start line: 855
-		// Start offset: 0x000418E8
-		// Variables:
-	// 		CELL_OBJECT *pco; // $a2
-	/* end block 1 */
-	// End offset: 0x000419A8
-	// End Line: 870
-
-	/* begin block 2 */
-		// Start line: 4699
-	/* end block 2 */
-	// End Line: 4700
-
-	/* begin block 3 */
-		// Start line: 1708
-	/* end block 3 */
-	// End Line: 1709
 
 // [D] [T]
 CELL_OBJECT* UnpackCellObject(PACKED_CELL_OBJECT* ppco, XZPAIR* near)

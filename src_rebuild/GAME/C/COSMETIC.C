@@ -24,40 +24,6 @@ char* CosmeticFiles[] = {
 
 CAR_COSMETICS car_cosmetics[MAX_CAR_MODELS];
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ LoadCosmetics(int level /*$a0*/)
- // line 188, offset 0x00031160
-	/* begin block 1 */
-		// Start line: 190
-		// Start offset: 0x00031160
-	/* end block 1 */
-	// End offset: 0x000311B0
-	// End Line: 203
-
-	/* begin block 2 */
-		// Start line: 376
-	/* end block 2 */
-	// End Line: 377
-
-	/* begin block 3 */
-		// Start line: 2374
-	/* end block 3 */
-	// End Line: 2375
-
-	/* begin block 4 */
-		// Start line: 2381
-	/* end block 4 */
-	// End Line: 2382
-
-// [D] [T]
-void LoadCosmetics(int level)
-{
-	LoadfileSeg(CosmeticFiles[level], _other_buffer, 0, 3120);
-	ProcessCosmeticsLump(_other_buffer, 0);
-}
-
-
 
 // decompiled code
 // original method signature: 
@@ -130,6 +96,38 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 }
 
 
+// decompiled code
+// original method signature: 
+// void /*$ra*/ LoadCosmetics(int level /*$a0*/)
+ // line 188, offset 0x00031160
+	/* begin block 1 */
+		// Start line: 190
+		// Start offset: 0x00031160
+	/* end block 1 */
+	// End offset: 0x000311B0
+	// End Line: 203
+
+	/* begin block 2 */
+		// Start line: 376
+	/* end block 2 */
+	// End Line: 377
+
+	/* begin block 3 */
+		// Start line: 2374
+	/* end block 3 */
+	// End Line: 2375
+
+	/* begin block 4 */
+		// Start line: 2381
+	/* end block 4 */
+	// End Line: 2382
+
+// [D] [T]
+void LoadCosmetics(int level)
+{
+	LoadfileSeg(CosmeticFiles[level], _other_buffer, 0, 3120);
+	ProcessCosmeticsLump(_other_buffer, 0);
+}
 
 // decompiled code
 // original method signature: 

@@ -84,25 +84,6 @@ int test555 = 0;
 	cp->ai.c.thrustState = 3; cp->ai.c.ctrlState = 7;
 #endif
 
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ InitCar(CAR_DATA *cp /*$s0*/, int direction /*$s6*/, LONGVECTOR* startPos /*$s2*/, unsigned char control /*$s4*/, int model /*stack 16*/, int palette /*stack 20*/, char *extraData /*stack 24*/)
- // line 717, offset 0x00023de8
-	/* begin block 1 */
-		// Start line: 718
-		// Start offset: 0x00023DE8
-		// Variables:
-	// 		VECTOR tmpStart; // stack offset -48
-	/* end block 1 */
-	// End offset: 0x00024028
-	// End Line: 786
-
-	/* begin block 2 */
-		// Start line: 1434
-	/* end block 2 */
-	// End Line: 1435
-
 // [D] [T]
 int InitCar(CAR_DATA* cp, int direction, LONGVECTOR4* startPos, unsigned char control, int model, int palette, char* extraData)
 {
@@ -183,36 +164,6 @@ int InitCar(CAR_DATA* cp, int direction, LONGVECTOR4* startPos, unsigned char co
 	return 1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// CAR_DATA * /*$ra*/ FindClosestCar(int x /*$t4*/, int y /*$a1*/, int z /*$a2*/, int *distToCarSq /*$a3*/)
- // line 891, offset 0x0002d11c
-	/* begin block 1 */
-		// Start line: 892
-		// Start offset: 0x0002D11C
-		// Variables:
-	// 		CAR_DATA *retCar; // $t2
-	// 		CAR_DATA *lcp; // $t0
-	// 		unsigned int retDistSq; // $t1
-	// 		int distSq; // $v0
-	// 		int dx; // $a0
-	// 		int dz; // $v1
-	/* end block 1 */
-	// End offset: 0x0002D220
-	// End Line: 915
-
-	/* begin block 2 */
-		// Start line: 1782
-	/* end block 2 */
-	// End Line: 1783
-
-	/* begin block 3 */
-		// Start line: 6497
-	/* end block 3 */
-	// End Line: 6498
-
 // [D] [T]
 CAR_DATA* FindClosestCar(int x, int y, int z, int* distToCarSq)
 {
@@ -257,34 +208,6 @@ CAR_DATA* FindClosestCar(int x, int y, int z, int* distToCarSq)
 	return retCar;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ NotTravellingAlongCurve(int x /*$a0*/, int z /*$a1*/, int dir /*$s0*/, DRIVER2_CURVE *cv /*$a3*/)
- // line 918, offset 0x0002d24c
-	/* begin block 1 */
-		// Start line: 919
-		// Start offset: 0x0002D24C
-	/* end block 1 */
-	// End offset: 0x0002D298
-	// End Line: 927
-
-	/* begin block 2 */
-		// Start line: 1803
-	/* end block 2 */
-	// End Line: 1804
-
-	/* begin block 3 */
-		// Start line: 7767
-	/* end block 3 */
-	// End Line: 7768
-
-	/* begin block 4 */
-		// Start line: 7769
-	/* end block 4 */
-	// End Line: 7770
-
 // [D] [T]
 int NotTravellingAlongCurve(int x, int z, int dir, DRIVER2_CURVE* cv)
 {
@@ -296,15 +219,6 @@ int NotTravellingAlongCurve(int x, int z, int dir, DRIVER2_CURVE* cv)
 
 	return (cvDiff < 1) * 2048;
 }
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ CivCarFX(CAR_DATA *cp /*$s0*/)
- // line 930, offset 0x0002d084
-	/* begin block 1 */
-		// Start line: 1860
-	/* end block 1 */
-	// End Line: 1861
 
 // [D] [T]
 void CivCarFX(CAR_DATA* cp)
@@ -323,240 +237,7 @@ void CivCarFX(CAR_DATA* cp)
 		AddBrakeLight(cp);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ GetNextRoadInfo(CAR_DATA *cp /*$s7*/, int randomExit /*$a1*/, int *turnAngle /*stack 8*/, int *startDist /*stack 12*/, CIV_ROUTE_ENTRY *oldNode /*stack 16*/)
- // line 981, offset 0x00024028
-	/* begin block 1 */
-		// Start line: 982
-		// Start offset: 0x00024028
-		// Variables:
-	// 		int oldOppDir; // $s4
-	// 		int i; // $a1
-	// 		int j; // $s6
-	// 		int newRoad; // $s3
-	// 		int numExits; // stack offset -88
-	// 		int currentRoadExit; // $t6
-	// 		int newNumLanes; // $a3
-	// 		int newDir; // stack offset -84
-	// 		int oppDir; // $s0
-	// 		DRIVER2_JUNCTION *jn; // $t5
-	// 		DRIVER2_CURVE *cv; // $s1
-	// 		DRIVER2_STRAIGHT *st; // $s5
-	// 		DRIVER2_STRAIGHT *tmpSt; // $a2
-	// 		DRIVER2_CURVE *tmpCv; // $s1
-	// 		short *jnExit; // $a2
-	// 		int newLane; // $s2
-	// 		char leftLane; // stack offset -80
-	// 		char rightLane; // stack offset -76
-
-		/* begin block 1.1 */
-			// Start line: 1042
-			// Start offset: 0x00024734
-			// Variables:
-		// 		char relExitId; // $fp
-		// 		static char validExitRelIdx[4][3][2]; // offset 0x0
-		// 		int addRoad; // $t9
-
-			/* begin block 1.1.1 */
-				// Start line: 982
-				// Start offset: 0x00024804
-				// Variables:
-			// 		int currentRoadExit; // $t6
-			// 		int newRoadExit; // $fp
-
-				/* begin block 1.1.1.1 */
-					// Start line: 982
-					// Start offset: 0x00024804
-					// Variables:
-				// 		int exitMod; // $a0
-				// 		int ret; // $a1
-				/* end block 1.1.1.1 */
-				// End offset: 0x00024870
-				// End Line: 982
-			/* end block 1.1.1 */
-			// End offset: 0x00024870
-			// End Line: 982
-
-			/* begin block 1.1.2 */
-				// Start line: 1091
-				// Start offset: 0x00024C18
-				// Variables:
-			// 		int x; // $v1
-			// 		int z; // $v0
-			// 		int dir; // stack offset -84
-			// 		DRIVER2_CURVE *cv; // $s1
-
-				/* begin block 1.1.2.1 */
-					// Start line: 1091
-					// Start offset: 0x00024C18
-				/* end block 1.1.2.1 */
-				// End offset: 0x00024C18
-				// End Line: 1091
-			/* end block 1.1.2 */
-			// End offset: 0x00024C18
-			// End Line: 1091
-
-			/* begin block 1.1.3 */
-				// Start line: 1112
-				// Start offset: 0x00025048
-				// Variables:
-			// 		int exitId; // $a1
-
-				/* begin block 1.1.3.1 */
-					// Start line: 1116
-					// Start offset: 0x0002506C
-					// Variables:
-				// 		char lane; // $v0
-				/* end block 1.1.3.1 */
-				// End offset: 0x000250C4
-				// End Line: 1132
-
-				/* begin block 1.1.3.2 */
-					// Start line: 982
-					// Start offset: 0x00025180
-					// Variables:
-				// 		int currentRoadExit; // $t6
-
-					/* begin block 1.1.3.2.1 */
-						// Start line: 982
-						// Start offset: 0x00025180
-						// Variables:
-					// 		int exitMod; // $a1
-					// 		int ret; // $a2
-					/* end block 1.1.3.2.1 */
-					// End offset: 0x000251E0
-					// End Line: 982
-				/* end block 1.1.3.2 */
-				// End offset: 0x000251E0
-				// End Line: 982
-			/* end block 1.1.3 */
-			// End offset: 0x000251EC
-			// End Line: 1147
-
-			/* begin block 1.1.4 */
-				// Start line: 982
-				// Start offset: 0x000251EC
-				// Variables:
-			// 		DRIVER2_JUNCTION *jn; // $t5
-			// 		int currentExit; // $a2
-			// 		int turnAngle; // $t1
-			// 		CAR_DATA *cp; // $s7
-			// 		CIV_ROUTE_ENTRY *oldNode; // $t7
-
-				/* begin block 1.1.4.1 */
-					// Start line: 982
-					// Start offset: 0x000251EC
-					// Variables:
-				// 		unsigned short jnFlags; // $a0
-				// 		int i; // $a1
-				// 		int exitId; // $a3
-				/* end block 1.1.4.1 */
-				// End offset: 0x000252BC
-				// End Line: 982
-			/* end block 1.1.4 */
-			// End offset: 0x000252BC
-			// End Line: 982
-
-			/* begin block 1.1.5 */
-				// Start line: 1152
-				// Start offset: 0x000252BC
-
-				/* begin block 1.1.5.1 */
-					// Start line: 1173
-					// Start offset: 0x00025774
-					// Variables:
-				// 		int x; // $v1
-				// 		int z; // $v0
-				// 		int dir; // stack offset -84
-				// 		DRIVER2_CURVE *cv; // $s1
-
-					/* begin block 1.1.5.1.1 */
-						// Start line: 1173
-						// Start offset: 0x00025774
-					/* end block 1.1.5.1.1 */
-					// End offset: 0x00025774
-					// End Line: 1173
-				/* end block 1.1.5.1 */
-				// End offset: 0x00025774
-				// End Line: 1173
-			/* end block 1.1.5 */
-			// End offset: 0x00025BC8
-			// End Line: 1184
-		/* end block 1.1 */
-		// End offset: 0x00025BC8
-		// End Line: 1184
-
-		/* begin block 1.2 */
-			// Start line: 1192
-			// Start offset: 0x00025BD0
-			// Variables:
-		// 		int i; // $a1
-		// 		int dx; // $v1
-		// 		int dz; // $a0
-		// 		int numLanes; // $fp
-		// 		int *pNewLane; // $s3
-		// 		int laneFromLeft; // $a3
-		// 		int laneFromRight; // $v1
-
-			/* begin block 1.2.1 */
-				// Start line: 1255
-				// Start offset: 0x00025FE4
-				// Variables:
-			// 		int preferredNewLane; // $t1
-			/* end block 1.2.1 */
-			// End offset: 0x00026314
-			// End Line: 1283
-
-			/* begin block 1.2.2 */
-				// Start line: 1286
-				// Start offset: 0x00026348
-				// Variables:
-			// 		int preferredNewLane; // $s4
-
-				/* begin block 1.2.2.1 */
-					// Start line: 1286
-					// Start offset: 0x00026348
-					// Variables:
-				// 		int x; // $v1
-				// 		int z; // $v0
-				// 		DRIVER2_CURVE *cv; // $s1
-
-					/* begin block 1.2.2.1.1 */
-						// Start line: 1286
-						// Start offset: 0x00026348
-					/* end block 1.2.2.1.1 */
-					// End offset: 0x00026348
-					// End Line: 1286
-				/* end block 1.2.2.1 */
-				// End offset: 0x00026348
-				// End Line: 1286
-			/* end block 1.2.2 */
-			// End offset: 0x0002669C
-			// End Line: 1313
-		/* end block 1.2 */
-		// End offset: 0x000267A4
-		// End Line: 1326
-	/* end block 1 */
-	// End offset: 0x00026964
-	// End Line: 1350
-
-	/* begin block 2 */
-		// Start line: 1783
-	/* end block 2 */
-	// End Line: 1784
-
-	/* begin block 3 */
-		// Start line: 1979
-	/* end block 3 */
-	// End Line: 1980
-
-/* WARNING: Type propagation algorithm not settling */
-
 // [D] [T]
-// BUGS: sometimes not getting right lane when road direction switched
 int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist, CIV_ROUTE_ENTRY* oldNode)
 {
 	u_int junctionFlags;
@@ -1250,55 +931,6 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 	return newRoad;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitNodeList(CAR_DATA *cp /*$s6*/, char *extraData /*$s7*/)
- // line 1365, offset 0x00026964
-	/* begin block 1 */
-		// Start line: 1366
-		// Start offset: 0x00026964
-		// Variables:
-	// 		int i; // $v1
-	// 		CIV_ROUTE_ENTRY *cr; // $s5
-	// 		int dx; // $s1
-	// 		int dz; // $s2
-	// 		int surfInd; // $s4
-
-		/* begin block 1.1 */
-			// Start line: 1397
-			// Start offset: 0x00026A04
-			// Variables:
-		// 		int theta; // $s0
-		// 		int laneDist; // $s1
-		// 		DRIVER2_STRAIGHT *str; // $s3
-		/* end block 1.1 */
-		// End offset: 0x00026B60
-		// End Line: 1406
-
-		/* begin block 1.2 */
-			// Start line: 1411
-			// Start offset: 0x00026B9C
-			// Variables:
-		// 		DRIVER2_CURVE *crv; // $s0
-		/* end block 1.2 */
-		// End offset: 0x00026C4C
-		// End Line: 1415
-	/* end block 1 */
-	// End offset: 0x00026CAC
-	// End Line: 1425
-
-	/* begin block 2 */
-		// Start line: 2972
-	/* end block 2 */
-	// End Line: 2973
-
-	/* begin block 3 */
-		// Start line: 2988
-	/* end block 3 */
-	// End Line: 2989
-
 // [D] [T]
 void InitNodeList(CAR_DATA* cp, EXTRA_CIV_DATA* extraData)
 {
@@ -1381,34 +1013,6 @@ void InitNodeList(CAR_DATA* cp, EXTRA_CIV_DATA* extraData)
 		cr->distAlongSegment = extraData->distAlongSegment;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ GetNodePos(DRIVER2_STRAIGHT *straight /*$t1*/, DRIVER2_JUNCTION *junction /*$a1*/, DRIVER2_CURVE *curve /*$t0*/, int distAlongPath /*$a3*/, CAR_DATA *cp /*stack 16*/, int *x /*stack 20*/, int *z /*stack 24*/, int laneNo /*stack 28*/)
- // line 1441, offset 0x00026cac
-	/* begin block 1 */
-		// Start line: 1442
-		// Start offset: 0x00026CAC
-		// Variables:
-	// 		unsigned char oldLane; // $a0
-	// 		unsigned char changeLaneCount; // $t3
-	/* end block 1 */
-	// End offset: 0x00026F20
-	// End Line: 1504
-
-	/* begin block 2 */
-		// Start line: 3154
-	/* end block 2 */
-	// End Line: 3155
-
-	/* begin block 3 */
-		// Start line: 3171
-	/* end block 3 */
-	// End Line: 3172
-
-
-
 // [D] [T]
 int GetNodePos(DRIVER2_STRAIGHT* straight, DRIVER2_JUNCTION* junction, DRIVER2_CURVE* curve, int distAlongPath, CAR_DATA* cp, int* x, int* z, int laneNo)
 {
@@ -1485,61 +1089,6 @@ int GetNodePos(DRIVER2_STRAIGHT* straight, DRIVER2_JUNCTION* junction, DRIVER2_C
 
 	return 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CheckChangeLanes(DRIVER2_STRAIGHT *straight /*$s4*/, DRIVER2_CURVE *curve /*$s6*/, int distAlongSegment /*$a2*/, CAR_DATA *cp /*$s3*/, int tryToPark /*stack 16*/)
- // line 1507, offset 0x00026f20
-	/* begin block 1 */
-		// Start line: 1508
-		// Start offset: 0x00026F20
-		// Variables:
-	// 		unsigned char currentLane; // $s7
-	// 		unsigned char newLane; // $s2
-	// 		unsigned char trials; // $t3
-	// 		unsigned char canProceed; // stack offset -88
-	// 		unsigned char travelAlongRoad; // $s5
-	// 		unsigned char turnRight; // stack offset -84
-	// 		CAR_DATA *cp1; // $s0
-	// 		CIV_ROUTE_ENTRY tmpNode; // stack offset -120
-
-		/* begin block 1.1 */
-			// Start line: 1572
-			// Start offset: 0x00027290
-			// Variables:
-		// 		VECTOR pos; // stack offset -104
-		// 		int theta; // $a0
-		// 		int length; // $a1
-
-			/* begin block 1.1.1 */
-				// Start line: 1588
-				// Start offset: 0x00027394
-			/* end block 1.1.1 */
-			// End offset: 0x00027494
-			// End Line: 1596
-		/* end block 1.1 */
-		// End offset: 0x000274A4
-		// End Line: 1598
-	/* end block 1 */
-	// End offset: 0x00027530
-	// End Line: 1623
-
-	/* begin block 2 */
-		// Start line: 3328
-	/* end block 2 */
-	// End Line: 3329
-
-	/* begin block 3 */
-		// Start line: 3332
-	/* end block 3 */
-	// End Line: 3333
-
-	/* begin block 4 */
-		// Start line: 3337
-	/* end block 4 */
-	// End Line: 3338
 
 // [D] [T]
 int CheckChangeLanes(DRIVER2_STRAIGHT* straight, DRIVER2_CURVE* curve, int distAlongSegment, CAR_DATA* cp, int tryToPark)
@@ -1711,327 +1260,6 @@ int CheckChangeLanes(DRIVER2_STRAIGHT* straight, DRIVER2_CURVE* curve, int distA
 
 	return currentLane;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CreateNewNode(CAR_DATA *cp /*$s4*/)
-	// line 1637, offset 0x00027530
-	/* begin block 1 */
-		// Start line: 1638
-		// Start offset: 0x00027530
-		// Variables:
-	// 		int oldRoad; // $s1
-	// 		int cr; // $a3
-	// 		CIV_ROUTE_ENTRY *newNode; // $s6
-	// 		CIV_ROUTE_ENTRY *oldNode; // $s3
-	// 		DRIVER2_CURVE *curve; // $s0
-	// 		DRIVER2_STRAIGHT *straight; // $s5
-	// 		int turnAngle; // stack offset -56
-
-		/* begin block 1.1 */
-			// Start line: 1638
-			// Start offset: 0x00027530
-			// Variables:
-		// 		CAR_DATA *cp; // $s4
-		// 		CIV_ROUTE_ENTRY *currentNode; // $v1
-
-			/* begin block 1.1.1 */
-				// Start line: 1638
-				// Start offset: 0x00027530
-				// Variables:
-			// 		CIV_ROUTE_ENTRY *retNode; // $a0
-			/* end block 1.1.1 */
-			// End offset: 0x0002757C
-			// End Line: 1638
-		/* end block 1.1 */
-		// End offset: 0x0002757C
-		// End Line: 1638
-
-		/* begin block 1.2 */
-			// Start line: 1638
-			// Start offset: 0x0002758C
-			// Variables:
-		// 		CAR_DATA *cp; // $s4
-
-			/* begin block 1.2.1 */
-				// Start line: 1638
-				// Start offset: 0x0002758C
-				// Variables:
-			// 		CIV_ROUTE_ENTRY *retNode; // $a0
-			/* end block 1.2.1 */
-			// End offset: 0x0002759C
-			// End Line: 1638
-		/* end block 1.2 */
-		// End offset: 0x0002759C
-		// End Line: 1638
-
-		/* begin block 1.3 */
-			// Start line: 1638
-			// Start offset: 0x000275A8
-			// Variables:
-		// 		CAR_DATA *cp; // $s4
-
-			/* begin block 1.3.1 */
-				// Start line: 1638
-				// Start offset: 0x000275A8
-				// Variables:
-			// 		CIV_ROUTE_ENTRY *retNode; // $a0
-			/* end block 1.3.1 */
-			// End offset: 0x000275B8
-			// End Line: 1638
-		/* end block 1.3 */
-		// End offset: 0x000275B8
-		// End Line: 1638
-
-		/* begin block 1.4 */
-			// Start line: 1638
-			// Start offset: 0x000275C4
-			// Variables:
-		// 		CAR_DATA *cp; // $s4
-
-			/* begin block 1.4.1 */
-				// Start line: 1638
-				// Start offset: 0x000275C4
-				// Variables:
-			// 		CIV_ROUTE_ENTRY *retNode; // $a0
-			/* end block 1.4.1 */
-			// End offset: 0x000275D4
-			// End Line: 1638
-		/* end block 1.4 */
-		// End offset: 0x000275D4
-		// End Line: 1638
-
-		/* begin block 1.5 */
-			// Start line: 1653
-			// Start offset: 0x000275F0
-			// Variables:
-		// 		CAR_DATA *cp; // $s4
-		// 		CIV_ROUTE_ENTRY *currentNode; // $s3
-
-			/* begin block 1.5.1 */
-				// Start line: 1653
-				// Start offset: 0x000275F0
-				// Variables:
-			// 		CIV_ROUTE_ENTRY *retNode; // $v1
-			/* end block 1.5.1 */
-			// End offset: 0x000275F0
-			// End Line: 1653
-		/* end block 1.5 */
-		// End offset: 0x000275F0
-		// End Line: 1653
-
-		/* begin block 1.6 */
-			// Start line: 1655
-			// Start offset: 0x000275F0
-
-			/* begin block 1.6.1 */
-				// Start line: 1638
-				// Start offset: 0x000275F0
-				// Variables:
-			// 		CAR_DATA *cp; // $s4
-
-				/* begin block 1.6.1.1 */
-					// Start line: 1638
-					// Start offset: 0x000275F0
-					// Variables:
-				// 		CIV_ROUTE_ENTRY *retNode; // $v1
-				/* end block 1.6.1.1 */
-				// End offset: 0x00027600
-				// End Line: 1638
-			/* end block 1.6.1 */
-			// End offset: 0x00027600
-			// End Line: 1638
-		/* end block 1.6 */
-		// End offset: 0x00027610
-		// End Line: 1658
-
-		/* begin block 1.7 */
-			// Start line: 1659
-			// Start offset: 0x00027634
-			// Variables:
-		// 		CAR_DATA *cp; // $s4
-		// 		CIV_ROUTE_ENTRY *currentNode; // $s3
-
-			/* begin block 1.7.1 */
-				// Start line: 1659
-				// Start offset: 0x00027634
-				// Variables:
-			// 		CIV_ROUTE_ENTRY *retNode; // $s2
-			/* end block 1.7.1 */
-			// End offset: 0x0002764C
-			// End Line: 1659
-		/* end block 1.7 */
-		// End offset: 0x0002764C
-		// End Line: 1659
-
-		/* begin block 1.8 */
-			// Start line: 1681
-			// Start offset: 0x000276E8
-			// Variables:
-		// 		int travelDir; // $a1
-		// 		int segmentEnd; // $a0
-
-			/* begin block 1.8.1 */
-				// Start line: 1688
-				// Start offset: 0x000277B0
-				// Variables:
-			// 		int startDist; // stack offset -52
-			/* end block 1.8.1 */
-			// End offset: 0x00027808
-			// End Line: 1688
-		/* end block 1.8 */
-		// End offset: 0x00027818
-		// End Line: 1688
-
-		/* begin block 1.9 */
-			// Start line: 1692
-			// Start offset: 0x0002784C
-			// Variables:
-		// 		int travelDir; // $a2
-		// 		int segmentEnd; // $t0
-
-			/* begin block 1.9.1 */
-				// Start line: 1699
-				// Start offset: 0x00027954
-				// Variables:
-			// 		int startDist; // stack offset -48
-			/* end block 1.9.1 */
-			// End offset: 0x00027990
-			// End Line: 1699
-		/* end block 1.9 */
-		// End offset: 0x000279A4
-		// End Line: 1700
-
-		/* begin block 1.10 */
-			// Start line: 1717
-			// Start offset: 0x00027A18
-			// Variables:
-		// 		CIV_ROUTE_ENTRY tmpNode; // stack offset -72
-
-			/* begin block 1.10.1 */
-				// Start line: 1721
-				// Start offset: 0x00027A58
-				// Variables:
-			// 		int travelDir; // $a0
-			/* end block 1.10.1 */
-			// End offset: 0x00027B18
-			// End Line: 1732
-
-			/* begin block 1.10.2 */
-				// Start line: 1739
-				// Start offset: 0x00027B90
-				// Variables:
-			// 		CAR_DATA *playerCar; // $v0
-			// 		int dx; // $v1
-			// 		int dz; // $a0
-			/* end block 1.10.2 */
-			// End offset: 0x00027C00
-			// End Line: 1744
-
-			/* begin block 1.10.3 */
-				// Start line: 1751
-				// Start offset: 0x00027C38
-				// Variables:
-			// 		int tryToPark; // $s1
-			/* end block 1.10.3 */
-			// End offset: 0x00027DA0
-			// End Line: 1773
-
-			/* begin block 1.10.4 */
-				// Start line: 1779
-				// Start offset: 0x00027E04
-				// Variables:
-			// 		int radOfCrv; // $s5
-			// 		int cornerAngle; // $a3
-			// 		int segLength; // $s0
-			// 		int tmp; // $a1
-			// 		int dx; // $s1
-			// 		int dz; // $s0
-
-				/* begin block 1.10.4.1 */
-					// Start line: 1789
-					// Start offset: 0x00027EBC
-					// Variables:
-				// 		CAR_DATA *cp; // $s4
-
-					/* begin block 1.10.4.1.1 */
-						// Start line: 1789
-						// Start offset: 0x00027EBC
-						// Variables:
-					// 		CIV_ROUTE_ENTRY *retNode; // $a0
-					/* end block 1.10.4.1.1 */
-					// End offset: 0x00027F44
-					// End Line: 1792
-				/* end block 1.10.4.1 */
-				// End offset: 0x00027F44
-				// End Line: 1792
-
-				/* begin block 1.10.4.2 */
-					// Start line: 1800
-					// Start offset: 0x00027F78
-					// Variables:
-				// 		CAR_DATA *cp; // $s4
-
-					/* begin block 1.10.4.2.1 */
-						// Start line: 1800
-						// Start offset: 0x00027F78
-						// Variables:
-					// 		CIV_ROUTE_ENTRY *retNode; // $a0
-					/* end block 1.10.4.2.1 */
-					// End offset: 0x0002800C
-					// End Line: 1803
-				/* end block 1.10.4.2 */
-				// End offset: 0x0002800C
-				// End Line: 1803
-			/* end block 1.10.4 */
-			// End offset: 0x0002800C
-			// End Line: 1806
-
-			/* begin block 1.10.5 */
-				// Start line: 1810
-				// Start offset: 0x0002800C
-
-				/* begin block 1.10.5.1 */
-					// Start line: 1638
-					// Start offset: 0x0002800C
-					// Variables:
-				// 		CAR_DATA *cp; // $s4
-				// 		CIV_ROUTE_ENTRY *currentNode; // $s6
-
-					/* begin block 1.10.5.1.1 */
-						// Start line: 1638
-						// Start offset: 0x0002800C
-						// Variables:
-					// 		CIV_ROUTE_ENTRY *retNode; // $v0
-					/* end block 1.10.5.1.1 */
-					// End offset: 0x0002800C
-					// End Line: 1638
-				/* end block 1.10.5.1 */
-				// End offset: 0x0002800C
-				// End Line: 1638
-			/* end block 1.10.5 */
-			// End offset: 0x0002801C
-			// End Line: 1814
-		/* end block 1.10 */
-		// End offset: 0x0002801C
-		// End Line: 1814
-	/* end block 1 */
-	// End offset: 0x000280D8
-	// End Line: 1828
-
-	/* begin block 2 */
-		// Start line: 3743
-	/* end block 2 */
-	// End Line: 3744
-
-	/* begin block 3 */
-		// Start line: 3758
-	/* end block 3 */
-	// End Line: 3759
-
-/* WARNING: Could not reconcile some variable overlaps */
 
 int makeNextNodeCtrlNode = -1;
 
@@ -2311,31 +1539,6 @@ int CreateNewNode(CAR_DATA * cp)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ InitCivState(CAR_DATA *cp /*$s1*/, char *extraData /*$s2*/)
-	// line 1843, offset 0x000280d8
-	/* begin block 1 */
-		// Start line: 1844
-		// Start offset: 0x000280D8
-		// Variables:
-	// 		CIV_STATE *cs; // $s0
-	/* end block 1 */
-	// End offset: 0x000282E8
-	// End Line: 1887
-
-	/* begin block 2 */
-		// Start line: 4201
-	/* end block 2 */
-	// End Line: 4202
-
-	/* begin block 3 */
-		// Start line: 4217
-	/* end block 3 */
-	// End Line: 4218
-
 // [D] [T]
 int InitCivState(CAR_DATA * cp, EXTRA_CIV_DATA * extraData)
 {
@@ -2393,27 +1596,6 @@ int InitCivState(CAR_DATA * cp, EXTRA_CIV_DATA * extraData)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ PingOutCar(CAR_DATA *cp /*$s0*/)
-	// line 1977, offset 0x0002cf80
-	/* begin block 1 */
-		// Start line: 7534
-	/* end block 1 */
-	// End Line: 7535
-
-	/* begin block 2 */
-		// Start line: 3954
-	/* end block 2 */
-	// End Line: 3955
-
-	/* begin block 3 */
-		// Start line: 7535
-	/* end block 3 */
-	// End Line: 7536
-
 // [D] [T]
 int PingOutCar(CAR_DATA * cp)
 {
@@ -2444,52 +1626,6 @@ int PingOutCar(CAR_DATA * cp)
 	return 1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ PingOutAllSpecialCivCars()
-	// line 2016, offset 0x000282e8
-	/* begin block 1 */
-		// Start line: 2018
-		// Start offset: 0x000282E8
-		// Variables:
-	// 		CAR_DATA *lcp; // $s0
-
-		/* begin block 1.1 */
-			// Start line: 2017
-			// Start offset: 0x00028348
-			// Variables:
-		// 		CAR_DATA *cp; // $s0
-		/* end block 1.1 */
-		// End offset: 0x000283E4
-		// End Line: 2017
-	/* end block 1 */
-	// End offset: 0x0002840C
-	// End Line: 2025
-
-	/* begin block 2 */
-		// Start line: 4449
-	/* end block 2 */
-	// End Line: 4450
-
-	/* begin block 3 */
-		// Start line: 4579
-	/* end block 3 */
-	// End Line: 4580
-
-	/* begin block 4 */
-		// Start line: 4580
-	/* end block 4 */
-	// End Line: 4581
-
-	/* begin block 5 */
-		// Start line: 4581
-	/* end block 5 */
-	// End Line: 4582
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 // used when secret car is requested
 int PingOutAllSpecialCivCars(void)
@@ -2510,52 +1646,6 @@ int PingOutAllSpecialCivCars(void)
 	return 1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ PingOutAllCivCarsAndCopCars()
-	// line 2028, offset 0x0002840c
-	/* begin block 1 */
-		// Start line: 2030
-		// Start offset: 0x0002840C
-		// Variables:
-	// 		CAR_DATA *lcp; // $s0
-
-		/* begin block 1.1 */
-			// Start line: 2029
-			// Start offset: 0x0002844C
-			// Variables:
-		// 		CAR_DATA *cp; // $s0
-		/* end block 1.1 */
-		// End offset: 0x0002852C
-		// End Line: 2029
-	/* end block 1 */
-	// End offset: 0x00028554
-	// End Line: 2037
-
-	/* begin block 2 */
-		// Start line: 4601
-	/* end block 2 */
-	// End Line: 4602
-
-	/* begin block 3 */
-		// Start line: 4605
-	/* end block 3 */
-	// End Line: 4606
-
-	/* begin block 4 */
-		// Start line: 4606
-	/* end block 4 */
-	// End Line: 4607
-
-	/* begin block 5 */
-		// Start line: 4607
-	/* end block 5 */
-	// End Line: 4608
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 // used by cutscenes
 int PingOutAllCivCarsAndCopCars(void)
@@ -2574,47 +1664,6 @@ int PingOutAllCivCarsAndCopCars(void)
 
 	return 1;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CheckPingOut(CAR_DATA *cp /*$s0*/)
-	// line 2050, offset 0x00028554
-	/* begin block 1 */
-		// Start line: 2051
-		// Start offset: 0x00028554
-		// Variables:
-	// 		int dx; // $a0
-	// 		int dz; // $v1
-	// 		int dist; // $s1
-
-		/* begin block 1.1 */
-			// Start line: 2051
-			// Start offset: 0x000285B8
-			// Variables:
-		// 		CAR_DATA *cp; // $s0
-		/* end block 1.1 */
-		// End offset: 0x00028694
-		// End Line: 2051
-	/* end block 1 */
-	// End offset: 0x000286E0
-	// End Line: 2081
-
-	/* begin block 2 */
-		// Start line: 4648
-	/* end block 2 */
-	// End Line: 4649
-
-	/* begin block 3 */
-		// Start line: 4651
-	/* end block 3 */
-	// End Line: 4652
-
-	/* begin block 4 */
-		// Start line: 4656
-	/* end block 4 */
-	// End Line: 4657
 
 // [D] [T]
 // called by civ car.
@@ -2641,60 +1690,12 @@ int CheckPingOut(CAR_DATA * cp)
 	return 1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetUpTrafficLightPhase()
-	// line 2084, offset 0x0002d220
-	/* begin block 1 */
-		// Start line: 7728
-	/* end block 1 */
-	// End Line: 7729
-
-	/* begin block 2 */
-		// Start line: 8898
-	/* end block 2 */
-	// End Line: 8899
-
-	/* begin block 3 */
-		// Start line: 8899
-	/* end block 3 */
-	// End Line: 8900
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void SetUpTrafficLightPhase(void)
 {
 	junctionLightsPhase[0] = TrafficLightCycle(0);
 	junctionLightsPhase[1] = TrafficLightCycle(1);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ TrafficLightCycle(int exit /*$a0*/)
-	// line 2116, offset 0x0002cf18
-	/* begin block 1 */
-		// Start line: 2117
-		// Start offset: 0x0002CF18
-		// Variables:
-	// 		int timeCnt; // $v1
-	/* end block 1 */
-	// End offset: 0x0002CF80
-	// End Line: 2141
-
-	/* begin block 2 */
-		// Start line: 4232
-	/* end block 2 */
-	// End Line: 4233
-
-	/* begin block 3 */
-		// Start line: 7647
-	/* end block 3 */
-	// End Line: 7648
 
 // [D] [T]
 int TrafficLightCycle(int exit)
@@ -2721,41 +1722,6 @@ int TrafficLightCycle(int exit)
 	return 2;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitCivCars()
-	// line 2144, offset 0x0002cda4
-	/* begin block 1 */
-		// Start line: 2146
-		// Start offset: 0x0002CDA4
-	/* end block 1 */
-	// End offset: 0x0002CE10
-	// End Line: 2157
-
-	/* begin block 2 */
-		// Start line: 4928
-	/* end block 2 */
-	// End Line: 4929
-
-	/* begin block 3 */
-		// Start line: 4288
-	/* end block 3 */
-	// End Line: 4289
-
-	/* begin block 4 */
-		// Start line: 7073
-	/* end block 4 */
-	// End Line: 7074
-
-	/* begin block 5 */
-		// Start line: 7075
-	/* end block 5 */
-	// End Line: 7076
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void InitCivCars(void)
 {
@@ -2779,51 +1745,6 @@ void InitCivCars(void)
 	currentAngle = 0;
 	closeEncounter = 3;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CreateCivCarWotDrivesABitThenStops(int direction /*$s5*/, LONGVECTOR* startPos /*$s2*/, LONGVECTOR* stopPos /*$a2*/, unsigned char internalModel /*$s4*/, int palette /*stack 16*/)
-	// line 2176, offset 0x000286e0
-	/* begin block 1 */
-		// Start line: 2177
-		// Start offset: 0x000286E0
-		// Variables:
-	// 		EXTRA_CIV_DATA civDat; // stack offset -56
-	// 		CAR_DATA *newCar; // $s1
-	// 		CIV_ROUTE_ENTRY *stopNode; // $a0
-	// 		CIV_ROUTE_ENTRY *spareNode; // $a1
-
-		/* begin block 1.1 */
-			// Start line: 2177
-			// Start offset: 0x000286E0
-
-			/* begin block 1.1.1 */
-				// Start line: 2177
-				// Start offset: 0x000286E0
-				// Variables:
-			// 		char *slot; // $v1
-			// 		CAR_DATA *carCnt; // $a0
-			/* end block 1.1.1 */
-			// End offset: 0x00028774
-			// End Line: 2184
-		/* end block 1.1 */
-		// End offset: 0x00028774
-		// End Line: 2184
-	/* end block 1 */
-	// End offset: 0x00028960
-	// End Line: 2229
-
-	/* begin block 2 */
-		// Start line: 4814
-	/* end block 2 */
-	// End Line: 4815
-
-	/* begin block 3 */
-		// Start line: 4910
-	/* end block 3 */
-	// End Line: 4911
 
 const int EVENT_CAR_SPEED = 60;
 const int DistanceTriggerCarMoves = 700; // 5000;
@@ -2900,51 +1821,6 @@ int CreateCivCarWotDrivesABitThenStops(int direction, LONGVECTOR4* startPos, LON
 
 	return pNewCar->id;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CreateStationaryCivCar(int direction /*$t4*/, long orientX /*$s2*/, long orientZ /*$s1*/, LONGVECTOR* startPos /*$a2*/, int externalModel /*stack 16*/, int palette /*stack 20*/, int controlFlags /*stack 24*/)
-	// line 2248, offset 0x00028960
-	/* begin block 1 */
-		// Start line: 2249
-		// Start offset: 0x00028960
-		// Variables:
-	// 		EXTRA_CIV_DATA civDat; // stack offset -72
-	// 		CAR_DATA *newCar; // $s0
-	// 		long tmpRes[4]; // stack offset -48
-	// 		long tmpQ[4]; // stack offset -32
-
-		/* begin block 1.1 */
-			// Start line: 2249
-			// Start offset: 0x00028A1C
-
-			/* begin block 1.1.1 */
-				// Start line: 2249
-				// Start offset: 0x00028A1C
-				// Variables:
-			// 		char *slot; // $v1
-			// 		CAR_DATA *carCnt; // $a0
-			/* end block 1.1.1 */
-			// End offset: 0x00028A68
-			// End Line: 2249
-		/* end block 1.1 */
-		// End offset: 0x00028A68
-		// End Line: 2249
-	/* end block 1 */
-	// End offset: 0x00028DB4
-	// End Line: 2289
-
-	/* begin block 2 */
-		// Start line: 5111
-	/* end block 2 */
-	// End Line: 5112
-
-	/* begin block 3 */
-		// Start line: 5131
-	/* end block 3 */
-	// End Line: 5132
 
 // [D] [T]
 int CreateStationaryCivCar(int direction, long orientX, long orientZ, LONGVECTOR4* startPos, int externalModel, int palette, int controlFlags)
@@ -3043,199 +1919,6 @@ int CreateStationaryCivCar(int direction, long orientX, long orientZ, LONGVECTOR
 
 	return -1;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ PingInCivCar(int minPingInDist /*stack 0*/)
-	// line 2323, offset 0x00028db4
-	/* begin block 1 */
-		// Start line: 2324
-		// Start offset: 0x00028DB4
-		// Variables:
-	// 		EXTRA_CIV_DATA civDat; // stack offset -128
-	// 		int dir; // stack offset -52
-	// 		int distAlongSegment; // $fp
-	// 		int lane; // $s7
-	// 		CAR_DATA *newCar; // $s1
-	// 		DRIVER2_STRAIGHT *str; // $s6
-	// 		DRIVER2_CURVE *crv; // $s5
-	// 		unsigned char cookieCountStart; // $s4
-	// 		int curveLength; // stack offset -48
-	// 		unsigned char model; // $s4
-	// 		unsigned char possibleLanes[12]; // stack offset -104
-	// 		unsigned char carDistLanes[15]; // stack offset -88
-	// 		char numPossibleLanes; // $s0
-	// 		int lbody; // $s3
-
-		/* begin block 1.1 */
-			// Start line: 2324
-			// Start offset: 0x00028EEC
-
-			/* begin block 1.1.1 */
-				// Start line: 2324
-				// Start offset: 0x00028EEC
-				// Variables:
-			// 		char *slot; // $a1
-			// 		CAR_DATA *carCnt; // $a0
-			/* end block 1.1.1 */
-			// End offset: 0x00028F40
-			// End Line: 2324
-		/* end block 1.1 */
-		// End offset: 0x00028F40
-		// End Line: 2324
-
-		/* begin block 1.2 */
-			// Start line: 2393
-			// Start offset: 0x00029000
-			// Variables:
-		// 		char newCarId; // $v1
-
-			/* begin block 1.2.1 */
-				// Start line: 2324
-				// Start offset: 0x00029058
-				// Variables:
-			// 		CAR_DATA *cp; // $s1
-			/* end block 1.2.1 */
-			// End offset: 0x00029140
-			// End Line: 2324
-		/* end block 1.2 */
-		// End offset: 0x000292A4
-		// End Line: 2402
-
-		/* begin block 1.3 */
-			// Start line: 2462
-			// Start offset: 0x00029620
-			// Variables:
-		// 		char frog; // $a0
-		// 		char numLanes; // $a1
-		/* end block 1.3 */
-		// End offset: 0x00029760
-		// End Line: 2462
-
-		/* begin block 1.4 */
-			// Start line: 2471
-			// Start offset: 0x00029860
-			// Variables:
-		// 		char frog; // $a0
-		// 		char numLanes; // $a1
-		/* end block 1.4 */
-		// End offset: 0x00029964
-		// End Line: 2471
-
-		/* begin block 1.5 */
-			// Start line: 2528
-			// Start offset: 0x00029C48
-			// Variables:
-		// 		int externalModel; // $v0
-
-			/* begin block 1.5.1 */
-				// Start line: 2535
-				// Start offset: 0x00029CC4
-				// Variables:
-			// 		unsigned char palette; // $v0
-			/* end block 1.5.1 */
-			// End offset: 0x00029D20
-			// End Line: 2539
-		/* end block 1.5 */
-		// End offset: 0x00029D5C
-		// End Line: 2544
-
-		/* begin block 1.6 */
-			// Start line: 2550
-			// Start offset: 0x00029DB8
-			// Variables:
-		// 		int theta; // $s0
-		// 		int minDistAlong; // $s2
-		/* end block 1.6 */
-		// End offset: 0x00029F10
-		// End Line: 2563
-
-		/* begin block 1.7 */
-			// Start line: 2567
-			// Start offset: 0x00029F58
-			// Variables:
-		// 		int minAngle; // $a1
-		/* end block 1.7 */
-		// End offset: 0x0002A090
-		// End Line: 2578
-
-		/* begin block 1.8 */
-			// Start line: 2593
-			// Start offset: 0x0002A0E8
-			// Variables:
-		// 		long pos[4]; // stack offset -72
-		// 		unsigned int distSq; // stack offset -56
-
-			/* begin block 1.8.1 */
-				// Start line: 2593
-				// Start offset: 0x0002A0E8
-				// Variables:
-			// 		int *distToCarSq; // $t2
-
-				/* begin block 1.8.1.1 */
-					// Start line: 2593
-					// Start offset: 0x0002A0E8
-					// Variables:
-				// 		int dz; // $v1
-				// 		int dx; // $a0
-				// 		int distSq; // $v0
-				// 		unsigned int retDistSq; // $a2
-				// 		CAR_DATA *lcp; // $a1
-				/* end block 1.8.1.1 */
-				// End offset: 0x0002A228
-				// End Line: 2601
-			/* end block 1.8.1 */
-			// End offset: 0x0002A228
-			// End Line: 2601
-
-			/* begin block 1.8.2 */
-				// Start line: 2611
-				// Start offset: 0x0002A240
-				// Variables:
-			// 		int x; // $t2
-			// 		int y; // $a2
-			// 		int z; // $t1
-			// 		unsigned int distSq; // $a3
-
-				/* begin block 1.8.2.1 */
-					// Start line: 2611
-					// Start offset: 0x0002A240
-					// Variables:
-				// 		int dz; // $v1
-				// 		int dx; // $a0
-				// 		int ret; // $t0
-				// 		CAR_DATA *lcp; // $a1
-				/* end block 1.8.2.1 */
-				// End offset: 0x0002A340
-				// End Line: 2611
-			/* end block 1.8.2 */
-			// End offset: 0x0002A340
-			// End Line: 2611
-		/* end block 1.8 */
-		// End offset: 0x0002A37C
-		// End Line: 2622
-	/* end block 1 */
-	// End offset: 0x0002A4C4
-	// End Line: 2656
-
-	/* begin block 2 */
-		// Start line: 5271
-	/* end block 2 */
-	// End Line: 5272
-
-	/* begin block 3 */
-		// Start line: 5306
-	/* end block 3 */
-	// End Line: 5307
-
-	/* begin block 4 */
-		// Start line: 5308
-	/* end block 4 */
-	// End Line: 5309
-
-/* WARNING: Type propagation algorithm not settling */
 
 
 VECTOR baseLoc;
@@ -3798,36 +2481,6 @@ int PingInCivCar(int minPingInDist)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ AttemptUnPark(CAR_DATA *cp /*$s1*/)
-	// line 2659, offset 0x0002a4c4
-	/* begin block 1 */
-		// Start line: 2660
-		// Start offset: 0x0002A4C4
-		// Variables:
-	// 		DRIVER2_STRAIGHT *str; // $s2
-	// 		DRIVER2_CURVE *crv; // $s3
-	/* end block 1 */
-	// End offset: 0x0002A5FC
-	// End Line: 2690
-
-	/* begin block 2 */
-		// Start line: 6109
-	/* end block 2 */
-	// End Line: 6110
-
-	/* begin block 3 */
-		// Start line: 6113
-	/* end block 3 */
-	// End Line: 6114
-
-	/* begin block 4 */
-		// Start line: 6115
-	/* end block 4 */
-	// End Line: 6116
-
 // [D] [T]
 void AttemptUnPark(CAR_DATA * cp)
 {
@@ -3849,313 +2502,6 @@ void AttemptUnPark(CAR_DATA * cp)
 		}
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CivControl(CAR_DATA *cp /*$s0*/)
-	// line 2699, offset 0x0002ce10
-	/* begin block 1 */
-		// Start line: 2700
-		// Start offset: 0x0002CE10
-
-		/* begin block 1.1 */
-			// Start line: 2700
-			// Start offset: 0x0002CE10
-		/* end block 1.1 */
-		// End offset: 0x0002CE10
-		// End Line: 2700
-
-		/* begin block 1.2 */
-			// Start line: 2729
-			// Start offset: 0x0002CE8C
-		/* end block 1.2 */
-		// End offset: 0x0002CEC0
-		// End Line: 2731
-	/* end block 1 */
-	// End offset: 0x0002CF18
-	// End Line: 2740
-
-	/* begin block 2 */
-		// Start line: 7646
-	/* end block 2 */
-	// End Line: 7647
-
-	/* begin block 3 */
-		// Start line: 8189
-	/* end block 3 */
-	// End Line: 8190
-
-// [D] [T]
-int CivControl(CAR_DATA * cp)
-{
-	CheckPingOut(cp);
-
-	if (cp->controlType == CONTROL_TYPE_CIV_AI)
-	{
-		if (cp->ai.c.changeLaneIndicateCount != 0)
-			cp->ai.c.changeLaneIndicateCount--;
-
-		if (cp->ai.c.ctrlState == 5 && cp->ai.c.thrustState == 3 &&
-			cp->totalDamage < 4 && (cp->ap.model != 3 && (Random2(0) + (25 - cp->id) * 16 & 0xff8) == 0xf00))
-		{
-			AttemptUnPark(cp);
-		}
-
-		cp->thrust = CivAccel(cp);
-
-		if (cp->ai.c.thrustState != 3)
-			cp->wheel_angle = CivSteerAngle(cp);
-
-#if 0
-		{
-			//maxCivCars = 2;
-			//maxCopCars = 0;
-
-			extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
-			extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
-
-			CVECTOR ggcv = { 0, 250, 0 };
-			CVECTOR bbcv = { 0, 0, 250 };
-			CVECTOR rrcv = { 250, 0, 0 };
-
-			CVECTOR yycv = { 250, 250, 0 };
-
-			VECTOR _zero = { 0 };
-			VECTOR _up = { 0, 120, 0 };
-
-			VECTOR _up1 = { 0, 20, 0 };
-			VECTOR _up2 = { 0, 40, 0 };
-			VECTOR _up3 = { 0, 60, 0 };
-			VECTOR _up4 = { 0, 80, 0 };
-
-			// show current road
-			/*
-			if (cp->ai.c.currentRoad != -1)
-			{
-				DRIVER2_STRAIGHT* straight = GET_STRAIGHT(cp->ai.c.currentRoad);
-
-				int angle = straight->angle;
-				int distFromCentreA = -straight->length / 2;
-				int distFromCentreB = straight->length / 2;
-
-				int laneNo = cp->ai.c.currentLane;
-				test42 = 0 * 0x80;
-				sideShift = ((straight->NumLanes & 0xf) * 0x200 - (laneNo * 0x200 + 0x100)) + test42;
-
-				int straightX1 = straight->Midx + FIXED(distFromCentreA * rcossin_tbl[(angle & 0xfffU) * 2]) + FIXED(sideShift * rcossin_tbl[(angle & 0xfffU) * 2 + 1]);
-				int straightZ1 = (straight->Midz + FIXED(distFromCentreA * rcossin_tbl[(angle & 0xfffU) * 2 + 1])) - FIXED(sideShift * rcossin_tbl[(angle & 0xfffU) * 2]);
-
-				int straightX2 = straight->Midx + FIXED(distFromCentreB * rcossin_tbl[(angle & 0xfffU) * 2]) + FIXED(sideShift * rcossin_tbl[(angle & 0xfffU) * 2 + 1]);
-				int straightZ2 = (straight->Midz + FIXED(distFromCentreB * rcossin_tbl[(angle & 0xfffU) * 2 + 1])) - FIXED(sideShift * rcossin_tbl[(angle & 0xfffU) * 2]);
-
-				VECTOR roadA = { straightX1, cp->hd.where.t[1], straightZ1 };
-				VECTOR roadB = { straightX2, cp->hd.where.t[1], straightZ2 };
-
-				Debug_AddLine(roadA, roadB, rrcv);
-			}*/
-
-			CIV_ROUTE_ENTRY* pn = cp->ai.c.pnode;
-			if (pn)
-			{
-				for (int i = 0; i < 13; i++)
-				{
-					if (pn->pathType != 127)
-					{
-						int sx, cx;
-						sx = rsin(pn->dir);
-						cx = rcos(pn->dir);
-
-						VECTOR ofs = { sx / 16, 0, cx / 16 };
-
-						VECTOR b1p = { pn->x, cp->hd.where.t[1], pn->z };
-
-						if (pn->pathType == 2)
-						{
-							ofs.vy = 1000;
-						}
-
-						//Debug_AddLineOfs(_zero, _up, b1p, rrcv);
-						Debug_AddLineOfs(_zero, ofs, b1p, rrcv);
-					}
-
-					pn = GET_NEXT_NODE(cp, pn);
-				}
-			}
-
-			// current node - YELLOW
-			if (cp->ai.c.currentNode > -1 && cp->ai.c.currentNode < 13)
-			{
-				CIV_ROUTE_ENTRY& currentNode = cp->ai.c.targetRoute[cp->ai.c.currentNode];
-
-				VECTOR b1p = { currentNode.x, cp->hd.where.t[1], currentNode.z };
-
-				Debug_AddLineOfs(_zero, _up1, b1p, yycv);
-			}
-
-			// turn node - RED
-			if (cp->ai.c.turnNode > -1 && cp->ai.c.turnNode < 13)
-			{
-				CIV_ROUTE_ENTRY& turnNode = cp->ai.c.targetRoute[cp->ai.c.turnNode];
-
-				VECTOR b1p = { turnNode.x, cp->hd.where.t[1], turnNode.z };
-
-				Debug_AddLineOfs(_up1, _up2, b1p, rrcv);
-			}
-
-			// control node - GREEN
-			if (cp->ai.c.ctrlNode)
-			{
-				VECTOR b1p = { cp->ai.c.ctrlNode->x, cp->hd.where.t[1], cp->ai.c.ctrlNode->z };
-
-				Debug_AddLineOfs(_up2, _up3, b1p, ggcv);
-			}
-
-			// previous node - BLUE
-			if (cp->ai.c.pnode)
-			{
-				VECTOR b1p = { cp->ai.c.pnode->x, cp->hd.where.t[1], cp->ai.c.pnode->z };
-
-				Debug_AddLineOfs(_up3, _up4, b1p, bbcv);
-			}
-		}
-#endif
-	}
-
-	// watch for the player
-	if (cp->controlFlags & CONTROL_FLAG_COP)
-		PassiveCopTasks(cp);
-
-	return 1;
-}
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CivAccelTrafficRules(CAR_DATA *cp /*$t3*/, int *distToNode /*$a1*/)
-	// line 2798, offset 0x0002a5fc
-	/* begin block 1 */
-		// Start line: 2799
-		// Start offset: 0x0002A5FC
-		// Variables:
-	// 		int lbody; // $t1
-	// 		int wbody; // $t2
-	// 		CIV_STATE *cs; // $a2
-
-		/* begin block 1.1 */
-			// Start line: 2844
-			// Start offset: 0x0002A71C
-			// Variables:
-		// 		int stopDist; // $t0
-
-			/* begin block 1.1.1 */
-				// Start line: 2848
-				// Start offset: 0x0002A794
-				// Variables:
-			// 		int endSpeed; // $v0
-			/* end block 1.1.1 */
-			// End offset: 0x0002A800
-			// End Line: 2853
-		/* end block 1.1 */
-		// End offset: 0x0002A800
-		// End Line: 2854
-
-		/* begin block 1.2 */
-			// Start line: 2863
-			// Start offset: 0x0002A844
-			// Variables:
-		// 		int ret; // $a1
-		// 		int properVel; // $v1
-		// 		int brakeDist; // $a3
-
-			/* begin block 1.2.1 */
-				// Start line: 2901
-				// Start offset: 0x0002A918
-				// Variables:
-			// 		int endSpeed; // $v0
-			// 		int currentDist; // $v1
-			/* end block 1.2.1 */
-			// End offset: 0x0002A918
-			// End Line: 2901
-		/* end block 1.2 */
-		// End offset: 0x0002A9EC
-		// End Line: 2915
-
-		/* begin block 1.3 */
-			// Start line: 2923
-			// Start offset: 0x0002A9EC
-			// Variables:
-		// 		int roadClear; // $t8
-		// 		int checkObstDist; // $t7
-		// 		int numLanes; // $v0
-
-			/* begin block 1.3.1 */
-				// Start line: 2932
-				// Start offset: 0x0002AA0C
-				// Variables:
-			// 		CAR_DATA *cp; // $t3
-
-				/* begin block 1.3.1.1 */
-					// Start line: 2932
-					// Start offset: 0x0002AA0C
-					// Variables:
-				// 		CAR_DATA *lcp; // $a3
-				// 		int normal; // $v0
-				// 		int tangent; // $a0
-				// 		int distToObstacle; // $t0
-				// 		int ccarAng; // $t1
-				// 		int scarAng; // $t2
-				/* end block 1.3.1.1 */
-				// End offset: 0x0002AB2C
-				// End Line: 2932
-			/* end block 1.3.1 */
-			// End offset: 0x0002AB2C
-			// End Line: 2932
-
-			/* begin block 1.3.2 */
-				// Start line: 2799
-				// Start offset: 0x0002AB44
-				// Variables:
-			// 		CAR_DATA *cp; // $t3
-
-				/* begin block 1.3.2.1 */
-					// Start line: 2799
-					// Start offset: 0x0002AB44
-					// Variables:
-				// 		CIV_STATE *cs; // $v1
-				/* end block 1.3.2.1 */
-				// End offset: 0x0002AB44
-				// End Line: 2799
-			/* end block 1.3.2 */
-			// End offset: 0x0002AB44
-			// End Line: 2799
-
-			/* begin block 1.3.3 */
-				// Start line: 2943
-				// Start offset: 0x0002AB58
-				// Variables:
-			// 		int ret; // $v1
-			/* end block 1.3.3 */
-			// End offset: 0x0002ABA8
-			// End Line: 2946
-		/* end block 1.3 */
-		// End offset: 0x0002ABA8
-		// End Line: 2947
-	/* end block 1 */
-	// End offset: 0x0002ABA8
-	// End Line: 2949
-
-	/* begin block 2 */
-		// Start line: 6290
-	/* end block 2 */
-	// End Line: 6291
-
-	/* begin block 3 */
-		// Start line: 6399
-	/* end block 3 */
-	// End Line: 6400
 
 int sideMul = 10;
 int collDat = 0;
@@ -4405,140 +2751,15 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetUpCivCollFlags()
-	// line 2950, offset 0x0002aba8
-	/* begin block 1 */
-		// Start line: 2952
-		// Start offset: 0x0002ABA8
-		// Variables:
-	// 		SVECTOR boxDisp; // stack offset -72
-	// 		int carLength[2]; // stack offset -64
-	// 		CAR_DATA *cp0; // $s5
-	// 		CAR_DATA *cp1; // $s2
-	// 		unsigned int dNewLBODY[2]; // stack offset -56
-	// 		int dx; // $s0
-	// 		int dz; // stack offset -48
-
-		/* begin block 1.1 */
-			// Start line: 2985
-			// Start offset: 0x0002AC14
-			// Variables:
-		// 		int extraLength; // $a2
-		/* end block 1.1 */
-		// End offset: 0x0002AC44
-		// End Line: 2985
-
-		/* begin block 1.2 */
-			// Start line: 2990
-			// Start offset: 0x0002AD74
-
-			/* begin block 1.2.1 */
-				// Start line: 3003
-				// Start offset: 0x0002ADC4
-			/* end block 1.2.1 */
-			// End offset: 0x0002AE18
-			// End Line: 3003
-
-			/* begin block 1.2.2 */
-				// Start line: 3016
-				// Start offset: 0x0002AF60
-				// Variables:
-			// 		int civCD; // $s7
-			// 		int brake; // $a0
-
-				/* begin block 1.2.2.1 */
-					// Start line: 3024
-					// Start offset: 0x0002AF90
-					// Variables:
-				// 		unsigned int *blth; // $v1
-				/* end block 1.2.2.1 */
-				// End offset: 0x0002AFC0
-				// End Line: 3024
-
-				/* begin block 1.2.2.2 */
-					// Start line: 3033
-					// Start offset: 0x0002B020
-					// Variables:
-				// 		int i; // $a1
-				// 		int h; // $a3
-				// 		int rnd; // $a2
-				// 		CAR_DATA *cp; // $s0
-
-					/* begin block 1.2.2.2.1 */
-						// Start line: 3040
-						// Start offset: 0x0002B0C0
-					/* end block 1.2.2.2.1 */
-					// End offset: 0x0002B190
-					// End Line: 3048
-				/* end block 1.2.2.2 */
-				// End offset: 0x0002B1A4
-				// End Line: 3050
-			/* end block 1.2.2 */
-			// End offset: 0x0002B1A4
-			// End Line: 3051
-		/* end block 1.2 */
-		// End offset: 0x0002B1A4
-		// End Line: 3052
-
-		/* begin block 1.3 */
-			// Start line: 3056
-			// Start offset: 0x0002B1C8
-			// Variables:
-		// 		unsigned char i; // $s0
-		/* end block 1.3 */
-		// End offset: 0x0002B26C
-		// End Line: 3065
-	/* end block 1 */
-	// End offset: 0x0002B26C
-	// End Line: 3066
-
-	/* begin block 2 */
-		// Start line: 6724
-	/* end block 2 */
-	// End Line: 6725
-
-	/* begin block 3 */
-		// Start line: 6725
-	/* end block 3 */
-	// End Line: 6726
-
-	/* begin block 4 */
-		// Start line: 6727
-	/* end block 4 */
-	// End Line: 6728
-
-	/* begin block 5 */
-		// Start line: 6729
-	/* end block 5 */
-	// End Line: 6730
-
-	/* begin block 6 */
-		// Start line: 6730
-	/* end block 6 */
-	// End Line: 6731
-
-	/* begin block 7 */
-		// Start line: 6757
-	/* end block 7 */
-	// End Line: 6758
-
-/* WARNING: Removing unreachable block (ram,0x0002b034) */
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 int brakeLength[MAX_CARS];
 
 int CAR_PAUSE_START = 100;
 static CAR_DATA(*horncarflag[2]) = { 0 };
-static unsigned char hornchanflag[2] = { 0 };
+static u_char hornchanflag[2] = { 0 };
 
 // [D] [T]
 void SetUpCivCollFlags(void)
 {
-	CAR_DATA** pp_Var9;
 	CAR_COSMETICS* car_cos;
 	CAR_DATA* cp1;
 	SVECTOR boxDisp;
@@ -4769,75 +2990,6 @@ void SetUpCivCollFlags(void)
 	} while (i < 2);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CivAccel(CAR_DATA *cp /*$s0*/)
-	// line 3074, offset 0x0002b26c
-	/* begin block 1 */
-		// Start line: 3075
-		// Start offset: 0x0002B26C
-		// Variables:
-	// 		int ret; // $t1
-	// 		int distToNode; // stack offset -16
-	// 		int dx; // $v1
-	// 		int dz; // $a0
-
-		/* begin block 1.1 */
-			// Start line: 3106
-			// Start offset: 0x0002B35C
-			// Variables:
-		// 		int tmpRet; // $a0
-		// 		int lbody; // $a0
-
-			/* begin block 1.1.1 */
-				// Start line: 3111
-				// Start offset: 0x0002B388
-				// Variables:
-			// 		int sf; // $v1
-			// 		int c1; // $t0
-			// 		int c2; // $a3
-			// 		int c3; // $a1
-
-				/* begin block 1.1.1.1 */
-					// Start line: 3126
-					// Start offset: 0x0002B44C
-					// Variables:
-				// 		int tmp; // $v1
-				/* end block 1.1.1.1 */
-				// End offset: 0x0002B4B8
-				// End Line: 3129
-			/* end block 1.1.1 */
-			// End offset: 0x0002B4C8
-			// End Line: 3132
-		/* end block 1.1 */
-		// End offset: 0x0002B528
-		// End Line: 3146
-	/* end block 1 */
-	// End offset: 0x0002B53C
-	// End Line: 3149
-
-	/* begin block 2 */
-		// Start line: 7066
-	/* end block 2 */
-	// End Line: 7067
-
-	/* begin block 3 */
-		// Start line: 7067
-	/* end block 3 */
-	// End Line: 7068
-
-	/* begin block 4 */
-		// Start line: 7076
-	/* end block 4 */
-	// End Line: 7077
-
-	/* begin block 5 */
-		// Start line: 7084
-	/* end block 5 */
-	// End Line: 7085
-
 // [D] [T]
 int CivAccel(CAR_DATA * cp)
 {
@@ -4939,195 +3091,163 @@ int CivAccel(CAR_DATA * cp)
 	return ret;
 }
 
+// [D] [T]
+int CivFindStation(CAR_DATA * cp)
+{
 
+	int loop;
+	int square;
+	CIV_ROUTE_ENTRY* currentNode;
+	CIV_ROUTE_ENTRY* retNode;
+	CIV_ROUTE_ENTRY* rep;
+	int dz;
+	int dx;
 
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CivSteerAngle(CAR_DATA *cp /*$s0*/)
-	// line 3166, offset 0x0002b53c
-	/* begin block 1 */
-		// Start line: 3167
-		// Start offset: 0x0002B53C
-		// Variables:
-	// 		int station; // $a3
-	// 		int step; // $s2
-	// 		int ret; // $a0
-	// 		VECTOR locPath; // stack offset -56
-	// 		VECTOR pathPoint; // stack offset -40
-	// 		int lbody; // $s3
+	int sz;
+	int sx;
 
-		/* begin block 1.1 */
-			// Start line: 3167
-			// Start offset: 0x0002B53C
+	int cx;
+	int cz;
+	int stepsize;
+	int i;
 
-			/* begin block 1.1.1 */
-				// Start line: 3167
-				// Start offset: 0x0002B53C
-				// Variables:
-			// 		CAR_DATA *cp; // $s0
+	cx = cp->hd.where.t[0];
+	cz = cp->hd.where.t[2];
 
-				/* begin block 1.1.1.1 */
-					// Start line: 3167
-					// Start offset: 0x0002B53C
-					// Variables:
-				// 		CIV_ROUTE_ENTRY *retNode; // $v1
-				/* end block 1.1.1.1 */
-				// End offset: 0x0002B590
-				// End Line: 3175
-			/* end block 1.1.1 */
-			// End offset: 0x0002B590
-			// End Line: 3175
+	loop = cp->ai.c.currentNode - 1;
 
-			/* begin block 1.1.2 */
-				// Start line: 3167
-				// Start offset: 0x0002B5A0
-				// Variables:
-			// 		CAR_DATA *cp; // $s0
+	currentNode = cp->ai.c.targetRoute;
+	rep = currentNode;
+	while (loop >= 0)
+	{
+		currentNode = rep = GET_NEXT_NODE(cp, rep);
+		loop--;
+	}
 
-				/* begin block 1.1.2.1 */
-					// Start line: 3167
-					// Start offset: 0x0002B5A0
-					// Variables:
-				// 		CIV_ROUTE_ENTRY *retNode; // $v1
-				/* end block 1.1.2.1 */
-				// End offset: 0x0002B5B0
-				// End Line: 3167
-			/* end block 1.1.2 */
-			// End offset: 0x0002B5B0
-			// End Line: 3167
+	do {
+		retNode = GET_NEXT_NODE(cp, currentNode);
 
-			/* begin block 1.1.3 */
-				// Start line: 3167
-				// Start offset: 0x0002B5C0
-				// Variables:
-			// 		CAR_DATA *cp; // $s0
+		if (retNode == NULL)
+			break;
 
-				/* begin block 1.1.3.1 */
-					// Start line: 3167
-					// Start offset: 0x0002B5C0
-					// Variables:
-				// 		CIV_ROUTE_ENTRY *retNode; // $v1
-				/* end block 1.1.3.1 */
-				// End offset: 0x0002B5D0
-				// End Line: 3167
-			/* end block 1.1.3 */
-			// End offset: 0x0002B5D0
-			// End Line: 3167
+		sx = currentNode->x;
+		sz = currentNode->z;
 
-			/* begin block 1.1.4 */
-				// Start line: 3167
-				// Start offset: 0x0002B5E0
-				// Variables:
-			// 		CAR_DATA *cp; // $s0
+		dx = retNode->x - sx;
+		dz = retNode->z - sz;
 
-				/* begin block 1.1.4.1 */
-					// Start line: 3167
-					// Start offset: 0x0002B5E0
-					// Variables:
-				// 		CIV_ROUTE_ENTRY *retNode; // $v1
-				/* end block 1.1.4.1 */
-				// End offset: 0x0002B5F0
-				// End Line: 3167
-			/* end block 1.1.4 */
-			// End offset: 0x0002B5F0
-			// End Line: 3167
-		/* end block 1.1 */
-		// End offset: 0x0002B610
-		// End Line: 3192
+		square = dx * dx + dz * dz;
 
-		/* begin block 1.2 */
-			// Start line: 3167
-			// Start offset: 0x0002B67C
-			// Variables:
-		// 		CAR_DATA *cp; // $s0
+		if (square < 0)
+			break;
 
-			/* begin block 1.2.1 */
-				// Start line: 3167
-				// Start offset: 0x0002B67C
-				// Variables:
-			// 		CIV_ROUTE_ENTRY *retNode; // $a0
-			/* end block 1.2.1 */
-			// End offset: 0x0002B690
-			// End Line: 3167
-		/* end block 1.2 */
-		// End offset: 0x0002B690
-		// End Line: 3167
+		square = SquareRoot0(square);
+		if (square > 0)
+		{
+			stepsize = ((cx - sx) * dx + (cz - sz) * dz) / square;
 
-		/* begin block 1.3 */
-			// Start line: 3201
-			// Start offset: 0x0002B6A0
-			// Variables:
-		// 		CIV_ROUTE_ENTRY *crLoc; // $a1
-		// 		CIV_ROUTE_ENTRY *cr; // $a0
-		/* end block 1.3 */
-		// End offset: 0x0002B700
-		// End Line: 3212
+			if (stepsize < square)
+			{
+				cp->ai.c.pnode = currentNode;
+				return stepsize;
+			}
+		}
 
-		/* begin block 1.4 */
-			// Start line: 3167
-			// Start offset: 0x0002B748
-			// Variables:
-		// 		CAR_DATA *cp; // $s0
+		currentNode = retNode;
+		cp->ai.c.currentNode = GET_NODE_ID(cp, currentNode);
 
-			/* begin block 1.4.1 */
-				// Start line: 3167
-				// Start offset: 0x0002B748
-				// Variables:
-			// 		CIV_ROUTE_ENTRY *retNode; // $v1
-			/* end block 1.4.1 */
-			// End offset: 0x0002B758
-			// End Line: 3167
-		/* end block 1.4 */
-		// End offset: 0x0002B758
-		// End Line: 3167
+		i = 1;
+		do
+		{
+			if (GET_NEXT_NODE(cp, retNode + i)->pathType == 127)
+				CreateNewNode(cp);
 
-		/* begin block 1.5 */
-			// Start line: 3236
-			// Start offset: 0x0002B870
-			// Variables:
-		// 		CIV_ROUTE_ENTRY *cr; // $a0
+			i++;
+		} while (i < 4);
+	} while (true);
 
-			/* begin block 1.5.1 */
-				// Start line: 3167
-				// Start offset: 0x0002B8A0
-				// Variables:
-			// 		CAR_DATA *cp; // $s0
+	CIV_STATE_SET_CONFUSED(cp);
 
-				/* begin block 1.5.1.1 */
-					// Start line: 3167
-					// Start offset: 0x0002B8A0
-					// Variables:
-				// 		CIV_ROUTE_ENTRY *retNode; // $v1
-				/* end block 1.5.1.1 */
-				// End offset: 0x0002B8B0
-				// End Line: 3167
-			/* end block 1.5.1 */
-			// End offset: 0x0002B8B0
-			// End Line: 3167
-		/* end block 1.5 */
-		// End offset: 0x0002B8C0
-		// End Line: 3243
-	/* end block 1 */
-	// End offset: 0x0002B8E4
-	// End Line: 3246
+	return 0;
+}
 
-	/* begin block 2 */
-		// Start line: 7260
-	/* end block 2 */
-	// End Line: 7261
+// [D] [T]
+int CivFindPointOnPath(CAR_DATA * cp, int station, VECTOR * ppoint)
+{
+	int stepSize;
+	CIV_ROUTE_ENTRY* start;
+	CIV_ROUTE_ENTRY* currentNode;
+	CIV_ROUTE_ENTRY* retNode;
+	int dx;
+	int dz;
+	int sx;
+	int sz;
 
-	/* begin block 3 */
-		// Start line: 7278
-	/* end block 3 */
-	// End Line: 7279
+	start = cp->ai.c.pnode;
 
-/* WARNING: Type propagation algorithm not settling */
+	if (start != NULL)
+	{
+		currentNode = start;
+
+		do {
+			retNode = currentNode + 1;
+
+			if (cp->ai.c.targetRoute + 13 <= retNode)	// [A] there was reflections bug?
+				retNode = currentNode - 12;
+
+			if (retNode == NULL || retNode && retNode->pathType == 127)
+			{
+				ppoint->vx = currentNode->x;
+				ppoint->vz = currentNode->z;
+
+				return 1;
+			}
+
+			sx = currentNode->x;
+			sz = currentNode->z;
+
+			dx = retNode->x - sx;
+			dz = retNode->z - sz;
+			stepSize = SquareRoot0(dx * dx + dz * dz);
+
+			// advance
+			if (station < stepSize)
+			{
+				if (station < 0)
+					station = 0;
+
+				if (stepSize < 4096)
+				{
+					ppoint->vx = sx + (dx * station) / stepSize;
+					ppoint->vz = sz + (dz * station) / stepSize;
+				}
+				else
+				{
+					stepSize /= 16;
+
+					ppoint->vx = sx + FIXEDH(((dx * 256) / stepSize) * station);
+					ppoint->vz = sz + FIXEDH(((dz * 256) / stepSize) * station);
+				}
+
+				return 1;
+			}
+
+			station -= stepSize;
+			currentNode = retNode;
+
+		} while (retNode != start);
+	}
+
+	CIV_STATE_SET_CONFUSED(cp);
+
+	return 0;
+}
 
 const int checkFrames = 20;
 const int maxSteer = 512;
 
 // [D] [T] [A] - removed copying of car. Still works okay
-int CivSteerAngle(CAR_DATA * cp)
+int CivSteerAngle(CAR_DATA* cp)
 {
 	CIV_ROUTE_ENTRY* startNode;
 	short lbody;
@@ -5215,518 +3335,6 @@ int CivSteerAngle(CAR_DATA * cp)
 	CIV_STATE_SET_CONFUSED(cp);
 	return 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CivFindStation(CAR_DATA *cp /*$s6*/)
-	// line 3265, offset 0x0002b8e4
-	/* begin block 1 */
-		// Start line: 3266
-		// Start offset: 0x0002B8E4
-		// Variables:
-	// 		CIV_ROUTE_ENTRY *rep; // $s3
-	// 		int cx; // stack offset -48
-	// 		int cz; // $fp
-
-		/* begin block 1.1 */
-			// Start line: 3266
-			// Start offset: 0x0002B8E4
-			// Variables:
-		// 		int loop; // $a0
-
-			/* begin block 1.1.1 */
-				// Start line: 3266
-				// Start offset: 0x0002B93C
-				// Variables:
-			// 		CAR_DATA *cp; // $s6
-
-				/* begin block 1.1.1.1 */
-					// Start line: 3266
-					// Start offset: 0x0002B93C
-					// Variables:
-				// 		CIV_ROUTE_ENTRY *retNode; // $v1
-				/* end block 1.1.1.1 */
-				// End offset: 0x0002B950
-				// End Line: 3266
-			/* end block 1.1.1 */
-			// End offset: 0x0002B950
-			// End Line: 3266
-		/* end block 1.1 */
-		// End offset: 0x0002B95C
-		// End Line: 3277
-
-		/* begin block 1.2 */
-			// Start line: 3280
-			// Start offset: 0x0002B964
-			// Variables:
-		// 		CAR_DATA *cp; // $s6
-		// 		CIV_ROUTE_ENTRY *currentNode; // $s3
-
-			/* begin block 1.2.1 */
-				// Start line: 3280
-				// Start offset: 0x0002B964
-				// Variables:
-			// 		CIV_ROUTE_ENTRY *retNode; // $s0
-			/* end block 1.2.1 */
-			// End offset: 0x0002B964
-			// End Line: 3280
-		/* end block 1.2 */
-		// End offset: 0x0002B964
-		// End Line: 3280
-
-		/* begin block 1.3 */
-			// Start line: 3282
-			// Start offset: 0x0002B964
-			// Variables:
-		// 		int sx; // $s5
-		// 		int sz; // $s4
-		// 		int dx; // $s2
-		// 		int dz; // $s1
-		// 		int stepsize; // $a1
-		// 		int square; // $a0
-
-			/* begin block 1.3.1 */
-				// Start line: 3309
-				// Start offset: 0x0002BA28
-				// Variables:
-			// 		CAR_DATA *cp; // $s6
-			// 		CIV_ROUTE_ENTRY *currentNode; // $s3
-
-				/* begin block 1.3.1.1 */
-					// Start line: 3309
-					// Start offset: 0x0002BA28
-					// Variables:
-				// 		CIV_ROUTE_ENTRY *retNode; // $v1
-				/* end block 1.3.1.1 */
-				// End offset: 0x0002BA38
-				// End Line: 3309
-			/* end block 1.3.1 */
-			// End offset: 0x0002BA38
-			// End Line: 3309
-
-			/* begin block 1.3.2 */
-				// Start line: 3266
-				// Start offset: 0x0002BA48
-				// Variables:
-			// 		CAR_DATA *cp; // $s6
-			// 		CIV_ROUTE_ENTRY *currentNode; // $s3
-
-				/* begin block 1.3.2.1 */
-					// Start line: 3266
-					// Start offset: 0x0002BA48
-					// Variables:
-				// 		CIV_ROUTE_ENTRY *retNode; // $v1
-				/* end block 1.3.2.1 */
-				// End offset: 0x0002BA58
-				// End Line: 3266
-			/* end block 1.3.2 */
-			// End offset: 0x0002BA58
-			// End Line: 3266
-
-			/* begin block 1.3.3 */
-				// Start line: 3266
-				// Start offset: 0x0002BA68
-				// Variables:
-			// 		CAR_DATA *cp; // $s6
-			// 		CIV_ROUTE_ENTRY *currentNode; // $s3
-
-				/* begin block 1.3.3.1 */
-					// Start line: 3266
-					// Start offset: 0x0002BA68
-					// Variables:
-				// 		CIV_ROUTE_ENTRY *retNode; // $v1
-				/* end block 1.3.3.1 */
-				// End offset: 0x0002BA78
-				// End Line: 3266
-			/* end block 1.3.3 */
-			// End offset: 0x0002BA78
-			// End Line: 3266
-		/* end block 1.3 */
-		// End offset: 0x0002BA90
-		// End Line: 3317
-	/* end block 1 */
-	// End offset: 0x0002BAEC
-	// End Line: 3320
-
-	/* begin block 2 */
-		// Start line: 7478
-	/* end block 2 */
-	// End Line: 7479
-
-	/* begin block 3 */
-		// Start line: 7498
-	/* end block 3 */
-	// End Line: 7499
-
-// [D] [T]
-int CivFindStation(CAR_DATA * cp)
-{
-
-	int loop;
-	int square;
-	CIV_ROUTE_ENTRY* currentNode;
-	CIV_ROUTE_ENTRY* retNode;
-	CIV_ROUTE_ENTRY* rep;
-	int dz;
-	int dx;
-
-	int sz;
-	int sx;
-
-	int cx;
-	int cz;
-	int stepsize;
-	int i;
-
-	cx = cp->hd.where.t[0];
-	cz = cp->hd.where.t[2];
-
-	loop = cp->ai.c.currentNode - 1;
-
-	currentNode = cp->ai.c.targetRoute;
-	rep = currentNode;
-	while (loop >= 0)
-	{
-		currentNode = rep = GET_NEXT_NODE(cp, rep);
-		loop--;
-	}
-
-	do {
-		retNode = GET_NEXT_NODE(cp, currentNode);
-
-		if (retNode == NULL)
-			break;
-
-		sx = currentNode->x;
-		sz = currentNode->z;
-
-		dx = retNode->x - sx;
-		dz = retNode->z - sz;
-
-		square = dx * dx + dz * dz;
-
-		if (square < 0)
-			break;
-
-		square = SquareRoot0(square);
-		if (square > 0)
-		{
-			stepsize = ((cx - sx) * dx + (cz - sz) * dz) / square;
-
-			if (stepsize < square)
-			{
-				cp->ai.c.pnode = currentNode;
-				return stepsize;
-			}
-		}
-
-		currentNode = retNode;
-		cp->ai.c.currentNode = GET_NODE_ID(cp, currentNode);
-
-		i = 1;
-		do
-		{
-			if (GET_NEXT_NODE(cp, retNode + i)->pathType == 127)
-				CreateNewNode(cp);
-
-			i++;
-		} while (i < 4);
-	} while (true);
-
-	CIV_STATE_SET_CONFUSED(cp);
-
-	return 0;
-}
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CivFindPointOnPath(CAR_DATA *cp /*$s7*/, int station /*$s2*/, VECTOR *ppoint /*$fp*/)
-	// line 3337, offset 0x0002baec
-	/* begin block 1 */
-		// Start line: 3338
-		// Start offset: 0x0002BAEC
-		// Variables:
-	// 		CIV_ROUTE_ENTRY *cprep; // $a0
-	// 		CIV_ROUTE_ENTRY *start; // stack offset -48
-
-		/* begin block 1.1 */
-			// Start line: 3346
-			// Start offset: 0x0002BB50
-			// Variables:
-		// 		CAR_DATA *cp; // $s7
-		// 		CIV_ROUTE_ENTRY *currentNode; // $a0
-
-			/* begin block 1.1.1 */
-				// Start line: 3346
-				// Start offset: 0x0002BB50
-				// Variables:
-			// 		CIV_ROUTE_ENTRY *retNode; // $s0
-			/* end block 1.1.1 */
-			// End offset: 0x0002BB50
-			// End Line: 3346
-		/* end block 1.1 */
-		// End offset: 0x0002BB50
-		// End Line: 3346
-
-		/* begin block 1.2 */
-			// Start line: 3348
-			// Start offset: 0x0002BB50
-			// Variables:
-		// 		int sx; // $s4
-		// 		int sz; // $s5
-		// 		int dx; // $s1
-		// 		int dz; // $s3
-		// 		int stepsize; // $a2
-		/* end block 1.2 */
-		// End offset: 0x0002BC90
-		// End Line: 3381
-	/* end block 1 */
-	// End offset: 0x0002BCF4
-	// End Line: 3385
-
-	/* begin block 2 */
-		// Start line: 7686
-	/* end block 2 */
-	// End Line: 7687
-
-	/* begin block 3 */
-		// Start line: 7704
-	/* end block 3 */
-	// End Line: 7705
-
-// [D] [T]
-int CivFindPointOnPath(CAR_DATA * cp, int station, VECTOR * ppoint)
-{
-	int stepSize;
-	CIV_ROUTE_ENTRY* start;
-	CIV_ROUTE_ENTRY* currentNode;
-	CIV_ROUTE_ENTRY* retNode;
-	int dx;
-	int dz;
-	int sx;
-	int sz;
-
-	start = cp->ai.c.pnode;
-
-	if (start != NULL)
-	{
-		currentNode = start;
-
-		do {
-			retNode = currentNode + 1;
-
-			if (cp->ai.c.targetRoute + 13 <= retNode)	// [A] there was reflections bug?
-				retNode = currentNode - 12;
-
-			if (retNode == NULL || retNode && retNode->pathType == 127)
-			{
-				ppoint->vx = currentNode->x;
-				ppoint->vz = currentNode->z;
-
-				return 1;
-			}
-
-			sx = currentNode->x;
-			sz = currentNode->z;
-
-			dx = retNode->x - sx;
-			dz = retNode->z - sz;
-			stepSize = SquareRoot0(dx * dx + dz * dz);
-
-			// advance
-			if (station < stepSize)
-			{
-				if (station < 0)
-					station = 0;
-
-				if (stepSize < 4096)
-				{
-					ppoint->vx = sx + (dx * station) / stepSize;
-					ppoint->vz = sz + (dz * station) / stepSize;
-				}
-				else
-				{
-					stepSize /= 16;
-
-					ppoint->vx = sx + FIXEDH(((dx * 256) / stepSize) * station);
-					ppoint->vz = sz + FIXEDH(((dz * 256) / stepSize) * station);
-				}
-
-				return 1;
-			}
-
-			station -= stepSize;
-			currentNode = retNode;
-
-		} while (retNode != start);
-	}
-
-	CIV_STATE_SET_CONFUSED(cp);
-
-	return 0;
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ CreateRoadblock()
-	// line 3398, offset 0x0002bcf4
-	/* begin block 1 */
-		// Start line: 3400
-		// Start offset: 0x0002BCF4
-		// Variables:
-	// 		CAR_DATA *cp; // $v1
-	// 		CAR_DATA *lcp; // $s0
-	// 		CAR_DATA *newCar; // $s0
-	// 		DRIVER2_STRAIGHT *str; // stack offset -72
-	// 		DRIVER2_CURVE *crv; // $s7
-	// 		int distAlongSegment; // $s2
-	// 		int lbody; // $s4
-	// 		int dir; // $s6
-	// 		int numLanes; // stack offset -68
-	// 		unsigned char externalCopModel; // stack offset -64
-	// 		int delta; // $s4
-	// 		int noMoreCars; // stack offset -60
-	// 		int newCarId; // $v1
-
-		/* begin block 1.1 */
-			// Start line: 3400
-			// Start offset: 0x0002BCF4
-			// Variables:
-		// 		int dir; // $s0
-		/* end block 1.1 */
-		// End offset: 0x0002C078
-		// End Line: 3437
-
-		/* begin block 1.2 */
-			// Start line: 3442
-			// Start offset: 0x0002C09C
-			// Variables:
-		// 		int theta; // $s0
-		/* end block 1.2 */
-		// End offset: 0x0002C198
-		// End Line: 3451
-
-		/* begin block 1.3 */
-			// Start line: 3455
-			// Start offset: 0x0002C1E0
-			// Variables:
-		// 		int minAngle; // $a3
-		// 		int curveLength; // $v1
-		/* end block 1.3 */
-		// End offset: 0x0002C334
-		// End Line: 3491
-
-		/* begin block 1.4 */
-			// Start line: 3478
-			// Start offset: 0x0002C3F8
-
-			/* begin block 1.4.1 */
-				// Start line: 3483
-				// Start offset: 0x0002C4C8
-			/* end block 1.4.1 */
-			// End offset: 0x0002C4E4
-			// End Line: 3485
-
-			/* begin block 1.4.2 */
-				// Start line: 3399
-				// Start offset: 0x0002C590
-				// Variables:
-			// 		CAR_DATA *cp; // $s0
-			/* end block 1.4.2 */
-			// End offset: 0x0002C674
-			// End Line: 3399
-
-			/* begin block 1.4.3 */
-				// Start line: 3399
-				// Start offset: 0x0002C708
-				// Variables:
-			// 		CAR_DATA *cp; // $s0
-			/* end block 1.4.3 */
-			// End offset: 0x0002C7E4
-			// End Line: 3399
-		/* end block 1.4 */
-		// End offset: 0x0002C7F4
-		// End Line: 3510
-
-		/* begin block 1.5 */
-			// Start line: 3515
-			// Start offset: 0x0002C830
-			// Variables:
-		// 		VECTOR startPos2; // stack offset -88
-		// 		int deltaAngle; // $a0
-		// 		int dir2NextRow; // $a1
-		// 		int faceDir; // $s1
-		// 		int numSpareCars; // $a0
-		// 		int count; // $s2
-		// 		int numSpots; // $fp
-
-			/* begin block 1.5.1 */
-				// Start line: 3527
-				// Start offset: 0x0002C948
-				// Variables:
-			// 		int numCarsToAdd; // $s5
-
-				/* begin block 1.5.1.1 */
-					// Start line: 3531
-					// Start offset: 0x0002C97C
-
-					/* begin block 1.5.1.1.1 */
-						// Start line: 3399
-						// Start offset: 0x0002CAC4
-						// Variables:
-					// 		CAR_DATA *cp; // $s0
-					/* end block 1.5.1.1.1 */
-					// End offset: 0x0002CBA8
-					// End Line: 3399
-
-					/* begin block 1.5.1.1.2 */
-						// Start line: 3399
-						// Start offset: 0x0002CC3C
-						// Variables:
-					// 		CAR_DATA *cp; // $s0
-					/* end block 1.5.1.1.2 */
-					// End offset: 0x0002CD18
-					// End Line: 3399
-				/* end block 1.5.1.1 */
-				// End offset: 0x0002CD28
-				// End Line: 3555
-			/* end block 1.5.1 */
-			// End offset: 0x0002CD34
-			// End Line: 3556
-		/* end block 1.5 */
-		// End offset: 0x0002CD34
-		// End Line: 3557
-	/* end block 1 */
-	// End offset: 0x0002CD74
-	// End Line: 3564
-
-	/* begin block 2 */
-		// Start line: 7892
-	/* end block 2 */
-	// End Line: 7893
-
-	/* begin block 3 */
-		// Start line: 7906
-	/* end block 3 */
-	// End Line: 7907
-
-	/* begin block 4 */
-		// Start line: 7907
-	/* end block 4 */
-	// End Line: 7908
-
-	/* begin block 5 */
-		// Start line: 7909
-	/* end block 5 */
-	// End Line: 7910
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void CreateRoadblock(void)
@@ -6016,4 +3624,148 @@ void CreateRoadblock(void)
 	roadblockCount = roadblockDelay;
 
 	PlaceRoadBlockCops();
+}
+
+
+// [D] [T]
+int CivControl(CAR_DATA* cp)
+{
+	CheckPingOut(cp);
+
+	if (cp->controlType == CONTROL_TYPE_CIV_AI)
+	{
+		if (cp->ai.c.changeLaneIndicateCount != 0)
+			cp->ai.c.changeLaneIndicateCount--;
+
+		if (cp->ai.c.ctrlState == 5 && cp->ai.c.thrustState == 3 &&
+			cp->totalDamage < 4 && (cp->ap.model != 3 && (Random2(0) + (25 - cp->id) * 16 & 0xff8) == 0xf00))
+		{
+			AttemptUnPark(cp);
+		}
+
+		cp->thrust = CivAccel(cp);
+
+		if (cp->ai.c.thrustState != 3)
+			cp->wheel_angle = CivSteerAngle(cp);
+
+#if 0
+		{
+			//maxCivCars = 2;
+			//maxCopCars = 0;
+
+			extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
+			extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
+
+			CVECTOR ggcv = { 0, 250, 0 };
+			CVECTOR bbcv = { 0, 0, 250 };
+			CVECTOR rrcv = { 250, 0, 0 };
+
+			CVECTOR yycv = { 250, 250, 0 };
+
+			VECTOR _zero = { 0 };
+			VECTOR _up = { 0, 120, 0 };
+
+			VECTOR _up1 = { 0, 20, 0 };
+			VECTOR _up2 = { 0, 40, 0 };
+			VECTOR _up3 = { 0, 60, 0 };
+			VECTOR _up4 = { 0, 80, 0 };
+
+			// show current road
+			/*
+			if (cp->ai.c.currentRoad != -1)
+			{
+				DRIVER2_STRAIGHT* straight = GET_STRAIGHT(cp->ai.c.currentRoad);
+
+				int angle = straight->angle;
+				int distFromCentreA = -straight->length / 2;
+				int distFromCentreB = straight->length / 2;
+
+				int laneNo = cp->ai.c.currentLane;
+				test42 = 0 * 0x80;
+				sideShift = ((straight->NumLanes & 0xf) * 0x200 - (laneNo * 0x200 + 0x100)) + test42;
+
+				int straightX1 = straight->Midx + FIXED(distFromCentreA * rcossin_tbl[(angle & 0xfffU) * 2]) + FIXED(sideShift * rcossin_tbl[(angle & 0xfffU) * 2 + 1]);
+				int straightZ1 = (straight->Midz + FIXED(distFromCentreA * rcossin_tbl[(angle & 0xfffU) * 2 + 1])) - FIXED(sideShift * rcossin_tbl[(angle & 0xfffU) * 2]);
+
+				int straightX2 = straight->Midx + FIXED(distFromCentreB * rcossin_tbl[(angle & 0xfffU) * 2]) + FIXED(sideShift * rcossin_tbl[(angle & 0xfffU) * 2 + 1]);
+				int straightZ2 = (straight->Midz + FIXED(distFromCentreB * rcossin_tbl[(angle & 0xfffU) * 2 + 1])) - FIXED(sideShift * rcossin_tbl[(angle & 0xfffU) * 2]);
+
+				VECTOR roadA = { straightX1, cp->hd.where.t[1], straightZ1 };
+				VECTOR roadB = { straightX2, cp->hd.where.t[1], straightZ2 };
+
+				Debug_AddLine(roadA, roadB, rrcv);
+			}*/
+
+			CIV_ROUTE_ENTRY* pn = cp->ai.c.pnode;
+			if (pn)
+			{
+				for (int i = 0; i < 13; i++)
+				{
+					if (pn->pathType != 127)
+					{
+						int sx, cx;
+						sx = rsin(pn->dir);
+						cx = rcos(pn->dir);
+
+						VECTOR ofs = { sx / 16, 0, cx / 16 };
+
+						VECTOR b1p = { pn->x, cp->hd.where.t[1], pn->z };
+
+						if (pn->pathType == 2)
+						{
+							ofs.vy = 1000;
+						}
+
+						//Debug_AddLineOfs(_zero, _up, b1p, rrcv);
+						Debug_AddLineOfs(_zero, ofs, b1p, rrcv);
+					}
+
+					pn = GET_NEXT_NODE(cp, pn);
+				}
+			}
+
+			// current node - YELLOW
+			if (cp->ai.c.currentNode > -1 && cp->ai.c.currentNode < 13)
+			{
+				CIV_ROUTE_ENTRY& currentNode = cp->ai.c.targetRoute[cp->ai.c.currentNode];
+
+				VECTOR b1p = { currentNode.x, cp->hd.where.t[1], currentNode.z };
+
+				Debug_AddLineOfs(_zero, _up1, b1p, yycv);
+			}
+
+			// turn node - RED
+			if (cp->ai.c.turnNode > -1 && cp->ai.c.turnNode < 13)
+			{
+				CIV_ROUTE_ENTRY& turnNode = cp->ai.c.targetRoute[cp->ai.c.turnNode];
+
+				VECTOR b1p = { turnNode.x, cp->hd.where.t[1], turnNode.z };
+
+				Debug_AddLineOfs(_up1, _up2, b1p, rrcv);
+			}
+
+			// control node - GREEN
+			if (cp->ai.c.ctrlNode)
+			{
+				VECTOR b1p = { cp->ai.c.ctrlNode->x, cp->hd.where.t[1], cp->ai.c.ctrlNode->z };
+
+				Debug_AddLineOfs(_up2, _up3, b1p, ggcv);
+			}
+
+			// previous node - BLUE
+			if (cp->ai.c.pnode)
+			{
+				VECTOR b1p = { cp->ai.c.pnode->x, cp->hd.where.t[1], cp->ai.c.pnode->z };
+
+				Debug_AddLineOfs(_up3, _up4, b1p, bbcv);
+			}
+		}
+#endif
+	}
+
+	// watch for the player
+	if (cp->controlFlags & CONTROL_FLAG_COP)
+		PassiveCopTasks(cp);
+
+	return 1;
 }

@@ -1,15 +1,11 @@
 #include "DRIVER2.H"
 #include "BCOLLIDE.H"
-#include "COSMETIC.H"
 #include "PAD.H"
 #include "DEBRIS.H"
-#include "EVENT.H"
-#include "OBJCOLL.H"
 #include "MODELS.H"
 #include "SOUND.H"
 #include "GAMESND.H"
 #include "GLAUNCH.H"
-#include "MAIN.H"
 #include "MISSION.H"
 #include "FELONY.H"
 #include "WHEELFORCES.H"
@@ -21,41 +17,7 @@
 #include "STRINGS.H"
 #include "INLINE_C.H"
 
-// decompiled code
-// original method signature: 
-// int /*$ra*/ bcollided2d(CDATA2D *body /*$t4*/, int needOverlap /*$fp*/)
- // line 120, offset 0x0001c51c
-	/* begin block 1 */
-		// Start line: 121
-		// Start offset: 0x0001C51C
-		// Variables:
-	// 		VECTOR delta; // stack offset -56
-	// 		int dtheta; // $v1
-	// 		int ac; // $s6
-	// 		int as; // $s5
-	// 		int i; // $t7
-	// 		int j; // $a2
-	// 		int k; // $t5
-
-		/* begin block 1.1 */
-			// Start line: 160
-			// Start offset: 0x0001C738
-			// Variables:
-		// 		int xover; // $t0
-		// 		int zover; // $a0
-		// 		int tmp2; // $a2
-		// 		int FE; // $a3
-		/* end block 1.1 */
-		// End offset: 0x0001C890
-		// End Line: 183
-	/* end block 1 */
-	// End offset: 0x0001C8C0
-	// End Line: 185
-
-	/* begin block 2 */
-		// Start line: 240
-	/* end block 2 */
-	// End Line: 241
+extern int gCameraBoxOverlap;
 
 // Checks of two bodies collides (basic check) with Separating Axis Theorem
 // also initializes axes
@@ -153,65 +115,6 @@ int bcollided2d(CDATA2D *body, int* boxOverlap)
 
 	return 1;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ bFindCollisionPoint(CDATA2D *body /*$t6*/, CRET2D *collisionResult /*$s0*/)
- // line 195, offset 0x0001c8c0
-	/* begin block 1 */
-		// Start line: 196
-		// Start offset: 0x0001C8C0
-		// Variables:
-	// 		int carBarrierCollision; // $s1
-	// 		int i; // $a3
-	// 		int j; // $v1
-	// 		int k; // $t0
-	// 		int smallest; // $t4
-	// 		int besti; // $t5
-	// 		int bestk; // $t7
-	// 		int sign; // $t3
-	// 		int sign0; // $t0
-	// 		int sign1; // $a3
-
-		/* begin block 1.1 */
-			// Start line: 212
-			// Start offset: 0x0001C964
-			// Variables:
-		// 		int upper; // $a1
-		// 		int lower; // $v1
-		/* end block 1.1 */
-		// End offset: 0x0001C9BC
-		// End Line: 228
-
-		/* begin block 1.2 */
-			// Start line: 235
-			// Start offset: 0x0001C9F0
-			// Variables:
-		// 		int upper; // $a1
-		// 		int lower; // $a0
-		/* end block 1.2 */
-		// End offset: 0x0001CA60
-		// End Line: 249
-	/* end block 1 */
-	// End offset: 0x0001CC30
-	// End Line: 273
-
-	/* begin block 2 */
-		// Start line: 416
-	/* end block 2 */
-	// End Line: 417
-
-	/* begin block 3 */
-		// Start line: 427
-	/* end block 3 */
-	// End Line: 428
-
-	/* begin block 4 */
-		// Start line: 431
-	/* end block 4 */
-	// End Line: 432
 
 // [D] [T]
 void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
@@ -324,37 +227,6 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 	collisionResult->surfNormal.vz = body[besti].axis[bestk].vz * sign;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ bFindCollisionTime(CDATA2D *cd /*$s5*/, CRET2D *collisionResult /*stack 4*/)
- // line 275, offset 0x0001cc30
-	/* begin block 1 */
-		// Start line: 276
-		// Start offset: 0x0001CC30
-		// Variables:
-	// 		int i; // $s4
-	// 		int q; // $s0
-	// 		int hit; // $t2
-	// 		int neverfree; // $fp
-	// 		int time; // $s1
-	// 		int step; // $s3
-	// 		CDATA2D original[2]; // stack offset -248
-	/* end block 1 */
-	// End offset: 0x0001CEEC
-	// End Line: 357
-
-	/* begin block 2 */
-		// Start line: 635
-	/* end block 2 */
-	// End Line: 636
-
-	/* begin block 3 */
-		// Start line: 638
-	/* end block 3 */
-	// End Line: 639
-
 // [D] [T]
 int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 {
@@ -453,31 +325,6 @@ int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 	return time;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ApplyDamage(CAR_DATA *cp /*$a0*/, char region /*$a1*/, int value /*$a2*/, char fakeDamage /*$a3*/)
- // line 384, offset 0x0001ceec
-	/* begin block 1 */
-		// Start line: 385
-		// Start offset: 0x0001CEEC
-		// Variables:
-	// 		short *pRegion; // $t0
-	/* end block 1 */
-	// End offset: 0x0001D0B0
-	// End Line: 465
-
-	/* begin block 2 */
-		// Start line: 965
-	/* end block 2 */
-	// End Line: 966
-
-	/* begin block 3 */
-		// Start line: 993
-	/* end block 3 */
-	// End Line: 994
-
 // [D] [T]
 void ApplyDamage(CAR_DATA *cp, char region, int value, char fakeDamage)
 {
@@ -546,48 +393,6 @@ void ApplyDamage(CAR_DATA *cp, char region, int value, char fakeDamage)
 		}
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ DamageCar3D(CAR_DATA *cp /*$s1*/, LONGVECTOR* delta /*$t4*/, int strikeVel /*$t6*/, CAR_DATA *pOtherCar /*$s2*/)
- // line 470, offset 0x0001d0b0
-	/* begin block 1 */
-		// Start line: 471
-		// Start offset: 0x0001D0B0
-		// Variables:
-	// 		int l; // $v1
-	// 		int w; // $v0
-	// 		int region; // $a1
-	// 		LONGVECTOR nose; // stack offset -56
-	// 		LONGVECTOR door; // stack offset -40
-	// 		int impact; // $s3
-	// 		int QQQ; // $t7
-
-		/* begin block 1.1 */
-			// Start line: 549
-			// Start offset: 0x0001D388
-			// Variables:
-		// 		char fakeDamage; // $a3
-		// 		char player_id; // $s0
-		// 		char kludge; // $a3
-		/* end block 1.1 */
-		// End offset: 0x0001D424
-		// End Line: 568
-	/* end block 1 */
-	// End offset: 0x0001D454
-	// End Line: 572
-
-	/* begin block 2 */
-		// Start line: 1162
-	/* end block 2 */
-	// End Line: 1163
-
-	/* begin block 3 */
-		// Start line: 1168
-	/* end block 3 */
-	// End Line: 1169
 
 // [D] [T]
 int DamageCar3D(CAR_DATA *cp, LONGVECTOR4* delta, int strikeVel, CAR_DATA *pOtherCar)
@@ -701,37 +506,6 @@ int DamageCar3D(CAR_DATA *cp, LONGVECTOR4* delta, int strikeVel, CAR_DATA *pOthe
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DamageCar(CAR_DATA *cp /*$s2*/, CDATA2D *cd /*$s1*/, CRET2D *collisionResult /*$s3*/, int strikeVel /*$s0*/)
- // line 587, offset 0x0001d454
-	/* begin block 1 */
-		// Start line: 588
-		// Start offset: 0x0001D454
-		// Variables:
-	// 		VECTOR delta; // stack offset -48
-	// 		int l; // $v1
-	// 		int w; // $v0
-	// 		int region; // $a1
-	// 		int damage; // $a2
-	// 		char player_id; // $s5
-	// 		int impact; // $s4
-	// 		int QQQ; // $t0
-	/* end block 1 */
-	// End offset: 0x0001D668
-	// End Line: 633
-
-	/* begin block 2 */
-		// Start line: 1425
-	/* end block 2 */
-	// End Line: 1426
-
-	/* begin block 3 */
-		// Start line: 1441
-	/* end block 3 */
-	// End Line: 1442
-
 // [D] [T]
 void DamageCar(CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVel)
 {
@@ -798,136 +572,6 @@ void DamageCar(CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVel
 		CollisionSound(player_id, cp, impact, 0);
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CarBuildingCollision(CAR_DATA *cp /*$s3*/, BUILDING_BOX *building /*$s2*/, CELL_OBJECT *cop /*$s6*/, int mightBeABarrier /*$s1*/)
- // line 839, offset 0x0001d68c
-	/* begin block 1 */
-		// Start line: 840
-		// Start offset: 0x0001D68C
-		// Variables:
-	// 		static CDATA2D cd[2]; // offset 0x0
-	// 		static CRET2D collisionResult; // offset 0xd0
-	// 		int debris_colour; // stack offset -48
-	// 		VECTOR tempwhere; // stack offset -168
-	// 		MODEL *pModel; // $s5
-	// 		int player_id; // stack offset -44
-
-		/* begin block 1.1 */
-			// Start line: 866
-			// Start offset: 0x0001D794
-			// Variables:
-		// 		SVECTOR boxDisp; // stack offset -152
-
-			/* begin block 1.1.1 */
-				// Start line: 908
-				// Start offset: 0x0001D8F4
-				// Variables:
-			// 		int wbod; // $a1
-			/* end block 1.1.1 */
-			// End offset: 0x0001D9A4
-			// End Line: 918
-		/* end block 1.1 */
-		// End offset: 0x0001D9A4
-		// End Line: 920
-
-		/* begin block 1.2 */
-			// Start line: 977
-			// Start offset: 0x0001DA64
-
-			/* begin block 1.2.1 */
-				// Start line: 977
-				// Start offset: 0x0001DA64
-				// Variables:
-			// 		VECTOR velocity; // stack offset -144
-			// 		LONGVECTOR pointVel; // stack offset -128
-			// 		LONGVECTOR reaction; // stack offset -112
-			// 		LONGVECTOR lever; // stack offset -96
-			// 		int strikeVel; // $s1
-
-				/* begin block 1.2.1.1 */
-					// Start line: 1014
-					// Start offset: 0x0001DC58
-					// Variables:
-				// 		short scale; // $a2
-				/* end block 1.2.1.1 */
-				// End offset: 0x0001DCA4
-				// End Line: 1034
-
-				/* begin block 1.2.1.2 */
-					// Start line: 1050
-					// Start offset: 0x0001DD04
-
-					/* begin block 1.2.1.2.1 */
-						// Start line: 1058
-						// Start offset: 0x0001DD28
-						// Variables:
-					// 		SMASHABLE_OBJECT *sip; // $a1
-					// 		SMASHABLE_OBJECT *match; // $s0
-					// 		int chan; // $s1
-					// 		int adjust; // $s2
-					/* end block 1.2.1.2.1 */
-					// End offset: 0x0001DE3C
-					// End Line: 1079
-				/* end block 1.2.1.2 */
-				// End offset: 0x0001DEC4
-				// End Line: 1093
-
-				/* begin block 1.2.1.3 */
-					// Start line: 1098
-					// Start offset: 0x0001DEF4
-					// Variables:
-				// 		VECTOR LeafPosition; // stack offset -80
-				/* end block 1.2.1.3 */
-				// End offset: 0x0001DEF4
-				// End Line: 1098
-
-				/* begin block 1.2.1.4 */
-					// Start line: 1116
-					// Start offset: 0x0001DF50
-
-					/* begin block 1.2.1.4.1 */
-						// Start line: 1119
-						// Start offset: 0x0001DF90
-						// Variables:
-					// 		VECTOR lamp_velocity; // stack offset -64
-					/* end block 1.2.1.4.1 */
-					// End offset: 0x0001DFC4
-					// End Line: 1123
-				/* end block 1.2.1.4 */
-				// End offset: 0x0001DFC4
-				// End Line: 1124
-
-				/* begin block 1.2.1.5 */
-					// Start line: 1143
-					// Start offset: 0x0001E058
-					// Variables:
-				// 		int twistY; // $a1
-				// 		int lever_dot_n; // $a0
-				// 		int displacementsquared; // $v1
-				// 		int denom; // $v1
-				/* end block 1.2.1.5 */
-				// End offset: 0x0001E170
-				// End Line: 1155
-			/* end block 1.2.1 */
-			// End offset: 0x0001E37C
-			// End Line: 1184
-		/* end block 1.2 */
-		// End offset: 0x0001E384
-		// End Line: 1188
-	/* end block 1 */
-	// End offset: 0x0001E3E8
-	// End Line: 1195
-
-	/* begin block 2 */
-		// Start line: 1966
-	/* end block 2 */
-	// End Line: 1967
-
-extern int gCameraBoxOverlap;
 
 // [D] [T]
 int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop, int flags)

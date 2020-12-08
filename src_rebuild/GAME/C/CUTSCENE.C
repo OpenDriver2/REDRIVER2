@@ -62,6 +62,19 @@ char gUserReplayFolderList[MAX_USER_REPLAYS][48];
 int gNumUserChases = 0;
 int gUserChaseLoaded = -1;
 
+int LoadInGameCutscene(int subindex);
+int TriggerInGameCutsceneSystem(int cutscene);
+void SetNullPlayer(int plr);
+void SetNullPlayerDontKill(int plr);
+void DestroyPlayer(int plr, int fully);
+void FindNextCutChange(int cameracnt);
+int LoadCutsceneToReplayBuffer(int residentCutscene);
+int LoadCutsceneToBuffer(int subindex);
+void ShowCutsceneError();
+int LoadCutsceneInformation(int cutscene);
+void FreeCutsceneBuffer();
+int IsCutsceneResident(int cutscene);
+
 // [A] user replay folders initialization
 void InitUserReplays(const char* str)
 {

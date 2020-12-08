@@ -1641,6 +1641,161 @@ int MoveSmashable_object(void)
 }
 
 
+// decompiled code
+// original method signature: 
+// void /*$ra*/ DisplayLightReflections(VECTOR *v1 /*$s1*/, CVECTOR *col /*$s3*/, short size /*$a2*/, TEXTURE_DETAILS *texture /*$s2*/)
+ // line 4550, offset 0x000397c0
+	/* begin block 1 */
+		// Start line: 4551
+		// Start offset: 0x000397C0
+		// Variables:
+	// 		SVECTOR vert[4]; // stack offset -80
+	// 		POLY_FT4 *poly; // $a1
+	// 		CVECTOR thiscol; // stack offset -48
+	// 		int z; // stack offset -40
+	// 		int tpage; // $s5
+	// 		int clut; // $s4
+	/* end block 1 */
+	// End offset: 0x00039A30
+	// End Line: 4602
+
+	/* begin block 2 */
+		// Start line: 11756
+	/* end block 2 */
+	// End Line: 11757
+
+/* WARNING: Could not reconcile some variable overlaps */
+
+// [D] [T]
+void DisplayLightReflections(VECTOR* v1, CVECTOR* col, short size, TEXTURE_DETAILS* texture)
+{
+	POLY_FT4* poly;
+	SVECTOR vert[4];
+	CVECTOR thiscol;
+	int z;
+
+	if (wetness > 9 && v1->vy > camera_position.vy)
+	{
+		gte_SetTransVector(v1);
+
+		Apply_Inv_CameraMatrix(v1);
+
+		gte_SetTransVector(v1);
+		gte_SetRotMatrix(&face_camera);
+
+		vert[0].vx = -size;
+		vert[2].vx = -size;
+		vert[1].vx = size;
+		vert[3].vx = size;
+
+		vert[0].vy = 0;
+		vert[0].vz = 0;
+		vert[1].vy = 0;
+		vert[1].vz = 0;
+		vert[2].vy = 0;
+		vert[2].vz = 0;
+		vert[3].vy = 0;
+		vert[3].vz = 0;
+
+		gte_ldv0(&vert[0]);
+
+		gte_rtps();
+
+		gte_stsz(&z);
+
+		if (z >= 150)
+		{
+			poly = (POLY_FT4*)current->primptr;
+			setPolyFT4(poly);
+			setSemiTrans(poly, 1);
+
+			gte_stsxy(&poly->x0);
+
+			vert[2].vy = (z >> 3) + 0xfa;
+			vert[3].vy = (z >> 3) + 0xfa;
+
+			gte_ldv3(&vert[1], &vert[2], &vert[3]);
+
+			gte_rtpt();
+
+			gte_stsxy3(&poly->x1, &poly->x2, &poly->x3);
+
+			poly->u0 = texture->coords.u0;
+			poly->v0 = texture->coords.v0;
+			poly->u1 = texture->coords.u1;
+			poly->v1 = texture->coords.v1;
+			poly->u2 = texture->coords.u2;
+			poly->v2 = texture->coords.v2;
+			poly->u3 = texture->coords.u3;
+			poly->v3 = texture->coords.v3;
+
+			poly->tpage = texture->tpageid | 0x20;
+			poly->clut = texture->clutid;
+
+			thiscol.r = col->r >> 3;
+			thiscol.g = col->g >> 3;
+			thiscol.b = col->b >> 3;
+
+			poly->r0 = thiscol.r;
+			poly->g0 = thiscol.g;
+			poly->b0 = thiscol.b;
+
+			addPrim(current->ot + (z >> 4), poly);
+			current->primptr += sizeof(POLY_FT4);
+		}
+	}
+}
+
+// decompiled code
+// original method signature: 
+// int /*$ra*/ find_lamp_streak(int LampId /*$a0*/)
+ // line 2200, offset 0x00039b08
+	/* begin block 1 */
+		// Start line: 2201
+		// Start offset: 0x00039B08
+		// Variables:
+	// 		int count; // $a1
+	/* end block 1 */
+	// End offset: 0x00039B78
+	// End Line: 2217
+
+	/* begin block 2 */
+		// Start line: 10055
+	/* end block 2 */
+	// End Line: 10056
+
+	/* begin block 3 */
+		// Start line: 10531
+	/* end block 3 */
+	// End Line: 10532
+
+	/* begin block 4 */
+		// Start line: 10534
+	/* end block 4 */
+	// End Line: 10535
+
+// [D] [T]
+int find_lamp_streak(int LampId)
+{
+	int count;
+
+	for (count = 0; count < MAX_LAMP_STREAKS; count++)
+	{
+		if (Known_Lamps[count].id == LampId)
+		{
+			Known_Lamps[count].set = 1;
+			return count;
+		}
+	}
+
+	// allocate new streak
+	if (StreakCount1 < MAX_LAMP_STREAKS)
+	{
+		NewLamp[StreakCount1++] = LampId;
+	}
+
+	return -1;
+}
 
 // decompiled code
 // original method signature: 
@@ -2029,60 +2184,6 @@ void PreLampStreak(void)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ find_lamp_streak(int LampId /*$a0*/)
- // line 2200, offset 0x00039b08
-	/* begin block 1 */
-		// Start line: 2201
-		// Start offset: 0x00039B08
-		// Variables:
-	// 		int count; // $a1
-	/* end block 1 */
-	// End offset: 0x00039B78
-	// End Line: 2217
-
-	/* begin block 2 */
-		// Start line: 10055
-	/* end block 2 */
-	// End Line: 10056
-
-	/* begin block 3 */
-		// Start line: 10531
-	/* end block 3 */
-	// End Line: 10532
-
-	/* begin block 4 */
-		// Start line: 10534
-	/* end block 4 */
-	// End Line: 10535
-
-// [D] [T]
-int find_lamp_streak(int LampId)
-{
-	int count;
-
-	for (count = 0; count < MAX_LAMP_STREAKS; count++)
-	{
-		if (Known_Lamps[count].id == LampId)
-		{
-			Known_Lamps[count].set = 1;
-			return count;
-		}
-	}
-
-	// allocate new streak
-	if (StreakCount1 < MAX_LAMP_STREAKS)
-	{
-		NewLamp[StreakCount1++] = LampId;
-	}
-
-	return -1;
-}
-
-
-
 // decompiled code
 // original method signature: 
 // int /*$ra*/ damage_lamp(CELL_OBJECT *cop /*$a2*/)
@@ -2236,6 +2337,112 @@ int damage_object(CELL_OBJECT *cop, VECTOR *velocity)
 	cop->pos.vx = 0xFD46FEC0;
 
 	return 0;
+}
+
+
+// decompiled code
+// original method signature: 
+// void /*$ra*/ ShowFlare(VECTOR *v1 /*$a0*/, CVECTOR *col /*$s2*/, short size /*$a2*/, int rotation /*$a3*/)
+ // line 2945, offset 0x000368d8
+	/* begin block 1 */
+		// Start line: 2946
+		// Start offset: 0x000368D8
+		// Variables:
+	// 		SVECTOR vert[4]; // stack offset -96
+	// 		POLY_FT4 *poly; // $t0
+	// 		SVECTOR direction; // stack offset -64
+	// 		MATRIX temp_matrix; // stack offset -56
+	// 		int z; // stack offset -24
+	/* end block 1 */
+	// End offset: 0x00036B54
+	// End Line: 3016
+
+	/* begin block 2 */
+		// Start line: 7488
+	/* end block 2 */
+	// End Line: 7489
+
+/* WARNING: Could not reconcile some variable overlaps */
+
+// [D] [T]
+void ShowFlare(VECTOR* v1, CVECTOR* col, short size, int rotation)
+{
+	POLY_FT4* poly;
+	SVECTOR vert[4];
+	SVECTOR direction;
+	MATRIX temp_matrix;
+	int z;
+
+	gte_SetTransVector(v1);
+
+	direction.vy = 0;
+	direction.vx = 0;
+	direction.vz = rotation;
+
+	RotMatrixXYZ(&temp_matrix, &direction);
+
+	gte_SetRotMatrix(&temp_matrix);
+
+	vert[0].vx = -size;
+	vert[0].vy = -size;
+	vert[0].vz = 0;
+
+	vert[1].vx = -size;
+	vert[1].vy = size;
+	vert[1].vz = 0;
+
+	vert[2].vx = size;
+	vert[2].vy = -size;
+	vert[2].vz = 0;
+
+	vert[3].vx = size;
+	vert[3].vy = size;
+	vert[3].vz = 0;
+
+	gte_ldv3(&vert[0], &vert[1], &vert[2]);
+
+	gte_rtpt();
+
+	poly = (POLY_FT4*)current->primptr;
+
+	poly->u0 = flare_texture.coords.u0;
+	poly->v0 = flare_texture.coords.v0;
+	poly->u1 = flare_texture.coords.u1;
+	poly->v1 = flare_texture.coords.v1;
+	poly->u2 = flare_texture.coords.u2;
+	poly->v2 = flare_texture.coords.v2 - 1;
+	poly->u3 = flare_texture.coords.u3;
+	poly->v3 = flare_texture.coords.v3 - 1;
+
+	setPolyFT4(poly);
+	setSemiTrans(poly, 1);
+
+	poly->r0 = col->r >> 1;
+	poly->g0 = col->g >> 1;
+	poly->b0 = col->b >> 1;
+
+	gte_stsz(&z);
+
+	if (z >> 3 > 39)
+	{
+		z = (z >> 3) + LightSortCorrect;
+
+		if (z < 1)
+			z = 1;
+
+		gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
+		gte_ldv0(&vert[3]);
+
+		gte_rtps();
+		gte_stsxy(&poly->x3);
+
+		poly->tpage = flare_texture.tpageid | 0x20;
+		poly->clut = flare_texture.clutid;
+
+		addPrim(current->ot + z, poly);
+
+		current->primptr += sizeof(POLY_FT4);
+	}
 }
 
 
@@ -3154,114 +3361,6 @@ void RoundShadow(VECTOR *v1, CVECTOR *col, short size)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ShowFlare(VECTOR *v1 /*$a0*/, CVECTOR *col /*$s2*/, short size /*$a2*/, int rotation /*$a3*/)
- // line 2945, offset 0x000368d8
-	/* begin block 1 */
-		// Start line: 2946
-		// Start offset: 0x000368D8
-		// Variables:
-	// 		SVECTOR vert[4]; // stack offset -96
-	// 		POLY_FT4 *poly; // $t0
-	// 		SVECTOR direction; // stack offset -64
-	// 		MATRIX temp_matrix; // stack offset -56
-	// 		int z; // stack offset -24
-	/* end block 1 */
-	// End offset: 0x00036B54
-	// End Line: 3016
-
-	/* begin block 2 */
-		// Start line: 7488
-	/* end block 2 */
-	// End Line: 7489
-
-/* WARNING: Could not reconcile some variable overlaps */
-
-// [D] [T]
-void ShowFlare(VECTOR *v1, CVECTOR *col, short size, int rotation)
-{
-	POLY_FT4 *poly;
-	SVECTOR vert[4];
-	SVECTOR direction;
-	MATRIX temp_matrix;
-	int z;
-
-	gte_SetTransVector(v1);
-
-	direction.vy = 0;
-	direction.vx = 0;
-	direction.vz = rotation;
-
-	RotMatrixXYZ(&temp_matrix, &direction);
-
-	gte_SetRotMatrix(&temp_matrix);
-
-	vert[0].vx = -size;
-	vert[0].vy = -size;
-	vert[0].vz = 0;
-
-	vert[1].vx = -size;
-	vert[1].vy = size;
-	vert[1].vz = 0;
-
-	vert[2].vx = size;
-	vert[2].vy = -size; 
-	vert[2].vz = 0;
-
-	vert[3].vx = size;
-	vert[3].vy = size; 
-	vert[3].vz = 0;
-
-	gte_ldv3(&vert[0], &vert[1], &vert[2]);
-
-	gte_rtpt();
-
-	poly = (POLY_FT4 *)current->primptr;
-
-	poly->u0 = flare_texture.coords.u0;
-	poly->v0 = flare_texture.coords.v0;
-	poly->u1 = flare_texture.coords.u1;
-	poly->v1 = flare_texture.coords.v1;
-	poly->u2 = flare_texture.coords.u2;
-	poly->v2 = flare_texture.coords.v2-1;
-	poly->u3 = flare_texture.coords.u3;
-	poly->v3 = flare_texture.coords.v3-1;
-
-	setPolyFT4(poly);
-	setSemiTrans(poly, 1);
-
-	poly->r0 = col->r >> 1;
-	poly->g0 = col->g >> 1;
-	poly->b0 = col->b >> 1;
-
-	gte_stsz(&z);
-
-	if (z >> 3 > 39) 
-	{
-		z = (z >> 3) + LightSortCorrect;
-
-		if (z < 1)
-			z = 1;
-
-		gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
-		gte_ldv0(&vert[3]);
-
-		gte_rtps();
-		gte_stsxy(&poly->x3);
-
-		poly->tpage = flare_texture.tpageid | 0x20;
-		poly->clut = flare_texture.clutid;
-
-		addPrim(current->ot + z, poly);
-
-		current->primptr += sizeof(POLY_FT4);
-	}
-}
-
-
-
 // decompiled code
 // original method signature: 
 // void /*$ra*/ DisplayWater(SMOKE *smoke /*$a0*/)
@@ -4136,6 +4235,238 @@ void DisplayDebris(DEBRIS *debris, char type)
 }
 
 
+// decompiled code
+// original method signature: 
+// void /*$ra*/ DisplaySmoke(SMOKE *smoke /*$s0*/)
+ // line 3983, offset 0x0003877c
+	/* begin block 1 */
+		// Start line: 3984
+		// Start offset: 0x0003877C
+		// Variables:
+	// 		POLY_FT4 *poly; // $t0
+	// 		VECTOR v; // stack offset -80
+	// 		SVECTOR smokemesh[4]; // stack offset -64
+	// 		int x; // $s2
+	// 		int negx; // $s1
+	// 		int z; // stack offset -32
+	// 		int smoke_z_offset; // $s3
+	// 		int tmode; // $a3
+	// 		int size; // $v0
+	// 		int centrex; // $a1
+	// 		int centrey; // $v1
+
+		/* begin block 1.1 */
+			// Start line: 4041
+			// Start offset: 0x00038970
+			// Variables:
+		// 		char red; // $a0
+		// 		char green; // $a1
+		// 		char blue; // $v1
+		/* end block 1.1 */
+		// End offset: 0x0003899C
+		// End Line: 4046
+	/* end block 1 */
+	// End offset: 0x00038C98
+	// End Line: 4115
+
+	/* begin block 2 */
+		// Start line: 10349
+	/* end block 2 */
+	// End Line: 10350
+
+	/* begin block 3 */
+		// Start line: 10366
+	/* end block 3 */
+	// End Line: 10367
+
+	/* begin block 4 */
+		// Start line: 10372
+	/* end block 4 */
+	// End Line: 10373
+
+/* WARNING: Could not reconcile some variable overlaps */
+
+// [D] [T]
+void DisplaySmoke(SMOKE* smoke)
+{
+	int Z;
+	int tmode;
+	POLY_FT4* poly;
+	VECTOR v;
+	SVECTOR smokemesh[4];
+	int smoke_z_offset;
+
+	smoke_z_offset = 0;
+
+	v.vx = smoke->position.vx - camera_position.vx;
+	v.vy = smoke->position.vy - camera_position.vy;
+	v.vz = smoke->position.vz - camera_position.vz;
+
+	if (v.vx > 20480 || v.vz > 20480)
+		return;
+
+	Apply_Inv_CameraMatrix(&v);
+
+	gte_SetTransVector(&v);
+	gte_SetRotMatrix(&identity);
+
+	smokemesh[0].vx = -smoke->start_w;
+	smokemesh[0].vy = -smoke->start_w;
+	smokemesh[0].vz = 0;
+
+	smokemesh[1].vx = smoke->start_w;
+	smokemesh[1].vy = -smoke->start_w;
+	smokemesh[1].vz = 0;
+
+	smokemesh[2].vx = -smoke->start_w;
+	smokemesh[2].vy = smoke->start_w;
+	smokemesh[2].vz = 0;
+
+	smokemesh[3].vx = smoke->start_w;
+	smokemesh[3].vy = smoke->start_w;
+	smokemesh[3].vz = 0;
+
+	poly = (POLY_FT4*)current->primptr;
+
+	gte_ldv3(&smokemesh[0], &smokemesh[1], &smokemesh[2]);
+	gte_rtpt();
+
+	tmode = 0x20;
+
+	if (smoke->flags & 0x4000)
+	{
+		poly->r0 = smoke->transparency;
+		poly->g0 = smoke->transparency;
+		poly->b0 = smoke->transparency;
+	}
+	else if (smoke->flags & 0x2000)
+	{
+		if (gNight)
+		{
+			poly->r0 = smoke->transparency / 2;
+			poly->g0 = smoke->transparency / 2;
+			poly->b0 = smoke->transparency / 2;
+		}
+		else
+		{
+			poly->r0 = smoke->transparency >> 2;
+			poly->g0 = smoke->transparency >> 2;
+			poly->b0 = smoke->transparency >> 2;
+		}
+
+		tmode = 0x40;
+		smoke_z_offset = 17;
+	}
+	else if (smoke->flags & 0x1000)
+	{
+		if ((smoke->transparency >> 3) + 50 & 0xff < 60)
+			poly->g0 = (smoke->transparency >> 3);
+		else
+			poly->g0 = smoke->transparency >> 2;
+
+		smoke_z_offset = 18;
+
+		poly->r0 = smoke->transparency;
+		poly->b0 = smoke->transparency >> 3;
+	}
+	else if (smoke->flags & 0x20)
+	{
+		poly->r0 = smoke->transparency >> 1;
+		poly->g0 = smoke->transparency;
+		poly->b0 = smoke->transparency + 10;
+
+		tmode = 0x40;
+	}
+	else if (smoke->flags & 0x40)
+	{
+		if (gNight == 0)
+		{
+			poly->r0 = smoke->transparency >> 2;
+			poly->g0 = smoke->transparency >> 2;
+			poly->b0 = smoke->transparency >> 2;
+		}
+		else
+		{
+			poly->r0 = smoke->transparency >> 3;
+			poly->g0 = smoke->transparency >> 3;
+			poly->b0 = smoke->transparency + 10 >> 3;
+		}
+	}
+	else
+	{
+		if (gNight == 0)
+		{
+			poly->r0 = smoke->transparency;
+			poly->g0 = smoke->transparency;
+			poly->b0 = smoke->transparency + 10;
+		}
+		else
+		{
+			poly->r0 = smoke->transparency / 2;
+			poly->g0 = smoke->transparency / 2;
+			poly->b0 = smoke->transparency + 10 >> 1;
+		}
+
+		smoke_z_offset = 25;
+	}
+
+	gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
+
+	gte_stsz(&Z);
+
+	gte_ldv0(&smokemesh[3]);
+	gte_rtps();
+
+	poly->u0 = smoke_texture.coords.u0;
+	poly->v0 = smoke_texture.coords.v0;
+	poly->u1 = smoke_texture.coords.u1;
+	poly->v1 = smoke_texture.coords.v1;
+	poly->u2 = smoke_texture.coords.u2;
+	poly->v2 = smoke_texture.coords.v2 - 4; // [A] ???
+	poly->u3 = smoke_texture.coords.u3;
+	poly->v3 = smoke_texture.coords.v3 - 4; // [A] ???
+
+	poly->tpage = smoke_texture.tpageid | tmode;
+	poly->clut = smoke_texture.clutid;
+
+	setPolyFT4(poly);
+	setSemiTrans(poly, 1);
+
+	if (Z >> 3 > 0)
+	{
+		int x, y;
+
+		smoke_z_offset = (Z >> 3) - smoke_z_offset;
+
+		if (smoke_z_offset < 9)
+			smoke_z_offset = 9;
+
+		gte_stsxy(&poly->x3);
+		addPrim(current->ot + smoke_z_offset, poly);
+
+		// reduce size?
+		if ((poly->x1 - poly->x0) / 2 > 100)
+		{
+			x = (poly->x0 + poly->x3) / 2;
+			y = (poly->y0 + poly->y3) / 2;
+
+			// FIXME:  * 0x10000 is needed because clipping issue
+			poly->x0 = (y - 50) << 0x10;
+			poly->y0 = x - 50;
+
+			poly->x1 = (y - 50) << 0x10;
+			poly->y1 = x + 50;
+
+			poly->x2 = (y + 50) << 0x10;
+			poly->y2 = x - 50;
+
+			poly->x3 = (y + 50) << 0x10;
+			poly->y3 = x + 50;
+		}
+
+		current->primptr += sizeof(POLY_FT4);
+	}
+}
 
 // decompiled code
 // original method signature: 
@@ -4439,242 +4770,6 @@ void HandleDebris(void)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DisplaySmoke(SMOKE *smoke /*$s0*/)
- // line 3983, offset 0x0003877c
-	/* begin block 1 */
-		// Start line: 3984
-		// Start offset: 0x0003877C
-		// Variables:
-	// 		POLY_FT4 *poly; // $t0
-	// 		VECTOR v; // stack offset -80
-	// 		SVECTOR smokemesh[4]; // stack offset -64
-	// 		int x; // $s2
-	// 		int negx; // $s1
-	// 		int z; // stack offset -32
-	// 		int smoke_z_offset; // $s3
-	// 		int tmode; // $a3
-	// 		int size; // $v0
-	// 		int centrex; // $a1
-	// 		int centrey; // $v1
-
-		/* begin block 1.1 */
-			// Start line: 4041
-			// Start offset: 0x00038970
-			// Variables:
-		// 		char red; // $a0
-		// 		char green; // $a1
-		// 		char blue; // $v1
-		/* end block 1.1 */
-		// End offset: 0x0003899C
-		// End Line: 4046
-	/* end block 1 */
-	// End offset: 0x00038C98
-	// End Line: 4115
-
-	/* begin block 2 */
-		// Start line: 10349
-	/* end block 2 */
-	// End Line: 10350
-
-	/* begin block 3 */
-		// Start line: 10366
-	/* end block 3 */
-	// End Line: 10367
-
-	/* begin block 4 */
-		// Start line: 10372
-	/* end block 4 */
-	// End Line: 10373
-
-/* WARNING: Could not reconcile some variable overlaps */
-
-// [D] [T]
-void DisplaySmoke(SMOKE *smoke)
-{
-	int Z;
-	int tmode;
-	POLY_FT4 *poly;
-	VECTOR v;
-	SVECTOR smokemesh[4];
-	int smoke_z_offset;
-
-	smoke_z_offset = 0;
-
-	v.vx = smoke->position.vx - camera_position.vx;
-	v.vy = smoke->position.vy - camera_position.vy;
-	v.vz = smoke->position.vz - camera_position.vz;
-
-	if (v.vx > 20480 || v.vz > 20480)
-		return;
-
-	Apply_Inv_CameraMatrix(&v);
-
-	gte_SetTransVector(&v);
-	gte_SetRotMatrix(&identity);
-
-	smokemesh[0].vx = -smoke->start_w;
-	smokemesh[0].vy = -smoke->start_w;
-	smokemesh[0].vz = 0;
-
-	smokemesh[1].vx = smoke->start_w;
-	smokemesh[1].vy = -smoke->start_w;
-	smokemesh[1].vz = 0;
-
-	smokemesh[2].vx = -smoke->start_w;
-	smokemesh[2].vy = smoke->start_w;
-	smokemesh[2].vz = 0;
-
-	smokemesh[3].vx = smoke->start_w;
-	smokemesh[3].vy = smoke->start_w;
-	smokemesh[3].vz = 0;
-
-	poly = (POLY_FT4 *)current->primptr;
-
-	gte_ldv3(&smokemesh[0], &smokemesh[1], &smokemesh[2]);
-	gte_rtpt();
-
-	tmode = 0x20;
-
-	if (smoke->flags & 0x4000)
-	{
-		poly->r0 = smoke->transparency;
-		poly->g0 = smoke->transparency;
-		poly->b0 = smoke->transparency;
-	}
-	else if (smoke->flags & 0x2000)
-	{
-		if (gNight)
-		{
-			poly->r0 = smoke->transparency / 2;
-			poly->g0 = smoke->transparency / 2;
-			poly->b0 = smoke->transparency / 2;
-		}
-		else 
-		{
-			poly->r0 = smoke->transparency >> 2;
-			poly->g0 = smoke->transparency >> 2;
-			poly->b0 = smoke->transparency >> 2;
-		}
-
-		tmode = 0x40;
-		smoke_z_offset = 17;
-	}
-	else if (smoke->flags & 0x1000)
-	{
-		if ((smoke->transparency >> 3) + 50 & 0xff < 60)
-			poly->g0 = (smoke->transparency >> 3);
-		else
-			poly->g0 = smoke->transparency >> 2;
-
-		smoke_z_offset = 18;
-			
-		poly->r0 = smoke->transparency;
-		poly->b0 = smoke->transparency >> 3;
-	}
-	else if (smoke->flags & 0x20)
-	{
-		poly->r0 = smoke->transparency >> 1;
-		poly->g0 = smoke->transparency;
-		poly->b0 = smoke->transparency + 10;
-			
-		tmode = 0x40;
-	}
-	else if (smoke->flags & 0x40)
-	{
-		if (gNight == 0)
-		{
-			poly->r0 = smoke->transparency >> 2;
-			poly->g0 = smoke->transparency >> 2;
-			poly->b0 = smoke->transparency >> 2;
-		}
-		else
-		{
-			poly->r0 = smoke->transparency >> 3;
-			poly->g0 = smoke->transparency >> 3;
-			poly->b0 = smoke->transparency + 10 >> 3;
-		}
-	}
-	else
-	{
-		if (gNight == 0)
-		{
-			poly->r0 = smoke->transparency;
-			poly->g0 = smoke->transparency;
-			poly->b0 = smoke->transparency + 10;
-		}
-		else
-		{
-			poly->r0 = smoke->transparency / 2;
-			poly->g0 = smoke->transparency / 2;
-			poly->b0 = smoke->transparency + 10 >> 1;
-		}
-
-		smoke_z_offset = 25;
-	}
-
-	gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
-		
-	gte_stsz(&Z);
-
-	gte_ldv0(&smokemesh[3]);
-	gte_rtps();
-
-	poly->u0 = smoke_texture.coords.u0;
-	poly->v0 = smoke_texture.coords.v0;
-	poly->u1 = smoke_texture.coords.u1;
-	poly->v1 = smoke_texture.coords.v1;
-	poly->u2 = smoke_texture.coords.u2;
-	poly->v2 = smoke_texture.coords.v2 - 4; // [A] ???
-	poly->u3 = smoke_texture.coords.u3;
-	poly->v3 = smoke_texture.coords.v3 - 4; // [A] ???
-
-	poly->tpage = smoke_texture.tpageid | tmode;
-	poly->clut = smoke_texture.clutid;
-
-	setPolyFT4(poly);
-	setSemiTrans(poly, 1);
-
-	if (Z >> 3 > 0)
-	{
-		int x,y;
-		
-		smoke_z_offset = (Z >> 3) - smoke_z_offset;
-
-		if (smoke_z_offset < 9)
-			smoke_z_offset = 9;
-
-		gte_stsxy(&poly->x3);
-		addPrim(current->ot + smoke_z_offset, poly);
-
-		// reduce size?
-		if ((poly->x1 - poly->x0) / 2 > 100)
-		{
-			x = (poly->x0 + poly->x3) / 2;
-			y = (poly->y0 + poly->y3) / 2;
-
-			// FIXME:  * 0x10000 is needed because clipping issue
-			poly->x0 = (y - 50) << 0x10;
-			poly->y0 = x - 50;
-
-			poly->x1 = (y - 50) << 0x10;
-			poly->y1 = x + 50;
-
-			poly->x2 = (y + 50) << 0x10;
-			poly->y2 = x - 50;
-
-			poly->x3 = (y + 50) << 0x10;
-			poly->y3 = x + 50;
-		}
-	
-		current->primptr += sizeof(POLY_FT4);
-	}
-}
-
-
-
 // decompiled code
 // original method signature: 
 // void /*$ra*/ add_haze(int top_col /*$a0*/, int bot_col /*$a1*/, short ot_pos /*$a2*/)
@@ -4840,6 +4935,107 @@ void ReleaseRainDrop(int RainIndex)
 }
 
 
+// decompiled code
+// original method signature: 
+// void /*$ra*/ DisplaySplashes()
+ // line 4489, offset 0x00039468
+	/* begin block 1 */
+		// Start line: 4491
+		// Start offset: 0x00039468
+		// Variables:
+	// 		int SplashNo; // $s4
+	// 		int SplashFrac; // $v0
+	// 		VECTOR CamGnd; // stack offset -96
+	// 		VECTOR Gnd1; // stack offset -80
+	// 		VECTOR Gnd2; // stack offset -64
+	// 		VECTOR Position; // stack offset -48
+	// 		CVECTOR col; // stack offset -32
+	// 		static unsigned long rand; // offset 0x170
+	// 		int d1; // $a0
+	// 		int d2; // $a2
+	/* end block 1 */
+	// End offset: 0x000397A0
+	// End Line: 4547
+
+	/* begin block 2 */
+		// Start line: 11536
+	/* end block 2 */
+	// End Line: 11537
+
+	/* begin block 3 */
+		// Start line: 11537
+	/* end block 3 */
+	// End Line: 11538
+
+	/* begin block 4 */
+		// Start line: 11549
+	/* end block 4 */
+	// End Line: 11550
+
+/* WARNING: Unknown calling convention yet parameter storage is locked */
+
+// [D] [T]
+void DisplaySplashes(void)
+{
+	static u_int rand;
+
+	int d1;
+	int d2;
+	VECTOR CamGnd;
+	VECTOR Gnd1;
+	VECTOR Gnd2;
+	VECTOR Position;
+	CVECTOR col = { 25, 25, 25 };
+	int ang;
+	int SplashNo, SplashFrac;
+
+	if (pauseflag != 0)
+		return;
+
+	if (gRainCount >> 2 > 30)
+		SplashNo = 30;
+	else
+		SplashNo = (gRainCount >> 2);
+
+	SplashFrac = FIXEDH(SplashNo * FrAng * 3);
+
+	gte_SetRotMatrix(&identity); // [A] norot
+
+	CamGnd.vx = camera_position.vx;
+	CamGnd.vz = camera_position.vz;
+	CamGnd.vy = -camera_position.vy - MapHeight(&CamGnd);
+
+	ang = FrAng - camera_angle.vy & 0xfff;
+
+	Gnd1.vx = rcossin_tbl[ang * 2] + camera_position.vx;
+	Gnd1.vz = rcossin_tbl[ang * 2 + 1] + camera_position.vz;
+
+	Gnd1.vx = Gnd1.vx - CamGnd.vx;
+	Gnd1.vy = -camera_position.vy - MapHeight(&Gnd1) - CamGnd.vy;
+	Gnd1.vz = Gnd1.vz - CamGnd.vz;
+
+	ang = -FrAng - camera_angle.vy & 0xfff;
+	Gnd2.vx = rcossin_tbl[ang * 2] + camera_position.vx;
+	Gnd2.vz = rcossin_tbl[ang * 2 + 1] + camera_position.vz;
+
+	Gnd2.vx = Gnd2.vx - CamGnd.vx;
+	Gnd2.vy = (-camera_position.vy - MapHeight(&Gnd2)) - CamGnd.vy;
+	Gnd2.vz = Gnd2.vz - CamGnd.vz;
+
+	while (--SplashFrac >= 0)
+	{
+		d2 = rand * 0x19660d + 0x3c6ef35f;
+		d1 = d2 >> 4 & 0xfff;
+		rand = d2 * 0x19660d + 0x3c6ef35f;
+		d2 = rand >> 0xe & 0xfff;
+
+		Position.vx = FIXEDH(Gnd1.vx * d1 + Gnd2.vx * d2);
+		Position.vy = FIXEDH(Gnd1.vy * d1 + Gnd2.vy * d2) + CamGnd.vy;
+		Position.vz = FIXEDH(Gnd1.vz * d1 + Gnd2.vz * d2);
+
+		ShowLight(&Position, &col, 12, &drop_texture);
+	}
+}
 
 // decompiled code
 // original method signature: 
@@ -5142,218 +5338,6 @@ void AddRainDrops(void)
 		first = 0;
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DisplaySplashes()
- // line 4489, offset 0x00039468
-	/* begin block 1 */
-		// Start line: 4491
-		// Start offset: 0x00039468
-		// Variables:
-	// 		int SplashNo; // $s4
-	// 		int SplashFrac; // $v0
-	// 		VECTOR CamGnd; // stack offset -96
-	// 		VECTOR Gnd1; // stack offset -80
-	// 		VECTOR Gnd2; // stack offset -64
-	// 		VECTOR Position; // stack offset -48
-	// 		CVECTOR col; // stack offset -32
-	// 		static unsigned long rand; // offset 0x170
-	// 		int d1; // $a0
-	// 		int d2; // $a2
-	/* end block 1 */
-	// End offset: 0x000397A0
-	// End Line: 4547
-
-	/* begin block 2 */
-		// Start line: 11536
-	/* end block 2 */
-	// End Line: 11537
-
-	/* begin block 3 */
-		// Start line: 11537
-	/* end block 3 */
-	// End Line: 11538
-
-	/* begin block 4 */
-		// Start line: 11549
-	/* end block 4 */
-	// End Line: 11550
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
-// [D] [T]
-void DisplaySplashes(void)
-{
-	static u_int rand;
-
-	int d1;
-	int d2;
-	VECTOR CamGnd;
-	VECTOR Gnd1;
-	VECTOR Gnd2;
-	VECTOR Position;
-	CVECTOR col = { 25, 25, 25};
-	int ang;
-	int SplashNo, SplashFrac;
-	
-	if (pauseflag != 0)
-		return;
-
-	if (gRainCount >> 2 > 30)
-		SplashNo = 30;
-	else
-		SplashNo = (gRainCount >> 2);
-
-	SplashFrac = FIXEDH(SplashNo * FrAng * 3);
-
-	gte_SetRotMatrix(&identity); // [A] norot
-
-	CamGnd.vx = camera_position.vx;
-	CamGnd.vz = camera_position.vz;
-	CamGnd.vy = -camera_position.vy - MapHeight(&CamGnd);
-
-	ang = FrAng - camera_angle.vy & 0xfff;
-
-	Gnd1.vx = rcossin_tbl[ang * 2] + camera_position.vx;
-	Gnd1.vz = rcossin_tbl[ang * 2 + 1] + camera_position.vz;
-
-	Gnd1.vx = Gnd1.vx - CamGnd.vx;
-	Gnd1.vy = -camera_position.vy - MapHeight(&Gnd1) - CamGnd.vy;
-	Gnd1.vz = Gnd1.vz - CamGnd.vz;
-
-	ang = -FrAng - camera_angle.vy & 0xfff;
-	Gnd2.vx = rcossin_tbl[ang * 2] + camera_position.vx;
-	Gnd2.vz = rcossin_tbl[ang * 2 + 1] + camera_position.vz;
-
-	Gnd2.vx = Gnd2.vx - CamGnd.vx;
-	Gnd2.vy = (-camera_position.vy - MapHeight(&Gnd2)) - CamGnd.vy;
-	Gnd2.vz = Gnd2.vz - CamGnd.vz;
-
-	while (--SplashFrac >= 0)
-	{
-		d2 = rand * 0x19660d + 0x3c6ef35f;
-		d1 = d2 >> 4 & 0xfff;
-		rand = d2 * 0x19660d + 0x3c6ef35f;
-		d2 = rand >> 0xe & 0xfff;
-
-		Position.vx = FIXEDH(Gnd1.vx * d1 + Gnd2.vx * d2);
-		Position.vy = FIXEDH(Gnd1.vy * d1 + Gnd2.vy * d2) + CamGnd.vy;
-		Position.vz = FIXEDH(Gnd1.vz * d1 + Gnd2.vz * d2);
-
-		ShowLight(&Position, &col, 12, &drop_texture);
-	}
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DisplayLightReflections(VECTOR *v1 /*$s1*/, CVECTOR *col /*$s3*/, short size /*$a2*/, TEXTURE_DETAILS *texture /*$s2*/)
- // line 4550, offset 0x000397c0
-	/* begin block 1 */
-		// Start line: 4551
-		// Start offset: 0x000397C0
-		// Variables:
-	// 		SVECTOR vert[4]; // stack offset -80
-	// 		POLY_FT4 *poly; // $a1
-	// 		CVECTOR thiscol; // stack offset -48
-	// 		int z; // stack offset -40
-	// 		int tpage; // $s5
-	// 		int clut; // $s4
-	/* end block 1 */
-	// End offset: 0x00039A30
-	// End Line: 4602
-
-	/* begin block 2 */
-		// Start line: 11756
-	/* end block 2 */
-	// End Line: 11757
-
-/* WARNING: Could not reconcile some variable overlaps */
-
-// [D] [T]
-void DisplayLightReflections(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
-{
-	POLY_FT4 *poly;
-	SVECTOR vert[4];
-	CVECTOR thiscol;
-	int z;
-
-	if (wetness > 9 && v1->vy > camera_position.vy)
-	{
-		gte_SetTransVector(v1);
-
-		Apply_Inv_CameraMatrix(v1);
-
-		gte_SetTransVector(v1);
-		gte_SetRotMatrix(&face_camera);
-
-		vert[0].vx = -size;
-		vert[2].vx = -size;
-		vert[1].vx = size;
-		vert[3].vx = size;
-
-		vert[0].vy = 0;
-		vert[0].vz = 0;
-		vert[1].vy = 0;
-		vert[1].vz = 0;
-		vert[2].vy = 0;
-		vert[2].vz = 0;
-		vert[3].vy = 0;
-		vert[3].vz = 0;
-
-		gte_ldv0(&vert[0]);
-
-		gte_rtps();
-
-		gte_stsz(&z);
-
-		if (z >= 150) 
-		{
-			poly = (POLY_FT4 *)current->primptr;
-			setPolyFT4(poly);
-			setSemiTrans(poly, 1);
-
-			gte_stsxy(&poly->x0);
-
-			vert[2].vy = (z >> 3) + 0xfa;
-			vert[3].vy = (z >> 3) + 0xfa;
-
-			gte_ldv3(&vert[1], &vert[2], &vert[3]);
-
-			gte_rtpt();
-
-			gte_stsxy3(&poly->x1, &poly->x2, &poly->x3);
-
-			poly->u0 = texture->coords.u0;
-			poly->v0 = texture->coords.v0;
-			poly->u1 = texture->coords.u1;
-			poly->v1 = texture->coords.v1;
-			poly->u2 = texture->coords.u2;
-			poly->v2 = texture->coords.v2;
-			poly->u3 = texture->coords.u3;
-			poly->v3 = texture->coords.v3;
-
-			poly->tpage = texture->tpageid | 0x20;
-			poly->clut = texture->clutid;
-
-			thiscol.r = col->r >> 3;
-			thiscol.g = col->g >> 3;
-			thiscol.b = col->b >> 3;
-
-			poly->r0 = thiscol.r;
-			poly->g0 = thiscol.g;
-			poly->b0 = thiscol.b;
-
-			addPrim(current->ot + (z >> 4), poly);
-			current->primptr += sizeof(POLY_FT4);
-		}
-	}
-}
-
 
 
 // decompiled code

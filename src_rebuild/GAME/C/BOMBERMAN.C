@@ -32,41 +32,6 @@ static int gWantFlash = 0;
 CAR_DATA *gBombTargetVehicle = NULL;
 static int flashval;
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitThrownBombs()
- // line 222, offset 0x0001f570
-	/* begin block 1 */
-		// Start line: 224
-		// Start offset: 0x0001F570
-		// Variables:
-	// 		int i; // $v1
-	/* end block 1 */
-	// End offset: 0x0001F5F4
-	// End Line: 235
-
-	/* begin block 2 */
-		// Start line: 1445
-	/* end block 2 */
-	// End Line: 1446
-
-	/* begin block 3 */
-		// Start line: 444
-	/* end block 3 */
-	// End Line: 445
-
-	/* begin block 4 */
-		// Start line: 1446
-	/* end block 4 */
-	// End Line: 1447
-
-	/* begin block 5 */
-		// Start line: 1448
-	/* end block 5 */
-	// End Line: 1449
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void InitThrownBombs(void)
 {
@@ -80,216 +45,6 @@ void InitThrownBombs(void)
 	gWantFlash = 0;
 	gBombTargetVehicle = NULL;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ HandleThrownBombs()
- // line 245, offset 0x0001e3e8
-	/* begin block 1 */
-		// Start line: 247
-		// Start offset: 0x0001E3E8
-		// Variables:
-	// 		BOMB *bomb; // $s1
-	// 		VECTOR velocity; // stack offset -48
-	// 		CAR_DATA *cp; // $s0
-	// 		int i; // $s5
-	// 		int y; // $a0
-
-		/* begin block 1.1 */
-			// Start line: 258
-			// Start offset: 0x0001E42C
-		/* end block 1.1 */
-		// End offset: 0x0001E5C8
-		// End Line: 301
-
-		/* begin block 1.2 */
-			// Start line: 319
-			// Start offset: 0x0001E670
-			// Variables:
-		// 		int len; // $v1
-		/* end block 1.2 */
-		// End offset: 0x0001E6E8
-		// End Line: 330
-	/* end block 1 */
-	// End offset: 0x0001E7E8
-	// End Line: 357
-
-	/* begin block 2 */
-		// Start line: 490
-	/* end block 2 */
-	// End Line: 491
-
-	/* begin block 3 */
-		// Start line: 491
-	/* end block 3 */
-	// End Line: 492
-
-	/* begin block 4 */
-		// Start line: 497
-	/* end block 4 */
-	// End Line: 498
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
-// [D] [T]
-void HandleThrownBombs(void)
-{
-	CAR_DATA *cp;
-	BOMB *bomb;
-	int i;
-	int y;
-
-	int dx, dz;
-	VECTOR velocity;
-
-	// throw bombs if we have vehicle
-	if (gBombTargetVehicle)
-	{
-		ThrownBombDelay--;
-
-		if (ThrownBombDelay == -1)
-		{
-			ThrownBombDelay = Random2(0) % 45 + 8;
-
-			bomb = &ThrownBombs[CurrentBomb++];
-			CurrentBomb = CurrentBomb % MAX_THROWN_BOMBS;
-
-			bomb->flags = 1;
-			bomb->active = 1;
-
-			bomb->position.vx = gBombTargetVehicle->hd.where.t[0];
-			bomb->position.vy = gBombTargetVehicle->hd.where.t[1] - 200;
-			bomb->position.vz = gBombTargetVehicle->hd.where.t[2];
-
-			velocity.vx = FIXEDH(gBombTargetVehicle->st.n.linearVelocity[0]);
-			velocity.vz = FIXEDH(gBombTargetVehicle->st.n.linearVelocity[2]);
-
-			bomb->velocity.vx = velocity.vx >> 10;
-			bomb->velocity.vz = velocity.vz >> 10;
-			bomb->velocity.vy = -(Long2DDistance(&bomb->position, (VECTOR *)player[0].pos) >> 7);
-
-			if ((rand() & 1) == 0)
-				bomb->rot_speed = -bomb->velocity.vy;
-			else
-				bomb->rot_speed = bomb->velocity.vy;
-
-			if (bomb->velocity.vy < -100)
-				bomb->velocity.vy = -100;
-		}
-	}
-
-	bomb = ThrownBombs;
-
-	i = 0;
-	while (i < MAX_THROWN_BOMBS)
-	{
-		if (bomb->flags & 1) 
-		{
-			bomb->position.vx += bomb->velocity.vx;
-			bomb->position.vy += bomb->velocity.vy;
-			bomb->position.vz += bomb->velocity.vz;
-
-			bomb->velocity.vy += 10;
-
-			bomb->active++;
-
-			y = -MapHeight(&bomb->position);
-
-			if (y < bomb->position.vy)
-			{
-				if ((bomb->flags & 2) == 0) 
-				{
-					bomb->flags |= 2;
-					bomb->position.vy = y;
-					bomb->velocity.vy = -bomb->velocity.vy / 2; // bounce
-				}
-				else 
-				{
-					bomb->flags = 0;
-					bomb->position.vy = y;
-
-					AddExplosion(bomb->position, LITTLE_BANG);
-					AddFlash(&bomb->position);
-
-					dx = (bomb->position.vx - player[0].pos[0]);
-					dz = (bomb->position.vz - player[0].pos[2]);
-
-					if (FIXEDH(dx * dx + dz * dz) < 1024)
-						SetPadVibration(player[0].padid, 3);		// [A] bug fix
-				}
-			}
-
-			cp = car_data;
-			
-			while (cp < &car_data[MAX_CARS])
-			{
-				if (cp != gBombTargetVehicle && cp->controlType != CONTROL_TYPE_NONE && BombCollisionCheck(cp, &bomb->position) != 0)
-				{
-					bomb->flags = 0;
-
-					AddExplosion(bomb->position, BIG_BANG);
-					AddFlash(&bomb->position);
-				}
-				cp++;
-			}
-		}
-		bomb++;
-		i++;
-	}
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawThrownBombs()
- // line 381, offset 0x0001e810
-	/* begin block 1 */
-		// Start line: 383
-		// Start offset: 0x0001E810
-		// Variables:
-	// 		MATRIX object_matrix; // stack offset -80
-	// 		MATRIX *finalmatrix; // $s2
-	// 		BOMB *bomb; // $s0
-	// 		VECTOR pos; // stack offset -48
-	// 		int i; // $s3
-
-		/* begin block 1.1 */
-			// Start line: 397
-			// Start offset: 0x0001E86C
-		/* end block 1.1 */
-		// End offset: 0x0001E998
-		// End Line: 414
-
-		/* begin block 1.2 */
-			// Start line: 420
-			// Start offset: 0x0001E9B4
-		/* end block 1.2 */
-		// End offset: 0x0001E9DC
-		// End Line: 424
-	/* end block 1 */
-	// End offset: 0x0001E9DC
-	// End Line: 425
-
-	/* begin block 2 */
-		// Start line: 864
-	/* end block 2 */
-	// End Line: 865
-
-	/* begin block 3 */
-		// Start line: 865
-	/* end block 3 */
-	// End Line: 866
-
-	/* begin block 4 */
-		// Start line: 871
-	/* end block 4 */
-	// End Line: 872
-
-/* WARNING: Could not reconcile some variable overlaps */
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void DrawThrownBombs(void)
@@ -358,26 +113,6 @@ void DrawThrownBombs(void)
 			gWantFlash = 0;
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ BombThePlayerToHellAndBack(int car /*$s3*/)
- // line 432, offset 0x0001ea00
-	/* begin block 1 */
-		// Start line: 433
-		// Start offset: 0x0001EA00
-		// Variables:
-	// 		BOMB *bomb; // $t3
-	/* end block 1 */
-	// End offset: 0x0001EC3C
-	// End Line: 486
-
-	/* begin block 2 */
-		// Start line: 1001
-	/* end block 2 */
-	// End Line: 1002
 
 // [D] [T]
 void BombThePlayerToHellAndBack(int car)
@@ -448,39 +183,6 @@ void BombThePlayerToHellAndBack(int car)
 	bomb->velocity.vz = 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ BombCollisionCheck(CAR_DATA *cp /*$a0*/, VECTOR *pPos /*$a1*/)
- // line 496, offset 0x0001ec58
-	/* begin block 1 */
-		// Start line: 497
-		// Start offset: 0x0001EC58
-		// Variables:
-	// 		CDATA2D cd[2]; // stack offset -216
-	// 		int carLength[2]; // stack offset -16
-
-		/* begin block 1.1 */
-			// Start line: 497
-			// Start offset: 0x0001EC58
-		/* end block 1.1 */
-		// End offset: 0x0001EC58
-		// End Line: 497
-	/* end block 1 */
-	// End offset: 0x0001ED18
-	// End Line: 523
-
-	/* begin block 2 */
-		// Start line: 1230
-	/* end block 2 */
-	// End Line: 1231
-
-	/* begin block 3 */
-		// Start line: 1235
-	/* end block 3 */
-	// End Line: 1236
-
 // [D] [T]
 int BombCollisionCheck(CAR_DATA *cp, VECTOR *pPos)
 {
@@ -504,109 +206,6 @@ int BombCollisionCheck(CAR_DATA *cp, VECTOR *pPos)
 
 	return bcollided2d(cd);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ExplosionCollisionCheck(CAR_DATA *cp /*$s1*/, _ExOBJECT *pE /*$s3*/)
- // line 534, offset 0x0001ed18
-	/* begin block 1 */
-		// Start line: 535
-		// Start offset: 0x0001ED18
-		// Variables:
-	// 		CDATA2D cd[2]; // stack offset -352
-	// 		int carLength[2]; // stack offset -152
-	// 		static int setUsed; // offset 0x28
-	// 		int tanner; // $s6
-
-		/* begin block 1.1 */
-			// Start line: 546
-			// Start offset: 0x0001ED74
-
-			/* begin block 1.1.1 */
-				// Start line: 546
-				// Start offset: 0x0001ED74
-			/* end block 1.1.1 */
-			// End offset: 0x0001ED74
-			// End Line: 546
-
-			/* begin block 1.1.2 */
-				// Start line: 553
-				// Start offset: 0x0001EE0C
-			/* end block 1.1.2 */
-			// End offset: 0x0001EE80
-			// End Line: 558
-
-			/* begin block 1.1.3 */
-				// Start line: 561
-				// Start offset: 0x0001EE80
-				// Variables:
-			// 		int x; // $a1
-			// 		int z; // $v1
-			// 		VECTOR *pos; // $v0
-			/* end block 1.1.3 */
-			// End offset: 0x0001EF54
-			// End Line: 600
-
-			/* begin block 1.1.4 */
-				// Start line: 623
-				// Start offset: 0x0001EF94
-				// Variables:
-			// 		CRET2D collisionResult; // stack offset -144
-
-				/* begin block 1.1.4.1 */
-					// Start line: 626
-					// Start offset: 0x0001EF94
-					// Variables:
-				// 		VECTOR velocity; // stack offset -104
-				// 		LONGVECTOR pointVel; // stack offset -88
-				// 		LONGVECTOR reaction; // stack offset -72
-				// 		LONGVECTOR lever; // stack offset -56
-				// 		int strikeVel; // $s0
-
-					/* begin block 1.1.4.1.1 */
-						// Start line: 688
-						// Start offset: 0x0001F210
-					/* end block 1.1.4.1.1 */
-					// End offset: 0x0001F250
-					// End Line: 695
-
-					/* begin block 1.1.4.1.2 */
-						// Start line: 698
-						// Start offset: 0x0001F250
-						// Variables:
-					// 		int twistY; // $a1
-					// 		int lever_dot_n; // $a0
-					// 		int displacementsquared; // $v1
-					// 		int denom; // $v1
-					/* end block 1.1.4.1.2 */
-					// End offset: 0x0001F360
-					// End Line: 710
-				/* end block 1.1.4.1 */
-				// End offset: 0x0001F4A8
-				// End Line: 732
-			/* end block 1.1.4 */
-			// End offset: 0x0001F4A8
-			// End Line: 733
-		/* end block 1.1 */
-		// End offset: 0x0001F4A8
-		// End Line: 734
-	/* end block 1 */
-	// End offset: 0x0001F4F4
-	// End Line: 740
-
-	/* begin block 2 */
-		// Start line: 1339
-	/* end block 2 */
-	// End Line: 1340
-
-	/* begin block 3 */
-		// Start line: 1351
-	/* end block 3 */
-	// End Line: 1352
-
-/* WARNING: Removing unreachable block (ram,0x0001ef54) */
 
 const int minBoxSize = 90;
 const int littleBoxRange = 400;
@@ -791,36 +390,6 @@ void ExplosionCollisionCheck(CAR_DATA *cp, EXOBJECT *pE)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ AddFlash(VECTOR *pos /*$a0*/)
- // line 747, offset 0x0001f4f4
-	/* begin block 1 */
-		// Start line: 748
-		// Start offset: 0x0001F4F4
-		// Variables:
-	// 		int dist; // $a0
-	/* end block 1 */
-	// End offset: 0x0001F570
-	// End Line: 761
-
-	/* begin block 2 */
-		// Start line: 1947
-	/* end block 2 */
-	// End Line: 1948
-
-	/* begin block 3 */
-		// Start line: 1955
-	/* end block 3 */
-	// End Line: 1956
-
-	/* begin block 4 */
-		// Start line: 1958
-	/* end block 4 */
-	// End Line: 1959
-
 // [D] [T]
 void AddFlash(VECTOR *pos)
 {
@@ -835,7 +404,109 @@ void AddFlash(VECTOR *pos)
 	}
 }
 
+// [D] [T]
+void HandleThrownBombs(void)
+{
+	CAR_DATA* cp;
+	BOMB* bomb;
+	int i;
+	int y;
 
+	int dx, dz;
+	VECTOR velocity;
 
+	// throw bombs if we have vehicle
+	if (gBombTargetVehicle)
+	{
+		ThrownBombDelay--;
 
+		if (ThrownBombDelay == -1)
+		{
+			ThrownBombDelay = Random2(0) % 45 + 8;
 
+			bomb = &ThrownBombs[CurrentBomb++];
+			CurrentBomb = CurrentBomb % MAX_THROWN_BOMBS;
+
+			bomb->flags = 1;
+			bomb->active = 1;
+
+			bomb->position.vx = gBombTargetVehicle->hd.where.t[0];
+			bomb->position.vy = gBombTargetVehicle->hd.where.t[1] - 200;
+			bomb->position.vz = gBombTargetVehicle->hd.where.t[2];
+
+			velocity.vx = FIXEDH(gBombTargetVehicle->st.n.linearVelocity[0]);
+			velocity.vz = FIXEDH(gBombTargetVehicle->st.n.linearVelocity[2]);
+
+			bomb->velocity.vx = velocity.vx >> 10;
+			bomb->velocity.vz = velocity.vz >> 10;
+			bomb->velocity.vy = -(Long2DDistance(&bomb->position, (VECTOR*)player[0].pos) >> 7);
+
+			if ((rand() & 1) == 0)
+				bomb->rot_speed = -bomb->velocity.vy;
+			else
+				bomb->rot_speed = bomb->velocity.vy;
+
+			if (bomb->velocity.vy < -100)
+				bomb->velocity.vy = -100;
+		}
+	}
+
+	bomb = ThrownBombs;
+
+	i = 0;
+	while (i < MAX_THROWN_BOMBS)
+	{
+		if (bomb->flags & 1)
+		{
+			bomb->position.vx += bomb->velocity.vx;
+			bomb->position.vy += bomb->velocity.vy;
+			bomb->position.vz += bomb->velocity.vz;
+
+			bomb->velocity.vy += 10;
+
+			bomb->active++;
+
+			y = -MapHeight(&bomb->position);
+
+			if (y < bomb->position.vy)
+			{
+				if ((bomb->flags & 2) == 0)
+				{
+					bomb->flags |= 2;
+					bomb->position.vy = y;
+					bomb->velocity.vy = -bomb->velocity.vy / 2; // bounce
+				}
+				else
+				{
+					bomb->flags = 0;
+					bomb->position.vy = y;
+
+					AddExplosion(bomb->position, LITTLE_BANG);
+					AddFlash(&bomb->position);
+
+					dx = (bomb->position.vx - player[0].pos[0]);
+					dz = (bomb->position.vz - player[0].pos[2]);
+
+					if (FIXEDH(dx * dx + dz * dz) < 1024)
+						SetPadVibration(player[0].padid, 3);		// [A] bug fix
+				}
+			}
+
+			cp = car_data;
+
+			while (cp < &car_data[MAX_CARS])
+			{
+				if (cp != gBombTargetVehicle && cp->controlType != CONTROL_TYPE_NONE && BombCollisionCheck(cp, &bomb->position) != 0)
+				{
+					bomb->flags = 0;
+
+					AddExplosion(bomb->position, BIG_BANG);
+					AddFlash(&bomb->position);
+				}
+				cp++;
+			}
+		}
+		bomb++;
+		i++;
+	}
+}
