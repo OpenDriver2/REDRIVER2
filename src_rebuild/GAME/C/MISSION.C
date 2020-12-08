@@ -219,8 +219,7 @@ void MRCancelCarRequest(MS_TARGET * target);
 
 void PreProcessTargets();
 void CompleteAllActiveTargets(int player);
-void SetMissionComplete();
-void SetMissionFailed(FAIL_REASON reason);
+
 void SetMissionOver(PAUSEMODE mode);
 void ActivateNextFlag();
 int CalcLapTime(int player, int time, int lap);

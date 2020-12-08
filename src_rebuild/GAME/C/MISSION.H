@@ -99,6 +99,8 @@ extern void HandleMission(); // 0x00061274
 
 extern void RegisterChaseHit(int car1, int car2); // 0x00061684
 
+extern void SetMissionComplete(void);
+extern void SetMissionFailed(FAIL_REASON reason);
 extern void SetMissionMessage(char *message, int priority, int seconds); // 0x000642A8
 extern void SetPlayerMessage(int player, char *message, int priority, int seconds); // 0x00064348
 
