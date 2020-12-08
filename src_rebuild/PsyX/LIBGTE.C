@@ -642,7 +642,7 @@ int docop2(int op) {
 				C2_MAC0 = nclip;
 			}
 #else
-			MAC0 = int(F((long long)(SX0 * SY1) + (SX1 * SY2) + (SX2 * SY0) - (SX0 * SY2) - (SX1 * SY0) - (SX2 * SY1)));
+			C2_MAC0 = int(F((long long)(C2_SX0 * C2_SY1) + (C2_SX1 * C2_SY2) + (C2_SX2 * C2_SY0) - (C2_SX0 * C2_SY2) - (C2_SX1 * C2_SY0) - (C2_SX2 * C2_SY1)));
 #endif
 			C2_FLAG = 0;
 			return 1;

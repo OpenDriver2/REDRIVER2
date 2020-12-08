@@ -71,6 +71,7 @@ KeyboardMapping g_keyboard_mapping;
 // without clamping
 inline void ScreenCoordsToEmulator(Vertex* vertex, int count)
 {
+#ifdef PGXP
 	while (count--)
 	{
 		float psxScreenW = activeDispEnv.disp.w;
@@ -84,6 +85,7 @@ inline void ScreenCoordsToEmulator(Vertex* vertex, int count)
 		vertex[count].x -= 0.5f;
 		vertex[count].y -= 0.5f;
 	}
+#endif
 }
 
 void Emulator_ResetDevice()
@@ -1265,7 +1267,9 @@ void Emulator_CreateGlobalShaders()
 
 #if defined(OGL) || defined(OGLES)
 	u_Projection = glGetUniformLocation(g_gte_shader_4, "Projection");
+#ifdef PGXP
 	u_Projection3D = glGetUniformLocation(g_gte_shader_4, "Projection3D");
+#endif
 #endif
 }
 
@@ -1397,7 +1401,7 @@ void Emulator_SetupClipMode(const RECT16& rect)
 		rect.y - activeDispEnv.disp.y > 0 ||
 		rect.w < activeDispEnv.disp.w - 1 ||
 		rect.h < activeDispEnv.disp.h - 1);
-
+	
 	float psxScreenW = activeDispEnv.disp.w;
 	float psxScreenH = activeDispEnv.disp.h;
 
@@ -1408,9 +1412,14 @@ void Emulator_SetupClipMode(const RECT16& rect)
 	float clipRectH = (float)(rect.h) / psxScreenH;
 
 	// then map to screen
+
 	{
 		clipRectX -= 0.5f;
+#ifdef PGXP
 		float emuScreenAspect = float(windowWidth) / float(windowHeight);
+#else
+		float emuScreenAspect = (320.0f / 240.0f);
+#endif
 
 		clipRectX /= PSX_SCREEN_ASPECT * emuScreenAspect;
 		clipRectW /= emuScreenAspect * PSX_SCREEN_ASPECT;
@@ -1437,6 +1446,7 @@ void Emulator_SetupClipMode(const RECT16& rect)
 
 void Emulator_GetPSXWidescreenMappedViewport(RECT16* rect)
 {
+#ifdef PGXP
 	float emuScreenAspect = float(windowWidth) / float(windowHeight);
 
 	float psxScreenW = activeDispEnv.disp.w;
@@ -1451,6 +1461,12 @@ void Emulator_GetPSXWidescreenMappedViewport(RECT16* rect)
 	rect->x -= (rect->w - activeDispEnv.disp.w) / 2;
 
 	rect->w += rect->x;
+#else
+	rect->x = activeDispEnv.screen.x;
+	rect->y = activeDispEnv.screen.y;
+	rect->w = activeDispEnv.disp.w;
+	rect->h = activeDispEnv.disp.h;
+#endif
 }
 
 void Emulator_SetShader(const ShaderID &shader)
@@ -1461,11 +1477,13 @@ void Emulator_SetShader(const ShaderID &shader)
 	#error
 #endif
 
+#ifdef PGXP
 	float emuScreenAspect = float(windowWidth) / float(windowHeight);
-
 	Emulator_Ortho2D(-0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f, -0.5f, -1.0f, 1.0f);
-
 	Emulator_Perspective3D(0.9265f, 1.0f, 1.0f / (emuScreenAspect * PSX_SCREEN_ASPECT), 1.0f, 1000.0f);
+#else
+	Emulator_Ortho2D(0, activeDispEnv.disp.w, activeDispEnv.disp.h, 0, -1.0f, 1.0f);
+#endif
 }
 
 void Emulator_SetTexture(TextureID texture, TexFormat texFormat)

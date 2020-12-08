@@ -23,6 +23,8 @@ extern void SetFullscreenDrawing(); // 0x00015E70
 extern void InitPercentageBar(PERCENTAGE_BAR *bar, int size, COLOUR_BAND *pColourBand, char *tag); // 0x00015F20
 extern void EnablePercentageBar(PERCENTAGE_BAR *bar, int max); // 0x00015F58
 
+extern void DrawProximityBar(PERCENTAGE_BAR* bar);
+
 extern void SetColourByValue(COLOUR_BAND *pColourBand, int value, CVECTOR *pOut); // 0x00015F6C
 extern void TransparencyOn(void *potz, unsigned short tpage); // 0x00016098
 

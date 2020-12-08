@@ -155,7 +155,9 @@ void Debug_Line2D(SXYPAIR& pointA, SXYPAIR& pointB, CVECTOR& color)
 	line->g0 = color.g;
 	line->b0 = color.b;
 
+#ifdef PGXP
 	line->pgxp_index = 0xFFFF;
+#endif
 
 	addPrim(current->ot, line);
 
