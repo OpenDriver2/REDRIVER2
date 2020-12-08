@@ -502,7 +502,7 @@ int BombCollisionCheck(CAR_DATA *cp, VECTOR *pPos)
 	cd[0].vel.vy = 0;
 	cd[0].vel.vz = 0;
 
-	return bcollided2d(cd, 1) != 0;
+	return bcollided2d(cd);
 }
 
 
@@ -703,7 +703,7 @@ void ExplosionCollisionCheck(CAR_DATA *cp, EXOBJECT *pE)
 		cd[0].vel.vz = 0;
 		cd[0].length[0] = cd[0].length[1];
 
-		if (bcollided2d(cd, 1) != 0)
+		if (bcollided2d(cd))
 		{
 			bFindCollisionPoint(cd, &collisionResult);
 

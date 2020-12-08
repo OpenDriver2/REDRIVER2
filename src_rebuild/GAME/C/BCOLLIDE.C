@@ -57,12 +57,10 @@
 	/* end block 2 */
 	// End Line: 241
 
-int boxOverlap = 0;
-
 // Checks of two bodies collides (basic check) with Separating Axis Theorem
 // also initializes axes
 // [D] [T]
-int bcollided2d(CDATA2D *body, int needOverlap)
+int bcollided2d(CDATA2D *body, int* boxOverlap)
 {
 	int dtheta;
 	short ac;
@@ -121,7 +119,7 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 	} while (i >= 0);
 
 	// calc overlap if needed
-	if (needOverlap)
+	if (boxOverlap)
 	{
 		FE = ABS(body[1].dist[0]) - ABS(body[1].limit[0]);
 		FE = ABS(FE);
@@ -146,11 +144,11 @@ int bcollided2d(CDATA2D *body, int needOverlap)
 			zover = xover;
 
 		if (xover <= -1)
-			boxOverlap = zover;
+			*boxOverlap = zover;
 		else if (zover < xover)
-			boxOverlap = zover;
+			*boxOverlap = zover;
 		else
-			boxOverlap = xover;
+			*boxOverlap = xover;
 	}
 
 	return 1;
@@ -414,7 +412,7 @@ int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 			time -= step;
 		}
 
-		hit = bcollided2d(cd, 0);
+		hit = bcollided2d(cd);
 
 		if (i != 0)
 			step >>= 1;
@@ -433,7 +431,7 @@ int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 			i--;
 		} while (i >= 0);
 
-		bcollided2d(cd, 0);
+		bcollided2d(cd);
 
 		time += step;
 	}
@@ -443,7 +441,7 @@ int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 		do {
 			cd[i] = original[i];
 
-			bcollided2d(cd, 0);
+			bcollided2d(cd);
 			i--;
 		} while (i >= 0);
 
@@ -929,6 +927,8 @@ void DamageCar(CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVel
 	/* end block 2 */
 	// End Line: 1967
 
+extern int gCameraBoxOverlap;
+
 // [D] [T]
 int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop, int flags)
 {
@@ -1057,12 +1057,11 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 
 		if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER) 
 		{
-			collided = bcollided2d(cd, 1);
+			collided = bcollided2d(cd, &gCameraBoxOverlap);
 		}
 		else 
 		{
-			collided = bcollided2d(cd, 0);
-
+			collided = bcollided2d(cd);
 
 #if defined(COLLISION_DEBUG) && !defined(PSX)
 			extern int gShowCollisionDebug;
@@ -1278,7 +1277,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 					{
 						if ((model->flags2 & 0x2000) == 0) 
 						{
-							if (gNight != 0 && (modelpointers[gLastModelCollisionCheck]->flags2 & 0x1000) != 0)
+							if (gNight != 0 && (modelpointers[building->model]->flags2 & 0x1000) != 0)
 							{
 								if (damage_lamp(cop))
 								{

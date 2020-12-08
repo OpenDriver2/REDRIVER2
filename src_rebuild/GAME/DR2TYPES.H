@@ -1821,6 +1821,7 @@ struct BUILDING_BOX
 	int zsize;
 	int theta;
 	int height;
+	int model;
 };
 
 struct CDATA2D

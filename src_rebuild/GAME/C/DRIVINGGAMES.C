@@ -493,7 +493,7 @@ int CarConeCollision(VECTOR *pPos, int car)
 	cd[1].theta = cp1->hd.direction;
 	cd[1].x.vz = cp1->hd.where.t[2];
 
-	return bcollided2d(cd, 1);
+	return bcollided2d(cd);
 }
 
 

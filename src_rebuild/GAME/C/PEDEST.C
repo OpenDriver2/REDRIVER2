@@ -3355,7 +3355,7 @@ int FindPointOfCollision(CAR_DATA* pCar, PEDESTRIAN* pPed)
 	cd[1].x.vz = pCar->hd.where.t[2];
 	cd[1].theta = pCar->hd.direction;
 
-	if (!bcollided2d(cd, 1))
+	if (!bcollided2d(cd))
 		return 0;
 
 	bFindCollisionPoint(cd, &collisionResult);
@@ -3536,7 +3536,7 @@ int TannerCarCollisionCheck(VECTOR* pPos, int dir, int bQuick)
 
 		if (cp1->controlType != CONTROL_TYPE_NONE &&
 			ABS(cp1->hd.where.t[1] + pPos->vy) < 500 &&
-			bcollided2d(cd, 1))
+			bcollided2d(cd))
 		{
 			if (bQuick != 0)
 				return 1;

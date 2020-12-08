@@ -998,8 +998,7 @@ void CollisionCopList(XZPAIR *pos, int *count)
 	/* end block 3 */
 	// End Line: 1377
 
-extern int boxOverlap;
-ushort gLastModelCollisionCheck;
+int gCameraBoxOverlap;
 int ExBoxDamage = 0;
 
 // [D] [T]
@@ -1041,7 +1040,7 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 	player_pos.vx = cp->hd.where.t[0];
 	player_pos.vz = cp->hd.where.t[2];
 
-	boxOverlap = -1;
+	gCameraBoxOverlap = -1;
 
 	if (cp->controlType == CONTROL_TYPE_TANNERCOLLIDER)
 		extraDist = 100;
@@ -1100,8 +1099,7 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 
 					bbox.height = collide->ysize;
 					bbox.theta = (cop->yang + collide->yang) * 64 & 0xfff;
-
-					gLastModelCollisionCheck = cop->type;
+					bbox.model = cop->type; // [A]
 
 					if (CAR_INDEX(cp) == TANNER_COLLIDER_CARID)
 					{
@@ -1129,13 +1127,13 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 							bbox.xsize += 100;
 							bbox.zsize += 100;
 
-							boxOverlap = -1;
+							gCameraBoxOverlap = -1;
 
 							minDist = lbody / 2;
 							
 							while (coll_test_count > 0 && minDist <= gCameraDistance && CarBuildingCollision(cp, &bbox, cop, 0))
 							{
-								gCameraDistance -= boxOverlap;
+								gCameraDistance -= gCameraBoxOverlap;
 										
 								if (gCameraDistance < minDist)
 									gCameraDistance = minDist;
@@ -1247,7 +1245,7 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 	int mdcount;
 	int dx, dz;
 
-	boxOverlap = -1;
+	gCameraBoxOverlap = -1;
 
 	player_pos.vx = pPos->vx;
 	player_pos.vz = pPos->vz;
@@ -1296,8 +1294,6 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 
 					if (ABS(pPos->vy + bbox.pos.vy) < collide->ysize / 2)
 					{
-						gLastModelCollisionCheck = cop->type;
-
 						cd[0].theta = dir;
 						cd[0].length[0] = l;
 						cd[0].length[1] = w;
@@ -1323,7 +1319,7 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 						cd[1].vel.vz = 0;
 						cd[1].avel = 0;
 
-						int res = bcollided2d(cd, 1);
+						int res = bcollided2d(cd);
 							
 #if defined(COLLISION_DEBUG) && !defined(PSX)
 						extern int gShowCollisionDebug;

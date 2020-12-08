@@ -1684,7 +1684,7 @@ int CheckChangeLanes(DRIVER2_STRAIGHT* straight, DRIVER2_CURVE* curve, int distA
 
 						if (ABS(dx) < length && ABS(dz) < length) 
 						{
-							if (bcollided2d(cd, 1))
+							if (bcollided2d(cd))
 							{
 								canProceed = false;
 								break;
@@ -4548,6 +4548,7 @@ void SetUpCivCollFlags(void)
 	int brake;
 	int dx;
 	int extraLength;
+	int boxOverlap;
 
 	CDATA2D cd[2];
 
@@ -4665,7 +4666,7 @@ void SetUpCivCollFlags(void)
 					}
 
 					// do overlap test between boxes
-					if (bcollided2d(cd, 1) == 0)
+					if (bcollided2d(cd, &boxOverlap) == 0)
 					{
 						cp1--;
 						continue;
