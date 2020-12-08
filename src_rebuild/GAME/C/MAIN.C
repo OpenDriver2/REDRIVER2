@@ -163,57 +163,31 @@ int wetness = 0;
 
 extern SPEECH_QUEUE gSpeechQueue;
 
+// [D] [T]
+void InitModelNames(void)
+{
+	gHubcapModelPtr = FindModelPtrWithName("HUBCAP1");
+	gCleanWheelModelPtr = FindModelPtrWithName("CLEANWHEEL");
+	gFastWheelModelPtr = FindModelPtrWithName("FASTWHEEL");
+	gDamWheelModelPtr = FindModelPtrWithName("DAMWHEEL");
+	gPed1HeadModelPtr = FindModelPtrWithName("PEDHEAD1");
+	gPed2HeadModelPtr = FindModelPtrWithName("HEAD");
+	gPed3HeadModelPtr = FindModelPtrWithName("HEAD");
+	gPed4HeadModelPtr = FindModelPtrWithName("HEAD");
+
+	//gBoxModelPtr = FindModelPtrWithName("CRATE");
+	//gRotorPtr = FindModelPtrWithName("ROTOR");
+	gTrailblazerConeModel = FindModelPtrWithName("GREENCONE");
+	gBombModel = FindModelPtrWithName("BOMB");
+
+	MangleWheelModels();
+	InitTanner();
+	InitAnimatingObjects();
+}
+
+
 int gDriver1Level = 0;
 int gDemoLevel = 0;
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ProcessLumps(char *lump_ptr /*$s1*/, int lump_size /*$a1*/)
- // line 2672, offset 0x00058c08
-	/* begin block 1 */
-		// Start line: 2673
-		// Start offset: 0x00058C08
-		// Variables:
-	// 		int quit; // $s3
-	// 		int lump_type; // $v1
-	// 		int seg_size; // $s0
-
-		/* begin block 1.1 */
-			// Start line: 2686
-			// Start offset: 0x00058D94
-
-			/* begin block 1.1.1 */
-				// Start line: 2845
-				// Start offset: 0x00058F7C
-				// Variables:
-			// 		DRIVER2_JUNCTION *dst; // $a0
-			// 		unsigned long *src; // $a2
-			// 		int i; // $v1
-			/* end block 1.1.1 */
-			// End offset: 0x00058FC4
-			// End Line: 2858
-
-			/* begin block 1.1.2 */
-				// Start line: 2865
-				// Start offset: 0x00058FCC
-				// Variables:
-			// 		DRIVER2_JUNCTION *dst; // $a0
-			// 		unsigned long *src; // $a2
-			// 		int i; // $v1
-			/* end block 1.1.2 */
-			// End offset: 0x00059018
-			// End Line: 2878
-		/* end block 1.1 */
-		// End offset: 0x00059024
-		// End Line: 2890
-	/* end block 1 */
-	// End offset: 0x00059050
-	// End Line: 2894
-
-	/* begin block 2 */
-		// Start line: 5344
-	/* end block 2 */
-	// End Line: 5345
 
 // [D] [T]
 void ProcessLumps(char* lump_ptr, int lump_size)
@@ -415,46 +389,6 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 	} while (numLumps != 0);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ LoadGameLevel()
- // line 2896, offset 0x00059050
-	/* begin block 1 */
-		// Start line: 2898
-		// Start offset: 0x00059050
-		// Variables:
-	// 		int sector; // stack offset -32
-	// 		int nsectors; // $s1
-	// 		char name[64]; // stack offset -96
-	// 		char *malloc_lump; // $s2
-	/* end block 1 */
-	// End offset: 0x00059238
-	// End Line: 2967
-
-	/* begin block 2 */
-		// Start line: 5806
-	/* end block 2 */
-	// End Line: 5807
-
-	/* begin block 3 */
-		// Start line: 5809
-	/* end block 3 */
-	// End Line: 5810
-
-	/* begin block 4 */
-		// Start line: 5810
-	/* end block 4 */
-	// End Line: 5811
-
-	/* begin block 5 */
-		// Start line: 5818
-	/* end block 5 */
-	// End Line: 5819
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 int SpoolLumpOffset;
 
 // [D] [T]
@@ -534,163 +468,6 @@ void LoadGameLevel(void)
 	
 	ReportMode(1);
 }
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitModelNames()
- // line 3003, offset 0x00059238
-	/* begin block 1 */
-		// Start line: 3005
-		// Start offset: 0x00059238
-	/* end block 1 */
-	// End offset: 0x00059330
-	// End Line: 3067
-
-	/* begin block 2 */
-		// Start line: 6005
-	/* end block 2 */
-	// End Line: 6006
-
-	/* begin block 3 */
-		// Start line: 6042
-	/* end block 3 */
-	// End Line: 6043
-
-	/* begin block 4 */
-		// Start line: 6043
-	/* end block 4 */
-	// End Line: 6044
-
-	/* begin block 5 */
-		// Start line: 6050
-	/* end block 5 */
-	// End Line: 6051
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
-// [D] [T]
-void InitModelNames(void)
-{
-	gHubcapModelPtr = FindModelPtrWithName("HUBCAP1");
-	gCleanWheelModelPtr = FindModelPtrWithName("CLEANWHEEL");
-	gFastWheelModelPtr = FindModelPtrWithName("FASTWHEEL");
-	gDamWheelModelPtr = FindModelPtrWithName("DAMWHEEL");
-	gPed1HeadModelPtr = FindModelPtrWithName("PEDHEAD1");
-	gPed2HeadModelPtr = FindModelPtrWithName("HEAD");
-	gPed3HeadModelPtr = FindModelPtrWithName("HEAD");
-	gPed4HeadModelPtr = FindModelPtrWithName("HEAD");
-
-	//gBoxModelPtr = FindModelPtrWithName("CRATE");
-	//gRotorPtr = FindModelPtrWithName("ROTOR");
-	gTrailblazerConeModel = FindModelPtrWithName("GREENCONE");
-	gBombModel = FindModelPtrWithName("BOMB");
-
-	MangleWheelModels();
-	InitTanner();
-	InitAnimatingObjects();
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ GameInit()
- // line 3114, offset 0x00059330
-	/* begin block 1 */
-		// Start line: 3122
-		// Start offset: 0x00059330
-
-		/* begin block 1.1 */
-			// Start line: 3226
-			// Start offset: 0x000594C0
-		/* end block 1.1 */
-		// End offset: 0x000594D4
-		// End Line: 3228
-
-		/* begin block 1.2 */
-			// Start line: 3263
-			// Start offset: 0x000595B4
-		/* end block 1.2 */
-		// End offset: 0x000595B4
-		// End Line: 3263
-
-		/* begin block 1.3 */
-			// Start line: 3271
-			// Start offset: 0x000595DC
-		/* end block 1.3 */
-		// End offset: 0x00059604
-		// End Line: 3277
-
-		/* begin block 1.4 */
-			// Start line: 3305
-			// Start offset: 0x000596B0
-			// Variables:
-		// 		STREAM_SOURCE *pinfo; // $s0
-		// 		char padid; // stack offset -48
-		// 		int i; // $s2
-		/* end block 1.4 */
-		// End offset: 0x0005980C
-		// End Line: 3359
-
-		/* begin block 1.5 */
-			// Start line: 3442
-			// Start offset: 0x00059944
-			// Variables:
-		// 		int loop; // $s0
-
-			/* begin block 1.5.1 */
-				// Start line: 3445
-				// Start offset: 0x0005994C
-			/* end block 1.5.1 */
-			// End offset: 0x0005994C
-			// End Line: 3445
-		/* end block 1.5 */
-		// End offset: 0x0005996C
-		// End Line: 3447
-
-		/* begin block 1.6 */
-			// Start line: 3455
-			// Start offset: 0x0005998C
-			// Variables:
-		// 		int i; // $v1
-		/* end block 1.6 */
-		// End offset: 0x000599B8
-		// End Line: 3460
-
-		/* begin block 1.7 */
-			// Start line: 3464
-			// Start offset: 0x000599B8
-		/* end block 1.7 */
-		// End offset: 0x000599B8
-		// End Line: 3475
-
-		/* begin block 1.8 */
-			// Start line: 3504
-			// Start offset: 0x00059A0C
-		/* end block 1.8 */
-		// End offset: 0x00059A14
-		// End Line: 3506
-	/* end block 1 */
-	// End offset: 0x00059A44
-	// End Line: 3509
-
-	/* begin block 2 */
-		// Start line: 6262
-	/* end block 2 */
-	// End Line: 6263
-
-	/* begin block 3 */
-		// Start line: 6310
-	/* end block 3 */
-	// End Line: 6311
-
-	/* begin block 4 */
-		// Start line: 6317
-	/* end block 4 */
-	// End Line: 6318
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void GameInit(void)
@@ -1009,131 +786,6 @@ void GameInit(void)
 
 	xa_timeout = 0;
 }
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ StepSim()
- // line 3555, offset 0x00059a44
-	/* begin block 1 */
-		// Start line: 3557
-		// Start offset: 0x00059A44
-		// Variables:
-	// 		static unsigned long t0; // offset 0x0
-	// 		static char t1; // offset 0x4
-	// 		static char t2; // offset 0x5
-	// 		static int oldsp; // offset 0x8
-	// 		CAR_DATA *lcp; // $s0
-	// 		int i; // $s2
-
-		/* begin block 1.1 */
-			// Start line: 3633
-			// Start offset: 0x00059C70
-			// Variables:
-		// 		int eekTimer; // $s0
-
-			/* begin block 1.1.1 */
-				// Start line: 3639
-				// Start offset: 0x00059CC4
-			/* end block 1.1.1 */
-			// End offset: 0x00059CC4
-			// End Line: 3641
-		/* end block 1.1 */
-		// End offset: 0x00059D20
-		// End Line: 3645
-
-		/* begin block 1.2 */
-			// Start line: 3649
-			// Start offset: 0x00059D6C
-		/* end block 1.2 */
-		// End offset: 0x00059D6C
-		// End Line: 3653
-
-		/* begin block 1.3 */
-			// Start line: 3556
-			// Start offset: 0x00059FD8
-		/* end block 1.3 */
-		// End offset: 0x00059FD8
-		// End Line: 3556
-
-		/* begin block 1.4 */
-			// Start line: 3838
-			// Start offset: 0x0005A220
-			// Variables:
-		// 		int padsteer; // $a1
-
-			/* begin block 1.4.1 */
-				// Start line: 3868
-				// Start offset: 0x0005A320
-			/* end block 1.4.1 */
-			// End offset: 0x0005A33C
-			// End Line: 3872
-
-			/* begin block 1.4.2 */
-				// Start line: 3879
-				// Start offset: 0x0005A374
-			/* end block 1.4.2 */
-			// End offset: 0x0005A374
-			// End Line: 3879
-		/* end block 1.4 */
-		// End offset: 0x0005A374
-		// End Line: 3879
-
-		/* begin block 1.5 */
-			// Start line: 3886
-			// Start offset: 0x0005A394
-		/* end block 1.5 */
-		// End offset: 0x0005A3C8
-		// End Line: 3888
-
-		/* begin block 1.6 */
-			// Start line: 3983
-			// Start offset: 0x0005A650
-			// Variables:
-		// 		int i; // $s1
-		// 		int j; // $s0
-		// 		static int stupid_logic[4]; // offset 0x0
-
-			/* begin block 1.6.1 */
-				// Start line: 4003
-				// Start offset: 0x0005A744
-			/* end block 1.6.1 */
-			// End offset: 0x0005A794
-			// End Line: 4005
-		/* end block 1.6 */
-		// End offset: 0x0005A7B0
-		// End Line: 4006
-
-		/* begin block 1.7 */
-			// Start line: 4033
-			// Start offset: 0x0005A894
-		/* end block 1.7 */
-		// End offset: 0x0005A8AC
-		// End Line: 4036
-	/* end block 1 */
-	// End offset: 0x0005A8DC
-	// End Line: 4039
-
-	/* begin block 2 */
-		// Start line: 7193
-	/* end block 2 */
-	// End Line: 7194
-
-	/* begin block 3 */
-		// Start line: 7240
-	/* end block 3 */
-	// End Line: 7241
-
-	/* begin block 4 */
-		// Start line: 7241
-	/* end block 4 */
-	// End Line: 7242
-
-	/* begin block 5 */
-		// Start line: 7263
-	/* end block 5 */
-	// End Line: 7264
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 extern short paddp;
 extern short padd;
@@ -1613,54 +1265,6 @@ void StepSim(void)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ GameLoop()
- // line 4046, offset 0x0005a8dc
-	/* begin block 1 */
-		// Start line: 4048
-		// Start offset: 0x0005A8DC
-		// Variables:
-	// 		int i; // $s0
-	// 		RECT dest; // stack offset -24
-
-		/* begin block 1.1 */
-			// Start line: 4125
-			// Start offset: 0x0005AA2C
-			// Variables:
-		// 		static POLY_FT3 buffer[2]; // offset 0x10
-		// 		static POLY_FT3 *null; // offset 0xc
-		/* end block 1.1 */
-		// End offset: 0x0005AA98
-		// End Line: 4140
-	/* end block 1 */
-	// End offset: 0x0005AB28
-	// End Line: 4188
-
-	/* begin block 2 */
-		// Start line: 8546
-	/* end block 2 */
-	// End Line: 8547
-
-	/* begin block 3 */
-		// Start line: 8554
-	/* end block 3 */
-	// End Line: 8555
-
-	/* begin block 4 */
-		// Start line: 8555
-	/* end block 4 */
-	// End Line: 8556
-
-	/* begin block 5 */
-		// Start line: 8575
-	/* end block 5 */
-	// End Line: 8576
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void GameLoop(void)
 {
@@ -1754,80 +1358,6 @@ void GameLoop(void)
 		UnprepareXA();
 	}
 }
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ StepGame()
- // line 4196, offset 0x0005ab28
-	/* begin block 1 */
-		// Start line: 4198
-		// Start offset: 0x0005AB28
-
-		/* begin block 1.1 */
-			// Start line: 4238
-			// Start offset: 0x0005AB60
-		/* end block 1.1 */
-		// End offset: 0x0005AB70
-		// End Line: 4240
-
-		/* begin block 1.2 */
-			// Start line: 4252
-			// Start offset: 0x0005ABD8
-			// Variables:
-		// 		int i; // $a1
-		/* end block 1.2 */
-		// End offset: 0x0005AC3C
-		// End Line: 4262
-
-		/* begin block 1.3 */
-			// Start line: 4336
-			// Start offset: 0x0005AE20
-		/* end block 1.3 */
-		// End offset: 0x0005AE50
-		// End Line: 4345
-
-		/* begin block 1.4 */
-			// Start line: 4361
-			// Start offset: 0x0005AEC0
-		/* end block 1.4 */
-		// End offset: 0x0005AED0
-		// End Line: 4368
-
-		/* begin block 1.5 */
-			// Start line: 4395
-			// Start offset: 0x0005AF6C
-			// Variables:
-		// 		int strobe; // $v0
-		/* end block 1.5 */
-		// End offset: 0x0005AFB8
-		// End Line: 4398
-
-		/* begin block 1.6 */
-			// Start line: 4536
-			// Start offset: 0x0005B2E4
-		/* end block 1.6 */
-		// End offset: 0x0005B31C
-		// End Line: 4538
-	/* end block 1 */
-	// End offset: 0x0005B384
-	// End Line: 4547
-
-	/* begin block 2 */
-		// Start line: 8865
-	/* end block 2 */
-	// End Line: 8866
-
-	/* begin block 3 */
-		// Start line: 8874
-	/* end block 3 */
-	// End Line: 8875
-
-	/* begin block 4 */
-		// Start line: 8875
-	/* end block 4 */
-	// End Line: 8876
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void StepGame(void)
@@ -2077,56 +1607,6 @@ void StepGame(void)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawGame()
- // line 4549, offset 0x0005c458
-	/* begin block 1 */
-		// Start line: 4551
-		// Start offset: 0x0005C458
-		// Variables:
-	// 		static unsigned long frame; // offset 0xc8
-
-		/* begin block 1.1 */
-			// Start line: 4555
-			// Start offset: 0x0005C480
-		/* end block 1.1 */
-		// End offset: 0x0005C4D0
-		// End Line: 4561
-
-		/* begin block 1.2 */
-			// Start line: 4567
-			// Start offset: 0x0005C4EC
-		/* end block 1.2 */
-		// End offset: 0x0005C554
-		// End Line: 4577
-	/* end block 1 */
-	// End offset: 0x0005C574
-	// End Line: 4583
-
-	/* begin block 2 */
-		// Start line: 10753
-	/* end block 2 */
-	// End Line: 10754
-
-	/* begin block 3 */
-		// Start line: 9098
-	/* end block 3 */
-	// End Line: 9099
-
-	/* begin block 4 */
-		// Start line: 10754
-	/* end block 4 */
-	// End Line: 10755
-
-	/* begin block 5 */
-		// Start line: 10756
-	/* end block 5 */
-	// End Line: 10757
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // TODO: DRAW.C?
 int ObjectDrawnValue = 0;
 int ObjectDrawnCounter = 0;
@@ -2189,26 +1669,6 @@ void DrawGame(void)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ EndGame(GAMEMODE mode /*$a0*/)
- // line 4586, offset 0x0005c574
-	/* begin block 1 */
-		// Start line: 10823
-	/* end block 1 */
-	// End Line: 10824
-
-	/* begin block 2 */
-		// Start line: 10827
-	/* end block 2 */
-	// End Line: 10828
-
-	/* begin block 3 */
-		// Start line: 10829
-	/* end block 3 */
-	// End Line: 10830
-
 // [D] [T]
 void EndGame(GAMEMODE mode)
 {
@@ -2217,21 +1677,6 @@ void EndGame(GAMEMODE mode)
 	game_over = 1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ EnablePause(PAUSEMODE mode /*$a0*/)
- // line 4593, offset 0x0005c590
-	/* begin block 1 */
-		// Start line: 10842
-	/* end block 1 */
-	// End Line: 10843
-
-	/* begin block 2 */
-		// Start line: 10843
-	/* end block 2 */
-	// End Line: 10844
 
 // [D]
 void EnablePause(PAUSEMODE mode)
@@ -2243,37 +1688,6 @@ void EnablePause(PAUSEMODE mode)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ CheckForPause()
- // line 4602, offset 0x0005c5d0
-	/* begin block 1 */
-		// Start line: 4604
-		// Start offset: 0x0005C5D0
-
-		/* begin block 1.1 */
-			// Start line: 4603
-			// Start offset: 0x0005C5E4
-		/* end block 1.1 */
-		// End offset: 0x0005C614
-		// End Line: 4603
-	/* end block 1 */
-	// End offset: 0x0005C668
-	// End Line: 4618
-
-	/* begin block 2 */
-		// Start line: 10861
-	/* end block 2 */
-	// End Line: 10862
-
-	/* begin block 3 */
-		// Start line: 10862
-	/* end block 3 */
-	// End Line: 10863
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void CheckForPause(void)
@@ -2332,47 +1746,6 @@ void SsSetSerialVol(short s_num, short voll, short volr)
 
 	SpuSetCommonAttr(&attr);
 }
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ main()
- // line 4767, offset 0x0005b384
-	/* begin block 1 */
-		// Start line: 4768
-		// Start offset: 0x0005B384
-
-		/* begin block 1.1 */
-			// Start line: 4768
-			// Start offset: 0x0005B384
-
-			/* begin block 1.1.1 */
-				// Start line: 4768
-				// Start offset: 0x0005B384
-				// Variables:
-			// 		char (*PALScreenNames[4]); // stack offset -24
-			// 		char (*NTSCScreenNames[4]); // stack offset -40
-			// 		char (*OPMScreenNames[4]); // stack offset -56
-			/* end block 1.1.1 */
-			// End offset: 0x0005B384
-			// End Line: 4768
-		/* end block 1.1 */
-		// End offset: 0x0005B384
-		// End Line: 4768
-	/* end block 1 */
-	// End offset: 0x0005B54C
-	// End Line: 4868
-
-	/* begin block 2 */
-		// Start line: 9845
-	/* end block 2 */
-	// End Line: 9846
-
-	/* begin block 3 */
-		// Start line: 10066
-	/* end block 3 */
-	// End Line: 10067
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 #ifndef PSX
 #include <SDL_messagebox.h>
@@ -2657,29 +2030,6 @@ int redriver2_main(int argc, char** argv)
 	return 1;
 }
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ FadeScreen(int end_value /*$a1*/)
- // line 4870, offset 0x0005c668
-	/* begin block 1 */
-		// Start line: 4871
-		// Start offset: 0x0005C668
-		// Variables:
-	// 		int tmp2; // $s1
-	/* end block 1 */
-	// End offset: 0x0005C6E0
-	// End Line: 4888
-
-	/* begin block 2 */
-		// Start line: 11280
-	/* end block 2 */
-	// End Line: 11281
-
-	/* begin block 3 */
-		// Start line: 11397
-	/* end block 3 */
-	// End Line: 11398
-
 // [D] [T]
 void FadeScreen(int end_value)
 {
@@ -2701,41 +2051,6 @@ void FadeScreen(int end_value)
 	pauseflag = tmp2;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ UpdatePlayerInformation()
- // line 4893, offset 0x0005b54c
-	/* begin block 1 */
-		// Start line: 4895
-		// Start offset: 0x0005B54C
-		// Variables:
-	// 		CAR_DATA *cp; // $s1
-	// 		int count; // $s0
-	// 		int scale; // $v1
-	// 		int wheel; // $t1
-	// 		int wheelsonwater; // $t2
-	/* end block 1 */
-	// End offset: 0x0005B888
-	// End Line: 4972
-
-	/* begin block 2 */
-		// Start line: 10293
-	/* end block 2 */
-	// End Line: 10294
-
-	/* begin block 3 */
-		// Start line: 10319
-	/* end block 3 */
-	// End Line: 10320
-
-	/* begin block 4 */
-		// Start line: 10320
-	/* end block 4 */
-	// End Line: 10321
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void UpdatePlayerInformation(void)
@@ -2837,65 +2152,6 @@ void UpdatePlayerInformation(void)
 		}
 	}
 }
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ RenderGame2(int view /*$s3*/)
- // line 5021, offset 0x0005b888
-	/* begin block 1 */
-		// Start line: 5022
-		// Start offset: 0x0005B888
-		// Variables:
-	// 		int spaceFree; // $a1
-	// 		int notInDreaAndStevesEvilLair; // $s0
-
-		/* begin block 1.1 */
-			// Start line: 5067
-			// Start offset: 0x0005B9A4
-			// Variables:
-		// 		int strobe; // $v0
-		/* end block 1.1 */
-		// End offset: 0x0005B9EC
-		// End Line: 5070
-
-		/* begin block 1.2 */
-			// Start line: 5073
-			// Start offset: 0x0005B9EC
-			// Variables:
-		// 		int i; // $s1
-		/* end block 1.2 */
-		// End offset: 0x0005BA84
-		// End Line: 5077
-
-		/* begin block 1.3 */
-			// Start line: 5090
-			// Start offset: 0x0005BAE4
-			// Variables:
-		// 		POLY_F4 *poly; // $v1
-		// 		int col; // $a1
-		/* end block 1.3 */
-		// End offset: 0x0005BC20
-		// End Line: 5113
-
-		/* begin block 1.4 */
-			// Start line: 5121
-			// Start offset: 0x0005BC40
-		/* end block 1.4 */
-		// End offset: 0x0005BC88
-		// End Line: 5125
-	/* end block 1 */
-	// End offset: 0x0005BCE4
-	// End Line: 5132
-
-	/* begin block 2 */
-		// Start line: 10644
-	/* end block 2 */
-	// End Line: 10645
-
-	/* begin block 3 */
-		// Start line: 10654
-	/* end block 3 */
-	// End Line: 10655
 
 int CurrentPlayerView = 0;
 
@@ -3074,65 +2330,6 @@ void RenderGame2(int view)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ RenderGame()
- // line 5260, offset 0x0005c6e0
-	/* begin block 1 */
-		// Start line: 5262
-		// Start offset: 0x0005C6E0
-
-		/* begin block 1.1 */
-			// Start line: 5262
-			// Start offset: 0x0005C6E0
-
-			/* begin block 1.1.1 */
-				// Start line: 5262
-				// Start offset: 0x0005C6E0
-				// Variables:
-			// 		static unsigned long frame; // offset 0xc8
-
-				/* begin block 1.1.1.1 */
-					// Start line: 5261
-					// Start offset: 0x0005C714
-				/* end block 1.1.1.1 */
-				// End offset: 0x0005C764
-				// End Line: 5261
-
-				/* begin block 1.1.1.2 */
-					// Start line: 5261
-					// Start offset: 0x0005C780
-				/* end block 1.1.1.2 */
-				// End offset: 0x0005C7E8
-				// End Line: 5261
-			/* end block 1.1.1 */
-			// End offset: 0x0005C7E8
-			// End Line: 5261
-		/* end block 1.1 */
-		// End offset: 0x0005C7E8
-		// End Line: 5261
-	/* end block 1 */
-	// End offset: 0x0005C81C
-	// End Line: 5269
-
-	/* begin block 2 */
-		// Start line: 11914
-	/* end block 2 */
-	// End Line: 11915
-
-	/* begin block 3 */
-		// Start line: 12188
-	/* end block 3 */
-	// End Line: 12189
-
-	/* begin block 4 */
-		// Start line: 12189
-	/* end block 4 */
-	// End Line: 12190
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void RenderGame(void)
 {
@@ -3142,34 +2339,6 @@ void RenderGame(void)
 
 	FadeGameScreen(0);
 }
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitGameVariables()
- // line 5272, offset 0x0005bce4
-	/* begin block 1 */
-		// Start line: 5274
-		// Start offset: 0x0005BCE4
-	/* end block 1 */
-	// End offset: 0x0005BF74
-	// End Line: 5341
-
-	/* begin block 2 */
-		// Start line: 11050
-	/* end block 2 */
-	// End Line: 11051
-
-	/* begin block 3 */
-		// Start line: 11191
-	/* end block 3 */
-	// End Line: 11192
-
-	/* begin block 4 */
-		// Start line: 11192
-	/* end block 4 */
-	// End Line: 11193
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void InitGameVariables(void)
@@ -3271,38 +2440,6 @@ void InitGameVariables(void)
 	InitCivCars();
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DealWithHorn(char *hr /*$s2*/, int i /*$s1*/)
- // line 5345, offset 0x0005bf74
-	/* begin block 1 */
-		// Start line: 5346
-		// Start offset: 0x0005BF74
-		// Variables:
-	// 		CAR_DATA *car; // $s0
-
-		/* begin block 1.1 */
-			// Start line: 5348
-			// Start offset: 0x0005C014
-		/* end block 1.1 */
-		// End offset: 0x0005C124
-		// End Line: 5363
-	/* end block 1 */
-	// End offset: 0x0005C154
-	// End Line: 5365
-
-	/* begin block 2 */
-		// Start line: 11377
-	/* end block 2 */
-	// End Line: 11378
-
-	/* begin block 3 */
-		// Start line: 11382
-	/* end block 3 */
-	// End Line: 11383
-
 // [D] [T]
 void DealWithHorn(char* hr, int i)
 {
@@ -3354,42 +2491,6 @@ void DealWithHorn(char* hr, int i)
 
 	*hr = (*hr + 1) % 3;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ Havana3DOcclusion(TDRFuncPtr_Havana3DOcclusion0func func /*$a3*/, int *param /*$fp*/)
- // line 5367, offset 0x0005c16c
-	/* begin block 1 */
-		// Start line: 5368
-		// Start offset: 0x0005C16C
-		// Variables:
-	// 		int outside; // $s6
-	// 		int otAltered; // $s5
-
-		/* begin block 1.1 */
-			// Start line: 5379
-			// Start offset: 0x0005C208
-			// Variables:
-		// 		int draw; // $s2
-		// 		int loop; // $s0
-		/* end block 1.1 */
-		// End offset: 0x0005C414
-		// End Line: 5473
-	/* end block 1 */
-	// End offset: 0x0005C458
-	// End Line: 5480
-
-	/* begin block 2 */
-		// Start line: 11426
-	/* end block 2 */
-	// End Line: 11427
-
-	/* begin block 3 */
-		// Start line: 11430
-	/* end block 3 */
-	// End Line: 11431
 
 // [D] [T] [A] Has bugs - some rooms not drawn properly
 int Havana3DOcclusion(occlFunc func, int* param)

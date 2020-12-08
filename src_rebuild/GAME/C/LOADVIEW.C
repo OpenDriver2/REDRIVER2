@@ -21,37 +21,6 @@ int load_steps = 0;
 int loading_bar_pos = 0;
 int gFastLoadingScreens = 0;
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ShowLoading()
- // line 200, offset 0x0005816c
-	/* begin block 1 */
-		// Start line: 202
-		// Start offset: 0x0005816C
-		// Variables:
-	// 		POLY_G4 poly; // stack offset -56
-	// 		int col; // $s0
-	/* end block 1 */
-	// End offset: 0x00058298
-	// End Line: 236
-
-	/* begin block 2 */
-		// Start line: 400
-	/* end block 2 */
-	// End Line: 401
-
-	/* begin block 3 */
-		// Start line: 401
-	/* end block 3 */
-	// End Line: 402
-
-	/* begin block 4 */
-		// Start line: 404
-	/* end block 4 */
-	// End Line: 405
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void ShowLoading(void)
 {
@@ -91,32 +60,6 @@ void ShowLoading(void)
 #endif
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetupScreenFade(int start /*$a0*/, int end /*$a1*/, int speed /*$a2*/)
- // line 248, offset 0x000589b0
-	/* begin block 1 */
-		// Start line: 1028
-	/* end block 1 */
-	// End Line: 1029
-
-	/* begin block 2 */
-		// Start line: 496
-	/* end block 2 */
-	// End Line: 497
-
-	/* begin block 3 */
-		// Start line: 1029
-	/* end block 3 */
-	// End Line: 1030
-
-	/* begin block 4 */
-		// Start line: 1033
-	/* end block 4 */
-	// End Line: 1034
-
 int FadingScreen = 0;
 int screen_fade_value = 0;
 int screen_fade_start = 0;
@@ -132,35 +75,6 @@ void SetupScreenFade(int start, int end, int speed)
 	screen_fade_speed = speed;
 	FadingScreen = 1;
 }
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ FadeGameScreen(int flag /*$t0*/, int speed /*$t1*/)
- // line 268, offset 0x000582ac
-	/* begin block 1 */
-		// Start line: 269
-		// Start offset: 0x000582AC
-		// Variables:
-	// 		static POLY_F4 poly; // offset 0x0
-	// 		static POLY_FT4 p; // offset 0x20
-	// 		int do_fade; // $v0
-
-		/* begin block 1.1 */
-			// Start line: 291
-			// Start offset: 0x000582EC
-			// Variables:
-		// 		int val; // $a3
-		/* end block 1.1 */
-		// End offset: 0x000583C8
-		// End Line: 310
-	/* end block 1 */
-	// End offset: 0x000583F4
-	// End Line: 315
-
-	/* begin block 2 */
-		// Start line: 565
-	/* end block 2 */
-	// End Line: 566
 
 // [D] [T]
 void FadeGameScreen(int flag)
@@ -220,43 +134,6 @@ void FadeGameScreen(int flag)
 		FadingScreen = 0;
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ShowLoadingScreen(char *screen_name /*$fp*/, int effect /*$s7*/, int loading_steps /*$a2*/)
- // line 327, offset 0x000583f4
-	/* begin block 1 */
-		// Start line: 328
-		// Start offset: 0x000583F4
-		// Variables:
-	// 		int fcount; // $s0
-	// 		int j; // $s2
-	// 		int done; // $fp
-	// 		RECT dest; // stack offset -264
-	// 		SPRT prims[4]; // stack offset -256
-	// 		POLY_FT3 nulls[4]; // stack offset -176
-	// 		int fade; // $s5
-	// 		int fade_step; // stack offset -48
-	/* end block 1 */
-	// End offset: 0x00058794
-	// End Line: 469
-
-	/* begin block 2 */
-		// Start line: 681
-	/* end block 2 */
-	// End Line: 682
-
-	/* begin block 3 */
-		// Start line: 694
-	/* end block 3 */
-	// End Line: 695
-
-	/* begin block 4 */
-		// Start line: 703
-	/* end block 4 */
-	// End Line: 704
 
 // [D] [T]
 void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
@@ -450,27 +327,6 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ CloseShutters(int speed /*$s5*/, int width /*$s1*/, int height /*$s4*/)
- // line 482, offset 0x000589d0
-	/* begin block 1 */
-		// Start line: 483
-		// Start offset: 0x000589D0
-		// Variables:
-	// 		POLY_F4 poly[2]; // stack offset -80
-	// 		int h; // $s0
-	// 		int done; // $s2
-	/* end block 1 */
-	// End offset: 0x00058B08
-	// End Line: 513
-
-	/* begin block 2 */
-		// Start line: 1500
-	/* end block 2 */
-	// End Line: 1501
-
 // [D] [T]
 void CloseShutters(int speed, int width, int height)
 {
@@ -513,42 +369,6 @@ void CloseShutters(int speed, int width, int height)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetupFadePolys()
- // line 527, offset 0x00058794
-	/* begin block 1 */
-		// Start line: 530
-		// Start offset: 0x00058794
-		// Variables:
-	// 		int i; // $a1
-	/* end block 1 */
-	// End offset: 0x00058824
-	// End Line: 549
-
-	/* begin block 2 */
-		// Start line: 1170
-	/* end block 2 */
-	// End Line: 1171
-
-	/* begin block 3 */
-		// Start line: 1229
-	/* end block 3 */
-	// End Line: 1230
-
-	/* begin block 4 */
-		// Start line: 1231
-	/* end block 4 */
-	// End Line: 1232
-
-	/* begin block 5 */
-		// Start line: 1237
-	/* end block 5 */
-	// End Line: 1238
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 POLY_G4 fade_g4[2];
 POLY_GT4 fade_gt4[2];
 
@@ -576,38 +396,6 @@ void SetupFadePolys(void)
 	fadeVal = 255;
 	gStopPadReads = 1;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawFadePoly()
- // line 556, offset 0x00058824
-	/* begin block 1 */
-		// Start line: 558
-		// Start offset: 0x00058824
-		// Variables:
-	// 		POLY_G4 *fl_g4; // $a2
-	/* end block 1 */
-	// End offset: 0x000589B0
-	// End Line: 577
-
-	/* begin block 2 */
-		// Start line: 1292
-	/* end block 2 */
-	// End Line: 1293
-
-	/* begin block 3 */
-		// Start line: 1300
-	/* end block 3 */
-	// End Line: 1301
-
-	/* begin block 4 */
-		// Start line: 1301
-	/* end block 4 */
-	// End Line: 1302
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void DrawFadePoly(void)
@@ -639,43 +427,6 @@ void DrawFadePoly(void)
 	addPrim(&current->ot[1], fl_g4);
 	addPrim(&current->ot[1], &fade_gt4[current->id]);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DisplayMissionTitle()
- // line 585, offset 0x00058b08
-	/* begin block 1 */
-		// Start line: 587
-		// Start offset: 0x00058B08
-
-		/* begin block 1.1 */
-			// Start line: 602
-			// Start offset: 0x00058B88
-		/* end block 1.1 */
-		// End offset: 0x00058BB8
-		// End Line: 606
-	/* end block 1 */
-	// End offset: 0x00058C08
-	// End Line: 622
-
-	/* begin block 2 */
-		// Start line: 1651
-	/* end block 2 */
-	// End Line: 1652
-
-	/* begin block 3 */
-		// Start line: 1724
-	/* end block 3 */
-	// End Line: 1725
-
-	/* begin block 4 */
-		// Start line: 1725
-	/* end block 4 */
-	// End Line: 1726
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void DisplayMissionTitle(void)

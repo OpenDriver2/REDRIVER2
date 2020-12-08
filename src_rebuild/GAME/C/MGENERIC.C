@@ -9,145 +9,6 @@
 
 #include "STRINGS.H"
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ StoreEndData()
- // line 62, offset 0x00060740
-	/* begin block 1 */
-		// Start line: 64
-		// Start offset: 0x00060740
-		// Variables:
-	// 		MS_TARGET *target; // $s0
-	// 		SAVED_CAR_POS *carpos; // $s2
-	// 		int i; // $s1
-	/* end block 1 */
-	// End offset: 0x000607E4
-	// End Line: 84
-
-	/* begin block 2 */
-		// Start line: 124
-	/* end block 2 */
-	// End Line: 125
-
-	/* begin block 3 */
-		// Start line: 347
-	/* end block 3 */
-	// End Line: 348
-
-	/* begin block 4 */
-		// Start line: 351
-	/* end block 4 */
-	// End Line: 352
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
-// [D] [T]
-void StoreEndData(void)
-{
-	MS_TARGET *target;
-	int i;
-	SAVED_CAR_POS *carpos;
-
-	if (gCurrentMissionNumber < 40) 
-	{
-		StorePlayerPosition(&MissionEndData.PlayerPos);
-
-		i = 15;
-
-		target = MissionTargets;
-		carpos = MissionEndData.CarPos;
-
-		do {
-			if ((target->data[0] == 2) && ((target->data[1] & 0x10) != 0))
-			{
-				StoreCarPosition(target, carpos);
-				carpos++;
-			}
-			i--;
-			target++;
-		} while (-1 < i);
-	}
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ RestoreStartData()
- // line 86, offset 0x000607e4
-	/* begin block 1 */
-		// Start line: 88
-		// Start offset: 0x000607E4
-		// Variables:
-	// 		SAVED_CAR_POS *carpos; // $s0
-	// 		int i; // $s1
-	/* end block 1 */
-	// End offset: 0x00060838
-	// End Line: 104
-
-	/* begin block 2 */
-		// Start line: 396
-	/* end block 2 */
-	// End Line: 397
-
-	/* begin block 3 */
-		// Start line: 399
-	/* end block 3 */
-	// End Line: 400
-
-	/* begin block 4 */
-		// Start line: 400
-	/* end block 4 */
-	// End Line: 401
-
-	/* begin block 5 */
-		// Start line: 403
-	/* end block 5 */
-	// End Line: 404
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
-// [D] [T]
-void RestoreStartData(void)
-{
-	SAVED_CAR_POS *data;
-	int i;
-
-	if (gHaveStoredData != 0) 
-	{
-		RestorePlayerPosition(&MissionStartData.PlayerPos);
-
-		data = MissionStartData.CarPos;
-		i = 5;
-		do {
-			if (data->active != 0)
-				RestoreCarPosition(data);
-
-			i--;
-			data++;
-		} while (-1 < i);
-	}
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ StorePlayerPosition(SAVED_PLAYER_POS *data /*$a2*/)
- // line 109, offset 0x0005ffac
-	/* begin block 1 */
-		// Start line: 110
-		// Start offset: 0x0005FFAC
-		// Variables:
-	// 		unsigned short type; // $a0
-	/* end block 1 */
-	// End offset: 0x00060248
-	// End Line: 148
-
-	/* begin block 2 */
-		// Start line: 218
-	/* end block 2 */
-	// End Line: 219
 
 // [D] [T]
 void StorePlayerPosition(SAVED_PLAYER_POS *data)
@@ -193,28 +54,6 @@ void StorePlayerPosition(SAVED_PLAYER_POS *data)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ RestorePlayerPosition(SAVED_PLAYER_POS *data /*$a2*/)
- // line 150, offset 0x00060248
-	/* begin block 1 */
-		// Start line: 151
-		// Start offset: 0x00060248
-	/* end block 1 */
-	// End offset: 0x000603B0
-	// End Line: 178
-
-	/* begin block 2 */
-		// Start line: 300
-	/* end block 2 */
-	// End Line: 301
-
-	/* begin block 3 */
-		// Start line: 303
-	/* end block 3 */
-	// End Line: 304
-
 // [D] [T]
 void RestorePlayerPosition(SAVED_PLAYER_POS *data)
 {
@@ -248,31 +87,6 @@ void RestorePlayerPosition(SAVED_PLAYER_POS *data)
 	else
 		car_data[player[0].playerCarId].felonyRating = data->felony;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ StoreCarPosition(MS_TARGET *target /*$t1*/, SAVED_CAR_POS *data /*$t0*/)
- // line 180, offset 0x000603b0
-	/* begin block 1 */
-		// Start line: 181
-		// Start offset: 0x000603B0
-		// Variables:
-	// 		int slot; // $v1
-	/* end block 1 */
-	// End offset: 0x000604DC
-	// End Line: 212
-
-	/* begin block 2 */
-		// Start line: 365
-	/* end block 2 */
-	// End Line: 366
-
-	/* begin block 3 */
-		// Start line: 368
-	/* end block 3 */
-	// End Line: 369
 
 // [D] [T]
 void StoreCarPosition(MS_TARGET *target, SAVED_CAR_POS *data)
@@ -311,21 +125,6 @@ void StoreCarPosition(MS_TARGET *target, SAVED_CAR_POS *data)
 		data->active = 1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ RestoreCarPosition(SAVED_CAR_POS *data /*$a3*/)
- // line 214, offset 0x000604e4
-	/* begin block 1 */
-		// Start line: 439
-	/* end block 1 */
-	// End Line: 440
-
-	/* begin block 2 */
-		// Start line: 441
-	/* end block 2 */
-	// End Line: 442
 
 // [D] [T]
 void RestoreCarPosition(SAVED_CAR_POS *data)
@@ -380,7 +179,52 @@ void RestoreCarPosition(SAVED_CAR_POS *data)
 	numPlayersToCreate++;
 }
 
+// [D] [T]
+void StoreEndData(void)
+{
+	MS_TARGET* target;
+	int i;
+	SAVED_CAR_POS* carpos;
 
+	if (gCurrentMissionNumber < 40)
+	{
+		StorePlayerPosition(&MissionEndData.PlayerPos);
 
+		i = 15;
 
+		target = MissionTargets;
+		carpos = MissionEndData.CarPos;
 
+		do {
+			if ((target->data[0] == 2) && ((target->data[1] & 0x10) != 0))
+			{
+				StoreCarPosition(target, carpos);
+				carpos++;
+			}
+			i--;
+			target++;
+		} while (-1 < i);
+	}
+}
+
+// [D] [T]
+void RestoreStartData(void)
+{
+	SAVED_CAR_POS* data;
+	int i;
+
+	if (gHaveStoredData != 0)
+	{
+		RestorePlayerPosition(&MissionStartData.PlayerPos);
+
+		data = MissionStartData.CarPos;
+		i = 5;
+		do {
+			if (data->active != 0)
+				RestoreCarPosition(data);
+
+			i--;
+			data++;
+		} while (-1 < i);
+	}
+}

@@ -152,32 +152,6 @@ tunnelinfo tunnels;
 
 char _sbank_buffer[0x80000];		// 0x180000
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ LoadBankFromLump(int bank /*$s3*/, int lump /*$s2*/)
- // line 98, offset 0x00052460
-	/* begin block 1 */
-		// Start line: 99
-		// Start offset: 0x00052460
-		// Variables:
-	// 		static unsigned int blockLimit[73]; // offset 0x10
-	// 		int size; // $s0
-	// 		char *name; // $s1
-	/* end block 1 */
-	// End offset: 0x00052510
-	// End Line: 119
-
-	/* begin block 2 */
-		// Start line: 4241
-	/* end block 2 */
-	// End Line: 4242
-
-	/* begin block 3 */
-		// Start line: 196
-	/* end block 3 */
-	// End Line: 197
-
 // [D] [T]
 void LoadBankFromLump(int bank, int lump)
 {
@@ -199,22 +173,6 @@ void LoadBankFromLump(int bank, int lump)
 	else
 		printf("WARNING: sound bank lump %d is not valid!\n", lump);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CarHasSiren(int index /*$a0*/)
- // line 127, offset 0x000522ec
-	/* begin block 1 */
-		// Start line: 254
-	/* end block 1 */
-	// End Line: 255
-
-	/* begin block 2 */
-		// Start line: 2853
-	/* end block 2 */
-	// End Line: 2854
 
 // [D] [T]
 int CarHasSiren(int index)
@@ -241,31 +199,6 @@ int CarHasSiren(int index)
 	return (MissionHeader->residentModels[index] == 0) << 9;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ SpecialVehicleKludge(char vehicle2 /*$a0*/)
- // line 161, offset 0x00052510
-	/* begin block 1 */
-		// Start line: 162
-		// Start offset: 0x00052510
-		// Variables:
-	// 		static char kludge_bank[4][3]; // offset 0x134
-	/* end block 1 */
-	// End offset: 0x00052540
-	// End Line: 169
-
-	/* begin block 2 */
-		// Start line: 4346
-	/* end block 2 */
-	// End Line: 4347
-
-	/* begin block 3 */
-		// Start line: 4389
-	/* end block 3 */
-	// End Line: 4390
-
 // [D] [T]
 int SpecialVehicleKludge(char vehicle2)
 {
@@ -278,34 +211,6 @@ int SpecialVehicleKludge(char vehicle2)
 
 	return kludge_bank[GameLevel][vehicle2];
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ ResidentModelsBodge()
- // line 171, offset 0x0004d690
-	/* begin block 1 */
-		// Start line: 172
-		// Start offset: 0x0004D690
-		// Variables:
-	// 		int i; // $a1
-	// 		int j; // $a2
-	/* end block 1 */
-	// End offset: 0x0004D784
-	// End Line: 183
-
-	/* begin block 2 */
-		// Start line: 342
-	/* end block 2 */
-	// End Line: 343
-
-	/* begin block 3 */
-		// Start line: 344
-	/* end block 3 */
-	// End Line: 345
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 int ResidentModelsBodge(void)
@@ -359,37 +264,6 @@ int ResidentModelsBodge(void)
 	return 4;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ MapCarIndexToBank(int index /*$a1*/)
- // line 197, offset 0x00052540
-	/* begin block 1 */
-		// Start line: 198
-		// Start offset: 0x00052540
-		// Variables:
-	// 		int *RM; // $a2
-	// 		static char car_banks[4][9]; // offset 0x140
-	/* end block 1 */
-	// End offset: 0x000525F8
-	// End Line: 219
-
-	/* begin block 2 */
-		// Start line: 4432
-	/* end block 2 */
-	// End Line: 4433
-
-	/* begin block 3 */
-		// Start line: 4461
-	/* end block 3 */
-	// End Line: 4462
-
-	/* begin block 4 */
-		// Start line: 4472
-	/* end block 4 */
-	// End Line: 4473
-
 // [D] [T]
 int MapCarIndexToBank(int index)
 {
@@ -430,41 +304,6 @@ int MapCarIndexToBank(int index)
 
 	return car_banks[GameLevel][ret];
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ LoadLevelSFX(int missionNum /*$s1*/)
- // line 228, offset 0x0004d784
-	/* begin block 1 */
-		// Start line: 229
-		// Start offset: 0x0004D784
-		// Variables:
-	// 		char city_night_fx; // $s2
-	// 		int i; // $s0
-
-		/* begin block 1.1 */
-			// Start line: 266
-			// Start offset: 0x0004DAD8
-			// Variables:
-		// 		int mission; // $a1
-		/* end block 1.1 */
-		// End offset: 0x0004DC70
-		// End Line: 269
-	/* end block 1 */
-	// End offset: 0x0004DE30
-	// End Line: 295
-
-	/* begin block 2 */
-		// Start line: 414
-	/* end block 2 */
-	// End Line: 415
-
-	/* begin block 3 */
-		// Start line: 460
-	/* end block 3 */
-	// End Line: 461
 
 static char cop_model = 0;
 int gDoCopSpeech = 1;
@@ -684,54 +523,6 @@ void LoadLevelSFX(int missionNum)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ StartGameSounds()
- // line 305, offset 0x0004de30
-	/* begin block 1 */
-		// Start line: 307
-		// Start offset: 0x0004DE30
-		// Variables:
-	// 		VECTOR *cp; // $s2
-	// 		int i; // $s1
-
-		/* begin block 1.1 */
-			// Start line: 315
-			// Start offset: 0x0004DE94
-			// Variables:
-		// 		int siren; // $a2
-		// 		int car_model; // $s0
-		/* end block 1.1 */
-		// End offset: 0x0004E07C
-		// End Line: 333
-	/* end block 1 */
-	// End offset: 0x0004E188
-	// End Line: 364
-
-	/* begin block 2 */
-		// Start line: 614
-	/* end block 2 */
-	// End Line: 615
-
-	/* begin block 3 */
-		// Start line: 625
-	/* end block 3 */
-	// End Line: 626
-
-	/* begin block 4 */
-		// Start line: 626
-	/* end block 4 */
-	// End Line: 627
-
-	/* begin block 5 */
-		// Start line: 633
-	/* end block 5 */
-	// End Line: 634
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 int TimeSinceLastSpeech = 0;
 
 // [A] start car sounds for player
@@ -831,35 +622,6 @@ void StartGameSounds(void)
 	InitializeMissionSound();
 }
 
-// decompiled code
-// original method signature: 
-// unsigned short /*$ra*/ GetEngineRevs(CAR_DATA *cp /*$t2*/)
- // line 404, offset 0x0004e188
-	/* begin block 1 */
-		// Start line: 405
-		// Start offset: 0x0004E188
-		// Variables:
-	// 		int gear; // $a1
-	// 		int lastgear; // $a0
-	// 		int ws; // $a2
-	// 		int acc; // $t1
-	// 		int type; // $t0
-	/* end block 1 */
-	// End offset: 0x0004E2E8
-	// End Line: 439
-
-	/* begin block 2 */
-		// Start line: 820
-	/* end block 2 */
-	// End Line: 821
-
-	/* begin block 3 */
-		// Start line: 861
-	/* end block 3 */
-	// End Line: 862
-
-/* WARNING: Removing unreachable block (ram,0x0004e1b0) */
-
 // [D] [T]
 ushort GetEngineRevs(CAR_DATA* cp)
 {
@@ -926,45 +688,6 @@ ushort GetEngineRevs(CAR_DATA* cp)
 
 	return ws * geard[type][lastgear].ratio_id;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ControlCarRevs(CAR_DATA *cp /*$s0*/)
- // line 458, offset 0x0004e2e8
-	/* begin block 1 */
-		// Start line: 459
-		// Start offset: 0x0004E2E8
-		// Variables:
-	// 		unsigned short oldRevs; // $s2
-	// 		unsigned short desiredRevs; // $v1
-	// 		unsigned short newRevs; // $a0
-	// 		int acc; // $s3
-	// 		char spin; // $s4
-	// 		char player_id; // $s1
-
-		/* begin block 1.1 */
-			// Start line: 498
-			// Start offset: 0x0004E414
-			// Variables:
-		// 		int revsmax; // $a3
-		/* end block 1.1 */
-		// End offset: 0x0004E4D4
-		// End Line: 504
-	/* end block 1 */
-	// End offset: 0x0004E560
-	// End Line: 513
-
-	/* begin block 2 */
-		// Start line: 954
-	/* end block 2 */
-	// End Line: 955
-
-	/* begin block 3 */
-		// Start line: 974
-	/* end block 3 */
-	// End Line: 975
 
 const int maxrevdrop = 1440;
 const int maxrevrise = 1600;
@@ -1067,21 +790,6 @@ void ControlCarRevs(CAR_DATA* cp)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DoSpeech(int chan /*$a0*/, int sound /*$a2*/)
- // line 515, offset 0x000525f8
-	/* begin block 1 */
-		// Start line: 4824
-	/* end block 1 */
-	// End Line: 4825
-
-	/* begin block 2 */
-		// Start line: 5121
-	/* end block 2 */
-	// End Line: 5122
-
 // [D] [T]
 void DoSpeech(int chan, int sound)
 {
@@ -1090,32 +798,6 @@ void DoSpeech(int chan, int sound)
 	else if (sound != 0)
 		StartSound(chan, SOUND_BANK_VOICES, sound, -1500, 4096);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// char /*$ra*/ PlaySpeech(SPEECH_QUEUE *pSpeechQueue /*$a0*/, int sound /*$a1*/)
- // line 562, offset 0x0005228c
-	/* begin block 1 */
-		// Start line: 563
-		// Start offset: 0x0005228C
-		// Variables:
-	// 		char result; // $v0
-	// 		int i; // $a2
-	/* end block 1 */
-	// End offset: 0x000522EC
-	// End Line: 583
-
-	/* begin block 2 */
-		// Start line: 1124
-	/* end block 2 */
-	// End Line: 1125
-
-	/* begin block 3 */
-		// Start line: 3271
-	/* end block 3 */
-	// End Line: 3272
 
 // [D] [T]
 char PlaySpeech(SPEECH_QUEUE* pSpeechQueue, int sound)
@@ -1139,17 +821,6 @@ char PlaySpeech(SPEECH_QUEUE* pSpeechQueue, int sound)
 	return 1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitSpeechQueue(SPEECH_QUEUE *pSpeechQueue /*$s0*/)
- // line 587, offset 0x00052654
-	/* begin block 1 */
-		// Start line: 5265
-	/* end block 1 */
-	// End Line: 5266
-
 // [D] [T]
 void InitSpeechQueue(SPEECH_QUEUE* pSpeechQueue)
 {
@@ -1158,34 +829,6 @@ void InitSpeechQueue(SPEECH_QUEUE* pSpeechQueue)
 	if (GameType != GAME_MISSION)
 		pSpeechQueue->allowed = 2;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ControlSpeech(SPEECH_QUEUE *pSpeechQueue /*$s0*/)
- // line 595, offset 0x0004e560
-	/* begin block 1 */
-		// Start line: 596
-		// Start offset: 0x0004E560
-	/* end block 1 */
-	// End offset: 0x0004E700
-	// End Line: 635
-
-	/* begin block 2 */
-		// Start line: 1169
-	/* end block 2 */
-	// End Line: 1170
-
-	/* begin block 3 */
-		// Start line: 1252
-	/* end block 3 */
-	// End Line: 1253
-
-	/* begin block 4 */
-		// Start line: 1257
-	/* end block 4 */
-	// End Line: 1258
 
 // [D] [T]
 void ControlSpeech(SPEECH_QUEUE* pSpeechQueue)
@@ -1241,22 +884,6 @@ void ControlSpeech(SPEECH_QUEUE* pSpeechQueue)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ CopSay(int phrase /*$s1*/, int direction /*$s2*/)
- // line 665, offset 0x00052190
-	/* begin block 1 */
-		// Start line: 3366
-	/* end block 1 */
-	// End Line: 3367
-
-	/* begin block 2 */
-		// Start line: 1330
-	/* end block 2 */
-	// End Line: 1331
-
 // [D]
 void CopSay(int phrase, int direction)
 {
@@ -1296,40 +923,12 @@ void CopSay(int phrase, int direction)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ BodSay(int phrase /*$a1*/)
- // line 677, offset 0x00052694
-	/* begin block 1 */
-		// Start line: 5445
-	/* end block 1 */
-	// End Line: 5446
-
 // [D] [T]
 void BodSay(int phrase)
 {
 	if (phrase_top != 0 && phrase < phrase_top)
 		PlaySpeech(&gSpeechQueue, phrase + 100);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ MissionSay(int phrase /*$a0*/)
- // line 686, offset 0x000526d0
-	/* begin block 1 */
-		// Start line: 687
-		// Start offset: 0x000526D0
-	/* end block 1 */
-	// End offset: 0x000526FC
-	// End Line: 691
-
-	/* begin block 2 */
-		// Start line: 5463
-	/* end block 2 */
-	// End Line: 5464
 
 // [D] [T]
 void MissionSay(int phrase)
@@ -1339,94 +938,6 @@ void MissionSay(int phrase)
 	if (phrase != -1)
 		PlaySpeech(&gSpeechQueue, phrase + 100);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// long /*$ra*/ jsqrt(unsigned long a /*$a0*/)
- // line 700, offset 0x0005270c
-	/* begin block 1 */
-		// Start line: 701
-		// Start offset: 0x0005270C
-		// Variables:
-	// 		long b1; // $a1
-	// 		long b0; // $v1
-	/* end block 1 */
-	// End offset: 0x000527C0
-	// End Line: 713
-
-	/* begin block 2 */
-		// Start line: 5491
-	/* end block 2 */
-	// End Line: 5492
-
-	/* begin block 3 */
-		// Start line: 5494
-	/* end block 3 */
-	// End Line: 5495
-
-// [D] [T]
-int jsqrt(u_int a)
-{
-	int b0;
-	int b1;
-
-	if (a < 2)
-		return a;
-
-	b0 = a >> 1;
-
-	if (a < 0x40000000)
-	{
-		if (b0 >= 0x8000)
-			b0 = 0x7fff;
-	}
-	else
-	{
-		if (b0 >= 0x10000)
-			b0 = 0xffff;
-	}
-
-	do
-	{
-		b1 = b0 + a / b0 >> 1;
-
-		if (ABS(b0 - b1) <= 100)
-			break;
-
-		b0 = b1;
-	} while (true);
-
-	return b1;
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitDopplerSFX()
- // line 721, offset 0x0004e710
-	/* begin block 1 */
-		// Start line: 722
-		// Start offset: 0x0004E710
-		// Variables:
-	// 		int i; // $v1
-	/* end block 1 */
-	// End offset: 0x0004E790
-	// End Line: 726
-
-	/* begin block 2 */
-		// Start line: 1510
-	/* end block 2 */
-	// End Line: 1511
-
-	/* begin block 3 */
-		// Start line: 1511
-	/* end block 3 */
-	// End Line: 1512
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void InitDopplerSFX(void)
@@ -1455,77 +966,6 @@ void InitDopplerSFX(void)
 	else
 		loudhail_time = 75;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DoDopplerSFX()
- // line 734, offset 0x0004e790
-	/* begin block 1 */
-		// Start line: 735
-		// Start offset: 0x0004E790
-		// Variables:
-	// 		int i; // $s1
-	// 		int j; // $s0
-	// 		int num_noisy_cars; // $s5
-	// 		unsigned long car_dist[20]; // stack offset -176
-	// 		unsigned short indexlist[20]; // stack offset -96
-	// 		CAR_DATA *car_ptr; // $s2
-	// 		VECTOR *pp; // $a1
-	// 		unsigned long car_flags; // $s4
-	// 		char sirens; // stack offset -56
-
-		/* begin block 1.1 */
-			// Start line: 825
-			// Start offset: 0x0004ECB8
-			// Variables:
-		// 		int siren; // $v0
-		/* end block 1.1 */
-		// End offset: 0x0004EDC8
-		// End Line: 842
-
-		/* begin block 1.2 */
-			// Start line: 890
-			// Start offset: 0x0004F09C
-			// Variables:
-		// 		int model; // $v1
-		/* end block 1.2 */
-		// End offset: 0x0004F134
-		// End Line: 892
-
-		/* begin block 1.3 */
-			// Start line: 909
-			// Start offset: 0x0004F1BC
-			// Variables:
-		// 		char old_idle; // $a1
-
-			/* begin block 1.3.1 */
-				// Start line: 914
-				// Start offset: 0x0004F240
-				// Variables:
-			// 		int model; // $v1
-			/* end block 1.3.1 */
-			// End offset: 0x0004F314
-			// End Line: 924
-		/* end block 1.3 */
-		// End offset: 0x0004F368
-		// End Line: 929
-	/* end block 1 */
-	// End offset: 0x0004F4A0
-	// End Line: 944
-
-	/* begin block 2 */
-		// Start line: 1527
-	/* end block 2 */
-	// End Line: 1528
-
-	/* begin block 3 */
-		// Start line: 1536
-	/* end block 3 */
-	// End Line: 1537
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 char force_idle[8] = { 0 };
 char force_siren[8] = { 0 };
@@ -1915,42 +1355,6 @@ void DoDopplerSFX(void)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DoPoliceLoudhailer(int cars /*$s1*/, unsigned short *indexlist /*$s2*/, unsigned long *dist /*$s3*/)
- // line 946, offset 0x0004f4a0
-	/* begin block 1 */
-		// Start line: 947
-		// Start offset: 0x0004F4A0
-		// Variables:
-	// 		int i; // $t1
-	// 		int rnd; // $t0
-	// 		int time; // $s0
-
-		/* begin block 1.1 */
-			// Start line: 951
-			// Start offset: 0x0004F560
-			// Variables:
-		// 		CAR_DATA *car_ptr; // $a3
-		/* end block 1.1 */
-		// End offset: 0x0004F624
-		// End Line: 959
-	/* end block 1 */
-	// End offset: 0x0004F64C
-	// End Line: 962
-
-	/* begin block 2 */
-		// Start line: 2215
-	/* end block 2 */
-	// End Line: 2216
-
-	/* begin block 3 */
-		// Start line: 2218
-	/* end block 3 */
-	// End Line: 2219
-
 // [D] [T]
 void DoPoliceLoudhailer(int cars, ushort* indexlist, uint* dist)
 {
@@ -2000,52 +1404,6 @@ void DoPoliceLoudhailer(int cars, ushort* indexlist, uint* dist)
 		loudhail_time++;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ CollisionSound(char player_id /*$s0*/, CAR_DATA *cp /*$s5*/, int impact /*$s2*/, int car_car /*$s7*/)
- // line 975, offset 0x0004f668
-	/* begin block 1 */
-		// Start line: 976
-		// Start offset: 0x0004F668
-		// Variables:
-	// 		long *here; // $s3
-	// 		char chan; // $s1
-	// 		char crash; // $s6
-	// 		char size; // $s4
-
-		/* begin block 1.1 */
-			// Start line: 983
-			// Start offset: 0x0004F6F0
-			// Variables:
-		// 		unsigned long p0dst; // $a1
-		// 		unsigned long p1dst; // $a0
-		/* end block 1.1 */
-		// End offset: 0x0004F6F0
-		// End Line: 984
-
-		/* begin block 1.2 */
-			// Start line: 993
-			// Start offset: 0x0004F784
-
-			/* begin block 1.2.1 */
-				// Start line: 1000
-				// Start offset: 0x0004F898
-			/* end block 1.2.1 */
-			// End offset: 0x0004F930
-			// End Line: 1007
-		/* end block 1.2 */
-		// End offset: 0x0004F954
-		// End Line: 1011
-	/* end block 1 */
-	// End offset: 0x0004F954
-	// End Line: 1012
-
-	/* begin block 2 */
-		// Start line: 2285
-	/* end block 2 */
-	// End Line: 2286
 
 // [D] [T]
 void CollisionSound(char player_id, CAR_DATA* cp, int impact, int car_car)
@@ -2159,31 +1517,6 @@ void CollisionSound(char player_id, CAR_DATA* cp, int impact, int car_car)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ExplosionSound(VECTOR *pos /*$s4*/, int type /*$s0*/)
- // line 1019, offset 0x0004f984
-	/* begin block 1 */
-		// Start line: 1020
-		// Start offset: 0x0004F984
-		// Variables:
-	// 		int bang; // $s5
-	// 		int pitch; // $t0
-	// 		int rnd; // $s3
-	// 		VECTOR P; // stack offset -48
-	// 		int sc1; // $s2
-	// 		int sc2; // $s1
-	/* end block 1 */
-	// End offset: 0x0004FB70
-	// End Line: 1048
-
-	/* begin block 2 */
-		// Start line: 2380
-	/* end block 2 */
-	// End Line: 2381
-
 // [D] [T]
 void ExplosionSound(VECTOR* pos, int type)
 {
@@ -2235,33 +1568,6 @@ void ExplosionSound(VECTOR* pos, int type)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ JerichoSpeak()
- // line 1052, offset 0x0004fb94
-	/* begin block 1 */
-		// Start line: 1053
-		// Start offset: 0x0004FB94
-		// Variables:
-	// 		static unsigned int j_said; // offset 0x0
-	// 		int rnd; // $a1
-	/* end block 1 */
-	// End offset: 0x0004FC90
-	// End Line: 1060
-
-	/* begin block 2 */
-		// Start line: 2452
-	/* end block 2 */
-	// End Line: 2453
-
-	/* begin block 3 */
-		// Start line: 2453
-	/* end block 3 */
-	// End Line: 2454
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void JerichoSpeak(void)
 {
@@ -2291,27 +1597,6 @@ void JerichoSpeak(void)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ FunkUpDaBGMTunez(int funk /*$a0*/)
- // line 1085, offset 0x000527c0
-	/* begin block 1 */
-		// Start line: 5888
-	/* end block 1 */
-	// End Line: 5889
-
-	/* begin block 2 */
-		// Start line: 6261
-	/* end block 2 */
-	// End Line: 6262
-
-	/* begin block 3 */
-		// Start line: 6263
-	/* end block 3 */
-	// End Line: 6264
-
 // [D] [T]
 void FunkUpDaBGMTunez(int funk)
 {
@@ -2332,39 +1617,6 @@ void FunkUpDaBGMTunez(int funk)
 		}
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SoundTasks()
- // line 1103, offset 0x0004fc90
-	/* begin block 1 */
-		// Start line: 1104
-		// Start offset: 0x0004FC90
-		// Variables:
-	// 		int i; // $s2
-	// 		CAR_DATA *cp; // $s1
-	/* end block 1 */
-	// End offset: 0x000500E4
-	// End Line: 1183
-
-	/* begin block 2 */
-		// Start line: 2510
-	/* end block 2 */
-	// End Line: 2511
-
-	/* begin block 3 */
-		// Start line: 2554
-	/* end block 3 */
-	// End Line: 2555
-
-	/* begin block 4 */
-		// Start line: 2558
-	/* end block 4 */
-	// End Line: 2559
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void SoundTasks(void)
@@ -2498,44 +1750,6 @@ void SoundTasks(void)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitMusic(int musicnum /*$s0*/)
- // line 1195, offset 0x000500e4
-	/* begin block 1 */
-		// Start line: 1196
-		// Start offset: 0x000500E4
-		// Variables:
-	// 		static char *music_pt; // offset 0xc
-	// 		static char *sample_pt; // offset 0x10
-	// 		static char xm_samples; // offset 0x4
-	// 		int musicpos[3]; // stack offset -32
-	// 		char *name; // $s1
-	// 		int sample_len; // $s0
-	// 		int music_len; // $t0
-
-		/* begin block 1.1 */
-			// Start line: 1240
-			// Start offset: 0x000501A4
-		/* end block 1.1 */
-		// End offset: 0x00050208
-		// End Line: 1247
-	/* end block 1 */
-	// End offset: 0x0005027C
-	// End Line: 1256
-
-	/* begin block 2 */
-		// Start line: 2760
-	/* end block 2 */
-	// End Line: 2761
-
-	/* begin block 3 */
-		// Start line: 2773
-	/* end block 3 */
-	// End Line: 2774
-
 // [D] [T]
 void InitMusic(int musicnum)
 {
@@ -2622,31 +1836,6 @@ void InitMusic(int musicnum)
 		XM_Pause(Song_ID);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitTunnels(char n /*$a0*/)
- // line 1317, offset 0x0005243c
-	/* begin block 1 */
-		// Start line: 1318
-		// Start offset: 0x0005243C
-		// Variables:
-	// 		tunnelinfo *T; // $a1
-	/* end block 1 */
-	// End offset: 0x00052460
-	// End Line: 1325
-
-	/* begin block 2 */
-		// Start line: 5453
-	/* end block 2 */
-	// End Line: 5454
-
-	/* begin block 3 */
-		// Start line: 2634
-	/* end block 3 */
-	// End Line: 2635
-
 // [D] [T]
 void InitTunnels(char n)
 {
@@ -2657,25 +1846,6 @@ void InitTunnels(char n)
 	tunnels.tunnel_cnt = 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ AddTunnel(long x1 /*$t1*/, long y1 /*$a1*/, long z1 /*$a2*/, long x2 /*$a3*/, long y2 /*stack 16*/, long z2 /*stack 20*/)
- // line 1331, offset 0x00052848
-	/* begin block 1 */
-		// Start line: 1332
-		// Start offset: 0x00052848
-		// Variables:
-	// 		tunnelinfo *T; // $t0
-	/* end block 1 */
-	// End offset: 0x000528FC
-	// End Line: 1344
-
-	/* begin block 2 */
-		// Start line: 6755
-	/* end block 2 */
-	// End Line: 6756
 
 // [D] [T]
 int AddTunnel(int x1, int y1, int z1, int x2, int y2, int z2)
@@ -2693,37 +1863,6 @@ int AddTunnel(int x1, int y1, int z1, int x2, int y2, int z2)
 
 	return tunnels.tunnel_cnt++;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ Tunnels(tunnelinfo *T /*$a0*/)
- // line 1350, offset 0x0005027c
-	/* begin block 1 */
-		// Start line: 1351
-		// Start offset: 0x0005027C
-		// Variables:
-	// 		int i; // $t2
-	// 		int verb; // $t4
-	/* end block 1 */
-	// End offset: 0x00050400
-	// End Line: 1364
-
-	/* begin block 2 */
-		// Start line: 3075
-	/* end block 2 */
-	// End Line: 3076
-
-	/* begin block 3 */
-		// Start line: 3115
-	/* end block 3 */
-	// End Line: 3116
-
-	/* begin block 4 */
-		// Start line: 3119
-	/* end block 4 */
-	// End Line: 3120
 
 // [D] [T]
 void Tunnels(tunnelinfo* T)
@@ -2758,22 +1897,6 @@ void Tunnels(tunnelinfo* T)
 
 	SetReverbInGameState(verb);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ AddTunnels(int level /*$a0*/)
- // line 1366, offset 0x00050400
-	/* begin block 1 */
-		// Start line: 3152
-	/* end block 1 */
-	// End Line: 3153
-
-	/* begin block 2 */
-		// Start line: 3155
-	/* end block 2 */
-	// End Line: 3156
 
 // [D] [T]
 void AddTunnels(int level)
@@ -2844,32 +1967,6 @@ void AddTunnels(int level)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitEnvSnd(int num_envsnds /*$a0*/)
- // line 1510, offset 0x00052388
-	/* begin block 1 */
-		// Start line: 1511
-		// Start offset: 0x00052388
-		// Variables:
-	// 		int i; // $v1
-	// 		int p; // $a1
-	// 		__envsoundtags *T; // $t1
-	/* end block 1 */
-	// End offset: 0x0005243C
-	// End Line: 1538
-
-	/* begin block 2 */
-		// Start line: 5618
-	/* end block 2 */
-	// End Line: 5619
-
-	/* begin block 3 */
-		// Start line: 5622
-	/* end block 3 */
-	// End Line: 5623
-
 // [D] [T]
 void InitEnvSnd(int num_envsnds)
 {
@@ -2904,36 +2001,6 @@ void InitEnvSnd(int num_envsnds)
 	EStags.envsnd_cnt = 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ SetEnvSndVol(int snd /*$a0*/, int vol /*$a1*/)
- // line 1545, offset 0x00052168
-	/* begin block 1 */
-		// Start line: 1546
-		// Start offset: 0x00052168
-		// Variables:
-	// 		int was; // $v0
-	/* end block 1 */
-	// End offset: 0x00052190
-	// End Line: 1550
-
-	/* begin block 2 */
-		// Start line: 4242
-	/* end block 2 */
-	// End Line: 4243
-
-	/* begin block 3 */
-		// Start line: 3090
-	/* end block 3 */
-	// End Line: 3091
-
-	/* begin block 4 */
-		// Start line: 4244
-	/* end block 4 */
-	// End Line: 4245
-
 // [D] [T]
 int SetEnvSndVol(int snd, int vol)
 {
@@ -2944,22 +2011,6 @@ int SetEnvSndVol(int snd, int vol)
 
 	return was;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetEnvSndPos(int snd /*$a0*/, long px /*$a1*/, long pz /*$a2*/)
- // line 1555, offset 0x00052904
-	/* begin block 1 */
-		// Start line: 7203
-	/* end block 1 */
-	// End Line: 7204
-
-	/* begin block 2 */
-		// Start line: 7205
-	/* end block 2 */
-	// End Line: 7206
 
 // [D] [T]
 void SetEnvSndPos(int snd, int px, int pz)
@@ -2972,29 +2023,6 @@ void SetEnvSndPos(int snd, int px, int pz)
 	envsnd[snd].pos2.vz = pz;
 	envsnd[snd].pos.vz = pz;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ AddEnvSnd(int type /*$t4*/, char flags /*$a1*/, int bank /*$a2*/, int sample /*$a3*/, int vol /*stack 16*/, long px /*stack 20*/, long pz /*stack 24*/)
- // line 1577, offset 0x00050c08
-	/* begin block 1 */
-		// Start line: 1578
-		// Start offset: 0x00050C08
-		// Variables:
-	// 		void *data; // $a1
-	// 		envsound *ep; // $t1
-	// 		__envsoundtags *T; // $t0
-	// 		long s; // $a1
-	/* end block 1 */
-	// End offset: 0x00050E08
-	// End Line: 1635
-
-	/* begin block 2 */
-		// Start line: 3577
-	/* end block 2 */
-	// End Line: 3578
 
 // [D] [T]
 int AddEnvSnd(int type, char flags, int bank, int sample, int vol, int px, int pz, int px2, int pz2)
@@ -3047,36 +2075,6 @@ int AddEnvSnd(int type, char flags, int bank, int sample, int vol, int px, int p
 
 	return EStags.envsnd_cnt++;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ IdentifyZone(envsound *ep /*$a3*/, envsoundinfo *E /*stack 4*/, int pl /*$a2*/)
- // line 1646, offset 0x00050e08
-	/* begin block 1 */
-		// Start line: 1647
-		// Start offset: 0x00050E08
-		// Variables:
-	// 		int i; // $s7
-	// 		int j; // $fp
-	// 		int tmp[4]; // stack offset -96
-	// 		float d; // $s0
-	// 		float _g[4]; // stack offset -80
-	// 		__bitfield64 zones; // stack offset -64
-	/* end block 1 */
-	// End offset: 0x000514BC
-	// End Line: 1704
-
-	/* begin block 2 */
-		// Start line: 3727
-	/* end block 2 */
-	// End Line: 3728
-
-	/* begin block 3 */
-		// Start line: 3739
-	/* end block 3 */
-	// End Line: 3740
 
 // [D] [T]
 void IdentifyZone(envsound* ep, envsoundinfo* E, int pl)
@@ -3237,31 +2235,6 @@ void IdentifyZone(envsound* ep, envsoundinfo* E, int pl)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ CalcEffPos(envsound *ep /*$s1*/, envsoundinfo *E /*$a1*/, int pl /*$a2*/)
- // line 1706, offset 0x000514bc
-	/* begin block 1 */
-		// Start line: 1707
-		// Start offset: 0x000514BC
-		// Variables:
-	// 		int j; // $t5
-	// 		int me; // $t2
-	/* end block 1 */
-	// End offset: 0x000517D0
-	// End Line: 1742
-
-	/* begin block 2 */
-		// Start line: 3903
-	/* end block 2 */
-	// End Line: 3904
-
-	/* begin block 3 */
-		// Start line: 3906
-	/* end block 3 */
-	// End Line: 3907
-
 // [D] [A] unprocessed arrays
 void CalcEffPos(envsound* ep, envsoundinfo* E, int pl)
 {
@@ -3349,39 +2322,6 @@ void CalcEffPos(envsound* ep, envsoundinfo* E, int pl)
 		E->flags |= 1 << (i & 0x1f);
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ CalcEffPos2(envsound *ep /*stack 0*/, envsoundinfo *E /*$s7*/, int pl /*$a2*/)
- // line 1744, offset 0x000517d0
-	/* begin block 1 */
-		// Start line: 1745
-		// Start offset: 0x000517D0
-		// Variables:
-	// 		int j; // stack offset -56
-	// 		int me; // $s5
-
-		/* begin block 1.1 */
-			// Start line: 1756
-			// Start offset: 0x000518D8
-		/* end block 1.1 */
-		// End offset: 0x000518D8
-		// End Line: 1756
-	/* end block 1 */
-	// End offset: 0x00051F0C
-	// End Line: 1810
-
-	/* begin block 2 */
-		// Start line: 4010
-	/* end block 2 */
-	// End Line: 4011
-
-	/* begin block 3 */
-		// Start line: 4013
-	/* end block 3 */
-	// End Line: 4014
 
 // [D] [A] unprocessed arrays
 void CalcEffPos2(envsound* ep, envsoundinfo* E, int pl)
@@ -3560,31 +2500,6 @@ void CalcEffPos2(envsound* ep, envsoundinfo* E, int pl)
 
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ UpdateEnvSnd(envsound *ep /*stack 0*/, envsoundinfo *E /*$s4*/, int pl /*stack 8*/)
- // line 1812, offset 0x00051f0c
-	/* begin block 1 */
-		// Start line: 1813
-		// Start offset: 0x00051F0C
-		// Variables:
-	// 		int i; // stack offset -48
-	/* end block 1 */
-	// End offset: 0x00052168
-	// End Line: 1841
-
-	/* begin block 2 */
-		// Start line: 4442
-	/* end block 2 */
-	// End Line: 4443
-
-	/* begin block 3 */
-		// Start line: 4445
-	/* end block 3 */
-	// End Line: 4446
-
 // [D] [T]
 void UpdateEnvSnd(envsound* ep, envsoundinfo* E, int pl)
 {
@@ -3633,19 +2548,6 @@ void UpdateEnvSnd(envsound* ep, envsoundinfo* E, int pl)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitLeadHorn()
- // line 1852, offset 0x00052948
-	/* begin block 1 */
-		// Start line: 7797
-	/* end block 1 */
-	// End Line: 7798
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 unsigned int horn_time;
 
 // [D] [T]
@@ -3665,30 +2567,6 @@ void InitLeadHorn(void)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ LeadHorn(CAR_DATA *cp /*$s0*/)
- // line 1855, offset 0x00052954
-	/* begin block 1 */
-		// Start line: 1856
-		// Start offset: 0x00052954
-		// Variables:
-	// 		static unsigned int rnd; // offset 0x8
-	/* end block 1 */
-	// End offset: 0x00052A28
-	// End Line: 1867
-
-	/* begin block 2 */
-		// Start line: 7803
-	/* end block 2 */
-	// End Line: 7804
-
-	/* begin block 3 */
-		// Start line: 7805
-	/* end block 3 */
-	// End Line: 7806
 
 // [D] [T]
 void LeadHorn(CAR_DATA* cp)

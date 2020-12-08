@@ -2143,6 +2143,39 @@ void VsyncProc(void)
 }
 
 
+// [D] [T]
+int jsqrt(u_int a)
+{
+	int b0;
+	int b1;
 
+	if (a < 2)
+		return a;
+
+	b0 = a >> 1;
+
+	if (a < 0x40000000)
+	{
+		if (b0 >= 0x8000)
+			b0 = 0x7fff;
+	}
+	else
+	{
+		if (b0 >= 0x10000)
+			b0 = 0xffff;
+	}
+
+	do
+	{
+		b1 = b0 + a / b0 >> 1;
+
+		if (ABS(b0 - b1) <= 100)
+			break;
+
+		b0 = b1;
+	} while (true);
+
+	return b1;
+}
 
 

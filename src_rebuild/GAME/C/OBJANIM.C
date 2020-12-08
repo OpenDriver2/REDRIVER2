@@ -163,39 +163,6 @@ DR_LOAD cyclecluts[12];
 int cycle_phase = 0;
 int cycle_timer = 0;
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitCyclingPals()
- // line 260, offset 0x000149b4
-	/* begin block 1 */
-		// Start line: 262
-		// Start offset: 0x000149B4
-		// Variables:
-	// 		int i; // $s0
-	// 		CYCLE_OBJECT *cyc; // $s1
-	// 		RECT vram; // stack offset -24
-	/* end block 1 */
-	// End offset: 0x00014A58
-	// End Line: 278
-
-	/* begin block 2 */
-		// Start line: 520
-	/* end block 2 */
-	// End Line: 521
-
-	/* begin block 3 */
-		// Start line: 1571
-	/* end block 3 */
-	// End Line: 1572
-
-	/* begin block 4 */
-		// Start line: 1575
-	/* end block 4 */
-	// End Line: 1576
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void InitCyclingPals(void)
 {
@@ -213,66 +180,6 @@ void InitCyclingPals(void)
 	cycle_phase = 0;
 	cycle_timer = 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ColourCycle()
- // line 362, offset 0x00013980
-	/* begin block 1 */
-		// Start line: 365
-		// Start offset: 0x00013980
-		// Variables:
-	// 		int i; // $s5
-	// 		CYCLE_OBJECT *cyc; // $s2
-	// 		RECT vram; // stack offset -56
-	// 		unsigned short *bufaddr; // $s0
-	// 		unsigned short length; // $v0
-	// 		unsigned short temp; // $s1
-
-		/* begin block 1.1 */
-			// Start line: 388
-			// Start offset: 0x00013A4C
-			// Variables:
-		// 		int tnum; // $a1
-
-			/* begin block 1.1.1 */
-				// Start line: 401
-				// Start offset: 0x00013AA4
-			/* end block 1.1.1 */
-			// End offset: 0x00013AEC
-			// End Line: 410
-
-			/* begin block 1.1.2 */
-				// Start line: 415
-				// Start offset: 0x00013B18
-			/* end block 1.1.2 */
-			// End offset: 0x00013B60
-			// End Line: 424
-		/* end block 1.1 */
-		// End offset: 0x00013C20
-		// End Line: 443
-	/* end block 1 */
-	// End offset: 0x00013C7C
-	// End Line: 450
-
-	/* begin block 2 */
-		// Start line: 724
-	/* end block 2 */
-	// End Line: 725
-
-	/* begin block 3 */
-		// Start line: 726
-	/* end block 3 */
-	// End Line: 727
-
-	/* begin block 4 */
-		// Start line: 732
-	/* end block 4 */
-	// End Line: 733
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void ColourCycle(void)
@@ -361,42 +268,6 @@ void ColourCycle(void)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ FindSmashableObjects()
- // line 460, offset 0x00014950
-	/* begin block 1 */
-		// Start line: 462
-		// Start offset: 0x00014950
-		// Variables:
-	// 		SMASHABLE_OBJECT *sip; // $s0
-	/* end block 1 */
-	// End offset: 0x000149A8
-	// End Line: 468
-
-	/* begin block 2 */
-		// Start line: 1661
-	/* end block 2 */
-	// End Line: 1662
-
-	/* begin block 3 */
-		// Start line: 920
-	/* end block 3 */
-	// End Line: 921
-
-	/* begin block 4 */
-		// Start line: 1662
-	/* end block 4 */
-	// End Line: 1663
-
-	/* begin block 5 */
-		// Start line: 1663
-	/* end block 5 */
-	// End Line: 1664
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void FindSmashableObjects(void)
 {
@@ -410,50 +281,12 @@ void FindSmashableObjects(void)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitAnimatingObjects()
- // line 481, offset 0x00013cac
-	/* begin block 1 */
-		// Start line: 483
-		// Start offset: 0x00013CAC
-		// Variables:
-	// 		ANIMATED_OBJECT *aop; // $s1
-	// 		int loop; // $s0
-	// 		int count1; // $a0
-	// 		int count; // $a2
-	// 		MODEL *modelPtr; // $a0
-	/* end block 1 */
-	// End offset: 0x00013DF8
-	// End Line: 528
-
-	/* begin block 2 */
-		// Start line: 1060
-	/* end block 2 */
-	// End Line: 1061
-
-	/* begin block 3 */
-		// Start line: 1061
-	/* end block 3 */
-	// End Line: 1062
-
-	/* begin block 4 */
-		// Start line: 1065
-	/* end block 4 */
-	// End Line: 1066
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
-// [D]
+// [D] [T]
 void InitAnimatingObjects(void)
 {
 	ANIMATED_OBJECT* aop;
 
 	int loop;
-	int count1;
-	int count;
 	MODEL* modelPtr;
 
 	num_anim_objects = Level_NumAnimatedObjects[GameLevel];
@@ -494,32 +327,6 @@ void InitAnimatingObjects(void)
 	InitCyclingPals();
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitSpooledAnimObj(int model_number /*$a0*/)
- // line 536, offset 0x00014828
-	/* begin block 1 */
-		// Start line: 537
-		// Start offset: 0x00014828
-		// Variables:
-	// 		ANIMATED_OBJECT *aop; // $a1
-	// 		int i; // $a2
-	/* end block 1 */
-	// End offset: 0x00014898
-	// End Line: 551
-
-	/* begin block 2 */
-		// Start line: 1072
-	/* end block 2 */
-	// End Line: 1073
-
-	/* begin block 3 */
-		// Start line: 1639
-	/* end block 3 */
-	// End Line: 1640
-
 // [D] [T]
 void InitSpooledAnimObj(int model_number)
 {
@@ -551,27 +358,6 @@ void InitSpooledAnimObj(int model_number)
 
 
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ int_garage_door()
- // line 565, offset 0x000149a8
-	/* begin block 1 */
-		// Start line: 1776
-	/* end block 1 */
-	// End Line: 1777
-
-	/* begin block 2 */
-		// Start line: 1874
-	/* end block 2 */
-	// End Line: 1875
-
-	/* begin block 3 */
-		// Start line: 1875
-	/* end block 3 */
-	// End Line: 1876
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 GARAGE_DOOR CurrentGarage;
 
 // [D] [T]
@@ -579,31 +365,6 @@ void int_garage_door(void)
 {
 	CurrentGarage.cop = NULL;
 }
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ DrawAnimatingObject(MODEL *model /*$a0*/, CELL_OBJECT *cop /*$s3*/, VECTOR *pos /*$a2*/)
- // line 578, offset 0x000148a0
-	/* begin block 1 */
-		// Start line: 579
-		// Start offset: 0x000148A0
-		// Variables:
-	// 		ANIMATED_OBJECT *aop; // $s1
-	// 		int loop; // $s2
-	// 		int type; // $s0
-	/* end block 1 */
-	// End offset: 0x00014950
-	// End Line: 605
-
-	/* begin block 2 */
-		// Start line: 1730
-	/* end block 2 */
-	// End Line: 1731
-
-	/* begin block 3 */
-		// Start line: 1734
-	/* end block 3 */
-	// End Line: 1735
 
 // [A] [T]
 void DrawAllAnimatingObjects(CELL_OBJECT** objects, int num_animated)
@@ -636,30 +397,6 @@ void DrawAllAnimatingObjects(CELL_OBJECT** objects, int num_animated)
 		}
 	}
 }
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ animate_object(CELL_OBJECT *cop /*$s2*/, int type /*$a1*/)
- // line 613, offset 0x00013df8
-	/* begin block 1 */
-		// Start line: 614
-		// Start offset: 0x00013DF8
-		// Variables:
-	// 		short yang; // $s1
-	// 		char phase; // $a0
-	/* end block 1 */
-	// End offset: 0x000146A4
-	// End Line: 896
-
-	/* begin block 2 */
-		// Start line: 1268
-	/* end block 2 */
-	// End Line: 1269
-
-	/* begin block 3 */
-		// Start line: 1354
-	/* end block 3 */
-	// End Line: 1355
 
 // [D] [T]
 void animate_object(CELL_OBJECT* cop, int type)
@@ -907,39 +644,6 @@ void animate_object(CELL_OBJECT* cop, int type)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ animate_garage_door()
- // line 931, offset 0x000146a4
-	/* begin block 1 */
-		// Start line: 933
-		// Start offset: 0x000146A4
-		// Variables:
-	// 		int dx; // $a0
-	// 		int dz; // $v1
-	// 		int dist; // $a0
-	/* end block 1 */
-	// End offset: 0x00014820
-	// End Line: 965
-
-	/* begin block 2 */
-		// Start line: 1997
-	/* end block 2 */
-	// End Line: 1998
-
-	/* begin block 3 */
-		// Start line: 1998
-	/* end block 3 */
-	// End Line: 1999
-
-	/* begin block 4 */
-		// Start line: 1999
-	/* end block 4 */
-	// End Line: 2000
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void animate_garage_door(void)

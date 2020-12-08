@@ -81,36 +81,6 @@ char* MissionName[37] =
 	"Lenny gets caught",
 };
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitialiseMissionDefaults()
- // line 1347, offset 0x0006084c
-	/* begin block 1 */
-		// Start line: 1349
-		// Start offset: 0x0006084C
-		// Variables:
-	// 		int i; // $a0
-	/* end block 1 */
-	// End offset: 0x00060A74
-	// End Line: 1435
-
-	/* begin block 2 */
-		// Start line: 2694
-	/* end block 2 */
-	// End Line: 2695
-
-	/* begin block 3 */
-		// Start line: 2695
-	/* end block 3 */
-	// End Line: 2696
-
-	/* begin block 4 */
-		// Start line: 2698
-	/* end block 4 */
-	// End Line: 2699
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 int gCopDifficultyLevel = 1;
 int gCopRespawnTime = 0;
 
@@ -228,6 +198,35 @@ const int TAIL_TOOFAR = 15900;
 #define MR_DebugWarn
 #endif
 
+int MRCommand(MR_THREAD * thread, u_int cmd);
+int MROperator(MR_THREAD * thread, u_int op);
+int MRFunction(MR_THREAD * thread, u_int fnc);
+void MRInitialiseThread(MR_THREAD * thread, u_int * pc, u_char player);
+void MRStartThread(MR_THREAD * callingthread, u_int addr, u_char player);
+int MRStopThread(MR_THREAD * thread);
+void MRCommitThreadGenocide();
+int MRJump(MR_THREAD * thread, int jump);
+void MRPush(MR_THREAD * thread, int value);
+int MRPop(MR_THREAD * thread);
+int MRGetParam(MR_THREAD * thread);
+int MRGetVariable(MR_THREAD * thread, u_int var);
+void MRSetVariable(MR_THREAD * thread, u_int var, int value);
+int MRProcessTarget(MR_THREAD * thread, MS_TARGET * target);
+int MRRequestCar(MS_TARGET * target);
+void MRHandleCarRequests();
+int MRCreateCar(MS_TARGET* target);
+void MRCancelCarRequest(MS_TARGET * target);
+
+void PreProcessTargets();
+void CompleteAllActiveTargets(int player);
+void SetMissionComplete();
+void SetMissionFailed(FAIL_REASON reason);
+void SetMissionOver(PAUSEMODE mode);
+void ActivateNextFlag();
+int CalcLapTime(int player, int time, int lap);
+void SetCarToBeStolen(MS_TARGET * target, int player);
+void MakePhantomCarEqualPlayerCar();
+
 // [D] [T]
 void InitialiseMissionDefaults(void)
 {
@@ -322,63 +321,6 @@ void InitialiseMissionDefaults(void)
 	gDontResetCarDamage = 0;
 	gStopCops.radius = 0;
 }
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ LoadMission(int missionnum /*$s0*/)
- // line 1437, offset 0x00060a74
-	/* begin block 1 */
-		// Start line: 1438
-		// Start offset: 0x00060A74
-		// Variables:
-	// 		char filename[32]; // stack offset -64
-	// 		unsigned long header; // stack offset -32
-	// 		unsigned long offset; // $s0
-	// 		unsigned long length; // $s1
-	// 		int size; // $t1
-	// 		int i; // $v0
-
-		/* begin block 1.1 */
-			// Start line: 1677
-			// Start offset: 0x00060D88
-			// Variables:
-		// 		int flags; // $a1
-		// 		int time; // $a2
-		/* end block 1.1 */
-		// End offset: 0x00060E04
-		// End Line: 1698
-
-		/* begin block 1.2 */
-			// Start line: 1767
-			// Start offset: 0x00060F84
-			// Variables:
-		// 		_ROUTE_INFO *rinfo; // $s0
-		/* end block 1.2 */
-		// End offset: 0x00061024
-		// End Line: 1793
-
-		/* begin block 1.3 */
-			// Start line: 1830
-			// Start offset: 0x000610FC
-			// Variables:
-		// 		int num; // $v1
-		/* end block 1.3 */
-		// End offset: 0x00061128
-		// End Line: 1841
-	/* end block 1 */
-	// End offset: 0x00061258
-	// End Line: 1879
-
-	/* begin block 2 */
-		// Start line: 2949
-	/* end block 2 */
-	// End Line: 2950
-
-	/* begin block 3 */
-		// Start line: 2952
-	/* end block 3 */
-	// End Line: 2953
 
 
 // [D] [T]
@@ -1110,117 +1052,6 @@ void LoadMission(int missionnum)
 	MRInitialiseThread(&MissionThreads[0], MissionScript, 0);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ HandleMission()
- // line 1881, offset 0x00061274
-	/* begin block 1 */
-		// Start line: 4184
-	/* end block 1 */
-	// End Line: 4185
-
-	/* begin block 2 */
-		// Start line: 4188
-	/* end block 2 */
-	// End Line: 4189
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
-// [D] [T]
-void HandleMission(void)
-{
-	if (!Mission.active)
-		return;
-
-	if(gInGameCutsceneActive)
-		return;
-
-	if(gInGameCutsceneDelay)
-		return;
-
-	// init frame
-	if (CameraCnt == 0)
-	{
-		// mission has countdown
-		if (MissionHeader->type & 4)
-		{
-			HandleMissionThreads();
-
-			Mission.message_timer[0] = 0;
-			Mission.message_timer[1] = 0;
-
-			MRCommitThreadGenocide();
-			MRInitialiseThread(&MissionThreads[0], MissionScript, 0);
-		}
-
-		switch(MissionHeader->type & 0x30)
-		{
-			case 0x20:
-				FelonyBar.flags |= 2;
-			case 0:
-				FelonyBar.active = 1;
-				break;
-			case 0x10:
-				FelonyBar.active = 0;
-			default:
-				FelonyBar.active = 0;
-		}
-	}
-
-	MRHandleCarRequests();
-
-	if (bMissionTitleFade)
-		return;
-
-	if (Handle321Go())
-		return;
-
-	if (HandleGameOver())
-		return;
-
-	if (Mission.message_timer[0] != 0)
-		Mission.message_timer[0]--;
-
-	if (Mission.message_timer[1] != 0)
-		Mission.message_timer[1]--;
-
-	if (Mission.ChaseHitDelay != 0)
-		Mission.ChaseHitDelay--;
-
-	gTannerActionNeeded = 0;
-
-	HandleTimer(&Mission.timer[0]);
-	HandleTimer(&Mission.timer[1]);
-
-	HandleThrownBombs();
-	HandleMissionThreads();
-
-	if(gCopCarTheftAttempted != 0) 
-	{
-		SetMissionMessage(MissionStrings + MissionHeader->msgPoliceCar, 2, 1);
-		gCopCarTheftAttempted = 0;
-	}
-
-	if(gLockPickingAttempted != 0 && NumPlayers == 1)
-	{
-		SetMissionMessage(MissionStrings + MissionHeader->msgDoorsLocked, 2, 1);
-		gLockPickingAttempted = 0;
-	}
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ HandleTimer(MR_TIMER *timer /*$s0*/)
- // line 1962, offset 0x000614a4
-	/* begin block 1 */
-		// Start line: 4347
-	/* end block 1 */
-	// End Line: 4348
-
 // [D] [T]
 void HandleTimer(MR_TIMER *timer)
 {
@@ -1283,21 +1114,6 @@ void HandleTimer(MR_TIMER *timer)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ RegisterChaseHit(int car1 /*$a0*/, int car2 /*$a1*/)
- // line 2015, offset 0x00061684
-	/* begin block 1 */
-		// Start line: 4464
-	/* end block 1 */
-	// End Line: 4465
-
-	/* begin block 2 */
-		// Start line: 4465
-	/* end block 2 */
-	// End Line: 4466
-
 // [D] [T]
 void RegisterChaseHit(int car1, int car2)
 {
@@ -1329,26 +1145,6 @@ void RegisterChaseHit(int car1, int car2)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ PauseMissionTimer(int pause /*$a0*/)
- // line 2046, offset 0x00064268
-	/* begin block 1 */
-		// Start line: 6575
-	/* end block 1 */
-	// End Line: 6576
-
-	/* begin block 2 */
-		// Start line: 4092
-	/* end block 2 */
-	// End Line: 4093
-
-	/* begin block 3 */
-		// Start line: 6576
-	/* end block 3 */
-	// End Line: 6577
-
 // [D] [T]
 void PauseMissionTimer(int pause)
 {
@@ -1363,31 +1159,6 @@ void PauseMissionTimer(int pause)
 		Mission.timer[1].flags |= 4;
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetMissionMessage(char *message /*$a0*/, int priority /*$a1*/, int seconds /*$a2*/)
- // line 2060, offset 0x000642a8
-	/* begin block 1 */
-		// Start line: 2061
-		// Start offset: 0x000642A8
-		// Variables:
-	// 		int i; // $a3
-	/* end block 1 */
-	// End offset: 0x00064340
-	// End Line: 2079
-
-	/* begin block 2 */
-		// Start line: 6606
-	/* end block 2 */
-	// End Line: 6607
-
-	/* begin block 3 */
-		// Start line: 6609
-	/* end block 3 */
-	// End Line: 6610
 
 // [D] [T]
 void SetMissionMessage(char *message, int priority, int seconds)
@@ -1419,22 +1190,6 @@ void SetMissionMessage(char *message, int priority, int seconds)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetPlayerMessage(int player /*$a0*/, char *message /*$a1*/, int priority /*$a2*/, int seconds /*$a3*/)
- // line 2081, offset 0x00064348
-	/* begin block 1 */
-		// Start line: 6657
-	/* end block 1 */
-	// End Line: 6658
-
-	/* begin block 2 */
-		// Start line: 6658
-	/* end block 2 */
-	// End Line: 6659
-
 // [D] [T]
 void SetPlayerMessage(int player, char *message, int priority, int seconds)
 {
@@ -1449,30 +1204,6 @@ void SetPlayerMessage(int player, char *message, int priority, int seconds)
 	Mission.message_timer[player] = seconds * 30;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ TargetComplete(MS_TARGET *target /*$a0*/, int player /*$a1*/)
- // line 2094, offset 0x000643c4
-	/* begin block 1 */
-		// Start line: 2095
-		// Start offset: 0x000643C4
-		// Variables:
-	// 		unsigned long complete; // $a0
-	/* end block 1 */
-	// End offset: 0x00064408
-	// End Line: 2115
-
-	/* begin block 2 */
-		// Start line: 6685
-	/* end block 2 */
-	// End Line: 6686
-
-	/* begin block 3 */
-		// Start line: 6688
-	/* end block 3 */
-	// End Line: 6689
 
 // [D] [T]
 int TargetComplete(MS_TARGET *target, int player)
@@ -1503,35 +1234,6 @@ int TargetComplete(MS_TARGET *target, int player)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ TargetActive(MS_TARGET *target /*$a0*/, int player /*$a1*/)
- // line 2117, offset 0x00064408
-	/* begin block 1 */
-		// Start line: 2118
-		// Start offset: 0x00064408
-		// Variables:
-	// 		unsigned long active; // $a0
-	/* end block 1 */
-	// End offset: 0x0006444C
-	// End Line: 2138
-
-	/* begin block 2 */
-		// Start line: 6728
-	/* end block 2 */
-	// End Line: 6729
-
-	/* begin block 3 */
-		// Start line: 6731
-	/* end block 3 */
-	// End Line: 6732
-
-	/* begin block 4 */
-		// Start line: 6734
-	/* end block 4 */
-	// End Line: 6735
-
 // [D] [T]
 int TargetActive(MS_TARGET *target, int player)
 {
@@ -1557,32 +1259,6 @@ int TargetActive(MS_TARGET *target, int player)
 	return active != 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ Swap2Cars(int curslot /*$a3*/, int newslot /*$s1*/)
- // line 2140, offset 0x00061784
-	/* begin block 1 */
-		// Start line: 2141
-		// Start offset: 0x00061784
-		// Variables:
-	// 		CAR_DATA cd; // stack offset -704
-	// 		CAR_DATA *cp; // $s0
-	// 		int ctrlNodeCurId; // $s4
-	// 		int pnodeCurId; // $s5
-	// 		int ctrlNodeNewId; // $t2
-	// 		int pnodeNewId; // $t3
-	/* end block 1 */
-	// End offset: 0x00061C5C
-	// End Line: 2221
-
-	/* begin block 2 */
-		// Start line: 4728
-	/* end block 2 */
-	// End Line: 4729
-
-/* WARNING: Type propagation algorithm not settling */
 
 // [D] [T]
 int Swap2Cars(int curslot, int newslot)
@@ -1724,27 +1400,6 @@ int Swap2Cars(int curslot, int newslot)
 	return newslot;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetConfusedCar(int slot /*$a0*/)
- // line 2223, offset 0x0006444c
-	/* begin block 1 */
-		// Start line: 6857
-	/* end block 1 */
-	// End Line: 6858
-
-	/* begin block 2 */
-		// Start line: 6943
-	/* end block 2 */
-	// End Line: 6944
-
-	/* begin block 3 */
-		// Start line: 6944
-	/* end block 3 */
-	// End Line: 6945
-
 // [D] [T]
 void SetConfusedCar(int slot)
 {
@@ -1756,45 +1411,6 @@ void SetConfusedCar(int slot)
 	car_data[slot].ai.c.ctrlNode = NULL;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ HandleMissionThreads()
- // line 2234, offset 0x00061c5c
-	/* begin block 1 */
-		// Start line: 2236
-		// Start offset: 0x00061C5C
-		// Variables:
-	// 		MR_THREAD *thread; // $s0
-	// 		int running; // $s1
-	// 		unsigned long value; // $a1
-	// 		int i; // $a0
-	/* end block 1 */
-	// End offset: 0x00061E3C
-	// End Line: 2277
-
-	/* begin block 2 */
-		// Start line: 4922
-	/* end block 2 */
-	// End Line: 4923
-
-	/* begin block 3 */
-		// Start line: 4936
-	/* end block 3 */
-	// End Line: 4937
-
-	/* begin block 4 */
-		// Start line: 4937
-	/* end block 4 */
-	// End Line: 4938
-
-	/* begin block 5 */
-		// Start line: 4943
-	/* end block 5 */
-	// End Line: 4944
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void HandleMissionThreads(void)
@@ -1841,37 +1457,6 @@ void HandleMissionThreads(void)
 		}
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ MRCommand(MR_THREAD *thread /*$s1*/, unsigned long cmd /*$a1*/)
- // line 2279, offset 0x00061e3c
-	/* begin block 1 */
-		// Start line: 2280
-		// Start offset: 0x00061E3C
-		// Variables:
-	// 		unsigned long val1; // $s0
-	// 		unsigned long val2; // $s0
-	/* end block 1 */
-	// End offset: 0x00062470
-	// End Line: 2439
-
-	/* begin block 2 */
-		// Start line: 5054
-	/* end block 2 */
-	// End Line: 5055
-
-	/* begin block 3 */
-		// Start line: 5057
-	/* end block 3 */
-	// End Line: 5058
-
-	/* begin block 4 */
-		// Start line: 5060
-	/* end block 4 */
-	// End Line: 5061
 
 // [D] [T]
 int MRCommand(MR_THREAD *thread, u_int cmd)
@@ -2098,33 +1683,6 @@ int MRCommand(MR_THREAD *thread, u_int cmd)
 	return 1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ MROperator(MR_THREAD *thread /*$s3*/, unsigned long op /*$s0*/)
- // line 2441, offset 0x00064498
-	/* begin block 1 */
-		// Start line: 2442
-		// Start offset: 0x00064498
-		// Variables:
-	// 		int result; // $s2
-	// 		long val1; // $s1
-	// 		long val2; // $a1
-	/* end block 1 */
-	// End offset: 0x000645AC
-	// End Line: 2492
-
-	/* begin block 2 */
-		// Start line: 7382
-	/* end block 2 */
-	// End Line: 7383
-
-	/* begin block 3 */
-		// Start line: 7383
-	/* end block 3 */
-	// End Line: 7384
-
 // [D] [T]
 int MROperator(MR_THREAD *thread, u_int op)
 {
@@ -2174,34 +1732,6 @@ int MROperator(MR_THREAD *thread, u_int op)
     return 1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ MRFunction(MR_THREAD *thread /*$s0*/, unsigned long fnc /*$a1*/)
- // line 2494, offset 0x000645ac
-	/* begin block 1 */
-		// Start line: 2495
-		// Start offset: 0x000645AC
-	/* end block 1 */
-	// End offset: 0x00064614
-	// End Line: 2511
-
-	/* begin block 2 */
-		// Start line: 7489
-	/* end block 2 */
-	// End Line: 7490
-
-	/* begin block 3 */
-		// Start line: 7492
-	/* end block 3 */
-	// End Line: 7493
-
-	/* begin block 4 */
-		// Start line: 7495
-	/* end block 4 */
-	// End Line: 7496
-
 // [D] [T]
 int MRFunction(MR_THREAD *thread, u_int fnc)
 {
@@ -2220,27 +1750,6 @@ int MRFunction(MR_THREAD *thread, u_int fnc)
 	return MRStopThread(thread);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ MRInitialiseThread(MR_THREAD *thread /*$a0*/, unsigned long *pc /*$a1*/, unsigned char player /*$a2*/)
- // line 2514, offset 0x00064614
-	/* begin block 1 */
-		// Start line: 7538
-	/* end block 1 */
-	// End Line: 7539
-
-	/* begin block 2 */
-		// Start line: 7542
-	/* end block 2 */
-	// End Line: 7543
-
-	/* begin block 3 */
-		// Start line: 7545
-	/* end block 3 */
-	// End Line: 7546
-
 // [D] [T]
 void MRInitialiseThread(MR_THREAD *thread, u_int *pc, u_char player)
 {
@@ -2250,30 +1759,6 @@ void MRInitialiseThread(MR_THREAD *thread, u_int *pc, u_char player)
 	thread->sp = thread->initial_sp;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ MRStartThread(MR_THREAD *callingthread /*$t0*/, unsigned long addr /*$a1*/, unsigned char player /*$a2*/)
- // line 2526, offset 0x00064630
-	/* begin block 1 */
-		// Start line: 2527
-		// Start offset: 0x00064630
-		// Variables:
-	// 		int i; // $v1
-	/* end block 1 */
-	// End offset: 0x00064680
-	// End Line: 2543
-
-	/* begin block 2 */
-		// Start line: 7561
-	/* end block 2 */
-	// End Line: 7562
-
-	/* begin block 3 */
-		// Start line: 7569
-	/* end block 3 */
-	// End Line: 7570
 
 // [D] [T]
 void MRStartThread(MR_THREAD *callingthread, u_int addr, unsigned char player)
@@ -2289,60 +1774,12 @@ void MRStartThread(MR_THREAD *callingthread, u_int addr, unsigned char player)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ MRStopThread(MR_THREAD *thread /*$a0*/)
- // line 2545, offset 0x00064690
-	/* begin block 1 */
-		// Start line: 7613
-	/* end block 1 */
-	// End Line: 7614
-
-	/* begin block 2 */
-		// Start line: 7614
-	/* end block 2 */
-	// End Line: 7615
-
 // [D] [T]
 int MRStopThread(MR_THREAD *thread)
 {
 	thread->active = 0;
 	return 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ MRCommitThreadGenocide()
- // line 2551, offset 0x0006469c
-	/* begin block 1 */
-		// Start line: 2553
-		// Start offset: 0x0006469C
-		// Variables:
-	// 		int i; // $s0
-	/* end block 1 */
-	// End offset: 0x000646E0
-	// End Line: 2557
-
-	/* begin block 2 */
-		// Start line: 7625
-	/* end block 2 */
-	// End Line: 7626
-
-	/* begin block 3 */
-		// Start line: 7626
-	/* end block 3 */
-	// End Line: 7627
-
-	/* begin block 4 */
-		// Start line: 7628
-	/* end block 4 */
-	// End Line: 7629
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void MRCommitThreadGenocide(void)
@@ -2351,22 +1788,6 @@ void MRCommitThreadGenocide(void)
 	for (i = 0; i < 16; i++)
 		MRStopThread(&MissionThreads[i]);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ MRJump(MR_THREAD *thread /*$a2*/, long jump /*$a1*/)
- // line 2560, offset 0x000646e0
-	/* begin block 1 */
-		// Start line: 7640
-	/* end block 1 */
-	// End Line: 7641
-
-	/* begin block 2 */
-		// Start line: 7644
-	/* end block 2 */
-	// End Line: 7645
 
 // [D] [T]
 int MRJump(MR_THREAD *thread, int jump)
@@ -2378,27 +1799,6 @@ int MRJump(MR_THREAD *thread, int jump)
 	return ~jump >> 31;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ MRPush(MR_THREAD *thread /*$a0*/, long value /*$a1*/)
- // line 2575, offset 0x0006472c
-	/* begin block 1 */
-		// Start line: 7678
-	/* end block 1 */
-	// End Line: 7679
-
-	/* begin block 2 */
-		// Start line: 7682
-	/* end block 2 */
-	// End Line: 7683
-
-	/* begin block 3 */
-		// Start line: 7688
-	/* end block 3 */
-	// End Line: 7689
-
 // [D] [T]
 void MRPush(MR_THREAD *thread, int value)
 {
@@ -2406,60 +1806,12 @@ void MRPush(MR_THREAD *thread, int value)
 	thread->sp++;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// long /*$ra*/ MRPop(MR_THREAD *thread /*$a0*/)
- // line 2585, offset 0x00064744
-	/* begin block 1 */
-		// Start line: 2586
-		// Start offset: 0x00064744
-	/* end block 1 */
-	// End offset: 0x00064760
-	// End Line: 2597
-
-	/* begin block 2 */
-		// Start line: 7702
-	/* end block 2 */
-	// End Line: 7703
-
-	/* begin block 3 */
-		// Start line: 7705
-	/* end block 3 */
-	// End Line: 7706
-
 // [D] [T]
 int MRPop(MR_THREAD *thread)
 {
 	thread->sp--;
 	return *thread->sp;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// long /*$ra*/ MRGetParam(MR_THREAD *thread /*$s0*/)
- // line 2600, offset 0x00064760
-	/* begin block 1 */
-		// Start line: 2601
-		// Start offset: 0x00064760
-		// Variables:
-	// 		long value; // $a1
-	/* end block 1 */
-	// End offset: 0x000647CC
-	// End Line: 2620
-
-	/* begin block 2 */
-		// Start line: 7728
-	/* end block 2 */
-	// End Line: 7729
-
-	/* begin block 3 */
-		// Start line: 7732
-	/* end block 3 */
-	// End Line: 7733
 
 // [D] [T]
 int MRGetParam(MR_THREAD *thread)
@@ -2480,27 +1832,6 @@ int MRGetParam(MR_THREAD *thread)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// long /*$ra*/ MRGetVariable(MR_THREAD *thread /*$a2*/, unsigned long var /*$a1*/)
- // line 2622, offset 0x000647cc
-	/* begin block 1 */
-		// Start line: 7773
-	/* end block 1 */
-	// End Line: 7774
-
-	/* begin block 2 */
-		// Start line: 7776
-	/* end block 2 */
-	// End Line: 7777
-
-	/* begin block 3 */
-		// Start line: 7777
-	/* end block 3 */
-	// End Line: 7778
-
 // [D] [T]
 int MRGetVariable(MR_THREAD *thread, u_int var)
 {
@@ -2520,22 +1851,6 @@ int MRGetVariable(MR_THREAD *thread, u_int var)
 	
 	return 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ MRSetVariable(MR_THREAD *thread /*$v1*/, unsigned long var /*$a1*/, long value /*$a2*/)
- // line 2648, offset 0x000648b0
-	/* begin block 1 */
-		// Start line: 7828
-	/* end block 1 */
-	// End Line: 7829
-
-	/* begin block 2 */
-		// Start line: 7829
-	/* end block 2 */
-	// End Line: 7830
 
 // [D] [T]
 void MRSetVariable(MR_THREAD *thread, u_int var, int value)
@@ -2581,98 +1896,6 @@ void MRSetVariable(MR_THREAD *thread, u_int var, int value)
 		break;
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ MRProcessTarget(MR_THREAD *thread /*$s7*/, MS_TARGET *target /*$s5*/)
- // line 2701, offset 0x00062470
-	/* begin block 1 */
-		// Start line: 2702
-		// Start offset: 0x00062470
-		// Variables:
-	// 		VECTOR tv; // stack offset -96
-	// 		VECTOR pv; // stack offset -80
-	// 		int ret; // $fp
-	// 		unsigned long dist; // $s6
-	// 		int slot; // stack offset -48
-	// 		int message; // $v0
-	// 		int sample; // $a0
-
-		/* begin block 1.1 */
-			// Start line: 2859
-			// Start offset: 0x000629BC
-			// Variables:
-		// 		unsigned long message; // $s1
-		// 		unsigned long timer; // $s0
-		// 		unsigned long delay; // $s2
-		/* end block 1.1 */
-		// End offset: 0x00062A2C
-		// End Line: 2874
-
-		/* begin block 1.2 */
-			// Start line: 2934
-			// Start offset: 0x00062BFC
-			// Variables:
-		// 		int direction; // $s0
-		// 		LONGVECTOR pos; // stack offset -64
-		// 		int *inform; // $s4
-		// 		CAR_DATA *cp; // $v0
-		/* end block 1.2 */
-		// End offset: 0x00062BFC
-		// End Line: 2940
-
-		/* begin block 1.3 */
-			// Start line: 3069
-			// Start offset: 0x00063028
-			// Variables:
-		// 		LONGVECTOR pos; // stack offset -64
-		/* end block 1.3 */
-		// End offset: 0x00063090
-		// End Line: 3076
-
-		/* begin block 1.4 */
-			// Start line: 3104
-			// Start offset: 0x0006319C
-		/* end block 1.4 */
-		// End offset: 0x0006319C
-		// End Line: 3104
-
-		/* begin block 1.5 */
-			// Start line: 3135
-			// Start offset: 0x00063254
-		/* end block 1.5 */
-		// End offset: 0x00063254
-		// End Line: 3135
-
-		/* begin block 1.6 */
-			// Start line: 3158
-			// Start offset: 0x00063318
-		/* end block 1.6 */
-		// End offset: 0x00063318
-		// End Line: 3158
-	/* end block 1 */
-	// End offset: 0x00063728
-	// End Line: 3294
-
-	/* begin block 2 */
-		// Start line: 5641
-	/* end block 2 */
-	// End Line: 5642
-
-	/* begin block 3 */
-		// Start line: 5904
-	/* end block 3 */
-	// End Line: 5905
-
-	/* begin block 4 */
-		// Start line: 5906
-	/* end block 4 */
-	// End Line: 5907
-
-/* WARNING: Type propagation algorithm not settling */
-/* WARNING: Could not reconcile some variable overlaps */
 
 // [D] [T]
 int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
@@ -3348,22 +2571,6 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 	return ret;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ MRRequestCar(MS_TARGET *target /*$a0*/)
- // line 3296, offset 0x000649e4
-	/* begin block 1 */
-		// Start line: 9124
-	/* end block 1 */
-	// End Line: 9125
-
-	/* begin block 2 */
-		// Start line: 9125
-	/* end block 2 */
-	// End Line: 9126
-
 // [D] [T]
 int MRRequestCar(MS_TARGET *target)
 {
@@ -3374,24 +2581,6 @@ int MRRequestCar(MS_TARGET *target)
 	}
 	return 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ MRHandleCarRequests()
- // line 3305, offset 0x00064a24
-	/* begin block 1 */
-		// Start line: 9142
-	/* end block 1 */
-	// End Line: 9143
-
-	/* begin block 2 */
-		// Start line: 9143
-	/* end block 2 */
-	// End Line: 9144
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void MRHandleCarRequests(void)
@@ -3405,39 +2594,6 @@ void MRHandleCarRequests(void)
 	if (Mission.CarTarget)
 		MRCreateCar(Mission.CarTarget);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ MRCreateCar(MS_TARGET *target /*$s1*/)
- // line 3311, offset 0x00063728
-	/* begin block 1 */
-		// Start line: 3312
-		// Start offset: 0x00063728
-		// Variables:
-	// 		LONGVECTOR pos; // stack offset -64
-	// 		int actAsCop; // $s2
-	// 		int damaged; // $s7
-	// 		int model; // $s4
-	// 		int palette; // $s5
-	// 		int dir; // $s3
-	// 		int rot; // $a2
-	// 		int id; // $s0
-	// 		char playerid; // stack offset -48
-	/* end block 1 */
-	// End offset: 0x000639A0
-	// End Line: 3390
-
-	/* begin block 2 */
-		// Start line: 7197
-	/* end block 2 */
-	// End Line: 7198
-
-	/* begin block 3 */
-		// Start line: 7215
-	/* end block 3 */
-	// End Line: 7216
 
 // [D] [T]
 int MRCreateCar(MS_TARGET *target)
@@ -3514,65 +2670,12 @@ int MRCreateCar(MS_TARGET *target)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ MRCancelCarRequest(MS_TARGET *target /*$a0*/)
- // line 3392, offset 0x00064a50
-	/* begin block 1 */
-		// Start line: 9316
-	/* end block 1 */
-	// End Line: 9317
-
-	/* begin block 2 */
-		// Start line: 9317
-	/* end block 2 */
-	// End Line: 9318
-
 // [D] [T]
 void MRCancelCarRequest(MS_TARGET *target)
 {
 	if (Mission.CarTarget == target)
 		Mission.CarTarget = NULL;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ PreProcessTargets()
- // line 3398, offset 0x000639a0
-	/* begin block 1 */
-		// Start line: 3400
-		// Start offset: 0x000639A0
-		// Variables:
-	// 		MS_TARGET *target; // $s0
-	// 		int i; // $s1
-	/* end block 1 */
-	// End offset: 0x00063B78
-	// End Line: 3450
-
-	/* begin block 2 */
-		// Start line: 7449
-	/* end block 2 */
-	// End Line: 7450
-
-	/* begin block 3 */
-		// Start line: 7458
-	/* end block 3 */
-	// End Line: 7459
-
-	/* begin block 4 */
-		// Start line: 7459
-	/* end block 4 */
-	// End Line: 7460
-
-	/* begin block 5 */
-		// Start line: 7462
-	/* end block 5 */
-	// End Line: 7463
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void PreProcessTargets(void)
@@ -3639,36 +2742,6 @@ void PreProcessTargets(void)
 	} while (i >= 0);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ Handle321Go()
- // line 3452, offset 0x00064a74
-	/* begin block 1 */
-		// Start line: 3454
-		// Start offset: 0x00064A74
-	/* end block 1 */
-	// End offset: 0x00064AD0
-	// End Line: 3467
-
-	/* begin block 2 */
-		// Start line: 9436
-	/* end block 2 */
-	// End Line: 9437
-
-	/* begin block 3 */
-		// Start line: 9437
-	/* end block 3 */
-	// End Line: 9438
-
-	/* begin block 4 */
-		// Start line: 9439
-	/* end block 4 */
-	// End Line: 9440
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 extern int gStopPadReads;
 
 // [D] [T]
@@ -3689,57 +2762,6 @@ int Handle321Go(void)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ HandleGameOver()
- // line 3469, offset 0x00063b78
-	/* begin block 1 */
-		// Start line: 3472
-		// Start offset: 0x00063B78
-
-		/* begin block 1.1 */
-			// Start line: 3474
-			// Start offset: 0x00063BB8
-			// Variables:
-		// 		PLAYER *lp; // $s0
-		// 		CAR_DATA *cp; // $a2
-		// 		int i; // $s2
-		// 		int playersdead; // $s3
-
-			/* begin block 1.1.1 */
-				// Start line: 3510
-				// Start offset: 0x00063CE4
-				// Variables:
-			// 		int surfInd; // $v1
-			/* end block 1.1.1 */
-			// End offset: 0x00063D7C
-			// End Line: 3522
-		/* end block 1.1 */
-		// End offset: 0x00063EE4
-		// End Line: 3565
-	/* end block 1 */
-	// End offset: 0x00063F84
-	// End Line: 3589
-
-	/* begin block 2 */
-		// Start line: 7627
-	/* end block 2 */
-	// End Line: 7628
-
-	/* begin block 3 */
-		// Start line: 7647
-	/* end block 3 */
-	// End Line: 7648
-
-	/* begin block 4 */
-		// Start line: 7649
-	/* end block 4 */
-	// End Line: 7650
-
-/* WARNING: Type propagation algorithm not settling */
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 extern int test42;	// why 42?
 
@@ -3893,43 +2915,6 @@ int HandleGameOver(void)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ CompleteAllActiveTargets(int player /*$a0*/)
- // line 3591, offset 0x00064ad0
-	/* begin block 1 */
-		// Start line: 3593
-		// Start offset: 0x00064AD0
-		// Variables:
-	// 		int i; // $a1
-	// 		int flag1; // $a3
-	// 		int flag2; // $a2
-	/* end block 1 */
-	// End offset: 0x00064B38
-	// End Line: 3621
-
-	/* begin block 2 */
-		// Start line: 9591
-	/* end block 2 */
-	// End Line: 9592
-
-	/* begin block 3 */
-		// Start line: 9716
-	/* end block 3 */
-	// End Line: 9717
-
-	/* begin block 4 */
-		// Start line: 9717
-	/* end block 4 */
-	// End Line: 9718
-
-	/* begin block 5 */
-		// Start line: 9719
-	/* end block 5 */
-	// End Line: 9720
-
 // [D] [T]
 void CompleteAllActiveTargets(int player)
 {
@@ -3958,29 +2943,6 @@ void CompleteAllActiveTargets(int player)
 		pTarget++;
 	} while (i < 16);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetMissionComplete()
- // line 3623, offset 0x00063f84
-	/* begin block 1 */
-		// Start line: 7986
-	/* end block 1 */
-	// End Line: 7987
-
-	/* begin block 2 */
-		// Start line: 8021
-	/* end block 2 */
-	// End Line: 8022
-
-	/* begin block 3 */
-		// Start line: 8022
-	/* end block 3 */
-	// End Line: 8023
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void SetMissionComplete(void)
@@ -4044,21 +3006,6 @@ void SetMissionComplete(void)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetMissionFailed(FAIL_REASON reason /*$a0*/)
- // line 3684, offset 0x00064b38
-	/* begin block 1 */
-		// Start line: 9846
-	/* end block 1 */
-	// End Line: 9847
-
-	/* begin block 2 */
-		// Start line: 9910
-	/* end block 2 */
-	// End Line: 9911
-
 // [D] [T]
 void SetMissionFailed(FAIL_REASON reason)
 {
@@ -4076,17 +3023,6 @@ void SetMissionFailed(FAIL_REASON reason)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetMissionOver(PAUSEMODE mode /*$a0*/)
- // line 3704, offset 0x00064bd8
-	/* begin block 1 */
-		// Start line: 9950
-	/* end block 1 */
-	// End Line: 9951
-
-
 // [D] [T]
 void SetMissionOver(PAUSEMODE mode)
 {
@@ -4099,39 +3035,6 @@ void SetMissionOver(PAUSEMODE mode)
 	Mission.gameover_mode = mode;
 	Mission.ChaseTarget = NULL;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ActivateNextFlag()
- // line 3716, offset 0x000641a8
-	/* begin block 1 */
-		// Start line: 3718
-		// Start offset: 0x000641A8
-		// Variables:
-	// 		int i; // $a3
-	// 		int j; // $a1
-	/* end block 1 */
-	// End offset: 0x00064268
-	// End Line: 3739
-
-	/* begin block 2 */
-		// Start line: 8207
-	/* end block 2 */
-	// End Line: 8208
-
-	/* begin block 3 */
-		// Start line: 8208
-	/* end block 3 */
-	// End Line: 8209
-
-	/* begin block 4 */
-		// Start line: 8211
-	/* end block 4 */
-	// End Line: 8212
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D]
 void ActivateNextFlag(void)
@@ -4166,32 +3069,6 @@ void ActivateNextFlag(void)
 	last_flag = j;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CalcLapTime(int player /*$a0*/, int time /*$a1*/, int lap /*$a2*/)
- // line 3760, offset 0x00064c24
-	/* begin block 1 */
-		// Start line: 3761
-		// Start offset: 0x00064C24
-		// Variables:
-	// 		int i; // $a2
-	// 		int ptime; // $a3
-	/* end block 1 */
-	// End offset: 0x00064C60
-	// End Line: 3768
-
-	/* begin block 2 */
-		// Start line: 10067
-	/* end block 2 */
-	// End Line: 10068
-
-	/* begin block 3 */
-		// Start line: 10070
-	/* end block 3 */
-	// End Line: 10071
-
 // [D] [T]
 int CalcLapTime(int player, int time, int lap)
 {
@@ -4210,21 +3087,13 @@ int CalcLapTime(int player, int time, int lap)
 	return time - ptime;
 }
 
+// [D]
+void MakePhantomCarEqualPlayerCar(void)
+{
+	if (player[0].playerType == 1)
+		Mission.PhantomCarId = player[0].playerCarId;
+}
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetCarToBeStolen(MS_TARGET *target /*$s0*/, int player /*$s1*/)
- // line 3770, offset 0x00064c60
-	/* begin block 1 */
-		// Start line: 10085
-	/* end block 1 */
-	// End Line: 10086
-
-	/* begin block 2 */
-		// Start line: 10088
-	/* end block 2 */
-	// End Line: 10089
 
 // [D]
 void SetCarToBeStolen(MS_TARGET *target, int player)
@@ -4241,25 +3110,84 @@ void SetCarToBeStolen(MS_TARGET *target, int player)
 
 
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ MakePhantomCarEqualPlayerCar()
- // line 3781, offset 0x00064cd0
-	/* begin block 1 */
-		// Start line: 10113
-	/* end block 1 */
-	// End Line: 10114
-
-	/* begin block 2 */
-		// Start line: 10114
-	/* end block 2 */
-	// End Line: 10115
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
-// [D]
-void MakePhantomCarEqualPlayerCar(void)
+// [D] [T]
+void HandleMission(void)
 {
-	if (player[0].playerType == 1)
-		Mission.PhantomCarId = player[0].playerCarId;
+	if (!Mission.active)
+		return;
+
+	if (gInGameCutsceneActive)
+		return;
+
+	if (gInGameCutsceneDelay)
+		return;
+
+	// init frame
+	if (CameraCnt == 0)
+	{
+		// mission has countdown
+		if (MissionHeader->type & 4)
+		{
+			HandleMissionThreads();
+
+			Mission.message_timer[0] = 0;
+			Mission.message_timer[1] = 0;
+
+			MRCommitThreadGenocide();
+			MRInitialiseThread(&MissionThreads[0], MissionScript, 0);
+		}
+
+		switch (MissionHeader->type & 0x30)
+		{
+		case 0x20:
+			FelonyBar.flags |= 2;
+		case 0:
+			FelonyBar.active = 1;
+			break;
+		case 0x10:
+			FelonyBar.active = 0;
+		default:
+			FelonyBar.active = 0;
+		}
+	}
+
+	MRHandleCarRequests();
+
+	if (bMissionTitleFade)
+		return;
+
+	if (Handle321Go())
+		return;
+
+	if (HandleGameOver())
+		return;
+
+	if (Mission.message_timer[0] != 0)
+		Mission.message_timer[0]--;
+
+	if (Mission.message_timer[1] != 0)
+		Mission.message_timer[1]--;
+
+	if (Mission.ChaseHitDelay != 0)
+		Mission.ChaseHitDelay--;
+
+	gTannerActionNeeded = 0;
+
+	HandleTimer(&Mission.timer[0]);
+	HandleTimer(&Mission.timer[1]);
+
+	HandleThrownBombs();
+	HandleMissionThreads();
+
+	if (gCopCarTheftAttempted != 0)
+	{
+		SetMissionMessage(MissionStrings + MissionHeader->msgPoliceCar, 2, 1);
+		gCopCarTheftAttempted = 0;
+	}
+
+	if (gLockPickingAttempted != 0 && NumPlayers == 1)
+	{
+		SetMissionMessage(MissionStrings + MissionHeader->msgDoorsLocked, 2, 1);
+		gLockPickingAttempted = 0;
+	}
 }

@@ -38,7 +38,10 @@ extern int CreateCivCarWotDrivesABitThenStops(int direction, LONGVECTOR4* startP
 extern int CreateStationaryCivCar(int direction, long orientX, long orientZ, LONGVECTOR4* startPos, int externalModel, int palette, int controlFlags); // 0x00028960
 
 extern int CheckChangeLanes(DRIVER2_STRAIGHT* straight, DRIVER2_CURVE* curve, int distAlongSegment, CAR_DATA* cp, int tryToPark); // 0x00026F20
+extern int NotTravellingAlongCurve(int x, int z, int dir, DRIVER2_CURVE* cv);
 
 extern int CivControl(CAR_DATA* cp); // 0x0002CE10
+
+
 
 #endif

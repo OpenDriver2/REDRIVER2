@@ -313,117 +313,6 @@ DAMAGED_LAMP damaged_lamp[MAX_DAMAGED_LAMPS];
 MATRIX debris_mat;
 MATRIX leaf_mat;
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ PlacePoolForCar(CAR_DATA *cp /*$s4*/, CVECTOR *col /*stack 4*/, int front /*$a2*/)
- // line 790, offset 0x00032c10
-	/* begin block 1 */
-		// Start line: 791
-		// Start offset: 0x00032C10
-		// Variables:
-	// 		int car_road_height; // $s2
-	// 		SVECTOR s[27]; // stack offset -832
-	// 		SVECTOR *ptr; // $s1
-	// 		SVECTOR sout[27]; // stack offset -616
-	// 		VECTOR s1[12]; // stack offset -400
-	// 		VECTOR *ptr1; // $s0
-	// 		POLY_FT4 *poly; // $t0
-	// 		MATRIX final_matrix; // stack offset -208
-	// 		VECTOR averagepos; // stack offset -176
-	// 		int in_car; // $t0
-	// 		int z; // stack offset -48
-	// 		int sub_level; // $fp
-	// 		int count; // $s3
-	// 		VECTOR mid_position; // stack offset -160
-
-		/* begin block 1.1 */
-			// Start line: 813
-			// Start offset: 0x00032CEC
-			// Variables:
-		// 		short farz; // $a2
-		// 		short nearz; // $a0
-		/* end block 1.1 */
-		// End offset: 0x00032EC0
-		// End Line: 898
-
-		/* begin block 1.2 */
-			// Start line: 904
-			// Start offset: 0x00032ED0
-		/* end block 1.2 */
-		// End offset: 0x00032F38
-		// End Line: 920
-
-		/* begin block 1.3 */
-			// Start line: 937
-			// Start offset: 0x00032FB4
-			// Variables:
-		// 		VECTOR toss; // stack offset -144
-		// 		int temp_y; // $a1
-		/* end block 1.3 */
-		// End offset: 0x0003306C
-		// End Line: 951
-
-		/* begin block 1.4 */
-			// Start line: 954
-			// Start offset: 0x000330A4
-			// Variables:
-		// 		LONGVECTOR n; // stack offset -128
-		/* end block 1.4 */
-		// End offset: 0x0003316C
-		// End Line: 960
-
-		/* begin block 1.5 */
-			// Start line: 967
-			// Start offset: 0x000331F0
-			// Variables:
-		// 		int count; // $s2
-
-			/* begin block 1.5.1 */
-				// Start line: 996
-				// Start offset: 0x000333C4
-				// Variables:
-			// 		long z[15]; // stack offset -112
-
-				/* begin block 1.5.1.1 */
-					// Start line: 1006
-					// Start offset: 0x0003341C
-					// Variables:
-				// 		char *VertIdx; // $s0
-
-					/* begin block 1.5.1.1.1 */
-						// Start line: 1018
-						// Start offset: 0x0003349C
-					/* end block 1.5.1.1.1 */
-					// End offset: 0x0003352C
-					// End Line: 1023
-				/* end block 1.5.1.1 */
-				// End offset: 0x0003352C
-				// End Line: 1024
-			/* end block 1.5.1 */
-			// End offset: 0x0003353C
-			// End Line: 1025
-		/* end block 1.5 */
-		// End offset: 0x0003353C
-		// End Line: 1027
-	/* end block 1 */
-	// End offset: 0x00033544
-	// End Line: 1029
-
-	/* begin block 2 */
-		// Start line: 1580
-	/* end block 2 */
-	// End Line: 1581
-
-	/* begin block 3 */
-		// Start line: 1590
-	/* end block 3 */
-	// End Line: 1591
-
-/* WARNING: Could not reconcile some variable overlaps */
-
-//POLY_G3 *spolys = NULL;
-//short light_col = 0;
-
 // [D] [T]
 void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 {
@@ -664,29 +553,6 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ AllocateLeaf()
- // line 1297, offset 0x00039a90
-	/* begin block 1 */
-		// Start line: 8721
-	/* end block 1 */
-	// End Line: 8722
-
-	/* begin block 2 */
-		// Start line: 2594
-	/* end block 2 */
-	// End Line: 2595
-
-	/* begin block 3 */
-		// Start line: 8722
-	/* end block 3 */
-	// End Line: 8723
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 int AllocateLeaf(void)
 {
@@ -696,87 +562,12 @@ int AllocateLeaf(void)
 	return -1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ReleaseLeaf(short num /*$a0*/)
- // line 1313, offset 0x00039d8c
-	/* begin block 1 */
-		// Start line: 2626
-	/* end block 1 */
-	// End Line: 2627
-
-	/* begin block 2 */
-		// Start line: 12096
-	/* end block 2 */
-	// End Line: 12097
-
 // [D] [T]
 void ReleaseLeaf(short num)
 {
 	next_leaf--;
 	leaf_alloc[next_leaf] = num;
 }
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ AddLeaf(VECTOR *Position /*$s1*/, int num_leaves /*$s5*/, int Type /*$s3*/)
- // line 1327, offset 0x00033574
-	/* begin block 1 */
-		// Start line: 1328
-		// Start offset: 0x00033574
-		// Variables:
-	// 		LEAF *myleaf; // $a1
-	// 		int num; // $v1
-	// 		int loop; // $s2
-	// 		int temprand; // $s0
-
-		/* begin block 1.1 */
-			// Start line: 1343
-			// Start offset: 0x000335D8
-
-			/* begin block 1.1.1 */
-				// Start line: 1401
-				// Start offset: 0x000336E4
-			/* end block 1.1.1 */
-			// End offset: 0x000336F8
-			// End Line: 1406
-
-			/* begin block 1.1.2 */
-				// Start line: 1410
-				// Start offset: 0x0003370C
-				// Variables:
-			// 		int temp; // $v0
-			/* end block 1.1.2 */
-			// End offset: 0x0003370C
-			// End Line: 1410
-
-			/* begin block 1.1.3 */
-				// Start line: 1416
-				// Start offset: 0x00033738
-				// Variables:
-			// 		int temp; // $v0
-			/* end block 1.1.3 */
-			// End offset: 0x0003374C
-			// End Line: 1419
-		/* end block 1.1 */
-		// End offset: 0x0003374C
-		// End Line: 1420
-	/* end block 1 */
-	// End offset: 0x00033784
-	// End Line: 1428
-
-	/* begin block 2 */
-		// Start line: 2983
-	/* end block 2 */
-	// End Line: 2984
-
-	/* begin block 3 */
-		// Start line: 2989
-	/* end block 3 */
-	// End Line: 2990
 
 // [D] [T]
 void AddLeaf(VECTOR *Position, int num_leaves, int Type)
@@ -869,48 +660,6 @@ void AddLeaf(VECTOR *Position, int num_leaves, int Type)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SwirlLeaves(CAR_DATA *cp /*$a0*/)
- // line 1437, offset 0x00039e54
-	/* begin block 1 */
-		// Start line: 1438
-		// Start offset: 0x00039E54
-		// Variables:
-	// 		int count; // $s2
-	// 		LEAF *lpLeaf; // $s0
-	// 		int XDiff; // $v0
-	// 		int ZDiff; // $a1
-	// 		VECTOR *CarPos; // $s1
-	// 		int WheelSpeed; // $a1
-
-		/* begin block 1.1 */
-			// Start line: 1475
-			// Start offset: 0x00039F60
-		/* end block 1.1 */
-		// End offset: 0x00039F84
-		// End Line: 1477
-	/* end block 1 */
-	// End offset: 0x00039F90
-	// End Line: 1481
-
-	/* begin block 2 */
-		// Start line: 17528
-	/* end block 2 */
-	// End Line: 17529
-
-	/* begin block 3 */
-		// Start line: 2874
-	/* end block 3 */
-	// End Line: 2875
-
-	/* begin block 4 */
-		// Start line: 17533
-	/* end block 4 */
-	// End Line: 17534
-
 // [D] [T]
 void SwirlLeaves(CAR_DATA *cp)
 {
@@ -945,31 +694,6 @@ void SwirlLeaves(CAR_DATA *cp)
 		lpLeaf++;
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitDebrisNames()
- // line 1493, offset 0x000337ac
-	/* begin block 1 */
-		// Start line: 1495
-		// Start offset: 0x000337AC
-	/* end block 1 */
-	// End offset: 0x00033B9C
-	// End Line: 1555
-
-	/* begin block 2 */
-		// Start line: 3607
-	/* end block 2 */
-	// End Line: 3608
-
-	/* begin block 3 */
-		// Start line: 3608
-	/* end block 3 */
-	// End Line: 3609
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void InitDebrisNames(void)
@@ -1031,62 +755,6 @@ void InitDebrisNames(void)
 	InitButtonTextures();
 	InitTannerShadow();
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitDebris()
- // line 1564, offset 0x00033b9c
-	/* begin block 1 */
-		// Start line: 1566
-		// Start offset: 0x00033B9C
-		// Variables:
-	// 		int loop; // $v1
-	// 		int count; // $s0
-	// 		TPAN texnum; // stack offset -88
-	// 		TRI_POINT_LONG temptri; // stack offset -80
-	// 		BVECTOR *debrisPTR; // $a0
-
-		/* begin block 1.1 */
-			// Start line: 1601
-			// Start offset: 0x00033CF4
-
-			/* begin block 1.1.1 */
-				// Start line: 1605
-				// Start offset: 0x00033D10
-			/* end block 1.1.1 */
-			// End offset: 0x00033D80
-			// End Line: 1610
-		/* end block 1.1 */
-		// End offset: 0x00033E2C
-		// End Line: 1627
-	/* end block 1 */
-	// End offset: 0x00033FA8
-	// End Line: 1674
-
-	/* begin block 2 */
-		// Start line: 3743
-	/* end block 2 */
-	// End Line: 3744
-
-	/* begin block 3 */
-		// Start line: 3753
-	/* end block 3 */
-	// End Line: 3754
-
-	/* begin block 4 */
-		// Start line: 3754
-	/* end block 4 */
-	// End Line: 3755
-
-	/* begin block 5 */
-		// Start line: 3759
-	/* end block 5 */
-	// End Line: 3760
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 
 // [D] [T]
 void InitDebris(void)
@@ -1199,29 +867,6 @@ void InitDebris(void)
 	SmashablesHit = 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ AllocateDebris()
- // line 1686, offset 0x00039a54
-	/* begin block 1 */
-		// Start line: 9103
-	/* end block 1 */
-	// End Line: 9104
-
-	/* begin block 2 */
-		// Start line: 3372
-	/* end block 2 */
-	// End Line: 3373
-
-	/* begin block 3 */
-		// Start line: 9104
-	/* end block 3 */
-	// End Line: 9105
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 int AllocateDebris(void)
 {
@@ -1231,27 +876,6 @@ int AllocateDebris(void)
 	return -1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ReleaseDebris(short num /*$a0*/)
- // line 1704, offset 0x00039d68
-	/* begin block 1 */
-		// Start line: 12485
-	/* end block 1 */
-	// End Line: 12486
-
-	/* begin block 2 */
-		// Start line: 3408
-	/* end block 2 */
-	// End Line: 3409
-
-	/* begin block 3 */
-		// Start line: 12486
-	/* end block 3 */
-	// End Line: 12487
-
 // [D] [T]
 void ReleaseDebris(short num)
 {
@@ -1259,28 +883,6 @@ void ReleaseDebris(short num)
 	debris_alloc[next_debris] = num;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ AllocateSmoke()
- // line 1719, offset 0x00039acc
-	/* begin block 1 */
-		// Start line: 9149
-	/* end block 1 */
-	// End Line: 9150
-
-	/* begin block 2 */
-		// Start line: 9567
-	/* end block 2 */
-	// End Line: 9568
-
-	/* begin block 3 */
-		// Start line: 9569
-	/* end block 3 */
-	// End Line: 9570
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 int AllocateSmoke(void)
@@ -1291,80 +893,12 @@ int AllocateSmoke(void)
 	return -1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ReleaseSmoke(short num /*$a0*/)
- // line 1737, offset 0x00039dd4
-	/* begin block 1 */
-		// Start line: 3474
-	/* end block 1 */
-	// End Line: 3475
-
-	/* begin block 2 */
-		// Start line: 15398
-	/* end block 2 */
-	// End Line: 15399
-
 // [D] [T]
 void ReleaseSmoke(short num)
 {
 	next_smoke--;
 	smoke_alloc[next_smoke] = num;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ AddGroundDebris()
- // line 1753, offset 0x00033fa8
-	/* begin block 1 */
-		// Start line: 1755
-		// Start offset: 0x00033FA8
-		// Variables:
-	// 		VECTOR Position; // stack offset -48
-	// 		int seed; // $s0
-	// 		int number; // $v0
-	// 		int count; // $s3
-	// 		int xbound; // $a1
-	// 		int zbound; // $a0
-	// 		int type; // $a2
-	// 		CELL_OBJECT *cop; // $s1
-	// 		MODEL *model; // $s2
-
-		/* begin block 1.1 */
-			// Start line: 1783
-			// Start offset: 0x0003407C
-		/* end block 1.1 */
-		// End offset: 0x00034100
-		// End Line: 1804
-	/* end block 1 */
-	// End offset: 0x00034110
-	// End Line: 1807
-
-	/* begin block 2 */
-		// Start line: 4269
-	/* end block 2 */
-	// End Line: 4270
-
-	/* begin block 3 */
-		// Start line: 4349
-	/* end block 3 */
-	// End Line: 4350
-
-	/* begin block 4 */
-		// Start line: 4350
-	/* end block 4 */
-	// End Line: 4351
-
-	/* begin block 5 */
-		// Start line: 4357
-	/* end block 5 */
-	// End Line: 4358
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void AddGroundDebris(void)
@@ -1426,62 +960,7 @@ void AddGroundDebris(void)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawSmashable_sprites()
- // line 1815, offset 0x00034138
-	/* begin block 1 */
-		// Start line: 1817
-		// Start offset: 0x00034138
-		// Variables:
-	// 		int count; // $s6
-	// 		VECTOR pos; // stack offset -128
-	// 		DAMAGED_OBJECT *dam; // $s2
-
-		/* begin block 1.1 */
-			// Start line: 1826
-			// Start offset: 0x000341A4
-			// Variables:
-		// 		MATRIX object_matrix; // stack offset -112
-		// 		MATRIX spritematrix; // stack offset -80
-		// 		MATRIX *finalmatrix; // $s0
-		// 		MODEL *model; // $s3
-
-			/* begin block 1.1.1 */
-				// Start line: 1861
-				// Start offset: 0x0003435C
-				// Variables:
-			// 		unsigned long colours; // $a0
-			/* end block 1.1.1 */
-			// End offset: 0x000343B4
-			// End Line: 1870
-		/* end block 1.1 */
-		// End offset: 0x000343E8
-		// End Line: 1875
-	/* end block 1 */
-	// End offset: 0x00034424
-	// End Line: 1877
-
-	/* begin block 2 */
-		// Start line: 4518
-	/* end block 2 */
-	// End Line: 4519
-
-	/* begin block 3 */
-		// Start line: 4519
-	/* end block 3 */
-	// End Line: 4520
-
-	/* begin block 4 */
-		// Start line: 4523
-	/* end block 4 */
-	// End Line: 4524
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 extern _pct plotContext;
-
 
 // [D] [T] [A]
 void DrawSmashable_sprites(void)
@@ -1563,47 +1042,6 @@ void DrawSmashable_sprites(void)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ MoveSmashable_object()
- // line 1886, offset 0x0003a234
-	/* begin block 1 */
-		// Start line: 1888
-		// Start offset: 0x0003A234
-		// Variables:
-	// 		int count; // $a3
-	// 		DAMAGED_OBJECT *dam; // $a1
-
-		/* begin block 1.1 */
-			// Start line: 1896
-			// Start offset: 0x0003A258
-			// Variables:
-		// 		int groundlevel; // $v0
-		/* end block 1.1 */
-		// End offset: 0x0003A2C0
-		// End Line: 1911
-	/* end block 1 */
-	// End offset: 0x0003A2D4
-	// End Line: 1914
-
-	/* begin block 2 */
-		// Start line: 3772
-	/* end block 2 */
-	// End Line: 3773
-
-	/* begin block 3 */
-		// Start line: 21340
-	/* end block 3 */
-	// End Line: 21341
-
-	/* begin block 4 */
-		// Start line: 21342
-	/* end block 4 */
-	// End Line: 21343
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 int MoveSmashable_object(void)
 {
@@ -1639,32 +1077,6 @@ int MoveSmashable_object(void)
 
 	return 0;
 }
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DisplayLightReflections(VECTOR *v1 /*$s1*/, CVECTOR *col /*$s3*/, short size /*$a2*/, TEXTURE_DETAILS *texture /*$s2*/)
- // line 4550, offset 0x000397c0
-	/* begin block 1 */
-		// Start line: 4551
-		// Start offset: 0x000397C0
-		// Variables:
-	// 		SVECTOR vert[4]; // stack offset -80
-	// 		POLY_FT4 *poly; // $a1
-	// 		CVECTOR thiscol; // stack offset -48
-	// 		int z; // stack offset -40
-	// 		int tpage; // $s5
-	// 		int clut; // $s4
-	/* end block 1 */
-	// End offset: 0x00039A30
-	// End Line: 4602
-
-	/* begin block 2 */
-		// Start line: 11756
-	/* end block 2 */
-	// End Line: 11757
-
-/* WARNING: Could not reconcile some variable overlaps */
 
 // [D] [T]
 void DisplayLightReflections(VECTOR* v1, CVECTOR* col, short size, TEXTURE_DETAILS* texture)
@@ -1746,34 +1158,6 @@ void DisplayLightReflections(VECTOR* v1, CVECTOR* col, short size, TEXTURE_DETAI
 	}
 }
 
-// decompiled code
-// original method signature: 
-// int /*$ra*/ find_lamp_streak(int LampId /*$a0*/)
- // line 2200, offset 0x00039b08
-	/* begin block 1 */
-		// Start line: 2201
-		// Start offset: 0x00039B08
-		// Variables:
-	// 		int count; // $a1
-	/* end block 1 */
-	// End offset: 0x00039B78
-	// End Line: 2217
-
-	/* begin block 2 */
-		// Start line: 10055
-	/* end block 2 */
-	// End Line: 10056
-
-	/* begin block 3 */
-		// Start line: 10531
-	/* end block 3 */
-	// End Line: 10532
-
-	/* begin block 4 */
-		// Start line: 10534
-	/* end block 4 */
-	// End Line: 10535
-
 // [D] [T]
 int find_lamp_streak(int LampId)
 {
@@ -1796,54 +1180,6 @@ int find_lamp_streak(int LampId)
 
 	return -1;
 }
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ AddSmallStreetLight(CELL_OBJECT *cop /*$s1*/, int x /*$s3*/, int y /*$s6*/, int z /*$s4*/, int type /*stack 16*/)
- // line 1925, offset 0x00034424
-	/* begin block 1 */
-		// Start line: 1926
-		// Start offset: 0x00034424
-		// Variables:
-	// 		VECTOR v1; // stack offset -112
-	// 		VECTOR v2; // stack offset -96
-	// 		VECTOR v3; // stack offset -80
-	// 		SVECTOR pos; // stack offset -64
-	// 		CVECTOR col; // stack offset -56
-	// 		CVECTOR col1; // stack offset -48
-	// 		int count; // $v1
-	// 		short angle; // $s2
-	// 		int halo_size; // $fp
-	// 		int size; // $s5
-	// 		int LampId; // $s7
-	// 		DAMAGED_LAMP *dam; // $s0
-
-		/* begin block 1.1 */
-			// Start line: 1961
-			// Start offset: 0x000344EC
-		/* end block 1.1 */
-		// End offset: 0x00034540
-		// End Line: 1967
-	/* end block 1 */
-	// End offset: 0x00034828
-	// End Line: 2039
-
-	/* begin block 2 */
-		// Start line: 4795
-	/* end block 2 */
-	// End Line: 4796
-
-	/* begin block 3 */
-		// Start line: 4844
-	/* end block 3 */
-	// End Line: 4845
-
-	/* begin block 4 */
-		// Start line: 4854
-	/* end block 4 */
-	// End Line: 4855
-
-/* WARNING: Could not reconcile some variable overlaps */
 
 // [D] [T]
 void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
@@ -1972,35 +1308,6 @@ void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 	LightSortCorrect = -10;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ AddLightEffect(CELL_OBJECT *cop /*$t0*/, int x /*$t2*/, int y /*$a2*/, int z /*$a3*/, int type /*stack 16*/, int colour /*stack 20*/)
- // line 2049, offset 0x00034858
-	/* begin block 1 */
-		// Start line: 2050
-		// Start offset: 0x00034858
-		// Variables:
-	// 		VECTOR v1; // stack offset -88
-	// 		VECTOR v2; // stack offset -72
-	// 		VECTOR v3; // stack offset -56
-	// 		SVECTOR pos; // stack offset -40
-	// 		CVECTOR col; // stack offset -32
-	// 		CVECTOR col1; // stack offset -24
-	// 		short angle; // $v1
-	// 		int size; // $s1
-	/* end block 1 */
-	// End offset: 0x00034C6C
-	// End Line: 2175
-
-	/* begin block 2 */
-		// Start line: 5163
-	/* end block 2 */
-	// End Line: 5164
-
-/* WARNING: Could not reconcile some variable overlaps */
-
 // [D] [T]
 void AddLightEffect(CELL_OBJECT *cop, int x, int y, int z, int type, int colour)
 {
@@ -2123,43 +1430,6 @@ void AddLightEffect(CELL_OBJECT *cop, int x, int y, int z, int type, int colour)
 	DisplayLightReflections(&v2, &col, (size << 0xd) >> 0x10, &lightref_texture);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ PreLampStreak()
- // line 2178, offset 0x00034c6c
-	/* begin block 1 */
-		// Start line: 2180
-		// Start offset: 0x00034C6C
-		// Variables:
-	// 		int count; // $a3
-	/* end block 1 */
-	// End offset: 0x00034D1C
-	// End Line: 2198
-
-	/* begin block 2 */
-		// Start line: 5470
-	/* end block 2 */
-	// End Line: 5471
-
-	/* begin block 3 */
-		// Start line: 5474
-	/* end block 3 */
-	// End Line: 5475
-
-	/* begin block 4 */
-		// Start line: 5475
-	/* end block 4 */
-	// End Line: 5476
-
-	/* begin block 5 */
-		// Start line: 5477
-	/* end block 5 */
-	// End Line: 5478
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void PreLampStreak(void)
 {
@@ -2182,31 +1452,6 @@ void PreLampStreak(void)
 
 	StreakCount1 = 0;
 }
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ damage_lamp(CELL_OBJECT *cop /*$a2*/)
- // line 2230, offset 0x00034d1c
-	/* begin block 1 */
-		// Start line: 2231
-		// Start offset: 0x00034D1C
-		// Variables:
-	// 		int count; // $v1
-	// 		int old_damage; // $v0
-	/* end block 1 */
-	// End offset: 0x00034DAC
-	// End Line: 2245
-
-	/* begin block 2 */
-		// Start line: 5557
-	/* end block 2 */
-	// End Line: 5558
-
-	/* begin block 3 */
-		// Start line: 5590
-	/* end block 3 */
-	// End Line: 5591
 
 // [D] [T]
 int damage_lamp(CELL_OBJECT *cop)
@@ -2246,45 +1491,6 @@ int damage_lamp(CELL_OBJECT *cop)
 
 	return 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ damage_object(CELL_OBJECT *cop /*$s1*/, VECTOR *velocity /*$a1*/)
- // line 2255, offset 0x00034dac
-	/* begin block 1 */
-		// Start line: 2256
-		// Start offset: 0x00034DAC
-		// Variables:
-	// 		DAMAGED_OBJECT *dam; // $s0
-
-		/* begin block 1.1 */
-			// Start line: 2256
-			// Start offset: 0x00034DAC
-			// Variables:
-		// 		PACKED_CELL_OBJECT *pcop; // $a0
-		/* end block 1.1 */
-		// End offset: 0x00034DAC
-		// End Line: 2256
-	/* end block 1 */
-	// End offset: 0x00034F64
-	// End Line: 2318
-
-	/* begin block 2 */
-		// Start line: 5636
-	/* end block 2 */
-	// End Line: 5637
-
-	/* begin block 3 */
-		// Start line: 5647
-	/* end block 3 */
-	// End Line: 5648
-
-	/* begin block 4 */
-		// Start line: 5653
-	/* end block 4 */
-	// End Line: 5654
 
 // [D] [T]
 int damage_object(CELL_OBJECT *cop, VECTOR *velocity)
@@ -2338,31 +1544,6 @@ int damage_object(CELL_OBJECT *cop, VECTOR *velocity)
 
 	return 0;
 }
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ShowFlare(VECTOR *v1 /*$a0*/, CVECTOR *col /*$s2*/, short size /*$a2*/, int rotation /*$a3*/)
- // line 2945, offset 0x000368d8
-	/* begin block 1 */
-		// Start line: 2946
-		// Start offset: 0x000368D8
-		// Variables:
-	// 		SVECTOR vert[4]; // stack offset -96
-	// 		POLY_FT4 *poly; // $t0
-	// 		SVECTOR direction; // stack offset -64
-	// 		MATRIX temp_matrix; // stack offset -56
-	// 		int z; // stack offset -24
-	/* end block 1 */
-	// End offset: 0x00036B54
-	// End Line: 3016
-
-	/* begin block 2 */
-		// Start line: 7488
-	/* end block 2 */
-	// End Line: 7489
-
-/* WARNING: Could not reconcile some variable overlaps */
 
 // [D] [T]
 void ShowFlare(VECTOR* v1, CVECTOR* col, short size, int rotation)
@@ -2444,50 +1625,6 @@ void ShowFlare(VECTOR* v1, CVECTOR* col, short size, int rotation)
 		current->primptr += sizeof(POLY_FT4);
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ AddTrafficLight(CELL_OBJECT *cop /*$t4*/, int x /*$t6*/, int y /*$t7*/, int z /*$a3*/, int flag /*stack 16*/, int yang /*stack 20*/)
- // line 2326, offset 0x00034f64
-	/* begin block 1 */
-		// Start line: 2327
-		// Start offset: 0x00034F64
-		// Variables:
-	// 		CVECTOR a; // stack offset -80
-	// 		CVECTOR b; // stack offset -72
-	// 		CVECTOR c; // stack offset -64
-	// 		VECTOR v1; // stack offset -56
-	// 		VECTOR v2; // stack offset -40
-	// 		int lDiffAnglesX; // $s2
-	// 		int lDiffAnglesY; // $s1
-	// 		int AbsX; // $a2
-	// 		int AbsY; // $a1
-	// 		int tempfade; // $v0
-
-		/* begin block 1.1 */
-			// Start line: 2327
-			// Start offset: 0x00034F64
-			// Variables:
-		// 		int c; // $t1
-		// 		int s; // $t2
-		/* end block 1.1 */
-		// End offset: 0x00034F64
-		// End Line: 2327
-	/* end block 1 */
-	// End offset: 0x000352B0
-	// End Line: 2416
-
-	/* begin block 2 */
-		// Start line: 5809
-	/* end block 2 */
-	// End Line: 5810
-
-	/* begin block 3 */
-		// Start line: 5818
-	/* end block 3 */
-	// End Line: 5819
 
 // [D] [T]
 void AddTrafficLight(CELL_OBJECT *cop, int x, int y, int z, int flag, int yang)
@@ -2584,36 +1721,6 @@ void AddTrafficLight(CELL_OBJECT *cop, int x, int y, int z, int flag, int yang)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitFXPos(VECTOR *vec /*$a0*/, SVECTOR *svec /*$a1*/, CAR_DATA *cp /*$a2*/)
- // line 2428, offset 0x00039c90
-	/* begin block 1 */
-		// Start line: 2429
-		// Start offset: 0x00039C90
-		// Variables:
-	// 		SVECTOR svectmp; // stack offset -8
-	/* end block 1 */
-	// End offset: 0x00039D68
-	// End Line: 2437
-
-	/* begin block 2 */
-		// Start line: 13201
-	/* end block 2 */
-	// End Line: 13202
-
-	/* begin block 3 */
-		// Start line: 4856
-	/* end block 3 */
-	// End Line: 4857
-
-	/* begin block 4 */
-		// Start line: 13202
-	/* end block 4 */
-	// End Line: 13203
-
 // [D] [T]
 void InitFXPos(VECTOR *vec, SVECTOR *svec, CAR_DATA *cp)
 {
@@ -2629,31 +1736,6 @@ void InitFXPos(VECTOR *vec, SVECTOR *svec, CAR_DATA *cp)
 	gte_stlvnl(vec);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ FindCarLightFade(MATRIX *carToCamera /*$a0*/)
- // line 2447, offset 0x00039c68
-	/* begin block 1 */
-		// Start line: 2449
-		// Start offset: 0x00039C68
-		// Variables:
-	// 		int zz; // $v0
-	/* end block 1 */
-	// End offset: 0x00039C90
-	// End Line: 2452
-
-	/* begin block 2 */
-		// Start line: 4894
-	/* end block 2 */
-	// End Line: 4895
-
-	/* begin block 3 */
-		// Start line: 13214
-	/* end block 3 */
-	// End Line: 13215
-
 int CarLightFadeBack = 0;
 int CarLightFadeFront = 0;
 
@@ -2667,30 +1749,6 @@ void FindCarLightFade(MATRIX *carToCamera)
 	CarLightFadeFront = zz - 124;
 	CarLightFadeBack = -124 - zz;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ShowCarlight(SVECTOR *v1 /*$s6*/, CAR_DATA *cp /*$s3*/, CVECTOR *col /*$s1*/, short size /*$s5*/, TEXTURE_DETAILS *texture /*stack 16*/, int flag /*stack 20*/)
- // line 2462, offset 0x000352cc
-	/* begin block 1 */
-		// Start line: 2463
-		// Start offset: 0x000352CC
-		// Variables:
-	// 		int CarLightFade; // $a1
-	// 		VECTOR v1t; // stack offset -72
-	// 		VECTOR v1l; // stack offset -56
-	// 		CVECTOR flareCol; // stack offset -40
-	// 		int front; // $a0
-	/* end block 1 */
-	// End offset: 0x00035534
-	// End Line: 2514
-
-	/* begin block 2 */
-		// Start line: 6201
-	/* end block 2 */
-	// End Line: 6202
 
 // [D] [T]
 void ShowCarlight(SVECTOR *v1, CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_DETAILS *texture,int flag)
@@ -2747,28 +1805,6 @@ void ShowCarlight(SVECTOR *v1, CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_D
 
 	ShowFlare(&v1l, &flareCol, size * 3, (v1->vx + v1->vz) / 4 + (cp->hd.direction - camera_angle.vy) * 2);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ShowLight1(VECTOR *v1 /*$a0*/, CVECTOR *col /*$a1*/, short size /*$a2*/, TEXTURE_DETAILS *texture /*$a3*/)
- // line 2523, offset 0x0003555c
-	/* begin block 1 */
-		// Start line: 2524
-		// Start offset: 0x0003555C
-		// Variables:
-	// 		SVECTOR vert[4]; // stack offset -40
-	// 		POLY_FT4 *poly; // $t0
-	// 		int z; // stack offset -8
-	/* end block 1 */
-	// End offset: 0x00035748
-	// End Line: 2575
-
-	/* begin block 2 */
-		// Start line: 6361
-	/* end block 2 */
-	// End Line: 6362
 
 // [D] [T]
 void ShowLight1(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
@@ -2841,87 +1877,6 @@ void ShowLight1(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 		current->primptr += sizeof(POLY_FT4);
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ShowLight(VECTOR *v1 /*$s0*/, CVECTOR *col /*$s3*/, short size /*$s4*/, TEXTURE_DETAILS *texture /*$s2*/)
- // line 2579, offset 0x00035750
-	/* begin block 1 */
-		// Start line: 2580
-		// Start offset: 0x00035750
-		// Variables:
-	// 		SVECTOR vert[4]; // stack offset -88
-	// 		POLY_FT4 *poly; // $s1
-	// 		int z; // stack offset -40
-	// 		int index; // $a1
-	// 		int tail_width; // $s5
-
-		/* begin block 1.1 */
-			// Start line: 2644
-			// Start offset: 0x00035A54
-			// Variables:
-		// 		int loop; // $a1
-		/* end block 1.1 */
-		// End offset: 0x00035AAC
-		// End Line: 2650
-
-		/* begin block 1.2 */
-			// Start line: 2654
-			// Start offset: 0x00035AD4
-			// Variables:
-		// 		POLY_G4 *poly1; // $s0
-		// 		int dx; // $a0
-		// 		int dy; // $v0
-		// 		int angle; // $v0
-		// 		int width; // $s2
-		// 		int c; // $a0
-		// 		int s; // $a2
-		// 		int length; // $v0
-		// 		SVECTOR tail; // stack offset -56
-		// 		SVECTOR head; // stack offset -48
-		/* end block 1.2 */
-		// End offset: 0x00035EB8
-		// End Line: 2709
-
-		/* begin block 1.3 */
-			// Start line: 2727
-			// Start offset: 0x00035F68
-			// Variables:
-		// 		int loop; // $a3
-		/* end block 1.3 */
-		// End offset: 0x00035FE8
-		// End Line: 2733
-
-		/* begin block 1.4 */
-			// Start line: 2737
-			// Start offset: 0x00036024
-			// Variables:
-		// 		POLY_G4 *poly1; // $s0
-		// 		int dx; // $a2
-		// 		int dy; // $a1
-		// 		int angle; // $v0
-		// 		int width; // $s1
-		// 		int c; // $a2
-		// 		int s; // $a1
-		// 		int length; // $v0
-		// 		SVECTOR tail; // stack offset -56
-		// 		SVECTOR head; // stack offset -48
-		/* end block 1.4 */
-		// End offset: 0x00036408
-		// End Line: 2792
-	/* end block 1 */
-	// End offset: 0x00036408
-	// End Line: 2794
-
-	/* begin block 2 */
-		// Start line: 6495
-	/* end block 2 */
-	// End Line: 6496
-
-/* WARNING: Could not reconcile some variable overlaps */
-
 
 // [D] [T]
 void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
@@ -3173,28 +2128,6 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 	*clock = FrameCnt;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ShowGroundLight(VECTOR *v1 /*$a0*/, CVECTOR *col /*$a1*/, short size /*$a2*/)
- // line 2804, offset 0x0003642c
-	/* begin block 1 */
-		// Start line: 2805
-		// Start offset: 0x0003642C
-		// Variables:
-	// 		SVECTOR vert[4]; // stack offset -40
-	// 		POLY_FT4 *poly; // $t0
-	// 		int z; // stack offset -8
-	/* end block 1 */
-	// End offset: 0x00036680
-	// End Line: 2858
-
-	/* begin block 2 */
-		// Start line: 7136
-	/* end block 2 */
-	// End Line: 7137
-
 // [D] [T]
 void ShowGroundLight(VECTOR *v1, CVECTOR *col, short size)
 {
@@ -3264,28 +2197,6 @@ void ShowGroundLight(VECTOR *v1, CVECTOR *col, short size)
 		current->primptr += sizeof(POLY_FT4);
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ RoundShadow(VECTOR *v1 /*$a0*/, CVECTOR *col /*$a1*/, short size /*$a2*/)
- // line 2869, offset 0x00036688
-	/* begin block 1 */
-		// Start line: 2870
-		// Start offset: 0x00036688
-		// Variables:
-	// 		SVECTOR vert[4]; // stack offset -40
-	// 		POLY_FT4 *poly; // $t0
-	// 		int z; // stack offset -8
-	/* end block 1 */
-	// End offset: 0x000368D0
-	// End Line: 2933
-
-	/* begin block 2 */
-		// Start line: 7286
-	/* end block 2 */
-	// End Line: 7287
 
 // [D] [T]
 void RoundShadow(VECTOR *v1, CVECTOR *col, short size)
@@ -3359,38 +2270,6 @@ void RoundShadow(VECTOR *v1, CVECTOR *col, short size)
 		current->primptr += sizeof(POLY_FT4);
 	}
 }
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DisplayWater(SMOKE *smoke /*$a0*/)
- // line 3029, offset 0x00036b6c
-	/* begin block 1 */
-		// Start line: 3030
-		// Start offset: 0x00036B6C
-		// Variables:
-	// 		POLY_FT4 *poly; // $t1
-	// 		VECTOR v; // stack offset -64
-	// 		SVECTOR vert[4]; // stack offset -48
-	// 		int size; // $t1
-	// 		int z; // $v0
-	// 		int z1; // stack offset -16
-	// 		int z2; // stack offset -12
-	// 		int z3; // stack offset -8
-	// 		int z4; // stack offset -4
-	/* end block 1 */
-	// End offset: 0x00036E18
-	// End Line: 3087
-
-	/* begin block 2 */
-		// Start line: 7696
-	/* end block 2 */
-	// End Line: 7697
-
-	/* begin block 3 */
-		// Start line: 7703
-	/* end block 3 */
-	// End Line: 7704
 
 // [D] [T weird and unused]
 void DisplayWater(SMOKE *smoke)
@@ -3471,43 +2350,6 @@ void DisplayWater(SMOKE *smoke)
 
 	current->primptr += sizeof(POLY_FT4);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DisplaySpark(SMOKE *spark /*$t1*/)
- // line 3102, offset 0x00036e18
-	/* begin block 1 */
-		// Start line: 3103
-		// Start offset: 0x00036E18
-		// Variables:
-	// 		int z; // stack offset -8
-	// 		SVECTOR v[3]; // stack offset -40
-	// 		SVECTOR TrailPos; // stack offset -16
-	// 		POLY_G3 *poly; // $t0
-
-		/* begin block 1.1 */
-			// Start line: 3135
-			// Start offset: 0x00036F30
-			// Variables:
-		// 		unsigned char *col; // $a0
-		/* end block 1.1 */
-		// End offset: 0x00036FE0
-		// End Line: 3150
-	/* end block 1 */
-	// End offset: 0x00037150
-	// End Line: 3170
-
-	/* begin block 2 */
-		// Start line: 7865
-	/* end block 2 */
-	// End Line: 7866
-
-	/* begin block 3 */
-		// Start line: 7881
-	/* end block 3 */
-	// End Line: 7882
 
 // [D] [T]
 void DisplaySpark(SMOKE *spark)
@@ -3603,36 +2445,6 @@ void DisplaySpark(SMOKE *spark)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ GetSmokeDrift(VECTOR *Wind /*$t2*/)
- // line 3182, offset 0x00037158
-	/* begin block 1 */
-		// Start line: 3183
-		// Start offset: 0x00037158
-		// Variables:
-	// 		static int SinTabIndex1; // offset 0x158
-	// 		static int SinTabIndex2; // offset 0x15c
-	// 		static int SinTabIndex3; // offset 0x160
-	// 		static int WindMagnitude; // offset 0x164
-	// 		static int SinX; // offset 0x0
-	// 		static int CosX; // offset 0x4
-	/* end block 1 */
-	// End offset: 0x00037250
-	// End Line: 3215
-
-	/* begin block 2 */
-		// Start line: 8067
-	/* end block 2 */
-	// End Line: 8068
-
-	/* begin block 3 */
-		// Start line: 8076
-	/* end block 3 */
-	// End Line: 8077
-
 int SmokeCnt = 0;
 
 // [D] [T]
@@ -3662,45 +2474,6 @@ void GetSmokeDrift(VECTOR *Wind)
 	Wind->vx = FIXEDH(WindMagnitude * CosX);
 	Wind->vz = FIXEDH(-WindMagnitude * SinX);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ Setup_Debris(VECTOR *ipos /*$fp*/, VECTOR *ispeed /*$s6*/, int num_debris /*$s7*/, int type /*$s5*/)
- // line 3227, offset 0x00037250
-	/* begin block 1 */
-		// Start line: 3228
-		// Start offset: 0x00037250
-		// Variables:
-	// 		DEBRIS *mydebris; // $s1
-	// 		int num; // $v1
-	// 		int loop; // $s4
-	// 		int vx; // $s2
-	// 		int vy; // $s3
-	// 		int vz; // $a2
-	// 		int seed; // $s0
-	// 		int col; // $a3
-
-		/* begin block 1.1 */
-			// Start line: 3245
-			// Start offset: 0x000372F4
-		/* end block 1.1 */
-		// End offset: 0x000373B4
-		// End Line: 3259
-	/* end block 1 */
-	// End offset: 0x00037444
-	// End Line: 3285
-
-	/* begin block 2 */
-		// Start line: 8194
-	/* end block 2 */
-	// End Line: 8195
-
-	/* begin block 3 */
-		// Start line: 8207
-	/* end block 3 */
-	// End Line: 8208
 
 // [D] [T]
 void Setup_Debris(VECTOR *ipos, VECTOR *ispeed, int num_debris, int type)
@@ -3765,57 +2538,6 @@ void Setup_Debris(VECTOR *ipos, VECTOR *ispeed, int num_debris, int type)
 		mydebris->pos = i & 0x1f;
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ Setup_Smoke(VECTOR *ipos /*$s1*/, int start_w /*$s3*/, int end_w /*$s4*/, int SmokeType /*$s7*/, int WheelSpeed /*stack 16*/, VECTOR *Drift /*stack 20*/, int Exhaust /*stack 24*/)
- // line 3296, offset 0x00037474
-	/* begin block 1 */
-		// Start line: 3297
-		// Start offset: 0x00037474
-		// Variables:
-	// 		SMOKE *mysmoke; // $s0
-	// 		int num; // $v1
-
-		/* begin block 1.1 */
-			// Start line: 3335
-			// Start offset: 0x00037594
-		/* end block 1.1 */
-		// End offset: 0x00037594
-		// End Line: 3335
-
-		/* begin block 1.2 */
-			// Start line: 3372
-			// Start offset: 0x000376A0
-		/* end block 1.2 */
-		// End offset: 0x000376A0
-		// End Line: 3372
-
-		/* begin block 1.3 */
-			// Start line: 3382
-			// Start offset: 0x000376EC
-		/* end block 1.3 */
-		// End offset: 0x00037728
-		// End Line: 3387
-
-		/* begin block 1.4 */
-			// Start line: 3423
-			// Start offset: 0x0003780C
-		/* end block 1.4 */
-		// End offset: 0x00037884
-		// End Line: 3434
-	/* end block 1 */
-	// End offset: 0x00037920
-	// End Line: 3463
-
-	/* begin block 2 */
-		// Start line: 8537
-	/* end block 2 */
-	// End Line: 8538
-
-/* WARNING: Removing unreachable block (ram,0x0003778c) */
 
 // [D] [T]
 void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelSpeed, VECTOR *Drift, int Exhaust)
@@ -3985,44 +2707,6 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ Setup_Sparks(VECTOR *ipos /*$fp*/, VECTOR *ispeed /*$s7*/, int num_sparks /*stack 8*/, char SparkType /*$s5*/)
- // line 3475, offset 0x00037950
-	/* begin block 1 */
-		// Start line: 3476
-		// Start offset: 0x00037950
-		// Variables:
-	// 		SMOKE *mysmoke; // $s2
-	// 		int num; // $s0
-	// 		int loop; // $s4
-	// 		int vx; // $s1
-	// 		int vy; // $s0
-	// 		int vz; // $v1
-	// 		int randtemp; // $v0
-
-		/* begin block 1.1 */
-			// Start line: 3487
-			// Start offset: 0x000379A0
-		/* end block 1.1 */
-		// End offset: 0x00037AD0
-		// End Line: 3549
-	/* end block 1 */
-	// End offset: 0x00037AE4
-	// End Line: 3550
-
-	/* begin block 2 */
-		// Start line: 9001
-	/* end block 2 */
-	// End Line: 9002
-
-	/* begin block 3 */
-		// Start line: 9007
-	/* end block 3 */
-	// End Line: 9008
-
 // [D] [T]
 void Setup_Sparks(VECTOR *ipos, VECTOR *ispeed, int num_sparks, char SparkType)
 {
@@ -4091,41 +2775,6 @@ void Setup_Sparks(VECTOR *ipos, VECTOR *ispeed, int num_sparks, char SparkType)
 		}
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DisplayDebris(DEBRIS *debris /*$t2*/, char type /*$t3*/)
- // line 3564, offset 0x00037b14
-	/* begin block 1 */
-		// Start line: 3565
-		// Start offset: 0x00037B14
-		// Variables:
-	// 		int pos; // $a1
-	// 		int z; // stack offset -8
-	// 		SVECTOR v[4]; // stack offset -56
-	// 		TRI_POINT *tv; // $t1
-	// 		VECTOR debrisvec; // stack offset -24
-	// 		POLY_FT3 *poly; // $t0
-	// 		POLY_GT4 *poly1; // $t0
-
-		/* begin block 1.1 */
-			// Start line: 3607
-			// Start offset: 0x00037D94
-			// Variables:
-		// 		unsigned long cbgr; // $v1
-		/* end block 1.1 */
-		// End offset: 0x00037E10
-		// End Line: 3618
-	/* end block 1 */
-	// End offset: 0x00038000
-	// End Line: 3648
-
-	/* begin block 2 */
-		// Start line: 9290
-	/* end block 2 */
-	// End Line: 9291
 
 // [D] [T]
 void DisplayDebris(DEBRIS *debris, char type)
@@ -4233,58 +2882,6 @@ void DisplayDebris(DEBRIS *debris, char type)
 		debris->life = 1;
 	}
 }
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DisplaySmoke(SMOKE *smoke /*$s0*/)
- // line 3983, offset 0x0003877c
-	/* begin block 1 */
-		// Start line: 3984
-		// Start offset: 0x0003877C
-		// Variables:
-	// 		POLY_FT4 *poly; // $t0
-	// 		VECTOR v; // stack offset -80
-	// 		SVECTOR smokemesh[4]; // stack offset -64
-	// 		int x; // $s2
-	// 		int negx; // $s1
-	// 		int z; // stack offset -32
-	// 		int smoke_z_offset; // $s3
-	// 		int tmode; // $a3
-	// 		int size; // $v0
-	// 		int centrex; // $a1
-	// 		int centrey; // $v1
-
-		/* begin block 1.1 */
-			// Start line: 4041
-			// Start offset: 0x00038970
-			// Variables:
-		// 		char red; // $a0
-		// 		char green; // $a1
-		// 		char blue; // $v1
-		/* end block 1.1 */
-		// End offset: 0x0003899C
-		// End Line: 4046
-	/* end block 1 */
-	// End offset: 0x00038C98
-	// End Line: 4115
-
-	/* begin block 2 */
-		// Start line: 10349
-	/* end block 2 */
-	// End Line: 10350
-
-	/* begin block 3 */
-		// Start line: 10366
-	/* end block 3 */
-	// End Line: 10367
-
-	/* begin block 4 */
-		// Start line: 10372
-	/* end block 4 */
-	// End Line: 10373
-
-/* WARNING: Could not reconcile some variable overlaps */
 
 // [D] [T]
 void DisplaySmoke(SMOKE* smoke)
@@ -4467,64 +3064,6 @@ void DisplaySmoke(SMOKE* smoke)
 		current->primptr += sizeof(POLY_FT4);
 	}
 }
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ HandleDebris()
- // line 3659, offset 0x00038008
-	/* begin block 1 */
-		// Start line: 3661
-		// Start offset: 0x00038008
-		// Variables:
-	// 		int count; // $s0
-	// 		int i; // $s3
-	// 		DEBRIS *lpDebris; // $s1
-	// 		SMOKE *smokeptr; // $s0
-	// 		VECTOR dummy; // stack offset -80
-	// 		LEAF *lpLeaf; // $s1
-	// 		int Height; // $v0
-	// 		int SinX; // $s2
-	// 		int CosX; // $v1
-	// 		VECTOR Drift; // stack offset -64
-
-		/* begin block 1.1 */
-			// Start line: 3852
-			// Start offset: 0x0003841C
-			// Variables:
-		// 		int offshore; // $s1
-		// 		ROUTE_DATA routeData; // stack offset -48
-		/* end block 1.1 */
-		// End offset: 0x000384B4
-		// End Line: 3864
-
-		/* begin block 1.2 */
-			// Start line: 3953
-			// Start offset: 0x000386F0
-			// Variables:
-		// 		static int weather_level; // offset 0x168
-		/* end block 1.2 */
-		// End offset: 0x00038750
-		// End Line: 3966
-	/* end block 1 */
-	// End offset: 0x0003877C
-	// End Line: 3967
-
-	/* begin block 2 */
-		// Start line: 9541
-	/* end block 2 */
-	// End Line: 9542
-
-	/* begin block 3 */
-		// Start line: 9542
-	/* end block 3 */
-	// End Line: 9543
-
-	/* begin block 4 */
-		// Start line: 9545
-	/* end block 4 */
-	// End Line: 9546
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 int NoRainIndoors = 0;
 
@@ -4769,25 +3308,6 @@ void HandleDebris(void)
 	}
 }
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ add_haze(int top_col /*$a0*/, int bot_col /*$a1*/, short ot_pos /*$a2*/)
- // line 4118, offset 0x00038cb4
-	/* begin block 1 */
-		// Start line: 4119
-		// Start offset: 0x00038CB4
-		// Variables:
-	// 		TILE *polys; // $a1
-	/* end block 1 */
-	// End offset: 0x00038E00
-	// End Line: 4141
-
-	/* begin block 2 */
-		// Start line: 10702
-	/* end block 2 */
-	// End Line: 10703
-
 // [D] [T]
 void add_haze(int top_col, int bot_col, short ot_pos)
 {
@@ -4834,35 +3354,6 @@ void add_haze(int top_col, int bot_col, short ot_pos)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetupRain()
- // line 4152, offset 0x00039df8
-	/* begin block 1 */
-		// Start line: 4154
-		// Start offset: 0x00039DF8
-	/* end block 1 */
-	// End offset: 0x00039E54
-	// End Line: 4163
-
-	/* begin block 2 */
-		// Start line: 20227
-	/* end block 2 */
-	// End Line: 20228
-
-	/* begin block 3 */
-		// Start line: 20228
-	/* end block 3 */
-	// End Line: 20229
-
-	/* begin block 4 */
-		// Start line: 20231
-	/* end block 4 */
-	// End Line: 20232
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void SetupRain(void)
 {
@@ -4879,29 +3370,6 @@ void SetupRain(void)
 	gNextRainDrop = 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ AllocateRainDrop()
- // line 4173, offset 0x0003a2d4
-	/* begin block 1 */
-		// Start line: 23682
-	/* end block 1 */
-	// End Line: 23683
-
-	/* begin block 2 */
-		// Start line: 25942
-	/* end block 2 */
-	// End Line: 25943
-
-	/* begin block 3 */
-		// Start line: 25943
-	/* end block 3 */
-	// End Line: 25944
- 
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 int AllocateRainDrop(void)
 {
@@ -4911,68 +3379,12 @@ int AllocateRainDrop(void)
 	return -1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ReleaseRainDrop(int RainIndex /*$a0*/)
- // line 4190, offset 0x00039db0
-	/* begin block 1 */
-		// Start line: 17849
-	/* end block 1 */
-	// End Line: 17850
-
-	/* begin block 2 */
-		// Start line: 17850
-	/* end block 2 */
-	// End Line: 17851
-
 // [D] [T]
 void ReleaseRainDrop(int RainIndex)
 {
 	gNextRainDrop--;
 	gRainAlloc[gNextRainDrop] = RainIndex;
 }
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DisplaySplashes()
- // line 4489, offset 0x00039468
-	/* begin block 1 */
-		// Start line: 4491
-		// Start offset: 0x00039468
-		// Variables:
-	// 		int SplashNo; // $s4
-	// 		int SplashFrac; // $v0
-	// 		VECTOR CamGnd; // stack offset -96
-	// 		VECTOR Gnd1; // stack offset -80
-	// 		VECTOR Gnd2; // stack offset -64
-	// 		VECTOR Position; // stack offset -48
-	// 		CVECTOR col; // stack offset -32
-	// 		static unsigned long rand; // offset 0x170
-	// 		int d1; // $a0
-	// 		int d2; // $a2
-	/* end block 1 */
-	// End offset: 0x000397A0
-	// End Line: 4547
-
-	/* begin block 2 */
-		// Start line: 11536
-	/* end block 2 */
-	// End Line: 11537
-
-	/* begin block 3 */
-		// Start line: 11537
-	/* end block 3 */
-	// End Line: 11538
-
-	/* begin block 4 */
-		// Start line: 11549
-	/* end block 4 */
-	// End Line: 11550
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void DisplaySplashes(void)
@@ -5036,53 +3448,6 @@ void DisplaySplashes(void)
 		ShowLight(&Position, &col, 12, &drop_texture);
 	}
 }
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawRainDrops()
- // line 4208, offset 0x00038e08
-	/* begin block 1 */
-		// Start line: 4210
-		// Start offset: 0x00038E08
-		// Variables:
-	// 		RAIN_TYPE *RainPtr; // $s0
-	// 		POLY_GT3 *poly; // $a3
-	// 		int Count; // $s2
-	// 		int z; // stack offset -48
-	// 		SVECTOR v[3]; // stack offset -88
-	// 		VECTOR drift; // stack offset -64
-	// 		int tpage; // $fp
-	// 		int clut; // $s7
-	// 		int col; // $s1
-
-		/* begin block 1.1 */
-			// Start line: 4259
-			// Start offset: 0x00038FA4
-			// Variables:
-		// 		int notfirst; // $a1
-		/* end block 1.1 */
-		// End offset: 0x00039158
-		// End Line: 4296
-	/* end block 1 */
-	// End offset: 0x0003919C
-	// End Line: 4300
-
-	/* begin block 2 */
-		// Start line: 10912
-	/* end block 2 */
-	// End Line: 10913
-
-	/* begin block 3 */
-		// Start line: 10913
-	/* end block 3 */
-	// End Line: 10914
-
-	/* begin block 4 */
-		// Start line: 10924
-	/* end block 4 */
-	// End Line: 10925
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 #define RAIN_DROP_SPEED 30		// [A] was 20
 
@@ -5205,65 +3570,6 @@ void DrawRainDrops(void)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ AddRainDrops()
- // line 4413, offset 0x0003919c
-	/* begin block 1 */
-		// Start line: 4415
-		// Start offset: 0x0003919C
-		// Variables:
-	// 		SVECTOR v; // stack offset -48
-	// 		RAIN_TYPE *RainPtr; // $a2
-	// 		int RainIndex; // $s0
-	// 		int RainNo; // $s1
-	// 		int first; // $s3
-	// 		static unsigned long rand; // offset 0x8
-
-		/* begin block 1.1 */
-			// Start line: 4453
-			// Start offset: 0x00039388
-			// Variables:
-		// 		int depth; // $v0
-		/* end block 1.1 */
-		// End offset: 0x000393B0
-		// End Line: 4456
-
-		/* begin block 1.2 */
-			// Start line: 4466
-			// Start offset: 0x000393E4
-			// Variables:
-		// 		ROUTE_DATA routeData; // stack offset -40
-		/* end block 1.2 */
-		// End offset: 0x00039434
-		// End Line: 4474
-	/* end block 1 */
-	// End offset: 0x00039444
-	// End Line: 4477
-
-	/* begin block 2 */
-		// Start line: 11241
-	/* end block 2 */
-	// End Line: 11242
-
-	/* begin block 3 */
-		// Start line: 11355
-	/* end block 3 */
-	// End Line: 11356
-
-	/* begin block 4 */
-		// Start line: 11356
-	/* end block 4 */
-	// End Line: 11357
-
-	/* begin block 5 */
-		// Start line: 11364
-	/* end block 5 */
-	// End Line: 11365
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void AddRainDrops(void)
 {
@@ -5339,35 +3645,6 @@ void AddRainDrops(void)
 	}
 }
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DoLightning()
- // line 4607, offset 0x00039b78
-	/* begin block 1 */
-		// Start line: 4609
-		// Start offset: 0x00039B78
-	/* end block 1 */
-	// End offset: 0x00039C58
-	// End Line: 4631
-
-	/* begin block 2 */
-		// Start line: 12959
-	/* end block 2 */
-	// End Line: 12960
-
-	/* begin block 3 */
-		// Start line: 15350
-	/* end block 3 */
-	// End Line: 15351
-
-	/* begin block 4 */
-		// Start line: 15351
-	/* end block 4 */
-	// End Line: 15352
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 int lightning = 0;
 int LightningTimer = 10;
 int ThunderTimer = 0;
@@ -5406,25 +3683,6 @@ void DoLightning(void)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitThunder()
- // line 4635, offset 0x0003a0bc
-	/* begin block 1 */
-		// Start line: 4636
-		// Start offset: 0x0003A0BC
-	/* end block 1 */
-	// End offset: 0x0003A120
-	// End Line: 4636
-
-	/* begin block 2 */
-		// Start line: 9270
-	/* end block 2 */
-	// End Line: 9271
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void InitThunder(void)
 {
@@ -5432,18 +3690,6 @@ void InitThunder(void)
 	ThunderDistance = rand() % 5000;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ RequestThunder()
- // line 4636, offset 0x0003a120
-	/* begin block 1 */
-		// Start line: 24079
-	/* end block 1 */
-	// End Line: 24080
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void RequestThunder(void)
@@ -5454,30 +3700,6 @@ void RequestThunder(void)
 		ThunderTimer = 1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DoThunder()
- // line 4638, offset 0x0003a144
-	/* begin block 1 */
-		// Start line: 4640
-		// Start offset: 0x0003A144
-	/* end block 1 */
-	// End offset: 0x0003A224
-	// End Line: 4647
-
-	/* begin block 2 */
-		// Start line: 24083
-	/* end block 2 */
-	// End Line: 24084
-
-	/* begin block 3 */
-		// Start line: 24084
-	/* end block 3 */
-	// End Line: 24085
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void DoThunder(void)
@@ -5502,26 +3724,6 @@ void DoThunder(void)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DoWeather(int weather /*$a0*/)
- // line 4651, offset 0x0003a000
-	/* begin block 1 */
-		// Start line: 24074
-	/* end block 1 */
-	// End Line: 24075
-
-	/* begin block 2 */
-		// Start line: 9302
-	/* end block 2 */
-	// End Line: 9303
-
-	/* begin block 3 */
-		// Start line: 24075
-	/* end block 3 */
-	// End Line: 24076
 
 // [D] [T]
 void DoWeather(int weather)
@@ -5550,32 +3752,6 @@ void DoWeather(int weather)
 
 	DrawRainDrops();
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ GetDebrisColour(CAR_DATA *cp /*$a0*/)
- // line 4725, offset 0x00039fa8
-	/* begin block 1 */
-		// Start line: 4726
-		// Start offset: 0x00039FA8
-		// Variables:
-	// 		int car_model; // $v1
-	// 		int palette; // $a0
-	/* end block 1 */
-	// End offset: 0x0003A000
-	// End Line: 4742
-
-	/* begin block 2 */
-		// Start line: 24129
-	/* end block 2 */
-	// End Line: 24130
-
-	/* begin block 3 */
-		// Start line: 24130
-	/* end block 3 */
-	// End Line: 24131
 
 // [D] [T]
 int GetDebrisColour(CAR_DATA *cp)

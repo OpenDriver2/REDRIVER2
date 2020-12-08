@@ -15,61 +15,6 @@
 #include "MAIN.H"
 
 
-// decompiled code
-// original method signature: 
-// char /*$ra*/ CellEmpty(VECTOR *pPosition /*$s1*/, int radius /*$s2*/)
- // line 63, offset 0x00069ba4
-	/* begin block 1 */
-		// Start line: 64
-		// Start offset: 0x00069BA4
-		// Variables:
-	// 		CELL_ITERATOR ci; // stack offset -48
-	// 		int cell_x; // $a0
-	// 		CELL_OBJECT *pCellObject; // $a2
-	// 		MODEL *pModel; // $a3
-
-		/* begin block 1.1 */
-			// Start line: 100
-			// Start offset: 0x00069C60
-			// Variables:
-		// 		int sphere_sq; // $v0
-		// 		int xd; // $t5
-		// 		int zd; // $t4
-
-			/* begin block 1.1.1 */
-				// Start line: 114
-				// Start offset: 0x00069CC4
-				// Variables:
-			// 		int box_loop; // $t3
-			// 		int num_cb; // $t6
-			// 		COLLISION_PACKET *collide; // $t0
-
-				/* begin block 1.1.1.1 */
-					// Start line: 119
-					// Start offset: 0x00069CE8
-					// Variables:
-				// 		unsigned int zs; // $t2
-				// 		unsigned int xs; // $t1
-				// 		int cs; // $a2
-				// 		int sn; // $a0
-				/* end block 1.1.1.1 */
-				// End offset: 0x00069DC8
-				// End Line: 138
-			/* end block 1.1.1 */
-			// End offset: 0x00069DD8
-			// End Line: 139
-		/* end block 1.1 */
-		// End offset: 0x00069DD8
-		// End Line: 141
-	/* end block 1 */
-	// End offset: 0x00069E1C
-	// End Line: 153
-
-	/* begin block 2 */
-		// Start line: 126
-	/* end block 2 */
-	// End Line: 127
-
 // [D] [T]
 char CellEmpty(VECTOR *pPosition, int radius)
 {
@@ -256,41 +201,6 @@ char CellEmpty(VECTOR *pPosition, int radius)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ GlobalPositionToCellNumber(VECTOR *pPosition /*$a0*/)
- // line 155, offset 0x0006b2ec
-	/* begin block 1 */
-		// Start line: 156
-		// Start offset: 0x0006B2EC
-		// Variables:
-	// 		int cellX; // $a3
-	// 		int cellZ; // $a1
-	// 		int cbrX; // $t1
-	// 		int cbrZ; // $t0
-	// 		int cbr; // $t2
-	// 		int xOff; // $a3
-	// 		int yOff; // $a0
-	/* end block 1 */
-	// End offset: 0x0006B3E4
-	// End Line: 175
-
-	/* begin block 2 */
-		// Start line: 1770
-	/* end block 2 */
-	// End Line: 1771
-
-	/* begin block 3 */
-		// Start line: 310
-	/* end block 3 */
-	// End Line: 311
-
-	/* begin block 4 */
-		// Start line: 1773
-	/* end block 4 */
-	// End Line: 1774
-
 // [D] [T]
 int GlobalPositionToCellNumber(VECTOR *pPosition)
 {
@@ -315,28 +225,6 @@ int GlobalPositionToCellNumber(VECTOR *pPosition)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// char /*$ra*/ CellAtPositionEmpty(VECTOR *pPosition /*$s0*/, int radius /*$s1*/)
- // line 183, offset 0x0006b3e4
-	/* begin block 1 */
-		// Start line: 184
-		// Start offset: 0x0006B3E4
-	/* end block 1 */
-	// End offset: 0x0006B430
-	// End Line: 205
-
-	/* begin block 2 */
-		// Start line: 1826
-	/* end block 2 */
-	// End Line: 1827
-
-	/* begin block 3 */
-		// Start line: 1835
-	/* end block 3 */
-	// End Line: 1836
-
 // [D] [T]
 char CellAtPositionEmpty(VECTOR *pPosition, int radius)
 {
@@ -346,47 +234,6 @@ char CellAtPositionEmpty(VECTOR *pPosition, int radius)
 	return CellEmpty(pPosition, radius);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ RaySlabsIntersection(tRay *ray /*$t5*/, tAABB *bbox /*$t4*/)
- // line 217, offset 0x00069e1c
-	/* begin block 1 */
-		// Start line: 218
-		// Start offset: 0x00069E1C
-		// Variables:
-	// 		int i; // $t1
-	// 		tRange inside; // stack offset -24
-
-		/* begin block 1.1 */
-			// Start line: 226
-			// Start offset: 0x00069E40
-			// Variables:
-		// 		tRange cabbage; // stack offset -16
-		// 		tRange scaledCabbage; // stack offset -8
-		// 		int dir; // $a2
-		/* end block 1.1 */
-		// End offset: 0x00069F94
-		// End Line: 253
-	/* end block 1 */
-	// End offset: 0x00069FB4
-	// End Line: 255
-
-	/* begin block 2 */
-		// Start line: 435
-	/* end block 2 */
-	// End Line: 436
-
-	/* begin block 3 */
-		// Start line: 500
-	/* end block 3 */
-	// End Line: 501
-
-	/* begin block 4 */
-		// Start line: 506
-	/* end block 4 */
-	// End Line: 507
 
 // [D] [T]
 int RaySlabsIntersection(tRay *ray, tAABB *bbox)
@@ -451,108 +298,6 @@ int RaySlabsIntersection(tRay *ray, tAABB *bbox)
 
 	return 1;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// char /*$ra*/ lineClear(VECTOR *v1 /*stack 0*/, VECTOR *v2 /*stack 4*/)
- // line 259, offset 0x00069fb4
-	/* begin block 1 */
-		// Start line: 260
-		// Start offset: 0x00069FB4
-		// Variables:
-	// 		int we; // stack offset -56
-	// 		int ocx; // $t2
-	// 		int ocz; // $t3
-	// 		VECTOR pos; // stack offset -184
-	// 		VECTOR va; // stack offset -168
-	// 		VECTOR vb; // stack offset -152
-
-		/* begin block 1.1 */
-			// Start line: 279
-			// Start offset: 0x0006A074
-			// Variables:
-		// 		int cell_x; // $fp
-		// 		int cell_z; // $s7
-		// 		CELL_ITERATOR ci; // stack offset -136
-		// 		CELL_OBJECT *pCellObject; // $s4
-
-			/* begin block 1.1.1 */
-				// Start line: 299
-				// Start offset: 0x0006A134
-				// Variables:
-			// 		MODEL *pModel; // $a1
-
-				/* begin block 1.1.1.1 */
-					// Start line: 307
-					// Start offset: 0x0006A170
-					// Variables:
-				// 		int sphere_sq; // $v0
-				// 		int xd; // $a0
-				// 		int zd; // $v1
-
-					/* begin block 1.1.1.1.1 */
-						// Start line: 318
-						// Start offset: 0x0006A1D4
-						// Variables:
-					// 		int box_loop; // $s5
-					// 		int num_cb; // $s6
-					// 		COLLISION_PACKET *collide; // $s3
-
-						/* begin block 1.1.1.1.1.1 */
-							// Start line: 323
-							// Start offset: 0x0006A1F0
-							// Variables:
-						// 		MATRIX *mat; // $a0
-						// 		int cx; // $v1
-						// 		int cy; // $a2
-						// 		int cz; // $v0
-						// 		int cs; // $t1
-						// 		int sn; // $t5
-
-							/* begin block 1.1.1.1.1.1.1 */
-								// Start line: 323
-								// Start offset: 0x0006A1F0
-								// Variables:
-							// 		tRay ray; // stack offset -112
-							// 		tAABB box; // stack offset -80
-							/* end block 1.1.1.1.1.1.1 */
-							// End offset: 0x0006A414
-							// End Line: 347
-						/* end block 1.1.1.1.1.1 */
-						// End offset: 0x0006A414
-						// End Line: 348
-					/* end block 1.1.1.1.1 */
-					// End offset: 0x0006A424
-					// End Line: 349
-				/* end block 1.1.1.1 */
-				// End offset: 0x0006A424
-				// End Line: 351
-			/* end block 1.1.1 */
-			// End offset: 0x0006A424
-			// End Line: 352
-		/* end block 1.1 */
-		// End offset: 0x0006A444
-		// End Line: 355
-	/* end block 1 */
-	// End offset: 0x0006A498
-	// End Line: 360
-
-	/* begin block 2 */
-		// Start line: 633
-	/* end block 2 */
-	// End Line: 634
-
-	/* begin block 3 */
-		// Start line: 638
-	/* end block 3 */
-	// End Line: 639
-
-	/* begin block 4 */
-		// Start line: 654
-	/* end block 4 */
-	// End Line: 655
 
 int testRadius = 222;
 
@@ -760,126 +505,13 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 	return 1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetCopListCell(int x /*$a0*/, int z /*$a1*/)
- // line 377, offset 0x0006b430
-	/* begin block 1 */
-		// Start line: 379
-		// Start offset: 0x0006B430
-		// Variables:
-	// 		XZPAIR cell; // stack offset -16
-	/* end block 1 */
-	// End offset: 0x0006B45C
-	// End Line: 384
-
-	/* begin block 2 */
-		// Start line: 2054
-	/* end block 2 */
-	// End Line: 2055
-
-	/* begin block 3 */
-		// Start line: 2227
-	/* end block 3 */
-	// End Line: 2228
-
-	/* begin block 4 */
-		// Start line: 2228
-	/* end block 4 */
-	// End Line: 2229
-
-	/* begin block 5 */
-		// Start line: 2229
-	/* end block 5 */
-	// End Line: 2230
-
 // [D] [T]
-void SetCopListCell(int x, int z)
-{
-	XZPAIR cell;
-
-	cell.x = x;
-	cell.z = z;
-	CollisionCopList(&cell, NULL);
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ BuildCollisionCopList(int *count /*$a1*/)
- // line 386, offset 0x0006b45c
-	/* begin block 1 */
-		// Start line: 2245
-	/* end block 1 */
-	// End Line: 2246
-
-	/* begin block 2 */
-		// Start line: 2248
-	/* end block 2 */
-	// End Line: 2249
-
-// [D] [T]
-void BuildCollisionCopList(int *count)
-{
-	CollisionCopList(NULL, count);
-}
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ CollisionCopList(XZPAIR *pos /*$a0*/, int *count /*$s0*/)
- // line 391, offset 0x0006a498
-	/* begin block 1 */
-		// Start line: 392
-		// Start offset: 0x0006A498
-		// Variables:
-	// 		static XZPAIR initial; // offset 0x0
-
-		/* begin block 1.1 */
-			// Start line: 402
-			// Start offset: 0x0006A4E8
-			// Variables:
-		// 		XZPAIR cell; // stack offset -72
-		// 		int i; // $a0
-		// 		int j; // $t1
-
-			/* begin block 1.1.1 */
-				// Start line: 411
-				// Start offset: 0x0006A508
-				// Variables:
-			// 		CELL_ITERATOR ci; // stack offset -64
-			// 		XZPAIR cbr; // stack offset -40
-			// 		int barrelRegion; // $v0
-			// 		CELL_OBJECT *cop; // $a0
-			/* end block 1.1.1 */
-			// End offset: 0x0006A5F8
-			// End Line: 429
-		/* end block 1.1 */
-		// End offset: 0x0006A628
-		// End Line: 431
-	/* end block 1 */
-	// End offset: 0x0006A64C
-	// End Line: 432
-
-	/* begin block 2 */
-		// Start line: 1207
-	/* end block 2 */
-	// End Line: 1208
-
-	/* begin block 3 */
-		// Start line: 1239
-	/* end block 3 */
-	// End Line: 1240
-
-// [D] [T]
-void CollisionCopList(XZPAIR *pos, int *count)
+void CollisionCopList(XZPAIR* pos, int* count)
 {
 	static XZPAIR initial;
 
-	PACKED_CELL_OBJECT *ppco;
-	CELL_OBJECT *cop;
+	PACKED_CELL_OBJECT* ppco;
+	CELL_OBJECT* cop;
 	int i;
 	int j;
 	XZPAIR cell;
@@ -900,7 +532,7 @@ void CollisionCopList(XZPAIR *pos, int *count)
 			do {
 				cbr.x = cell.x / MAP_REGION_SIZE;
 				cbr.z = cell.z / MAP_REGION_SIZE;
-				
+
 				// [A] FIXME: replace with 'cell_header.region_size'
 				if (cbr.x + cbr.z * (cells_across / MAP_REGION_SIZE) == RoadMapRegions[(cbr.x & 1) + (cbr.z & 1) * 2])
 				{
@@ -912,12 +544,12 @@ void CollisionCopList(XZPAIR *pos, int *count)
 						cop->pad = *count;
 
 						model = modelpointers[cop->type];
-						
+
 						if (model->collision_block > 0 &&
-							model->num_vertices-3 < 300 && 
+							model->num_vertices - 3 < 300 &&
 							model->num_point_normals < 300 &&
 							model->num_polys < 300 &&
-							*(int *)model->collision_block > 0)
+							*(int*)model->collision_block > 0)
 						{
 							coplist[*count] = cop;
 							pcoplist[*count] = ci.ppco;
@@ -947,56 +579,21 @@ void CollisionCopList(XZPAIR *pos, int *count)
 }
 
 
+// [D] [T]
+void SetCopListCell(int x, int z)
+{
+	XZPAIR cell;
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ CheckScenaryCollisions(CAR_DATA *cp /*$s7*/)
- // line 439, offset 0x0006a64c
-	/* begin block 1 */
-		// Start line: 440
-		// Start offset: 0x0006A64C
-		// Variables:
-	// 		MODEL *model; // stack offset -76
-	// 		CELL_OBJECT *cop; // $s5
-	// 		VECTOR player_pos; // stack offset -152
-	// 		COLLISION_PACKET *collide; // $s1
-	// 		int cell_x; // $a0
-	// 		int xd; // $v1
-	// 		int zd; // $a0
-	// 		int num_cb; // stack offset -72
-	// 		int box_loop; // $s6
-	// 		int sphere_sq; // $v0
-	// 		int x1; // stack offset -68
-	// 		BUILDING_BOX bbox; // stack offset -136
-	// 		int mdcount; // stack offset -80
-	// 		int coll_test_count; // $t0
-	// 		XZPAIR box; // stack offset -104
-	// 		int lbody; // stack offset -64
-	// 		int extraDist; // stack offset -60
+	cell.x = x;
+	cell.z = z;
+	CollisionCopList(&cell, NULL);
+}
 
-		/* begin block 1.1 */
-			// Start line: 519
-			// Start offset: 0x0006A934
-			// Variables:
-		// 		BUILDING_BOX *pbox; // $s4
-		// 		MATRIX *mat; // $a1
-		// 		VECTOR offset; // stack offset -96
-		/* end block 1.1 */
-		// End offset: 0x0006AD48
-		// End Line: 591
-	/* end block 1 */
-	// End offset: 0x0006AD8C
-	// End Line: 597
-
-	/* begin block 2 */
-		// Start line: 1368
-	/* end block 2 */
-	// End Line: 1369
-
-	/* begin block 3 */
-		// Start line: 1376
-	/* end block 3 */
-	// End Line: 1377
+// [D] [T]
+void BuildCollisionCopList(int *count)
+{
+	CollisionCopList(NULL, count);
+}
 
 int gCameraBoxOverlap;
 int ExBoxDamage = 0;
@@ -1177,55 +774,6 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 	EventCollisions(cp, 1);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ QuickBuildingCollisionCheck(VECTOR *pPos /*$s5*/, int dir /*stack 4*/, int l /*stack 8*/, int w /*$fp*/, int extra /*stack 16*/)
- // line 609, offset 0x0006adbc
-	/* begin block 1 */
-		// Start line: 610
-		// Start offset: 0x0006ADBC
-		// Variables:
-	// 		MODEL *model; // $a1
-	// 		CELL_OBJECT *cop; // $s3
-	// 		VECTOR player_pos; // stack offset -112
-	// 		COLLISION_PACKET *collide; // $s0
-	// 		int cell_x; // $a0
-	// 		int xd; // $v1
-	// 		int zd; // $a0
-	// 		int num_cb; // $s7
-	// 		int box_loop; // $s4
-	// 		int sphere_sq; // $v0
-	// 		int x1; // $s6
-	// 		BUILDING_BOX bbox; // stack offset -96
-	// 		int mdcount; // stack offset -48
-
-		/* begin block 1.1 */
-			// Start line: 669
-			// Start offset: 0x0006AFA4
-			// Variables:
-		// 		BUILDING_BOX *pbox; // $s1
-		// 		MATRIX *mat; // $a1
-		// 		VECTOR offset; // stack offset -64
-
-			/* begin block 1.1.1 */
-				// Start line: 685
-				// Start offset: 0x0006B0F0
-			/* end block 1.1.1 */
-			// End offset: 0x0006B1BC
-			// End Line: 712
-		/* end block 1.1 */
-		// End offset: 0x0006B1BC
-		// End Line: 714
-	/* end block 1 */
-	// End offset: 0x0006B220
-	// End Line: 721
-
-	/* begin block 2 */
-		// Start line: 1891
-	/* end block 2 */
-	// End Line: 1892
 
 // [D] [T]
 int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
@@ -1412,43 +960,6 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 	}
 	return 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DoScenaryCollisions()
- // line 735, offset 0x0006b220
-	/* begin block 1 */
-		// Start line: 737
-		// Start offset: 0x0006B220
-		// Variables:
-	// 		CAR_DATA *lcp; // $s0
-	/* end block 1 */
-	// End offset: 0x0006B2EC
-	// End Line: 753
-
-	/* begin block 2 */
-		// Start line: 2307
-	/* end block 2 */
-	// End Line: 2308
-
-	/* begin block 3 */
-		// Start line: 2322
-	/* end block 3 */
-	// End Line: 2323
-
-	/* begin block 4 */
-		// Start line: 2323
-	/* end block 4 */
-	// End Line: 2324
-
-	/* begin block 5 */
-		// Start line: 2324
-	/* end block 5 */
-	// End Line: 2325
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void DoScenaryCollisions(void)

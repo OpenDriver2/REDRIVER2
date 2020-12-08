@@ -32,73 +32,12 @@ unsigned char gCarDamageZoneVerts[MAX_CAR_MODELS][NUM_DAMAGE_ZONES][MAX_DAMAGE_Z
 unsigned char gHDCarDamageZonePolys[MAX_CAR_MODELS][NUM_DAMAGE_ZONES][MAX_DAMAGE_ZONE_POLYS];
 unsigned char gHDCarDamageLevels[MAX_CAR_MODELS][MAX_DAMAGE_LEVELS];
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitialiseDenting()
- // line 267, offset 0x0003b1c0
-	/* begin block 1 */
-		// Start line: 534
-	/* end block 1 */
-	// End Line: 535
-
-	/* begin block 2 */
-		// Start line: 1508
-	/* end block 2 */
-	// End Line: 1509
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void InitialiseDenting(void)
 {
 	LoadDenting(GameLevel);
 	InitHubcap();
 }
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DentCar(CAR_DATA *cp /*$t7*/)
- // line 288, offset 0x0003a310
-	/* begin block 1 */
-		// Start line: 289
-		// Start offset: 0x0003A310
-		// Variables:
-	// 		SVECTOR *VertPtr; // $t0
-	// 		int MaxDamage; // $s0
-	// 		unsigned char VertIndex; // $v0
-	// 		unsigned char PolyIndex; // $v0
-	// 		DENTUVS *dentptr; // $t1
-	// 		unsigned char *DamPtr; // $a2
-	// 		int model; // $t5
-	// 		int Poly; // $a1
-	// 		int Damage; // $v1
-	// 		int Zone; // $a3
-	// 		int VertNo; // $a2
-	// 		short *tempDamage; // $t1
-	// 		SVECTOR *DamVertPtr; // $a3
-	// 		SVECTOR *CleanVertPtr; // $a1
-	// 		MODEL *pCleanModel; // $t3
-
-		/* begin block 1.1 */
-			// Start line: 421
-			// Start offset: 0x0003A690
-		/* end block 1.1 */
-		// End offset: 0x0003A690
-		// End Line: 423
-	/* end block 1 */
-	// End offset: 0x0003A6E4
-	// End Line: 428
-
-	/* begin block 2 */
-		// Start line: 576
-	/* end block 2 */
-	// End Line: 577
-
-	/* begin block 3 */
-		// Start line: 579
-	/* end block 3 */
-	// End Line: 580
 
 // [D] [T]
 void DentCar(CAR_DATA *cp)
@@ -234,61 +173,6 @@ void DentCar(CAR_DATA *cp)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ CreateDentableCar(CAR_DATA *cp /*$t2*/)
- // line 458, offset 0x0003a6e4
-	/* begin block 1 */
-		// Start line: 459
-		// Start offset: 0x0003A6E4
-		// Variables:
-	// 		DENTUVS *dentptr; // $a3
-	// 		int Zone; // $v1
-	// 		int count; // $a2
-	// 		int model; // $t3
-
-		/* begin block 1.1 */
-			// Start line: 478
-			// Start offset: 0x0003A710
-			// Variables:
-		// 		SVECTOR *dst; // $a2
-		// 		SVECTOR *src; // $a3
-		// 		int count; // $t0
-
-			/* begin block 1.1.1 */
-				// Start line: 484
-				// Start offset: 0x0003A748
-				// Variables:
-			// 		int x; // $v0
-			// 		int y; // $v1
-			// 		int z; // $a0
-			/* end block 1.1.1 */
-			// End offset: 0x0003A748
-			// End Line: 484
-		/* end block 1.1 */
-		// End offset: 0x0003A770
-		// End Line: 493
-	/* end block 1 */
-	// End offset: 0x0003A874
-	// End Line: 534
-
-	/* begin block 2 */
-		// Start line: 1092
-	/* end block 2 */
-	// End Line: 1093
-
-	/* begin block 3 */
-		// Start line: 1123
-	/* end block 3 */
-	// End Line: 1124
-
-	/* begin block 4 */
-		// Start line: 1138
-	/* end block 4 */
-	// End Line: 1139
-
 // [D] [T]
 void CreateDentableCar(CAR_DATA *cp)
 {
@@ -345,36 +229,6 @@ void CreateDentableCar(CAR_DATA *cp)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitHubcap()
- // line 549, offset 0x0003a874
-	/* begin block 1 */
-		// Start line: 552
-		// Start offset: 0x0003A874
-	/* end block 1 */
-	// End offset: 0x0003A8F8
-	// End Line: 573
-
-	/* begin block 2 */
-		// Start line: 1330
-	/* end block 2 */
-	// End Line: 1331
-
-	/* begin block 3 */
-		// Start line: 1346
-	/* end block 3 */
-	// End Line: 1347
-
-	/* begin block 4 */
-		// Start line: 1348
-	/* end block 4 */
-	// End Line: 1349
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 extern HUBCAP gHubcap;
 int gHubcapTime = 0;
 
@@ -407,47 +261,6 @@ void InitHubcap(void)
 	gHubcap.Offset[3].vz = -275;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ LoseHubcap(int Hubcap /*$s3*/, int Velocity /*$a1*/)
- // line 600, offset 0x0003a8f8
-	/* begin block 1 */
-		// Start line: 601
-		// Start offset: 0x0003A8F8
-		// Variables:
-	// 		CAR_DATA *car_data_pt; // $s1
-	// 		SVECTOR InitialLocalAngle; // stack offset -64
-
-		/* begin block 1.1 */
-			// Start line: 671
-			// Start offset: 0x0003AA84
-			// Variables:
-		// 		VECTOR R; // stack offset -56
-		// 		VECTOR VW; // stack offset -40
-		// 		long AY; // $t0
-		/* end block 1.1 */
-		// End offset: 0x0003AAE0
-		// End Line: 681
-	/* end block 1 */
-	// End offset: 0x0003AB2C
-	// End Line: 694
-
-	/* begin block 2 */
-		// Start line: 1441
-	/* end block 2 */
-	// End Line: 1442
-
-	/* begin block 3 */
-		// Start line: 1469
-	/* end block 3 */
-	// End Line: 1470
-
-	/* begin block 4 */
-		// Start line: 1471
-	/* end block 4 */
-	// End Line: 1472
 
 // [D] [T]
 void LoseHubcap(int car, int Hubcap, int Velocity)
@@ -496,64 +309,6 @@ void LoseHubcap(int car, int Hubcap, int Velocity)
 	gHubcap.Direction.vz = FIXEDH(-FIXEDH(cp->st.n.angularVelocity[1]) * gHubcap.Offset[Hubcap].vx) + FIXEDH(cp->st.n.linearVelocity[2]);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ MoveHubcap()
- // line 706, offset 0x0003ab4c
-	/* begin block 1 */
-		// Start line: 708
-		// Start offset: 0x0003AB4C
-		// Variables:
-	// 		CAR_DATA *car_data_pt; // $a1
-	// 		VECTOR Position; // stack offset -80
-	// 		MATRIX Orientation; // stack offset -64
-	// 		CVECTOR col; // stack offset -32
-	// 		int VelocityMagnitude; // $s0
-	// 		int CurrentMapHeight; // $a0
-	// 		int savecombo; // $s0
-
-		/* begin block 1.1 */
-			// Start line: 731
-			// Start offset: 0x0003ABF8
-		/* end block 1.1 */
-		// End offset: 0x0003AC18
-		// End Line: 734
-
-		/* begin block 1.2 */
-			// Start line: 738
-			// Start offset: 0x0003AC28
-		/* end block 1.2 */
-		// End offset: 0x0003AC58
-		// End Line: 741
-
-		/* begin block 1.3 */
-			// Start line: 762
-			// Start offset: 0x0003ACA4
-		/* end block 1.3 */
-		// End offset: 0x0003AD24
-		// End Line: 780
-	/* end block 1 */
-	// End offset: 0x0003AE44
-	// End Line: 805
-
-	/* begin block 2 */
-		// Start line: 1741
-	/* end block 2 */
-	// End Line: 1742
-
-	/* begin block 3 */
-		// Start line: 1742
-	/* end block 3 */
-	// End Line: 1743
-
-	/* begin block 4 */
-		// Start line: 1745
-	/* end block 4 */
-	// End Line: 1746
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [A]
 void HandlePlayerHubcaps(int playerId)
@@ -662,28 +417,8 @@ void MoveHubcap()
 	}
 }
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ProcessDentLump(char *lump_ptr /*$t2*/, int lump_size /*$a1*/)
- // line 838, offset 0x0003ae60
-	/* begin block 1 */
-		// Start line: 839
-		// Start offset: 0x0003AE60
-		// Variables:
-	// 		int i; // $a3
-	// 		int model; // $a0
-	// 		int offset; // $a0
-	/* end block 1 */
-	// End offset: 0x0003B1C0
-	// End Line: 868
-
-	/* begin block 2 */
-		// Start line: 2047
-	/* end block 2 */
-	// End Line: 2048
-
 #ifndef PSX
-	// [A] loads car model from file
+// [A] loads car model from file
 char* LoadCarDentingFromFile(char* dest, int modelNumber)
 {
 	char* mem;
@@ -754,37 +489,6 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetupSpecDenting(char *loadbuffer /*$a0*/)
- // line 877, offset 0x0003b240
-	/* begin block 1 */
-		// Start line: 878
-		// Start offset: 0x0003B240
-		// Variables:
-	// 		char *from; // $a0
-	// 		char *to; // $v1
-	// 		char *limit; // $a1
-	/* end block 1 */
-	// End offset: 0x0003B2E4
-	// End Line: 911
-
-	/* begin block 2 */
-		// Start line: 2681
-	/* end block 2 */
-	// End Line: 2682
-
-	/* begin block 3 */
-		// Start line: 2729
-	/* end block 3 */
-	// End Line: 2730
-
-	/* begin block 4 */
-		// Start line: 2739
-	/* end block 4 */
-	// End Line: 2740
-
 // [D] [T]
 void SetupSpecDenting(char *loadbuffer)
 {
@@ -799,33 +503,6 @@ void SetupSpecDenting(char *loadbuffer)
 
 	memcpy(gHDCarDamageLevels[4], loadbuffer + offset, MAX_FILE_DAMAGE_LEVELS);
 }
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ LoadDenting(int level /*$a0*/)
- // line 815, offset 0x0003b1f0
-	/* begin block 1 */
-		// Start line: 817
-		// Start offset: 0x0003B1F0
-	/* end block 1 */
-	// End offset: 0x0003B240
-	// End Line: 830
-
-	/* begin block 2 */
-		// Start line: 2602
-	/* end block 2 */
-	// End Line: 2603
-
-	/* begin block 3 */
-		// Start line: 2603
-	/* end block 3 */
-	// End Line: 2604
-
-	/* begin block 4 */
-		// Start line: 2610
-	/* end block 4 */
-	// End Line: 2611
 
 // [D] [T]
 void LoadDenting(int level)

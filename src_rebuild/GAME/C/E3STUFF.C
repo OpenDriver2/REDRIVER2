@@ -28,24 +28,6 @@ POLYCOORD polycoords[6] =
   { 512, 256, 896, 256, 128, 256 }
 };
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ShowHiresScreens(char **names /*$s1*/, int delay /*$s4*/, int wait /*$s3*/)
- // line 139, offset 0x00044ce0
-	/* begin block 1 */
-		// Start line: 140
-		// Start offset: 0x00044CE0
-		// Variables:
-	// 		char *filename; // $a0
-	// 		int timedelay; // $s0
-	/* end block 1 */
-	// End offset: 0x00044DA0
-	// End Line: 164
-
-	/* begin block 2 */
-		// Start line: 278
-	/* end block 2 */
-	// End Line: 279
 
 // [D] [T]
 void ShowHiresScreens(char **names, int delay, int wait)
@@ -79,38 +61,6 @@ void ShowHiresScreens(char **names, int delay, int wait)
 		filename = *(++names);
 	} while (true);
 }
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ FadeInHiresScreen(char *filename /*stack 0*/)
- // line 171, offset 0x00044244
-	/* begin block 1 */
-		// Start line: 172
-		// Start offset: 0x00044244
-		// Variables:
-	// 		DISPENV disp; // stack offset -488
-	// 		DRAWENV draw; // stack offset -464
-	// 		SPRT prims[6]; // stack offset -368
-	// 		POLY_FT3 nulls[6]; // stack offset -248
-	// 		RECT rect; // stack offset -56
-	// 		unsigned long ot; // stack offset -48
-	// 		int i; // $t5
-	// 		int col; // $s1
-	/* end block 1 */
-	// End offset: 0x000445F4
-	// End Line: 251
-
-	/* begin block 2 */
-		// Start line: 302
-	/* end block 2 */
-	// End Line: 303
-
-	/* begin block 3 */
-		// Start line: 342
-	/* end block 3 */
-	// End Line: 343
-
 
 // [D] [T]
 void FadeInHiresScreen(char *filename)
@@ -379,49 +329,6 @@ void ShowBonusGallery()
 	DrawSync(0);
 }
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ FadeOutHiresScreen()
- // line 258, offset 0x000445f4
-	/* begin block 1 */
-		// Start line: 260
-		// Start offset: 0x000445F4
-		// Variables:
-	// 		DISPENV disp; // stack offset -496
-	// 		DRAWENV draw; // stack offset -472
-	// 		SPRT prims[6]; // stack offset -376
-	// 		POLY_FT3 nulls[6]; // stack offset -256
-	// 		RECT rect; // stack offset -64
-	// 		unsigned long ot; // stack offset -56
-	// 		int i; // $t5
-	// 		int col; // $s1
-	/* end block 1 */
-	// End offset: 0x000448CC
-	// End Line: 318
-
-	/* begin block 2 */
-		// Start line: 662
-	/* end block 2 */
-	// End Line: 663
-
-	/* begin block 3 */
-		// Start line: 670
-	/* end block 3 */
-	// End Line: 671
-
-	/* begin block 4 */
-		// Start line: 671
-	/* end block 4 */
-	// End Line: 672
-
-	/* begin block 5 */
-		// Start line: 680
-	/* end block 5 */
-	// End Line: 681
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void FadeOutHiresScreen(void)
 {
@@ -516,17 +423,6 @@ void FadeOutHiresScreen(void)
 	DrawSync(0);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetupDefDrawEnv(DRAWENV *env /*$a0*/, int x /*$a1*/, int y /*$a2*/, int w /*$a3*/, int h /*stack 16*/)
- // line 325, offset 0x00044e40
-	/* begin block 1 */
-		// Start line: 650
-	/* end block 1 */
-	// End Line: 651
-
 // [D] [T]
 void SetupDefDrawEnv(DRAWENV *env, int x, int y, int w, int h)
 {
@@ -535,22 +431,6 @@ void SetupDefDrawEnv(DRAWENV *env, int x, int y, int w, int h)
 	else
 		SetDefDrawEnv(env, x, y, w, 512);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetupDefDispEnv(DISPENV *env /*$s0*/, int x /*$a1*/, int y /*$a2*/, int w /*$a3*/, int h /*stack 16*/)
- // line 350, offset 0x00044da0
-	/* begin block 1 */
-		// Start line: 1213
-	/* end block 1 */
-	// End Line: 1214
-
-	/* begin block 2 */
-		// Start line: 1400
-	/* end block 2 */
-	// End Line: 1401
 
 // [D] [T]
 void SetupDefDispEnv(DISPENV *env, int x, int y, int w, int h)
@@ -576,34 +456,6 @@ void SetupDefDispEnv(DISPENV *env, int x, int y, int w, int h)
 
 	env->isrgb24 = 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetPleaseWait(char *buffer /*$s2*/)
- // line 391, offset 0x000448cc
-	/* begin block 1 */
-		// Start line: 392
-		// Start offset: 0x000448CC
-		// Variables:
-	// 		DISPENV disp; // stack offset -144
-	// 		DRAWENV draw; // stack offset -120
-	// 		RECT rect; // stack offset -24
-	// 		char *exe; // $a0
-	/* end block 1 */
-	// End offset: 0x00044A40
-	// End Line: 435
-
-	/* begin block 2 */
-		// Start line: 983
-	/* end block 2 */
-	// End Line: 984
-
-	/* begin block 3 */
-		// Start line: 1057
-	/* end block 3 */
-	// End Line: 1058
 
 int lastrequesteddisc = 0;
 
@@ -670,50 +522,6 @@ void SetPleaseWait(char *buffer)
 #endif // PSX
 	
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ CheckForCorrectDisc(int disc /*$s0*/)
- // line 443, offset 0x00044a40
-	/* begin block 1 */
-		// Start line: 444
-		// Start offset: 0x00044A40
-		// Variables:
-	// 		DISPENV disp; // stack offset -160
-	// 		DRAWENV draw; // stack offset -136
-	// 		RECT rect; // stack offset -40
-	// 		char *mess1; // $s6
-	// 		char *mess2; // $s3
-	// 		char *exe; // $s4
-	// 		int ret; // $s0
-	// 		int discerror; // $s5
-
-		/* begin block 1.1 */
-			// Start line: 492
-			// Start offset: 0x00044B70
-		/* end block 1.1 */
-		// End offset: 0x00044BF4
-		// End Line: 522
-	/* end block 1 */
-	// End offset: 0x00044CB8
-	// End Line: 538
-
-	/* begin block 2 */
-		// Start line: 1162
-	/* end block 2 */
-	// End Line: 1163
-
-	/* begin block 3 */
-		// Start line: 1171
-	/* end block 3 */
-	// End Line: 1172
-
-	/* begin block 4 */
-		// Start line: 1178
-	/* end block 4 */
-	// End Line: 1179
 
 // [D] [T]
 void CheckForCorrectDisc(int disc)

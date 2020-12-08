@@ -288,77 +288,11 @@ int LoadReplayFromFile(char* fileName)
 
 #endif
 
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CalcReplayDataSize()
- // line 37, offset 0x00057fd4
-	/* begin block 1 */
-		// Start line: 39
-		// Start offset: 0x00057FD4
-	/* end block 1 */
-	// End offset: 0x00057FF4
-	// End Line: 46
-
-	/* begin block 2 */
-		// Start line: 279
-	/* end block 2 */
-	// End Line: 280
-
-	/* begin block 3 */
-		// Start line: 74
-	/* end block 3 */
-	// End Line: 75
-
-	/* begin block 4 */
-		// Start line: 280
-	/* end block 4 */
-	// End Line: 281
-
-	/* begin block 5 */
-		// Start line: 282
-	/* end block 5 */
-	// End Line: 283
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 int CalcReplayDataSize(void)
 {
 	return SaveReplayToBuffer(NULL);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ SaveReplayData(char *buffer /*$a0*/)
- // line 48, offset 0x00057ff4
-	/* begin block 1 */
-		// Start line: 50
-		// Start offset: 0x00057FF4
-	/* end block 1 */
-	// End offset: 0x00058014
-	// End Line: 54
-
-	/* begin block 2 */
-		// Start line: 298
-	/* end block 2 */
-	// End Line: 299
-
-	/* begin block 3 */
-		// Start line: 301
-	/* end block 3 */
-	// End Line: 302
-
-	/* begin block 4 */
-		// Start line: 302
-	/* end block 4 */
-	// End Line: 303
-
-	/* begin block 5 */
-		// Start line: 304
-	/* end block 5 */
-	// End Line: 305
 
 // [D] [T]
 int SaveReplayData(char* buffer)
@@ -367,73 +301,17 @@ int SaveReplayData(char* buffer)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ LoadReplayData(char *buffer /*$a0*/)
- // line 56, offset 0x00058014
-	/* begin block 1 */
-		// Start line: 314
-	/* end block 1 */
-	// End Line: 315
-
-	/* begin block 2 */
-		// Start line: 317
-	/* end block 2 */
-	// End Line: 318
-
-	/* begin block 3 */
-		// Start line: 318
-	/* end block 3 */
-	// End Line: 319
-
 // [D] [T]
 int LoadReplayData(char* buffer)
 {
 	return LoadReplayFromBuffer(buffer);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CalcGameDataSize()
- // line 62, offset 0x00058034
-	/* begin block 1 */
-		// Start line: 329
-	/* end block 1 */
-	// End Line: 330
-
-	/* begin block 2 */
-		// Start line: 332
-	/* end block 2 */
-	// End Line: 333
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 int CalcGameDataSize(void)
 {
 	return sizeof(GAME_SAVE_HEADER);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ SaveGameData(char *buffer /*$s0*/)
- // line 69, offset 0x0005803c
-	/* begin block 1 */
-		// Start line: 70
-		// Start offset: 0x0005803C
-	/* end block 1 */
-	// End offset: 0x000580CC
-	// End Line: 83
-
-	/* begin block 2 */
-		// Start line: 343
-	/* end block 2 */
-	// End Line: 344
 
 // [D] [T]
 int SaveGameData(char* buffer)
@@ -451,36 +329,6 @@ int SaveGameData(char* buffer)
 
 	return sizeof(GAME_SAVE_HEADER);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ LoadGameData(char *buffer /*$a0*/)
- // line 85, offset 0x000580cc
-	/* begin block 1 */
-		// Start line: 86
-		// Start offset: 0x000580CC
-		// Variables:
-	// 		GAME_SAVE_HEADER *header; // $a0
-	/* end block 1 */
-	// End offset: 0x00058164
-	// End Line: 99
-
-	/* begin block 2 */
-		// Start line: 379
-	/* end block 2 */
-	// End Line: 380
-
-	/* begin block 3 */
-		// Start line: 382
-	/* end block 3 */
-	// End Line: 383
-
-	/* begin block 4 */
-		// Start line: 386
-	/* end block 4 */
-	// End Line: 387
 
 // [D] [T]
 int LoadGameData(char* buffer)
@@ -502,55 +350,11 @@ int LoadGameData(char* buffer)
 	return 1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CalcConfigDataSize()
- // line 102, offset 0x00058164
-	/* begin block 1 */
-		// Start line: 417
-	/* end block 1 */
-	// End Line: 418
-
-	/* begin block 2 */
-		// Start line: 421
-	/* end block 2 */
-	// End Line: 422
-
-	/* begin block 3 */
-		// Start line: 424
-	/* end block 3 */
-	// End Line: 425
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 int CalcConfigDataSize(void)
 {
 	return sizeof(CONFIG_SAVE_HEADER);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ SaveConfigData(char *buffer /*$a0*/)
- // line 109, offset 0x00057bf0
-	/* begin block 1 */
-		// Start line: 110
-		// Start offset: 0x00057BF0
-		// Variables:
-	// 		CONFIG_SAVE_HEADER *header; // $s0
-	// 		int i; // $t0
-	/* end block 1 */
-	// End offset: 0x00057DF0
-	// End Line: 138
-
-	/* begin block 2 */
-		// Start line: 218
-	/* end block 2 */
-	// End Line: 219
 
 // [D] [T]
 int SaveConfigData(char* buffer)
@@ -584,37 +388,6 @@ int SaveConfigData(char* buffer)
 
 	return sizeof(CONFIG_SAVE_HEADER);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ LoadConfigData(char *buffer /*$a0*/)
- // line 140, offset 0x00057df0
-	/* begin block 1 */
-		// Start line: 141
-		// Start offset: 0x00057DF0
-		// Variables:
-	// 		CONFIG_SAVE_HEADER *header; // $t3
-	// 		int i; // $t4
-	/* end block 1 */
-	// End offset: 0x00057FD4
-	// End Line: 168
-
-	/* begin block 2 */
-		// Start line: 307
-	/* end block 2 */
-	// End Line: 308
-
-	/* begin block 3 */
-		// Start line: 310
-	/* end block 3 */
-	// End Line: 311
-
-	/* begin block 4 */
-		// Start line: 315
-	/* end block 4 */
-	// End Line: 316
 
 // [D] [T]
 int LoadConfigData(char* buffer)

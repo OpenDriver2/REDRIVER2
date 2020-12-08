@@ -460,53 +460,6 @@ EVENT* event;
 
 static EventCamera eventCamera;
 
-// decompiled code
-// original method signature: 
-// int /*$ra*/ GetVisValue(int index /*$t1*/, int zDir /*$a1*/)
- // line 249, offset 0x00045ab8
-	/* begin block 1 */
-		// Start line: 250
-		// Start offset: 0x00045AB8
-		// Variables:
-	// 		int value; // $v1
-	// 		int radius; // $a0
-
-		/* begin block 1.1 */
-			// Start line: 256
-			// Start offset: 0x00045AC8
-			// Variables:
-		// 		int num; // $a0
-		/* end block 1.1 */
-		// End offset: 0x00045B28
-		// End Line: 259
-
-		/* begin block 1.2 */
-			// Start line: 263
-			// Start offset: 0x00045B30
-			// Variables:
-		// 		EVENT *ev; // $a0
-		// 		int multiple; // $a2
-
-			/* begin block 1.2.1 */
-				// Start line: 274
-				// Start offset: 0x00045BBC
-				// Variables:
-			// 		VECTOR pos; // stack offset -16
-			/* end block 1.2.1 */
-			// End offset: 0x00045C3C
-			// End Line: 281
-		/* end block 1.2 */
-		// End offset: 0x00045C40
-		// End Line: 283
-	/* end block 1 */
-	// End offset: 0x00045C68
-	// End Line: 294
-
-	/* begin block 2 */
-		// Start line: 498
-	/* end block 2 */
-	// End Line: 499
-
 // [D] [T]
 int GetVisValue(int index, int zDir)
 {
@@ -583,83 +536,6 @@ int GetVisValue(int index, int zDir)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ VisibilityLists(VisType type /*$a0*/, int i /*$s2*/)
- // line 297, offset 0x00045c68
-	/* begin block 1 */
-		// Start line: 298
-		// Start offset: 0x00045C68
-		// Variables:
-	// 		static unsigned short xList[128]; // offset 0x0
-	// 		static unsigned short zList[128]; // offset 0x100
-	// 		static unsigned short (*firstX[2]); // offset 0x0
-	// 		static unsigned short (*firstZ[2]); // offset 0x8
-	// 		static int count; // offset 0x10
-
-		/* begin block 1.1 */
-			// Start line: 331
-			// Start offset: 0x00045D98
-			// Variables:
-		// 		static unsigned short (*list[2]); // offset 0x50
-		// 		int table[128]; // stack offset -552
-		// 		int j; // $s0
-
-			/* begin block 1.1.1 */
-				// Start line: 339
-				// Start offset: 0x00045E10
-				// Variables:
-			// 		int tempList; // $t7
-			// 		int k; // $t0
-			/* end block 1.1.1 */
-			// End offset: 0x00045EB8
-			// End Line: 350
-		/* end block 1.1 */
-		// End offset: 0x00045ECC
-		// End Line: 352
-
-		/* begin block 1.2 */
-			// Start line: 355
-			// Start offset: 0x00045F14
-			// Variables:
-		// 		int num; // $a1
-		/* end block 1.2 */
-		// End offset: 0x00045F78
-		// End Line: 361
-
-		/* begin block 1.3 */
-			// Start line: 365
-			// Start offset: 0x00045F90
-			// Variables:
-		// 		EVENT *ev; // $a0
-		/* end block 1.3 */
-		// End offset: 0x00046068
-		// End Line: 384
-
-		/* begin block 1.4 */
-			// Start line: 387
-			// Start offset: 0x00046068
-			// Variables:
-		// 		EVENT *ev; // $v1
-		/* end block 1.4 */
-		// End offset: 0x000460BC
-		// End Line: 398
-	/* end block 1 */
-	// End offset: 0x000460EC
-	// End Line: 400
-
-	/* begin block 2 */
-		// Start line: 590
-	/* end block 2 */
-	// End Line: 591
-
-	/* begin block 3 */
-		// Start line: 594
-	/* end block 3 */
-	// End Line: 595
-
-/* WARNING: Type propagation algorithm not settling */
 
 static unsigned short* xVis;
 static unsigned short* zVis;
@@ -813,17 +689,6 @@ void VisibilityLists(VisType type, int i)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetElTrainRotation(EVENT *ev /*$a1*/)
- // line 402, offset 0x0004be5c
-	/* begin block 1 */
-		// Start line: 804
-	/* end block 1 */
-	// End Line: 805
-
 // [D] [T]
 void SetElTrainRotation(EVENT* ev)
 {
@@ -836,32 +701,6 @@ void SetElTrainRotation(EVENT* ev)
 		ev->rotation += 2048;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitTrain(EVENT *ev /*$s0*/, int count /*$s3*/, int type /*$a2*/)
- // line 422, offset 0x000460ec
-	/* begin block 1 */
-		// Start line: 423
-		// Start offset: 0x000460EC
-		// Variables:
-	// 		int height; // $s2
-	// 		int length; // $s1
-	// 		int *to; // $a0
-	/* end block 1 */
-	// End offset: 0x00046258
-	// End Line: 469
-
-	/* begin block 2 */
-		// Start line: 918
-	/* end block 2 */
-	// End Line: 919
-
-	/* begin block 3 */
-		// Start line: 941
-	/* end block 3 */
-	// End Line: 942
 
 // [D] [T]
 void InitTrain(EVENT* ev, int count, int type)
@@ -926,22 +765,6 @@ void InitTrain(EVENT* ev, int count, int type)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitDoor(FixedEvent *ev /*$a0*/, EVENT ***e /*$a1*/, int *cEvents /*$a2*/)
- // line 471, offset 0x0004beb8
-	/* begin block 1 */
-		// Start line: 8350
-	/* end block 1 */
-	// End Line: 8351
-
-	/* begin block 2 */
-		// Start line: 8352
-	/* end block 2 */
-	// End Line: 8353
-
 // [D] [T]
 void InitDoor(FixedEvent* ev, EVENT*** e, int* cEvents)
 {
@@ -954,29 +777,6 @@ void InitDoor(FixedEvent* ev, EVENT*** e, int* cEvents)
 
 	VisibilityLists(VIS_ADD, (ev - fixedEvent) | 0x80);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitEvents()
- // line 483, offset 0x0004bbd4
-	/* begin block 1 */
-		// Start line: 5662
-	/* end block 1 */
-	// End Line: 5663
-
-	/* begin block 2 */
-		// Start line: 966
-	/* end block 2 */
-	// End Line: 967
-
-	/* begin block 3 */
-		// Start line: 5689
-	/* end block 3 */
-	// End Line: 5690
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void InitEvents(void)
@@ -1007,142 +807,44 @@ void InitEvents(void)
 	TriggerEvent(-1);
 }
 
+// [D] [T]
+void BoatOffset(SVECTOR* offset, EVENT* ev)
+{
+	offset->vx = 0;
+	offset->vy = -ev->data[2];
+	offset->vz = ev->data[4] - ev->position.vz;
+}
 
+// [D] [T]
+int OnBoat(VECTOR* pos, EVENT* ev, int* dist)
+{
+	int halfBoatLength;
+	int halfBoatWidth;
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetUpEvents(int full /*stack 0*/)
- // line 515, offset 0x00046258
-	/* begin block 1 */
-		// Start line: 516
-		// Start offset: 0x00046258
-		// Variables:
-	// 		int count; // $s5
-	// 		int *p; // $s2
-	// 		int cEvents; // stack offset -52
-	// 		EVENT **e; // stack offset -56
+	if (GameLevel == 1)
+	{
+		halfBoatWidth = 853;
+		halfBoatLength = 2431;
+	}
+	else
+	{
+		halfBoatWidth = 1600;
+		halfBoatLength = 5376;
+	}
 
-		/* begin block 1.1 */
-			// Start line: 540
-			// Start offset: 0x00046310
-			// Variables:
-		// 		int ElTrackModel; // stack offset -48
-		// 		int carModel; // stack offset -44
-		// 		int direction; // $fp
-		// 		int i; // $s3
+	if (ev->position.vx - halfBoatWidth < pos->vx &&
+		ev->position.vx + halfBoatWidth > pos->vx)
+	{
+		*dist = pos->vz - ev->position.vz;
 
-			/* begin block 1.1.1 */
-				// Start line: 551
-				// Start offset: 0x00046334
-				// Variables:
-			// 		int cBridges; // $s1
-			// 		int timeOffset; // $a2
-			// 		int loop; // $a3
-			/* end block 1.1.1 */
-			// End offset: 0x00046548
-			// End Line: 606
+		if (*dist > -halfBoatLength && *dist < halfBoatLength)
+		{
+			return 1;
+		}
+	}
 
-			/* begin block 1.1.2 */
-				// Start line: 625
-				// Start offset: 0x00046628
-				// Variables:
-			// 		int cCarriages; // $s0
-			// 		int first; // $s1
-
-				/* begin block 1.1.2.1 */
-					// Start line: 634
-					// Start offset: 0x00046630
-				/* end block 1.1.2.1 */
-				// End offset: 0x00046644
-				// End Line: 635
-			/* end block 1.1.2 */
-			// End offset: 0x0004675C
-			// End Line: 664
-		/* end block 1.1 */
-		// End offset: 0x000468C8
-		// End Line: 703
-
-		/* begin block 1.2 */
-			// Start line: 758
-			// Start offset: 0x00046AA4
-			// Variables:
-		// 		int trainModel; // $s5
-		// 		int loop; // $s1
-		// 		int carriages; // $s2
-
-			/* begin block 1.2.1 */
-				// Start line: 811
-				// Start offset: 0x00046C34
-				// Variables:
-			// 		int loop; // $t1
-
-				/* begin block 1.2.1.1 */
-					// Start line: 824
-					// Start offset: 0x00046DD8
-					// Variables:
-				// 		int detonatorModel; // $v0
-				/* end block 1.2.1.1 */
-				// End offset: 0x00046E30
-				// End Line: 829
-			/* end block 1.2.1 */
-			// End offset: 0x00046E30
-			// End Line: 830
-		/* end block 1.2 */
-		// End offset: 0x00046E38
-		// End Line: 834
-
-		/* begin block 1.3 */
-			// Start line: 838
-			// Start offset: 0x00046E38
-			// Variables:
-		// 		int detonatorModel; // $s3
-		// 		int loop; // $s1
-
-			/* begin block 1.3.1 */
-				// Start line: 882
-				// Start offset: 0x00046F84
-				// Variables:
-			// 		int loop; // $s1
-
-				/* begin block 1.3.1.1 */
-					// Start line: 888
-					// Start offset: 0x00047094
-					// Variables:
-				// 		XYPAIR offset; // stack offset -64
-				/* end block 1.3.1.1 */
-				// End offset: 0x000471A0
-				// End Line: 896
-			/* end block 1.3.1 */
-			// End offset: 0x00047218
-			// End Line: 904
-
-			/* begin block 1.3.2 */
-				// Start line: 909
-				// Start offset: 0x0004724C
-			/* end block 1.3.2 */
-			// End offset: 0x000474BC
-			// End Line: 946
-		/* end block 1.3 */
-		// End offset: 0x000474BC
-		// End Line: 948
-	/* end block 1 */
-	// End offset: 0x00047538
-	// End Line: 964
-
-	/* begin block 2 */
-		// Start line: 1090
-	/* end block 2 */
-	// End Line: 1091
-
-	/* begin block 3 */
-		// Start line: 1137
-	/* end block 3 */
-	// End Line: 1138
-
-	/* begin block 4 */
-		// Start line: 1143
-	/* end block 4 */
-	// End Line: 1144
+	return 0;
+}
 
 #ifdef PSX
 #define EVENT_RADIUS 4096
@@ -1706,24 +1408,6 @@ void SetUpEvents(int full)
 	MALLOC_END();
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitEventCamera()
- // line 974, offset 0x0004bf54
-	/* begin block 1 */
-		// Start line: 9359
-	/* end block 1 */
-	// End Line: 9360
-
-	/* begin block 2 */
-		// Start line: 9360
-	/* end block 2 */
-	// End Line: 9361
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void InitEventCamera(void)
 {
@@ -1734,29 +1418,6 @@ void InitEventCamera(void)
 	events.camera = 1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ResetEventCamera()
- // line 983, offset 0x0004c014
-	/* begin block 1 */
-		// Start line: 9387
-	/* end block 1 */
-	// End Line: 9388
-
-	/* begin block 2 */
-		// Start line: 9391
-	/* end block 2 */
-	// End Line: 9392
-
-	/* begin block 3 */
-		// Start line: 9395
-	/* end block 3 */
-	// End Line: 9396
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void ResetEventCamera(void)
 {
@@ -1765,55 +1426,6 @@ void ResetEventCamera(void)
 	inv_camera_matrix = eventCamera.matrix;
 	events.camera = 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetCamera(EVENT *ev /*$s5*/)
- // line 991, offset 0x00047538
-	/* begin block 1 */
-		// Start line: 992
-		// Start offset: 0x00047538
-		// Variables:
-	// 		int rotation; // $s4
-	// 		int axis; // $a3
-	// 		VECTOR pivot; // stack offset -96
-	// 		int iPivot; // $a2
-	// 		int height; // $a1
-	// 		SVECTOR offset; // stack offset -80
-
-		/* begin block 1.1 */
-			// Start line: 1037
-			// Start offset: 0x00047688
-			// Variables:
-		// 		MATRIX matrix; // stack offset -72
-		// 		SVECTOR temp; // stack offset -40
-
-			/* begin block 1.1.1 */
-				// Start line: 1045
-				// Start offset: 0x0004770C
-			/* end block 1.1.1 */
-			// End offset: 0x0004775C
-			// End Line: 1055
-		/* end block 1.1 */
-		// End offset: 0x0004775C
-		// End Line: 1057
-	/* end block 1 */
-	// End offset: 0x000479DC
-	// End Line: 1104
-
-	/* begin block 2 */
-		// Start line: 2631
-	/* end block 2 */
-	// End Line: 2632
-
-	/* begin block 3 */
-		// Start line: 2659
-	/* end block 3 */
-	// End Line: 2660
-
-/* WARNING: Could not reconcile some variable overlaps */
 
 // [D] [T]
 void SetCamera(EVENT* ev)
@@ -1981,31 +1593,6 @@ void SetCamera(EVENT* ev)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ EventCollisions(CAR_DATA *cp /*$a2*/, int type /*$a1*/)
- // line 1107, offset 0x0004bc50
-	/* begin block 1 */
-		// Start line: 1108
-		// Start offset: 0x0004BC50
-		// Variables:
-	// 		static SVECTOR offset; // offset 0x18
-	/* end block 1 */
-	// End offset: 0x0004BD2C
-	// End Line: 1125
-
-	/* begin block 2 */
-		// Start line: 6981
-	/* end block 2 */
-	// End Line: 6982
-
-	/* begin block 3 */
-		// Start line: 6984
-	/* end block 3 */
-	// End Line: 6985
-
 // [D] [T]
 void EventCollisions(CAR_DATA* cp, int type)
 {
@@ -2030,27 +1617,6 @@ void EventCollisions(CAR_DATA* cp, int type)
 
 	events.camera = 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ NextNode(EVENT *ev /*$a0*/)
- // line 1127, offset 0x0004c0a4
-	/* begin block 1 */
-		// Start line: 9546
-	/* end block 1 */
-	// End Line: 9547
-
-	/* begin block 2 */
-		// Start line: 9686
-	/* end block 2 */
-	// End Line: 9687
-
-	/* begin block 3 */
-		// Start line: 9687
-	/* end block 3 */
-	// End Line: 9688
 
 // [D] [T]
 void NextNode(EVENT* ev)
@@ -2080,42 +1646,6 @@ void NextNode(EVENT* ev)
 
 	SetElTrainRotation(ev);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ StepFromToEvent(EVENT *ev /*$a3*/)
- // line 1152, offset 0x000479dc
-	/* begin block 1 */
-		// Start line: 1153
-		// Start offset: 0x000479DC
-
-		/* begin block 1.1 */
-			// Start line: 1160
-			// Start offset: 0x00047A08
-			// Variables:
-		// 		int *from; // $a1
-		// 		int *to; // $t4
-		// 		long *current; // $t0
-		// 		int d; // $a0
-		// 		int d2; // $t2
-		/* end block 1.1 */
-		// End offset: 0x00047BC4
-		// End Line: 1208
-	/* end block 1 */
-	// End offset: 0x00047BD4
-	// End Line: 1209
-
-	/* begin block 2 */
-		// Start line: 2962
-	/* end block 2 */
-	// End Line: 2963
-
-	/* begin block 3 */
-		// Start line: 3011
-	/* end block 3 */
-	// End Line: 3012
 
 // [D] [T]
 void StepFromToEvent(EVENT* ev)
@@ -2202,76 +1732,6 @@ void StepFromToEvent(EVENT* ev)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ StepPathEvent(EVENT *ev /*$s0*/)
- // line 1214, offset 0x00047bd4
-	/* begin block 1 */
-		// Start line: 1215
-		// Start offset: 0x00047BD4
-		// Variables:
-	// 		int *from; // $a1
-	// 		int *to; // $t1
-	// 		long *current; // $t3
-	// 		static int speed; // offset 0x20
-
-		/* begin block 1.1 */
-			// Start line: 1225
-			// Start offset: 0x00047C08
-			// Variables:
-		// 		int flags; // $v0
-		/* end block 1.1 */
-		// End offset: 0x00047C34
-		// End Line: 1233
-
-		/* begin block 1.2 */
-			// Start line: 1242
-			// Start offset: 0x00047C7C
-			// Variables:
-		// 		Station station; // $t2
-
-			/* begin block 1.2.1 */
-				// Start line: 1276
-				// Start offset: 0x00047D2C
-				// Variables:
-			// 		int direction; // $t2
-			// 		int loop; // $a2
-			// 		int *i; // $a0
-			// 		int turn[4]; // stack offset -48
-			// 		XZPAIR centre; // stack offset -32
-			// 		XZPAIR offset; // stack offset -24
-			/* end block 1.2.1 */
-			// End offset: 0x00047F98
-			// End Line: 1348
-
-			/* begin block 1.2.2 */
-				// Start line: 1355
-				// Start offset: 0x00047FB0
-				// Variables:
-			// 		int d; // $a0
-			// 		int d1; // $v1
-			// 		int dir; // $t4
-			/* end block 1.2.2 */
-			// End offset: 0x000482F8
-			// End Line: 1447
-		/* end block 1.2 */
-		// End offset: 0x000482F8
-		// End Line: 1448
-	/* end block 1 */
-	// End offset: 0x0004830C
-	// End Line: 1449
-
-	/* begin block 2 */
-		// Start line: 3131
-	/* end block 2 */
-	// End Line: 3132
-
-	/* begin block 3 */
-		// Start line: 3137
-	/* end block 3 */
-	// End Line: 3138
-
 // [D] [T]
 void StepPathEvent(EVENT* ev)
 {
@@ -2329,10 +1789,8 @@ void StepPathEvent(EVENT* ev)
 	if (speed == 0 && (flags & 0x400) == 0)
 		return;
 
-	
-
 	//
-	// [A] completely custom code because OG code for handling trains SUCKS!!!
+	// [A] completely custom code for Luxor Monorail because OG code for handling trains SUCKS!!!
 	if(ev->data[2] & 0x10000)
 	{
 		from = ev->node;
@@ -2636,30 +2094,6 @@ void StepPathEvent(EVENT* ev)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ GetBridgeRotation(int timer /*$a0*/)
- // line 1452, offset 0x0004c158
-	/* begin block 1 */
-		// Start line: 1453
-		// Start offset: 0x0004C158
-		// Variables:
-	// 		int angle; // $v1
-	/* end block 1 */
-	// End offset: 0x0004C208
-	// End Line: 1476
-
-	/* begin block 2 */
-		// Start line: 10337
-	/* end block 2 */
-	// End Line: 10338
-
-	/* begin block 3 */
-		// Start line: 10339
-	/* end block 3 */
-	// End Line: 10340
-
 // [D] [T]
 int GetBridgeRotation(int timer)
 {
@@ -2679,89 +2113,6 @@ int GetBridgeRotation(int timer)
 
 	return (4096 - rcossin_tbl[((timer * 2048) / 1000 & 0xfffU) * 2 + 1]) * 800 / 8192;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ StepHelicopter(EVENT *ev /*$s0*/)
- // line 1478, offset 0x0004830c
-	/* begin block 1 */
-		// Start line: 1479
-		// Start offset: 0x0004830C
-		// Variables:
-	// 		static int rotacc; // offset 0xa4
-
-		/* begin block 1.1 */
-			// Start line: 1485
-			// Start offset: 0x00048334
-			// Variables:
-		// 		int b; // $a0
-		// 		int c; // $t2
-		// 		int d; // $v1
-		// 		int t; // $a1
-		// 		int t2; // $a3
-		// 		int t3; // $v1
-		// 		int dx1; // $a2
-		// 		int dx2; // $t1
-		// 		int dx3; // $t0
-		// 		int dz1; // $v0
-		// 		int dz2; // $a3
-		// 		int dz3; // $a0
-
-			/* begin block 1.1.1 */
-				// Start line: 1522
-				// Start offset: 0x000484A0
-				// Variables:
-			// 		XZPAIR vel; // stack offset -56
-			// 		int direction; // $t1
-			// 		int temp; // $t1
-			// 		int dt; // $a0
-			// 		int d2p; // $v1
-			// 		int d2r; // $v1
-			// 		int pitch; // $a1
-			// 		int roll; // $a2
-			// 		static int rotating; // offset 0x24
-			/* end block 1.1.1 */
-			// End offset: 0x000487F4
-			// End Line: 1577
-
-			/* begin block 1.1.2 */
-				// Start line: 1590
-				// Start offset: 0x00048854
-				// Variables:
-			// 		VECTOR pos; // stack offset -48
-			/* end block 1.1.2 */
-			// End offset: 0x00048854
-			// End Line: 1591
-		/* end block 1.1 */
-		// End offset: 0x00048930
-		// End Line: 1609
-
-		/* begin block 1.2 */
-			// Start line: 1613
-			// Start offset: 0x00048948
-			// Variables:
-		// 		VECTOR pos; // stack offset -56
-		// 		VECTOR drift; // stack offset -32
-		/* end block 1.2 */
-		// End offset: 0x00048948
-		// End Line: 1613
-	/* end block 1 */
-	// End offset: 0x00048A60
-	// End Line: 1633
-
-	/* begin block 2 */
-		// Start line: 3674
-	/* end block 2 */
-	// End Line: 3675
-
-	/* begin block 3 */
-		// Start line: 3704
-	/* end block 3 */
-	// End Line: 3705
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 // [D] [T]
 void StepHelicopter(EVENT* ev)
@@ -2944,148 +2295,6 @@ void StepHelicopter(EVENT* ev)
 			rotating = -rotating;
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ StepEvents()
- // line 1642, offset 0x00048a60
-	/* begin block 1 */
-		// Start line: 1645
-		// Start offset: 0x00048A60
-		// Variables:
-	// 		EVENT *ev; // $s0
-
-		/* begin block 1.1 */
-			// Start line: 1671
-			// Start offset: 0x00048AC4
-			// Variables:
-		// 		VECTOR old; // stack offset -72
-		// 		int onBoatLastFrame; // $s7
-
-			/* begin block 1.1.1 */
-				// Start line: 1676
-				// Start offset: 0x00048ACC
-				// Variables:
-			// 		int dist; // stack offset -48
-			// 		int loop; // $s2
-			// 		CAR_DATA *cp; // $s1
-			/* end block 1.1.1 */
-			// End offset: 0x00048B98
-			// End Line: 1699
-
-			/* begin block 1.1.2 */
-				// Start line: 1714
-				// Start offset: 0x00048C40
-				// Variables:
-			// 		int d2; // $a2
-			/* end block 1.1.2 */
-			// End offset: 0x00048CB4
-			// End Line: 1717
-
-			/* begin block 1.1.3 */
-				// Start line: 1724
-				// Start offset: 0x00048CD8
-			/* end block 1.1.3 */
-			// End offset: 0x00048CFC
-			// End Line: 1725
-
-			/* begin block 1.1.4 */
-				// Start line: 1729
-				// Start offset: 0x00048D10
-				// Variables:
-			// 		XZPAIR speed; // stack offset -56
-
-				/* begin block 1.1.4.1 */
-					// Start line: 1733
-					// Start offset: 0x00048D28
-					// Variables:
-				// 		int loop; // $s2
-				// 		int mask; // $s1
-
-					/* begin block 1.1.4.1.1 */
-						// Start line: 1740
-						// Start offset: 0x00048D60
-						// Variables:
-					// 		VECTOR *pos; // $a0
-					// 		VECTOR *vel; // $a1
-					/* end block 1.1.4.1.1 */
-					// End offset: 0x00048E4C
-					// End Line: 1775
-				/* end block 1.1.4.1 */
-				// End offset: 0x00048E64
-				// End Line: 1776
-			/* end block 1.1.4 */
-			// End offset: 0x00048E64
-			// End Line: 1777
-		/* end block 1.1 */
-		// End offset: 0x00048E64
-		// End Line: 1778
-
-		/* begin block 1.2 */
-			// Start line: 1797
-			// Start offset: 0x00048F44
-
-			/* begin block 1.2.1 */
-				// Start line: 1802
-				// Start offset: 0x00048F54
-				// Variables:
-			// 		int sign; // $t0
-			// 		unsigned short *target; // $a3
-			/* end block 1.2.1 */
-			// End offset: 0x00049070
-			// End Line: 1820
-		/* end block 1.2 */
-		// End offset: 0x00049080
-		// End Line: 1825
-
-		/* begin block 1.3 */
-			// Start line: 1862
-			// Start offset: 0x0004914C
-			// Variables:
-		// 		int thisCamera; // $s1
-		// 		int otherCamera; // $s2
-		// 		int loop; // $s0
-		// 		unsigned short *x; // $t0
-		// 		unsigned short *z; // $a3
-
-			/* begin block 1.3.1 */
-				// Start line: 1889
-				// Start offset: 0x00049240
-				// Variables:
-			// 		CELL_OBJECT *cop; // $a2
-			/* end block 1.3.1 */
-			// End offset: 0x000492C4
-			// End Line: 1936
-		/* end block 1.3 */
-		// End offset: 0x0004930C
-		// End Line: 1941
-	/* end block 1 */
-	// End offset: 0x00049364
-	// End Line: 1951
-
-	/* begin block 2 */
-		// Start line: 4129
-	/* end block 2 */
-	// End Line: 4130
-
-	/* begin block 3 */
-		// Start line: 4139
-	/* end block 3 */
-	// End Line: 4140
-
-	/* begin block 4 */
-		// Start line: 4141
-	/* end block 4 */
-	// End Line: 4142
-
-	/* begin block 5 */
-		// Start line: 4143
-	/* end block 5 */
-	// End Line: 4144
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void StepEvents(void)
@@ -3390,51 +2599,6 @@ void StepEvents(void)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawFerrisWheel(MATRIX *matrix /*$s0*/, VECTOR *pos /*$s1*/)
- // line 2110, offset 0x00049364
-	/* begin block 1 */
-		// Start line: 2111
-		// Start offset: 0x00049364
-
-		/* begin block 1.1 */
-			// Start line: 2126
-			// Start offset: 0x00049460
-			// Variables:
-		// 		int loop; // $s3
-		// 		MODEL *model; // $s2
-		// 		VECTOR spoke[2]; // stack offset -104
-
-			/* begin block 1.1.1 */
-				// Start line: 2138
-				// Start offset: 0x000494E4
-				// Variables:
-			// 		VECTOR offset; // stack offset -72
-			// 		VECTOR carPos; // stack offset -56
-			// 		int rotation; // $v0
-			/* end block 1.1.1 */
-			// End offset: 0x000494E4
-			// End Line: 2142
-		/* end block 1.1 */
-		// End offset: 0x00049658
-		// End Line: 2155
-	/* end block 1 */
-	// End offset: 0x00049684
-	// End Line: 2157
-
-	/* begin block 2 */
-		// Start line: 5081
-	/* end block 2 */
-	// End Line: 5082
-
-	/* begin block 3 */
-		// Start line: 5241
-	/* end block 3 */
-	// End Line: 5242
-
 // [D] [T]
 void DrawFerrisWheel(MATRIX* matrix, VECTOR* pos)
 {
@@ -3502,46 +2666,6 @@ void DrawFerrisWheel(MATRIX* matrix, VECTOR* pos)
 		rotation += 410;
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawRotor(VECTOR pos /*stack 0*/, MATRIX *matrix /*stack 16*/)
- // line 2159, offset 0x00049684
-	/* begin block 1 */
-		// Start line: 2160
-		// Start offset: 0x00049684
-		// Variables:
-	// 		SVECTOR v[5]; // stack offset -120
-	// 		MATRIX local; // stack offset -80
-	// 		POLY_FT4 *poly; // $t0
-	// 		TEXTURE_DETAILS *tex; // $t3
-	// 		int z; // stack offset -48
-	// 		char *firstPoly; // $a1
-	/* end block 1 */
-	// End offset: 0x00049C38
-	// End Line: 2238
-
-	/* begin block 2 */
-		// Start line: 5381
-	/* end block 2 */
-	// End Line: 5382
-
-	/* begin block 3 */
-		// Start line: 5384
-	/* end block 3 */
-	// End Line: 5385
-
-	/* begin block 4 */
-		// Start line: 5385
-	/* end block 4 */
-	// End Line: 5386
-
-/* WARNING: Removing unreachable block (ram,0x000496dc) */
-/* WARNING: Removing unreachable block (ram,0x00049704) */
-/* WARNING: Removing unreachable block (ram,0x00049750) */
-/* WARNING: Could not reconcile some variable overlaps */
 
 // [D] [T]
 void DrawRotor(VECTOR pos, MATRIX* matrix)
@@ -3658,150 +2782,6 @@ void DrawRotor(VECTOR pos, MATRIX* matrix)
 
 	current->primptr += sizeof(POLY_FT4);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawEvents(int num /*stack 0*/)
- // line 2240, offset 0x00049c38
-	/* begin block 1 */
-		// Start line: 2241
-		// Start offset: 0x00049C38
-		// Variables:
-	// 		unsigned short *x; // $a1
-	// 		unsigned short *z; // $a0
-	// 		int thisCamera; // stack offset -56
-	// 		int otherCamera; // stack offset -52
-	// 		static EVENT *nearestTrain; // offset 0x28
-	// 		static int distanceFromNearestTrain; // offset 0x2c
-
-		/* begin block 1.1 */
-			// Start line: 2276
-			// Start offset: 0x00049D14
-			// Variables:
-		// 		EVENT *ev; // $s1
-
-			/* begin block 1.1.1 */
-				// Start line: 2289
-				// Start offset: 0x00049E0C
-				// Variables:
-			// 		unsigned int dist; // $v1
-			/* end block 1.1.1 */
-			// End offset: 0x00049E74
-			// End Line: 2298
-
-			/* begin block 1.1.2 */
-				// Start line: 2314
-				// Start offset: 0x00049EA4
-
-				/* begin block 1.1.2.1 */
-					// Start line: 2316
-					// Start offset: 0x00049ED4
-					// Variables:
-				// 		MATRIX matrix; // stack offset -208
-				// 		MATRIX ext; // stack offset -176
-				// 		VECTOR pos; // stack offset -144
-				// 		int reflection; // $s5
-				// 		int temp; // stack offset -48
-
-					/* begin block 1.1.2.1.1 */
-						// Start line: 2329
-						// Start offset: 0x00049F48
-					/* end block 1.1.2.1.1 */
-					// End offset: 0x00049F48
-					// End Line: 2329
-
-					/* begin block 1.1.2.1.2 */
-						// Start line: 2335
-						// Start offset: 0x00049FB4
-
-						/* begin block 1.1.2.1.2.1 */
-							// Start line: 2346
-							// Start offset: 0x0004A038
-							// Variables:
-						// 		VECTOR shadow[4]; // stack offset -128
-						// 		int loop; // $t0
-
-							/* begin block 1.1.2.1.2.1.1 */
-								// Start line: 2351
-								// Start offset: 0x0004A05C
-								// Variables:
-							// 		XZPAIR offset; // stack offset -64
-							// 		int rotate; // $a1
-							/* end block 1.1.2.1.2.1.1 */
-							// End offset: 0x0004A0E8
-							// End Line: 2358
-						/* end block 1.1.2.1.2.1 */
-						// End offset: 0x0004A118
-						// End Line: 2361
-
-						/* begin block 1.1.2.1.2.2 */
-							// Start line: 2373
-							// Start offset: 0x0004A17C
-						/* end block 1.1.2.1.2.2 */
-						// End offset: 0x0004A1B8
-						// End Line: 2382
-					/* end block 1.1.2.1.2 */
-					// End offset: 0x0004A1B8
-					// End Line: 2383
-
-					/* begin block 1.1.2.1.3 */
-						// Start line: 2393
-						// Start offset: 0x0004A218
-					/* end block 1.1.2.1.3 */
-					// End offset: 0x0004A218
-					// End Line: 2393
-
-					/* begin block 1.1.2.1.4 */
-						// Start line: 2412
-						// Start offset: 0x0004A304
-						// Variables:
-					// 		int i; // $a0
-					/* end block 1.1.2.1.4 */
-					// End offset: 0x0004A354
-					// End Line: 2419
-
-					/* begin block 1.1.2.1.5 */
-						// Start line: 2424
-						// Start offset: 0x0004A368
-					/* end block 1.1.2.1.5 */
-					// End offset: 0x0004A3E0
-					// End Line: 2441
-				/* end block 1.1.2.1 */
-				// End offset: 0x0004A540
-				// End Line: 2485
-			/* end block 1.1.2 */
-			// End offset: 0x0004A540
-			// End Line: 2485
-		/* end block 1.1 */
-		// End offset: 0x0004A588
-		// End Line: 2495
-
-		/* begin block 1.2 */
-			// Start line: 2510
-			// Start offset: 0x0004A628
-		/* end block 1.2 */
-		// End offset: 0x0004A628
-		// End Line: 2510
-	/* end block 1 */
-	// End offset: 0x0004A658
-	// End Line: 2516
-
-	/* begin block 2 */
-		// Start line: 5634
-	/* end block 2 */
-	// End Line: 5635
-
-	/* begin block 3 */
-		// Start line: 5637
-	/* end block 3 */
-	// End Line: 5638
-
-	/* begin block 4 */
-		// Start line: 5644
-	/* end block 4 */
-	// End Line: 5645
 
 // [D] [T]
 void DrawEvents(int camera)
@@ -4107,35 +3087,6 @@ void DrawEvents(int camera)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ BoatOffset(SVECTOR *offset /*$a0*/, EVENT *ev /*$a1*/)
- // line 2520, offset 0x0004be24
-	/* begin block 1 */
-		// Start line: 10327
-	/* end block 1 */
-	// End Line: 10328
-
-	/* begin block 2 */
-		// Start line: 5040
-	/* end block 2 */
-	// End Line: 5041
-
-	/* begin block 3 */
-		// Start line: 10328
-	/* end block 3 */
-	// End Line: 10329
-
-// [D] [T]
-void BoatOffset(SVECTOR* offset, EVENT* ev)
-{
-	offset->vx = 0;
-	offset->vy = -ev->data[2];
-	offset->vz = ev->data[4] - ev->position.vz;
-}
-
 // [A] camera offset for events
 void EventCameraOffset(SVECTOR* offset)
 {
@@ -4149,120 +3100,6 @@ void EventCameraOffset(SVECTOR* offset)
 		offset->vz = -850;
 	}
 }
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ OnBoat(VECTOR *pos /*$t1*/, EVENT *ev /*$a1*/, int *dist /*$a2*/)
- // line 2527, offset 0x0004bda0
-	/* begin block 1 */
-		// Start line: 2528
-		// Start offset: 0x0004BDA0
-		// Variables:
-	// 		int halfBoatWidth; // $t0
-	// 		int halfBoatLength; // $a0
-	/* end block 1 */
-	// End offset: 0x0004BE24
-	// End Line: 2558
-
-	/* begin block 2 */
-		// Start line: 10304
-	/* end block 2 */
-	// End Line: 10305
-
-	/* begin block 3 */
-		// Start line: 5054
-	/* end block 3 */
-	// End Line: 5055
-
-	/* begin block 4 */
-		// Start line: 10308
-	/* end block 4 */
-	// End Line: 10309
-
-// [D] [T]
-int OnBoat(VECTOR* pos, EVENT* ev, int* dist)
-{
-	int halfBoatLength;
-	int halfBoatWidth;
-
-	if (GameLevel == 1)
-	{
-		halfBoatWidth = 853;
-		halfBoatLength = 2431;
-	}
-	else
-	{
-		halfBoatWidth = 1600;
-		halfBoatLength = 5376;
-	}
-
-	if (ev->position.vx - halfBoatWidth < pos->vx &&
-		ev->position.vx + halfBoatWidth > pos->vx)
-	{
-		*dist = pos->vz - ev->position.vz;
-
-		if (*dist > -halfBoatLength && *dist < halfBoatLength)
-		{
-			return 1;
-		}
-	}
-
-	return 0;
-
-}
-
-
-
-// decompiled code
-// original method signature: 
-// sdPlane * /*$ra*/ EventSurface(VECTOR *pos /*$a0*/, sdPlane *plane /*$s1*/)
- // line 2560, offset 0x0004a688
-	/* begin block 1 */
-		// Start line: 2561
-		// Start offset: 0x0004A688
-		// Variables:
-	// 		EVENT *ev; // $s0
-	// 		int i; // $a2
-
-		/* begin block 1.1 */
-			// Start line: 2572
-			// Start offset: 0x0004A700
-			// Variables:
-		// 		int dist; // $a3
-		// 		int end; // $a1
-		// 		int cos; // $a2
-		/* end block 1.1 */
-		// End offset: 0x0004A880
-		// End Line: 2623
-
-		/* begin block 1.2 */
-			// Start line: 2628
-			// Start offset: 0x0004A894
-			// Variables:
-		// 		int dist; // stack offset -24
-
-			/* begin block 1.2.1 */
-				// Start line: 2632
-				// Start offset: 0x0004A8A4
-				// Variables:
-			// 		int sin; // $a3
-			// 		int cos; // $a2
-			// 		int height; // $t0
-			// 		int offset; // $a0
-			/* end block 1.2.1 */
-			// End offset: 0x0004AA20
-			// End Line: 2664
-		/* end block 1.2 */
-		// End offset: 0x0004AA20
-		// End Line: 2665
-	/* end block 1 */
-	// End offset: 0x0004AA78
-	// End Line: 2681
-
-	/* begin block 2 */
-		// Start line: 6772
-	/* end block 2 */
-	// End Line: 6773
 
 int debugOffset = 0;
 
@@ -4411,31 +3248,6 @@ sdPlane* EventSurface(VECTOR* pos, sdPlane* plane)
 	return plane;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ MakeEventTrackable(EVENT *ev /*$a0*/)
- // line 2684, offset 0x0004bd6c
-	/* begin block 1 */
-		// Start line: 2685
-		// Start offset: 0x0004BD6C
-		// Variables:
-	// 		EVENT **p; // $v1
-	/* end block 1 */
-	// End offset: 0x0004BDA0
-	// End Line: 2694
-
-	/* begin block 2 */
-		// Start line: 5368
-	/* end block 2 */
-	// End Line: 5369
-
-	/* begin block 3 */
-		// Start line: 10454
-	/* end block 3 */
-	// End Line: 10455
-
 // [D] [T]
 void MakeEventTrackable(EVENT* ev)
 {
@@ -4448,22 +3260,6 @@ void MakeEventTrackable(EVENT* ev)
 	*p = ev;
 	p[1] = NULL;	// WTF?
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ TriggerDoor(FixedEvent *door /*$a3*/, int *stage /*$a1*/, int sound /*$a2*/)
- // line 2696, offset 0x0004c208
-	/* begin block 1 */
-		// Start line: 11604
-	/* end block 1 */
-	// End Line: 11605
-
-	/* begin block 2 */
-		// Start line: 12825
-	/* end block 2 */
-	// End Line: 12826
 
 // [D] [T]
 void TriggerDoor(FixedEvent* door, int* stage, int sound)
@@ -4486,131 +3282,6 @@ void TriggerDoor(FixedEvent* door, int* stage, int sound)
 	if (sound != 0)
 		SetMSoundVar(1, &door->position);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// VECTOR * /*$ra*/ TriggerEvent(int i /*$s4*/)
- // line 2718, offset 0x0004aa78
-	/* begin block 1 */
-		// Start line: 2719
-		// Start offset: 0x0004AA78
-		// Variables:
-	// 		static int stage[10]; // offset 0x200
-	// 		VECTOR *pos; // $s7
-
-		/* begin block 1.1 */
-			// Start line: 2726
-			// Start offset: 0x0004AAB0
-			// Variables:
-		// 		int loop; // $v1
-		/* end block 1.1 */
-		// End offset: 0x0004AAD0
-		// End Line: 2731
-
-		/* begin block 1.2 */
-			// Start line: 2739
-			// Start offset: 0x0004AB20
-			// Variables:
-		// 		EVENT *ev; // $a2
-		/* end block 1.2 */
-		// End offset: 0x0004AB20
-		// End Line: 2740
-
-		/* begin block 1.3 */
-			// Start line: 2754
-			// Start offset: 0x0004AC08
-
-			/* begin block 1.3.1 */
-				// Start line: 2757
-				// Start offset: 0x0004AC08
-				// Variables:
-			// 		MissionTrain *train; // $s1
-
-				/* begin block 1.3.1.1 */
-					// Start line: 2763
-					// Start offset: 0x0004AC38
-				/* end block 1.3.1.1 */
-				// End offset: 0x0004AC50
-				// End Line: 2769
-
-				/* begin block 1.3.1.2 */
-					// Start line: 2774
-					// Start offset: 0x0004AC5C
-					// Variables:
-				// 		EVENT *ev; // $s0
-				// 		int count; // $s2
-				// 		int offset; // $s6
-
-					/* begin block 1.3.1.2.1 */
-						// Start line: 2785
-						// Start offset: 0x0004ACAC
-						// Variables:
-					// 		int pos; // $a1
-					/* end block 1.3.1.2.1 */
-					// End offset: 0x0004ACAC
-					// End Line: 2785
-				/* end block 1.3.1.2 */
-				// End offset: 0x0004AD88
-				// End Line: 2817
-			/* end block 1.3.1 */
-			// End offset: 0x0004AD88
-			// End Line: 2819
-
-			/* begin block 1.3.2 */
-				// Start line: 2831
-				// Start offset: 0x0004ADB8
-				// Variables:
-			// 		EVENT *ev; // $v1
-			// 		int count; // $a0
-			/* end block 1.3.2 */
-			// End offset: 0x0004AE04
-			// End Line: 2848
-		/* end block 1.3 */
-		// End offset: 0x0004AE28
-		// End Line: 2860
-
-		/* begin block 1.4 */
-			// Start line: 2867
-			// Start offset: 0x0004AE90
-		/* end block 1.4 */
-		// End offset: 0x0004AF60
-		// End Line: 2897
-
-		/* begin block 1.5 */
-			// Start line: 2905
-			// Start offset: 0x0004AFA8
-
-			/* begin block 1.5.1 */
-				// Start line: 2907
-				// Start offset: 0x0004AFA8
-				// Variables:
-			// 		int loop; // $s0
-			/* end block 1.5.1 */
-			// End offset: 0x0004B044
-			// End Line: 2923
-		/* end block 1.5 */
-		// End offset: 0x0004B0D0
-		// End Line: 2941
-	/* end block 1 */
-	// End offset: 0x0004B29C
-	// End Line: 2992
-
-	/* begin block 2 */
-		// Start line: 7076
-	/* end block 2 */
-	// End Line: 7077
-
-	/* begin block 3 */
-		// Start line: 7114
-	/* end block 3 */
-	// End Line: 7115
-
-	/* begin block 4 */
-		// Start line: 7118
-	/* end block 4 */
-	// End Line: 7119
 
 // [D] [T]
 VECTOR* TriggerEvent(int i)
@@ -4884,27 +3555,6 @@ VECTOR* TriggerEvent(int i)
 	return pos;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ OffsetTarget(VECTOR *target /*$a0*/)
- // line 2994, offset 0x0004bd2c
-	/* begin block 1 */
-		// Start line: 8890
-	/* end block 1 */
-	// End Line: 8891
-
-	/* begin block 2 */
-		// Start line: 10760
-	/* end block 2 */
-	// End Line: 10761
-
-	/* begin block 3 */
-		// Start line: 10761
-	/* end block 3 */
-	// End Line: 10762
-
 // [D] [T]
 void OffsetTarget(VECTOR* target)
 {
@@ -4912,44 +3562,6 @@ void OffsetTarget(VECTOR* target)
 	target->vy -= boatOffset.vy;
 	target->vz -= boatOffset.vz;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SpecialCamera(enum SpecialCamera type /*$t2*/, int change /*$a1*/)
- // line 2999, offset 0x0004b29c
-	/* begin block 1 */
-		// Start line: 3000
-		// Start offset: 0x0004B29C
-		// Variables:
-	// 		static int rememberCamera[3]; // offset 0x230
-	// 		static short boatCamera[6]; // offset 0x684
-
-		/* begin block 1.1 */
-			// Start line: 3013
-			// Start offset: 0x0004B2E4
-			// Variables:
-		// 		int *hackCamera; // $a2
-		// 		short *boat; // $t3
-		/* end block 1.1 */
-		// End offset: 0x0004B540
-		// End Line: 3114
-	/* end block 1 */
-	// End offset: 0x0004B5FC
-	// End Line: 3142
-
-	/* begin block 2 */
-		// Start line: 7742
-	/* end block 2 */
-	// End Line: 7743
-
-	/* begin block 3 */
-		// Start line: 7750
-	/* end block 3 */
-	// End Line: 7751
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 //[D] [T]
 void SetSpecialCamera(SpecialCamera type, int change)
@@ -5100,29 +3712,6 @@ void SetSpecialCamera(SpecialCamera type, int change)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ScreenShake(int count /*$a0*/, SVECTOR *ang /*$s0*/)
- // line 3144, offset 0x0004c280
-	/* begin block 1 */
-		// Start line: 3145
-		// Start offset: 0x0004C280
-	/* end block 1 */
-	// End offset: 0x0004C330
-	// End Line: 3150
-
-	/* begin block 2 */
-		// Start line: 13723
-	/* end block 2 */
-	// End Line: 13724
-
-	/* begin block 3 */
-		// Start line: 13724
-	/* end block 3 */
-	// End Line: 13725
-
 // [D] [T]
 void ScreenShake(int count, SVECTOR* ang)
 {
@@ -5133,96 +3722,6 @@ void ScreenShake(int count, SVECTOR* ang)
 
 	eventHaze *= 3;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ DetonatorTimer()
- // line 3152, offset 0x0004b5fc
-	/* begin block 1 */
-		// Start line: 3154
-		// Start offset: 0x0004B5FC
-		// Variables:
-	// 		static SVECTOR rememberCameraAngle; // offset 0x30
-
-		/* begin block 1.1 */
-			// Start line: 3168
-			// Start offset: 0x0004B698
-
-			/* begin block 1.1.1 */
-				// Start line: 3175
-				// Start offset: 0x0004B6B0
-				// Variables:
-			// 		static int count; // offset 0x38
-
-				/* begin block 1.1.1.1 */
-					// Start line: 3179
-					// Start offset: 0x0004B6CC
-					// Variables:
-				// 		VECTOR pos; // stack offset -32
-				/* end block 1.1.1.1 */
-				// End offset: 0x0004B700
-				// End Line: 3184
-
-				/* begin block 1.1.1.2 */
-					// Start line: 3188
-					// Start offset: 0x0004B720
-					// Variables:
-				// 		VECTOR pos; // stack offset -32
-				/* end block 1.1.1.2 */
-				// End offset: 0x0004B720
-				// End Line: 3189
-			/* end block 1.1.1 */
-			// End offset: 0x0004B7C8
-			// End Line: 3204
-		/* end block 1.1 */
-		// End offset: 0x0004B7DC
-		// End Line: 3210
-
-		/* begin block 1.2 */
-			// Start line: 3218
-			// Start offset: 0x0004B864
-			// Variables:
-		// 		EVENT *ev; // $s0
-		// 		VECTOR pos; // stack offset -32
-
-			/* begin block 1.2.1 */
-				// Start line: 3247
-				// Start offset: 0x0004B9B0
-				// Variables:
-			// 		VECTOR *epicentre; // $v1
-			/* end block 1.2.1 */
-			// End offset: 0x0004BA08
-			// End Line: 3260
-		/* end block 1.2 */
-		// End offset: 0x0004BA8C
-		// End Line: 3275
-	/* end block 1 */
-	// End offset: 0x0004BAB0
-	// End Line: 3278
-
-	/* begin block 2 */
-		// Start line: 8082
-	/* end block 2 */
-	// End Line: 8083
-
-	/* begin block 3 */
-		// Start line: 8093
-	/* end block 3 */
-	// End Line: 8094
-
-	/* begin block 4 */
-		// Start line: 8094
-	/* end block 4 */
-	// End Line: 8095
-
-	/* begin block 5 */
-		// Start line: 8096
-	/* end block 5 */
-	// End Line: 8097
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 int DetonatorTimer(void)
@@ -5387,47 +3886,6 @@ int DetonatorTimer(void)
 	detonator.timer--;
 	return 1;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ MultiCarEvent(MS_TARGET *target /*$a0*/)
- // line 3288, offset 0x0004bab0
-	/* begin block 1 */
-		// Start line: 3289
-		// Start offset: 0x0004BAB0
-		// Variables:
-	// 		MULTICAR_DATA *data; // $s0
-	// 		int i; // $s1
-	// 		EVENT *ev; // $s2
-
-		/* begin block 1.1 */
-			// Start line: 3301
-			// Start offset: 0x0004BAF8
-			// Variables:
-		// 		int num; // $a1
-		/* end block 1.1 */
-		// End offset: 0x0004BAF8
-		// End Line: 3303
-	/* end block 1 */
-	// End offset: 0x0004BBD4
-	// End Line: 3313
-
-	/* begin block 2 */
-		// Start line: 8381
-	/* end block 2 */
-	// End Line: 8382
-
-	/* begin block 3 */
-		// Start line: 8392
-	/* end block 3 */
-	// End Line: 8393
-
-	/* begin block 4 */
-		// Start line: 8398
-	/* end block 4 */
-	// End Line: 8399
 
 // [D] [T]
 void MultiCarEvent(MS_TARGET* target)

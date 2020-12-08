@@ -2,15 +2,6 @@
 #include "ENVSOUND.H"
 #include "GAMESND.H"
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ AddEnvSounds(int level /*$a0*/, int time /*$a1*/)
- // line 41, offset 0x00044f60
-	/* begin block 1 */
-		// Start line: 82
-	/* end block 1 */
-	// End Line: 83
-
 // [D] [T]
 void AddEnvSounds(int level, int time)
 {

@@ -97,83 +97,17 @@ extern void LoadMission(int missionnum); // 0x00060A74
 
 extern void HandleMission(); // 0x00061274
 
-extern void HandleTimer(MR_TIMER *timer); // 0x000614A4
-
 extern void RegisterChaseHit(int car1, int car2); // 0x00061684
 
-extern void PauseMissionTimer(int pause); // 0x00064268
-
 extern void SetMissionMessage(char *message, int priority, int seconds); // 0x000642A8
-
 extern void SetPlayerMessage(int player, char *message, int priority, int seconds); // 0x00064348
 
 extern int TargetComplete(MS_TARGET *target, int player); // 0x000643C4
-
 extern int TargetActive(MS_TARGET *target, int player); // 0x00064408
 
 extern int Swap2Cars(int curslot, int newslot); // 0x00061784
 
 extern void SetConfusedCar(int slot); // 0x0006444C
-
-extern void HandleMissionThreads(); // 0x00061C5C
-
-extern int MRCommand(MR_THREAD *thread, u_int cmd); // 0x00061E3C
-
-extern int MROperator(MR_THREAD *thread, u_int op); // 0x00064498
-
-extern int MRFunction(MR_THREAD *thread, u_int fnc); // 0x000645AC
-
-extern void MRInitialiseThread(MR_THREAD *thread, u_int *pc, u_char player); // 0x00064614
-
-extern void MRStartThread(MR_THREAD *callingthread, u_int addr, u_char player); // 0x00064630
-
-extern int MRStopThread(MR_THREAD *thread); // 0x00064690
-
-extern void MRCommitThreadGenocide(); // 0x0006469C
-
-extern int MRJump(MR_THREAD *thread, int jump); // 0x000646E0
-
-extern void MRPush(MR_THREAD *thread, int value); // 0x0006472C
-
-extern int MRPop(MR_THREAD *thread); // 0x00064744
-
-extern int MRGetParam(MR_THREAD *thread); // 0x00064760
-
-extern int MRGetVariable(MR_THREAD *thread, u_int var); // 0x000647CC
-
-extern void MRSetVariable(MR_THREAD *thread, u_int var, int value); // 0x000648B0
-
-extern int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target); // 0x00062470
-
-extern int MRRequestCar(MS_TARGET *target); // 0x000649E4
-
-extern void MRHandleCarRequests(); // 0x00064A24
-
-extern int MRCreateCar(MS_TARGET *target); // 0x00063728
-
-extern void MRCancelCarRequest(MS_TARGET *target); // 0x00064A50
-
-extern void PreProcessTargets(); // 0x000639A0
-
-extern int Handle321Go(); // 0x00064A74
-
-extern int HandleGameOver(); // 0x00063B78
-
-extern void CompleteAllActiveTargets(int player); // 0x00064AD0
-
-extern void SetMissionComplete(); // 0x00063F84
-
-extern void SetMissionFailed(FAIL_REASON reason); // 0x00064B38
-
-extern void SetMissionOver(PAUSEMODE mode); // 0x00064BD8
-
-extern void ActivateNextFlag(); // 0x000641A8
-
-extern int CalcLapTime(int player, int time, int lap); // 0x00064C24
-
-extern void SetCarToBeStolen(MS_TARGET *target, int player); // 0x00064C60
-
-extern void MakePhantomCarEqualPlayerCar(); // 0x00064CD0
 
 extern void DrawMission(void);
 
