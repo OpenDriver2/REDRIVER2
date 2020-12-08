@@ -1541,7 +1541,7 @@ void RebuildCarMatrix(RigidBodyState* st, CAR_DATA* cp)
 // [D] [T]
 void StepCarPhysics(CAR_DATA* cp)
 {
-	_HANDLING_TYPE* hp;
+	HANDLING_TYPE* hp;
 	int car_id;
 
 	int frontWheelSpeed;

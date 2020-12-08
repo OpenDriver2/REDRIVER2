@@ -18,6 +18,12 @@
 #include "PAD.H"
 #include "PEDEST.H"
 
+struct iVectNT
+{
+	int n;
+	int t;
+};
+
 COP_DATA gCopData = {
 	0,
 	0,

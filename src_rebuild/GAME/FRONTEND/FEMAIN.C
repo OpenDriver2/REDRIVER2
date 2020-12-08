@@ -23,6 +23,34 @@
 
 #include "MEMCARD/MAIN.H"
 
+struct FE_CHARDATA
+{
+	u_char u;
+	u_char v;
+	u_char w;
+	u_char h;
+};
+
+struct FE_FONT
+{
+	int NumFonts;
+	FE_CHARDATA CharInfo[256];
+};
+
+struct SCREEN_LIMITS
+{
+	short minx;
+	short miny;
+	short maxx;
+	short maxy;
+};
+
+struct BOTCH
+{
+	int missNum;
+	char** name;
+};
+
 typedef int(*screenFunc)(int bSetup);
 
 extern ACTIVE_CHEATS AvailableCheats;

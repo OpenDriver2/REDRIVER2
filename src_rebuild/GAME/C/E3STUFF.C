@@ -8,7 +8,15 @@
 #include "PAUSE.H"
 #include "SOUND.H"
 
-#undef v0
+struct POLYCOORD
+{
+	short x;
+	short y;
+	short u;
+	short v;
+	short w;
+	short h;
+};
 
 POLYCOORD polycoords[6] =
 {
@@ -102,6 +110,7 @@ void ShowHiresScreens(char **names, int delay, int wait)
 		// Start line: 342
 	/* end block 3 */
 	// End Line: 343
+
 
 // [D] [T]
 void FadeInHiresScreen(char *filename)

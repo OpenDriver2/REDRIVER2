@@ -30,8 +30,6 @@
 
 #include "FELONY.H"
 
-
-
 enum SoundBankIds
 {
 	SBK_ID_MENU					= 0,	// frontend, alpha 1.6 used it in ingame menu as well
@@ -81,7 +79,7 @@ enum SoundBankIds
 	SBK_COP_SIREN_START			= 69,
 };
 
-typedef void(*envsoundfunc)(__envsound* ep /*$s1*/, __envsoundinfo* E /*$a1*/, int pl /*$a2*/);
+typedef void(*envsoundfunc)(envsound* ep /*$s1*/, envsoundinfo* E /*$a1*/, int pl /*$a2*/);
 
 void IdentifyZone(envsound* ep, envsoundinfo* E, int pl);
 void CalcEffPos(envsound* ep, envsoundinfo* E, int pl);
@@ -93,6 +91,17 @@ static envsoundfunc UpdateEnvSounds[] = {
 	CalcEffPos,
 	CalcEffPos2,
 	UpdateEnvSnd
+};
+
+static envsoundtags EStags;
+
+struct GEAR_DESC
+{
+	int lowidl_ws;
+	int low_ws;
+	int hi_ws;
+	int ratio_ac;
+	int ratio_id;
 };
 
 GEAR_DESC geard[2][4] =
@@ -2360,8 +2369,6 @@ void FunkUpDaBGMTunez(int funk)
 // [D] [T]
 void SoundTasks(void)
 {
-	static __envsoundtags EStags;
-
 	int chan;
 	int vol;
 	VECTOR* position;
@@ -2862,8 +2869,6 @@ void AddTunnels(int level)
 		// Start line: 5622
 	/* end block 3 */
 	// End Line: 5623
-
-static __envsoundtags EStags;
 
 // [D] [T]
 void InitEnvSnd(int num_envsnds)

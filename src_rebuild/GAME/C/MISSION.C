@@ -173,8 +173,8 @@ int bStopTanner = 0;
 int tannerDeathTimer = 0;
 STOPCOPS gStopCops;
 
-_MISSION* MissionLoadAddress;
-_MISSION* MissionHeader;
+MS_MISSION* MissionLoadAddress;
+MS_MISSION* MissionHeader;
 STREAM_SOURCE* PlayerStartInfo[8];
 int numPlayersToCreate = 0;
 int gStartOnFoot = 0;
@@ -385,7 +385,7 @@ void InitialiseMissionDefaults(void)
 void LoadMission(int missionnum)
 {
 	int missionSize;
-	int *routedata;
+	_ROUTE_INFO* rinfo;
 	uint loadsize;
 	char filename[32];
 	u_int header;
@@ -433,10 +433,10 @@ void LoadMission(int missionnum)
 
 	if (NewLevel != 0)
 	{
-		MissionLoadAddress = (_MISSION*)mallocptr;
+		MissionLoadAddress = (MS_MISSION*)mallocptr;
 	}
 	
-	LoadfileSeg(filename, (char *)MissionLoadAddress, offset, sizeof(_MISSION));
+	LoadfileSeg(filename, (char *)MissionLoadAddress, offset, sizeof(MS_MISSION));
 
 	MissionHeader = MissionLoadAddress;
 	MissionTargets = (MS_TARGET *)((int)&MissionLoadAddress->id + MissionLoadAddress->size);
@@ -489,9 +489,9 @@ void LoadMission(int missionnum)
 		if (header == 0)
 			return;
 
-		_MISSION missionTempHeader;
+		MS_MISSION missionTempHeader;
 
-		LoadfileSeg(filename, (char *)&missionTempHeader, header & 0x7ffff, sizeof(_MISSION));
+		LoadfileSeg(filename, (char *)&missionTempHeader, header & 0x7ffff, sizeof(MS_MISSION));
 
 		memcpy(MissionHeader->residentModels, missionTempHeader.residentModels, sizeof(missionTempHeader.residentModels));
 		MissionHeader->time = missionTempHeader.time;
@@ -662,16 +662,17 @@ void LoadMission(int missionnum)
 		}
 		else 
 		{
-			routedata = (int *)(MissionStrings + MissionHeader->route);
-			
-			NumTempJunctions = *routedata;
-			memcpy(Driver2TempJunctionsPtr, routedata + 1, NumTempJunctions << 2);
+			rinfo = (_ROUTE_INFO *)(MissionStrings + MissionHeader->route);
+
+			// store route info
+			NumTempJunctions = rinfo->nJunctions;
+			memcpy(Driver2TempJunctionsPtr, rinfo->data, NumTempJunctions << 2);
+			LeadValues = rinfo->parameters;
 
 			mallocptr = MissionStrings + MissionHeader->route;
 #ifdef PSX
 			Loadfile("LEAD.BIN", 0xE7000);
 #endif // PSX
-			memcpy(&LeadValues, routedata + 1001, sizeof(LEAD_PARAMETERS));
 
 #ifdef DEBUG
 			printInfo("---- LEAD VALUES ----\n");

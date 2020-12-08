@@ -13,6 +13,21 @@
 #include "MAP.H"
 #include "SDL.h"
 
+struct tNode
+{
+	int vx;
+	int vy;
+	int vz;
+	u_short dist;
+	u_short ptoey;
+};
+
+struct XZDIR
+{
+	short dx;
+	short dz;
+};
+
 ushort distanceCache[16384];
 char omap[128][16];				// obstacle map
 int dunyet[32][2];				// scanned cell map
@@ -31,7 +46,7 @@ int lastDistanceFound;
 tNode heap[201];
 unsigned int numHeapEntries = 0;
 
-PATHFIND_237fake ends[6][2] = {
+XZDIR ends[6][2] = {
 	{
 		{0, 0},
 		{512, 0}
@@ -62,7 +77,7 @@ PATHFIND_237fake ends[6][2] = {
 	}
 };
 
-PATHFIND_238fake dirs[6] = {
+XZDIR dirs[6] = {
 	{
 		512,0
 	},

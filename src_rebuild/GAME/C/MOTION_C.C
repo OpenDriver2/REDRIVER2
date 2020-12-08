@@ -23,6 +23,62 @@
 
 #include "INLINE_C.H"
 
+enum LIMBS
+{
+	ROOT = 0,
+	LOWERBACK = 1,
+	JOINT_1 = 2,
+	NECK = 3,
+	HEAD = 4,
+	LSHOULDER = 5,
+	LELBOW = 6,
+	LHAND = 7,
+	LFINGERS = 8,
+	RSHOULDER = 9,
+	RELBOW = 10,
+	RHAND = 11,
+	RFINGERS = 12,
+	HIPS = 13,
+	LHIP = 14,
+	LKNEE = 15,
+	LFOOT = 16,
+	LTOE = 17,
+	RHIP = 18,
+	RKNEE = 19,
+	RFOOT = 20,
+	RTOE = 21,
+	JOINT = 22,
+};
+
+enum TEXTURE_PALS
+{
+	NO_PAL = 0,
+	JEANS_PAL = 1,
+	ARM_PAL = 2,
+	CHEST_PAL = 3,
+};
+
+struct BONE
+{
+	LIMBS id;
+	BONE* pParent;
+	char numChildren;
+	BONE(*pChildren[3]);
+	SVECTOR_NOPAD* pvOrigPos;
+	SVECTOR* pvRotation;
+	VECTOR vOffset;
+	VECTOR vCurrPos;
+	MODEL** pModel;
+};
+
+struct PED_DATA
+{
+	char cWidth;
+	u_char cAdj;
+	TEXTURE_DETAILS* ptd;
+	TEXTURE_PALS texPal;
+};
+
 #define NUM_BONES 23
 
 LIMBS lRoutes[5][8] = {

@@ -13,6 +13,12 @@
 
 #include "INLINE_C.H"
 
+struct TARGET_ARROW_MODEL
+{
+	SVECTOR* pVerts;
+	char* pTris;
+	char numTris;
+};
 
 SVECTOR targetArrowVerts[] = 
 {
@@ -87,97 +93,52 @@ TARGET_ARROW_MODEL targetArrowModel[4] =
 
 int gDraw3DArrowBlue = 0;
 
-
 // decompiled code
 // original method signature: 
-// void /*$ra*/ Draw3DTarget(VECTOR *position /*$s0*/, int flags /*$s2*/)
- // line 213, offset 0x0007fb44
+// void /*$ra*/ WorldToCameraPositions(VECTOR *pGlobalPositionIn /*$s1*/, VECTOR *pCameraPositionOut /*$s0*/, int count /*$s2*/)
+ // line 496, offset 0x0008047c
 	/* begin block 1 */
-		// Start line: 214
-		// Start offset: 0x0007FB44
-		// Variables:
-	// 		VECTOR pos; // stack offset -32
-	// 		int shadow; // $s1
+		// Start line: 497
+		// Start offset: 0x0008047C
+
+		/* begin block 1.1 */
+			// Start line: 500
+			// Start offset: 0x000804B8
+			// Variables:
+		// 		VECTOR temp; // stack offset -48
+		/* end block 1.1 */
+		// End offset: 0x000804B8
+		// End Line: 502
 	/* end block 1 */
-	// End offset: 0x0007FD48
-	// End Line: 262
+	// End offset: 0x00080528
+	// End Line: 511
 
 	/* begin block 2 */
-		// Start line: 426
+		// Start line: 1144
 	/* end block 2 */
-	// End Line: 427
+	// End Line: 1145
+
+	/* begin block 3 */
+		// Start line: 1152
+	/* end block 3 */
+	// End Line: 1153
 
 // [D] [T]
-void Draw3DTarget(VECTOR *position, int flags)
+void WorldToCameraPositions(VECTOR* pGlobalPositionIn, VECTOR* pCameraPositionOut, int count)
 {
-	int shadow;
-	VECTOR pos;
-
-	shadow = (flags & 2);
-
-	// arrow
-	if (flags & 0x1)
+	while (count)
 	{
-		pos.vx = position->vx;
-		pos.vz = position->vz;
-		pos.pad = position->pad;
-		pos.vy = position->vy  - 300 + (CameraCnt & 0xfU) * 16;
-	
-		if (CurrentPlayerView != 1 || GameType != GAME_COPSANDROBBERS) 
-		{
-			DrawTargetArrowModel(&targetArrowModel[0], &pos, shadow, 0);
-		}
-	}
+		count--;
+		pCameraPositionOut->vx = pGlobalPositionIn->vx - camera_position.vx;
+		pCameraPositionOut->vy = pGlobalPositionIn->vy - camera_position.vy;
+		pCameraPositionOut->vz = pGlobalPositionIn->vz - camera_position.vz;
 
-	// flipped carrow
-	if (flags & 0x20)
-	{
-		pos.vx = position->vx;
-		pos.vz = position->vz;
-		pos.pad = position->pad;
-		pos.vy = position->vy + 900 - (CameraCnt & 0xfU) * 16;
-	
-		if (CurrentPlayerView != 1 || GameType != GAME_COPSANDROBBERS) 
-		{
-			DrawTargetArrowModel(&targetArrowModel[0], &pos, shadow, 1);
-		}
-	}
+		Apply_Inv_CameraMatrix(pCameraPositionOut);
 
-	// exclamation mark
-	if (flags & 0x4)
-	{
-		pos.vx = position->vx;
-		pos.vz = position->vz;
-		pos.pad = position->pad;
-		pos.vy = position->vy - 300;
-
-		DrawTargetArrowModel(&targetArrowModel[1], &pos, shadow, 0);
-	}
-
-	// timer
-	if (flags & 8)
-	{
-		pos.vx = position->vx;
-		pos.vz = position->vz;
-		pos.pad = position->pad;
-		pos.vy = position->vy - 300;
-
-		DrawTargetArrowModel(&targetArrowModel[2], &pos, shadow, 0);
-	}
-
-	// stop zone
-	if (flags & 0x10)
-	{
-		pos.vx = position->vx;
-		pos.vz = position->vz;
-		pos.pad = position->pad;
-		pos.vy = position->vy - 300;
-
-		DrawTargetArrowModel(&targetArrowModel[3], &pos, shadow, 0);
+		pGlobalPositionIn++;
+		pCameraPositionOut++;
 	}
 }
-
-
 
 // decompiled code
 // original method signature: 
@@ -316,7 +277,94 @@ void DrawTargetArrowModel(TARGET_ARROW_MODEL *pTargetArrowModel, VECTOR *pPositi
 		DrawStopZone(pPosition);
 }
 
+// decompiled code
+// original method signature: 
+// void /*$ra*/ Draw3DTarget(VECTOR *position /*$s0*/, int flags /*$s2*/)
+ // line 213, offset 0x0007fb44
+	/* begin block 1 */
+		// Start line: 214
+		// Start offset: 0x0007FB44
+		// Variables:
+	// 		VECTOR pos; // stack offset -32
+	// 		int shadow; // $s1
+	/* end block 1 */
+	// End offset: 0x0007FD48
+	// End Line: 262
 
+	/* begin block 2 */
+		// Start line: 426
+	/* end block 2 */
+	// End Line: 427
+
+// [D] [T]
+void Draw3DTarget(VECTOR* position, int flags)
+{
+	int shadow;
+	VECTOR pos;
+
+	shadow = (flags & 2);
+
+	// arrow
+	if (flags & 0x1)
+	{
+		pos.vx = position->vx;
+		pos.vz = position->vz;
+		pos.pad = position->pad;
+		pos.vy = position->vy - 300 + (CameraCnt & 0xfU) * 16;
+
+		if (CurrentPlayerView != 1 || GameType != GAME_COPSANDROBBERS)
+		{
+			DrawTargetArrowModel(&targetArrowModel[0], &pos, shadow, 0);
+		}
+	}
+
+	// flipped carrow
+	if (flags & 0x20)
+	{
+		pos.vx = position->vx;
+		pos.vz = position->vz;
+		pos.pad = position->pad;
+		pos.vy = position->vy + 900 - (CameraCnt & 0xfU) * 16;
+
+		if (CurrentPlayerView != 1 || GameType != GAME_COPSANDROBBERS)
+		{
+			DrawTargetArrowModel(&targetArrowModel[0], &pos, shadow, 1);
+		}
+	}
+
+	// exclamation mark
+	if (flags & 0x4)
+	{
+		pos.vx = position->vx;
+		pos.vz = position->vz;
+		pos.pad = position->pad;
+		pos.vy = position->vy - 300;
+
+		DrawTargetArrowModel(&targetArrowModel[1], &pos, shadow, 0);
+	}
+
+	// timer
+	if (flags & 8)
+	{
+		pos.vx = position->vx;
+		pos.vz = position->vz;
+		pos.pad = position->pad;
+		pos.vy = position->vy - 300;
+
+		DrawTargetArrowModel(&targetArrowModel[2], &pos, shadow, 0);
+	}
+
+	// stop zone
+	if (flags & 0x10)
+	{
+		pos.vx = position->vx;
+		pos.vz = position->vz;
+		pos.pad = position->pad;
+		pos.vy = position->vy - 300;
+
+		DrawTargetArrowModel(&targetArrowModel[3], &pos, shadow, 0);
+	}
+}
 
 // decompiled code
 // original method signature: 
@@ -443,54 +491,6 @@ void DrawStopZone(VECTOR *pPosition)
 	current->primptr += sizeof(POLY_FT4);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ WorldToCameraPositions(VECTOR *pGlobalPositionIn /*$s1*/, VECTOR *pCameraPositionOut /*$s0*/, int count /*$s2*/)
- // line 496, offset 0x0008047c
-	/* begin block 1 */
-		// Start line: 497
-		// Start offset: 0x0008047C
-
-		/* begin block 1.1 */
-			// Start line: 500
-			// Start offset: 0x000804B8
-			// Variables:
-		// 		VECTOR temp; // stack offset -48
-		/* end block 1.1 */
-		// End offset: 0x000804B8
-		// End Line: 502
-	/* end block 1 */
-	// End offset: 0x00080528
-	// End Line: 511
-
-	/* begin block 2 */
-		// Start line: 1144
-	/* end block 2 */
-	// End Line: 1145
-
-	/* begin block 3 */
-		// Start line: 1152
-	/* end block 3 */
-	// End Line: 1153
-
-// [D] [T]
-void WorldToCameraPositions(VECTOR *pGlobalPositionIn, VECTOR *pCameraPositionOut, int count)
-{
-	while (count)
-	{
-		count--;
-		pCameraPositionOut->vx = pGlobalPositionIn->vx - camera_position.vx;
-		pCameraPositionOut->vy = pGlobalPositionIn->vy - camera_position.vy;
-		pCameraPositionOut->vz = pGlobalPositionIn->vz - camera_position.vz;
-
-		Apply_Inv_CameraMatrix(pCameraPositionOut);
-
-		pGlobalPositionIn++;
-		pCameraPositionOut++;
-	}
-}
 
 
 

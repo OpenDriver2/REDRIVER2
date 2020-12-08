@@ -24,6 +24,16 @@
 #include "RAND.H"
 #include "STRINGS.H"
 
+struct REPLAY_ICON
+{
+	short x;
+	short y;
+	TEXTURE_DETAILS* texture;
+	char* TextPtr;
+	short tx;
+	short ty;
+};
+
 TEXTURE_DETAILS delcam; // address 0xC0EE0
 TEXTURE_DETAILS incar; // address 0xBF950
 TEXTURE_DETAILS lenschan; // address 0xC1DB0

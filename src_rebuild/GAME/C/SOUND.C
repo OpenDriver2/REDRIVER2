@@ -19,6 +19,28 @@
 #include "STRINGS.H"
 
 #define SPU_CHANNEL_COUNT 24
+#define LSB_BANK_COUNT 7
+
+typedef struct __LSBDinfo
+{
+	int addr;
+	int memtop;
+	int count[LSB_BANK_COUNT];
+	int bnktop[LSB_BANK_COUNT];
+	int append;
+} LSBDinfo;
+
+typedef struct __pauseinfo
+{
+	u_short pitch[MAX_SFX_CHANNELS];
+	u_short voll[MAX_SFX_CHANNELS];
+	u_short volr[MAX_SFX_CHANNELS];
+	u_short max;
+	u_short lev;
+} pauseinfo;
+
+static pauseinfo pause;
+static LSBDinfo lsbTabs;
 
 LONGVECTOR3 dummylong = { 0, 0, 0 };
 
@@ -27,7 +49,7 @@ int banksize[2] = { 88064, 412672 };
 
 char banks[24] = { 0 };
 
-SAMPLE_DATA samples[7][35];
+SAMPLE_DATA samples[LSB_BANK_COUNT][35];
 CHANNEL_DATA channels[MAX_SFX_CHANNELS]; // offset 0xDE480
 
 int master_volume = 0;	// why need two?
@@ -74,7 +96,7 @@ void InitSound(void)
 	int i;
 
 	SpuInit();
-	SpuInitMalloc(7, banks);
+	SpuInitMalloc(LSB_BANK_COUNT, banks);
 	SpuSetMute(1);
 
 	AllocateReverb(3, 16384);
@@ -856,8 +878,6 @@ void PauseXM(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-static __pauseinfo pause;
-
 // [D] [T]
 void PauseSFX(void)
 {
@@ -1422,8 +1442,6 @@ void UpdateXMSamples(int num_samps)
 // [D] [T]
 int LoadSoundBankDynamic(char *address, int length, int dbank)
 {
-	static __LSBDinfo lsbTabs;
-	
 	int i;
 	int slength;
 	int num_samples;

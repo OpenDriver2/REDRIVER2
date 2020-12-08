@@ -38,6 +38,14 @@ char* XANames[] = {
 
 #endif
 
+struct XA_TRACK
+{
+	int start;
+	int end;
+};
+
+XA_TRACK XAMissionMessages[4];
+
 static unsigned long finished_count = 0;
 static int gPlaying = 0;
 unsigned short gChannel = 0;
@@ -48,7 +56,7 @@ static unsigned short ID;
 static int StartPos;
 static CdlLOC pause_loc;
 static uint buffer[8];
-XA_TRACK XAMissionMessages[4];
+
 
 #ifndef PSX
 struct XA_SUBTITLE

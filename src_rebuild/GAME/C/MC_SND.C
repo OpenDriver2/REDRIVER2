@@ -10,6 +10,21 @@
 #include "XAPLAY.H"
 #include "GLAUNCH.H"
 
+typedef struct __io
+{
+	char in;
+	char out;
+} io;
+
+typedef struct __xa_request
+{
+	short delay;
+	char bank;
+	char track;
+	char mission;
+	char cutscene;
+} xa_request;
+
 char missionstarts[42] = {
 	0xFF, 0xFF, 0, 2, 4, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 	6, 8, 0xFF, 9, 0xFF, 12, 13, 0xFF, 14, 0xFF, 19,
@@ -18,7 +33,7 @@ char missionstarts[42] = {
 	46, 48, 49
 };
 
-__io id_map[49] =
+io id_map[49] =
 {
 	{0, 0},{0, 1},
 	
@@ -77,7 +92,7 @@ __io id_map[49] =
 	{39, 0},
 };
 
-__xa_request xa_data[26] = {
+xa_request xa_data[26] = {
 	{16, 0, 0, 1, 0},
 	{25, 0, 1, 2, 0},
 	{30, 0, 2, 3, 0},
@@ -198,12 +213,12 @@ char GetMissionSound(char id)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
-__xa_request xa;
+xa_request xa;
 
 // [D] [T]
 void RequestXA(void)
 {
-	__xa_request* pXA;
+	xa_request* pXA;
 
 	xa.delay = 0xFFFF;
 	xa.bank = 0;

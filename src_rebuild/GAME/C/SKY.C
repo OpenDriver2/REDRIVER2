@@ -12,6 +12,21 @@
 #include "LIBGTE.H"
 #include "INLINE_C.H"
 
+struct RGB16
+{
+	short r;
+	short g;
+	short b;
+	short pad;
+};
+
+struct FLAREREC
+{
+	RGB16 transparency;
+	char size;
+	short gapmod;
+};
+
 int sky_y_offset[4] = { 14, 14, 14, 14 };
 
 unsigned char HorizonLookup[4][4] = {

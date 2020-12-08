@@ -13,7 +13,7 @@ extern GAMETYPE StoredGameType;
 extern GAMEMODE CurrentGameMode;
 extern GAMEMODE WantedGameMode;
 extern int gCurrentMissionNumber;
-extern _MISSION *MissionHeader;
+extern MS_MISSION*MissionHeader;
 extern STREAM_SOURCE* PlayerStartInfo[8];
 extern int numPlayersToCreate;
 extern int gStartOnFoot;
