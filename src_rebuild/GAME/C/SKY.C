@@ -875,7 +875,7 @@ void PlotSkyPoly(POLYFT4* polys, int skytexnum, unsigned char r, unsigned char g
 
 		addPrim(current->ot + 0x107f, poly);
 
-#ifdef PGXP
+#if defined(PGXP) && defined(USE_32_BIT_ADDR)
 		poly->pgxp_index = outpoints[src->v0].pgxp_index;
 #endif 
 

@@ -19,6 +19,8 @@ DISPENV activeDispEnv;
 DRAWENV activeDrawEnv;	// word_33BC
 int g_GPUDisabledState = 0;
 
+
+
 #if 0
 char fontDebugTexture[] =
 {
@@ -191,30 +193,13 @@ void ResetPolyState()
 	s_lastPolyType = 0xFFFF;
 }
 
-//#define WIREFRAME_MODE
-
 #if defined(USE_32_BIT_ADDR)
-unsigned long terminator[2] = { -1, 0 };
+u_long terminator[2] = { 0xffffffff, 0 }; // P_TAG with zero length
 #else
-unsigned long terminator = -1;
+u_long terminator = 0xffffffff;
 #endif
 
 void(*drawsync_callback)(void) = NULL;
-
-void* off_3348[] =
-{
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	NULL
-};
 
 int ClearImage(RECT16* rect, u_char r, u_char g, u_char b)
 {
@@ -357,16 +342,18 @@ int StoreImage2(RECT16 *RECT16, u_long *p)
 
 u_long* ClearOTag(u_long* ot, int n)
 {
-	//Nothing to do here.
 	if (n == 0)
 		return NULL;
 
-	//last is special terminator
-	ot[n - OT_WIDTH] = (unsigned long)&terminator;
+	// last is  aspecial terminator
+	setaddr(&ot[n - OT_WIDTH], &terminator);
+	setlen(&ot[n - OT_WIDTH], 0);
 
-	for (int i = n - OT_WIDTH; i > -1; i -= OT_WIDTH)
+	// make a linked list with it's next items
+	for (int i = (n-1) * OT_WIDTH; i >= 0; i -= OT_WIDTH)
 	{
-		ot[i] = (unsigned long)&ot[i + OT_WIDTH];
+		setaddr(&ot[i], (u_long)&ot[i + OT_WIDTH]);
+		setlen(&ot[i], 0);
 	}
 
 	return NULL;
@@ -374,17 +361,17 @@ u_long* ClearOTag(u_long* ot, int n)
 
 u_long* ClearOTagR(u_long* ot, int n)
 {
-	//Nothing to do here.
 	if (n == 0)
 		return NULL;
 
-	//First is special terminator
+	// first is a special terminator
 	setaddr(ot, &terminator);
 	setlen(ot, 0);
 
+	// initialize a linked list with it's previous items
 	for (int i = OT_WIDTH; i < n * OT_WIDTH; i += OT_WIDTH)
 	{
-		setaddr(&ot[i], (unsigned long)&ot[i - OT_WIDTH]);
+		setaddr(&ot[i], (u_long)&ot[i - OT_WIDTH]);
 		setlen(&ot[i], 0);
 	}
 
@@ -488,7 +475,10 @@ void SetDrawEnv(DR_ENV* dr_env, DRAWENV* env)
 	dr_env->code[2] = ((env->ofs[1] & 0x3FF) << 11) | env->ofs[0] & 0x7FF | 0xE5000000;
 	dr_env->code[3] = 32 * (((256 - env->tw.h) >> 3) & 0x1F) | ((256 - env->tw.w) >> 3) & 0x1F | (((env->tw.y >> 3) & 0x1F) << 15) | (((env->tw.x >> 3) & 0x1F) << 10) | 0xE2000000;
 	dr_env->code[4] = ((env->dtd != 0) << 9) | ((env->dfe != 0) << 10) | env->tpage & 0x1FF | 0xE1000000;
+
+#ifdef USE_32_BIT_ADDR
 	dr_env->len = 5;
+#endif
 	dr_env->tag = dr_env->tag & 0xFFFFFF | 0x5000000;
 }
 
@@ -501,7 +491,9 @@ void SetDrawArea(DR_AREA *p, RECT16 *r)
 {
 	p->code[0] = (r->x & 0x3FF | ((r->y & 0x3FF) << 10)) | 0xE3000000;
 	p->code[1] = (((r->x + r->w) & 0x3FF) | (((r->y + r->h) & 0x3FF) << 10)) | 0xE4000000;
+#ifdef USE_32_BIT_ADDR
 	p->len = 2;
+#endif
 	p->tag = p->tag & 0xFFFFFF | 0x2000000;
 }
 
@@ -520,7 +512,9 @@ void SetDrawMove(DR_MOVE* p, RECT16* rect, int x, int y)
 	p->code[3] = y << 0x10 | x & 0xffffU;
 	p->code[4] = *(ulong *)&rect->w;
 
+#ifdef USE_32_BIT_ADDR
 	p->len = len;
+#endif
 	p->tag = p->tag & 0xFFFFFF | 0x1000000;
 }
 
@@ -653,10 +647,9 @@ void AggregatePTAGsToSplits(u_long* p, bool singlePrimitive)
 	if (!p)
 		return;
 
-
 	if (singlePrimitive)
 	{
-#ifdef PGXP
+#if defined(PGXP) && defined(USE_32_BIT_ADDR)
 		P_TAG* pTag = (P_TAG*)p;
 		pTag->pgxp_index = 0xFFFF;		// force
 #endif
@@ -678,7 +671,8 @@ void AggregatePTAGsToSplits(u_long* p, bool singlePrimitive)
 				if (lastSize == -1)
 					break; // safe bailout
 			}
-			pTag = (P_TAG*)pTag->addr;
+			
+			pTag = (P_TAG*)(pTag->addr);
 		}
 	}
 }
@@ -802,7 +796,7 @@ int ParsePrimitive(uintptr_t primPtr)
 
 	bool semi_transparent = (pTag->code & 2) != 0;
 
-#ifdef PGXP
+#if defined(PGXP) && defined(USE_32_BIT_ADDR)
 	unsigned short gte_index = pTag->pgxp_index;
 #else
 	unsigned short gte_index = 0xFFFF;

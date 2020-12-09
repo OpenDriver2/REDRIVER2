@@ -183,8 +183,9 @@ extern	int (*GPU_printf)(const char *fmt, ...);
 #define LEN_OFFSET (4)
 
 #define setlen( p, _len) 	(((P_TAG *)(p))->len  = (u_char)(_len))
-#define setaddr(p, _addr)	(((P_TAG *)(p))->addr = (u_long)(_addr))
+#define setaddr(p, _addr)	(((P_TAG *)(p))->addr = (u_long)((u_long*)_addr))
 #define setcode(p, _code)	(((P_TAG *)(p))->code = (u_char)(_code))
+
 #define getlen(p)    		(u_char)(((P_TAG *)(p))->len)
 #define getcode(p)   		(u_char)(((P_TAG *)(p))->code)
 #define getaddr(p)   		(u_long)(((P_TAG *)(p))->addr)
@@ -192,7 +193,7 @@ extern	int (*GPU_printf)(const char *fmt, ...);
 #define nextPrim(p)  		(void *)((((P_TAG *)(p))->addr)|0x80000000)
 #define isendprim(p) 		((((P_TAG *)(p))->addr)==0xffffff)
 
-#if defined(PGXP)
+#if defined(PGXP) && defined(USE_32_BIT_ADDR)
 #define setpgxpindex(p, _pgxp_index) (((P_TAG *)(p))->pgxp_index = (u_short)(_pgxp_index))
 #define addPrim(ot, p)		setaddr(p, getaddr(ot)), setaddr(ot, p), setpgxpindex(p, PGXP_GetIndex())
 #else
@@ -203,7 +204,7 @@ extern	int (*GPU_printf)(const char *fmt, ...);
 #define addPrims(ot, p0, p1)	setaddr(p1, getaddr(ot)),setaddr(ot, p0)
 
 #define catPrim(p0, p1)		setaddr(p0, p1)
-#define termPrim(p)		setaddr(p, 0xffffffff)
+#define termPrim(p)			setaddr(p, 0xffffffff)
 
 #define setSemiTrans(p, abe) \
 	((abe)?setcode(p, getcode(p)|0x02):setcode(p, getcode(p)&~0x02))
