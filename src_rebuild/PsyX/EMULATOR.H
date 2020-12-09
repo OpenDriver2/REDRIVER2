@@ -44,8 +44,8 @@
 #define eprinterr(fmt, ...) eprintf("[%s] - " fmt, FUNCNAME, ##__VA_ARGS__);
 #endif
 
-#if defined(__EMSCRIPTEN__)
-#define UNIMPLEMENTED() 0;
+#if defined(__EMSCRIPTEN__) || !defined(_DEBUG)
+#define PSYX_UNIMPLEMENTED()
 #else
 #define PSYX_UNIMPLEMENTED() eprinterr("Unimplemented!\n");
 #endif

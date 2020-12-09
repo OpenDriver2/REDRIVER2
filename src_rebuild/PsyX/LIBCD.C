@@ -440,7 +440,7 @@ int CdInit(void)
 	//Read the cue sheet and obtain properties from it.
 	if (!ParseCueSheet())
 	{
-		eprinterr("Failed to read cue sheet!");
+		eprinterr("Failed to read cue sheet!\n");
 		return 0;
 	}
 
