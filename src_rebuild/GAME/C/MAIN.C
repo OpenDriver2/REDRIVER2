@@ -2164,7 +2164,7 @@ void RenderGame2(int view)
 	int notInDreaAndStevesEvilLair;
 
 	CurrentPlayerView = view;
-	InitCamera((PLAYER*)(player + view));
+	InitCamera(&player[view]);
 
 #ifndef PSX
 	int screenW, screenH;

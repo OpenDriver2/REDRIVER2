@@ -1012,7 +1012,7 @@ void DrawSmashable_sprites(void)
 
 			if (FrustrumCheck(&pos, model->bounding_sphere) != -1)
 			{
-				if ((model->shape_flags & 0x4000) != 0)
+				if (model->shape_flags & 0x4000)
 				{
 					UNIMPLEMENTED();
 

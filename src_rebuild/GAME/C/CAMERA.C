@@ -170,7 +170,10 @@ void InitCamera(PLAYER *lp)
 			PlaceCameraAtLocation(lp, 0);
 		}
 
-		if (gCurrentMissionNumber == 22 && lp->cameraPos.vx < 0 && lp->cameraPos.vz < 0xc1c47 && lp->cameraPos.vz > 700000)
+		// "Beat the Train" hack
+		if (gCurrentMissionNumber == 22 && 
+			lp->cameraPos.vx < 0 && 
+			lp->cameraPos.vz < 793671 && lp->cameraPos.vz > 700000)
 		{
 			SetSpecialCamera(SPECIAL_CAMERA_SET, 0);
 		}
@@ -209,41 +212,42 @@ void ModifyCamera(void)
 
 	int i;
 
-	if (NoPlayerControl == 0 && cameraview != 6 && events.cameraEvent == NULL) // && NumPlayers == 1)	// [A] allow switching cameras in multiplayer
+	if (NoPlayerControl || cameraview == 6 || events.cameraEvent != NULL) // || NumPlayers > 1)	// [A] allow switching cameras in multiplayer
+		return;
+
+	for(i = 0; i < NumPlayers; i++)
 	{
-		for(i = 0; i < NumPlayers; i++)
+		lp = &player[i];
+
+		if (Pads[i].mapped & 0x100)
 		{
-			lp = &player[i];
-
-			if ((Pads[i].mapped & 0x100) != 0)
+			// [A] if only new button is pressed
+			if (lp->viewChange != FrameCnt-1 && (Pads[i].mapnew & 0x100))
 			{
-				if (lp->viewChange != FrameCnt-1) 
+				pNextCameraView = inGameCamera;
+
+				while (*pNextCameraView++ != lp->cameraView)
 				{
-					pNextCameraView = inGameCamera;
-
-					while (*pNextCameraView++ != lp->cameraView)
-					{
-						if (pNextCameraView > inGameCamera + 2)
-							break;
-					}
-					lp->cameraView = *pNextCameraView;
+					if (pNextCameraView > inGameCamera + 2)
+						break;
 				}
-
+			
+				lp->cameraView = *pNextCameraView;
 				lp->viewChange = FrameCnt;
+			}
 
-				if (lp->cameraView == 1)
-				{
-					if (lp->cameraCarId < 1)
-						length = 360;
-					else
-						length = car_data[lp->cameraCarId].ap.carCos->colBox.vz;
+			if (lp->cameraView == 1)
+			{
+				if (lp->cameraCarId < 1)
+					length = 360;
+				else
+					length = car_data[lp->cameraCarId].ap.carCos->colBox.vz;
 
-					CalcCameraBasePos(lp);
+				CalcCameraBasePos(lp);
 
-					angle = baseDir + 2048 & 0xfff;
-					lp->cameraPos.vx = basePos[0] + FIXEDH(rcossin_tbl[angle * 2] * (length - 60));
-					lp->cameraPos.vz = basePos[2] + FIXEDH(rcossin_tbl[angle * 2 + 1] * (length - 60));
-				}
+				angle = baseDir + 2048 & 0xfff;
+				lp->cameraPos.vx = basePos[0] + FIXEDH(rcossin_tbl[angle * 2] * (length - 60));
+				lp->cameraPos.vz = basePos[2] + FIXEDH(rcossin_tbl[angle * 2 + 1] * (length - 60));
 			}
 		}
 	}
@@ -346,7 +350,7 @@ int CameraCollisionCheck(void)
 		}
 		count++;
 
-		if (8 < count)
+		if (count > 8)
 			break;
 
 	} while (true);
@@ -357,41 +361,38 @@ int CameraCollisionCheck(void)
 // [D] [T]
 void TurnHead(PLAYER *lp)
 {
-	if ((paddCamera & 3) == 3) 
+	if ((paddCamera & 0x3) == 0x3)
 	{
-		if (pPlayerPed != NULL)
+		if (pPlayerPed != NULL)  // look back
 			pPlayerPed->head_rot = 0;
 	}
-	else if ((paddCamera & 1) == 0) 
+	else if (paddCamera & 0x1)
 	{
-		if ((paddCamera & 2) == 0) // look back
-		{
-			if (pPlayerPed != NULL)
-				pPlayerPed->head_rot = 0;
-
-			lp->headTimer = 0;
-			lp->headTarget = 0;
-		}
-		else
-		{
-			if (pPlayerPed != NULL)
-				pPlayerPed->head_rot = -512;
-
-			if (lp->headTimer > 1)
-				lp->headTarget = -0x4000000;
-			else
-				lp->headTimer++;
-		}
-	}
-	else
-	{
-		if (pPlayerPed != NULL) 
+		if (pPlayerPed != NULL)
 			pPlayerPed->head_rot = 512;
 
 		if (lp->headTimer > 1)
 			lp->headTarget = 0x4000000;
 		else
 			lp->headTimer++;
+	}
+	else if (paddCamera & 0x2)
+	{
+		if (pPlayerPed != NULL)
+			pPlayerPed->head_rot = -512;
+
+		if (lp->headTimer > 1)
+			lp->headTarget = -0x4000000;
+		else
+			lp->headTimer++;
+	}
+	else
+	{
+		if (pPlayerPed != NULL)
+			pPlayerPed->head_rot = 0;
+
+		lp->headTimer = 0;
+		lp->headTarget = 0;
 	}
 
 	lp->headPos += (lp->headTarget - lp->headPos) / 2;
@@ -453,9 +454,9 @@ void PlaceCameraFollowCar(PLAYER *lp)
 
 	if (pauseflag == 0 || EditMode == 2)
 	{
-		if ((paddCamera & 3) == 3)
+		if ((paddCamera & 0x3) == 0x3)
 		{
-			camAngle = baseDir & 0xfff;
+			camAngle = baseDir & 0xfff; // look back
 		}
 		else
 		{
@@ -575,7 +576,7 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 		viewer_position.vz = cp->ap.carCos->colBox.vz - 80;
 	}
 
-	if ((paddCamera & 3) == 3)
+	if ((paddCamera & 0x3) == 0x3)
 		viewer_position.vz = 0;
 
 	angle = baseDir & 0xfff;
@@ -586,7 +587,7 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 
 	TurnHead(lp);
 
-	if ((paddCamera & 3) == 3)
+	if ((paddCamera & 0x3) == 0x3)
 		camera_angle.vy = 2048 - baseDir & 0xfff;
 	else
 		camera_angle.vy = (lp->headPos >> 16) - baseDir & 0xfff;
@@ -611,14 +612,14 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 		InvertMatrix(&cp->hd.drawCarMat, &inv_camera_matrix);
 	}
 
-	if ((paddCamera & 3) == 3) 
+	if ((paddCamera & 0x3) == 0x3)
 	{
 		if (cp != NULL)
 			viewer_position.vz = 170;
 	}
 	else 
 	{
-		_RotMatrixY(&inv_camera_matrix, 0x800);
+		_RotMatrixY(&inv_camera_matrix, 2048);
 		_RotMatrixY(&inv_camera_matrix, (lp->headPos >> 16));
 	
 		if (cp != NULL) 

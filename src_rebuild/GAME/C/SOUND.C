@@ -122,7 +122,7 @@ void InitSound(void)
 
 		if (bankaddr[i] == -1)
 		{
-			eprintf("Failed to SpuMalloc! Exiting...\n");
+			printError("Failed to SpuMalloc! Exiting...\n");
 			exit(-1);
 		}
 

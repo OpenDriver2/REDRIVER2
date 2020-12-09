@@ -317,10 +317,10 @@ void DrawPercentageBar(PERCENTAGE_BAR *bar)
 	{
 		SetTextColour(128, 128, 64);
 
-		if ((bar->flags & 1U) == 0)
-			PrintString(bar->tag, min_x + 8, min_y - 11);
-		else
+		if (bar->flags & 0x1)
 			PrintStringRightAligned(bar->tag, max_x - 8, min_y - 11);
+		else
+			PrintString(bar->tag, min_x + 8, min_y - 11);
 	}
 }
 
