@@ -14,16 +14,14 @@ extern int bReverseYRotation;
 
 extern PEDESTRIAN *pUsedPeds;
 
-extern void IHaveThePower(); // 0x0006DD34
+extern void ProcessChairLump(char *lump_file, int lump_size); // 0x00073328
+
+extern void InitTanner(); // 0x0006E408
+extern void SetTannerPosition(VECTOR *pVec); // 0x00072478
 
 extern void ProcessTannerPad(PEDESTRIAN *pPed, u_int pad, char PadSteer, char use_analogue); // 0x0006DF54
 
-extern void InitTanner(); // 0x0006E408
-
-extern void SetTannerPosition(VECTOR *pVec); // 0x00072478
-
 extern void InitPedestrians(); // 0x0006E5C4
-
 extern void DestroyPedestrians(); // 0x00071F54
 
 extern void DestroyCivPedestrians(); // 0x00072FD0
@@ -31,58 +29,15 @@ extern void DestroyCivPedestrians(); // 0x00072FD0
 extern void DestroyPedestrian(PEDESTRIAN *pPed); // 0x00071FB4
 
 extern int ActivatePlayerPedestrian(CAR_DATA *pCar, char *padId, int direction, LONGVECTOR4* position, PED_MODEL_TYPES playerType); // 0x0006E6C4
-
 extern PEDESTRIAN * CreatePedestrian(); // 0x000720AC
 
 extern void PlaceRoadBlockCops(); // 0x0006EC88
-
 extern int CreatePedAtLocation(LONGVECTOR4* pPos, int pedType); // 0x0006F00C
 
 extern void DrawAllPedestrians(); // 0x00072290
-
 extern int TannerActionHappening(); // 0x00072430
 
 extern void ControlPedestrians(); // 0x0006F16C
-
-extern void SetupDoNowt(PEDESTRIAN *pPed); // 0x00073038
-
-extern void SetupWalker(PEDESTRIAN *pPed); // 0x0007307C
-
-extern void SetupRunner(PEDESTRIAN *pPed); // 0x000730B8
-
-extern void SetupBack(PEDESTRIAN *pPed); // 0x000730FC
-
-extern void CivGetIn(PEDESTRIAN *pPed); // 0x00072DFC
-
-extern void CopStand(PEDESTRIAN *pPed); // 0x00072DA0
-
-extern void PedDoNothing(PEDESTRIAN *pPed); // 0x0006F2DC
-
-extern void PedUserRunner(PEDESTRIAN *pPed); // 0x0006F5AC
-
-extern void PedUserWalker(PEDESTRIAN *pPed); // 0x00072944
-
-extern void PedCarryOutAnimation(PEDESTRIAN *pPed); // 0x00072A10
-
-extern void PedGetOutCar(PEDESTRIAN *pPed); // 0x00072BEC
-
-extern void SetupGetOutCar(PEDESTRIAN *pPed, CAR_DATA *pCar, int side); // 0x0006F80C
-
-extern void SetupGetInCar(PEDESTRIAN *pPed); // 0x0006FA3C
-
-extern void PedGetInCar(PEDESTRIAN *pPed); // 0x00072B5C
-
-extern void SetupPressButton(PEDESTRIAN *pPed); // 0x00072904
-
-extern void PedPressButton(PEDESTRIAN *pPed); // 0x00072C90
-
-extern void SetupTannerSitDown(PEDESTRIAN *pPed); // 0x000728C8
-
-extern void TannerCameraHandler(PEDESTRIAN *pPed); // 0x0006FD08
-
-extern void TannerSitDown(PEDESTRIAN *pPed); // 0x0006FF48
-
-extern void AnimatePed(PEDESTRIAN *pPed); // 0x000700D0
 
 extern void DeActivatePlayerPedestrian(PEDESTRIAN *pPed); // 0x0007216C
 
@@ -137,10 +92,5 @@ extern CAR_DATA * CheckForCar(PEDESTRIAN *pedestrian); // 0x00072738
 extern int CheckForPlayerCar(PEDESTRIAN *pedestrian, CAR_COLLISION_BOX *collision_box); // 0x000732C0
 
 extern void CalculatePedestrianInterest(PEDESTRIAN *pPed); // 0x00071E0C
-
-extern int PedSurfaceType(VECTOR *ped_pos); // 0x00072584
-
-extern void ProcessChairLump(char *lump_file, int lump_size); // 0x00073328
-
 
 #endif

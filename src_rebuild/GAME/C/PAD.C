@@ -9,53 +9,24 @@
 #include "PLAYERS.H"
 #include "CARS.H"
 
-#include <string.h>
+#include "STRINGS.H"
 
+u_char High_shake_data[] = { 1, 0xFF, 0xFF, 0xC8, 0x50, 0x50, 0x50, 0x50, 0x50, 0x46, 0x46, 0x46, 0x46, 0x46, 0xA, 0xA, 0xA, 0xA, 0xA, 0xA, 0 };
+u_char Med_shake_data[] = { 1, 0xC8, 0xC8, 0x64, 0x46, 0x46, 0x46, 0x46, 0x46, 0xA, 0xA, 0xA, 0 };
+u_char Low_shake_data[] = { 1, 0xA0, 0xA0, 0x46, 0x46, 0xA, 0xA, 0xA, 0xA, 0 };
 
-
-unsigned char High_shake_data[] = { 1, 0xFF, 0xFF, 0xC8, 0x50, 0x50, 0x50, 0x50, 0x50, 0x46, 0x46, 0x46, 0x46, 0x46, 0xA, 0xA, 0xA, 0xA, 0xA, 0xA, 0 };
-
-unsigned char Med_shake_data[] = { 1, 0xC8, 0xC8, 0x64, 0x46, 0x46, 0x46, 0x46, 0x46, 0xA, 0xA, 0xA, 0 };
-
-unsigned char Low_shake_data[] = { 1, 0xA0, 0xA0, 0x46, 0x46, 0xA, 0xA, 0xA, 0xA, 0 };
-
-unsigned char* shake_data[] = { High_shake_data, Med_shake_data, Low_shake_data };
+unsigned char* shake_data[] = {
+	High_shake_data,
+	Med_shake_data,
+	Low_shake_data
+};
 
 PAD Pads[2];
 int numPadsConnected = 0;
 int pad_connected = 0;
+
 int gVibration = 0;
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitControllers()
- // line 75, offset 0x0006b480
-	/* begin block 1 */
-		// Start line: 77
-		// Start offset: 0x0006B480
-		// Variables:
-	// 		int i; // $s3
-	// 		int j; // $a1
-	/* end block 1 */
-	// End offset: 0x0006B5A8
-	// End Line: 111
-
-	/* begin block 2 */
-		// Start line: 150
-	/* end block 2 */
-	// End Line: 151
-
-	/* begin block 3 */
-		// Start line: 151
-	/* end block 3 */
-	// End Line: 152
-
-	/* begin block 4 */
-		// Start line: 156
-	/* end block 4 */
-	// End Line: 157
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
+int gDualShockMax = 255;
 
 char padbuffer[2][PADBUFFER_SIZE];	// [A] was static
 DUPLICATION DuplicatePadData;		// [A]
@@ -99,36 +70,6 @@ void InitControllers(void)
 	}
 }
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ CloseControllers()
- // line 113, offset 0x0006bdf8
-	/* begin block 1 */
-		// Start line: 115
-		// Start offset: 0x0006BDF8
-		// Variables:
-	// 		int i; // $v1
-	/* end block 1 */
-	// End offset: 0x0006BE38
-	// End Line: 124
-
-	/* begin block 2 */
-		// Start line: 226
-	/* end block 2 */
-	// End Line: 227
-
-	/* begin block 3 */
-		// Start line: 837
-	/* end block 3 */
-	// End Line: 838
-
-	/* begin block 4 */
-		// Start line: 839
-	/* end block 4 */
-	// End Line: 840
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void CloseControllers(void)
 {
@@ -144,112 +85,6 @@ void CloseControllers(void)
 	} while (i < 2);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ReadControllers()
- // line 132, offset 0x0006b5a8
-	/* begin block 1 */
-		// Start line: 134
-		// Start offset: 0x0006B5A8
-		// Variables:
-	// 		int i; // $s3
-	// 		int pad; // $s2
-	/* end block 1 */
-	// End offset: 0x0006B6F0
-	// End Line: 189
-
-	/* begin block 2 */
-		// Start line: 299
-	/* end block 2 */
-	// End Line: 300
-
-	/* begin block 3 */
-		// Start line: 321
-	/* end block 3 */
-	// End Line: 322
-
-	/* begin block 4 */
-		// Start line: 322
-	/* end block 4 */
-	// End Line: 323
-
-	/* begin block 5 */
-		// Start line: 325
-	/* end block 5 */
-	// End Line: 326
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
-// [D] [T]
-void ReadControllers(void)
-{
-#ifndef PSX
-	Emulator_UpdateInput();
-#endif
-
-	int pad;
-
-	if (DuplicatePadData.buffer)
-		memcpy(DuplicatePadData.buffer, &padbuffer, DuplicatePadData.size);
-
-	pad = 0;
-	do {
-		PADRAW* padRaw = (PADRAW*)padbuffer[pad];
-
-		if (padRaw->status == 0)
-		{
-			if (padRaw->id == 65 || padRaw->id == 115)
-			{
-				MapPad(pad, padRaw);
-			}
-			else 
-			{
-				Pads[pad].type = 1;
-				ClearPad(pad);
-			}
-		}
-		else 
-		{
-			Pads[pad].type = 0;
-			ClearPad(pad);
-		}
-
-		pad++;
-	} while (pad < 2);
-
-	HandleDualShock();
-	pad_connected = (Pads[0].type != 0);
-
-	if (Pads[0].type == 1)
-		pad_connected = -1;
-
-	if (NumPlayers > 1) 
-	{
-		if (Pads[1].type == 0)
-			pad_connected = 0;
-	
-		if (Pads[1].type == 1)
-			pad_connected = -1;
-	}
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetPadVibration(int pad /*$a3*/, unsigned char type /*$a1*/)
- // line 191, offset 0x0006be38
-	/* begin block 1 */
-		// Start line: 927
-	/* end block 1 */
-	// End Line: 928
-
-	/* begin block 2 */
-		// Start line: 995
-	/* end block 2 */
-	// End Line: 996
 
 // [D] [T]
 void SetPadVibration(int pad, unsigned char type)
@@ -269,22 +104,6 @@ void SetPadVibration(int pad, unsigned char type)
 	Pads[pad].vibrate = 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ StopPadVibration(int pad /*$a0*/)
- // line 209, offset 0x0006beb4
-	/* begin block 1 */
-		// Start line: 1033
-	/* end block 1 */
-	// End Line: 1034
-
-	/* begin block 2 */
-		// Start line: 1034
-	/* end block 2 */
-	// End Line: 1035
-
 // [D] [T]
 void StopPadVibration(int pad)
 {
@@ -296,45 +115,11 @@ void StopPadVibration(int pad)
 	Pads[pad].alarmShakeCounter = 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ StopDualShockMotors()
- // line 228, offset 0x0006beec
-	/* begin block 1 */
-		// Start line: 1073
-	/* end block 1 */
-	// End Line: 1074
-
-	/* begin block 2 */
-		// Start line: 1074
-	/* end block 2 */
-	// End Line: 1075
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void StopDualShockMotors(void)
 {
 	return;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetDuplicatePadData(char *buffer /*$a0*/, int size /*$a1*/)
- // line 232, offset 0x0006bef4
-	/* begin block 1 */
-		// Start line: 1081
-	/* end block 1 */
-	// End Line: 1082
-
-	/* begin block 2 */
-		// Start line: 1082
-	/* end block 2 */
-	// End Line: 1083
 
 // [D] [T]
 void SetDuplicatePadData(char *buffer, int size)
@@ -349,33 +134,6 @@ void SetDuplicatePadData(char *buffer, int size)
 	DuplicatePadData.buffer = NULL;
 	DuplicatePadData.size = 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ MapPad(int pad /*$t2*/, PADRAW *pData /*$a3*/)
- // line 257, offset 0x0006b6f0
-	/* begin block 1 */
-		// Start line: 258
-		// Start offset: 0x0006B6F0
-		// Variables:
-	// 		unsigned short i; // $a3
-	// 		unsigned short buttons; // $t0
-	// 		unsigned short mapped; // $t1
-	/* end block 1 */
-	// End offset: 0x0006B8D8
-	// End Line: 321
-
-	/* begin block 2 */
-		// Start line: 532
-	/* end block 2 */
-	// End Line: 533
-
-	/* begin block 3 */
-		// Start line: 601
-	/* end block 3 */
-	// End Line: 602
 
 // [D] [T]
 void MapPad(int pad, PADRAW *pData)
@@ -453,22 +211,6 @@ void MapPad(int pad, PADRAW *pData)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ClearPad(int pad /*$a0*/)
- // line 323, offset 0x0006bf24
-	/* begin block 1 */
-		// Start line: 1263
-	/* end block 1 */
-	// End Line: 1264
-
-	/* begin block 2 */
-		// Start line: 1264
-	/* end block 2 */
-	// End Line: 1265
-
 // [D] [T]
 void ClearPad(int pad)
 {
@@ -477,40 +219,6 @@ void ClearPad(int pad)
 	Pads[pad].mapped = 0;
 	Pads[pad].mapnew = 0;
 }
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ HandleDualShock()
- // line 336, offset 0x0006b8e0
-	/* begin block 1 */
-		// Start line: 338
-		// Start offset: 0x0006B8E0
-		// Variables:
-	// 		int state; // $v1
-	// 		int port; // $s3
-	// 		int pad; // $s5
-	// 		int dsload; // $s7
-	/* end block 1 */
-	// End offset: 0x0006BBC4
-	// End Line: 450
-
-	/* begin block 2 */
-		// Start line: 776
-	/* end block 2 */
-	// End Line: 777
-
-	/* begin block 3 */
-		// Start line: 777
-	/* end block 3 */
-	// End Line: 778
-
-	/* begin block 4 */
-		// Start line: 778
-	/* end block 4 */
-	// End Line: 779
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D]
 void HandleDualShock(void)
@@ -647,38 +355,6 @@ void HandleDualShock(void)
 #endif
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ HandlePadVibration(int pad /*$t1*/)
- // line 452, offset 0x0006bbc4
-	/* begin block 1 */
-		// Start line: 453
-		// Start offset: 0x0006BBC4
-		// Variables:
-	// 		int speed; // $a3
-	/* end block 1 */
-	// End offset: 0x0006BDE8
-	// End Line: 496
-
-	/* begin block 2 */
-		// Start line: 1119
-	/* end block 2 */
-	// End Line: 1120
-
-	/* begin block 3 */
-		// Start line: 1122
-	/* end block 3 */
-	// End Line: 1123
-
-	/* begin block 4 */
-		// Start line: 1123
-	/* end block 4 */
-	// End Line: 1124
-
-int gDualShockMax = 255;
-
 // [D]
 void HandlePadVibration(int pad)
 {
@@ -735,6 +411,55 @@ void HandlePadVibration(int pad)
 }
 
 
+// [D] [T]
+void ReadControllers(void)
+{
+#ifndef PSX
+	Emulator_UpdateInput();
+#endif
 
+	int pad;
 
+	if (DuplicatePadData.buffer)
+		memcpy(DuplicatePadData.buffer, &padbuffer, DuplicatePadData.size);
 
+	pad = 0;
+	do {
+		PADRAW* padRaw = (PADRAW*)padbuffer[pad];
+
+		if (padRaw->status == 0)
+		{
+			if (padRaw->id == 65 || padRaw->id == 115)
+			{
+				MapPad(pad, padRaw);
+			}
+			else
+			{
+				Pads[pad].type = 1;
+				ClearPad(pad);
+			}
+		}
+		else
+		{
+			Pads[pad].type = 0;
+			ClearPad(pad);
+		}
+
+		pad++;
+	} while (pad < 2);
+
+	HandleDualShock();
+	pad_connected = (Pads[0].type != 0);
+
+	if (Pads[0].type == 1)
+		pad_connected = -1;
+
+	if (NumPlayers > 1)
+	{
+		if (Pads[1].type == 0)
+			pad_connected = 0;
+
+		if (Pads[1].type == 1)
+			pad_connected = -1;
+	}
+}

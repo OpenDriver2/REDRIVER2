@@ -539,48 +539,6 @@ void SetVariable(int var)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ LoadFrontendScreens()
- // line 1371, offset 0x001c0c1c
-	/* begin block 1 */
-	// Start line: 1373
-	// Start offset: 0x001C0C1C
-	// Variables:
-	// 		int iTpage; // $s0
-	// 		int iNumScreens; // $t6
-	// 		int i; // $t0
-	// 		int j; // $a3
-	// 		RECT rect; // stack offset -40
-	// 		char *ptr; // $a2
-	/* end block 1 */
-	// End offset: 0x001C0F24
-	// End Line: 1454
-
-	/* begin block 2 */
-		// Start line: 2740
-	/* end block 2 */
-	// End Line: 2741
-
-	/* begin block 3 */
-		// Start line: 2750
-	/* end block 3 */
-	// End Line: 2751
-
-	/* begin block 4 */
-		// Start line: 2751
-	/* end block 4 */
-	// End Line: 2752
-
-	/* begin block 5 */
-		// Start line: 2761
-	/* end block 5 */
-	// End Line: 2762
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void LoadFrontendScreens(void)
 {
@@ -639,34 +597,6 @@ void LoadFrontendScreens(void)
 	Loadfile("DATA\\FEFONT.BNK", (char*)&feFont);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ LoadBackgroundFile(char *name /*$s4*/)
- // line 1461, offset 0x001c0f24
-	/* begin block 1 */
-		// Start line: 1462
-		// Start offset: 0x001C0F24
-		// Variables:
-	// 		int iTpage; // $s2
-	// 		RECT rect; // stack offset -72
-	// 		int p; // $s0
-	// 		int pages[7]; // stack offset -64
-	/* end block 1 */
-	// End offset: 0x001C10F4
-	// End Line: 1509
-
-	/* begin block 2 */
-		// Start line: 2951
-	/* end block 2 */
-	// End Line: 2952
-
-	/* begin block 3 */
-		// Start line: 2959
-	/* end block 3 */
-	// End Line: 2960
-
 // [D] [T]
 void LoadBackgroundFile(char *name)
 {
@@ -721,44 +651,6 @@ void LoadBackgroundFile(char *name)
 	SetupBackgroundPolys();
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetupBackgroundPolys()
- // line 1516, offset 0x001c10f4
-	/* begin block 1 */
-		// Start line: 1518
-		// Start offset: 0x001C10F4
-		// Variables:
-	// 		int i; // $v1
-	// 		int tpage; // $t3
-	/* end block 1 */
-	// End offset: 0x001C132C
-	// End Line: 1580
-
-	/* begin block 2 */
-		// Start line: 3110
-	/* end block 2 */
-	// End Line: 3111
-
-	/* begin block 3 */
-		// Start line: 3118
-	/* end block 3 */
-	// End Line: 3119
-
-	/* begin block 4 */
-		// Start line: 3119
-	/* end block 4 */
-	// End Line: 3120
-
-	/* begin block 5 */
-		// Start line: 3122
-	/* end block 5 */
-	// End Line: 3123
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void SetupBackgroundPolys(void)
 {
@@ -810,37 +702,6 @@ void SetupBackgroundPolys(void)
 	setTPage(poly, 0, 0, 960, 0);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetupScreenSprts(PSXSCREEN *pScr /*$a0*/)
- // line 1588, offset 0x001c132c
-	/* begin block 1 */
-		// Start line: 1589
-		// Start offset: 0x001C132C
-		// Variables:
-	// 		int tpage; // $a1
-	// 		POLY_FT3 *null; // $v0
-	/* end block 1 */
-	// End offset: 0x001C147C
-	// End Line: 1650
-
-	/* begin block 2 */
-		// Start line: 3344
-	/* end block 2 */
-	// End Line: 3345
-
-	/* begin block 3 */
-		// Start line: 3353
-	/* end block 3 */
-	// End Line: 3354
-
-	/* begin block 4 */
-		// Start line: 3363
-	/* end block 4 */
-	// End Line: 3364
-
 SPRT HighlightSprt;
 POLY_FT4 HighlightDummy;
 
@@ -885,33 +746,6 @@ void SetupScreenSprts(PSXSCREEN *pScr)
 		}
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawScreen(PSXSCREEN *pScr /*stack 0*/)
- // line 1658, offset 0x001c147c
-	/* begin block 1 */
-		// Start line: 1659
-		// Start offset: 0x001C147C
-		// Variables:
-	// 		int i; // $s1
-	// 		char version_info[32]; // stack offset -88
-	// 		int numBtnsToDraw; // stack offset -56
-	/* end block 1 */
-	// End offset: 0x001C18B4
-	// End Line: 1760
-
-	/* begin block 2 */
-		// Start line: 3516
-	/* end block 2 */
-	// End Line: 3517
-
-	/* begin block 3 */
-		// Start line: 3525
-	/* end block 3 */
-	// End Line: 3526
 
 DR_MOVE In;
 DR_MOVE Out;
@@ -1081,62 +915,6 @@ void DrawScreen(PSXSCREEN *pScr)
 #endif
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DisplayOnScreenText()
- // line 1769, offset 0x001c18e4
-	/* begin block 1 */
-		// Start line: 1771
-		// Start offset: 0x001C18E4
-		// Variables:
-	// 		int i; // $s0
-	// 		char text[32]; // stack offset -64
-
-		/* begin block 1.1 */
-			// Start line: 1795
-			// Start offset: 0x001C19DC
-
-			/* begin block 1.1.1 */
-				// Start line: 1797
-				// Start offset: 0x001C19E4
-			/* end block 1.1.1 */
-			// End offset: 0x001C19EC
-			// End Line: 1798
-		/* end block 1.1 */
-		// End offset: 0x001C19EC
-		// End Line: 1799
-
-		/* begin block 1.2 */
-			// Start line: 1807
-			// Start offset: 0x001C1A4C
-			// Variables:
-		// 		int extraVal; // $t1
-		/* end block 1.2 */
-		// End offset: 0x001C1AAC
-		// End Line: 1810
-	/* end block 1 */
-	// End offset: 0x001C1AD0
-	// End Line: 1847
-
-	/* begin block 2 */
-		// Start line: 3804
-	/* end block 2 */
-	// End Line: 3805
-
-	/* begin block 3 */
-		// Start line: 3805
-	/* end block 3 */
-	// End Line: 3806
-
-	/* begin block 4 */
-		// Start line: 3809
-	/* end block 4 */
-	// End Line: 3810
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 char cutUnlock[] = { 
 	2, 2, 2, 4, 5, 
 	6, 7, 7, 7, 9,
@@ -1195,36 +973,6 @@ void DisplayOnScreenText(void)
 		}
 	}
 }
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetupExtraPoly(char *fileName /*$s5*/, int offset /*$s1*/, int offset2 /*$s0*/)
- // line 1855, offset 0x001c1ad0
-	/* begin block 1 */
-		// Start line: 1856
-		// Start offset: 0x001C1AD0
-		// Variables:
-	// 		int i; // $s0
-	// 		int tpage; // $v1
-	// 		RECT rect; // stack offset -40
-	/* end block 1 */
-	// End offset: 0x001C1CF4
-	// End Line: 1916
-
-	/* begin block 2 */
-		// Start line: 3983
-	/* end block 2 */
-	// End Line: 3984
-
-	/* begin block 3 */
-		// Start line: 3992
-	/* end block 3 */
-	// End Line: 3993
-
-	/* begin block 4 */
-		// Start line: 3996
-	/* end block 4 */
-	// End Line: 3997
 
 // [D] [T]
 void SetupExtraPoly(char *fileName, int offset, int offset2)
@@ -1288,28 +1036,6 @@ void SetupExtraPoly(char *fileName, int offset, int offset2)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ReInitScreens()
- // line 1941, offset 0x001c1cf4
-	/* begin block 1 */
-		// Start line: 4221
-	/* end block 1 */
-	// End Line: 4222
-
-	/* begin block 2 */
-		// Start line: 4247
-	/* end block 2 */
-	// End Line: 4248
-
-	/* begin block 3 */
-		// Start line: 4248
-	/* end block 3 */
-	// End Line: 4249
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void ReInitScreens(void)
@@ -1388,39 +1114,14 @@ void ReInitScreens(void)
 	idle_timer = VSync(0xffffffff);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ NewSelection(short dir /*$s3*/)
- // line 1991, offset 0x001c1e18
-	/* begin block 1 */
-		// Start line: 1992
-		// Start offset: 0x001C1E18
-		// Variables:
-	// 		RECT rect; // stack offset -48
-	// 		PSXBUTTON *pNewB; // $s2
-	/* end block 1 */
-	// End offset: 0x001C227C
-	// End Line: 2085
-
-	/* begin block 2 */
-		// Start line: 4367
-	/* end block 2 */
-	// End Line: 4368
-
-	/* begin block 3 */
-		// Start line: 4369
-	/* end block 3 */
-	// End Line: 4370
-
-int NewButton(short dir)
+// [D] [T]
+void NewSelection(short dir)
 {
 	PSXBUTTON *pNewB;
 	RECT16 rect;
 
 	if (pCurrScreen->numButtons == 0)
-		return -1;
+		return;
 
 	pNewB = pCurrButton;
 	int btn = 0;
@@ -1429,7 +1130,7 @@ int NewButton(short dir)
 	if (dir != 0)
 	{
 		SetDrawMove(&In, &storeRect, pCurrButton->s_x, pCurrButton->s_y);
-		addPrim(current->ot+9, &In);
+		addPrim(current->ot + 9, &In);
 
 		if ((dir & 0x1000) != 0)
 		{
@@ -1454,7 +1155,7 @@ int NewButton(short dir)
 			pNewB = &pCurrScreen->buttons[btn - 1];
 		}
 	}
-	
+
 	pCurrButton = pNewB;
 
 #ifdef PSX
@@ -1467,7 +1168,7 @@ int NewButton(short dir)
 	addPrim(current->ot + 8, &Out);
 
 	setXY0(&HighlightSprt, rect.x, rect.y);
-	
+
 	addPrim(current->ot + 6, &HighlightSprt);
 	addPrim(current->ot + 7, &HighlightDummy);
 
@@ -1486,65 +1187,11 @@ int NewButton(short dir)
 		}
 	}
 #endif
-	return btn;
-}
 
-// [D] [T]
-void NewSelection(short dir)
-{
 #ifdef PSX
-	NewButton(dir);
 	EndFrame();
-#else
-	NewButton(dir);
 #endif
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ HandleKeyPress()
- // line 2093, offset 0x001c22a8
-	/* begin block 1 */
-		// Start line: 2095
-		// Start offset: 0x001C22A8
-
-		/* begin block 1.1 */
-			// Start line: 2112
-			// Start offset: 0x001C2340
-			// Variables:
-		// 		int action; // $s0
-
-			/* begin block 1.1.1 */
-				// Start line: 2141
-				// Start offset: 0x001C244C
-			/* end block 1.1.1 */
-			// End offset: 0x001C2510
-			// End Line: 2166
-		/* end block 1.1 */
-		// End offset: 0x001C2564
-		// End Line: 2186
-	/* end block 1 */
-	// End offset: 0x001C2668
-	// End Line: 2232
-
-	/* begin block 2 */
-		// Start line: 4610
-	/* end block 2 */
-	// End Line: 4611
-
-	/* begin block 3 */
-		// Start line: 4611
-	/* end block 3 */
-	// End Line: 4612
-
-	/* begin block 4 */
-		// Start line: 4613
-	/* end block 4 */
-	// End Line: 4614
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 int HandleKeyPress(void)
@@ -1655,43 +1302,6 @@ int HandleKeyPress(void)
 	return 1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ PadChecks()
- // line 2300, offset 0x001c2668
-	/* begin block 1 */
-		// Start line: 2302
-		// Start offset: 0x001C2668
-		// Variables:
-	// 		int i; // $a2
-	// 		int oldnum; // $s2
-	/* end block 1 */
-	// End offset: 0x001C296C
-	// End Line: 2417
-
-	/* begin block 2 */
-		// Start line: 4977
-	/* end block 2 */
-	// End Line: 4978
-
-	/* begin block 3 */
-		// Start line: 5046
-	/* end block 3 */
-	// End Line: 5047
-
-	/* begin block 4 */
-		// Start line: 5047
-	/* end block 4 */
-	// End Line: 5048
-
-	/* begin block 5 */
-		// Start line: 5048
-	/* end block 5 */
-	// End Line: 5049
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void PadChecks(void)
@@ -1862,41 +1472,6 @@ void InitDisplay(void)
 	SetDispMask(1);
 }
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DoFrontEnd()
- // line 2423, offset 0x001c296c
-	/* begin block 1 */
-		// Start line: 2425
-		// Start offset: 0x001C296C
-		// Variables:
-	// 		static unsigned char result[8]; // offset 0x0
-	/* end block 1 */
-	// End offset: 0x001C2C2C
-	// End Line: 2588
-
-	/* begin block 2 */
-		// Start line: 5332
-	/* end block 2 */
-	// End Line: 5333
-
-	/* begin block 3 */
-		// Start line: 5339
-	/* end block 3 */
-	// End Line: 5340
-
-	/* begin block 4 */
-		// Start line: 5340
-	/* end block 4 */
-	// End Line: 5341
-
-	/* begin block 5 */
-		// Start line: 5346
-	/* end block 5 */
-	// End Line: 5347
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void DoFrontEnd(void)
 {
@@ -1967,44 +1542,6 @@ void DoFrontEnd(void)
 	} while (bQuitToSystem != 2);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetFEDrawMode()
- // line 2630, offset 0x001c2c2c
-	/* begin block 1 */
-		// Start line: 2632
-		// Start offset: 0x001C2C2C
-		// Variables:
-	// 		DRAW_MODE *dm; // $s3
-	/* end block 1 */
-	// End offset: 0x001C2D90
-	// End Line: 2687
-
-	/* begin block 2 */
-		// Start line: 5839
-	/* end block 2 */
-	// End Line: 5840
-
-	/* begin block 3 */
-		// Start line: 5882
-	/* end block 3 */
-	// End Line: 5883
-
-	/* begin block 4 */
-		// Start line: 5883
-	/* end block 4 */
-	// End Line: 5884
-
-	/* begin block 5 */
-		// Start line: 5893
-	/* end block 5 */
-	// End Line: 5894
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
-
 // [D] [T]
 void SetFEDrawMode(void)
 {
@@ -2043,43 +1580,6 @@ void SetFEDrawMode(void)
 	PutDrawEnv(&current->draw);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ EndFrame()
- // line 2695, offset 0x001c6378
-	/* begin block 1 */
-		// Start line: 2697
-		// Start offset: 0x001C6378
-		// Variables:
-	// 		DB *db_hold; // $a1
-	/* end block 1 */
-	// End offset: 0x001C6404
-	// End Line: 2716
-
-	/* begin block 2 */
-		// Start line: 8781
-	/* end block 2 */
-	// End Line: 8782
-
-	/* begin block 3 */
-		// Start line: 5390
-	/* end block 3 */
-	// End Line: 5391
-
-	/* begin block 4 */
-		// Start line: 8782
-	/* end block 4 */
-	// End Line: 8783
-
-	/* begin block 5 */
-		// Start line: 8784
-	/* end block 5 */
-	// End Line: 8785
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void EndFrame(void)
 {
@@ -2105,61 +1605,6 @@ void EndFrame(void)
 	Emulator_EndScene();
 #endif
 }
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ FEPrintString(char *string /*$t1*/, int x /*$t2*/, int y /*$s4*/, int justification /*$a3*/, int r /*stack 16*/, int g /*stack 20*/, int b /*stack 24*/)
- // line 2745, offset 0x001c2d90
-	/* begin block 1 */
-		// Start line: 2746
-		// Start offset: 0x001C2D90
-		// Variables:
-	// 		FE_CHARDATA *pFontInfo; // $a0
-	// 		SPRT *font; // $t0
-	// 		unsigned char let; // $a0
-	// 		int counter; // $t4
-
-		/* begin block 1.1 */
-			// Start line: 2746
-			// Start offset: 0x001C2DEC
-			// Variables:
-		// 		char *pString; // $a1
-
-			/* begin block 1.1.1 */
-				// Start line: 2746
-				// Start offset: 0x001C2DEC
-				// Variables:
-			// 		char let; // $v1
-			// 		int w; // $a2
-			/* end block 1.1.1 */
-			// End offset: 0x001C2E38
-			// End Line: 2746
-		/* end block 1.1 */
-		// End offset: 0x001C2E38
-		// End Line: 2746
-
-		/* begin block 1.2 */
-			// Start line: 2792
-			// Start offset: 0x001C2F28
-			// Variables:
-		// 		int tpage; // $v1
-		/* end block 1.2 */
-		// End offset: 0x001C2F28
-		// End Line: 2792
-	/* end block 1 */
-	// End offset: 0x001C2FD8
-	// End Line: 2809
-
-	/* begin block 2 */
-		// Start line: 6177
-	/* end block 2 */
-	// End Line: 6178
-
-	/* begin block 3 */
-		// Start line: 6236
-	/* end block 3 */
-	// End Line: 6237
 
 // [D] [T]
 int FEPrintString(char *string, int x, int y, int justification, int r, int g, int b)
@@ -2244,35 +1689,6 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 }
 
 
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ FEPrintStringSized(char *string /*$t2*/, int x /*$t1*/, int y /*$t7*/, int scale /*$a3*/, int transparent /*stack 16*/, int r /*stack 20*/, int g /*stack 24*/, int b /*stack 28*/)
- // line 2817, offset 0x001c2fd8
-	/* begin block 1 */
-		// Start line: 2818
-		// Start offset: 0x001C2FD8
-		// Variables:
-	// 		POLY_FT4 *font; // $t0
-	// 		FE_CHARDATA *pFontInfo; // $a2
-	// 		char let; // $v1
-	// 		int tpage; // $v0
-	// 		int w; // $t3
-	// 		int h; // $t4
-	/* end block 1 */
-	// End offset: 0x001C31FC
-	// End Line: 2880
-
-	/* begin block 2 */
-		// Start line: 6457
-	/* end block 2 */
-	// End Line: 6458
-
-	/* begin block 3 */
-		// Start line: 6466
-	/* end block 3 */
-	// End Line: 6467
-
 // [D] [T]
 int FEPrintStringSized(char *string, int x, int y, int scale, int transparent, int r, int g, int b)
 {
@@ -2330,26 +1746,6 @@ int FEPrintStringSized(char *string, int x, int y, int scale, int transparent, i
 	return x;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CentreScreen(int bSetup /*$a0*/)
- // line 2894, offset 0x001c31fc
-	/* begin block 1 */
-		// Start line: 6662
-	/* end block 1 */
-	// End Line: 6663
-
-	/* begin block 2 */
-		// Start line: 6677
-	/* end block 2 */
-	// End Line: 6678
-
-	/* begin block 3 */
-		// Start line: 6678
-	/* end block 3 */
-	// End Line: 6679
 
 SCREEN_LIMITS screen_limits[2] = {
 	// min(x/y), max(x/y)
@@ -2441,86 +1837,6 @@ int CentreScreen(int bSetup)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CarSelectScreen(int bSetup /*$a0*/)
- // line 3029, offset 0x001c3430
-	/* begin block 1 */
-		// Start line: 3031
-		// Start offset: 0x001C3430
-		// Variables:
-	// 		int i; // $a0
-	// 		RECT rect; // stack offset -32
-
-		/* begin block 1.1 */
-			// Start line: 3145
-			// Start offset: 0x001C373C
-			// Variables:
-		// 		int lastVal; // $a3
-
-			/* begin block 1.1.1 */
-				// Start line: 3030
-				// Start offset: 0x001C37BC
-
-				/* begin block 1.1.1.1 */
-					// Start line: 3030
-					// Start offset: 0x001C37BC
-					// Variables:
-				// 		RECT rect; // stack offset -24
-				/* end block 1.1.1.1 */
-				// End offset: 0x001C37BC
-				// End Line: 3030
-			/* end block 1.1.1 */
-			// End offset: 0x001C37BC
-			// End Line: 3030
-		/* end block 1.1 */
-		// End offset: 0x001C37BC
-		// End Line: 3030
-
-		/* begin block 1.2 */
-			// Start line: 3164
-			// Start offset: 0x001C37D0
-			// Variables:
-		// 		int lastVal; // $a3
-
-			/* begin block 1.2.1 */
-				// Start line: 3030
-				// Start offset: 0x001C3858
-
-				/* begin block 1.2.1.1 */
-					// Start line: 3030
-					// Start offset: 0x001C3858
-					// Variables:
-				// 		RECT rect; // stack offset -24
-				/* end block 1.2.1.1 */
-				// End offset: 0x001C3858
-				// End Line: 3030
-			/* end block 1.2.1 */
-			// End offset: 0x001C3858
-			// End Line: 3030
-		/* end block 1.2 */
-		// End offset: 0x001C3858
-		// End Line: 3030
-	/* end block 1 */
-	// End offset: 0x001C3A60
-	// End Line: 3212
-
-	/* begin block 2 */
-		// Start line: 6955
-	/* end block 2 */
-	// End Line: 6956
-
-	/* begin block 3 */
-		// Start line: 6956
-	/* end block 3 */
-	// End Line: 6957
-
-	/* begin block 4 */
-		// Start line: 6957
-	/* end block 4 */
-	// End Line: 6958
 
 // [D] [T]
 int CarSelectScreen(int bSetup)
@@ -2722,29 +2038,6 @@ int CarSelectScreen(int bSetup)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CopDiffLevelScreen(int bSetup /*$a0*/)
- // line 3220, offset 0x001c6404
-	/* begin block 1 */
-		// Start line: 5153
-	/* end block 1 */
-	// End Line: 5154
-
-	/* begin block 2 */
-		// Start line: 10615
-	/* end block 2 */
-	// End Line: 10616
-
-	/* begin block 3 */
-		// Start line: 10616
-	/* end block 3 */
-	// End Line: 10617
-
-/* WARNING: Control flow encountered bad instruction data */
-
 // [D] [T]
 int CopDiffLevelScreen(int bSetup)
 {
@@ -2769,29 +2062,6 @@ int CopDiffLevelScreen(int bSetup)
 
 	return 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ VibroOnOffScreen(int bSetup /*$a0*/)
- // line 3256, offset 0x001c3a60
-	/* begin block 1 */
-		// Start line: 7415
-	/* end block 1 */
-	// End Line: 7416
-
-	/* begin block 2 */
-		// Start line: 7460
-	/* end block 2 */
-	// End Line: 7461
-
-	/* begin block 3 */
-		// Start line: 7461
-	/* end block 3 */
-	// End Line: 7462
-
-/* WARNING: Control flow encountered bad instruction data */
 
 // [D] [T]
 int VibroOnOffScreen(int bSetup)
@@ -2819,48 +2089,6 @@ int VibroOnOffScreen(int bSetup)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ MissionSelectScreen(int bSetup /*$a0*/)
- // line 3394, offset 0x001c3b1c
-	/* begin block 1 */
-		// Start line: 3396
-		// Start offset: 0x001C3B1C
-		// Variables:
-	// 		int i; // $a1
-
-		/* begin block 1.1 */
-			// Start line: 3423
-			// Start offset: 0x001C3BDC
-			// Variables:
-		// 		int usedB; // $s2
-		// 		int done; // $t0
-		// 		int bP; // $a3
-		// 		int bN; // $s5
-		// 		int shift; // $a3
-		/* end block 1.1 */
-		// End offset: 0x001C40D8
-		// End Line: 3552
-	/* end block 1 */
-	// End offset: 0x001C4338
-	// End Line: 3625
-
-	/* begin block 2 */
-		// Start line: 7783
-	/* end block 2 */
-	// End Line: 7784
-
-	/* begin block 3 */
-		// Start line: 7784
-	/* end block 3 */
-	// End Line: 7785
-
-	/* begin block 4 */
-		// Start line: 7791
-	/* end block 4 */
-	// End Line: 7792
 
 // [D] [T]
 int MissionSelectScreen(int bSetup)
@@ -3091,66 +2319,6 @@ int MissionSelectScreen(int bSetup)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ MissionCityScreen(int bSetup /*$a0*/)
- // line 3632, offset 0x001c4338
-	/* begin block 1 */
-		// Start line: 3638
-		// Start offset: 0x001C4338
-
-		/* begin block 1.1 */
-			// Start line: 3703
-			// Start offset: 0x001C449C
-
-			/* begin block 1.1.1 */
-				// Start line: 3703
-				// Start offset: 0x001C449C
-				// Variables:
-			// 		RECT rect; // stack offset -16
-			/* end block 1.1.1 */
-			// End offset: 0x001C449C
-			// End Line: 3703
-		/* end block 1.1 */
-		// End offset: 0x001C449C
-		// End Line: 3703
-
-		/* begin block 1.2 */
-			// Start line: 3709
-			// Start offset: 0x001C44C4
-
-			/* begin block 1.2.1 */
-				// Start line: 3709
-				// Start offset: 0x001C44C4
-				// Variables:
-			// 		RECT rect; // stack offset -16
-			/* end block 1.2.1 */
-			// End offset: 0x001C44C4
-			// End Line: 3709
-		/* end block 1.2 */
-		// End offset: 0x001C44C4
-		// End Line: 3709
-	/* end block 1 */
-	// End offset: 0x001C4600
-	// End Line: 3720
-
-	/* begin block 2 */
-		// Start line: 8321
-	/* end block 2 */
-	// End Line: 8322
-
-	/* begin block 3 */
-		// Start line: 8329
-	/* end block 3 */
-	// End Line: 8330
-
-	/* begin block 4 */
-		// Start line: 8334
-	/* end block 4 */
-	// End Line: 8335
-
 // [D] [T]
 int MissionCityScreen(int bSetup)
 {
@@ -3254,107 +2422,6 @@ int MissionCityScreen(int bSetup)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CutSceneSelectScreen(int bSetup /*$a0*/)
- // line 3728, offset 0x001c4600
-	/* begin block 1 */
-		// Start line: 3730
-		// Start offset: 0x001C4600
-		// Variables:
-	// 		RENDER_ARGS renderArgs; // stack offset -48
-	// 		int extraVal; // $a0
-	// 		RECT rect; // stack offset -24
-
-		/* begin block 1.1 */
-			// Start line: 3789
-			// Start offset: 0x001C4798
-
-			/* begin block 1.1.1 */
-				// Start line: 3789
-				// Start offset: 0x001C4798
-				// Variables:
-			// 		RECT rect; // stack offset -16
-			/* end block 1.1.1 */
-			// End offset: 0x001C4798
-			// End Line: 3789
-		/* end block 1.1 */
-		// End offset: 0x001C4798
-		// End Line: 3789
-
-		/* begin block 1.2 */
-			// Start line: 3729
-			// Start offset: 0x001C4844
-			// Variables:
-		// 		int offset; // $a1
-
-			/* begin block 1.2.1 */
-				// Start line: 3729
-				// Start offset: 0x001C4844
-				// Variables:
-			// 		RECT rect; // stack offset -16
-			/* end block 1.2.1 */
-			// End offset: 0x001C4844
-			// End Line: 3729
-		/* end block 1.2 */
-		// End offset: 0x001C4844
-		// End Line: 3729
-
-		/* begin block 1.3 */
-			// Start line: 3808
-			// Start offset: 0x001C4900
-
-			/* begin block 1.3.1 */
-				// Start line: 3808
-				// Start offset: 0x001C4900
-				// Variables:
-			// 		RECT rect; // stack offset -16
-			/* end block 1.3.1 */
-			// End offset: 0x001C4900
-			// End Line: 3808
-		/* end block 1.3 */
-		// End offset: 0x001C4900
-		// End Line: 3808
-
-		/* begin block 1.4 */
-			// Start line: 3813
-			// Start offset: 0x001C4940
-
-			/* begin block 1.4.1 */
-				// Start line: 3813
-				// Start offset: 0x001C4940
-				// Variables:
-			// 		RECT rect; // stack offset -16
-			/* end block 1.4.1 */
-			// End offset: 0x001C4940
-			// End Line: 3813
-		/* end block 1.4 */
-		// End offset: 0x001C4940
-		// End Line: 3813
-	/* end block 1 */
-	// End offset: 0x001C4B30
-	// End Line: 3847
-
-	/* begin block 2 */
-		// Start line: 8520
-	/* end block 2 */
-	// End Line: 8521
-
-	/* begin block 3 */
-		// Start line: 8529
-	/* end block 3 */
-	// End Line: 8530
-
-	/* begin block 4 */
-		// Start line: 8530
-	/* end block 4 */
-	// End Line: 8531
-
-	/* begin block 5 */
-		// Start line: 8534
-	/* end block 5 */
-	// End Line: 8535
 
 // [D] [T]
 int CutSceneSelectScreen(int bSetup)
@@ -3480,98 +2547,6 @@ int CutSceneSelectScreen(int bSetup)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CutSceneCitySelectScreen(int bSetup /*$a0*/)
- // line 3855, offset 0x001c4b30
-	/* begin block 1 */
-		// Start line: 3857
-		// Start offset: 0x001C4B30
-		// Variables:
-	// 		RECT rect; // stack offset -24
-
-		/* begin block 1.1 */
-			// Start line: 3856
-			// Start offset: 0x001C4E6C
-
-			/* begin block 1.1.1 */
-				// Start line: 3856
-				// Start offset: 0x001C4E6C
-				// Variables:
-			// 		RECT rect; // stack offset -16
-			/* end block 1.1.1 */
-			// End offset: 0x001C4E6C
-			// End Line: 3856
-		/* end block 1.1 */
-		// End offset: 0x001C4E6C
-		// End Line: 3856
-
-		/* begin block 1.2 */
-			// Start line: 3856
-			// Start offset: 0x001C4E6C
-
-			/* begin block 1.2.1 */
-				// Start line: 3856
-				// Start offset: 0x001C4E6C
-				// Variables:
-			// 		RECT rect; // stack offset -16
-			/* end block 1.2.1 */
-			// End offset: 0x001C4E6C
-			// End Line: 3856
-		/* end block 1.2 */
-		// End offset: 0x001C4E6C
-		// End Line: 3856
-
-		/* begin block 1.3 */
-			// Start line: 3856
-			// Start offset: 0x001C4EB4
-
-			/* begin block 1.3.1 */
-				// Start line: 3856
-				// Start offset: 0x001C4EB4
-				// Variables:
-			// 		RECT rect; // stack offset -16
-			/* end block 1.3.1 */
-			// End offset: 0x001C4EB4
-			// End Line: 3856
-		/* end block 1.3 */
-		// End offset: 0x001C4EB4
-		// End Line: 3856
-
-		/* begin block 1.4 */
-			// Start line: 3856
-			// Start offset: 0x001C4FAC
-
-			/* begin block 1.4.1 */
-				// Start line: 3856
-				// Start offset: 0x001C4FAC
-				// Variables:
-			// 		RECT rect; // stack offset -16
-			/* end block 1.4.1 */
-			// End offset: 0x001C50A0
-			// End Line: 3856
-		/* end block 1.4 */
-		// End offset: 0x001C50A0
-		// End Line: 3856
-	/* end block 1 */
-	// End offset: 0x001C50B0
-	// End Line: 3995
-
-	/* begin block 2 */
-		// Start line: 8827
-	/* end block 2 */
-	// End Line: 8828
-
-	/* begin block 3 */
-		// Start line: 8836
-	/* end block 3 */
-	// End Line: 8837
-
-	/* begin block 4 */
-		// Start line: 8837
-	/* end block 4 */
-	// End Line: 8838
 
 // [D] [T]
 int CutSceneCitySelectScreen(int bSetup)
@@ -3733,106 +2708,6 @@ int CutSceneCitySelectScreen(int bSetup)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ SetVolumeScreen(int bSetup /*$a0*/)
- // line 4005, offset 0x001c50b0
-	/* begin block 1 */
-		// Start line: 4007
-		// Start offset: 0x001C50B0
-		// Variables:
-	// 		int last; // $s2
-	// 		char text[4]; // stack offset -48
-	// 		int ypos[2]; // stack offset -40
-	// 		RECT rect; // stack offset -32
-
-		/* begin block 1.1 */
-			// Start line: 4048
-			// Start offset: 0x001C5254
-
-			/* begin block 1.1.1 */
-				// Start line: 4048
-				// Start offset: 0x001C5254
-				// Variables:
-			// 		DB *db_hold; // $a1
-			/* end block 1.1.1 */
-			// End offset: 0x001C5254
-			// End Line: 4048
-		/* end block 1.1 */
-		// End offset: 0x001C5254
-		// End Line: 4048
-
-		/* begin block 1.2 */
-			// Start line: 4070
-			// Start offset: 0x001C5284
-
-			/* begin block 1.2.1 */
-				// Start line: 4070
-				// Start offset: 0x001C5284
-				// Variables:
-			// 		DB *db_hold; // $a1
-			/* end block 1.2.1 */
-			// End offset: 0x001C5284
-			// End Line: 4070
-		/* end block 1.2 */
-		// End offset: 0x001C5284
-		// End Line: 4070
-
-		/* begin block 1.3 */
-			// Start line: 4097
-			// Start offset: 0x001C52CC
-
-			/* begin block 1.3.1 */
-				// Start line: 4097
-				// Start offset: 0x001C52CC
-				// Variables:
-			// 		DB *db_hold; // $a1
-			/* end block 1.3.1 */
-			// End offset: 0x001C52CC
-			// End Line: 4097
-		/* end block 1.3 */
-		// End offset: 0x001C52CC
-		// End Line: 4097
-
-		/* begin block 1.4 */
-			// Start line: 4119
-			// Start offset: 0x001C5420
-
-			/* begin block 1.4.1 */
-				// Start line: 4119
-				// Start offset: 0x001C5420
-				// Variables:
-			// 		DB *db_hold; // $a1
-			/* end block 1.4.1 */
-			// End offset: 0x001C5530
-			// End Line: 4122
-		/* end block 1.4 */
-		// End offset: 0x001C5530
-		// End Line: 4122
-	/* end block 1 */
-	// End offset: 0x001C55F8
-	// End Line: 4148
-
-	/* begin block 2 */
-		// Start line: 9157
-	/* end block 2 */
-	// End Line: 9158
-
-	/* begin block 3 */
-		// Start line: 9168
-	/* end block 3 */
-	// End Line: 9169
-
-	/* begin block 4 */
-		// Start line: 9169
-	/* end block 4 */
-	// End Line: 9170
-
-	/* begin block 5 */
-		// Start line: 9172
-	/* end block 5 */
-	// End Line: 9173
 
 // [D] [T]
 int SetVolumeScreen(int bSetup)
@@ -4006,48 +2881,6 @@ int SetVolumeScreen(int bSetup)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DisplayScoreTable()
- // line 4165, offset 0x001c55f8
-	/* begin block 1 */
-		// Start line: 4167
-		// Start offset: 0x001C55F8
-		// Variables:
-	// 		int offset; // $a2
-	// 		int i; // $s4
-	// 		char text[32]; // stack offset -80
-	// 		SCORE_ENTRY *pSE; // stack offset -48
-	// 		int min; // $v1
-	// 		int frac; // $t0
-	/* end block 1 */
-	// End offset: 0x001C59A0
-	// End Line: 4221
-
-	/* begin block 2 */
-		// Start line: 9490
-	/* end block 2 */
-	// End Line: 9491
-
-	/* begin block 3 */
-		// Start line: 9508
-	/* end block 3 */
-	// End Line: 9509
-
-	/* begin block 4 */
-		// Start line: 9509
-	/* end block 4 */
-	// End Line: 9510
-
-	/* begin block 5 */
-		// Start line: 9517
-	/* end block 5 */
-	// End Line: 9518
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 int GameNum = 0;
 CVECTOR scoreCol = { 120, 120, 120 };
 CVECTOR otherCol = {125, 115, 34};
@@ -4124,26 +2957,6 @@ void DisplayScoreTable(void)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ ScoreScreen(int bSetup /*$a0*/)
- // line 4227, offset 0x001c59a0
-	/* begin block 1 */
-		// Start line: 9657
-	/* end block 1 */
-	// End Line: 9658
-
-	/* begin block 2 */
-		// Start line: 9664
-	/* end block 2 */
-	// End Line: 9665
-
-	/* begin block 3 */
-		// Start line: 9666
-	/* end block 3 */
-	// End Line: 9667
-
 // [D] [T]
 int ScoreScreen(int bSetup)
 {
@@ -4212,24 +3025,6 @@ int ScoreScreen(int bSetup)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ SubtitlesOnOffScreen(int bSetup /*$a0*/)
- // line 4322, offset 0x001c64b0
-	/* begin block 1 */
-		// Start line: 12820
-	/* end block 1 */
-	// End Line: 12821
-
-	/* begin block 2 */
-		// Start line: 12821
-	/* end block 2 */
-	// End Line: 12822
-
-/* WARNING: Control flow encountered bad instruction data */
-
 // [D] [T]
 int SubtitlesOnOffScreen(int bSetup)
 {
@@ -4249,23 +3044,6 @@ int SubtitlesOnOffScreen(int bSetup)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CityCutOffScreen(int bSetup /*$a0*/)
- // line 4345, offset 0x001c64fc
-	/* begin block 1 */
-		// Start line: 12866
-	/* end block 1 */
-	// End Line: 12867
-
-	/* begin block 2 */
-		// Start line: 12867
-	/* end block 2 */
-	// End Line: 12868
-
-/* WARNING: Control flow encountered bad instruction data */
 
 // [D] [T]
 int CityCutOffScreen(int bSetup)
@@ -4351,21 +3129,6 @@ int CityCutOffScreen(int bSetup)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ ControllerScreen(int bSetup /*$a0*/)
- // line 4378, offset 0x001c6548
-	/* begin block 1 */
-		// Start line: 12932
-	/* end block 1 */
-	// End Line: 12933
-
-	/* begin block 2 */
-		// Start line: 12933
-	/* end block 2 */
-	// End Line: 12934
-
 char* contNames[2] = {
 	"DATA\\CARCONT.RAW",
 	"DATA\\TANCONT.RAW"
@@ -4401,22 +3164,6 @@ int ControllerScreen(int bSetup)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ MainScreen(int bSetup /*$a0*/)
- // line 4412, offset 0x001c6614
-	/* begin block 1 */
-		// Start line: 13006
-	/* end block 1 */
-	// End Line: 13007
-
-	/* begin block 2 */
-		// Start line: 13007
-	/* end block 2 */
-	// End Line: 13008
-
 // [D] [T]
 int MainScreen(int bSetup)
 {
@@ -4435,50 +3182,6 @@ int MainScreen(int bSetup)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CheatScreen(int bSetup /*$a0*/)
- // line 4434, offset 0x001c5b4c
-	/* begin block 1 */
-		// Start line: 4436
-		// Start offset: 0x001C5B4C
-		// Variables:
-	// 		int numOpen; // $s5
-	// 		int i; // $s1
-	// 		int k; // $s6
-	// 		int *uc; // $s2
-	// 		unsigned char cheatOn[12]; // stack offset -104
-	// 		int hackLookup1[4]; // stack offset -88
-	// 		int hackLookup2[4]; // stack offset -72
-
-		/* begin block 1.1 */
-			// Start line: 4473
-			// Start offset: 0x001C5C6C
-			// Variables:
-		// 		int evilRuss[4]; // stack offset -56
-		/* end block 1.1 */
-		// End offset: 0x001C606C
-		// End Line: 4560
-	/* end block 1 */
-	// End offset: 0x001C60A0
-	// End Line: 4568
-
-	/* begin block 2 */
-		// Start line: 10082
-	/* end block 2 */
-	// End Line: 10083
-
-	/* begin block 3 */
-		// Start line: 10083
-	/* end block 3 */
-	// End Line: 10084
-
-	/* begin block 4 */
-		// Start line: 10087
-	/* end block 4 */
-	// End Line: 10088
 
 static char* cheatText[] =
 {
@@ -4660,22 +3363,6 @@ int CheatScreen(int bSetup)
 }
 
 
-// decompiled code
-// original method signature: 
-// int /*$ra*/ ImmunityOnOffScreen(int bSetup /*$a0*/)
- // line 4575, offset 0x001c6654
-	/* begin block 1 */
-		// Start line: 13332
-	/* end block 1 */
-	// End Line: 13333
-
-	/* begin block 2 */
-		// Start line: 13333
-	/* end block 2 */
-	// End Line: 13334
-
-/* WARNING: Control flow encountered bad instruction data */
-
 // [D] [T]
 int ImmunityOnOffScreen(int bSetup)
 {
@@ -4690,24 +3377,6 @@ int ImmunityOnOffScreen(int bSetup)
 
 	return 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ InvincibleOnOffScreen(int bSetup /*$a0*/)
- // line 4597, offset 0x001c66a0
-	/* begin block 1 */
-		// Start line: 13376
-	/* end block 1 */
-	// End Line: 13377
-
-	/* begin block 2 */
-		// Start line: 13377
-	/* end block 2 */
-	// End Line: 13378
-
-/* WARNING: Control flow encountered bad instruction data */
 
 // [D] [T]
 int InvincibleOnOffScreen(int bSetup)
@@ -4724,22 +3393,6 @@ int InvincibleOnOffScreen(int bSetup)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ GamePlayScreen(int bSetup /*$a0*/)
- // line 4619, offset 0x001c66ec
-	/* begin block 1 */
-		// Start line: 13420
-	/* end block 1 */
-	// End Line: 13421
-
-	/* begin block 2 */
-		// Start line: 13421
-	/* end block 2 */
-	// End Line: 13422
-
 // [D] [T]
 int GamePlayScreen(int bSetup)
 {
@@ -4750,41 +3403,6 @@ int GamePlayScreen(int bSetup)
 
 	return 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ GameNameScreen(int bSetup /*$a0*/)
- // line 4642, offset 0x001c60a0
-	/* begin block 1 */
-		// Start line: 4644
-		// Start offset: 0x001C60A0
-		// Variables:
-	// 		int offset; // $s3
-	/* end block 1 */
-	// End offset: 0x001C61AC
-	// End Line: 4656
-
-	/* begin block 2 */
-		// Start line: 10496
-	/* end block 2 */
-	// End Line: 10497
-
-	/* begin block 3 */
-		// Start line: 10571
-	/* end block 3 */
-	// End Line: 10572
-
-	/* begin block 4 */
-		// Start line: 10572
-	/* end block 4 */
-	// End Line: 10573
-
-	/* begin block 5 */
-		// Start line: 10573
-	/* end block 5 */
-	// End Line: 10574
 
 // [D] [T]
 int GameNameScreen(int bSetup)
@@ -4811,45 +3429,6 @@ int GameNameScreen(int bSetup)
 
 	return 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ FEInitCdIcon()
- // line 4671, offset 0x001c61ac
-	/* begin block 1 */
-		// Start line: 4673
-		// Start offset: 0x001C61AC
-		// Variables:
-	// 		int i; // $a0
-	// 		RECT dest; // stack offset -24
-	// 		unsigned short *palette; // $a2
-	/* end block 1 */
-	// End offset: 0x001C62F8
-	// End Line: 4709
-
-	/* begin block 2 */
-		// Start line: 10614
-	/* end block 2 */
-	// End Line: 10615
-
-	/* begin block 3 */
-		// Start line: 10630
-	/* end block 3 */
-	// End Line: 10631
-
-	/* begin block 4 */
-		// Start line: 10631
-	/* end block 4 */
-	// End Line: 10632
-
-	/* begin block 5 */
-		// Start line: 10633
-	/* end block 5 */
-	// End Line: 10634
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void FEInitCdIcon(void)
@@ -4888,40 +3467,6 @@ void FEInitCdIcon(void)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ FEDrawCDicon()
- // line 4716, offset 0x001c62f8
-	/* begin block 1 */
-		// Start line: 4718
-		// Start offset: 0x001C62F8
-		// Variables:
-	// 		unsigned short *palette; // $a1
-	// 		int temp; // $a2
-	// 		int i; // $a0
-	// 		RECT dest; // stack offset -16
-	/* end block 1 */
-	// End offset: 0x001C6378
-	// End Line: 4735
-
-	/* begin block 2 */
-		// Start line: 10758
-	/* end block 2 */
-	// End Line: 10759
-
-	/* begin block 3 */
-		// Start line: 10766
-	/* end block 3 */
-	// End Line: 10767
-
-	/* begin block 4 */
-		// Start line: 10767
-	/* end block 4 */
-	// End Line: 10768
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void FEDrawCDicon(void)
 {
@@ -4948,24 +3493,6 @@ void FEDrawCDicon(void)
 	DrawPrim(&cd_sprite);
 	DrawSync(0);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CheatNumlayerSelect(int bSetup /*$a0*/)
- // line 4742, offset 0x001c6724
-	/* begin block 1 */
-		// Start line: 13666
-	/* end block 1 */
-	// End Line: 13667
-
-	/* begin block 2 */
-		// Start line: 13667
-	/* end block 2 */
-	// End Line: 13668
-
-/* WARNING: Control flow encountered bad instruction data */
 
 // [D] [T]
 int CheatNumlayerSelect(int bSetup)

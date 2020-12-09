@@ -93,36 +93,6 @@ TARGET_ARROW_MODEL targetArrowModel[4] =
 
 int gDraw3DArrowBlue = 0;
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ WorldToCameraPositions(VECTOR *pGlobalPositionIn /*$s1*/, VECTOR *pCameraPositionOut /*$s0*/, int count /*$s2*/)
- // line 496, offset 0x0008047c
-	/* begin block 1 */
-		// Start line: 497
-		// Start offset: 0x0008047C
-
-		/* begin block 1.1 */
-			// Start line: 500
-			// Start offset: 0x000804B8
-			// Variables:
-		// 		VECTOR temp; // stack offset -48
-		/* end block 1.1 */
-		// End offset: 0x000804B8
-		// End Line: 502
-	/* end block 1 */
-	// End offset: 0x00080528
-	// End Line: 511
-
-	/* begin block 2 */
-		// Start line: 1144
-	/* end block 2 */
-	// End Line: 1145
-
-	/* begin block 3 */
-		// Start line: 1152
-	/* end block 3 */
-	// End Line: 1153
-
 // [D] [T]
 void WorldToCameraPositions(VECTOR* pGlobalPositionIn, VECTOR* pCameraPositionOut, int count)
 {
@@ -139,49 +109,6 @@ void WorldToCameraPositions(VECTOR* pGlobalPositionIn, VECTOR* pCameraPositionOu
 		pCameraPositionOut++;
 	}
 }
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawTargetArrowModel(TARGET_ARROW_MODEL *pTargetArrowModel /*$s1*/, VECTOR *pPosition /*$s2*/, int shadow /*$s4*/, int invert /*$s3*/)
- // line 267, offset 0x0007fd48
-	/* begin block 1 */
-		// Start line: 268
-		// Start offset: 0x0007FD48
-
-		/* begin block 1.1 */
-			// Start line: 271
-			// Start offset: 0x0007FD9C
-			// Variables:
-		// 		VECTOR tempVec; // stack offset -56
-		// 		SVECTOR *pVerts; // $s0
-		// 		SVECTOR temp; // stack offset -40
-		// 		char *pVertIndex; // $a3
-
-			/* begin block 1.1.1 */
-				// Start line: 283
-				// Start offset: 0x0007FE2C
-				// Variables:
-			// 		POLY_F3 *poly; // $t0
-			// 		int z; // stack offset -32
-			/* end block 1.1.1 */
-			// End offset: 0x00080044
-			// End Line: 323
-		/* end block 1.1 */
-		// End offset: 0x000800D8
-		// End Line: 329
-	/* end block 1 */
-	// End offset: 0x000800F8
-	// End Line: 330
-
-	/* begin block 2 */
-		// Start line: 555
-	/* end block 2 */
-	// End Line: 556
-
-	/* begin block 3 */
-		// Start line: 561
-	/* end block 3 */
-	// End Line: 562
 
 // [D] [T]
 void DrawTargetArrowModel(TARGET_ARROW_MODEL *pTargetArrowModel, VECTOR *pPosition, int shadow, int invert)
@@ -277,25 +204,6 @@ void DrawTargetArrowModel(TARGET_ARROW_MODEL *pTargetArrowModel, VECTOR *pPositi
 		DrawStopZone(pPosition);
 }
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ Draw3DTarget(VECTOR *position /*$s0*/, int flags /*$s2*/)
- // line 213, offset 0x0007fb44
-	/* begin block 1 */
-		// Start line: 214
-		// Start offset: 0x0007FB44
-		// Variables:
-	// 		VECTOR pos; // stack offset -32
-	// 		int shadow; // $s1
-	/* end block 1 */
-	// End offset: 0x0007FD48
-	// End Line: 262
-
-	/* begin block 2 */
-		// Start line: 426
-	/* end block 2 */
-	// End Line: 427
-
 // [D] [T]
 void Draw3DTarget(VECTOR* position, int flags)
 {
@@ -365,44 +273,6 @@ void Draw3DTarget(VECTOR* position, int flags)
 		DrawTargetArrowModel(&targetArrowModel[3], &pos, shadow, 0);
 	}
 }
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawStopZone(VECTOR *pPosition /*$s5*/)
- // line 412, offset 0x000800f8
-	/* begin block 1 */
-		// Start line: 413
-		// Start offset: 0x000800F8
-		// Variables:
-	// 		VECTOR *pVector; // $s0
-	// 		VECTOR pStopZonePt[4]; // stack offset -128
-	// 		POLY_FT4 *pPoly; // $s1
-	// 		long *pOut; // $s2
-	// 		long sz; // stack offset -48
-
-		/* begin block 1.1 */
-			// Start line: 430
-			// Start offset: 0x000801FC
-			// Variables:
-		// 		SVECTOR temp; // stack offset -64
-		// 		long p; // stack offset -56
-		// 		long flag; // stack offset -52
-		/* end block 1.1 */
-		// End offset: 0x0008030C
-		// End Line: 465
-	/* end block 1 */
-	// End offset: 0x0008047C
-	// End Line: 489
-
-	/* begin block 2 */
-		// Start line: 890
-	/* end block 2 */
-	// End Line: 891
-
-	/* begin block 3 */
-		// Start line: 899
-	/* end block 3 */
-	// End Line: 900
 
 // [D] [T]
 void DrawStopZone(VECTOR *pPosition)

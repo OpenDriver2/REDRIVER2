@@ -49,6 +49,10 @@ void SfxVolume(int direction);
 void MusicVolume(int direction);
 void SaveReplay(int direction);
 void SaveGame(int direction);
+
+void EnterScoreName();
+void CreateScoreNames(SCORE_ENTRY *table, PLAYER_SCORE *score, int position);
+void DrawHighScoreMenu(int selection); 
 void EnterName();
 
 char EnterScoreText[32] = { 0 };
@@ -466,237 +470,6 @@ MENU_HEADER InvalidMultiPadHeader =
 int playerwithcontrol[3] = { 0 };
 
 
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ ShowPauseMenu(PAUSEMODE mode /*$s0*/)
- // line 1004, offset 0x0006bf50
-	/* begin block 1 */
-		// Start line: 1005
-		// Start offset: 0x0006BF50
-		// Variables:
-	// 		PAUSEMODE passed_mode; // $s2
-
-		/* begin block 1.1 */
-			// Start line: 1062
-			// Start offset: 0x0006C0C0
-		/* end block 1.1 */
-		// End offset: 0x0006C140
-		// End Line: 1085
-
-		/* begin block 1.2 */
-			// Start line: 1092
-			// Start offset: 0x0006C178
-			// Variables:
-		// 		RECT rect; // stack offset -32
-		/* end block 1.2 */
-		// End offset: 0x0006C1FC
-		// End Line: 1101
-	/* end block 1 */
-	// End offset: 0x0006C2AC
-	// End Line: 1137
-
-	/* begin block 2 */
-		// Start line: 2008
-	/* end block 2 */
-	// End Line: 2009
-
-// [D] [T]
-int ShowPauseMenu(PAUSEMODE mode)
-{
-	PAUSEMODE passed_mode;
-	RECT16 rect;
-
-	ReadControllers();
-
-	if (mode == PAUSEMODE_PAUSEP1)
-	{
-		playerwithcontrol[0] = 1;
-		playerwithcontrol[1] = 0;
-		playerwithcontrol[2] = 0;
-	}
-	else if (mode == PAUSEMODE_PAUSEP2) 
-	{
-		playerwithcontrol[0] = 0;
-		playerwithcontrol[1] = 1;
-		playerwithcontrol[2] = 0;
-	}
-	else 
-	{
-		playerwithcontrol[0] = 0;
-		playerwithcontrol[1] = 0;
-		playerwithcontrol[2] = 1;
-	}
-
-	SetDispMask(1);
-
-	SfxVolume(0);
-	MusicVolume(0);
-
-	StopPadVibration(0);
-	StopPadVibration(1);
-
-	InitaliseMenu(mode);
-	gDrawPauseMenus = 1;
-
-	if (NoPlayerControl == 0 && OnScoreTable(NULL) != -1 && allownameentry) 
-	{
-		gScoreEntered = 0;
-	
-		sprintf(EnterScoreText, "Enter Score");
-		sprintf(EnterNameText, "Enter Name:");
-	}
-	else
-	{
-		gScoreEntered = 1;
-		
-		sprintf(EnterScoreText, "View Table");
-		sprintf(EnterNameText, "High Scores");
-	}
-
-	passed_mode = mode;
-
-	if (mode == PAUSEMODE_PADERROR)
-		mode = PAUSEMODE_PAUSE;
-
-	PauseReturnValue = 0;
-
-	do {
-		UpdatePadData();
-
-		if (passed_mode == PAUSEMODE_PADERROR)
-		{
-			if (pad_connected == 1) 
-			{
-				InitaliseMenu(mode);
-				passed_mode = mode;
-			}
-			else 
-			{
-				InitaliseMenu(PAUSEMODE_PADERROR);
-			}
-		}
-		else 
-		{
-			if (pad_connected != 1) 
-			{
-				passed_mode = PAUSEMODE_PADERROR;
-				InitaliseMenu(PAUSEMODE_PADERROR);
-			}
-		}
-
-		if (pad_connected < 1) 
-			playerwithcontrol[2] = 1;
-
-		ControlMenu();
-		DrawGame();
-
-	} while (PauseReturnValue == 0);
-
-	gDrawPauseMenus = 0;
-
-	if (NumPlayers > 1)
-	{
-		rect.x = 0;
-		rect.w = 320;
-		rect.h = 1;
-		rect.y = current->draw.clip.y + current->draw.clip.h;
-		
-		ClearImage2(&rect, 0, 0, 0);
-		DrawGame();
-		
-		ClearImage2(&rect, 0, 0, 0);
-		DrawGame();
-	}
-
-	switch (PauseReturnValue)
-	{
-		case 1:
-			pauseflag = 0;
-			break;
-		case 2:
-			EndGame(GAMEMODE_QUIT);
-			break;
-		case 3:
-			EndGame(GAMEMODE_RESTART);
-			break;
-		case 4:
-			EndGame(GAMEMODE_DIRECTOR);
-			break;
-		case 5:
-			EndGame(GAMEMODE_REPLAY);
-			break;
-		case 7:
-			EndGame(GAMEMODE_NEXTMISSION);
-			break;
-	}
-
-	return PauseReturnValue;
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawPauseMenus()
- // line 1139, offset 0x0006dcd4
-	/* begin block 1 */
-		// Start line: 4357
-	/* end block 1 */
-	// End Line: 4358
-
-	/* begin block 2 */
-		// Start line: 2278
-	/* end block 2 */
-	// End Line: 2279
-
-	/* begin block 3 */
-		// Start line: 4358
-	/* end block 3 */
-	// End Line: 4359
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
-// [D] [T]
-void DrawPauseMenus(void)
-{
-#if !defined(PSX) && defined(DEBUG_OPTIONS)
-	extern int g_FreeCameraEnabled;
-
-	if (g_FreeCameraEnabled)
-		return;
-#endif
-
-	if (gDrawPauseMenus && gShowMap == 0) 
-	{
-		if (gEnteringScore == 0)
-			DrawVisibleMenus();
-		else 
-			DrawHighScoreMenu(gScorePosition);
-	}
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SaveReplay(int direction /*$a0*/)
- // line 1153, offset 0x0006d9b0
-	/* begin block 1 */
-		// Start line: 3753
-	/* end block 1 */
-	// End Line: 3754
-
-	/* begin block 2 */
-		// Start line: 2306
-	/* end block 2 */
-	// End Line: 2307
-
-	/* begin block 3 */
-		// Start line: 3754
-	/* end block 3 */
-	// End Line: 3755
-
 // [D] [T]
 void SaveReplay(int direction)
 {
@@ -745,73 +518,17 @@ void SaveReplay(int direction)
 #endif
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SaveGame(int direction /*$a0*/)
- // line 1158, offset 0x0006d9d4
-	/* begin block 1 */
-		// Start line: 3763
-	/* end block 1 */
-	// End Line: 3764
-
-	/* begin block 2 */
-		// Start line: 3764
-	/* end block 2 */
-	// End Line: 3765
-
 // [D] [T]
 void SaveGame(int direction)
 {
 	CallMemoryCard(0x20, 1);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ EnterName()
- // line 1163, offset 0x0006d9f8
-	/* begin block 1 */
-		// Start line: 3773
-	/* end block 1 */
-	// End Line: 3774
-
-	/* begin block 2 */
-		// Start line: 3774
-	/* end block 2 */
-	// End Line: 3775
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void EnterName(void)
 {
 	EnterScoreName();
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ MaxMenuStringLength(MENU_HEADER *pMenu /*$v0*/)
- // line 1185, offset 0x0006da18
-	/* begin block 1 */
-		// Start line: 1186
-		// Start offset: 0x0006DA18
-		// Variables:
-	// 		MENU_ITEM *pItems; // $s1
-	// 		int max; // $s2
-	// 		int temp; // $s0
-	/* end block 1 */
-	// End offset: 0x0006DAD0
-	// End Line: 1206
-
-	/* begin block 2 */
-		// Start line: 3817
-	/* end block 2 */
-	// End Line: 3818
 
 // [D] [T]
 int MaxMenuStringLength(MENU_HEADER *pMenu)
@@ -840,30 +557,39 @@ int MaxMenuStringLength(MENU_HEADER *pMenu)
 }
 
 
+// [D] [T]
+void SetupMenu(MENU_HEADER *menu, int back)
+{
+	int len;
+	MENU_ITEM *pItem;
+	int numItems;
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitaliseMenu(PAUSEMODE mode /*$a2*/)
- // line 1216, offset 0x0006c2ac
-	/* begin block 1 */
-		// Start line: 1217
-		// Start offset: 0x0006C2AC
-		// Variables:
-	// 		MENU_ITEM *pItem; // $a0
-	// 		int i; // $a1
-	/* end block 1 */
-	// End offset: 0x0006C6B8
-	// End Line: 1388
+	numItems = 0;
 
-	/* begin block 2 */
-		// Start line: 2361
-	/* end block 2 */
-	// End Line: 2362
+	ActiveMenuItem = 0;
 
-	/* begin block 3 */
-		// Start line: 2441
-	/* end block 3 */
-	// End Line: 2442
+	pItem = menu->MenuItems;
+	while (pItem->Type != PAUSE_TYPE_ENDITEMS)
+	{
+		if (back && pItem == ActiveItem[VisibleMenu])
+			ActiveMenuItem = numItems;
+
+		numItems++;
+		pItem++;
+	}
+
+	ActiveMenu = menu;
+	ActiveMenu->NumItems = numItems;
+
+	len = MaxMenuStringLength(ActiveMenu);
+
+	ActiveMenu->Bound.x = ((304 - len) / 2) - 4;
+	ActiveMenu->Bound.w = len + 24;
+	ActiveMenu->Bound.y = MAX(48, ((numItems + 1) * -15 + 256) / 2);
+	ActiveMenu->Bound.h = (numItems + 1) * 15 + 10;
+
+	ActiveItem[VisibleMenu] = &ActiveMenu->MenuItems[ActiveMenuItem];
+}
 
 // [D] [T]
 void InitaliseMenu(PAUSEMODE mode)
@@ -1033,126 +759,6 @@ void InitaliseMenu(PAUSEMODE mode)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetupMenu(MENU_HEADER *menu /*$a0*/, int back /*$a1*/)
- // line 1401, offset 0x0006c6b8
-	/* begin block 1 */
-		// Start line: 1402
-		// Start offset: 0x0006C6B8
-		// Variables:
-	// 		MENU_ITEM *pItem; // $a2
-	// 		int count; // $a3
-	/* end block 1 */
-	// End offset: 0x0006C7F4
-	// End Line: 1431
-
-	/* begin block 2 */
-		// Start line: 2819
-	/* end block 2 */
-	// End Line: 2820
-
-	/* begin block 3 */
-		// Start line: 2833
-	/* end block 3 */
-	// End Line: 2834
-
-	/* begin block 4 */
-		// Start line: 2840
-	/* end block 4 */
-	// End Line: 2841
-
-// [D] [T]
-void SetupMenu(MENU_HEADER *menu, int back)
-{
-	int len;
-	MENU_ITEM *pItem;
-	int numItems;
-
-	numItems = 0;
-
-	ActiveMenuItem = 0;
-
-	pItem = menu->MenuItems;
-	while (pItem->Type != PAUSE_TYPE_ENDITEMS)
-	{
-		if (back && pItem == ActiveItem[VisibleMenu])
-			ActiveMenuItem = numItems;
-
-		numItems++;
-		pItem++;
-	}
-
-	ActiveMenu = menu;
-	ActiveMenu->NumItems = numItems;
-
-	len = MaxMenuStringLength(ActiveMenu);
-
-	ActiveMenu->Bound.x = ((304 - len) / 2) - 4;
-	ActiveMenu->Bound.w = len + 24;
-	ActiveMenu->Bound.y = MAX(48, ((numItems + 1) * -15 + 256) / 2);
-	ActiveMenu->Bound.h = (numItems + 1) * 15 + 10;
-
-	ActiveItem[VisibleMenu] = &ActiveMenu->MenuItems[ActiveMenuItem];
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawVisibleMenus()
- // line 1443, offset 0x0006c7f4
-	/* begin block 1 */
-		// Start line: 1445
-		// Start offset: 0x0006C7F4
-		// Variables:
-	// 		MENU_HEADER *pActive; // $s5
-	// 		MENU_ITEM *pItem; // $s1
-	// 		POLY_FT3 *null; // $a0
-	// 		int i; // stack offset -48
-	// 		int ypos; // $s3
-	// 		int xpos; // $fp
-	// 		int width; // $s4
-
-		/* begin block 1.1 */
-			// Start line: 1473
-			// Start offset: 0x0006C8C0
-			// Variables:
-		// 		unsigned char r; // $s6
-		// 		unsigned char b; // $s7
-		// 		int x1; // $s0
-		// 		int x2; // $s2
-		/* end block 1.1 */
-		// End offset: 0x0006CA40
-		// End Line: 1509
-	/* end block 1 */
-	// End offset: 0x0006CBE8
-	// End Line: 1528
-
-	/* begin block 2 */
-		// Start line: 2919
-	/* end block 2 */
-	// End Line: 2920
-
-	/* begin block 3 */
-		// Start line: 2932
-	/* end block 3 */
-	// End Line: 2933
-
-	/* begin block 4 */
-		// Start line: 2933
-	/* end block 4 */
-	// End Line: 2934
-
-	/* begin block 5 */
-		// Start line: 2939
-	/* end block 5 */
-	// End Line: 2940
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void DrawVisibleMenus(void)
 {
@@ -1275,70 +881,6 @@ void DrawVisibleMenus(void)
 
 
 }
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ControlMenu()
- // line 1543, offset 0x0006cbe8
-	/* begin block 1 */
-		// Start line: 1545
-		// Start offset: 0x0006CBE8
-		// Variables:
-	// 		static int debounce; // offset 0x30
-	// 		unsigned short paddata; // $a2
-	// 		unsigned short paddirect; // $a3
-
-		/* begin block 1.1 */
-			// Start line: 1596
-			// Start offset: 0x0006CCD4
-			// Variables:
-		// 		int doit; // $v1
-		/* end block 1.1 */
-		// End offset: 0x0006CD78
-		// End Line: 1621
-
-		/* begin block 1.2 */
-			// Start line: 1675
-			// Start offset: 0x0006CF54
-			// Variables:
-		// 		int i; // $a0
-		/* end block 1.2 */
-		// End offset: 0x0006CFB8
-		// End Line: 1682
-
-		/* begin block 1.3 */
-			// Start line: 1692
-			// Start offset: 0x0006CFD8
-			// Variables:
-		// 		int i; // $a0
-		/* end block 1.3 */
-		// End offset: 0x0006D034
-		// End Line: 1703
-	/* end block 1 */
-	// End offset: 0x0006D034
-	// End Line: 1705
-
-	/* begin block 2 */
-		// Start line: 3196
-	/* end block 2 */
-	// End Line: 3197
-
-	/* begin block 3 */
-		// Start line: 3212
-	/* end block 3 */
-	// End Line: 3213
-
-	/* begin block 4 */
-		// Start line: 3213
-	/* end block 4 */
-	// End Line: 3214
-
-	/* begin block 5 */
-		// Start line: 3233
-	/* end block 5 */
-	// End Line: 3234
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void ControlMenu(void)
@@ -1508,26 +1050,6 @@ void ControlMenu(void)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ PauseMap(int direction /*$a0*/)
- // line 1710, offset 0x0006dad0
-	/* begin block 1 */
-		// Start line: 4364
-	/* end block 1 */
-	// End Line: 4365
-
-	/* begin block 2 */
-		// Start line: 4869
-	/* end block 2 */
-	// End Line: 4870
-
-	/* begin block 3 */
-		// Start line: 4870
-	/* end block 3 */
-	// End Line: 4871
-
 // [D] [T]
 void PauseMap(int direction)
 {
@@ -1541,29 +1063,6 @@ void PauseMap(int direction)
 	if (gShowMap == 0)
 		InitOverheadMap();
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SfxVolume(int direction /*$a0*/)
- // line 1725, offset 0x0006db34
-	/* begin block 1 */
-		// Start line: 1726
-		// Start offset: 0x0006DB34
-	/* end block 1 */
-	// End offset: 0x0006DC04
-	// End Line: 1744
-
-	/* begin block 2 */
-		// Start line: 4902
-	/* end block 2 */
-	// End Line: 4903
-
-	/* begin block 3 */
-		// Start line: 4905
-	/* end block 3 */
-	// End Line: 4906
 
 // [D] [T]
 void SfxVolume(int direction)
@@ -1584,34 +1083,6 @@ void SfxVolume(int direction)
 	SetMasterVolume(gMasterVolume);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ MusicVolume(int direction /*$a0*/)
- // line 1746, offset 0x0006dc04
-	/* begin block 1 */
-		// Start line: 1747
-		// Start offset: 0x0006DC04
-	/* end block 1 */
-	// End offset: 0x0006DCD4
-	// End Line: 1765
-
-	/* begin block 2 */
-		// Start line: 4942
-	/* end block 2 */
-	// End Line: 4943
-
-	/* begin block 3 */
-		// Start line: 4945
-	/* end block 3 */
-	// End Line: 4946
-
-	/* begin block 4 */
-		// Start line: 4948
-	/* end block 4 */
-	// End Line: 4949
-
 // [D] [T]
 void MusicVolume(int direction)
 {
@@ -1630,45 +1101,6 @@ void MusicVolume(int direction)
 
 	SetXMVolume(gMusicVolume);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ EnterScoreName()
- // line 1787, offset 0x0006d044
-	/* begin block 1 */
-		// Start line: 1789
-		// Start offset: 0x0006D044
-		// Variables:
-	// 		SCORE_ENTRY *table; // stack offset -40
-	// 		char *username; // $s3
-	// 		unsigned short npad; // $a1
-	// 		int so; // $s0
-	// 		int co; // $s1
-	// 		int delay; // $s2
-	// 		char c; // $a0
-	// 		char toggle; // $s6
-	/* end block 1 */
-	// End offset: 0x0006D324
-	// End Line: 1941
-
-	/* begin block 2 */
-		// Start line: 3716
-	/* end block 2 */
-	// End Line: 3717
-
-	/* begin block 3 */
-		// Start line: 3717
-	/* end block 3 */
-	// End Line: 3718
-
-	/* begin block 4 */
-		// Start line: 3718
-	/* end block 4 */
-	// End Line: 3719
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void EnterScoreName(void)
@@ -1839,32 +1271,6 @@ void EnterScoreName(void)
 	} while (true);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawHighScoreMenu(int selection /*stack 0*/)
- // line 2020, offset 0x0006d694
-	/* begin block 1 */
-		// Start line: 2021
-		// Start offset: 0x0006D694
-		// Variables:
-	// 		POLY_FT3 *null; // $a0
-	// 		char text[4]; // stack offset -48
-	// 		unsigned char r; // $s3
-	// 		unsigned char g; // $s5
-	// 		unsigned char b; // $s2
-	// 		int i; // $s0
-	// 		int ypos; // $s4
-	/* end block 1 */
-	// End offset: 0x0006D9B0
-	// End Line: 2075
-
-	/* begin block 2 */
-		// Start line: 4486
-	/* end block 2 */
-	// End Line: 4487
-
 // [D] [T]
 void DrawHighScoreMenu(int selection)
 {
@@ -1945,18 +1351,6 @@ void DrawHighScoreMenu(int selection)
 	current->primptr += sizeof(POLY_FT3);
 }
 
-//*Offset 0x6D324, from D : \driver2\game\C\PAUSE.C(lines 1943..2011)
-//* Stack frame base $sp, size 80
-//* Saved registers at offset - 4: s0 s1 s2 s3 s4 s5 s6 s7 fp ra
-//* /
-//void /*$ra*/ CreateScoreNames(SCORE_ENTRY* table /*$s0*/, PLAYER_SCORE* score /*stack 4*/, int position /*stack 8*/)
-//{ // line 1, offset 0x6d324
-//	char* text; // $s1
-//	int min; // $t1
-//	int frac; // $v0
-//	int i; // $s5
-//} // line 69, offset 0x6d664
-
 // [D] [T]
 void CreateScoreNames(SCORE_ENTRY* table, PLAYER_SCORE* score, int position)
 {
@@ -2020,4 +1414,157 @@ void CreateScoreNames(SCORE_ENTRY* table, PLAYER_SCORE* score, int position)
 		i++;
 	} while (i < 5);
 
+}
+
+
+// [D] [T]
+int ShowPauseMenu(PAUSEMODE mode)
+{
+	PAUSEMODE passed_mode;
+	RECT16 rect;
+
+	ReadControllers();
+
+	if (mode == PAUSEMODE_PAUSEP1)
+	{
+		playerwithcontrol[0] = 1;
+		playerwithcontrol[1] = 0;
+		playerwithcontrol[2] = 0;
+	}
+	else if (mode == PAUSEMODE_PAUSEP2)
+	{
+		playerwithcontrol[0] = 0;
+		playerwithcontrol[1] = 1;
+		playerwithcontrol[2] = 0;
+	}
+	else
+	{
+		playerwithcontrol[0] = 0;
+		playerwithcontrol[1] = 0;
+		playerwithcontrol[2] = 1;
+	}
+
+	SetDispMask(1);
+
+	SfxVolume(0);
+	MusicVolume(0);
+
+	StopPadVibration(0);
+	StopPadVibration(1);
+
+	InitaliseMenu(mode);
+	gDrawPauseMenus = 1;
+
+	if (NoPlayerControl == 0 && OnScoreTable(NULL) != -1 && allownameentry)
+	{
+		gScoreEntered = 0;
+
+		sprintf(EnterScoreText, "Enter Score");
+		sprintf(EnterNameText, "Enter Name:");
+	}
+	else
+	{
+		gScoreEntered = 1;
+
+		sprintf(EnterScoreText, "View Table");
+		sprintf(EnterNameText, "High Scores");
+	}
+
+	passed_mode = mode;
+
+	if (mode == PAUSEMODE_PADERROR)
+		mode = PAUSEMODE_PAUSE;
+
+	PauseReturnValue = 0;
+
+	do {
+		UpdatePadData();
+
+		if (passed_mode == PAUSEMODE_PADERROR)
+		{
+			if (pad_connected == 1)
+			{
+				InitaliseMenu(mode);
+				passed_mode = mode;
+			}
+			else
+			{
+				InitaliseMenu(PAUSEMODE_PADERROR);
+			}
+		}
+		else
+		{
+			if (pad_connected != 1)
+			{
+				passed_mode = PAUSEMODE_PADERROR;
+				InitaliseMenu(PAUSEMODE_PADERROR);
+			}
+		}
+
+		if (pad_connected < 1)
+			playerwithcontrol[2] = 1;
+
+		ControlMenu();
+		DrawGame();
+
+	} while (PauseReturnValue == 0);
+
+	gDrawPauseMenus = 0;
+
+	if (NumPlayers > 1)
+	{
+		rect.x = 0;
+		rect.w = 320;
+		rect.h = 1;
+		rect.y = current->draw.clip.y + current->draw.clip.h;
+
+		ClearImage2(&rect, 0, 0, 0);
+		DrawGame();
+
+		ClearImage2(&rect, 0, 0, 0);
+		DrawGame();
+	}
+
+	switch (PauseReturnValue)
+	{
+	case 1:
+		pauseflag = 0;
+		break;
+	case 2:
+		EndGame(GAMEMODE_QUIT);
+		break;
+	case 3:
+		EndGame(GAMEMODE_RESTART);
+		break;
+	case 4:
+		EndGame(GAMEMODE_DIRECTOR);
+		break;
+	case 5:
+		EndGame(GAMEMODE_REPLAY);
+		break;
+	case 7:
+		EndGame(GAMEMODE_NEXTMISSION);
+		break;
+	}
+
+	return PauseReturnValue;
+}
+
+// [D] [T]
+void DrawPauseMenus(void)
+{
+#if !defined(PSX) && defined(DEBUG_OPTIONS)
+	extern int g_FreeCameraEnabled;
+
+	if (g_FreeCameraEnabled)
+		return;
+#endif
+
+	if (gDrawPauseMenus && gShowMap == 0)
+	{
+		if (gEnteringScore == 0)
+			DrawVisibleMenus();
+		else
+			DrawHighScoreMenu(gScorePosition);
+	}
 }

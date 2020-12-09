@@ -177,7 +177,7 @@ extern LEAD_PARAMETERS LeadValues;
 
 static char NewLeadDelay = 0;
 
-#define MISSIOH_IDENT (('D' << 24) | ('2' << 16) | ('M' << 8) | 'S' )
+#define MISSION_IDENT (('D' << 24) | ('2' << 16) | ('M' << 8) | 'S' )
 
 MR_MISSION Mission;
 u_int MissionStack[16][16];
@@ -392,7 +392,7 @@ void LoadMission(int missionnum)
 	missionSize = LoadfileSeg(filename, (char *)MissionLoadAddress, offset, loadsize);
 
 	// check if mission header itself valid
-	if (MissionHeader->id != MISSIOH_IDENT) 
+	if (MissionHeader->id != MISSION_IDENT)
 	{
 #ifndef PSX
 		char errPrint[1024];
