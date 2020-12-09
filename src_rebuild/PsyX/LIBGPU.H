@@ -190,13 +190,15 @@ extern	int (*GPU_printf)(const char *fmt, ...);
 #define getcode(p)   		(u_char)(((P_TAG *)(p))->code)
 #define getaddr(p)   		(u_long)(((P_TAG *)(p))->addr)
 
-#define nextPrim(p)  		(void *)((((P_TAG *)(p))->addr)|0x80000000)
-#define isendprim(p) 		((((P_TAG *)(p))->addr)==0xffffff)
-
 #if defined(PGXP) && defined(USE_32_BIT_ADDR)
 #define setpgxpindex(p, _pgxp_index) (((P_TAG *)(p))->pgxp_index = (u_short)(_pgxp_index))
+
+#define isendprim(p) 		((((P_TAG *)(p))->addr)==0xffffffff)
+#define nextPrim(p)  		(void *)(((P_TAG *)(p))->addr)
 #define addPrim(ot, p)		setaddr(p, getaddr(ot)), setaddr(ot, p), setpgxpindex(p, PGXP_GetIndex())
 #else
+#define isendprim(p) 		((((P_TAG *)(p))->addr)==0xffffff)
+#define nextPrim(p)  		(void *)((((P_TAG *)(p))->addr)|0x80000000)
 #define addPrim(ot, p)		setaddr(p, getaddr(ot)), setaddr(ot, p)
 #endif
 

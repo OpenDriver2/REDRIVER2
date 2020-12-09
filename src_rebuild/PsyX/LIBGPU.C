@@ -352,7 +352,7 @@ u_long* ClearOTag(u_long* ot, int n)
 	// make a linked list with it's next items
 	for (int i = (n-1) * OT_WIDTH; i >= 0; i -= OT_WIDTH)
 	{
-		setaddr(&ot[i], (u_long)&ot[i + OT_WIDTH]);
+		setaddr(&ot[i], &ot[i + OT_WIDTH]);
 		setlen(&ot[i], 0);
 	}
 
@@ -371,7 +371,7 @@ u_long* ClearOTagR(u_long* ot, int n)
 	// initialize a linked list with it's previous items
 	for (int i = OT_WIDTH; i < n * OT_WIDTH; i += OT_WIDTH)
 	{
-		setaddr(&ot[i], (u_long)&ot[i - OT_WIDTH]);
+		setaddr(&ot[i], &ot[i - OT_WIDTH]);
 		setlen(&ot[i], 0);
 	}
 
@@ -1380,7 +1380,7 @@ int ParseLinkedPrimitiveList(uintptr_t packetStart, uintptr_t packetEnd)
 
 	int lastSize = -1;
 
-	while (currentAddress != packetEnd)
+	while (currentAddress < packetEnd)
 	{
 		lastSize = ParsePrimitive(currentAddress);
 
