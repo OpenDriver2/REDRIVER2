@@ -17,7 +17,7 @@ end
 	
 workspace "REDRIVER2"
     configurations { "Debug", "Release", "Release_dev" }
-	platforms { "x86" } --, "x86_64" }
+	-- platforms { "x86", "x86_64" }
 
     defines { VERSION } 
 
