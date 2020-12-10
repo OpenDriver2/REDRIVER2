@@ -90,7 +90,7 @@ inline void ScreenCoordsToEmulator(Vertex* vertex, int count)
 
 void Emulator_ResetDevice()
 {
-#if defined(OGL)
+#if defined(RENDERER_OGL)
 	SDL_GL_SetSwapInterval(g_enableSwapInterval ? g_swapInterval : 0);
 #endif
 }
@@ -107,7 +107,7 @@ static int Emulator_InitialiseGLContext(char* windowName, int fullscreen)
 	
 	g_window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, windowFlags);
 
-#if defined(OGL)
+#if defined(RENDERER_OGL)
 	SDL_GL_CreateContext(g_window);
 #endif
 
@@ -241,13 +241,13 @@ static int Emulator_InitialiseSDL(char* windowName, int width, int height, int f
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, OGLES_VERSION);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-#elif defined(OGL)
+#elif defined(RENDERER_OGL)
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 #endif
 
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 		SDL_GL_SetAttribute( SDL_GL_STENCIL_SIZE, 1 );
 #endif
 	}
@@ -257,7 +257,7 @@ static int Emulator_InitialiseSDL(char* windowName, int width, int height, int f
 		return FALSE;
 	}
 
-#if defined(OGL)
+#if defined(RENDERER_OGL)
 	if (Emulator_InitialiseGLContext(windowName, fullscreen) == FALSE)
 	{
 		eprinterr("Failed to Initialise GL Context!\n");
@@ -928,7 +928,7 @@ ShaderID g_gte_shader_8;
 ShaderID g_gte_shader_16;
 ShaderID g_blit_shader;
 
-#if defined(OGLES) || defined(OGL)
+#if defined(OGLES) || defined(RENDERER_OGL)
 GLint u_Projection;
 GLint u_Projection3D;
 
@@ -1265,7 +1265,7 @@ void Emulator_CreateGlobalShaders()
 	g_gte_shader_16 = Shader_Compile(gte_shader_16);
 	g_blit_shader   = Shader_Compile(blit_shader);
 
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	u_Projection = glGetUniformLocation(g_gte_shader_4, "Projection");
 #ifdef USE_PGXP
 	u_Projection3D = glGetUniformLocation(g_gte_shader_4, "Projection3D");
@@ -1278,7 +1278,7 @@ unsigned short vram[VRAM_WIDTH * VRAM_HEIGHT];
 void Emulator_GenerateCommonTextures()
 {
 	unsigned int pixelData = 0xFFFFFFFF;
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	glGenTextures(1, &whiteTexture);
 	glBindTexture(GL_TEXTURE_2D, whiteTexture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -1294,7 +1294,7 @@ int Emulator_Initialise()
 	Emulator_GenerateCommonTextures();
 	Emulator_CreateGlobalShaders();
 
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_STENCIL_TEST);
 	glBlendColor(0.5f, 0.5f, 0.5f, 0.25f);
@@ -1355,7 +1355,7 @@ void Emulator_Ortho2D(float left, float right, float bottom, float top, float zn
 	float x = (left + right) / (left - right);
 	float y = (bottom + top) / (bottom - top);
 
-#if defined(OGL) || defined(OGLES) // -1..1
+#if defined(RENDERER_OGL) || defined(OGLES) // -1..1
 	float z = (znear + zfar) / (znear - zfar);
 #endif
 
@@ -1366,7 +1366,7 @@ void Emulator_Ortho2D(float left, float right, float bottom, float top, float zn
 		x, y, z, 1
 	};
 
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	glUniformMatrix4fv(u_Projection, 1, GL_FALSE, ortho);
 #endif
 }
@@ -1387,7 +1387,7 @@ void Emulator_Perspective3D(const float fov, const float width, const float heig
 		0, 0, 1, 0
 	};
 
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	glUniformMatrix4fv(u_Projection3D, 1, GL_TRUE, persp);
 #elif defined(D3D9)
 	d3ddev->SetVertexShaderConstantF(u_Projection3D, persp, 4);
@@ -1427,7 +1427,7 @@ void Emulator_SetupClipMode(const RECT16& rect)
 		clipRectX += 0.5f;
 	}
 
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	if (!enabled)
 	{
 		glDisable(GL_SCISSOR_TEST);
@@ -1471,7 +1471,7 @@ void Emulator_GetPSXWidescreenMappedViewport(RECT16* rect)
 
 void Emulator_SetShader(const ShaderID &shader)
 {
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	glUseProgram(shader);
 #else
 	#error
@@ -1509,7 +1509,7 @@ void Emulator_SetTexture(TextureID texture, TexFormat texFormat)
 		return;
 	}
 
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	glBindTexture(GL_TEXTURE_2D, texture);
 #endif
 
@@ -1518,7 +1518,7 @@ void Emulator_SetTexture(TextureID texture, TexFormat texFormat)
 
 void Emulator_DestroyTexture(TextureID texture)
 {
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
     glDeleteTextures(1, &texture);
 #else
     #error
@@ -1528,7 +1528,7 @@ void Emulator_DestroyTexture(TextureID texture)
 extern void Emulator_Clear(int x, int y, int w, int h, unsigned char r, unsigned char g, unsigned char b)
 {
 // TODO clear rect if it's necessary
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	
 	glClearColor(r / 255.0f, g / 255.0f, b / 255.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1545,7 +1545,7 @@ void Emulator_SaveVRAM(const char* outputFileName, int x, int y, int width, int 
 	return;
 #endif
 
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	
 	#define FLIP_Y (VRAM_HEIGHT - i - 1)
 	
@@ -1584,7 +1584,7 @@ void Emulator_StoreFrameBuffer(int x, int y, int w, int h)
 {
 	short *fb = (short*)SDL_malloc(windowWidth * windowHeight * sizeof(short));
 
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	int *data = (int*)SDL_malloc(windowWidth * windowHeight * sizeof(int));
 	glReadPixels(0, 0, windowWidth, windowHeight, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
@@ -1604,7 +1604,7 @@ void Emulator_StoreFrameBuffer(int x, int y, int w, int h)
 		}
 	}
 
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	SDL_free(data);
 #endif
 
@@ -1669,7 +1669,7 @@ void Emulator_UpdateVRAM()
 	}
 	vram_need_update = false;
 
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	vramTexture = vramTextures[curVramTexture];
 	
 	glBindTexture(GL_TEXTURE_2D, vramTexture);
@@ -1783,7 +1783,7 @@ bool Emulator_BeginScene()
 
 	g_lastBoundTexture = NULL;
 
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	glBindVertexArray(dynamic_vertex_array);
 
 	glClearDepth(1.0f);
@@ -1803,7 +1803,7 @@ bool Emulator_BeginScene()
 	{
 		Emulator_SetWireframe(true);
 
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 #endif
@@ -1816,7 +1816,7 @@ bool Emulator_BeginScene()
 void Emulator_TakeScreenshot()
 {
 	unsigned char* pixels = new unsigned char[windowWidth * windowHeight * 4];
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	glReadPixels(0, 0, windowWidth, windowHeight, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
 #endif
 	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(pixels, windowWidth, windowHeight, 8 * 4, windowWidth * 4, 0, 0, 0, 0);
@@ -1953,7 +1953,7 @@ void Emulator_SwapWindow()
 	//Emulator_WaitForTimestep(1);
 
 #if defined(RO_DOUBLE_BUFFERED)
-#if defined(OGL)
+#if defined(RENDERER_OGL)
 	SDL_GL_SwapWindow(g_window);
 #elif defined(OGLES)
 	eglSwapBuffers(eglDisplay, eglSurface);
@@ -1994,7 +1994,7 @@ void Emulator_EndScene()
 		Emulator_SetWireframe(false);
 	}
 
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	glBindVertexArray(0);
 #endif
 
@@ -2017,7 +2017,7 @@ void Emulator_ShutDown()
 	if(g_vblankMutex)
 		SDL_DestroyMutex(g_vblankMutex);
 
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	vramTexture = 0;
 	Emulator_DestroyTexture(vramTextures[0]);
 	Emulator_DestroyTexture(vramTextures[1]);
@@ -2068,7 +2068,7 @@ void Emulator_SetBlendMode(BlendMode blendMode)
 		return;
 	}
 
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	if (g_PreviousBlendMode == BM_NONE)
 	{
 		glEnable(GL_BLEND);
@@ -2108,7 +2108,7 @@ void Emulator_SetBlendMode(BlendMode blendMode)
 
 void Emulator_SetPolygonOffset(float ofs)
 {
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	if (ofs == 0.0f)
 	{
 		glDisable(GL_POLYGON_OFFSET_FILL);
@@ -2123,14 +2123,14 @@ void Emulator_SetPolygonOffset(float ofs)
 
 void Emulator_SetViewPort(int x, int y, int width, int height)
 {
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	glViewport(x, y, width, height);
 #endif
 }
 
 void Emulator_SetRenderTarget(const RenderTargetID &frameBufferObject)
 {
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
 #else
     #error
@@ -2139,7 +2139,7 @@ void Emulator_SetRenderTarget(const RenderTargetID &frameBufferObject)
 
 void Emulator_SetWireframe(bool enable)
 {
-#if defined(OGL)
+#if defined(RENDERER_OGL)
 	glPolygonMode(GL_FRONT_AND_BACK, enable ? GL_LINE : GL_FILL);
 #endif
 }
@@ -2147,7 +2147,7 @@ void Emulator_SetWireframe(bool enable)
 void Emulator_UpdateVertexBuffer(const Vertex *vertices, int num_vertices)
 {
 	assert(num_vertices <= MAX_NUM_POLY_BUFFER_VERTICES);
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	glBufferSubData(GL_ARRAY_BUFFER, 0, num_vertices * sizeof(Vertex), vertices);
 #else
 	#error
@@ -2156,7 +2156,7 @@ void Emulator_UpdateVertexBuffer(const Vertex *vertices, int num_vertices)
 
 void Emulator_DrawTriangles(int start_vertex, int triangles)
 {
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	glDrawArrays(GL_TRIANGLES, start_vertex, triangles * 3);
 #else
 	#error

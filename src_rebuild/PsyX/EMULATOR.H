@@ -22,7 +22,7 @@
 #define NULL		0
 #endif
 
-#if !((defined OGL) || (defined(OGLES) && OGLES_VERSION == 3))
+#if !((defined RENDERER_OGL) || (defined(OGLES) && OGLES_VERSION == 3))
 #define glGenVertexArrays       glGenVertexArraysOES
 #define glBindVertexArray       glBindVertexArrayOES
 #define glDeleteVertexArrays    glDeleteVertexArraysOES
@@ -50,7 +50,7 @@
 #define PSYX_UNIMPLEMENTED() eprinterr("Unimplemented!\n");
 #endif
 
-#if defined(OGL)
+#if defined(RENDERER_OGL)
 #define VRAM_FORMAT            GL_RG
 #define VRAM_INTERNAL_FORMAT   GL_RG8
 #elif defined(OGLES)
@@ -170,7 +170,7 @@ enum TexFormat
 #define MAX_NUM_POLY_BUFFER_VERTICES (32768)
 #define MAX_NUM_INDEX_BUFFERS        (4096)
 
-#if defined(OGLES) || defined(OGL)
+#if defined(OGLES) || defined(RENDERER_OGL)
 typedef GLuint TextureID;
 typedef GLuint ShaderID;
 typedef GLuint RenderTargetID;

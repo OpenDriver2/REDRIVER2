@@ -14,9 +14,9 @@
 //#define OGLES_VERSION 2
 
 //Open Graphics Library
-#define OGL
+#define RENDERER_OGL
 
-#if defined(OGL)
+#if defined(RENDERER_OGL)
 #define SDL2
 #define GLEW
 #endif
@@ -64,7 +64,7 @@
 #include <SDL.h>
 #endif
 
-#if defined (OGL)
+#if defined (RENDERER_OGL)
 #include <SDL_opengl.h>///@FIXME see mac!
 #elif defined (OGLES)
 #include <SDL_syswm.h>
@@ -82,7 +82,7 @@
 //#include <SDL_gamecontroller.h>
 #endif
 
-#if defined(OGL)
+#if defined(RENDERER_OGL)
 #define TEXTURE_FORMAT GL_UNSIGNED_SHORT_1_5_5_5_REV
 #elif defined(OGLES)
 #define TEXTURE_FORMAT GL_UNSIGNED_SHORT_5_5_5_1

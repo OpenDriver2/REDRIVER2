@@ -8,5 +8,7 @@
 // PGXP-Z: Precise GTE transform pipeline with Z-depth and widescreen fixes. Recommended
 #define USE_PGXP
 
+// Renderer to use. Currently only OpenGL is supported
+#define RENDERER_OGL
 
 #endif // PSYX_CONFIG_H

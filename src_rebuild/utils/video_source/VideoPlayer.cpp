@@ -250,7 +250,7 @@ void FMVPlayerInitGL()
 	memset(g_FMVDecodedImageBuffer, 0, DECODE_BUFFER_ALLOC);
 	// FIXME: double buffering?
 	
-#if defined(OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)
 	glGenTextures(1, &g_FMVTexture);
 
 	glBindTexture(GL_TEXTURE_2D, g_FMVTexture);
