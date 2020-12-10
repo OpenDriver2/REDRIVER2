@@ -17,6 +17,7 @@ end
 	
 workspace "REDRIVER2"
     configurations { "Debug", "Release", "Release_dev" }
+	platforms { "x86" } --, "x86_64" }
 
     defines { VERSION } 
 
@@ -27,20 +28,22 @@ workspace "REDRIVER2"
 			"-Wno-write-strings",
 			"-Wno-format-security",
 			"-Wno-unused-result",
-            "-fpermissive",
-            "-m32"
+            "-fpermissive"
         }
-		linkoptions {
-            "-m32"
-        }
+		
 		cppdialect "C++11"
-
+		
+		filter "platforms:x86_64"
+			buildoptions {
+				"-m32"
+			}
+			
+			linkoptions {
+				"-m32"
+			}
 
 	filter "system:Windows"
 		disablewarnings { "4996", "4554", "4244", "4101", "4838", "4309" }
-
-    filter "system:Windows or linux"
-        defines { "USE_32_BIT_ADDR", "PGXP" }
 
     filter "configurations:Debug"
         defines { 
@@ -99,7 +102,7 @@ project "REDRIVER2"
 	end
 
     filter "system:Windows or linux"
-        defines { "OGL", "SIMPLE_SPOOL" }
+        defines { "SIMPLE_SPOOL" }
         dependson { "PsyX" }
         links { "Psy-X", "jpeg" }
 		
