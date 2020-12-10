@@ -14,6 +14,6 @@ sudo apt-get install -qq aptitude -y
 # fix Ubuntu's broken mess of packages using aptitude
 sudo aptitude install --quiet=2 \
     g++-multilib libsdl2-2.0-0:i386 libsdl2-dev:i386 \
-    libopenal1:i386 libopenal-dev:i386 libjpeg-turbo8:i386 \
+    libopenal-dev:i386 libjpeg-turbo8:i386 \
     libjpeg-turbo8-dev:i386 -y
 
