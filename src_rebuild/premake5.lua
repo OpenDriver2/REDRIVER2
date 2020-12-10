@@ -20,6 +20,22 @@ workspace "REDRIVER2"
 
     defines { VERSION } 
 
+	filter "system:Linux"
+		buildoptions {
+            "-Wno-narrowing",
+			"-Wno-endif-labels",
+			"-Wno-write-strings",
+			"-Wno-format-security",
+			"-Wno-unused-result",
+            "-fpermissive",
+            "-m32"
+        }
+		linkoptions {
+            "-m32"
+        }
+		cppdialect "C++11"
+
+
 	filter "system:Windows"
 		disablewarnings { "4996", "4554", "4244", "4101", "4838", "4309" }
 
@@ -100,7 +116,6 @@ project "REDRIVER2"
 		}
 
     filter "system:Windows"
-		
         files { 
             "Windows/resource.h", 
             "Windows/Resource.rc", 
@@ -118,14 +133,6 @@ project "REDRIVER2"
         }
         
     filter "system:linux"
-        buildoptions {
-            "-Wno-narrowing",
-            "-fpermissive",
-            "-m32"
-        }
-        
-        cppdialect "C++11"
-
         includedirs {
             "/usr/include/SDL2"
         }
@@ -135,11 +142,6 @@ project "REDRIVER2"
             "openal",
             "SDL2",
             "dl",
-        }
-
-        linkoptions {
-            "-z muldefs",
-            "-m32"
         }
 		
 	filter "system:psx"

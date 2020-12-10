@@ -40,11 +40,6 @@ project "Psy-X"
         }
 
     filter "system:linux"
-        buildoptions {
-            "-Wno-narrowing",
-            "-m32",
-        }
-
         includedirs {
             "/usr/include/SDL2"
         }
@@ -53,10 +48,6 @@ project "Psy-X"
             "GL",
             "openal",
             "SDL2",
-        }
-
-        linkoptions {
-            "-m32"
         }
 
     filter "configurations:Release"
