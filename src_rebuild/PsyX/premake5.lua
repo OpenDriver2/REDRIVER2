@@ -34,17 +34,17 @@ project "Psy-X"
             "OpenAL32"
         }
 		
-		filter "platforms:x86"
-			libdirs { 
-				SDL2_DIR.."/lib/x86",
-				OPENAL_DIR.."/libs/Win32",
-			}
-			
-		filter "platforms:x86_64"
-			libdirs { 
-				SDL2_DIR.."/lib/x64",
-				OPENAL_DIR.."/libs/Win64",
-			}
+	filter {"system:Windows", "platforms:x86"}
+		libdirs { 
+			SDL2_DIR.."/lib/x86",
+			OPENAL_DIR.."/libs/Win32",
+		}
+		
+	filter {"system:Windows", "platforms:x86_64"}
+		libdirs { 
+			SDL2_DIR.."/lib/x64",
+			OPENAL_DIR.."/libs/Win64",
+		}
 
     filter "system:linux"
         includedirs {

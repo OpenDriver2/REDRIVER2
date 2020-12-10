@@ -1,8 +1,9 @@
 #ifndef EMULATOR_H
 #define EMULATOR_H
 
-#include "EMULATOR_PLATFORM_SETUP.H"
 #include "TYPES.H"
+#include "EMULATOR_PLATFORM_SETUP.H"
+
 #include "PGXP_DEFS.H"
 #include "LIBGTE.H"
 #include "LIBGPU.H"
