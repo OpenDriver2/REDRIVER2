@@ -291,7 +291,7 @@ void LoadSky(void)
 }
 
 // [D] [T]
-#ifdef PGXP
+#ifdef USE_PGXP
 void DisplaySun(DVECTORF* pos, CVECTOR* col, int flare_col)
 #else
 void DisplaySun(DVECTOR* pos, CVECTOR* col, int flare_col)
@@ -405,7 +405,7 @@ void DisplaySun(DVECTOR* pos, CVECTOR* col, int flare_col)
 }
 
 // [D] [T]
-#ifdef PGXP
+#ifdef USE_PGXP
 void DisplayMoon(DVECTORF* pos, CVECTOR* col, int flip)
 #else
 void DisplayMoon(DVECTOR* pos, CVECTOR* col, int flip)
@@ -496,7 +496,7 @@ void DrawLensFlare(void)
 	
 	int haze_col;
 
-#ifdef PGXP
+#ifdef USE_PGXP
 	DVECTORF sun_pers_conv_position;
 #else
 	DVECTOR sun_pers_conv_position;
@@ -825,7 +825,7 @@ void calc_sky_brightness(void)
 // offset: 0x1f800020
 extern _pct plotContext;
 
-#ifdef PGXP
+#ifdef USE_PGXP
 DVECTORF scratchPad_skyVertices[35];	// 1f800044
 #else
 DVECTOR scratchPad_skyVertices[35];	// 1f800044
@@ -842,7 +842,7 @@ void PlotSkyPoly(POLYFT4* polys, int skytexnum, unsigned char r, unsigned char g
 	src = polys;
 	poly = (POLY_FT4*)current->primptr;
 
-#ifdef PGXP
+#ifdef USE_PGXP
 	DVECTORF* outpoints = scratchPad_skyVertices;
 #else
 	DVECTOR* outpoints = scratchPad_skyVertices;
@@ -875,7 +875,7 @@ void PlotSkyPoly(POLYFT4* polys, int skytexnum, unsigned char r, unsigned char g
 
 		addPrim(current->ot + 0x107f, poly);
 
-#if defined(PGXP) && defined(USE_32_BIT_ADDR)
+#if defined(USE_PGXP) && defined(USE_EXTENDED_PRIM_POINTERS)
 		poly->pgxp_index = outpoints[src->v0].pgxp_index;
 #endif 
 
@@ -888,7 +888,7 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 {
 	SVECTOR* verts;
 
-#ifdef PGXP
+#ifdef USE_PGXP
 	DVECTORF* dv0;
 	DVECTORF* dv1;
 	DVECTORF* dv2;
@@ -953,7 +953,7 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 		if(count == 15)
 			gte_stszotz(&z);
 
-#ifdef PGXP
+#ifdef USE_PGXP
 		// store PGXP index
 		// HACK: -1 is needed here for some reason
 		dv0->pgxp_index = dv1->pgxp_index = dv2->pgxp_index = PGXP_GetIndex() - 1;

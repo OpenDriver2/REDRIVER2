@@ -1,7 +1,7 @@
 #ifndef PGXP_DEFS_H
 #define PGXP_DEFS_H
 
-#ifdef PGXP
+#ifdef USE_PGXP
 #include "GTE/half_float.h"
 
 typedef half VERTTYPE;

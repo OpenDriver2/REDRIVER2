@@ -71,7 +71,7 @@ KeyboardMapping g_keyboard_mapping;
 // without clamping
 inline void ScreenCoordsToEmulator(Vertex* vertex, int count)
 {
-#ifdef PGXP
+#ifdef USE_PGXP
 	while (count--)
 	{
 		float psxScreenW = activeDispEnv.disp.w;
@@ -516,7 +516,7 @@ void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p
 		vertex[3].y = vertex[0].y;
 	} // TODO diagonal line alignment
 
-#ifdef PGXP
+#ifdef USE_PGXP
 	vertex[0].scr_h = vertex[1].scr_h = vertex[2].scr_h = vertex[3].scr_h = 0.0f;
 #endif
 
@@ -527,7 +527,7 @@ void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p
 
 inline void Emulator_ApplyVertexPGXP(Vertex* v, VERTTYPE* p, float ofsX, float ofsY, ushort gteidx)
 {
-#ifdef PGXP
+#ifdef USE_PGXP
 	uint lookup = PGXP_LOOKUP_VALUE(p[0], p[1]);
 	PGXPVData vd;
 	if(g_pgxpTextureCorrection && PGXP_GetCacheData(vd, lookup, gteidx)) 
@@ -638,7 +638,7 @@ void Emulator_GenerateVertexArrayRect(struct Vertex* vertex, VERTTYPE* p0, short
 	vertex[3].x = vertex[0].x + w;
 	vertex[3].y = vertex[0].y;
 
-#ifdef PGXP
+#ifdef USE_PGXP
 	vertex[0].scr_h = vertex[1].scr_h = vertex[2].scr_h = vertex[3].scr_h = 0.0f;
 #endif
 
@@ -1029,7 +1029,7 @@ GLint u_Projection3D;
 		"	vec2 VRAM(vec2 uv) { return texture2D(s_texture, uv).rg; }\n"
 #endif
 
-#ifdef PGXP
+#ifdef USE_PGXP
 #define GTE_PERSPECTIVE_CORRECTION \
 		"	mat4 ofsMat = mat4(\n"\
 		"		vec4(1.0,  0.0,  0.0,  0.0),\n"\
@@ -1240,7 +1240,7 @@ ShaderID Shader_Compile(const char *source)
 
 
 
-#ifdef PGXP
+#ifdef USE_PGXP
 	glBindAttribLocation(program, a_zw, "a_zw");
 #endif
 
@@ -1267,7 +1267,7 @@ void Emulator_CreateGlobalShaders()
 
 #if defined(OGL) || defined(OGLES)
 	u_Projection = glGetUniformLocation(g_gte_shader_4, "Projection");
-#ifdef PGXP
+#ifdef USE_PGXP
 	u_Projection3D = glGetUniformLocation(g_gte_shader_4, "Projection3D");
 #endif
 #endif
@@ -1324,7 +1324,7 @@ int Emulator_Initialise()
 	glEnableVertexAttribArray(a_texcoord);
     glEnableVertexAttribArray(a_color);
 
-#if defined(PGXP)
+#if defined(USE_PGXP)
 	glVertexAttribPointer(a_position, 4, GL_FLOAT,         GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->x);
 	glVertexAttribPointer(a_zw,		  4, GL_FLOAT,		   GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->z);
 
@@ -1415,7 +1415,7 @@ void Emulator_SetupClipMode(const RECT16& rect)
 
 	{
 		clipRectX -= 0.5f;
-#ifdef PGXP
+#ifdef USE_PGXP
 		float emuScreenAspect = float(windowWidth) / float(windowHeight);
 #else
 		float emuScreenAspect = (320.0f / 240.0f);
@@ -1446,7 +1446,7 @@ void Emulator_SetupClipMode(const RECT16& rect)
 
 void Emulator_GetPSXWidescreenMappedViewport(RECT16* rect)
 {
-#ifdef PGXP
+#ifdef USE_PGXP
 	float emuScreenAspect = float(windowWidth) / float(windowHeight);
 
 	float psxScreenW = activeDispEnv.disp.w;
@@ -1477,7 +1477,7 @@ void Emulator_SetShader(const ShaderID &shader)
 	#error
 #endif
 
-#ifdef PGXP
+#ifdef USE_PGXP
 	float emuScreenAspect = float(windowWidth) / float(windowHeight);
 	Emulator_Ortho2D(-0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f, -0.5f, -1.0f, 1.0f);
 	Emulator_Perspective3D(0.9265f, 1.0f, 1.0f / (emuScreenAspect * PSX_SCREEN_ASPECT), 1.0f, 1000.0f);

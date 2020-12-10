@@ -17,7 +17,7 @@
 #include "CARS.H"
 #include "CONVERT.H"
 
-#ifdef PGXP
+#ifdef USE_PGXP
 #include <math.h>
 #endif
 
@@ -607,7 +607,7 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	prims->x3 = v2[0] - FIXEDH(cs) - dx1;
 	prims->y3 = v2[1] - FIXEDH(sn) - dy1;
 
-#ifdef PGXP
+#ifdef USE_PGXP
 
 	PGXPVData vdata1, vdata2;
 	PGXP_GetCacheData(vdata1, PGXP_LOOKUP_VALUE(v1[0], v1[1]), 0);

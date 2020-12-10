@@ -9,6 +9,7 @@
 #endif
 
 // Necessary types
+// It's size should match P_LEN*4
 #ifdef PSX
 typedef u_long OTTYPE;
 #else

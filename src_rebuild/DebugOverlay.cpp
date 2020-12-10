@@ -155,7 +155,7 @@ void Debug_Line2D(SXYPAIR& pointA, SXYPAIR& pointB, CVECTOR& color)
 	line->g0 = color.g;
 	line->b0 = color.b;
 
-#if defined(PGXP) && defined(USE_32_BIT_ADDR)
+#if defined(USE_PGXP) && defined(USE_EXTENDED_PRIM_POINTERS)
 	line->pgxp_index = 0xFFFF;
 #endif
 

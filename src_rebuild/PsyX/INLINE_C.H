@@ -146,7 +146,7 @@ extern int docop2(int op);
 #define gte_lddp( r0 )	\
 	MTC2(*(uint*)r0, 8);
 
-#if defined(PGXP)
+#if defined(USE_PGXP)
 
 // swc2 14
 #define gte_stsxy( r0 ) \

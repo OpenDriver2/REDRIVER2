@@ -462,7 +462,7 @@ int Lm_H(long long value, int sf) {
 	return value_12;
 }
 
-#ifdef PGXP
+#ifdef USE_PGXP
 PGXPVector3D g_FP_SXYZ0; // direct access PGXP without table lookup
 PGXPVector3D g_FP_SXYZ1;
 PGXPVector3D g_FP_SXYZ2;
@@ -530,7 +530,7 @@ bool PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint)
 	return false;
 }
 
-#endif // PGXP
+#endif // USE_PGXP
 
 int GTE_RotTransPers(int idx, int lm)
 {
@@ -552,7 +552,7 @@ int GTE_RotTransPers(int idx, int lm)
 	C2_SX2 = Lm_G1(F((long long)C2_OFX + ((long long)C2_IR1 * h_over_sz3)) >> 16);
 	C2_SY2 = Lm_G2(F((long long)C2_OFY + ((long long)C2_IR2 * h_over_sz3)) >> 16);
 
-#if defined(PGXP)
+#if defined(USE_PGXP)
 	// perform the same but in floating point
 	double fMAC1 = (/*int44*/(double)((float)C2_TRX * 4096.0f) + ((float)C2_R11 * (float)VX(idx)) + ((float)C2_R12 * (float)VY(idx)) + ((float)C2_R13 * (float)VZ(idx)));
 	double fMAC2 = (/*int44*/(double)((float)C2_TRY * 4096.0f) + ((float)C2_R21 * (float)VX(idx)) + ((float)C2_R22 * (float)VY(idx)) + ((float)C2_R23 * (float)VZ(idx)));
@@ -621,7 +621,7 @@ int docop2(int op) {
 			GTELOG("%08x NCLIP", op);
 #endif
 
-#ifdef PGXP
+#ifdef USE_PGXP
 			{
 				float fSX0 = g_FP_SXYZ0.px;
 				float fSY0 = g_FP_SXYZ0.py;

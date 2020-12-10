@@ -1,6 +1,8 @@
 #ifndef	_SYS_TYPES_H
 #define	_SYS_TYPES_H
 
+#include "PSYX_CONFIG.H"
+
 #include <stdint.h>
 #include <stddef.h>
 
@@ -62,12 +64,6 @@ typedef	long *	qaddr_t;
 typedef	long	swblk_t;
 #endif
 
-#if !defined(__EMSCRIPTEN__)
-#ifndef _SIZE_T
-#define _SIZE_T
-typedef	unsigned int size_t;
-#endif
-#endif
 
 //typedef	long	time_t;
 //typedef	short	dev_t;

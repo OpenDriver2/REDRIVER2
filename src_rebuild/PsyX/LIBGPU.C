@@ -193,7 +193,7 @@ void ResetPolyState()
 	s_lastPolyType = 0xFFFF;
 }
 
-#if defined(USE_32_BIT_ADDR)
+#if defined(USE_EXTENDED_PRIM_POINTERS)
 u_long terminator[2] = { 0xffffffff, 0 }; // P_TAG with zero length
 #else
 u_long terminator = 0xffffffff;
@@ -271,7 +271,7 @@ int MargePrim(void* p0, void* p1)
 	return -1;
 #endif //0
 
-#if defined(USE_32_BIT_ADDR)
+#if defined(USE_EXTENDED_PRIM_POINTERS)
 	int v0 = ((int*)p0)[1];
 	int v1 = ((int*)p1)[1];
 #else
@@ -282,13 +282,13 @@ int MargePrim(void* p0, void* p1)
 	v0 += v1;
 	v1 = v0 + 1;
 
-#if defined(USE_32_BIT_ADDR)
+#if defined(USE_EXTENDED_PRIM_POINTERS)
 	if (v1 < 0x12)
 #else
 	if (v1 < 0x11)
 #endif
 	{
-#if defined(USE_32_BIT_ADDR)
+#if defined(USE_EXTENDED_PRIM_POINTERS)
 		((int*)p0)[1] = v1;
 		((int*)p1)[1] = 0;
 #else
@@ -334,11 +334,6 @@ int StoreImage2(RECT16 *RECT16, u_long *p)
 	return result;
 }
 
-#ifdef USE_32_BIT_ADDR
-#	define OT_WIDTH 2	// two longs
-#else
-#	define OT_WIDTH 1	// single long
-#endif
 
 u_long* ClearOTag(u_long* ot, int n)
 {
@@ -346,13 +341,13 @@ u_long* ClearOTag(u_long* ot, int n)
 		return NULL;
 
 	// last is  aspecial terminator
-	setaddr(&ot[n - OT_WIDTH], &terminator);
-	setlen(&ot[n - OT_WIDTH], 0);
+	setaddr(&ot[n - P_LEN], &terminator);
+	setlen(&ot[n - P_LEN], 0);
 
 	// make a linked list with it's next items
-	for (int i = (n-1) * OT_WIDTH; i >= 0; i -= OT_WIDTH)
+	for (int i = (n-1) * P_LEN; i >= 0; i -= P_LEN)
 	{
-		setaddr(&ot[i], &ot[i + OT_WIDTH]);
+		setaddr(&ot[i], &ot[i + P_LEN]);
 		setlen(&ot[i], 0);
 	}
 
@@ -369,9 +364,9 @@ u_long* ClearOTagR(u_long* ot, int n)
 	setlen(ot, 0);
 
 	// initialize a linked list with it's previous items
-	for (int i = OT_WIDTH; i < n * OT_WIDTH; i += OT_WIDTH)
+	for (int i = P_LEN; i < n * P_LEN; i += P_LEN)
 	{
-		setaddr(&ot[i], &ot[i - OT_WIDTH]);
+		setaddr(&ot[i], &ot[i - P_LEN]);
 		setlen(&ot[i], 0);
 	}
 
@@ -476,10 +471,9 @@ void SetDrawEnv(DR_ENV* dr_env, DRAWENV* env)
 	dr_env->code[3] = 32 * (((256 - env->tw.h) >> 3) & 0x1F) | ((256 - env->tw.w) >> 3) & 0x1F | (((env->tw.y >> 3) & 0x1F) << 15) | (((env->tw.x >> 3) & 0x1F) << 10) | 0xE2000000;
 	dr_env->code[4] = ((env->dtd != 0) << 9) | ((env->dfe != 0) << 10) | env->tpage & 0x1FF | 0xE1000000;
 
-#ifdef USE_32_BIT_ADDR
-	dr_env->len = 5;
-#endif
-	dr_env->tag = dr_env->tag & 0xFFFFFF | 0x5000000;
+	// TODO: add missing logic when env->isbg != 0
+	
+	setlen(dr_env, 5);
 }
 
 void SetDrawMode(DR_MODE* p, int dfe, int dtd, int tpage, RECT16* tw)
@@ -491,10 +485,8 @@ void SetDrawArea(DR_AREA *p, RECT16 *r)
 {
 	p->code[0] = (r->x & 0x3FF | ((r->y & 0x3FF) << 10)) | 0xE3000000;
 	p->code[1] = (((r->x + r->w) & 0x3FF) | (((r->y + r->h) & 0x3FF) << 10)) | 0xE4000000;
-#ifdef USE_32_BIT_ADDR
-	p->len = 2;
-#endif
-	p->tag = p->tag & 0xFFFFFF | 0x2000000;
+
+	setlen(p, 2);
 }
 
 void SetDrawMove(DR_MOVE* p, RECT16* rect, int x, int y)
@@ -512,10 +504,7 @@ void SetDrawMove(DR_MOVE* p, RECT16* rect, int x, int y)
 	p->code[3] = y << 0x10 | x & 0xffffU;
 	p->code[4] = *(ulong *)&rect->w;
 
-#ifdef USE_32_BIT_ADDR
-	p->len = len;
-#endif
-	p->tag = p->tag & 0xFFFFFF | 0x1000000;
+	setlen(p, len);
 }
 
 void SetDrawLoad(DR_LOAD* p, RECT16* RECT16)
@@ -611,7 +600,7 @@ void DrawAggregatedSplits()
 
 			eprintf("==========================================\n");
 			eprintf("POLYGON: %d\n", g_polygonSelected);
-#ifdef PGXP
+#ifdef USE_PGXP
 			eprintf("X: %.2f Y: %.2f\n", vert->x, vert->y);
 			eprintf("U: %.2f V: %.2f\n", vert->u, vert->v);
 #else
@@ -633,7 +622,7 @@ void DrawAggregatedSplits()
 
 	ClearVBO();
 
-#ifdef PGXP
+#ifdef USE_PGXP
 	PGXP_ClearCache();
 #endif
 }
@@ -649,10 +638,11 @@ void AggregatePTAGsToSplits(u_long* p, bool singlePrimitive)
 
 	if (singlePrimitive)
 	{
-#if defined(PGXP) && defined(USE_32_BIT_ADDR)
+#if defined(USE_PGXP) && defined(USE_EXTENDED_PRIM_POINTERS)
 		P_TAG* pTag = (P_TAG*)p;
 		pTag->pgxp_index = 0xFFFF;		// force
 #endif
+	
 		// single primitive
 		ParsePrimitive((uintptr_t)p);
 		g_splits[g_splitIndex].vCount = g_vertexIndex - g_splits[g_splitIndex].vIndex;
@@ -667,12 +657,14 @@ void AggregatePTAGsToSplits(u_long* p, bool singlePrimitive)
 		{
 			if (pTag->len > 0)
 			{
-				int lastSize = ParseLinkedPrimitiveList((uintptr_t)pTag, (uintptr_t)pTag + (uintptr_t)(pTag->len * 4) + 4 + LEN_OFFSET);
+				uintptr_t packetEnd = (uintptr_t)pTag + (pTag->len + P_LEN) * sizeof(u_long);
+
+				int lastSize = ParseLinkedPrimitiveList((uintptr_t)pTag, packetEnd);
 				if (lastSize == -1)
 					break; // safe bailout
 			}
 			
-			pTag = (P_TAG*)(pTag->addr);
+			pTag = (P_TAG*)pTag->addr;
 		}
 	}
 }
@@ -694,7 +686,7 @@ void DrawOTag(u_long* p)
 			ClearVBO();
 			ResetPolyState();
 
-#ifdef PGXP
+#ifdef USE_PGXP
 			PGXP_ClearCache();
 #endif
 			return;
@@ -735,7 +727,7 @@ void DrawPrim(void* p)
 		ClearVBO();
 		ResetPolyState();
 
-#ifdef PGXP
+#ifdef USE_PGXP
 		PGXP_ClearCache();
 #endif
 		return;
@@ -796,7 +788,7 @@ int ParsePrimitive(uintptr_t primPtr)
 
 	bool semi_transparent = (pTag->code & 2) != 0;
 
-#if defined(PGXP) && defined(USE_32_BIT_ADDR)
+#if defined(USE_PGXP) && defined(USE_EXTENDED_PRIM_POINTERS)
 	unsigned short gte_index = pTag->pgxp_index;
 #else
 	unsigned short gte_index = 0xFFFF;
@@ -1367,7 +1359,7 @@ int ParsePrimitive(uintptr_t primPtr)
 		}
 	}
 
-#ifdef USE_32_BIT_ADDR
+#ifdef USE_EXTENDED_PRIM_POINTERS
 	return (pTag->len + 2) * sizeof(long);
 #else
 	return (pTag->len + 1) * sizeof(long);
@@ -1380,7 +1372,7 @@ int ParseLinkedPrimitiveList(uintptr_t packetStart, uintptr_t packetEnd)
 
 	int lastSize = -1;
 
-	while (currentAddress < packetEnd)
+	while (currentAddress != packetEnd)
 	{
 		lastSize = ParsePrimitive(currentAddress);
 
