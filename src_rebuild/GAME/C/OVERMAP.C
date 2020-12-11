@@ -462,8 +462,8 @@ void SetMapPos(void)
 
 	scale = overlaidmaps[GameLevel].scale;
 
-	x_map = overlaidmaps[GameLevel].x_offset + player[0].pos[0] / scale;
-	y_map = overlaidmaps[GameLevel].y_offset - player[0].pos[2] / scale;
+	x_map = overlaidmaps[GameLevel].x_offset + player[0].pos[0] / scale + 1;
+	y_map = overlaidmaps[GameLevel].y_offset - player[0].pos[2] / scale + 1;
 }
 
 // [D] [T]
@@ -755,20 +755,19 @@ void CopIndicator(int xpos, int strength)
 }
 
 // [D] [T]
-void DrawSightCone(COP_SIGHT_DATA *pCopSightData, VECTOR *pPosition, int direction)
+void DrawSightCone(COP_SIGHT_DATA *pCopSightData, VECTOR *pPosition, int direction, int flags)
 {
 	short temp;
 	int dir;
-	VECTOR *pVVar8;
 	VECTOR *pNextVertex;
 	POLY_G3 *poly;
+	TILE_1* tile1;
 	VECTOR *pVertex;
 	VECTOR vertex[9];
 	int angle;
 	int frontViewAngle;
 	int frontViewDistance;
 	int surroundViewDistance;
-
 
 	frontViewDistance = pCopSightData->frontViewDistance;
 	surroundViewDistance = pCopSightData->surroundViewDistance;
@@ -826,7 +825,23 @@ void DrawSightCone(COP_SIGHT_DATA *pCopSightData, VECTOR *pPosition, int directi
 		addPrim(current->ot, poly);
 
 		current->primptr += sizeof(POLY_G3);
+		
 		pVertex++;
+	}
+
+	// draw center
+	if(flags & 0x1)
+	{
+		tile1 = (TILE_1*)current->primptr;
+		setTile1(tile1);
+
+		tile1->r0 = tile1->g0 = tile1->b0 = (CameraCnt & 7) > 3 ? 255 : 0;
+
+		tile1->x0 = vertex[0].vx;
+		tile1->y0 = vertex[0].vz;
+
+		addPrim(current->ot, tile1);
+		current->primptr += sizeof(TILE_1);
 	}
 
 	TransparencyOn(current->ot, 0x20);
@@ -1202,7 +1217,7 @@ void DrawOverheadMap(void)
 	cp = car_data;
 	do {
 		if (cp->controlType == CONTROL_TYPE_PURSUER_AI && cp->ai.p.dying == 0 || (cp->controlFlags & CONTROL_FLAG_COP))
-			DrawSightCone(&copSightData, (VECTOR *)cp->hd.where.t, cp->hd.direction);
+			DrawSightCone(&copSightData, (VECTOR *)cp->hd.where.t, cp->hd.direction, cp->controlType == CONTROL_TYPE_PURSUER_AI);
 
 		cp++;
 	} while (cp <= &car_data[MAX_CARS]);
