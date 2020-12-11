@@ -273,11 +273,11 @@ struct sdNodePACKED
 	int node : 1;
 };
 
-union _sdNode
+typedef union _sdNode
 {
 	int value;
 	sdNodePACKED n;
-};
+} sdNode;
 
 // really it's UNUSED in Driver 2 - so it's Driver 1 Only
 struct ROUTE_DATA
