@@ -84,7 +84,7 @@ static RECT16 MapRect;
 
 static int tilehnum = 0;
 static char maptile[4][4];
-static char tile_size = 0x20;
+static char tile_size = 32;
 
 static int old_x_mod = 0;
 static int old_y_mod = 0;
@@ -488,7 +488,7 @@ void draw_box(int yPos, int h)
 	linef4->y2 = yPos + h;
 	linef4->y3 = yPos + h;
 
-	addPrim(current->ot + 1, linef4);
+	addPrim(current->ot, linef4);
 	current->primptr += sizeof(LINE_F4);
 
 	LINE_F2* linef2 = (LINE_F2*)current->primptr;
@@ -504,7 +504,7 @@ void draw_box(int yPos, int h)
 	linef2->x1 = gMapXOffset;
 	linef2->y1 = yPos + h;
 
-	addPrim(current->ot + 1, linef2);
+	addPrim(current->ot, linef2);
 	current->primptr += sizeof(LINE_F2);
 }
 
@@ -1169,13 +1169,14 @@ void DrawOverheadMap(void)
 	drarea = (DR_AREA *)current->primptr;
 	SetDrawArea(drarea, &current->draw.clip);
 
-	addPrim(current->ot, drarea);
+	addPrim(current->ot + 1, drarea);
 	current->primptr += sizeof(DR_AREA);
 
 	WorldToOverheadMapPositions((VECTOR *)player->pos, &vec, 1, 0, 0);
 
 	// draw map center
-	if (vec.vx > map_minX && vec.vx < map_maxX && vec.vz > map_minY && vec.vz < map_maxY) 
+	if (vec.vx > map_minX && vec.vx < map_maxX && 
+		vec.vz > map_minY && vec.vz < map_maxY) 
 	{
 		tile1 = (TILE_1 *)current->primptr;
 		setTile1(tile1);
@@ -1284,8 +1285,8 @@ void DrawOverheadMap(void)
 	for (i = 0; i < 5; i++)
 	{
 
-		MapMesh[0][i].vx = -35;
-		MapMesh[i][0].vz = -35;
+		MapMesh[0][i].vx = -44;
+		MapMesh[i][0].vz = -44;
 
 		MapMesh[1][i].vx = -x_mod - 16;
 		MapMesh[i][1].vz = -y_mod - 16;
@@ -1296,8 +1297,8 @@ void DrawOverheadMap(void)
 		MapMesh[3][i].vx = -x_mod + 48;
 		MapMesh[i][3].vz = -y_mod + 48;
 
-		MapMesh[4][i].vx = 35;
-		MapMesh[i][4].vz = 35;
+		MapMesh[4][i].vx = 44;
+		MapMesh[i][4].vz = 44;
 	}
 
 	MapTex[1].w = MapTex[2].w = tile_size;
@@ -1325,15 +1326,8 @@ void DrawOverheadMap(void)
 	gte_SetRotMatrix(&map_matrix);
 	gte_SetTransVector(&translate);
 
-	if (x_mod != 0)
-		MeshWidth = 4;
-	else
-		MeshWidth = 3;
-
-	if (y_mod != 0)
-		MeshHeight = 4;
-	else
-		MeshHeight = 3;
+	MeshWidth = x_mod ? 4 : 3;
+	MeshHeight = y_mod ? 4 : 3;
 	
 	// transform the map mesh
 	for (i = 0; i <= MeshWidth; i++)
@@ -1351,16 +1345,8 @@ void DrawOverheadMap(void)
 		{
 			int tile;
 			tile = maptile[j][i];
-			
-			if ((MapSegmentPos[tile].x & 24) == 24)
-				width = MapTex[j].w - 1;
-			else
-				width = MapTex[j].w;
-	
-			if ((MapSegmentPos[tile].y & 96) == 96)
-				height = MapTex[i].h - 1;
-			else
-				height = MapTex[i].h;
+			width = MapTex[j].w;
+			height = MapTex[i].h;
 
 			spt = (POLY_FT4*)current->primptr;
 
@@ -1399,7 +1385,7 @@ void DrawOverheadMap(void)
 			spt->u3 = MapTex[j].u + MapSegmentPos[tile].x * 4 + width;
 			spt->v3 = MapTex[i].v + MapSegmentPos[tile].y + height;
 
-			addPrim(current->ot, spt);
+			addPrim(current->ot + 1, spt);
 
 			current->primptr += sizeof(POLY_FT4);
 		}
@@ -1422,7 +1408,7 @@ void DrawOverheadMap(void)
 	sptb->x3 = map_maxX;
 	sptb->y3 = map_maxY;
 
-	addPrim(current->ot, sptb);
+	addPrim(current->ot + 1, sptb);
 	current->primptr += sizeof(POLY_F4);
 
 	null = (POLY_FT3 *)current->primptr;
@@ -1436,19 +1422,19 @@ void DrawOverheadMap(void)
 	null->y2 = -1;
 	null->tpage = 0;
 
-	addPrim(current->ot, null);
+	addPrim(current->ot + 1, null);
 	current->primptr += sizeof(POLY_FT3);
 
 	clipped_size.x = map_minX + 1;
 	clipped_size.w = MAP_SIZE_W - 1;
-	clipped_size.h = MAP_SIZE_H - 1;
-	clipped_size.y = current->draw.clip.y + map_minY + 1;
+	clipped_size.h = MAP_SIZE_H;
+	clipped_size.y = current->draw.clip.y + map_minY;// +1;
 
 	drarea = (DR_AREA*)current->primptr;
 
 	SetDrawArea(drarea, &clipped_size);
 
-	addPrim(current->ot, drarea);
+	addPrim(current->ot+1, drarea);
 	current->primptr += sizeof(DR_AREA);
 }
 
