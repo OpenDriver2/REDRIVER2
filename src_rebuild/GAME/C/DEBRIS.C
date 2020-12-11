@@ -21,7 +21,6 @@
 #include "COSMETIC.H"
 #include "DENTING.H"
 #include "GAMESND.H"
-#include "ROADBITS.H"
 
 #include "../ASM/ASMTEST.H"
 
@@ -3204,17 +3203,16 @@ void HandleDebris(void)
 				{
 					if (sm->flags & 0x8000) 
 					{
-						// OBSOLETE CODE
+						// OBSOLETE DRIVER 1 CODE
 						/*
 						ROUTE_DATA routeData;
 						ROADS_GetRouteData(sm->position.vx - sm->start_w, sm->position.vz - sm->start_w, &routeData);
 						ROADS_GetRouteData(sm->position.vx + sm->start_w, sm->position.vz + sm->start_w, &routeData);
-						*
-						if (sm->start_w < 800 && (modelpointers[routeData.type]->shape_flags & 0x80) != 0) 
+
+						if (sm->start_w < 800 && (modelpointers[routeData.type]->shape_flags & MODEL_FLAG_ALLEY)) 
 							sm->start_w += sm->step;
 						else*/
-
-						sm->start_w -= sm->step;
+							sm->start_w -= sm->step;
 					}
 					else 
 					{
@@ -3638,6 +3636,8 @@ void AddRainDrops(void)
 
 		gte_stlvnl(&rt->position)
 
+		// OBSOLETE DRIVER 1 CODE
+		/*
 		if(first)
 		{
 			ROADS_GetRouteData(rt->position.vx, rt->position.vz, &routeData);
@@ -3645,6 +3645,7 @@ void AddRainDrops(void)
 			if (modelpointers[routeData.type]->flags2 & MODEL_FLAG_HASROOF)
 				break;
 		}
+		*/
 
 		first = 0;
 	}

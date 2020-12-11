@@ -11,9 +11,7 @@
 #include "MAIN.H"
 #include "GLAUNCH.H"
 #include "DR2ROADS.H"
-#include "ROADBITS.H"
 #include "SPOOL.H"
-#include "MODELS.H"
 #include "OBJCOLL.H"
 #include "OVERLAY.H"
 #include "PRES.H"
@@ -1161,6 +1159,8 @@ void ControlReplay(void)
 			if ((padd & 1) && gCameraOffset.vy < 50)
 				gCameraOffset.vy += speed * 16;
 
+			// OBSOLETE DRIVER 1 CODE
+			/*
 			ROADS_GetRouteData(player[0].cameraPos.vx, player[0].cameraPos.vz, &routeData1);
 
 			if (modelpointers[routeData1.type]->flags2 & MODEL_FLAG_HASROOF)
@@ -1176,6 +1176,7 @@ void ControlReplay(void)
 					player[0].cameraPos.vy = road_height;
 				}
 			}
+			*/
 		}
 		else if (EditMode == 3)
 		{
@@ -1293,12 +1294,14 @@ void ControlReplay(void)
 			if (player[0].cameraPos.vy < height - 1050)
 				player[0].cameraPos.vy = height - 1050;
 
+			// OBSOLETE DRIVER 1 CODE
+			/*
 			ROADS_GetRouteData(player[0].cameraPos.vx, player[0].cameraPos.vz, &routeData);
 
 			if ((modelpointers[routeData.type]->flags2 & MODEL_FLAG_HASROOF) && player[0].cameraPos.vy < height - 450)
 			{
 				player[0].cameraPos.vy = height - 450;
-			}
+			}*/
 
 			if (cameraview == 1 && OK_To_Zoom() == 0)
 			{
