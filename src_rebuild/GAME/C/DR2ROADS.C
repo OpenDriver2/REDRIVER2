@@ -240,17 +240,17 @@ int sdHeightOnPlane(VECTOR *pos, sdPlane *plane)
 // [D] [T]
 short* sdGetBSP(sdNode *node, XYPAIR *pos)
 {
-	while (node->value & 0x80000000U)
+	int ang, dot;
+
+	while (node->value < 0) // & 0x80000000U)
 	{
-		int ang = ((node->n.angle * 4) & 0x3ffc) / 2;
-		int dot = pos->y * rcossin_tbl[ang + 1] - 
-				  pos->x * rcossin_tbl[ang];
+		ang = (node->n.angle & 0xfff) * 2;
+		dot = pos->y * rcossin_tbl[ang + 1] - pos->x * rcossin_tbl[ang];
 
 		if (dot < node->n.dist * 4096)
 			node++;
 		else
 			node += node->n.offset;
-		
 	} 
 
 	return (short *)node;
@@ -296,16 +296,18 @@ sdPlane* sdGetCell(VECTOR *pos)
 		if (*surface == -1)
 			return GetSeaPlane();
 
-		// check if that's a multi-level surface
+		// check surface has overlapping planes flag (aka multiple levels)
 		if ((*surface & 0x6000) == 0x2000)
 		{
 			surface = &bspData[(*surface & 0x1fff)];
 			do {
-				if (-256 - pos->vy <= *surface)
+				if(-256 - pos->vy > *surface)
+				{
+					surface += 2;
+					sdLevel++;
+				}
+				else
 					break;
-
-				surface += 2;
-				sdLevel++;
 			} while (*surface != -0x8000);
 			
 			surface += 1;
@@ -479,7 +481,7 @@ int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, sdPlane **plane)
 	if (*plane == NULL || (*plane)->b == 0)
 	{
 		normal->vx = 0;
-		normal->vy = 0x1000;
+		normal->vy = 4096;
 		normal->vz = 0;
 	}
 	else
@@ -491,7 +493,7 @@ int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, sdPlane **plane)
 
 	if (*plane == NULL)
 	{
-		return 0x1000;
+		return 4096;
 	}
 	else if ((*plane)->surface == 4)
 	{
@@ -501,8 +503,8 @@ int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, sdPlane **plane)
 		else
 			out->vy += (rcossin_tbl[(pos->vx + pos->vz) * 4 & 0x1fff] >> 8) / 3;
 
-		return 0x800;
+		return 2048;
 	}
 
-	return 0x1000;
+	return 4096;
 }
