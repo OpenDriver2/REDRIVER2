@@ -27,7 +27,7 @@ void Tile1x1(MODEL *model)
 	polys = (PL_POLYFT4*)model->poly_block;
 
 	// grass should be under pavements and other things
-	if ((model->shape_flags & 0x80) || (model->flags2 & 0x4000))
+	if ((model->shape_flags & SHAPE_FLAG_SUBSURFACE) || (model->flags2 & 0x4000))
 		ofse = 229;
 	else
 		ofse = 133;
@@ -404,7 +404,7 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 	tileTypes = *(uint *)(model + 1) >> 2;
 
 	// grass should be under pavements and other things
-	if((model->shape_flags & 0x80) || (model->flags2 & 0x4000))
+	if((model->shape_flags & SHAPE_FLAG_SUBSURFACE) || (model->flags2 & 0x4000))
 		ofse = 229;
 	else
 		ofse = 133;

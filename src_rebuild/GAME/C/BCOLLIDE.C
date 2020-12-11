@@ -624,7 +624,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 	else
 		buildingHeightY = building->height / 2;
 
-	if (boxDiffY <= buildingHeightY + (cp->hd.oBox.length[1] / 2) && (cop->pos.vx != 0xFD46FEC0) && (model->shape_flags & 0x10) == 0)
+	if (boxDiffY <= buildingHeightY + (cp->hd.oBox.length[1] / 2) && (cop->pos.vx != 0xFD46FEC0) && (model->shape_flags & SHAPE_FLAG_NOCOLLIDE) == 0)
 	{
 		tempwhere.vx = cp->hd.where.t[0];
 		tempwhere.vz = cp->hd.where.t[2];
@@ -856,12 +856,12 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 						if (strikeVel < 32) 
 							scale = ((strikeVel << 23) >> 16);
 						else 
-							scale = 0x1000;
+							scale = 4096;
 
-						if ((model->flags2 & 0x800) == 0) 
-							NoteFelony(&felonyData, 6, scale);
-						else
+						if (model->flags2 & MODEL_FLAG_SMASHABLE)
 							NoteFelony(&felonyData, 7, scale);
+						else
+							NoteFelony(&felonyData, 6, scale);
 					}
 
 					collisionResult.hit.vy = -collisionResult.hit.vy;
@@ -870,13 +870,13 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 					velocity.vy = -17;
 					velocity.vz = cp->st.n.linearVelocity[2] / ONE;
 
-					if ((model->flags2 & 0x800) != 0)
+					if (model->flags2 & MODEL_FLAG_SMASHABLE)
 					{
-						// that's for lamps
+						// smash object
 						damage_object(cop, &velocity);
 
 						// smash object
-						if ((model->shape_flags & 8) == 0)
+						if ((model->shape_flags & SHAPE_FLAG_SMASH_QUIET) == 0)
 						{
 							sip = smashable;
 							match = sip;
@@ -919,9 +919,17 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 					// add leaves
 					if (strikeVel > 0x3600 && cp->hd.wheel_speed + 16000U > 32000)
 					{
-						if ((model->flags2 & 0x2000) == 0) 
+						if (model->flags2 & MODEL_FLAG_TREE)
 						{
-							if (gNight != 0 && (modelpointers[building->model]->flags2 & 0x1000) != 0)
+							LeafPosition.vx = collisionResult.hit.vx;
+							LeafPosition.vy = -((rand() & 0xfe) + 600) - collisionResult.hit.vy;
+							LeafPosition.vz = collisionResult.hit.vz;
+
+							AddLeaf(&LeafPosition, 3, 1);
+						}
+						else 
+						{
+							if (gNight && (model->flags2 & 0x1000))
 							{
 								if (damage_lamp(cop))
 								{
@@ -940,14 +948,6 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 
 							collisionResult.hit.vy -= 30;
 							velocity.vy += 20;
-						}
-						else 
-						{
-							LeafPosition.vx = collisionResult.hit.vx;
-							LeafPosition.vy = -((rand() & 0xfe) + 600) - collisionResult.hit.vy;
-							LeafPosition.vz = collisionResult.hit.vz;
-
-							AddLeaf(&LeafPosition, 3, 1);
 						}
 
 						if (strikeVel > 0x1b000)

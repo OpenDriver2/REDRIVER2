@@ -2213,7 +2213,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 						if ((((model->num_vertices - 3 < 300) && (model->num_point_normals < 300)) &&
 							(model->num_polys < 300)) &&
 							((piVar7 = (int*)model->collision_block, piVar7 != NULL &&
-								((model->flags2 & 0x800) == 0))))
+								((model->flags2 & MODEL_FLAG_SMASHABLE) == 0))))
 						{
 							iVar11 = *piVar7;
 							collide = (COLLISION_PACKET*)(piVar7 + 1);

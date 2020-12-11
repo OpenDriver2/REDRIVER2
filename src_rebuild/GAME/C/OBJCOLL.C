@@ -45,7 +45,8 @@ char CellEmpty(VECTOR *pPosition, int radius)
 	{
 		pModel = modelpointers[pCellObject->type];
 
-		if (pModel->collision_block > 0 && (pModel->flags2 & 0xA00) == 0)
+		if (pModel->collision_block > 0 && 
+			(pModel->flags2 & (MODEL_FLAG_NOCOL_200 | MODEL_FLAG_SMASHABLE)) == 0)
 		{
 			num_cb = *(int*)pModel->collision_block;
 
@@ -375,7 +376,9 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 
 				sphere_sq = pModel->bounding_sphere + 800;
 
-				if (pModel->collision_block > 0 && (pModel->flags2 & 0xA00) == 0 && (xd*xd + zd*zd < sphere_sq*sphere_sq))
+				if (pModel->collision_block > 0 && 
+					(pModel->flags2 & (MODEL_FLAG_NOCOL_200 | MODEL_FLAG_SMASHABLE)) == 0 && 
+					(xd*xd + zd*zd < sphere_sq*sphere_sq))
 				{
 					num_cb = *(int*)pModel->collision_block;
 					box_loop = 0;
@@ -717,7 +720,8 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 					}
 					else if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER)
 					{
-						if ((model->flags2 & 0xa00) == 0 && (bbox.xsize > 100 || (bbox.zsize > 100)))
+						if ((model->flags2 & (MODEL_FLAG_NOCOL_200 | MODEL_FLAG_SMASHABLE)) == 0 && 
+							(bbox.xsize > 100 || (bbox.zsize > 100)))
 						{
 							coll_test_count = 5;
 							

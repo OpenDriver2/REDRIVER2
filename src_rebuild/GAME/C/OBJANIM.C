@@ -300,10 +300,10 @@ void InitAnimatingObjects(void)
 		if (model_idx != -1 && modelpointers[model_idx] != &dummyModel)
 		{
 			modelPtr = modelpointers[model_idx];
-			modelPtr->flags2 |= 0x1;
+			modelPtr->flags2 |= MODEL_FLAG_ANIMOBJ;
 
 			if (aop->LitPoly)
-				modelPtr->flags2 |= 0x1000;
+				modelPtr->flags2 |= MODEL_FLAG_LAMP;
 			
 			aop->model_num = model_idx;
 
@@ -311,10 +311,10 @@ void InitAnimatingObjects(void)
 				modelpointers[modelPtr->instance_number] != &dummyModel)
 			{
 				modelPtr = modelpointers[modelPtr->instance_number];
-				modelPtr->flags2 |= 0x1;
+				modelPtr->flags2 |= MODEL_FLAG_ANIMOBJ;
 
 				if (aop->LitPoly)
-					modelPtr->flags2 |= 0x1000;
+					modelPtr->flags2 |= MODEL_FLAG_LAMP;
 			}
 		}
 		else
@@ -345,10 +345,10 @@ void InitSpooledAnimObj(int model_number)
 		if (aop->model_num == model_number)
 		{
 			modelPtr = modelpointers[model_number];
-			modelPtr->flags2 |= 0x1;
+			modelPtr->flags2 |= MODEL_FLAG_ANIMOBJ;
 
 			if (aop->LitPoly)
-				modelPtr->flags2 |= 0x1000;
+				modelPtr->flags2 |= MODEL_FLAG_LAMP;
 			
 			break;
 		}

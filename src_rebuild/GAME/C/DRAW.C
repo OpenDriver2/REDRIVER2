@@ -1072,18 +1072,18 @@ void DrawMapPSX(int* comp_val)
 					if (FrustrumCheck16(ppco, model->bounding_sphere) != -1)
 					{
 						// sprity type
-						if (model->shape_flags & 0x4000)
+						if (model->shape_flags & SHAPE_FLAG_SMASH_SPRITE)
 						{
 							if (sprites_found < MAX_DRAWN_SPRITES)
 								spriteList[sprites_found++] = ppco;
 
-							if ((model->flags2 & 1) && anim_objs_found < 20)
+							if ((model->flags2 & MODEL_FLAG_ANIMOBJ) && anim_objs_found < 20)
 							{
 								cop = UnpackCellObject(ppco, &ci.nearCell);
 								anim_obj_buffer[anim_objs_found++] = cop;
 							}
 
-							if (model->flags2 & 0x2000)
+							if (model->flags2 & MODEL_FLAG_TREE)
 							{
 								if (treecount == 0)
 								{
@@ -1125,9 +1125,10 @@ void DrawMapPSX(int* comp_val)
 								}
 							}
 
-							if ((model->shape_flags & 0x480) || (model->flags2 & 0xc000))
+							if ((model->shape_flags & (SHAPE_FLAG_SUBSURFACE | SHAPE_FLAG_ALLEYWAY)) || 
+								(model->flags2 & (MODEL_FLAG_SIDEWALK | MODEL_FLAG_GRASS)))
 							{
-								if (model->flags2 & 0x80)
+								if (model->flags2 & MODEL_FLAG_ALLEY)
 								{
 									alleycount++;
 
@@ -1155,7 +1156,7 @@ void DrawMapPSX(int* comp_val)
 								if (other_models_found < MAX_DRAWN_BUILDINGS)
 									model_object_ptrs[other_models_found++] = cop;
 
-								if ((model->flags2 & 1) && anim_objs_found < MAX_DRAWN_ANIMATING)
+								if ((model->flags2 & MODEL_FLAG_ANIMOBJ) && anim_objs_found < MAX_DRAWN_ANIMATING)
 									anim_obj_buffer[anim_objs_found++] = cop;
 							}
 						}

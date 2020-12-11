@@ -940,14 +940,14 @@ void AddGroundDebris(void)
 
 				number = seed & 7;
 
-				if ((model->flags2 & 0x2000) == 0) 
+				if (model->flags2 & MODEL_FLAG_TREE)
 				{
-					number = seed & 3;
-					type = 2;	// paper
+					type = 1;	// ground leaves
 				}
 				else 
 				{
-					type = 1;	// ground leaves
+					number = seed & 3;
+					type = 2;	// paper
 				}
 
 				AddLeaf(&Position, number + 1, type);
@@ -990,7 +990,7 @@ void DrawSmashable_sprites(void)
 			object_matrix.m[2][1] = 0;
 			object_matrix.m[2][2] = ONE;
 
-			if ((model->shape_flags & 0x4000) == 0)
+			if ((model->shape_flags & SHAPE_FLAG_SMASH_SPRITE) == 0)
 				RotMatrixY(dam->rot_speed * dam->damage * 3 & 0xfff, &object_matrix);
 
 			RotMatrixZ(dam->rot_speed * dam->damage & 0xfff, &object_matrix);
@@ -1012,7 +1012,7 @@ void DrawSmashable_sprites(void)
 
 			if (FrustrumCheck(&pos, model->bounding_sphere) != -1)
 			{
-				if (model->shape_flags & 0x4000)
+				if (model->shape_flags & SHAPE_FLAG_SMASH_SPRITE)
 				{
 					UNIMPLEMENTED();
 
@@ -3638,8 +3638,13 @@ void AddRainDrops(void)
 
 		gte_stlvnl(&rt->position)
 
-		if (first && (ROADS_GetRouteData(rt->position.vx, rt->position.vz, &routeData), modelpointers[routeData.type]->flags2 & 0x100) != 0)
-			break;
+		if(first)
+		{
+			ROADS_GetRouteData(rt->position.vx, rt->position.vz, &routeData);
+
+			if (modelpointers[routeData.type]->flags2 & MODEL_FLAG_HASROOF)
+				break;
+		}
 
 		first = 0;
 	}

@@ -292,7 +292,7 @@ int CameraCollisionCheck(void)
 				model = modelpointers[cop->type];
 				boxptr = (int *)model->collision_block;
 
-				if (boxptr != NULL && (model->flags2 & 0x800) == 0) 
+				if (boxptr != NULL && (model->flags2 & MODEL_FLAG_SMASHABLE) == 0)
 				{
 					xd = ABS(cop->pos.vx - camera_position.vx);
 					zd = ABS(cop->pos.vz - camera_position.vz);
