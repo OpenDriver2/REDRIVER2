@@ -199,7 +199,7 @@ void DrawTargetBlip(VECTOR *pos, u_char r, u_char g, u_char b, int flags)
 	}
 	else
 	{
-		addPrim(current->ot, poly);
+		addPrim(current->ot + 1, poly);
 		current->primptr += sizeof(POLY_FT4);
 	}
 }
@@ -288,8 +288,8 @@ void DrawTargetArrow(VECTOR *pos, int flags)
 	}
 	else
 	{
-		addPrim(current->ot, poly);
-		addPrim(current->ot, null);
+		addPrim(current->ot + 1, poly);
+		addPrim(current->ot + 1, null);
 
 		current->primptr += sizeof(POLY_G3) + sizeof(POLY_FT3);
 	}
@@ -377,7 +377,7 @@ void DrawPlayerDot(VECTOR *pos, short rot, u_char r, u_char g, u_char b, int fla
 	}
 	else 
 	{
-		addPrim(current->ot, poly);
+		addPrim(current->ot + 1, poly);
 		current->primptr += sizeof(POLY_F3);
 	}
 }
@@ -556,7 +556,7 @@ void DrawN(VECTOR *pScreenPosition, int direct)
 
 		if (direct == 0)
 		{
-			addPrim(current->ot, linef2);
+			addPrim(current->ot + 1, linef2);
 			current->primptr += sizeof(LINE_F2);
 		}
 		else
@@ -598,7 +598,7 @@ void DrawCompass(void)
 	position[4].vx = position[4].vx + position[1].vx;
 	position[4].vz = position[4].vz + position[1].vz;
 
-	potz = current->ot;
+	potz = current->ot + 1;
 
 	pPosition = position + 2;
 
@@ -822,7 +822,7 @@ void DrawSightCone(COP_SIGHT_DATA *pCopSightData, VECTOR *pPosition, int directi
 		poly->r1 = poly->g1 = poly->b1 = 0;
 		poly->r2 = poly->g2 = poly->b2 = 0;
 
-		addPrim(current->ot, poly);
+		addPrim(current->ot + 1, poly);
 
 		current->primptr += sizeof(POLY_G3);
 		
@@ -840,11 +840,11 @@ void DrawSightCone(COP_SIGHT_DATA *pCopSightData, VECTOR *pPosition, int directi
 		tile1->x0 = vertex[0].vx;
 		tile1->y0 = vertex[0].vz;
 
-		addPrim(current->ot, tile1);
+		addPrim(current->ot + 1, tile1);
 		current->primptr += sizeof(TILE_1);
 	}
 
-	TransparencyOn(current->ot, 0x20);
+	TransparencyOn(current->ot + 1, 0x20);
 }
 
 // [D] [T]
@@ -960,7 +960,7 @@ void FlashOverheadMap(int r, int g, int b)
 	prim->h = MAP_SIZE_H;
 
 
-	addPrim(current->ot, prim);
+	addPrim(current->ot + 1, prim);
 
 	current->primptr += sizeof(TILE);
 
@@ -977,7 +977,7 @@ void FlashOverheadMap(int r, int g, int b)
 	null->y2 = -1;
 	null->tpage = 0x20;		// [A] correct me if I'm wrong
 
-	addPrim(current->ot, null);
+	addPrim(current->ot + 1, null);
 
 	current->primptr += sizeof(POLY_FT3);
 }
