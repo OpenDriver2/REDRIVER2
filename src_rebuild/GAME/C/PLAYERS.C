@@ -128,8 +128,14 @@ void ChangeCarPlayerToPed(int playerID)
 
 	first_offence = 1;
 
-	if (CarHasSiren(lcp->ap.model) != 0)
+	if (CarHasSiren(lcp->ap.model))
 		player[playerID].horn.on = 0;
+
+	// [A] carry over felony from car to Tanner if cops see player
+	if (CopsCanSeePlayer)
+		pedestrianFelony = lcp->felonyRating;
+	else
+		pedestrianFelony = 0;
 }
 
 extern int lastCarCameraView;
@@ -206,7 +212,10 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 
 	// [A] carry over felony from Tanner to car if cops see player. Force in Destroy the yard
 	if(CopsCanSeePlayer || gCurrentMissionNumber == 30)
-		newCar->felonyRating = pedestrianFelony;
+	{
+		if(newCar->felonyRating < pedestrianFelony)
+			newCar->felonyRating = pedestrianFelony;
+	}
 	else
 		pedestrianFelony = 0;
 }
