@@ -118,6 +118,46 @@ int GetSurfaceRoadInfo(DRIVER2_ROAD_INFO* outRoadInfo, int surfId)
 	return 0;
 }
 
+// [A]
+int GetLaneByPositionOnRoad(DRIVER2_ROAD_INFO* roadInfo, VECTOR* pos)
+{
+	int dx, dz, lane;
+	int lane_count;
+
+	lane_count = ROAD_WIDTH_IN_LANES(roadInfo);
+	lane = -1;
+
+	if (roadInfo->straight)
+	{
+		dx = pos->vx - roadInfo->straight->Midx;
+		dz = pos->vz - roadInfo->straight->Midz;
+
+		lane = ROAD_LANES_COUNT(roadInfo) - (FIXEDH(dx * rcossin_tbl[(roadInfo->straight->angle & 0xfff) * 2 + 1] -
+													dz * rcossin_tbl[(roadInfo->straight->angle & 0xfff) * 2]) + 512 >> 9);
+
+		if (lane < 0)
+			lane = 0;
+
+		if (lane_count <= lane)
+			lane = lane_count - 1;
+	}
+	else if(roadInfo->curve)
+	{
+		dx = pos->vx - roadInfo->curve->Midx;
+		dz = pos->vz - roadInfo->curve->Midz;
+
+		lane = (SquareRoot0(dx * dx + dz * dz) >> 9) - roadInfo->curve->inside * 2;
+	
+		if (lane < 0)
+			lane = 0;
+
+		if (lane >= lane_count)
+			lane = lane_count - 1;
+	}
+
+	return lane;
+}
+
 // [D] [T]
 void ProcessStraightsDriver2Lump(char *lump_file, int lump_size)
 {

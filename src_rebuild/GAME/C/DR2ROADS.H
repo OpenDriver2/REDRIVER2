@@ -65,6 +65,7 @@ extern short* RoadMapDataRegions[4];
 extern sdPlane* GetSeaPlane();
 
 extern int GetSurfaceRoadInfo(DRIVER2_ROAD_INFO* outRoadInfo, int surfId);
+extern int GetLaneByPositionOnRoad(DRIVER2_ROAD_INFO* roadInfo, VECTOR* pos);
 
 extern void ProcessStraightsDriver2Lump(char *lump_file, int lump_size); // 0x000136C0
 extern void ProcessCurvesDriver2Lump(char *lump_file, int lump_size); // 0x000136F4

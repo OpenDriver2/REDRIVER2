@@ -329,43 +329,15 @@ void CheckPlayerMiscFelonies(void)
 
 	if(GetSurfaceRoadInfo(&roadInfo, surfInd))
 	{
-		int lane_count;
 		int lane;
-		int dx;
-		int dz;
 		int crd;
 
-		lane_count = ROAD_WIDTH_IN_LANES(&roadInfo);
+		lane = GetLaneByPositionOnRoad(&roadInfo, carPos);
 
 		if(roadInfo.straight)
-		{
-			dx = carPos->vx - roadInfo.straight->Midx;
-			dz = carPos->vz - roadInfo.straight->Midz;
-
-			lane = ROAD_LANES_COUNT(&roadInfo) - (FIXEDH(dx * rcossin_tbl[(roadInfo.straight->angle & 0xfff) * 2 + 1] - dz * rcossin_tbl[(roadInfo.straight->angle & 0xfff) * 2]) + 512 >> 9);
-
-			if (lane < 0)
-				lane = 0;
-
-			if (lane_count <= lane)
-				lane = lane_count - 1;
-
-			crd = (roadInfo.straight->angle - cp->hd.direction) + 0x400U >> 0xb & 1;
-		}
+			crd = (roadInfo.straight->angle - cp->hd.direction) + 1024U >> 0xb & 1;
 		else
-		{
-			dx = carPos->vx - roadInfo.curve->Midx;
-			dz = carPos->vz - roadInfo.curve->Midz;
-
-			lane = (SquareRoot0(dx * dx + dz * dz) >> 9) - roadInfo.curve->inside * 2;
-			if (lane < 0)
-				lane = 0;
-			
-			if (lane >= lane_count)
-				lane = lane_count - 1;
-
 			crd = NotTravellingAlongCurve(carPos->vx, carPos->vz, cp->hd.direction, roadInfo.curve);
-		}
 
 		// check if on correct lane
 		if (ROAD_IS_AI_LANE(&roadInfo, lane))
@@ -386,14 +358,14 @@ void CheckPlayerMiscFelonies(void)
 		printInfo("ROAD %d lane: %d / %d, (%d). AI drive: %d, flg: %d%d%d, dir: %d, spd: %d (wrong way: %d)\n",
 			roadInfo.surfId,
 			lane + 1,
-			((u_char)roadInfo.NumLanes & 0xF) * 2,			// lane count. * 2 for both sides as roads are symmetric
+			ROAD_WIDTH_IN_LANES(&roadInfo),					// lane count. * 2 for both sides as roads are symmetric
 			IS_NARROW_ROAD(&roadInfo),
-			((u_char)roadInfo.AILanes >> (lane / 2) & 1U),	// lane AI driveable flag
+			ROAD_IS_AI_LANE(&roadInfo, lane),				// lane AI driveable flag
 			(roadInfo.NumLanes & 0x20) > 0,					// flag 0 - first lane?
 			(roadInfo.NumLanes & 0x40) > 0,					// flag 1 - leftmost park
 			(roadInfo.NumLanes & 0x80) > 0,					// flag 2 - rightmost park
-			((u_char)roadInfo.LaneDirs >> (lane / 2) & 1U),	// direction bit
-			((u_char)roadInfo.NumLanes >> 4) & 3,			// speed limit id
+			ROAD_LANE_DIRECTION_BIT(&roadInfo, lane),		// direction bit
+			ROAD_SPEED_LIMIT(&roadInfo),					// speed limit id
 			goingWrongWay);
 #endif
 
