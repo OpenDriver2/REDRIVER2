@@ -2947,7 +2947,7 @@ void SetUpCivCollFlags(void)
 								int sample;
 
 								hornchanflag[i] = GetFreeChannel();
-								SpuSetVoiceAR(hornchanflag[i], 0x1b);
+								SpuSetVoiceAR(hornchanflag[i], 27);
 
 								if (cp0->ap.model == 4)
 									sample = ResidentModelsBodge();
@@ -2956,7 +2956,13 @@ void SetUpCivCollFlags(void)
 								else
 									sample = cp0->ap.model - 1;
 
-								Start3DSoundVolPitch(hornchanflag[i], SOUND_BANK_CARS, sample * 3 + 2, cp0->hd.where.t[0], cp0->hd.where.t[1], cp0->hd.where.t[2], -2000, 0x1000);
+								// [A] use tracking sound
+								Start3DTrackingSound(hornchanflag[i], SOUND_BANK_CARS, sample * 3 + 2, 
+									(VECTOR*)cp0->hd.where.t,
+									(LONGVECTOR3*)cp0->st.n.linearVelocity);
+								
+								SetChannelVolume(hornchanflag[i], -2000, 0);
+
 								horncarflag[i] = cp0;
 
 								channels[hornchanflag[i]].time += rnd - (rnd / 30) * 30;
