@@ -321,6 +321,59 @@ void InitialiseMissionDefaults(void)
 	gStopCops.radius = 0;
 }
 
+// [A] function to properly place wanted car into resident models
+void SetupResidentModels()
+{
+	int i, j;
+	int takenSlots = 0;
+
+	// check if start data is required
+	if (MissionHeader->type & 1)
+	{
+		RestoreStartData();
+
+		if (PlayerStartInfo[0]->model > 4)
+			MissionHeader->residentModels[4] = PlayerStartInfo[0]->model;
+	}
+
+	
+
+	for(i = 0; i < 2; i++)
+	{
+		if (wantedCar[i] != -1)
+		{
+			int foundRM = -1;
+			int singlePal;
+			
+			for (j = 0; j < 5; j++)
+			{
+				if (MissionHeader->residentModels[j] == wantedCar[i])
+				{
+					foundRM = j;
+					break;
+				}
+			}
+			
+			PlayerStartInfo[i]->model = wantedCar[i];
+
+			singlePal = (wantedCar[i] == 0 || wantedCar[i] > 4);
+			
+			// check if chosen cop car or special car
+			if (wantedCar[i] > 3 && NumPlayers == 1)
+			{		
+				MissionHeader->residentModels[4] = wantedCar[i];
+			}
+			else if(foundRM == -1)
+			{
+				MissionHeader->residentModels[takenSlots++] = wantedCar[i];
+			}
+
+			// force palette
+			if (singlePal)
+				PlayerStartInfo[i]->palette = 0;
+		}
+	}
+}
 
 // [D] [T]
 void LoadMission(int missionnum)
@@ -657,9 +710,6 @@ void LoadMission(int missionnum)
 	if (MissionHeader->type & 1)
 	{
 		RestoreStartData();
-
-		if (PlayerStartInfo[0]->model > 4)
-			MissionHeader->residentModels[4] = PlayerStartInfo[0]->model;
 	}
 
 	PreProcessTargets();
@@ -685,30 +735,7 @@ void LoadMission(int missionnum)
 		gMissionTitle = NULL;
 	}
 
-	if (wantedCar[0] != -1) 
-	{
-		PlayerStartInfo[0]->model = wantedCar[0];
-
-		if (wantedCar[0] == 0 || wantedCar[0] > 4) 
-		{
-			PlayerStartInfo[0]->palette = 0;
-
-			if (wantedCar[0] > 3)
-				MissionHeader->residentModels[4] = wantedCar[0];
-		}
-		else 
-			MissionHeader->residentModels[0] = wantedCar[0];
-	}
-
-	if (wantedCar[1] != -1)
-	{
-		PlayerStartInfo[1]->model = wantedCar[1];
-
-		if (wantedCar[1] == 0 || wantedCar[1] > 4)
-			PlayerStartInfo[1]->palette = 0;
-		else
-			MissionHeader->residentModels[1] = wantedCar[1];
-	}
+	SetupResidentModels();
 
 	if (GameType == GAME_CAPTURETHEFLAG)
 		ActivateNextFlag();
