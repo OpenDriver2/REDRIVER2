@@ -203,6 +203,10 @@ void CreateDentableCar(CAR_DATA *cp)
 			count++;
 		}
 	}
+	else
+	{
+		printError("gCarCleanModelPtr is NULL in CreateDentableCar\n");
+	}
 
 	srcModel = gCarLowModelPtr[model];
 	if (srcModel != NULL)
@@ -214,7 +218,10 @@ void CreateDentableCar(CAR_DATA *cp)
 			count++;
 		}
 	}
-
+	else
+	{
+		printError("gCarLowModelPtr is NULL in CreateDentableCar\n");
+	}
 
 	if (gDontResetCarDamage == 0) 
 	{

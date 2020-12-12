@@ -93,7 +93,7 @@ void sys_tempfree()
 }
 #else
 
-char g_allocatedMem[0x200000];			// 0x137400 (_ramsize). TODO: use real malloc
+char g_allocatedMem[0x200000];			// 0x137400 (_ramsize). TODO: use real malloc  size: 870332
 char* mallocptr = g_allocatedMem;
 const char* mallocptr_start = g_allocatedMem;
 

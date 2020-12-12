@@ -15,8 +15,9 @@ extern char* _replay_buffer;		// 0x1FABBC
 
 extern char gDataFolder[32];
 
-extern const char* mallocptr_start;
+#define PSX_MALLOC_SIZE 870332
 
+extern const char* mallocptr_start;
 extern char* mallocptr;
 
 #ifdef USE_CRT_MALLOC

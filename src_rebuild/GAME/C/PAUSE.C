@@ -1373,6 +1373,7 @@ void CreateScoreNames(SCORE_ENTRY* table, PLAYER_SCORE* score, int position)
 			text = "Cones";
 			break;
 		default:
+			printError("CreateScoreNames: Invalid game type\n");
 			return;
 	}
 

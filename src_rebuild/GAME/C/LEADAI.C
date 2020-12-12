@@ -1659,6 +1659,10 @@ void BlockToMap(MAP_DATA* data)
 
 			ldist = rdist;
 			break;
+#ifdef DEBUG
+		default:
+			printError("\nunknwn intention in leadai.c LOCKUP!!\n");
+#endif
 	}
 
 	switch (data->intention)
@@ -1754,6 +1758,10 @@ void BlockToMap(MAP_DATA* data)
 			}
 
 			break;
+#ifdef DEBUG
+		default:
+			printError("\nunknwn intention in leadai.c LOCKUP!!\n");
+#endif
 	}
 
 	tangent = ldist;
@@ -2252,6 +2260,13 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 
 										size.vz = FIXEDH(iVar14 - iVar8);
 									}
+#ifdef DEBUG
+									else
+									{
+										printError("\nERROR! unknown collision box type in leadai.c\n");
+									}
+#endif
+									
 									offset.vx = FIXEDH(collide->xpos * matrixtable[uVar6].m[0][0] + collide->zpos * matrixtable[uVar6].m[2][0]) + (cop->pos).vx;
 									offset.vz = FIXEDH(collide->xpos * matrixtable[uVar6].m[0][2] + collide->zpos * matrixtable[uVar6].m[2][2]) + (cop->pos).vz;
 									offset.vy = -(cop->pos).vy - (cop->pos).vy;

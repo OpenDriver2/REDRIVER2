@@ -239,13 +239,9 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 			ProcessSpoolInfoLump((char*)ptr, lump_size);
 			ProcessMapLump(map_lump, 0);
 
-			// [A] I don't think it's used anymore
-			//region_buffer_xor =
-			//	(cells_down >> 5 & 2U | cells_across >> 6 & 1U) << 2;
-
-			//sdSelfModifyingCode =
-			//	sdSelfModifyingCode ^
-			//	(sdSelfModifyingCode ^ region_buffer_xor) & 0xc;
+			// [A] only used in alpha 1.6
+			// region_buffer_xor = (cells_down >> 5 & 2U | cells_across >> 6 & 1U) * 4;
+			// sdSelfModifyingCode = sdSelfModifyingCode ^ (sdSelfModifyingCode ^ region_buffer_xor) & 0xC;
 		}
 		else if (lump_type == LUMP_CURVES2)
 		{
@@ -542,6 +538,9 @@ void GameInit(void)
 		LockChannel(3);
 		LockChannel(4);
 		LockChannel(5);
+#ifdef DEBUG
+		printInfo("*---LOCKED P2 CHANS---*\n");
+#endif
 	}
 
 	if (NewLevel != 0)
@@ -762,6 +761,15 @@ void GameInit(void)
 		player[i].horn.time = 0;
 		player[i].horn.on = 0;
 	}
+
+#ifdef DEBUG
+	printInfo("malloctab 0x%08x to 0x%08x (%d bytes) (Final: 0x%08x)\n", &mallocptr_start, mallocptr, mallocptr - mallocptr_start, mallocptr);
+
+	if (mallocptr < mallocptr_start + PSX_MALLOC_SIZE)
+		printInfo("COOL: Level fits on blue station by %d bytes!\n", mallocptr_start + PSX_MALLOC_SIZE - mallocptr);
+	else
+		printWarning("WARNING: Level too big to fit on blue station by %d bytes!\n", mallocptr - (mallocptr_start + PSX_MALLOC_SIZE));
+#endif
 
 	gShowPlayerDamage = 1;
 	InitThunder();
