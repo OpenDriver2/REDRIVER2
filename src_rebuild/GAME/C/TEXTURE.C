@@ -236,6 +236,7 @@ void LoadTPageFromTIMs(int tpage2send)
 			else
 				clutN = texture_cluts[tpage2send][i];
 
+#if 0
 			// FIXME:
 			// this is a wasteful way handling multiple palettes
 			// we just allocate new palettes to ensure that it would not glitch
@@ -246,6 +247,7 @@ void LoadTPageFromTIMs(int tpage2send)
 				IncrementClutNum(&clutpos);
 				civ_clut[cpal][i][j] = clutN;
 			}
+#endif
 			
 			tmpclut.x = (clutN & 0x3f) << 4;
 			tmpclut.y = (clutN >> 6);
@@ -425,6 +427,7 @@ void LoadPermanentTPagesFromTIM()
 			int tpage = tpageslots[slot];
 			LoadTPageFromTIMs(tpage);
 
+#if 0
 			// initialize ALL texture palettes
 			// this makes damaged textures appear properly
 			int pal = GetCarPalIndex(tpage);
@@ -440,6 +443,7 @@ void LoadPermanentTPagesFromTIM()
 				}
 
 			}
+#endif
 		}
 	}
 }
