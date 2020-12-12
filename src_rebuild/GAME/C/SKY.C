@@ -683,7 +683,7 @@ void DrawLensFlare(void)
 int gTunnelNum = -1;
 int skyFade;
 
-CVECTOR skycolor = { 128,128,128 };
+RGB16 skycolor = { 128,128,128 };
 
 int tunnelDir[3][2] =
 {
