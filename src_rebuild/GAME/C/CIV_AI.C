@@ -3637,6 +3637,7 @@ void CreateRoadblock(void)
 int CivControl(CAR_DATA* cp)
 {
 	int thrust;
+	int steer;
 	CheckPingOut(cp);
 
 	if (cp->controlType == CONTROL_TYPE_CIV_AI)
@@ -3650,16 +3651,18 @@ int CivControl(CAR_DATA* cp)
 			AttemptUnPark(cp);
 		}
 
-		
+		steer = cp->wheel_angle;
 
 		if (cp->ai.c.thrustState != 3)
-			cp->wheel_angle = CivSteerAngle(cp);
+			steer = CivSteerAngle(cp);
 
-		thrust = CivAccel(cp) - ABS(cp->wheel_angle) * 4;
+		// reduce acceleration when steering is applied
+		thrust = CivAccel(cp) - MAX(ABS(steer), 4) * 3;
 
 		if (thrust < 0 && cp->hd.wheel_speed < 5)
 			thrust = 0;
-		
+
+		cp->wheel_angle = steer;
 		cp->thrust = thrust;
 
 #if 0
