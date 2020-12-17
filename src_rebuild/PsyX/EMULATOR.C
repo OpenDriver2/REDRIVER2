@@ -1663,8 +1663,7 @@ void Emulator_ReadFramebufferDataToVRAM(int x, int y, int w, int h)
 
 		for (int fy = 0; fy < h; fy++)
 		{
-			int flip_y = (h - fy - 1);
-			ushort* fb_ptr = fb + (h * flip_y / h) * w;
+			ushort* fb_ptr = fb + (h * fy / h) * w;
 
 			for (int fx = 0; fx < w; fx++)
 				ptr[fx] = fb_ptr[w * fx / w];
@@ -1697,7 +1696,7 @@ void Emulator_StoreFrameBuffer(int x, int y, int w, int h)
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);					// source is backbuffer
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_glFramebuffer);
 
-		glBlitFramebuffer(0, 0, g_windowWidth, g_windowHeight, x, y, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+		glBlitFramebuffer(0, 0, g_windowWidth, g_windowHeight, x, y + h, x + w, y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 		// done, unbind
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
@@ -1706,6 +1705,7 @@ void Emulator_StoreFrameBuffer(int x, int y, int w, int h)
 
 	// after drawing
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glFlush();
 #endif
 }
 
