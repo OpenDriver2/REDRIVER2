@@ -30,25 +30,20 @@
 #include "EMULATOR_TIMER.H"
 
 SDL_Window* g_window = NULL;
-TextureID vramTexture;
 
-TextureID vramTextures[2];
-int curVramTexture = 0;
-
-TextureID whiteTexture;
-
-GLuint dynamic_vertex_buffer;
-GLuint dynamic_vertex_array;
-
-
-int windowWidth = 0;
-int windowHeight = 0;
-char* pVirtualMemory = NULL;
 SysCounter counters[3] = { 0 };
 
-#if !defined(__ANDROID__)
-//std::thread counter_thread;
-#endif
+TextureID g_vramTextures[2];
+TextureID g_curVramTexture;
+int g_curVramTextureIdx = 0;
+
+TextureID g_fbTexture;
+
+TextureID g_whiteTexture;
+TextureID g_lastBoundTexture;
+
+int g_windowWidth = 0;
+int g_windowHeight = 0;
 
 timerCtx_t g_swapTimer;
 int g_swapInterval = SWAP_INTERVAL;
@@ -61,7 +56,14 @@ int g_polygonSelected = 0;
 int g_pgxpTextureCorrection = 1;
 int g_pgxpZBuffer = 1;
 int g_bilinearFiltering = 0;
-TextureID g_lastBoundTexture;
+
+#if defined(RENDERER_OGL)
+GLuint g_glVertexArray;
+GLuint g_glVertexBuffer;
+
+GLuint g_glFramebuffer;
+#endif
+
 KeyboardMapping g_keyboard_mapping;
 
 // Remap a value in the range [A,B] to [C,D].
@@ -106,7 +108,7 @@ static int Emulator_InitialiseGLContext(char* windowName, int fullscreen)
 		windowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
 	}
 	
-	g_window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, windowFlags);
+	g_window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, g_windowWidth, g_windowHeight, windowFlags);
 
 #if defined(RENDERER_OGL)
 	SDL_GL_CreateContext(g_window);
@@ -215,8 +217,8 @@ static int Emulator_InitialiseGLESContext(char* windowName, int fullscreen)
 
 static int Emulator_InitialiseSDL(char* windowName, int width, int height, int fullscreen)
 {
-	windowWidth  = width;
-	windowHeight = height;
+	g_windowWidth  = width;
+	g_windowHeight = height;
 
 	//Initialise SDL2
 	if (SDL_Init(SDL_INIT_VIDEO) == 0)
@@ -244,7 +246,7 @@ static int Emulator_InitialiseSDL(char* windowName, int width, int height, int f
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 #elif defined(RENDERER_OGL)
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 #endif
 
@@ -1281,8 +1283,8 @@ void Emulator_GenerateCommonTextures()
 {
 	unsigned int pixelData = 0xFFFFFFFF;
 #if defined(RENDERER_OGL) || defined(OGLES)
-	glGenTextures(1, &whiteTexture);
-	glBindTexture(GL_TEXTURE_2D, whiteTexture);
+	glGenTextures(1, &g_whiteTexture);
+	glBindTexture(GL_TEXTURE_2D, g_whiteTexture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &pixelData);
@@ -1301,44 +1303,82 @@ int Emulator_Initialise()
 	glEnable(GL_STENCIL_TEST);
 	glBlendColor(0.5f, 0.5f, 0.5f, 0.25f);
 
-	glGenTextures(2, vramTextures);
-	vramTexture = vramTextures[0];
-	curVramTexture = 0;
-	for(int i = 0; i < 2; i++)
+	// gen framebuffer
 	{
-		glBindTexture(GL_TEXTURE_2D, vramTextures[i]);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexImage2D(GL_TEXTURE_2D, 0, VRAM_INTERNAL_FORMAT, VRAM_WIDTH, VRAM_HEIGHT, 0, VRAM_FORMAT, GL_UNSIGNED_BYTE, NULL);
+		// make a special texture
+		// it will be resized later
+		glGenTextures(1, &g_fbTexture);
+		{
+			glBindTexture(GL_TEXTURE_2D, g_fbTexture);
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+			// default to VRAM size
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, VRAM_WIDTH, VRAM_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+			
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
+		
+		glGenFramebuffers(1, &g_glFramebuffer);
+		glBindFramebuffer(GL_FRAMEBUFFER, g_glFramebuffer);
+
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, g_fbTexture, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-	glBindTexture(GL_TEXTURE_2D, 0);
+	// gen VRAM textures.
+	// double-buffered
+	{
+		glGenTextures(2, g_vramTextures);
+		g_curVramTexture = g_vramTextures[0];
+		g_curVramTextureIdx = 0;
+	
+		for(int i = 0; i < 2; i++)
+		{
+			glBindTexture(GL_TEXTURE_2D, g_vramTextures[i]);
+			
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-	glGenBuffers(1, &dynamic_vertex_buffer);
+			// set storage size
+			glTexImage2D(GL_TEXTURE_2D, 0, VRAM_INTERNAL_FORMAT, VRAM_WIDTH, VRAM_HEIGHT, 0, VRAM_FORMAT, GL_UNSIGNED_BYTE, NULL);
+		}
 
-	glGenVertexArrays(1, &dynamic_vertex_array);
-	glBindVertexArray(dynamic_vertex_array);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
 
-	glBindBuffer(GL_ARRAY_BUFFER, dynamic_vertex_buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * MAX_NUM_POLY_BUFFER_VERTICES, NULL, GL_DYNAMIC_DRAW);
+	// gen vertex buffer and index buffer
+	{
+		glGenBuffers(1, &g_glVertexBuffer);
+		glGenVertexArrays(1, &g_glVertexArray);
 
-	glEnableVertexAttribArray(a_position);
-	glEnableVertexAttribArray(a_texcoord);
-    glEnableVertexAttribArray(a_color);
+		glBindVertexArray(g_glVertexArray);
+
+		glBindBuffer(GL_ARRAY_BUFFER, g_glVertexBuffer);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * MAX_NUM_POLY_BUFFER_VERTICES, NULL, GL_DYNAMIC_DRAW);
+
+		glEnableVertexAttribArray(a_position);
+		glEnableVertexAttribArray(a_texcoord);
+		glEnableVertexAttribArray(a_color);
 
 #if defined(USE_PGXP)
-	glVertexAttribPointer(a_position, 4, GL_FLOAT,         GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->x);
-	glVertexAttribPointer(a_zw,		  4, GL_FLOAT,		   GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->z);
+		glVertexAttribPointer(a_position, 4, GL_FLOAT,         GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->x);
+		glVertexAttribPointer(a_zw,		  4, GL_FLOAT,		   GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->z);
 
-	glEnableVertexAttribArray(a_zw);
+		glEnableVertexAttribArray(a_zw);
 #else
-	glVertexAttribPointer(a_position, 4, GL_SHORT,         GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->x);
+		glVertexAttribPointer(a_position, 4, GL_SHORT,         GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->x);
 #endif
 
-	glVertexAttribPointer(a_texcoord, 4, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->u);
-	glVertexAttribPointer(a_color,    4, GL_UNSIGNED_BYTE, GL_TRUE,  sizeof(Vertex), &((Vertex*)NULL)->r);
+		glVertexAttribPointer(a_texcoord, 4, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->u);
+		glVertexAttribPointer(a_color,    4, GL_UNSIGNED_BYTE, GL_TRUE,  sizeof(Vertex), &((Vertex*)NULL)->r);
 
-	glBindVertexArray(0);
+		glBindVertexArray(0);
+	}
 #else
 	#error
 #endif
@@ -1418,7 +1458,7 @@ void Emulator_SetupClipMode(const RECT16& rect)
 	{
 		clipRectX -= 0.5f;
 #ifdef USE_PGXP
-		float emuScreenAspect = float(windowWidth) / float(windowHeight);
+		float emuScreenAspect = float(g_windowWidth) / float(g_windowHeight);
 #else
 		float emuScreenAspect = (320.0f / 240.0f);
 #endif
@@ -1436,20 +1476,20 @@ void Emulator_SetupClipMode(const RECT16& rect)
 		return;
 	}
 
-	float flipOffset = windowHeight - clipRectH * (float)windowHeight;
+	float flipOffset = g_windowHeight - clipRectH * (float)g_windowHeight;
 
 	glEnable(GL_SCISSOR_TEST);
-	glScissor(clipRectX * (float)windowWidth, 
-			  flipOffset - clipRectY * (float)windowHeight, 
-		      clipRectW * (float)windowWidth,
-		      clipRectH * (float)windowHeight);
+	glScissor(clipRectX * (float)g_windowWidth, 
+			  flipOffset - clipRectY * (float)g_windowHeight, 
+		      clipRectW * (float)g_windowWidth,
+		      clipRectH * (float)g_windowHeight);
 #endif
 }
 
 void Emulator_GetPSXWidescreenMappedViewport(RECT16* rect)
 {
 #ifdef USE_PGXP
-	float emuScreenAspect = float(windowWidth) / float(windowHeight);
+	float emuScreenAspect = float(g_windowWidth) / float(g_windowHeight);
 
 	float psxScreenW = activeDispEnv.disp.w;
 	float psxScreenH = activeDispEnv.disp.h;
@@ -1480,7 +1520,7 @@ void Emulator_SetShader(const ShaderID &shader)
 #endif
 
 #ifdef USE_PGXP
-	float emuScreenAspect = float(windowWidth) / float(windowHeight);
+	float emuScreenAspect = float(g_windowWidth) / float(g_windowHeight);
 	Emulator_Ortho2D(-0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f, -0.5f, -1.0f, 1.0f);
 	Emulator_Perspective3D(0.9265f, 1.0f, 1.0f / (emuScreenAspect * PSX_SCREEN_ASPECT), 1.0f, 1000.0f);
 #else
@@ -1504,7 +1544,7 @@ void Emulator_SetTexture(TextureID texture, TexFormat texFormat)
 	}
 
 	if (g_texturelessMode) {
-		texture = whiteTexture;
+		texture = g_whiteTexture;
 	}
 
 	if (g_lastBoundTexture == texture) {
@@ -1581,52 +1621,85 @@ void Emulator_SaveVRAM(const char* outputFileName, int x, int y, int width, int 
 #endif
 
 bool vram_need_update = true;
+bool framebuffer_need_update = true;
 
 void Emulator_StoreFrameBuffer(int x, int y, int w, int h)
 {
-	short *fb = (short*)SDL_malloc(windowWidth * windowHeight * sizeof(short));
+	if (!framebuffer_need_update)
+		return;
 
+	framebuffer_need_update = false;
+	
 #if defined(RENDERER_OGL) || defined(OGLES)
-	int *data = (int*)SDL_malloc(windowWidth * windowHeight * sizeof(int));
-	glReadPixels(0, 0, windowWidth, windowHeight, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-	#define FLIP_Y (h - fy - 1)
-#endif
-
-	unsigned int   *data_src = (unsigned int*)data;
-	unsigned short *data_dst = (unsigned short*)fb;
-
-	for (int i = 0; i < windowHeight; i++) {
-		for (int j = 0; j < windowWidth; j++) {
-			unsigned int  c = *data_src++;
-			unsigned char b = ((c >>  3) & 0x1F);
-			unsigned char g = ((c >> 11) & 0x1F);
-			unsigned char r = ((c >> 19) & 0x1F);
-			*data_dst++ = r | (g << 5) | (b << 10) | 0x8000;
-		}
-	}
-
-#if defined(RENDERER_OGL) || defined(OGLES)
-	SDL_free(data);
-#endif
-
-	short *ptr = (short*)vram + VRAM_WIDTH * y + x;
-
-	for (int fy = 0; fy < h; fy++)
+	// set storage size first
 	{
-		short *fb_ptr = fb + (windowHeight * FLIP_Y / h) * windowWidth;
-
-		for (int fx = 0; fx < w; fx++)
-		{
-			ptr[fx] = fb_ptr[windowWidth * fx / w];
-		}
-
-		ptr += VRAM_WIDTH;
+		glBindTexture(GL_TEXTURE_2D, g_fbTexture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
-	#undef FLIP_Y
+	glBindFramebuffer(GL_FRAMEBUFFER, g_glFramebuffer);
 
-	SDL_free(fb);
+	// before drawing set source and target
+	{
+		// setup draw and read framebuffers
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);					// source is backbuffer
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_glFramebuffer);
+
+		glBlitFramebuffer(0, 0, g_windowWidth, g_windowHeight, x, y, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+		// done, unbind
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	}
+
+	// after drawing
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+#endif
+	// now we can read it back to VRAM texture
+	{
+		ushort* fb = (ushort*)malloc(w * h * sizeof(ushort));
+		uint* data = (uint*)malloc(w * h * sizeof(uint));
+
+#if defined(RENDERER_OGL) || defined(OGLES)
+		// reat the texture
+		glBindTexture(GL_TEXTURE_2D, g_fbTexture);
+		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glBindTexture(GL_TEXTURE_2D, 0);
+#endif
+
+		uint* data_src = (uint*)data;
+		ushort* data_dst = (ushort*)fb;
+
+		for (int i = 0; i < h; i++)
+		{
+			for (int j = 0; j < w; j++)
+			{
+				unsigned int  c = *data_src++;
+				unsigned char b = ((c >> 3) & 0x1F);
+				unsigned char g = ((c >> 11) & 0x1F);
+				unsigned char r = ((c >> 19) & 0x1F);
+				*data_dst++ = r | (g << 5) | (b << 10) | 0x8000;
+			}
+		}
+
+		ushort* ptr = (ushort*)vram + VRAM_WIDTH * y + x;
+
+		for (int fy = 0; fy < h; fy++)
+		{
+			int flip_y = (h - fy - 1);
+			ushort* fb_ptr = fb + (h * flip_y / h) * w;
+
+			for (int fx = 0; fx < w; fx++)
+				ptr[fx] = fb_ptr[w * fx / w];
+
+			ptr += VRAM_WIDTH;
+		}
+		
+		free(fb);
+		free(data);
+	}
 
 	vram_need_update = true;
 }
@@ -1637,7 +1710,10 @@ void Emulator_CopyVRAM(unsigned short *src, int x, int y, int w, int h, int dst_
 
     int stride = w;
 
-    if (!src) {
+    if (!src)
+	{
+		Emulator_StoreFrameBuffer(activeDispEnv.disp.x, activeDispEnv.disp.y, activeDispEnv.disp.w, activeDispEnv.disp.h);
+    
         src    = vram;
         stride = VRAM_WIDTH;
     }
@@ -1672,13 +1748,13 @@ void Emulator_UpdateVRAM()
 	vram_need_update = false;
 
 #if defined(RENDERER_OGL) || defined(OGLES)
-	vramTexture = vramTextures[curVramTexture];
+	g_curVramTexture = g_vramTextures[g_curVramTextureIdx];
 	
-	glBindTexture(GL_TEXTURE_2D, vramTexture);
+	glBindTexture(GL_TEXTURE_2D, g_curVramTexture);
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, VRAM_WIDTH, VRAM_HEIGHT, VRAM_FORMAT, GL_UNSIGNED_BYTE, vram);
 
-	curVramTexture++;
-	curVramTexture &= 1;
+	g_curVramTextureIdx++;
+	g_curVramTextureIdx &= 1;
 #endif
 }
 
@@ -1739,8 +1815,8 @@ void Emulator_DoPollEvent()
 				switch (event.window.event)
 				{
 				case SDL_WINDOWEVENT_RESIZED:
-					windowWidth = event.window.data1;
-					windowHeight = event.window.data2;
+					g_windowWidth = event.window.data1;
+					g_windowHeight = event.window.data2;
 					Emulator_ResetDevice();
 					break;
 				case SDL_WINDOWEVENT_CLOSE:
@@ -1786,7 +1862,7 @@ bool Emulator_BeginScene()
 	g_lastBoundTexture = NULL;
 
 #if defined(RENDERER_OGL) || defined(OGLES)
-	glBindVertexArray(dynamic_vertex_array);
+	glBindVertexArray(g_glVertexArray);
 
 	glClearDepth(1.0f);
 	glClear(GL_DEPTH_BUFFER_BIT);
@@ -1794,7 +1870,7 @@ bool Emulator_BeginScene()
 #endif
 
 	Emulator_UpdateVRAM();
-	Emulator_SetViewPort(0, 0, windowWidth, windowHeight);
+	Emulator_SetViewPort(0, 0, g_windowWidth, g_windowHeight);
 
 	Emulator_SetShader(g_gte_shader_4);
 	Emulator_Ortho2D(0.0f, activeDispEnv.disp.w, activeDispEnv.disp.h, 0.0f, -1.0f, 1.0f);
@@ -1817,11 +1893,11 @@ bool Emulator_BeginScene()
 #if !defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
 void Emulator_TakeScreenshot()
 {
-	unsigned char* pixels = new unsigned char[windowWidth * windowHeight * 4];
+	unsigned char* pixels = new unsigned char[g_windowWidth * g_windowHeight * 4];
 #if defined(RENDERER_OGL) || defined(OGLES)
-	glReadPixels(0, 0, windowWidth, windowHeight, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
+	glReadPixels(0, 0, g_windowWidth, g_windowHeight, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
 #endif
-	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(pixels, windowWidth, windowHeight, 8 * 4, windowWidth * 4, 0, 0, 0, 0);
+	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(pixels, g_windowWidth, g_windowHeight, 8 * 4, g_windowWidth * 4, 0, 0, 0, 0);
 	
 	SDL_SaveBMP(surface, "SCREENSHOT.BMP");
 	SDL_FreeSurface(surface);
@@ -2020,10 +2096,10 @@ void Emulator_ShutDown()
 		SDL_DestroyMutex(g_vblankMutex);
 
 #if defined(RENDERER_OGL) || defined(OGLES)
-	vramTexture = 0;
-	Emulator_DestroyTexture(vramTextures[0]);
-	Emulator_DestroyTexture(vramTextures[1]);
-	Emulator_DestroyTexture(whiteTexture);
+	g_curVramTexture = 0;
+	Emulator_DestroyTexture(g_vramTextures[0]);
+	Emulator_DestroyTexture(g_vramTextures[1]);
+	Emulator_DestroyTexture(g_whiteTexture);
 #endif
 
 	SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER);
@@ -2163,4 +2239,6 @@ void Emulator_DrawTriangles(int start_vertex, int triangles)
 #else
 	#error
 #endif
+
+	framebuffer_need_update = true;
 }

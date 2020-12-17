@@ -4,13 +4,13 @@
 #include <SDL_gamecontroller.h>
 #include "EMULATOR.H"
 
-extern TextureID        whiteTexture;
-extern TextureID        vramTexture;
+extern TextureID        g_whiteTexture;
+extern TextureID        g_curVramTexture;
 
 extern int screenWidth;
 extern int screenHeight;
-extern int windowWidth;
-extern int windowHeight;
+extern int g_windowWidth;
+extern int g_windowHeight;
 extern uint32_t DMAControlRegister;
 extern int assetsLoaded;
 extern int g_emulatorPaused;
