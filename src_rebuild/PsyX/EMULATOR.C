@@ -1621,15 +1621,66 @@ void Emulator_SaveVRAM(const char* outputFileName, int x, int y, int width, int 
 #endif
 
 bool vram_need_update = true;
-bool framebuffer_need_update = true;
+bool framebuffer_need_update = false;
 
-void Emulator_StoreFrameBuffer(int x, int y, int w, int h)
+void Emulator_ReadFramebufferDataToVRAM(int x, int y, int w, int h)
 {
 	if (!framebuffer_need_update)
 		return;
 
 	framebuffer_need_update = false;
 	
+	// now we can read it back to VRAM texture
+	{
+		ushort* fb = (ushort*)malloc(w * h * sizeof(ushort));
+		uint* data = (uint*)malloc(w * h * sizeof(uint));
+
+#if defined(RENDERER_OGL) || defined(OGLES)
+		// reat the texture
+		glBindTexture(GL_TEXTURE_2D, g_fbTexture);
+		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glBindTexture(GL_TEXTURE_2D, 0);
+#endif
+
+		uint* data_src = (uint*)data;
+		ushort* data_dst = (ushort*)fb;
+
+		for (int i = 0; i < h; i++)
+		{
+			for (int j = 0; j < w; j++)
+			{
+				uint c = *data_src++;
+				
+				u_char b = ((c >> 3) & 0x1F);
+				u_char g = ((c >> 11) & 0x1F);
+				u_char r = ((c >> 19) & 0x1F);
+
+				*data_dst++ = r | (g << 5) | (b << 10) | 0x8000;
+			}
+		}
+
+		ushort* ptr = (ushort*)vram + VRAM_WIDTH * y + x;
+
+		for (int fy = 0; fy < h; fy++)
+		{
+			int flip_y = (h - fy - 1);
+			ushort* fb_ptr = fb + (h * flip_y / h) * w;
+
+			for (int fx = 0; fx < w; fx++)
+				ptr[fx] = fb_ptr[w * fx / w];
+
+			ptr += VRAM_WIDTH;
+		}
+
+		free(fb);
+		free(data);
+	}
+
+	vram_need_update = true;
+}
+
+void Emulator_StoreFrameBuffer(int x, int y, int w, int h)
+{
 #if defined(RENDERER_OGL) || defined(OGLES)
 	// set storage size first
 	{
@@ -1655,53 +1706,7 @@ void Emulator_StoreFrameBuffer(int x, int y, int w, int h)
 
 	// after drawing
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 #endif
-	// now we can read it back to VRAM texture
-	{
-		ushort* fb = (ushort*)malloc(w * h * sizeof(ushort));
-		uint* data = (uint*)malloc(w * h * sizeof(uint));
-
-#if defined(RENDERER_OGL) || defined(OGLES)
-		// reat the texture
-		glBindTexture(GL_TEXTURE_2D, g_fbTexture);
-		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-		glBindTexture(GL_TEXTURE_2D, 0);
-#endif
-
-		uint* data_src = (uint*)data;
-		ushort* data_dst = (ushort*)fb;
-
-		for (int i = 0; i < h; i++)
-		{
-			for (int j = 0; j < w; j++)
-			{
-				unsigned int  c = *data_src++;
-				unsigned char b = ((c >> 3) & 0x1F);
-				unsigned char g = ((c >> 11) & 0x1F);
-				unsigned char r = ((c >> 19) & 0x1F);
-				*data_dst++ = r | (g << 5) | (b << 10) | 0x8000;
-			}
-		}
-
-		ushort* ptr = (ushort*)vram + VRAM_WIDTH * y + x;
-
-		for (int fy = 0; fy < h; fy++)
-		{
-			int flip_y = (h - fy - 1);
-			ushort* fb_ptr = fb + (h * flip_y / h) * w;
-
-			for (int fx = 0; fx < w; fx++)
-				ptr[fx] = fb_ptr[w * fx / w];
-
-			ptr += VRAM_WIDTH;
-		}
-		
-		free(fb);
-		free(data);
-	}
-
-	vram_need_update = true;
 }
 
 void Emulator_CopyVRAM(unsigned short *src, int x, int y, int w, int h, int dst_x, int dst_y)
@@ -1712,8 +1717,8 @@ void Emulator_CopyVRAM(unsigned short *src, int x, int y, int w, int h, int dst_
 
     if (!src)
 	{
-		Emulator_StoreFrameBuffer(activeDispEnv.disp.x, activeDispEnv.disp.y, activeDispEnv.disp.w, activeDispEnv.disp.h);
-    
+		framebuffer_need_update = true;
+
         src    = vram;
         stride = VRAM_WIDTH;
     }
@@ -1731,6 +1736,8 @@ void Emulator_CopyVRAM(unsigned short *src, int x, int y, int w, int h, int dst_
 
 void Emulator_ReadVRAM(unsigned short *dst, int x, int y, int dst_w, int dst_h)
 {
+	Emulator_ReadFramebufferDataToVRAM(activeDispEnv.disp.x, activeDispEnv.disp.y, activeDispEnv.disp.w, activeDispEnv.disp.h);
+	
 	unsigned short *src = vram + x + VRAM_WIDTH * y;
 
 	for (int i = 0; i < dst_h; i++) {
@@ -1742,10 +1749,12 @@ void Emulator_ReadVRAM(unsigned short *dst, int x, int y, int dst_w, int dst_h)
 
 void Emulator_UpdateVRAM()
 {
-	if (!vram_need_update) {
+	if (!vram_need_update)
 		return;
-	}
+
 	vram_need_update = false;
+
+	Emulator_ReadFramebufferDataToVRAM(activeDispEnv.disp.x, activeDispEnv.disp.y, activeDispEnv.disp.w, activeDispEnv.disp.h);
 
 #if defined(RENDERER_OGL) || defined(OGLES)
 	g_curVramTexture = g_vramTextures[g_curVramTextureIdx];
@@ -2049,11 +2058,11 @@ void Emulator_WaitForTimestep(int count)
 	// additional wait for swap
 	if (g_swapInterval > 0)
 	{
-		double delta;
+		double delta = 0;
 		do
 		{
 			SDL_Delay(0); // yield
-			delta = Emulator_GetHPCTime(&g_swapTimer, 0);
+			delta += Emulator_GetHPCTime(&g_swapTimer, 0);
 		} while (delta < timestep * count);
 
 		Emulator_GetHPCTime(&g_swapTimer, 1);
@@ -2079,6 +2088,8 @@ void Emulator_EndScene()
 	begin_scene_flag = false;
 
 	Emulator_SwapWindow();
+
+	Emulator_StoreFrameBuffer(activeDispEnv.disp.x, activeDispEnv.disp.y, activeDispEnv.disp.w, activeDispEnv.disp.h);
 }
 
 void Emulator_ShutDown()
@@ -2240,5 +2251,5 @@ void Emulator_DrawTriangles(int start_vertex, int triangles)
 	#error
 #endif
 
-	framebuffer_need_update = true;
+	//framebuffer_need_update = true;
 }

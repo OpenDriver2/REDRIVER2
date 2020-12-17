@@ -53,7 +53,7 @@
 
 #if defined(RENDERER_OGL)
 #define VRAM_FORMAT            GL_RG
-#define VRAM_INTERNAL_FORMAT   GL_RG8
+#define VRAM_INTERNAL_FORMAT   GL_RG32F
 #elif defined(OGLES)
 #define VRAM_FORMAT            GL_LUMINANCE_ALPHA
 #define VRAM_INTERNAL_FORMAT   GL_LUMINANCE_ALPHA
