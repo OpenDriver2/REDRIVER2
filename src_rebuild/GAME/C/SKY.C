@@ -478,7 +478,9 @@ extern VECTOR dummy;
 void DrawLensFlare(void)
 {
 	static char last_attempt_failed; // offset 0x0
-	static short buffer[160];
+	static ushort buffer[160];
+
+	RECT16 viewp = { -1,-1,321,257 };
 
 	int flarez;
 	int distance_to_sun;
@@ -487,7 +489,7 @@ void DrawLensFlare(void)
 	POLY_FT4 *poly;
 	FLAREREC *pFlareInfo;
 	int shade;
-	short *pwBuffer;
+	ushort *pwBuffer;
 	DR_MOVE* sample_sun;
 	int ygap;
 	int xgap;
@@ -518,7 +520,7 @@ void DrawLensFlare(void)
 	if (gTimeOfDay == 3)
 		col.r = 128;
 	else
-		col.r = 254;
+		col.r = 255;
 
 	flare_col = 0;
 
@@ -539,8 +541,13 @@ void DrawLensFlare(void)
 			do
 			{
 
-				if (*pwBuffer == -1 || *pwBuffer == 0x7fff)
+#ifdef PSX
+				if (*pwBuffer == 0xFFFF || *pwBuffer == 0x7fff)
 					flare_col++;
+#else
+				if (*pwBuffer > 50000)
+					flare_col++;
+#endif
 
 				bufferX++;
 				pwBuffer++;
@@ -652,17 +659,44 @@ void DrawLensFlare(void)
 				while (pFlareInfo < flare_info + 8);
 			}
 		}
-		sun_pers_conv_position.vx = sun_pers_conv_position.vx + -8;
-		sun_pers_conv_position.vy = sun_pers_conv_position.vy + -4;
+		sun_pers_conv_position.vx = sun_pers_conv_position.vx - 8;
+		sun_pers_conv_position.vy = sun_pers_conv_position.vy - 4;
 
+#ifndef PSX
+		Emulator_GetPSXWidescreenMappedViewport(&viewp);
+#if 0 // debug view
+		{
+			POLY_F4* sptb = (POLY_F4*)current->primptr;
+
+			setPolyF4(sptb);
+
+			sptb->r0 = 255;
+			sptb->g0 = 255;
+			sptb->b0 = 255;
+
+			sptb->x0 = sun_pers_conv_position.vx;
+			sptb->x1 = sun_pers_conv_position.vx + 16;
+			sptb->x2 = sun_pers_conv_position.vx + 16;
+			sptb->x3 = sun_pers_conv_position.vx;
+			
+			sptb->y0 = sun_pers_conv_position.vy;
+			sptb->y1 = sun_pers_conv_position.vy + 10;
+			sptb->y2 = sun_pers_conv_position.vy ;
+			sptb->y3 = sun_pers_conv_position.vy + 10;
+
+			addPrim(current->ot + 1, sptb);
+			current->primptr += sizeof(POLY_F4);
+		}
+#endif
+#endif
+		
 		// store framebuffer image of sun separately in VRAM
-		if (sun_pers_conv_position.vx > -1 && 
-			sun_pers_conv_position.vy > -1 &&
-			sun_pers_conv_position.vx + 16 < 321 &&
-			sun_pers_conv_position.vy + 10 < 257)
+		if (sun_pers_conv_position.vx > viewp.x &&
+			sun_pers_conv_position.vy > viewp.y &&
+			sun_pers_conv_position.vx + 16 < viewp.x+viewp.w &&
+			sun_pers_conv_position.vy + 10 < viewp.y+viewp.h)
 		{
 			last_attempt_failed = 0;
-
 
 			source.x = sun_pers_conv_position.vx;
 			source.y = sun_pers_conv_position.vy + last->disp.disp.y;
