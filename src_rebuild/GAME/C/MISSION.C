@@ -2051,16 +2051,19 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						if (data9 == 0)
 						{
 							// Handling of Lose Tail message
-							if (target->data[8] == -1 || copsAreInPursuit == 0)
+							if (target->data[8] != -1 && copsAreInPursuit)
+							{
+								if (Mission.message_timer[0] == 0 && prevCopsInPursuit == 0)
+								{
+									// lose tail
+									SetPlayerMessage(thread->player, MissionStrings + target->data[8], 2, 2);
+									prevCopsInPursuit = copsAreInPursuit;
+								}
+							}
+							else
 							{
 								ret = 1;
 								prevCopsInPursuit = 0;
-							}
-							else if (Mission.message_timer[0] == 0 && prevCopsInPursuit == 0)
-							{
-								// lose tail
-								SetPlayerMessage(thread->player, MissionStrings + target->data[8], 2, 2);
-								prevCopsInPursuit = copsAreInPursuit;
 							}
 						}
 						else
