@@ -93,10 +93,10 @@ void StoreCarPosition(MS_TARGET *target, SAVED_CAR_POS *data)
 {
 	int slot;
 
-	if (target->data[10] & 0x400000)
+	if (target->car.flags & 0x400000)
 		slot = Mission.PhantomCarId;
 	else
-		slot = target->data[6];
+		slot = target->car.slot;
 
 	if (slot == -1)
 		return;
@@ -119,7 +119,7 @@ void StoreCarPosition(MS_TARGET *target, SAVED_CAR_POS *data)
 
 	data->direction = car_data[slot].hd.direction;
 
-	if (target->data[1] & 0x40)
+	if (target->base.target_flags & 0x40)
 		data->active = -127;
 	else
 		data->active = 1;
@@ -196,7 +196,7 @@ void StoreEndData(void)
 		carpos = MissionEndData.CarPos;
 
 		do {
-			if ((target->data[0] == 2) && ((target->data[1] & 0x10) != 0))
+			if (target->base.type == Target_Car && (target->base.target_flags & 0x10))
 			{
 				StoreCarPosition(target, carpos);
 				carpos++;

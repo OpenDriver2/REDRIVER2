@@ -450,6 +450,7 @@ void PlaceCameraFollowCar(PLAYER *lp)
 		TurnHead(lp);
 
 	camera_angle.vx = 25;
+
 	camAngle = lp->cameraAngle - (lp->headPos >> 16) & 0xfff;
 
 	if (pauseflag == 0 || EditMode == 2)
@@ -461,6 +462,7 @@ void PlaceCameraFollowCar(PLAYER *lp)
 		else
 		{
 			angleDelta = (((baseDir + gCameraAngle) - lp->cameraAngle) + 2048U & 0xfff) - 2048;
+
 			lp->cameraAngle += (angleDelta >> 3) & 0xfff;
 		}
 	}

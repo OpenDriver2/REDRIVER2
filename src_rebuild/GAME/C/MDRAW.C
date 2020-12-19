@@ -144,30 +144,30 @@ void DrawOverheadTarget(MS_TARGET *target)
 	if (TargetComplete(target, -1))
 		return;
 
-	if ((target->data[1] & 0x600) == 0)  // invisible flag
+	if ((target->base.target_flags & 0x600) == 0)  // invisible flag
 		return;
 
-	switch(target->data[0])
+	switch(target->base.type)
 	{
-		case 1:	// point or car target
-		case 2:
+		case Target_Point:	// point or car target
+		case Target_Car:
 		{
-			tv.vx = target->data[3];
-			tv.vz = target->data[4];
+			tv.vx = target->base.posX;
+			tv.vz = target->base.posZ;
 			tv.vy = 0;
 			break;
 		}
-		case 3:	// event target
-			tv = *(VECTOR*)target->data[4];
+		case Target_Event:	// event target
+			tv = *(VECTOR*)target->event.eventPos;
 			break;
 		default:
 			return;
 	}
 
-	if (target->data[2] & 0x10)
+	if (target->base.display_flags & 0x10)
 		DrawTargetBlip(&tv, 64, 64, 64, 0x11);
 
-	if (target->data[2] & 0x40)
+	if (target->base.display_flags & 0x40)
 		DrawTargetArrow(&tv, 1);
 }
 
@@ -179,30 +179,30 @@ void DrawFullscreenTarget(MS_TARGET *target)
 	if (TargetComplete(target, -1))
 		return;
 
-	if ((target->data[1] & 0x600) == 0)
+	if ((target->base.target_flags & 0x600) == 0)
 		return;
 
-	switch(target->data[0])
+	switch(target->base.type)
 	{
-		case 1:	// point or car target
-		case 2:
+		case Target_Point:	// point or car target
+		case Target_Car:
 		{
-			tv.vx = target->data[3];
-			tv.vz = target->data[4];
+			tv.vx = target->base.posX;
+			tv.vz = target->base.posZ;
 			tv.vy = 0;
 			break;
 		}
-		case 3:	// event target
-			tv = *(VECTOR*)target->data[4];
+		case Target_Event:	// event target
+			tv = *(VECTOR*)target->event.eventPos;
 			break;
 		default:
 			return;
 	}
 
-	if (target->data[2] & 0x10)
+	if (target->base.display_flags & 0x10)
 		DrawTargetBlip(&tv, 64, 64, 64, 0x14);
 
-	if (target->data[2] & 0x40)
+	if (target->base.display_flags & 0x40)
 		DrawTargetArrow(&tv, 4);
 }
 
@@ -222,16 +222,16 @@ void DrawWorldTarget(MS_TARGET *target)
 
 	flags = 2;
 	
-	switch(target->data[0])
+	switch(target->base.type)
 	{
-		case 1:
+		case Target_Point:
 		{
-			tv.vx = target->data[3];
-			tv.vz = target->data[4];
+			tv.vx = target->base.posX;
+			tv.vz = target->base.posZ;
 			tv.vy = 10000;
 
 			// Capture the Flag target properties
-			switch(target->data[1] & 0x30000)
+			switch(target->base.target_flags & 0x30000)
 			{
 				case 0x20000:
 				{
@@ -266,17 +266,17 @@ void DrawWorldTarget(MS_TARGET *target)
 				}
 			}
 
-			if (target->data[7] != 0) 
-				tv.vy = target->data[6];
+			if (target->point.height != 0) 
+				tv.vy = target->point.posY;
 			else 
 				tv.vy = -MapHeight(&tv);
 			
 			break;
 		}
-		case 2:
+		case Target_Car:
 		{
 			int slot;
-			slot = target->data[6];
+			slot = target->car.slot;
 
 			if (slot == -1)
 				return;
@@ -286,9 +286,9 @@ void DrawWorldTarget(MS_TARGET *target)
 			tv.vy = -car_data[slot].hd.where.t[1];
 			break;
 		}
-		case 3:
+		case Target_Event:
 		{
-			tv = *(VECTOR*)target->data[4];
+			tv = *(VECTOR*)target->event.eventPos;
 			break;
 		}
 		default:
@@ -297,10 +297,10 @@ void DrawWorldTarget(MS_TARGET *target)
 
 	if (gMultiplayerLevels != 0 && doSpooling == 0 || Long2DDistance(player[0].spoolXZ, &tv) <= 15900)
 	{
-		if (target->data[2] & 0x20)
+		if (target->base.display_flags & 0x20)
 			flags |= 0x1;
 
-		if (target->data[2] & 0x80)
+		if (target->base.display_flags & 0x80)
 			flags |= 0x20;
 
 		if (flags) 
@@ -343,16 +343,16 @@ void DrawMultiplayerTarget(MS_TARGET *target)
 		b = 0;
 	}
 
-	switch(target->data[0])
+	switch(target->base.type)
 	{
-		case 1:
+		case Target_Point:
 		{
-			tv.vx = target->data[3];
-			tv.vz = target->data[4];
+			tv.vx = target->base.posX;
+			tv.vz = target->base.posZ;
 			tv.vy = 10000;
 
 			// Capture the Flag target properties
-			switch(target->data[1] & 0x30000)
+			switch(target->base.target_flags & 0x30000)
 			{
 				case 0x10000:
 				{
@@ -380,17 +380,17 @@ void DrawMultiplayerTarget(MS_TARGET *target)
 				}
 			}
 
-			if (target->data[7] != 0) 
-				tv.vy = target->data[6];
+			if (target->point.height != 0)
+				tv.vy = target->point.posY;
 			else 
 				tv.vy = -MapHeight(&tv);
 
 			break;
 		}
-		case 2:
+		case Target_Car:
 		{
 			int slot;
-			slot = target->data[6];
+			slot = target->car.slot;
 
 			if (slot == -1)
 				return;
@@ -400,16 +400,16 @@ void DrawMultiplayerTarget(MS_TARGET *target)
 			tv.vy = -car_data[slot].hd.where.t[1];
 			break;
 		}
-		case 3:
+		case Target_Event:
 		{
-			tv = *(VECTOR*)target->data[4];
+			tv = *(VECTOR*)target->event.eventPos;
 			break;
 		}
 		default:
 			return;
 	}
 
-	if (target->data[2] & 0x10) 
+	if (target->base.display_flags & 0x10)
 	{
 		DrawTargetBlip(&tv, r, g, b, 0x30);
 	}

@@ -1261,13 +1261,13 @@ struct MS_TARGET_CAR
 struct MS_TARGET_POINT
 {
 	MS_TARGET_BASE base;
-	int radius;			// data 5
-	int posY;			// data 6
-	int height;			// data 7
-	int _unused;
-	int actionFlag;		// data 9
-	int boatX;			// data 10
-	int boatZ;			// data 11
+	int radius;				// data 5
+	int posY;				// data 6
+	int height;				// data 7
+	int loseTailMessage;	// data 8
+	int actionFlag;			// data 9
+	int boatX;				// data 10
+	int boatZ;				// data 11
 };
 
 struct MS_TARGET_EVENT
