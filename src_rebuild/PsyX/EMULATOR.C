@@ -2043,8 +2043,6 @@ unsigned int Emulator_GetFPS()
 
 void Emulator_SwapWindow()
 {
-	//Emulator_WaitForTimestep(1);
-
 #if defined(RO_DOUBLE_BUFFERED)
 #if defined(RENDERER_OGL)
 	SDL_GL_SwapWindow(g_window);
@@ -2060,15 +2058,19 @@ void Emulator_WaitForTimestep(int count)
 {
 	const long vmode = GetVideoMode();
 	const double timestep = vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;
+
+#if defined(RENDERER_OGL) || defined(OGLES)
+	glFinish(); // best time to complete GPU drawing
+#endif
 	
 	// additional wait for swap
 	if (g_swapInterval > 0)
 	{
-		double delta = 0;
+		double delta;
 		do
 		{
 			SDL_Delay(0); // yield
-			delta += Emulator_GetHPCTime(&g_swapTimer, 0);
+			delta = Emulator_GetHPCTime(&g_swapTimer, 0);
 		} while (delta < timestep * count);
 
 		Emulator_GetHPCTime(&g_swapTimer, 1);
