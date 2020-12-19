@@ -838,7 +838,6 @@ void ControlCopDetection(void)
 					}
 					else if (distanceToPlayer < copSightData.frontViewDistance)
 					{
-						char tempBuf[128];
 						int theta;
 
 						dz = vec.vx - cp->hd.where.t[0];

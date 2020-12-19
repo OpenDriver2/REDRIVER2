@@ -1394,12 +1394,13 @@ void DrawCar(CAR_DATA* cp, int view)
 	{
 		int doSmoke = 0;
 
-		WheelSpeed = cp->hd.speed * 0x2000;
+		WheelSpeed = cp->hd.speed * 8192;
 		maxDamage = MaxPlayerDamage[0];
 
 		if (cp->controlType == CONTROL_TYPE_PLAYER)
 		{
-			maxDamage = MaxPlayerDamage[*cp->ai.padid];
+			if(*cp->ai.padid >= 0 && *cp->ai.padid < 2)
+				maxDamage = MaxPlayerDamage[*cp->ai.padid];
 		}
 
 		if (cp->totalDamage >= maxDamage)
