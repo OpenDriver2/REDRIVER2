@@ -1800,6 +1800,7 @@ int CreateCivCarWotDrivesABitThenStops(int direction, LONGVECTOR4* startPos, LON
 	pNewCar->ai.c.targetRoute[0].z = (*startPos)[2];
 
 	stopNode = &pNewCar->ai.c.targetRoute[1];
+	pNewCar->ai.c.ctrlNode = stopNode;
 
 	stopNode->pathType = 1;
 	stopNode->dir = direction;
@@ -1812,8 +1813,6 @@ int CreateCivCarWotDrivesABitThenStops(int direction, LONGVECTOR4* startPos, LON
 	spareNode->pathType = 1;
 	spareNode->dir = direction;
 	spareNode->distAlongSegment = 0;
-
-	pNewCar->ai.c.ctrlNode = spareNode;
 
 	spareNode->x = (*startPos)[0] + FIXEDH(DistanceTriggerCarMoves * rcossin_tbl[(direction & 0xfffU) * 2] * 3);
 	spareNode->z = (*startPos)[2] + FIXEDH(DistanceTriggerCarMoves * rcossin_tbl[(direction & 0xfffU) * 2 + 1] * 3);
