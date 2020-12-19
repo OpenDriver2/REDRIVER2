@@ -17,6 +17,7 @@
 #include "WHEELFORCES.H"
 #include "PAD.H"
 #include "PEDEST.H"
+#include "PRES.H"
 
 struct iVectNT
 {
@@ -820,14 +821,14 @@ void ControlCopDetection(void)
 				{
 					cp->ai.p.DistanceToPlayer = distanceToPlayer;
 
-					if(cp->ai.p.close_pursuit != 0)
+					if(cp->ai.p.close_pursuit)
 					{
 						CopsCanSeePlayer = 1;
 						break;
 					}
 				}
 
-				if (newPositionVisible(&vec, CopWorkMem, ccx, ccz) != 0)
+				if (newPositionVisible(&vec, CopWorkMem, ccx, ccz) )
 				{
 					spotted = false;
 					
@@ -837,15 +838,16 @@ void ControlCopDetection(void)
 					}
 					else if (distanceToPlayer < copSightData.frontViewDistance)
 					{
+						char tempBuf[128];
 						int theta;
 
 						dz = vec.vx - cp->hd.where.t[0];
 						dx = vec.vz - cp->hd.where.t[2];
 
 						theta = ABS(ratan2(dz, dx) - cp->hd.direction);
-
+						
 						if (theta < copSightData.frontViewAngle || 
-							theta < copSightData.frontViewAngle + 512)
+							(theta + 512 & 0xfff) < copSightData.frontViewAngle + 512)
 						{
 							spotted = true;
 						}

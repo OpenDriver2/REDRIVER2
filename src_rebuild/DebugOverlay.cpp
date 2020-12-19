@@ -12,6 +12,7 @@
 #include "C/PRES.H"
 #include "C/SPOOL.H"
 #include "C/CARS.H"
+#include "C/COP_AI.H"
 #include "C/DR2ROADS.H"
 #include "C/PLAYERS.H"
 #include "C/GLAUNCH.H"
@@ -106,7 +107,7 @@ void DrawDebugOverlays()
 		sprintf(tempBuf, "Civs: %d - %d parked - max %d", numCivCars, numParkedCars, maxCivCars);
 		PrintString(tempBuf, 10, 40);
 
-		sprintf(tempBuf, "Cops: %d - %d active - max %d", numCopCars, numActiveCops, maxCopCars);
+		sprintf(tempBuf, "Cops: %d - %d active - max %d - seen: %d", numCopCars, numActiveCops, maxCopCars, CopsCanSeePlayer);
 		PrintString(tempBuf, 10, 50);
 
 		sprintf(tempBuf, "Mission %d Chase: %d", gCurrentMissionNumber, gRandomChase);
