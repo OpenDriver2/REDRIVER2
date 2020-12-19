@@ -182,42 +182,46 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 	lPlayer->headTimer = 0;
 	lPlayer->pPed = NULL;
 
-	newCar->controlType = CONTROL_TYPE_PLAYER;
-	newCar->ai.padid = &lPlayer->padid;
-	newCar->hndType = 0;
-
-	if (playerID == 0 && 
-		!(newCar->controlFlags & CONTROL_FLAG_PLAYER_START_CAR))	// [A] bug fix: don't give felony if player owns his cop car
+	// only allow non-cutscene players to get into cars
+	if(lPlayer->padid >= 0)
 	{
-		if (gCurrentMissionNumber != 32 && MissionHeader->residentModels[newCar->ap.model] == 0)
+		newCar->controlType = CONTROL_TYPE_PLAYER;
+		newCar->ai.padid = &lPlayer->padid;
+		newCar->hndType = 0;
+
+		if (playerID == 0 &&
+			!(newCar->controlFlags & CONTROL_FLAG_PLAYER_START_CAR))	// [A] bug fix: don't give felony if player owns his cop car
 		{
-			NoteFelony(&felonyData, 11, 4096);
+			if (gCurrentMissionNumber != 32 && MissionHeader->residentModels[newCar->ap.model] == 0)
+			{
+				NoteFelony(&felonyData, 11, 4096);
+			}
 		}
+
+		if (gCurrentMissionNumber == 33 && newCar->ap.model == 4)
+		{
+			makeLimoPullOver = 0;
+		}
+
+		StartPlayerCarSounds(playerID, newCar->ap.model, (VECTOR*)newCar->hd.where.t);
+
+		if (carParked)
+			RequestSlightPauseBeforeCarSoundStarts(playerID);
+		else
+			HaveCarSoundStraightAway(playerID);
+
+		// [A] carry over felony from Tanner to car if cops see player. Force in Destroy the yard
+		if (CopsCanSeePlayer || gCurrentMissionNumber == 30)
+		{
+			if (newCar->felonyRating < pedestrianFelony)
+				newCar->felonyRating = pedestrianFelony;
+		}
+		else
+			pedestrianFelony = 0;
 	}
 
-	if (gCurrentMissionNumber == 33 && newCar->ap.model == 4) 
-	{
-		makeLimoPullOver = 0;
-	}
-
-	// door close sound
+	// play door close sound
 	Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 3, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], 0, 0x1000);
-
-	StartPlayerCarSounds(playerID, newCar->ap.model, (VECTOR*)newCar->hd.where.t);
-
-	if (carParked)
-		RequestSlightPauseBeforeCarSoundStarts(playerID);
-	else
-		HaveCarSoundStraightAway(playerID);
-
-	// [A] carry over felony from Tanner to car if cops see player. Force in Destroy the yard
-	if(CopsCanSeePlayer || gCurrentMissionNumber == 30)
-	{
-		if(newCar->felonyRating < pedestrianFelony)
-			newCar->felonyRating = pedestrianFelony;
-	}
-	else
-		pedestrianFelony = 0;
 }
 
 // [D] [T]
