@@ -1629,8 +1629,7 @@ void DrawGame(void)
 	}
 
 #ifndef PSX
-	extern int g_enableSwapInterval; // Psy-X var
-	g_enableSwapInterval = 1;
+	Emulator_EnableSwapInterval(1);
 #endif
 
 	static int frame = 0;

@@ -65,4 +65,7 @@ extern void Emulator_GetPSXWidescreenMappedViewport(RECT16* rect);
 /* Waits for timer */
 extern void Emulator_WaitForTimestep(int count);
 
+/* Changes swap interval state */
+extern void Emulator_EnableSwapInterval(int enable);
+
 #endif

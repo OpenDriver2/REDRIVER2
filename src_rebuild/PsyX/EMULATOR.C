@@ -93,11 +93,16 @@ inline void ScreenCoordsToEmulator(Vertex* vertex, int count)
 
 void Emulator_ResetDevice()
 {
+
+}
+
+void Emulator_EnableSwapInterval(int enable)
+{
+	g_enableSwapInterval = enable;
 #if defined(RENDERER_OGL)
 	SDL_GL_SetSwapInterval(g_enableSwapInterval ? g_swapInterval : 0);
 #endif
 }
-
 
 static int Emulator_InitialiseGLContext(char* windowName, int fullscreen)
 {
@@ -1384,6 +1389,7 @@ int Emulator_Initialise()
 #endif
 
 	Emulator_ResetDevice();
+	Emulator_EnableSwapInterval(g_enableSwapInterval);
 
     return TRUE;
 }
