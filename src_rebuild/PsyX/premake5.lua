@@ -57,8 +57,5 @@ project "Psy-X"
             "SDL2",
         }
 
-    filter "configurations:Release"
-        optimize "Full"
-		
-	filter "configurations:Release_dev"
-        optimize "Full"
+    filter {"configurations:Release", "configurations:Release_dev"}
+        optimize "Speed"

@@ -173,7 +173,7 @@ project "REDRIVER2"
 		 symbols "On"
 
     filter "configurations:Release"
-        optimize "Full"
+        optimize "Speed"
 		
 	filter "configurations:Release_dev"
 		targetsuffix "_dev"
@@ -182,4 +182,4 @@ project "REDRIVER2"
             "COLLISION_DEBUG",
 			"CUTSCENE_RECORDER"
         }
-        optimize "Full"
+        optimize "Speed"
