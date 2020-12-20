@@ -1388,17 +1388,17 @@ void DrawOverheadMap(void)
 			spt->x3 = MapMeshO[j+1][i+1].vx;
 			spt->y3 = MapMeshO[j+1][i+1].vz;
 
-			spt->u0 = MapTex[j].u + MapSegmentPos[tile].x * 4;
-			spt->v0 = MapTex[i].v + MapSegmentPos[tile].y;
+			spt->u0 = MIN(255, MapTex[j].u + MapSegmentPos[tile].x * 4);
+			spt->v0 = MIN(255, MapTex[i].v + MapSegmentPos[tile].y);
 
-			spt->u1 = MapTex[j].u + MapSegmentPos[tile].x * 4 + width;
-			spt->v1 = MapTex[i].v + MapSegmentPos[tile].y;
+			spt->u1 = MIN(255, MapTex[j].u + MapSegmentPos[tile].x * 4 + width);
+			spt->v1 = MIN(255, MapTex[i].v + MapSegmentPos[tile].y);
 
-			spt->u2 = MapTex[j].u + MapSegmentPos[tile].x * 4;
-			spt->v2 = MapTex[i].v + MapSegmentPos[tile].y + height;
+			spt->u2 = MIN(255, MapTex[j].u + MapSegmentPos[tile].x * 4);
+			spt->v2 = MIN(255, MapTex[i].v + MapSegmentPos[tile].y + height);
 
-			spt->u3 = MapTex[j].u + MapSegmentPos[tile].x * 4 + width;
-			spt->v3 = MapTex[i].v + MapSegmentPos[tile].y + height;
+			spt->u3 = MIN(255, MapTex[j].u + MapSegmentPos[tile].x * 4 + width);
+			spt->v3 = MIN(255, MapTex[i].v + MapSegmentPos[tile].y + height);
 
 			addPrim(current->ot + 1, spt);
 
