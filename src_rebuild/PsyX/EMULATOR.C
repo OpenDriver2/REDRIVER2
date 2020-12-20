@@ -955,7 +955,8 @@ GLint u_Projection3D;
 	"		fragColor = fract(floor(color_16 / vec4(1.0, 32.0, 1024.0, 32768.0)) / 32.0);\n"
 
 #define GPU_PACK_RG_FUNC\
-	"	float packRG(vec2 rg) { return (rg.y * 256.0 + rg.x) * 255.0;}\n"
+	"	const float c_PackRange = 255.001;\n"\
+	"	float packRG(vec2 rg) { return (rg.y * 256.0 + rg.x) * c_PackRange;}\n"
 
 #define GPU_DECODE_RG_FUNC\
 	"	vec4 decodeRG(float rg) { return fract(floor(rg / vec4(1.0, 32.0, 1024.0, 32768.0)) / 32.0); }\n"
@@ -976,7 +977,7 @@ GLint u_Projection3D;
     "       vec2 uv = (tc * vec2(0.25, 1.0) + v_page_clut.xy) * vec2(1.0 / 1024.0, 1.0 / 512.0);\n"\
     "       vec2 comp = VRAM(uv);\n"\
     "       int index = int(fract(tc.x / 4.0 + 0.0001) * 4.0);\n"\
-    "       float v = comp[index / 2] * (255.0 / 16.0);\n"\
+    "       float v = comp[index / 2] * (c_PackRange / 16.0);\n"\
     "       float f = floor(v);\n"\
     "       vec2 c = vec2( (v - f) * 16.0, f );\n"\
     "       vec2 clut_pos = v_page_clut.zw;\n"\
@@ -991,7 +992,7 @@ GLint u_Projection3D;
 	"		vec2 comp = VRAM(uv);\n"\
 	"		vec2 clut_pos = v_page_clut.zw;\n"\
 	"		int index = int(mod(tc.x, 2.0));\n"\
-	"		clut_pos.x += comp[index] * 255.0 / 1024.0;\n"\
+	"		clut_pos.x += comp[index] * c_PackRange / 1024.0;\n"\
 	"		vec2 color_rg = VRAM(clut_pos);\n"\
 	"		return packRG(VRAM(clut_pos));\n"\
 	"	}\n"
