@@ -5,7 +5,7 @@
 #include "EMULATOR.H"
 
 extern TextureID        g_whiteTexture;
-extern TextureID        g_curVramTexture;
+extern TextureID        g_vramTexture;
 
 extern int screenWidth;
 extern int screenHeight;

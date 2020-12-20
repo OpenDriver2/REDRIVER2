@@ -36,12 +36,12 @@ SysCounter counters[3] = { 0 };
 int g_PreviousBlendMode = BM_NONE;
 int g_PreviousDepthMode = 0;
 int g_PreviousStencilMode = 0;
+int g_PreviousScissorState = 0;
+RECT16 g_PreviousFramebuffer = {0,0,0,0};
+
 ShaderID g_PreviousShader = -1;
 
-TextureID g_vramTextures[2];
-TextureID g_curVramTexture;
-int g_curVramTextureIdx = 0;
-
+TextureID g_vramTexture;
 TextureID g_fbTexture;
 
 TextureID g_whiteTexture;
@@ -1343,13 +1343,10 @@ int Emulator_Initialise()
 	// gen VRAM textures.
 	// double-buffered
 	{
-		glGenTextures(2, g_vramTextures);
-		g_curVramTexture = g_vramTextures[0];
-		g_curVramTextureIdx = 0;
-	
-		for(int i = 0; i < 2; i++)
+		glGenTextures(1, &g_vramTexture);
+		
 		{
-			glBindTexture(GL_TEXTURE_2D, g_vramTextures[i]);
+			glBindTexture(GL_TEXTURE_2D, g_vramTexture);
 			
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -1480,16 +1477,23 @@ void Emulator_SetupClipMode(const RECT16& rect)
 		clipRectX += 0.5f;
 	}
 
-#if defined(RENDERER_OGL) || defined(OGLES)
-	if (!enabled)
+	if(g_PreviousScissorState != enabled)
 	{
-		glDisable(GL_SCISSOR_TEST);
-		return;
+		g_PreviousScissorState = enabled;
+#if defined(RENDERER_OGL) || defined(OGLES)	
+		if (!enabled)
+		{
+			glDisable(GL_SCISSOR_TEST);
+			return;
+		}
+	
+		glEnable(GL_SCISSOR_TEST);
+#endif
 	}
-
+	
+#if defined(RENDERER_OGL) || defined(OGLES)	
 	float flipOffset = g_windowHeight - clipRectH * (float)g_windowHeight;
 
-	glEnable(GL_SCISSOR_TEST);
 	glScissor(clipRectX * (float)g_windowWidth, 
 			  flipOffset - clipRectY * (float)g_windowHeight, 
 		      clipRectW * (float)g_windowWidth,
@@ -1639,12 +1643,18 @@ void Emulator_SaveVRAM(const char* outputFileName, int x, int y, int width, int 
 bool vram_need_update = true;
 bool framebuffer_need_update = false;
 
-void Emulator_ReadFramebufferDataToVRAM(int x, int y, int w, int h)
+void Emulator_ReadFramebufferDataToVRAM()
 {
+	int x, y, w, h;
 	if (!framebuffer_need_update)
 		return;
 
 	framebuffer_need_update = false;
+
+	x = g_PreviousFramebuffer.x;
+	y = g_PreviousFramebuffer.y;
+	w = g_PreviousFramebuffer.w;
+	h = g_PreviousFramebuffer.h;
 	
 	// now we can read it back to VRAM texture
 	{
@@ -1691,18 +1701,31 @@ void Emulator_ReadFramebufferDataToVRAM(int x, int y, int w, int h)
 		free(data);
 	}
 
-	vram_need_update = true;
+	// vram_need_update = true;
 }
 
 void Emulator_StoreFrameBuffer(int x, int y, int w, int h)
 {
 #if defined(RENDERER_OGL) || defined(OGLES)
 	// set storage size first
+	if (g_PreviousFramebuffer.w != w &&
+		g_PreviousFramebuffer.h != h)
 	{
+		if (g_PreviousScissorState)
+		{
+			glDisable(GL_SCISSOR_TEST);
+			g_PreviousScissorState = 0;
+		}
+		
 		glBindTexture(GL_TEXTURE_2D, g_fbTexture);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
+
+	g_PreviousFramebuffer.x = x;
+	g_PreviousFramebuffer.y = y;
+	g_PreviousFramebuffer.w = w;
+	g_PreviousFramebuffer.h = h;
 
 	glBindFramebuffer(GL_FRAMEBUFFER, g_glFramebuffer);
 
@@ -1722,6 +1745,7 @@ void Emulator_StoreFrameBuffer(int x, int y, int w, int h)
 	// after drawing
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glFlush();
+	Emulator_ReadFramebufferDataToVRAM();
 #endif
 }
 
@@ -1752,8 +1776,6 @@ void Emulator_CopyVRAM(unsigned short *src, int x, int y, int w, int h, int dst_
 
 void Emulator_ReadVRAM(unsigned short *dst, int x, int y, int dst_w, int dst_h)
 {
-	Emulator_ReadFramebufferDataToVRAM(activeDispEnv.disp.x, activeDispEnv.disp.y, activeDispEnv.disp.w, activeDispEnv.disp.h);
-	
 	unsigned short *src = vram + x + VRAM_WIDTH * y;
 
 	for (int i = 0; i < dst_h; i++) {
@@ -1770,29 +1792,17 @@ void Emulator_UpdateVRAM()
 
 	vram_need_update = false;
 
-	Emulator_ReadFramebufferDataToVRAM(activeDispEnv.disp.x, activeDispEnv.disp.y, activeDispEnv.disp.w, activeDispEnv.disp.h);
-
 #if defined(RENDERER_OGL) || defined(OGLES)
-	g_curVramTexture = g_vramTextures[g_curVramTextureIdx];
-	
-	glBindTexture(GL_TEXTURE_2D, g_curVramTexture);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, VRAM_WIDTH, VRAM_HEIGHT, VRAM_FORMAT, GL_UNSIGNED_BYTE, vram);
-
-	g_curVramTextureIdx++;
-	g_curVramTextureIdx &= 1;
+	glBindTexture(GL_TEXTURE_2D, g_vramTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, VRAM_WIDTH, VRAM_HEIGHT, 0, VRAM_FORMAT, GL_UNSIGNED_BYTE, vram);
+	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, VRAM_WIDTH, VRAM_HEIGHT, VRAM_FORMAT, GL_UNSIGNED_BYTE, vram);
 #endif
 }
 
 void Emulator_BlitVRAM()
 {
 #if 0
-	if (activeDispEnv.isinter)
-	{
-		//Emulator_StoreFrameBuffer(activeDispEnv.disp.x, activeDispEnv.disp.y, activeDispEnv.disp.w, activeDispEnv.disp.h);
-		return;
-	}
-
-	Emulator_SetTexture(vramTexture, (TexFormat)-1);	// avoid shader setup
+	Emulator_SetTexture(g_vramTexture, (TexFormat)-1);	// avoid shader setup
 	Emulator_SetShader(g_blit_shader);
 
 	u_char l = activeDispEnv.disp.x / 8;
@@ -2070,7 +2080,7 @@ void Emulator_WaitForTimestep(int count)
 	const double timestep = vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;
 
 #if defined(RENDERER_OGL) || defined(OGLES)
-	glFinish(); // best time to complete GPU drawing
+	//glFinish(); // best time to complete GPU drawing
 #endif
 	
 	// additional wait for swap
@@ -2105,9 +2115,9 @@ void Emulator_EndScene()
 
 	begin_scene_flag = false;
 
-	Emulator_SwapWindow();
-
 	Emulator_StoreFrameBuffer(activeDispEnv.disp.x, activeDispEnv.disp.y, activeDispEnv.disp.w, activeDispEnv.disp.h);
+	
+	Emulator_SwapWindow();
 }
 
 void Emulator_ShutDown()
@@ -2125,9 +2135,7 @@ void Emulator_ShutDown()
 		SDL_DestroyMutex(g_vblankMutex);
 
 #if defined(RENDERER_OGL) || defined(OGLES)
-	g_curVramTexture = 0;
-	Emulator_DestroyTexture(g_vramTextures[0]);
-	Emulator_DestroyTexture(g_vramTextures[1]);
+	Emulator_DestroyTexture(g_vramTexture);
 	Emulator_DestroyTexture(g_whiteTexture);
 #endif
 
