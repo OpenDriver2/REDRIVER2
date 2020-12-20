@@ -535,7 +535,7 @@ void AddSplit(bool semiTrans, int page, TextureID textureId)
 
 	RECT16& clipRect = activeDrawEnv.clip;
 
-	if (curSplit.blendMode == blendMode && 
+	if (curSplit.blendMode == blendMode &&
 		curSplit.texFormat == texFormat && 
 		curSplit.textureId == textureId &&
 		curSplit.clipRect.x == clipRect.x &&
@@ -549,13 +549,17 @@ void AddSplit(bool semiTrans, int page, TextureID textureId)
 	curSplit.vCount = g_vertexIndex - curSplit.vIndex;
 
 	VertexBufferSplit& split = g_splits[++g_splitIndex];
-
-	split.textureId = textureId;
-	split.vIndex    = g_vertexIndex;
-	split.vCount    = 0;
+	
 	split.blendMode = blendMode;
 	split.texFormat = texFormat;
-	split.clipRect  = clipRect;
+	split.textureId = textureId;
+	split.clipRect.x = clipRect.x;
+	split.clipRect.y = clipRect.y;
+	split.clipRect.w = clipRect.w;
+	split.clipRect.h = clipRect.h;
+
+	split.vIndex = g_vertexIndex;
+	split.vCount = 0;
 }
 
 void TriangulateQuad()
@@ -761,6 +765,16 @@ void DrawPrim(void* p)
 	DrawAggregatedSplits();
 }
 
+inline int IsNull(POLY_FT3* poly)
+{
+	return  poly->x0 == -1 &&
+			poly->y0 == -1 &&
+			poly->x1 == -1 &&
+			poly->y1 == -1 &&
+			poly->x2 == -1 &&
+			poly->y2 == -1;
+}
+
 // parses primitive and pushes it to VBO
 // returns primitive size
 // -1 means invalid primitive
@@ -855,17 +869,22 @@ int ParsePrimitive(uintptr_t primPtr)
 			POLY_FT3* poly = (POLY_FT3*)pTag;
 			activeDrawEnv.tpage = poly->tpage;
 
-			AddSplit(semi_transparent, poly->tpage, g_curVramTexture);
+			// It is an official hack from SCE devs to not use DR_TPAGE and instead use null polygon
+			if (!IsNull(poly))
+			{
+				AddSplit(semi_transparent, poly->tpage, g_curVramTexture);
 
-			Emulator_GenerateVertexArrayTriangle(&g_vertexBuffer[g_vertexIndex], &poly->x0, &poly->x1, &poly->x2, gte_index);
-			Emulator_GenerateTexcoordArrayTriangle(&g_vertexBuffer[g_vertexIndex], &poly->u0, &poly->u1, &poly->u2, poly->tpage, poly->clut, GET_TPAGE_DITHER(lastTpage));
-			Emulator_GenerateColourArrayTriangle(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0, &poly->r0);
+				Emulator_GenerateVertexArrayTriangle(&g_vertexBuffer[g_vertexIndex], &poly->x0, &poly->x1, &poly->x2, gte_index);
+				Emulator_GenerateTexcoordArrayTriangle(&g_vertexBuffer[g_vertexIndex], &poly->u0, &poly->u1, &poly->u2, poly->tpage, poly->clut, GET_TPAGE_DITHER(lastTpage));
+				Emulator_GenerateColourArrayTriangle(&g_vertexBuffer[g_vertexIndex], &poly->r0, &poly->r0, &poly->r0);
 
-			g_vertexIndex += 3;
+				g_vertexIndex += 3;
 
 #if defined(DEBUG_POLY_COUNT)
-			polygon_count++;
+				polygon_count++;
 #endif
+			}
+
 			break;
 		}
 		case 0x28:

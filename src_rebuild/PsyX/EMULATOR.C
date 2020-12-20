@@ -33,6 +33,11 @@ SDL_Window* g_window = NULL;
 
 SysCounter counters[3] = { 0 };
 
+int g_PreviousBlendMode = BM_NONE;
+int g_PreviousDepthMode = 0;
+int g_PreviousStencilMode = 0;
+ShaderID g_PreviousShader = -1;
+
 TextureID g_vramTextures[2];
 TextureID g_curVramTexture;
 int g_curVramTextureIdx = 0;
@@ -1519,11 +1524,16 @@ void Emulator_GetPSXWidescreenMappedViewport(RECT16* rect)
 
 void Emulator_SetShader(const ShaderID &shader)
 {
+	if(g_PreviousShader != shader)
+	{
 #if defined(RENDERER_OGL) || defined(OGLES)
-	glUseProgram(shader);
+		glUseProgram(shader);
 #else
-	#error
+#error
 #endif
+
+		g_PreviousShader = shader;
+	}
 
 #ifdef USE_PGXP
 	float emuScreenAspect = float(g_windowWidth) / float(g_windowHeight);
@@ -2128,10 +2138,14 @@ void Emulator_ShutDown()
 	exit(0);
 }
 
-int g_PreviousBlendMode = BM_NONE;
-
 void Emulator_EnableDepth(int enable)
 {
+	if(g_PreviousDepthMode == enable)
+		return;
+
+	g_PreviousDepthMode = enable;
+
+#if defined(RENDERER_OGL) || defined(OGLES)
 	if(enable && g_pgxpZBuffer)
 	{
 		glEnable(GL_DEPTH_TEST);
@@ -2142,10 +2156,17 @@ void Emulator_EnableDepth(int enable)
 		glDisable(GL_DEPTH_TEST);
 		//glDepthMask(GL_FALSE);
 	}
+#endif
 }
 
 void Emulator_SetStencilMode(int drawPrim)
 {
+	if(g_PreviousStencilMode == drawPrim)
+		return;
+
+	g_PreviousStencilMode = drawPrim;
+
+#if defined(RENDERER_OGL) || defined(OGLES)
 	if(drawPrim)
 	{
 		glStencilFunc( GL_ALWAYS, 1, 0x10 );
@@ -2156,20 +2177,17 @@ void Emulator_SetStencilMode(int drawPrim)
 		glStencilFunc( GL_NOTEQUAL, 1, 0xFF );
 		glStencilOp( GL_REPLACE, GL_KEEP, GL_KEEP );
 	}
+#endif
 }
 
 void Emulator_SetBlendMode(BlendMode blendMode)
 {
 	if (g_PreviousBlendMode == blendMode)
-	{
 		return;
-	}
 
 #if defined(RENDERER_OGL) || defined(OGLES)
 	if (g_PreviousBlendMode == BM_NONE)
-	{
 		glEnable(GL_BLEND);
-	}
 
 	switch (blendMode)
 	{
@@ -2222,15 +2240,6 @@ void Emulator_SetViewPort(int x, int y, int width, int height)
 {
 #if defined(RENDERER_OGL) || defined(OGLES)
 	glViewport(x, y, width, height);
-#endif
-}
-
-void Emulator_SetRenderTarget(const RenderTargetID &frameBufferObject)
-{
-#if defined(RENDERER_OGL) || defined(OGLES)
-	glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObject);
-#else
-    #error
 #endif
 }
 
