@@ -974,32 +974,32 @@ GLint u_Projection3D;
 #define GPU_SAMPLE_TEXTURE_4BIT_FUNC\
     "   // returns 16 bit colour\n"\
     "   float samplePSX(vec2 tc){\n"\
-    "       vec2 uv = (tc * vec2(0.25, 1.0) + v_page_clut.xy) * vec2(1.0 / 1024.0, 1.0 / 512.0);\n"\
+    "       vec2 uv = (tc * vec2(0.25, 1.0) + v_page_clut.xy) * c_VRAMTexel;\n"\
     "       vec2 comp = VRAM(uv);\n"\
     "       int index = int(fract(tc.x / 4.0 + 0.0001) * 4.0);\n"\
     "       float v = comp[index / 2] * (c_PackRange / 16.0);\n"\
     "       float f = floor(v);\n"\
     "       vec2 c = vec2( (v - f) * 16.0, f );\n"\
     "       vec2 clut_pos = v_page_clut.zw;\n"\
-    "       clut_pos.x += mix(c[0], c[1], mod(index, 2)) / 1024.0;\n"\
+    "       clut_pos.x += mix(c[0], c[1], mod(index, 2)) * c_VRAMTexel.x;\n"\
     "       return packRG(VRAM(clut_pos));\n"\
     "   }\n"
 
 #define GPU_SAMPLE_TEXTURE_8BIT_FUNC\
 	"	// returns 16 bit colour\n"\
 	"	float samplePSX(vec2 tc){\n"\
-	"		vec2 uv = (tc * vec2(0.5, 1.0) + v_page_clut.xy) * vec2(1.0 / 1024.0, 1.0 / 512.0);\n"\
+	"		vec2 uv = (tc * vec2(0.5, 1.0) + v_page_clut.xy) * c_VRAMTexel;\n"\
 	"		vec2 comp = VRAM(uv);\n"\
 	"		vec2 clut_pos = v_page_clut.zw;\n"\
 	"		int index = int(mod(tc.x, 2.0));\n"\
-	"		clut_pos.x += comp[index] * c_PackRange / 1024.0;\n"\
+	"		clut_pos.x += comp[index] * c_PackRange * c_VRAMTexel.x;\n"\
 	"		vec2 color_rg = VRAM(clut_pos);\n"\
 	"		return packRG(VRAM(clut_pos));\n"\
 	"	}\n"
 
 #define GPU_SAMPLE_TEXTURE_16BIT_FUNC\
 	"	float samplePSX(vec2 tc){\n"\
-	"		vec2 uv = (tc + v_page_clut.xy) * vec2(1.0 / 1024.0, 1.0 / 512.0);\n"\
+	"		vec2 uv = (tc + v_page_clut.xy) * c_VRAMTexel;\n"\
 	"		vec2 color_rg = VRAM(uv);\n"\
 	"		return packRG(color_rg);\n"\
 	"	}\n"
@@ -1009,16 +1009,15 @@ GLint u_Projection3D;
 	"	float c_textureSize = 1;\n"\
 	"	float c_onePixel = 1;\n"\
 	"	vec4 BilinearTextureSample(vec2 P) {\n"\
-	"		vec2 pixel = P + vec2(1.0, 1);\n"\
-	"		vec2 frac = fract(pixel);\n"\
-	"		pixel = floor(pixel) - vec2(c_onePixel * 0.5);\n"\
-	"		float C11 = samplePSX(pixel + vec2( 0.0        , 0.0));\n"\
-	"		float C21 = samplePSX(pixel + vec2( c_onePixel, 0.0));\n"\
-	"		float C12 = samplePSX(pixel + vec2( 0.0        , c_onePixel));\n"\
-	"		float C22 = samplePSX(pixel + vec2( c_onePixel, c_onePixel));\n"\
+	"		vec2 frac = fract(P);\n"\
+	"		vec2 pixel = floor(P);\n"\
+	"		float C11 = samplePSX(pixel);\n"\
+	"		float C21 = samplePSX(pixel + vec2(c_onePixel, 0.0));\n"\
+	"		float C12 = samplePSX(pixel + vec2(0.0, c_onePixel));\n"\
+	"		float C22 = samplePSX(pixel + vec2(c_onePixel, c_onePixel));\n"\
 	"		float ax1 = mix(float(C11 > 0), float(C21 > 0), frac.x);\n"\
 	"		float ax2 = mix(float(C12 > 0), float(C22 > 0), frac.x);\n"\
-	"		if(mix(ax1, ax2, frac.y) < 0.25) { discard; }\n"\
+	"		if(mix(ax1, ax2, frac.y) < 0.5) { discard; }\n"\
 	"		vec4 x1 = mix(decodeRG(C11), decodeRG(C21), frac.x);\n"\
 	"		vec4 x2 = mix(decodeRG(C12), decodeRG(C22), frac.x);\n"\
 	"		return mix(x1, x2, frac.y);\n"\
@@ -1082,6 +1081,7 @@ GLint u_Projection3D;
 	GPU_PACK_RG_FUNC\
 	GPU_DECODE_RG_FUNC\
 	GPU_FETCH_VRAM_FUNC\
+	"	const vec2 c_VRAMTexel = vec2(1.0 / 1024.0, 1.0 / 512.0);\n"\
 	GPU_SAMPLE_TEXTURE_## bit ##BIT_FUNC\
 	"#ifdef BILINEAR_FILTER\n"\
 	GPU_BILINEAR_SAMPLE_FUNC\
@@ -1252,7 +1252,6 @@ ShaderID Shader_Compile(const char *source)
     glBindAttribLocation(program, a_position, "a_position");
     glBindAttribLocation(program, a_texcoord, "a_texcoord");
     glBindAttribLocation(program, a_color,    "a_color");
-
 
 
 #ifdef USE_PGXP
