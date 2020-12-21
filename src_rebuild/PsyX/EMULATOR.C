@@ -1477,20 +1477,11 @@ void Emulator_SetupClipMode(const RECT16& rect)
 		clipRectX += 0.5f;
 	}
 
-	if(g_PreviousScissorState != enabled)
-	{
-		g_PreviousScissorState = enabled;
-#if defined(RENDERER_OGL) || defined(OGLES)	
-		if (!enabled)
-		{
-			glDisable(GL_SCISSOR_TEST);
-			return;
-		}
-	
-		glEnable(GL_SCISSOR_TEST);
-#endif
-	}
-	
+	Emulator_SetScissorState(enabled);
+
+	if(!enabled)
+		return;
+
 #if defined(RENDERER_OGL) || defined(OGLES)	
 	float flipOffset = g_windowHeight - clipRectH * (float)g_windowHeight;
 
@@ -1704,6 +1695,20 @@ void Emulator_ReadFramebufferDataToVRAM()
 	// vram_need_update = true;
 }
 
+void Emulator_SetScissorState(int enable)
+{
+	if(g_PreviousScissorState == enable)
+		return;
+
+#if defined(RENDERER_OGL) || defined(OGLES)	
+	if (g_PreviousScissorState)
+		glDisable(GL_SCISSOR_TEST);
+	else
+		glEnable(GL_SCISSOR_TEST);
+#endif
+	g_PreviousScissorState = enable;
+}
+
 void Emulator_StoreFrameBuffer(int x, int y, int w, int h)
 {
 #if defined(RENDERER_OGL) || defined(OGLES)
@@ -1711,11 +1716,7 @@ void Emulator_StoreFrameBuffer(int x, int y, int w, int h)
 	if (g_PreviousFramebuffer.w != w &&
 		g_PreviousFramebuffer.h != h)
 	{
-		if (g_PreviousScissorState)
-		{
-			glDisable(GL_SCISSOR_TEST);
-			g_PreviousScissorState = 0;
-		}
+		Emulator_SetScissorState(0);
 		
 		glBindTexture(GL_TEXTURE_2D, g_fbTexture);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);

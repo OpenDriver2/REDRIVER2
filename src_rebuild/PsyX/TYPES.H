@@ -1,5 +1,5 @@
-#ifndef	_SYS_TYPES_H
-#define	_SYS_TYPES_H
+#ifndef	TYPES_H
+#define	TYPES_H
 
 #include "PSYX_CONFIG.H"
 
@@ -48,30 +48,6 @@ typedef	unsigned int	uint;		/* sys V compat */
 typedef	unsigned long	ulong;		/* sys V compat */
 #endif
 #endif /* ! __psx__ */
-
-#if !__APPLE__
-typedef	struct	_physadr { int r[1]; } *physadr;
-typedef	struct	label_t	{
-	int	val[12];
-} label_t;
-
-#if !defined(__ANDROID__)
-typedef	struct	_quad { long val[2]; } quad;
-typedef	long	daddr_t;
-typedef	char *	caddr_t;
-typedef	long *	qaddr_t;
-//typedef	u_long	ino_t;
-typedef	long	swblk_t;
-#endif
-
-
-//typedef	long	time_t;
-//typedef	short	dev_t;
-//typedef	long	off_t;
-//typedef	u_short	uid_t;
-//typedef	u_short	gid_t;
-
-#endif
 
 #define	NBBY	8
 

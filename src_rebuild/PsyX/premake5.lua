@@ -22,12 +22,11 @@ project "Psy-X"
 
     includedirs { 
         SDL2_DIR.."/include",
-        OPENAL_DIR.."/include",
-		OPENAL_DIR.."/include",
+        OPENAL_DIR.."/include"
     }
 
     filter "system:Windows"
-		defines { "_WINDOWS" }
+	defines { "_WINDOWS" }
         links { 
             "opengl32",
             "SDL2", 
