@@ -230,7 +230,7 @@ static char gameAreas[64] = {
 	0, 6, // Centro, Flamengo
 };
 
-#define AREA_NAME(level, index) areaNames[level][index]
+#define AREA_NAME(level, index) GET_MISSION_TXT(areaNames[level][index])
 
 #define GAMEMODE_AREA(level, offset, index) gameAreas[offset + level * 2 + index]
 #define GAMEMODE_AREA_NAME(level, offset, index) AREA_NAME(level, GAMEMODE_AREA(level, offset, index))
@@ -2828,16 +2828,16 @@ int GameNum = 0;
 CVECTOR scoreCol = { 120, 120, 120 };
 CVECTOR otherCol = {125, 115, 34};
 
-char* CityNames[4] = {
-	M_LTXT_ID(MTXT_Chicago),
-	M_LTXT_ID(MTXT_Havana),
-	M_LTXT_ID(MTXT_LasVegas),
-	M_LTXT_ID(MTXT_RioDeJaneiro)
-};
-
 // [D] [T]
 void DisplayScoreTable(void)
 {
+	static char* CityNames[4] = {
+		M_LTXT(MTXT_Chicago),
+		M_LTXT(MTXT_Havana),
+		M_LTXT(MTXT_LasVegas),
+		M_LTXT(MTXT_RioDeJaneiro)
+	};
+
 	int time;
 	int i;
 	int offset;
@@ -2851,8 +2851,8 @@ void DisplayScoreTable(void)
 	sprintf(text, ScreenNames[ScreenDepth - 1]);
 	FEPrintString(text, 20, 200, 2, otherCol.r, otherCol.g, otherCol.b);
 
-	sprintf(text, GET_MISSION_TXT(CityNames[GameLevel]));
-	FEPrintString(text, 280, 200, 2, otherCol.r, otherCol.g, otherCol.b);
+	sprintf(text, CityNames[GameLevel]);
+	FEPrintStringSized(text, 280, 206, 3072, 2, otherCol.r, otherCol.g, otherCol.b);
 
 	if (GameType == GAME_TAKEADRIVE && NumPlayers == 2)
 		offset = 48;
@@ -2868,7 +2868,7 @@ void DisplayScoreTable(void)
 	if (GameType != GAME_PURSUIT && GameType != GAME_SURVIVAL) 
 	{
 		sprintf(text, "%s", GAMEMODE_AREA_NAME(GameLevel, offset, GameNum));
-		FEPrintStringSized(text, 420, 206, 0xc00, 2, otherCol.r, otherCol.g, otherCol.b);
+		FEPrintStringSized(text, 420, 206, 3072, 2, otherCol.r, otherCol.g, otherCol.b);
 	}
 
 	offset = 240;
@@ -2930,6 +2930,12 @@ int ScoreScreen(int bSetup)
 			else
 			{
 				GameNum ^= 1;
+
+				if (GameNum == 1)
+				{
+					if (--GameLevel < 0)
+						GameLevel = 3;
+				}
 			}
 		}
 		else
@@ -2944,6 +2950,12 @@ int ScoreScreen(int bSetup)
 			else
 			{
 				GameNum ^= 1;
+
+				if (GameNum == 0)
+				{
+					if (++GameLevel > 3)
+						GameLevel = 0;
+				}
 			}
 		}
 
