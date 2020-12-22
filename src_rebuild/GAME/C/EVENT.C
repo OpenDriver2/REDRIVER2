@@ -24,6 +24,7 @@
 #include "../ASM/ASMTEST.H"
 
 #include "INLINE_C.H"
+#include "GTEMAC.H"
 #include "RAND.H"
 
 #define PATH_NODE_WRAP		0x80000000	// go back to first node without interpolation

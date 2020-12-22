@@ -6,19 +6,84 @@ extern int gte_ldlzc(int input);
 
 extern int docop2(int op);
 
+/*
+ * Type 1 functions
+ */
+
+ // ctc2 21-23
+#define gte_ldfc( r0 ) \
+	CTC2(*(uint*)((char*)r0+0), 21);\
+	CTC2(*(uint*)((char*)r0+4), 22);\
+	CTC2(*(uint*)((char*)r0+8), 23);
+
+// mtc2 0-1
+#define gte_ldv0( r0 )\
+	MTC2(*(uint*)((char*)r0+0), 0);\
+	MTC2(*(uint*)((char*)r0+4), 1);
+
+// mtc2 2-3
+#define gte_ldv1( r0 )\
+	MTC2(*(uint*)((char*)r0+0), 2);\
+	MTC2(*(uint*)((char*)r0+4), 3);
+
+// mtc2 4-5
+#define gte_ldv2( r0 )\
+	MTC2(*(uint*)((char*)r0+0), 4);\
+	MTC2(*(uint*)((char*)r0+4), 5);
+
+// mtc2 0-5
+#define gte_ldv3( r0, r1, r2 ) \
+	MTC2(*(uint*)((char*)r0+0), 0);\
+	MTC2(*(uint*)((char*)r0+4), 1);\
+	MTC2(*(uint*)((char*)r1+0), 2);\
+	MTC2(*(uint*)((char*)r1+4), 3);\
+	MTC2(*(uint*)((char*)r2+0), 4);\
+	MTC2(*(uint*)((char*)r2+4), 5);
+
 // load mtc2 9,10,11
 #define gte_ldclmv( r0 ) \
-	MTC2(*(ushort*)((char*)r0), 9);\
-	MTC2(*(ushort*)((char*)r0+6), 10);\
+	MTC2(*(ushort*)((char*)r0), 9); \
+	MTC2(*(ushort*)((char*)r0+6), 10); \
 	MTC2(*(ushort*)((char*)r0+12), 11);\
 
-// store mfc2 9,10,11
-#define gte_stclmv( r0 ) \
-	*(ushort*)((char*)r0) = MFC2(9) & 0xFFFF; \
-	*(ushort*)((char*)r0 + 6) = MFC2(10) & 0xFFFF; \
-	*(ushort*)((char*)r0 + 12) = MFC2(11) & 0xFFFF;
+// lwc2 9-11
+#define gte_ldlvl( r0 ) \
+	MTC2(*(uint*)((char*)r0), 9); \
+	MTC2(*(uint*)((char*)r0 + 4), 10);\
+	MTC2(*(uint*)((char*)r0 + 8), 11);
 
-// load ctc2 8-11
+#define gte_ldrgb( r0 ) \
+	MTC2(*(uint*)((char*)r0), 6);
+
+// mtc2 8
+#define gte_lddp( r0 )	\
+	MTC2(*(uint*)r0, 8);
+
+// ctc2 13 14 15
+#define gte_ldbkdir( r0, r1, r2 ) \
+	CTC2(r0, 13); \
+	CTC2(r1, 14); \
+	CTC2(r2, 15);
+
+// ctc2 24,25
+#define gte_SetGeomOffset( r0, r1 )\
+	CTC2(r0 << 16, 24); \
+	CTC2(r1 << 16, 25); \
+
+// ctc2 13,14,15
+#define gte_SetBackColor( r0, r1, r2 ) \
+				{	CTC2(r1 << 4, 13); \
+					CTC2(r2 << 4, 14); \
+					CTC2(r3 << 4, 15); }
+
+
+// ctc2 21, 22, 23
+#define gte_SetFarColor( r0, r1, r2 ) \
+				{	CTC2(r1 << 4, 21); \
+					CTC2(r2 << 4, 22); \
+					CTC2(r3 << 4, 23); }
+
+ // load ctc2 8-11
 #define gte_SetLightMatrix( r0 ) \
 	CTC2(*(uint*)((char*)r0), 8);\
 	CTC2(*(uint*)((char*)r0+4), 9);\
@@ -54,39 +119,6 @@ extern int docop2(int op);
 	CTC2(*(uint*)((char*)r0+24), 6);\
 	CTC2(*(uint*)((char*)r0+28), 7);
 
-// store cfc2 0-7
-#define gte_ReadRotMatrix( r0 ) \
-	*(uint*)((char*)r0) = CFC2(0);		\
-	*(uint*)((char*)r0 + 4) = CFC2(1);	\
-	*(uint*)((char*)r0 + 8) = CFC2(2);	\
-	*(uint*)((char*)r0 + 12) = CFC2(3);	\
-	*(uint*)((char*)r0 + 16) = CFC2(4);	\
-	*(uint*)((char*)r0 + 20) = CFC2(5);	\
-	*(uint*)((char*)r0 + 24) = CFC2(6);	\
-	*(uint*)((char*)r0 + 28) = CFC2(7);
-
-// cfc2 16-23
-#define gte_ReadColorMatrix( r0 ) \
-	*(uint*)((char*)r0) = CFC2(16);		\
-	*(uint*)((char*)r0 + 4) = CFC2(17);	\
-	*(uint*)((char*)r0 + 8) = CFC2(18);	\
-	*(uint*)((char*)r0 + 12) = CFC2(19);	\
-	*(uint*)((char*)r0 + 16) = CFC2(20);	\
-	*(uint*)((char*)r0 + 20) = CFC2(21);	\
-	*(uint*)((char*)r0 + 24) = CFC2(22);	\
-	*(uint*)((char*)r0 + 28) = CFC2(23);
-
-// cfc2 8-15
-#define gte_ReadLightMatrix( r0 ) \
-	*(uint*)((char*)r0) = CFC2(8);		\
-	*(uint*)((char*)r0 + 4) = CFC2(9);	\
-	*(uint*)((char*)r0 + 8) = CFC2(10);	\
-	*(uint*)((char*)r0 + 12) = CFC2(11);	\
-	*(uint*)((char*)r0 + 16) = CFC2(12);	\
-	*(uint*)((char*)r0 + 20) = CFC2(13);	\
-	*(uint*)((char*)r0 + 24) = CFC2(14);	\
-	*(uint*)((char*)r0 + 28) = CFC2(15);
-
 // ctc2 8-12
 #define gte_SetLightMatrix( r0 )\
 	CTC2(*(uint*)((char*)r0), 8);\
@@ -103,48 +135,58 @@ extern int docop2(int op);
 	CTC2(*(uint*)((char*)r0+12), 19);\
 	CTC2(*(uint*)((char*)r0+16), 20);
 
-// lwc2 9-11
-#define gte_ldlvl( r0 ) \
-	MTC2(*(uint*)((char*)r0), 9); \
-	MTC2(*(uint*)((char*)r0 + 4), 10);\
-	MTC2(*(uint*)((char*)r0 + 8), 11);
+/*
+ * Type 2 functions
+ */
 
-// ctc2 21-23
-#define gte_ldfc( r0 ) \
-	CTC2(*(uint*)((char*)r0+0), 21);\
-	CTC2(*(uint*)((char*)r0+4), 22);\
-	CTC2(*(uint*)((char*)r0+8), 23);
+ // FIXME: there is lack of some macros
+ // please refer to official Psy-Q PSX SDK headers
+ // and this: https://github.com/ogamespec/pops-gte/blob/master/docs/gte.txt
 
-// mtc2 0-1
-#define gte_ldv0( r0 )\
-	MTC2(*(uint*)((char*)r0+0), 0);\
-	MTC2(*(uint*)((char*)r0+4), 1);
+#define gte_rtv0tr()		docop2(0x480012);
+#define gte_rtv0()			docop2(0x486012);
+#define gte_lcir()			docop2(0x4DE012);
+#define gte_llir()			docop2(0x4BE012);
 
-// mtc2 2-3
-#define gte_ldv1( r0 )\
-	MTC2(*(uint*)((char*)r0+0), 2);\
-	MTC2(*(uint*)((char*)r0+4), 3);
+#define gte_rtir()			docop2(0x49E012)
+#define gte_rtps()			docop2(0x180001)
+#define gte_rtpt()			docop2(0x280030)
+#define gte_nclip()			docop2(0x1400006)
+#define gte_avsz3()			docop2(0x158002D)
+#define gte_avsz4()			docop2(0x168002E)
+#define gte_sqr0()			docop2(0xA00428)
+#define gte_sqr12()			docop2(0xA80428)
+#define gte_op0()			docop2(0x170000C)
+#define gte_op12()			docop2(0x178000C)
+#define gte_ncs()			docop2(0xC8041E)
+#define gte_nct()			docop2(0xD80420)
+#define gte_nccs()			docop2(0x108041B)
+#define gte_ncct()			docop2(0x118043F)
+#define gte_ncds()			docop2(0xE80413)
+#define gte_ncdt()			docop2(0xF80416)
+#define gte_cc()			docop2(0x138041C)
+#define gte_cdp()			docop2(0x1280414)
+#define gte_dcpl()			docop2(0x680029)
+#define gte_dpcs()			docop2(0x780010)
+#define gte_dpct()			docop2(0x180001)
+#define gte_intpl()			docop2(0x980011)
+#define gte_gpf0()			docop2(0x190003D)
+#define gte_gpf12()			docop2(0x198003D)
+#define gte_gpl0()			docop2(0x1A0003E)
+#define gte_gpl12()			docop2(0x1A8003E)
 
-// mtc2 4-5
-#define gte_ldv2( r0 )\
-	MTC2(*(uint*)((char*)r0+0), 4);\
-	MTC2(*(uint*)((char*)r0+4), 5);
+#define gte_mvmva(sf, mx, v, cv, lm) docop2( 0x0400012 | \
+	((sf)<<19) | ((mx)<<17) | ((v)<<15) | ((cv)<<13) | ((lm)<<10) )
 
-// mtc2 0-5
-#define gte_ldv3( r0, r1, r2 ) \
-	MTC2(*(uint*)((char*)r0+0), 0);\
-	MTC2(*(uint*)((char*)r0+4), 1);\
-	MTC2(*(uint*)((char*)r1+0), 2);\
-	MTC2(*(uint*)((char*)r1+4), 3);\
-	MTC2(*(uint*)((char*)r2+0), 4);\
-	MTC2(*(uint*)((char*)r2+4), 5);
+ /*
+  * Type 3 functions
+  */
 
-#define gte_ldrgb( r0 ) \
-	MTC2(*(uint*)((char*)r0), 6);
-
-// mtc2 8
-#define gte_lddp( r0 )	\
-	MTC2(*(uint*)r0, 8);
+// store mfc2 9,10,11
+#define gte_stclmv( r0 ) \
+	*(ushort*)((char*)r0) = MFC2(9) & 0xFFFF; \
+	*(ushort*)((char*)r0 + 6) = MFC2(10) & 0xFFFF; \
+	*(ushort*)((char*)r0 + 12) = MFC2(11) & 0xFFFF;
 
 #if defined(USE_PGXP)
 
@@ -264,90 +306,44 @@ extern int docop2(int op);
 	*(uint*)((char*)r1) = MFC2(21);\
 	*(uint*)((char*)r2) = MFC2(22);
 
-// ctc2 13 14 15
-#define gte_ldbkdir( r0, r1, r2 ) \
-	CTC2(r0, 13); \
-	CTC2(r1, 14); \
-	CTC2(r2, 15);
+
+// store cfc2 0-7
+#define gte_ReadRotMatrix( r0 ) \
+	*(uint*)((char*)r0) = CFC2(0);		\
+	*(uint*)((char*)r0 + 4) = CFC2(1);	\
+	*(uint*)((char*)r0 + 8) = CFC2(2);	\
+	*(uint*)((char*)r0 + 12) = CFC2(3);	\
+	*(uint*)((char*)r0 + 16) = CFC2(4);	\
+	*(uint*)((char*)r0 + 20) = CFC2(5);	\
+	*(uint*)((char*)r0 + 24) = CFC2(6);	\
+	*(uint*)((char*)r0 + 28) = CFC2(7);
+
+// cfc2 16-23
+#define gte_ReadColorMatrix( r0 ) \
+	*(uint*)((char*)r0) = CFC2(16);		\
+	*(uint*)((char*)r0 + 4) = CFC2(17);	\
+	*(uint*)((char*)r0 + 8) = CFC2(18);	\
+	*(uint*)((char*)r0 + 12) = CFC2(19);	\
+	*(uint*)((char*)r0 + 16) = CFC2(20);	\
+	*(uint*)((char*)r0 + 20) = CFC2(21);	\
+	*(uint*)((char*)r0 + 24) = CFC2(22);	\
+	*(uint*)((char*)r0 + 28) = CFC2(23);
+
+// cfc2 8-15
+#define gte_ReadLightMatrix( r0 ) \
+	*(uint*)((char*)r0) = CFC2(8);		\
+	*(uint*)((char*)r0 + 4) = CFC2(9);	\
+	*(uint*)((char*)r0 + 8) = CFC2(10);	\
+	*(uint*)((char*)r0 + 12) = CFC2(11);	\
+	*(uint*)((char*)r0 + 16) = CFC2(12);	\
+	*(uint*)((char*)r0 + 20) = CFC2(13);	\
+	*(uint*)((char*)r0 + 24) = CFC2(14);	\
+	*(uint*)((char*)r0 + 28) = CFC2(15);
 
 // cfc2 21,22,23
 #define gte_stfc( r0 )\
 	*(uint*)((char*)r0 + 0) = CFC2(21);\
 	*(uint*)((char*)r0 + 4) = CFC2(22);\
 	*(uint*)((char*)r0 + 8) = CFC2(23);
-
-// ctc2 24,25
-#define gte_SetGeomOffset( r0, r1 )\
-	CTC2(r0 << 16, 24); \
-	CTC2(r1 << 16, 25); \
-
-// TODO: GTEMAC
-#define gte_RotTransPers3(r1,r2,r3,r4,r5,r6,r7,r8,r9)		\
-				{	gte_ldv3(r1,r2,r3);	\
-					gte_rtpt();		\
-					gte_stsxy3(r4,r5,r6);	\
-					gte_stdp(r7);		\
-					gte_stflg(r8);		\
-					gte_stszotz(r9);	}
-
-#define gte_MulMatrix0(r1,r2,r3)				\
-				{	gte_SetRotMatrix(r1);	\
-					gte_ldclmv(r2);		\
-					gte_rtir();		\
-					gte_stclmv(r3);		\
-					gte_ldclmv((char*)r2+2);\
-					gte_rtir();		\
-					gte_stclmv((char*)r3+2);\
-					gte_ldclmv((char*)r2+4);\
-					gte_rtir();		\
-					gte_stclmv((char*)r3+4);	}
-
-#define gte_LoadAverage12(r1,r2,r3,r4,r5)			\
-				{	gte_lddp(r3);		\
-					gte_ldlvl(r1);		\
-					gte_gpf12();		\
-					gte_lddp(r4);		\
-					gte_ldlvl(r2);		\
-					gte_gpl12();		\
-					gte_stlvl(r5);	}
-
-// FIXME: there is lack of some macros
-// please refer to official Psy-Q PSX SDK headers
-// and this: https://github.com/ogamespec/pops-gte/blob/master/docs/gte.txt
-
-#define gte_rtv0tr()		docop2(0x480012);
-#define gte_rtv0()			docop2(0x486012);
-#define gte_lcir()			docop2(0x4DE012);
-#define gte_llir()			docop2(0x4BE012);
-
-#define gte_rtir()			docop2(0x49E012)
-#define gte_rtps()			docop2(0x180001)
-#define gte_rtpt()			docop2(0x280030)
-#define gte_nclip()			docop2(0x1400006)
-#define gte_avsz3()			docop2(0x158002D)
-#define gte_avsz4()			docop2(0x168002E)
-#define gte_sqr0()			docop2(0xA00428)
-#define gte_sqr12()			docop2(0xA80428)
-#define gte_op0()			docop2(0x170000C)
-#define gte_op12()			docop2(0x178000C)
-#define gte_ncs()			docop2(0xC8041E)
-#define gte_nct()			docop2(0xD80420)
-#define gte_nccs()			docop2(0x108041B)
-#define gte_ncct()			docop2(0x118043F)
-#define gte_ncds()			docop2(0xE80413)
-#define gte_ncdt()			docop2(0xF80416)
-#define gte_cc()			docop2(0x138041C)
-#define gte_cdp()			docop2(0x1280414)
-#define gte_dcpl()			docop2(0x680029)
-#define gte_dpcs()			docop2(0x780010)
-#define gte_dpct()			docop2(0x180001)
-#define gte_intpl()			docop2(0x980011)
-#define gte_gpf0()			docop2(0x190003D)
-#define gte_gpf12()			docop2(0x198003D)
-#define gte_gpl0()			docop2(0x1A0003E)
-#define gte_gpl12()			docop2(0x1A8003E)
-
-#define gte_mvmva(sf, mx, v, cv, lm) docop2( 0x0400012 | \
-	((sf)<<19) | ((mx)<<17) | ((v)<<15) | ((cv)<<13) | ((lm)<<10) )
 
 #endif

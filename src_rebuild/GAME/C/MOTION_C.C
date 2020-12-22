@@ -22,6 +22,7 @@
 #endif
 
 #include "INLINE_C.H"
+#include "GTEMAC.H"
 
 enum LIMBS
 {

@@ -7,6 +7,7 @@
 #include "LIBMATH.H"
 
 #include "INLINE_C.H"
+#include "GTEMAC.H"
 #include "GTEREG.H"
 
 #include "GTE/rcossin_tbl.h"
@@ -1170,18 +1171,23 @@ void RotTrans(struct SVECTOR* v0, VECTOR* v1, long* flag)
 
 	gte_stlvnl(v1);
 	gte_stflg(flag);
-
-	return;
 }
 
 void NormalColorDpq(struct SVECTOR* v0, struct CVECTOR* v1, long p, struct CVECTOR* v2)
 {
-	PSYX_UNIMPLEMENTED();
+	gte_ldv0(v0);
+	gte_ldrgb(v1);
+	gte_lddp(p);
+	gte_ncds();
+	gte_strgb(v2);
 }
 
 void NormalColorCol(struct SVECTOR* v0, struct CVECTOR* v1, struct CVECTOR* v2)
 {
-	PSYX_UNIMPLEMENTED();
+	gte_ldv0(v0);
+	gte_ldrgb(v1);
+	gte_nccs();
+	gte_strgb(v2);
 }
 
 long RotAverageNclip4(struct SVECTOR* v0, struct SVECTOR* v1, struct SVECTOR* v2, struct SVECTOR* v3, long* sxy0/*arg_10*/, long* sxy1/*arg_14*/, long* sxy2/*arg_18*/, long* sxy3/*arg_1C*/, long* p/*arg_20*/, long* otz/*arg_24*/, long* flag/*arg_28*/)
@@ -1220,7 +1226,51 @@ long RotAverageNclip4(struct SVECTOR* v0, struct SVECTOR* v1, struct SVECTOR* v2
 MATRIX* MulMatrix0(MATRIX* m0, MATRIX* m1, MATRIX* m2)
 {
 #if 1
+	/*
+	// FIXME: might be wrong
+	SVECTOR t1, t2, t3;
+
+	gte_SetRotMatrix(m0);
+
+	t1.vx = m1->m[0][0];
+	t1.vy = m1->m[1][0];
+	t1.vz = m1->m[2][0];
+
+	gte_rtv0();
+	gte_stsv(&t1);
+
+	t2.vx = m1->m[0][1];
+	t2.vy = m1->m[1][1];
+	t2.vz = m1->m[2][1];
+	gte_ldv0(&t2);
+	gte_rtv0();
+	gte_stsv(&t2);
+
+	t3.vx = m1->m[0][2];
+	t3.vy = m1->m[1][2];
+	t3.vz = m1->m[2][2];
+	gte_ldv0(&t3);
+	gte_rtv0();
+	gte_stsv(&t3);
+
+	m2->m[0][0] = t1.vx;
+	m2->m[1][0] = t1.vx;
+	m2->m[2][0] = t1.vz;
+
+	m2->m[0][1] = t2.vz;
+	m2->m[1][1] = t2.vx;
+	m2->m[2][1] = t2.vy;
+
+	m2->m[0][2] = t3.vy;
+	m2->m[1][2] = t3.vy;
+	m2->m[2][2] = t3.vz;
+
+	return m1;
+	*/
+
 	gte_MulMatrix0(m0, m1, m2);
+
+	return m1;
 #else
 	/* ‚±‚ê‚Å‚àm0==m2‚ÌŽžƒ„ƒoƒC */
 	int vx, vy, vz;
@@ -1253,9 +1303,31 @@ MATRIX* MulMatrix0(MATRIX* m0, MATRIX* m1, MATRIX* m2)
 	return m2;
 }
 
+MATRIX* MulMatrix(MATRIX* m0, MATRIX* m1)
+{
+	MATRIX tmp;
+	gte_MulMatrix0(m0, m1, &tmp);
+
+	*m0 = tmp;
+
+	return m0;
+}
+
+MATRIX* MulMatrix2(MATRIX* m0, MATRIX* m1)
+{
+	// Same as MulMatrix but result goes to m1
+	MATRIX tmp;
+	gte_MulMatrix0(m0, m1, &tmp);
+
+	*m1 = tmp;
+
+	return m1;
+}
+
 MATRIX* MulRotMatrix(MATRIX* m0)
 {
 	// FIXME: might be wrong
+	// as RTV0 can be insufficient
 	gte_ldv0(&m0->m[0]);
 	gte_rtv0();
 	gte_stsv(&m0->m[0]);
@@ -1269,18 +1341,6 @@ MATRIX* MulRotMatrix(MATRIX* m0)
 	gte_stsv(&m0->m[2]);
 
 	return m0;
-}
-
-MATRIX* MulMatrix(MATRIX* m0, MATRIX* m1)
-{
-	PSYX_UNIMPLEMENTED();
-	return NULL;
-}
-
-MATRIX* MulMatrix2(MATRIX* m0, MATRIX* m1)
-{
-	PSYX_UNIMPLEMENTED();
-	return NULL;
 }
 
 void SetBackColor(long rbk, long gbk, long bbk)
@@ -1304,7 +1364,8 @@ void SetFarColor(long rfc, long gfc, long bfc)
 
 VECTOR* ApplyMatrix(MATRIX* m, SVECTOR* v0, VECTOR* v1)
 {
-#if 0
+#if 1
+	// correct Psy-Q implementation
 	gte_SetRotMatrix(m);
 	gte_ldv0(v0);
 	gte_rtv0();
@@ -1317,7 +1378,8 @@ VECTOR* ApplyMatrix(MATRIX* m, SVECTOR* v0, VECTOR* v1)
 
 VECTOR* ApplyRotMatrix(SVECTOR* v0, VECTOR* v1)
 {
-#if 0
+#if 1
+	// correct Psy-Q implementation
 	gte_ldv0(v0);
 	gte_rtv0();
 	gte_stsv(v1);
@@ -1378,8 +1440,8 @@ VECTOR* ApplyRotMatrixLV(VECTOR* v0, VECTOR* v1)
 
 	gte_ldlvl(&tmpLO);
 	docop2(0x41E012);	// gte_rtir_sf0 ?
-
 	gte_stlvnl(&tmpLO);
+
 	gte_ldlvl(&tmpHI);
 	gte_rtir();
 
@@ -1403,7 +1465,6 @@ VECTOR* ApplyRotMatrixLV(VECTOR* v0, VECTOR* v1)
 	v1->vx = tmpHI.vx + tmpLO.vx;
 	v1->vy = tmpHI.vy + tmpLO.vy;
 	v1->vz = tmpHI.vz + tmpLO.vz;
-
 #else
 	MATRIX temp;
 	gte_ReadRotMatrix(&temp);
@@ -1431,11 +1492,77 @@ SVECTOR* ApplyMatrixSV(MATRIX* m, SVECTOR* v0, SVECTOR* v1)
 
 VECTOR* ApplyMatrixLV(MATRIX* m, VECTOR* v0, VECTOR* v1)
 {
-#if 0
+#if 1
+	// correct Psy-Q implementation
+	VECTOR tmpHI;
+	VECTOR tmpLO;
+
 	gte_SetRotMatrix(m);
-	gte_ldv0(v0);
-	gte_rtv0();
-	gte_stlvnl(v1);
+
+	tmpHI.vx = v0->vx;
+	tmpHI.vy = v0->vy;
+	tmpHI.vz = v0->vz;
+
+	if (tmpHI.vx < 0)
+	{
+		tmpLO.vx = -(-tmpHI.vx >> 0xf);
+		tmpHI.vx = -(-tmpHI.vx & 0x7fff);
+	}
+	else
+	{
+		tmpLO.vx = tmpHI.vx >> 0xf;
+		tmpHI.vx = tmpHI.vx & 0x7fff;
+	}
+
+	if (tmpHI.vy < 0)
+	{
+		tmpLO.vy = -(-tmpHI.vy >> 0xf);
+		tmpHI.vy = -(-tmpHI.vy & 0x7fff);
+	}
+	else
+	{
+		tmpLO.vy = tmpHI.vy >> 0xf;
+		tmpHI.vy = tmpHI.vy & 0x7fff;
+	}
+
+	if (tmpHI.vz < 0)
+	{
+		tmpLO.vz = -(-tmpHI.vz >> 0xf);
+		tmpHI.vz = -(-tmpHI.vz & 0x7fff);
+	}
+	else
+	{
+		tmpLO.vz = tmpHI.vz >> 0xf;
+		tmpHI.vz = tmpHI.vz & 0x7fff;
+	}
+
+	gte_ldlvl(&tmpLO);
+	docop2(0x41E012);	// gte_rtir_sf0 ?
+	gte_stlvnl(&tmpLO);
+
+	gte_ldlvl(&tmpHI);
+	gte_rtir();
+
+	if (tmpLO.vx < 0)
+		tmpLO.vx *= 8;
+	else
+		tmpLO.vx <<= 3;
+
+	if (tmpLO.vy < 0)
+		tmpLO.vy *= 8;
+	else
+		tmpLO.vy <<= 3;
+
+	if (tmpLO.vz < 0)
+		tmpLO.vz *= 8;
+	else
+		tmpLO.vz <<= 3;
+
+	gte_stlvnl(&tmpHI);
+
+	v1->vx = tmpHI.vx + tmpLO.vx;
+	v1->vy = tmpHI.vy + tmpLO.vy;
+	v1->vz = tmpHI.vz + tmpLO.vz;
 #else
 	APPLYMATRIX(m, v0, v1);
 #endif
@@ -1599,6 +1726,105 @@ MATRIX* RotMatrixZYX_gte(SVECTOR* r, MATRIX* m)
 	RotMatrixZ(r->vz, m);
 #endif
 	return m;
+}
+
+MATRIX* CompMatrix(MATRIX* m0, MATRIX* m1, MATRIX* m2)
+{
+	// UNTESTED
+	SVECTOR tmp;
+	gte_MulMatrix0(m0, m1, m2);
+
+	tmp.vx = m1->t[0];
+	tmp.vy = m1->t[1];
+	tmp.vz = m1->t[2];
+
+	gte_ldv0(&tmp);
+	gte_rtv0();
+	gte_stlvnl(m2->t);
+
+	m2->t[0] += m0->t[0];
+	m2->t[1] += m0->t[1];
+	m2->t[2] += m0->t[2];
+
+	return m2;
+}
+
+MATRIX* CompMatrixLV(MATRIX* m0, MATRIX* m1, MATRIX* m2)
+{
+	// UNTESTED
+	// correct Psy-Q implementation
+	VECTOR tmpHI;
+	VECTOR tmpLO;
+
+	gte_MulMatrix0(m0, m1, m2);
+
+	// next... same as ApplyMatrixLV
+	tmpHI.vx = m1->t[0];
+	tmpHI.vy = m1->t[1];
+	tmpHI.vz = m1->t[2];
+
+	if (tmpHI.vx < 0)
+	{
+		tmpLO.vx = -(-tmpHI.vx >> 0xf);
+		tmpHI.vx = -(-tmpHI.vx & 0x7fff);
+	}
+	else 
+	{
+		tmpLO.vx = tmpHI.vx >> 0xf;
+		tmpHI.vx = tmpHI.vx & 0x7fff;
+	}
+
+	if (tmpHI.vy < 0)
+	{
+		tmpLO.vy = -(-tmpHI.vy >> 0xf);
+		tmpHI.vy = -(-tmpHI.vy & 0x7fff);
+	}
+	else 
+	{
+		tmpLO.vy = tmpHI.vy >> 0xf;
+		tmpHI.vy = tmpHI.vy & 0x7fff;
+	}
+
+	if (tmpHI.vz < 0)
+	{
+		tmpLO.vz = -(-tmpHI.vz >> 0xf);
+		tmpHI.vz = -(-tmpHI.vz & 0x7fff);
+	}
+	else
+	{
+		tmpLO.vz = tmpHI.vz >> 0xf;
+		tmpHI.vz = tmpHI.vz & 0x7fff;
+	}
+
+	gte_ldlvl(&tmpLO);
+	docop2(0x41E012);	// gte_rtir_sf0 ?
+	gte_stlvnl(&tmpLO);
+
+	gte_ldlvl(&tmpHI);
+	gte_rtir();
+
+	if (tmpLO.vx < 0)
+		tmpLO.vx = tmpLO.vx * 8;
+	else
+		tmpLO.vx = tmpLO.vx << 3;
+
+	if (tmpLO.vy < 0)
+		tmpLO.vy = tmpLO.vy * 8;
+	else
+		tmpLO.vy = tmpLO.vy << 3;
+
+	if (tmpLO.vz < 0)
+		tmpLO.vz = tmpLO.vz * 8;
+	else
+		tmpLO.vz = tmpLO.vz << 3;
+
+	gte_stlvnl(&tmpHI);
+
+	m2->t[0] = tmpHI.vx + tmpLO.vx + m0->t[0];
+	m2->t[1] = tmpHI.vy + tmpLO.vy + m0->t[1];
+	m2->t[2] = tmpHI.vz + tmpLO.vz + m0->t[2];
+
+	return m2;
 }
 
 MATRIX* TransMatrix(MATRIX* m, VECTOR* v)
