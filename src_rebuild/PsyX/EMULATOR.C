@@ -2090,7 +2090,6 @@ void Emulator_WaitForTimestep(int count)
 		double delta;
 		do
 		{
-			SDL_Delay(0); // yield
 			delta = Emulator_GetHPCTime(&g_swapTimer, 0);
 		} while (delta < timestep * count);
 
