@@ -49,6 +49,7 @@ void SfxVolume(int direction);
 void MusicVolume(int direction);
 void SaveReplay(int direction);
 void SaveGame(int direction);
+void SkipCutscene(int direction);
 
 void EnterScoreName();
 void CreateScoreNames(SCORE_ENTRY *table, PLAYER_SCORE *score, int position);
@@ -69,6 +70,14 @@ enum MenuItemType
 };
 
 #if defined(_DEBUG) || defined(DEBUG_OPTIONS)
+
+#ifdef CUTSCENE_RECORDER
+extern void NextCutsceneRecorderPlayer(int dir);
+extern char gCutsceneRecorderPauseText[64];
+
+extern void NextChase(int dir);
+extern char gCurrentChasePauseText[64];
+#endif
 
 void SetRightWayUp(int direction)
 {
@@ -224,14 +233,6 @@ MENU_ITEM DebugJustForFunItems[] =
 MENU_HEADER DebugJustForFunHeader =
 { "Just for fun", { 0, 0, 0, 0 }, 0u, DebugJustForFunItems };
 
-#ifdef CUTSCENE_RECORDER
-extern void NextCutsceneRecorderPlayer(int dir);
-extern char gCutsceneRecorderPauseText[64];
-
-extern void NextChase(int dir);
-extern char gCurrentChasePauseText[64];
-#endif
-
 MENU_ITEM DebugOptionsItems[] =
 {
 #ifdef CUTSCENE_RECORDER
@@ -257,131 +258,126 @@ MENU_HEADER DebugOptionsHeader =
 
 MENU_ITEM YesNoRestartItems[] =
 {
-	{ "NO", 1u, 2u, NULL, MENU_QUIT_BACKMENU, NULL },
-	{ "YES", 1u, 2u, NULL, MENU_QUIT_RESTART, NULL },
+	{ G_LTXT_ID(GTXT_NO), 1u, 2u, NULL, MENU_QUIT_BACKMENU, NULL },
+	{ G_LTXT_ID(GTXT_YES), 1u, 2u, NULL, MENU_QUIT_RESTART, NULL },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM YesNoQuitItems[] =
 {
-	{ "NO", 1u, 2u, NULL, MENU_QUIT_BACKMENU, NULL },
-	{ "YES", 1u, 2u, NULL, MENU_QUIT_QUIT, NULL },
+	{ G_LTXT_ID(GTXT_NO), 1u, 2u, NULL, MENU_QUIT_BACKMENU, NULL },
+	{ G_LTXT_ID(GTXT_YES), 1u, 2u, NULL, MENU_QUIT_QUIT, NULL },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_HEADER YesNoRestartHeader =
-{ "Are You Sure?", { 0, 0, 0, 0 }, 0u, YesNoRestartItems };
+{ G_LTXT_ID(GTXT_AreYouSure), { 0, 0, 0, 0 }, 0u, YesNoRestartItems };
 
 MENU_HEADER YesNoQuitHeader =
-{ "Are You Sure?", { 0, 0, 0, 0 }, 0u, YesNoQuitItems };
+{ G_LTXT_ID(GTXT_AreYouSure), { 0, 0, 0, 0 }, 0u, YesNoQuitItems };
 
 MENU_ITEM MainPauseItems[] =
 {
-	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
-	{ "Show Map", PAUSE_TYPE_FUNC, 2u, (pauseFunc)&PauseMap, MENU_QUIT_NONE, NULL },
-	{ "Restart", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Sfx Volume", PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
-	{ "Music Volume", PAUSE_TYPE_MUSICVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
-	{ "Film Director", 1u, 2u, NULL, MENU_QUIT_DIRECTOR, NULL},
-	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ G_LTXT_ID(GTXT_Continue), 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
+	{ G_LTXT_ID(GTXT_ShowMap), PAUSE_TYPE_FUNC, 2u, (pauseFunc)&PauseMap, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_Restart), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ G_LTXT_ID(GTXT_SfxVolume), PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_MusicVolume), PAUSE_TYPE_MUSICVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_FilmDirector), 1u, 2u, NULL, MENU_QUIT_DIRECTOR, NULL},
+	{ G_LTXT_ID(GTXT_QuickReplay),1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
 #if defined(_DEBUG) || defined(DEBUG_OPTIONS)
 	{ "Debug Options", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &DebugOptionsHeader },
 #endif
-	{ "Exit", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ G_LTXT_ID(GTXT_Exit), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM MultiplayerPauseItems[] =
 {
-	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
-	{ "Restart", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Sfx Volume", PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
-	{ "Music Volume", PAUSE_TYPE_MUSICVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
-	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Exit", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ G_LTXT_ID(GTXT_Continue), 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
+	{ G_LTXT_ID(GTXT_Restart), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ G_LTXT_ID(GTXT_SfxVolume), PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_MusicVolume), PAUSE_TYPE_MUSICVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_QuickReplay),1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ G_LTXT_ID(GTXT_Exit), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
-void SkipCutscene(int dir)
-{
-	gSkipInGameCutscene = 1;
-}
-
 MENU_ITEM CutscenePauseItems[] =
 {
-	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
-	{ "Skip Cutscene", PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SkipCutscene, MENU_QUIT_CONTINUE, NULL },
-	{ "Restart", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Sfx Volume", PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
-	{ "Music Volume", PAUSE_TYPE_MUSICVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_Continue), 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
+	{ G_LTXT_ID(GTXT_SkipCutscene), PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SkipCutscene, MENU_QUIT_CONTINUE, NULL },
+	{ G_LTXT_ID(GTXT_Restart), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ G_LTXT_ID(GTXT_SfxVolume), PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_MusicVolume), PAUSE_TYPE_MUSICVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
 #if defined(_DEBUG) || defined(DEBUG_OPTIONS)
 	{ "Debug Options", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &DebugOptionsHeader },
 #endif
-	{ "Exit", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ G_LTXT_ID(GTXT_Exit), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM MissionCompleteItems[] =
 {
 #ifdef PSX
-	{ "Save Game", 3u, 2u, (pauseFunc)&SaveGame, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_SaveGame), 3u, 2u, (pauseFunc)&SaveGame, MENU_QUIT_NONE, NULL },
 #endif
-	{ "Continue", 1u, 2u, NULL, MENU_QUIT_NEXTMISSION, NULL },
-	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
-	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Save Replay", PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
-	{ "Restart", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Exit", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ G_LTXT_ID(GTXT_Continue), 1u, 2u, NULL, MENU_QUIT_NEXTMISSION, NULL },
+	{ G_LTXT_ID(GTXT_FilmDirector),1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ G_LTXT_ID(GTXT_QuickReplay),1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ G_LTXT_ID(GTXT_SaveReplay), PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_Restart), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ G_LTXT_ID(GTXT_Exit), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM MissionFailedItems[6] =
 {
-	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
-	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Exit", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
-	{ "Retry Mission",PAUSE_TYPE_SUBMENU,2u,NULL,MENU_QUIT_NONE,&YesNoRestartHeader },
-	{ "Exit", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ G_LTXT_ID(GTXT_FilmDirector),1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ G_LTXT_ID(GTXT_QuickReplay),1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ G_LTXT_ID(GTXT_Exit), 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_RetryMission),PAUSE_TYPE_SUBMENU,2u,NULL,MENU_QUIT_NONE,&YesNoRestartHeader },
+	{ G_LTXT_ID(GTXT_Exit), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM TakeARideFinishedItems[] =
 {
-	{ "Restart", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
-	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Save Replay", PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
-	{ "Exit", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ G_LTXT_ID(GTXT_Restart), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ G_LTXT_ID(GTXT_FilmDirector),1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ G_LTXT_ID(GTXT_QuickReplay),1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ G_LTXT_ID(GTXT_SaveReplay), PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_Exit), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM DrivingGameFinishedItems[] =
 {
-	{ "Play Again", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ G_LTXT_ID(GTXT_PlayAgain), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ EnterScoreText, 3u, 2u, (pauseFunc)&EnterName, MENU_QUIT_NONE, NULL },
-	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
-	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Save Replay", PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
-	{ "Exit", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ G_LTXT_ID(GTXT_FilmDirector),1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ G_LTXT_ID(GTXT_QuickReplay),1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ G_LTXT_ID(GTXT_SaveReplay), PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_Exit), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM MultiplayerFinishedItems[] =
 {
-	{ "Play Again", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Save Replay", PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
-	{ "Exit", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ G_LTXT_ID(GTXT_PlayAgain), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ G_LTXT_ID(GTXT_QuickReplay),1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ G_LTXT_ID(GTXT_SaveReplay), PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_Exit), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM ChaseGameFinishedItems[] =
 {
-	{ "Play Again", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
-	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Save Replay", PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
-	{ "Exit", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ G_LTXT_ID(GTXT_PlayAgain), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ G_LTXT_ID(GTXT_FilmDirector),1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ G_LTXT_ID(GTXT_QuickReplay),1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ G_LTXT_ID(GTXT_SaveReplay), PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_Exit), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
@@ -403,41 +399,41 @@ MENU_ITEM InvalidPadItems[] =
 
 MENU_ITEM InvalidMultiPadItems[] =
 {
-	{ "Exit", 1u, 2u, NULL, MENU_QUIT_QUIT, NULL },
+	{ G_LTXT_ID(GTXT_Exit), 1u, 2u, NULL, MENU_QUIT_QUIT, NULL },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 
 MENU_HEADER PauseMenuHeader =
-{ "Paused", { 0, 0, 0, 0 }, 0u, MainPauseItems };
+{ G_LTXT_ID(GTXT_Paused), { 0, 0, 0, 0 }, 0u, MainPauseItems };
 
 MENU_HEADER MultiplayerPauseHeader =
-{ "Paused", { 0, 0, 0, 0 }, 0u, MultiplayerPauseItems };
+{ G_LTXT_ID(GTXT_Paused), { 0, 0, 0, 0 }, 0u, MultiplayerPauseItems };
 
 MENU_HEADER CutscenePauseMenuHeader =
-{ "Paused", { 0, 0, 0, 0 }, 0u, CutscenePauseItems };
+{ G_LTXT_ID(GTXT_Paused), { 0, 0, 0, 0 }, 0u, CutscenePauseItems };
 
 MENU_HEADER MissionCompleteHeader =
-{ "Mission Successful", { 0, 0, 0, 0 }, 0u, MissionCompleteItems };
+{ G_LTXT_ID(GTXT_MissionSuccessful), { 0, 0, 0, 0 }, 0u, MissionCompleteItems };
 
 MENU_HEADER MissionFailedHeader =
-{ "Mission Failed", { 0, 0, 0, 0 }, 0u, MissionFailedItems };
+{ G_LTXT_ID(GTXT_MissionFailed), { 0, 0, 0, 0 }, 0u, MissionFailedItems };
 
 MENU_HEADER TakeARideFinishedHeader =
-{ "Game Over", { 0, 0, 0, 0 }, 0u, TakeARideFinishedItems };
+{ G_LTXT_ID(GTXT_GameOver), { 0, 0, 0, 0 }, 0u, TakeARideFinishedItems };
 
 MENU_HEADER DrivingGameFinishedHeader =
-{ "Game Over", { 0, 0, 0, 0 }, 0u, DrivingGameFinishedItems };
+{ G_LTXT_ID(GTXT_GameOver), { 0, 0, 0, 0 }, 0u, DrivingGameFinishedItems };
 
 MENU_HEADER MultiplayerFinishedHeader =
-{ "Game Over", { 0, 0, 0, 0 }, 0u, MultiplayerFinishedItems };
+{ G_LTXT_ID(GTXT_GameOver), { 0, 0, 0, 0 }, 0u, MultiplayerFinishedItems };
 
 MENU_HEADER ChaseGameFinishedHeader =
-{ "Game Over", { 0, 0, 0, 0 }, 0u, ChaseGameFinishedItems };
+{ G_LTXT_ID(GTXT_GameOver), { 0, 0, 0, 0 }, 0u, ChaseGameFinishedItems };
 
 MENU_HEADER NoPadHeader =
 {
-	"Insert a Controller in port 1",
+	G_LTXT_ID(GTXT_InsertController1),
 	{ 0, 0, 0, 0 },
 	0u,
 	NoPadItems
@@ -445,7 +441,7 @@ MENU_HEADER NoPadHeader =
 
 MENU_HEADER NoMultiPadHeader =
 {
-	"Insert a Controller in port 2",
+	G_LTXT_ID(GTXT_InsertController2),
 	{ 0, 0, 0, 0 },
 	0u,
 	NoMultiPadItems
@@ -453,7 +449,7 @@ MENU_HEADER NoMultiPadHeader =
 
 MENU_HEADER InvalidPadHeader =
 {
-	"Unsupported controller in port 1",
+	G_LTXT_ID(GTXT_IncorrectController1),
 	{ 0, 0, 0, 0 },
 	0u,
 	InvalidPadItems
@@ -461,7 +457,7 @@ MENU_HEADER InvalidPadHeader =
 
 MENU_HEADER InvalidMultiPadHeader =
 {
-	"Unsupported controller in port 2",
+	G_LTXT_ID(GTXT_IncorrectController2),
 	{ 0, 0, 0, 0 },
 	0u,
 	InvalidMultiPadItems
@@ -469,6 +465,10 @@ MENU_HEADER InvalidMultiPadHeader =
 
 int playerwithcontrol[3] = { 0 };
 
+void SkipCutscene(int direction)
+{
+	gSkipInGameCutscene = 1;
+}
 
 // [D] [T]
 void SaveReplay(int direction)
@@ -538,11 +538,11 @@ int MaxMenuStringLength(MENU_HEADER *pMenu)
 	MENU_ITEM *pItems;
 
 	pItems = pMenu->MenuItems;
-	max = StringWidth(pMenu->Title);
+	max = StringWidth(GET_GAME_TXT(pMenu->Title));
 
 	while ((pItems->Type & PAUSE_TYPE_ENDITEMS) == 0)
 	{
-		temp = StringWidth(pItems->Text);
+		temp = StringWidth(GET_GAME_TXT(pItems->Text));
 
 		if (pItems->Type & (PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_MUSICVOLUME)) 
 			temp = temp + StringWidth(" 100");
@@ -726,9 +726,9 @@ void InitaliseMenu(PAUSEMODE mode)
 					pNewMenu = &InvalidMultiPadHeader;
 
 				if (Pads[0].type == 1)
-					pNewMenu->Title = "Incorrect controller in Port 1";
+					pNewMenu->Title = G_LTXT(GTXT_IncorrectController1);
 				else
-					pNewMenu->Title = "Incorrect controller in Port 2";
+					pNewMenu->Title = G_LTXT(GTXT_IncorrectController2);
 			}
 			else 
 			{
@@ -738,9 +738,9 @@ void InitaliseMenu(PAUSEMODE mode)
 					pNewMenu = &NoMultiPadHeader;
 
 				if (Pads[0].type == 0)
-					pNewMenu->Title = "Please insert controller into Port 1";
+					pNewMenu->Title = G_LTXT(GTXT_InsertController1);
 				else
-					pNewMenu->Title = "Please insert controller into Port 2";
+					pNewMenu->Title = G_LTXT(GTXT_InsertController2);
 			}
 			break;
 	}
@@ -789,7 +789,7 @@ void DrawVisibleMenus(void)
 	
 	if (pActive->Title)
 	{
-		OutputString(pActive->Title, 2, xpos, ypos, menuWidth, 128, 32, 32);
+		OutputString(GET_GAME_TXT(pActive->Title), 2, xpos, ypos, menuWidth, 128, 32, 32);
 
 		ypos += 15;
 	}
@@ -815,11 +815,11 @@ void DrawVisibleMenus(void)
 
 		if(pItem->Type & (PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_MUSICVOLUME))
 		{
-			width = StringWidth(pItem->Text);
+			width = StringWidth(GET_GAME_TXT(pItem->Text));
 
 			itemXpos = xpos + ((menuWidth - width) - maxPercentageWidth) / 2;
 
-			OutputString(pItem->Text, 1, itemXpos, ypos, menuWidth, r, 128, b);
+			OutputString(GET_GAME_TXT(pItem->Text), 1, itemXpos, ypos, menuWidth, r, 128, b);
 			
 			if (pItem->Type & PAUSE_TYPE_SFXVOLUME)
 				OutputString(SfxVolumeText, 1, itemXpos + width + 10, ypos, menuWidth, r, 128, b);
@@ -828,7 +828,7 @@ void DrawVisibleMenus(void)
 		}
 		else
 		{
-			OutputString(pItem->Text, pItem->Justify, xpos, ypos, menuWidth, r, 128, b);
+			OutputString(GET_GAME_TXT(pItem->Text), pItem->Justify, xpos, ypos, menuWidth, r, 128, b);
 		}
 
 		ypos += 15;
@@ -1283,8 +1283,8 @@ void DrawHighScoreMenu(int selection)
 	char text[8];
 
 	OutputString(EnterNameText, 2, 160, 70, 0, 128, 32, 32);
-	OutputString("Name", 1, 40, 90, 0, 128, 128, 32);
-	OutputString("Time", 4, 280, 90, 0, 128, 128, 32);
+	OutputString(G_LTXT(GTXT_Name), 1, 40, 90, 0, 128, 128, 32);
+	OutputString(G_LTXT(GTXT_Time), 4, 280, 90, 0, 128, 128, 32);
 
 	ypos = 110;
 

@@ -76,7 +76,7 @@ void InitOverlays(void)
 	gMapXOffset = 249;
 	gMapYOffset = 181;
 
-	InitPercentageBar(&PlayerDamageBar, MaxPlayerDamage[0], playerDamageColour, "Damage");
+	InitPercentageBar(&PlayerDamageBar, MaxPlayerDamage[0], playerDamageColour, G_LTXT(GTXT_Damage));
 
 	PlayerDamageBar.xpos = gOverlayXPos;
 	PlayerDamageBar.ypos = 24;
@@ -85,7 +85,7 @@ void InitOverlays(void)
 
 	if (NumPlayers > 1)
 	{
-		InitPercentageBar(&Player2DamageBar, MaxPlayerDamage[1], playerDamageColour, "Damage");
+		InitPercentageBar(&Player2DamageBar, MaxPlayerDamage[1], playerDamageColour, G_LTXT(GTXT_Damage));
 		Player2DamageBar.xpos = gOverlayXPos;
 		Player2DamageBar.ypos = 140;
 		Player2DamageBar.active = 1;
@@ -95,18 +95,18 @@ void InitOverlays(void)
 		Player2DamageBar.active = 0;
 	}
 
-	InitPercentageBar(&FelonyBar, 4096, felonyColour, "Felony");
+	InitPercentageBar(&FelonyBar, 4096, felonyColour, G_LTXT(GTXT_Felony));
 	FelonyBar.xpos = gOverlayXPos;
 	FelonyBar.ypos = 46;
 	FelonyBar.active = 0;
 
-	InitPercentageBar(&DamageBar, 1, damageColour, "Damage");
+	InitPercentageBar(&DamageBar, 1, damageColour, G_LTXT(GTXT_Damage));
 	DamageBar.xpos = gOverlayXOppPos;
 	DamageBar.ypos = 24;
 	DamageBar.flags = 1;
 	DamageBar.active = 0;
 
-	InitPercentageBar(&ProxyBar, TAIL_TOOFAR - TAIL_TOOCLOSE, felonyColour, "Proximity");
+	InitPercentageBar(&ProxyBar, TAIL_TOOFAR - TAIL_TOOCLOSE, felonyColour, G_LTXT(GTXT_Proximity));
 	ProxyBar.xpos = gOverlayXPos;
 	ProxyBar.ypos = 46;
 	ProxyBar.active = 0;
@@ -495,7 +495,7 @@ void SetColourByValue(COLOUR_BAND *pColourBand, int value, CVECTOR *pOut)
 	else
 		scale = value;
 
-	temp = ((scale - pColourBand->value) * 0x1000) / (pPrevColourBand->value - pColourBand->value);
+	temp = ((scale - pColourBand->value) * 4096) / (pPrevColourBand->value - pColourBand->value);
 
 	inv = 4096 - temp;
 
@@ -550,7 +550,7 @@ void DrawDrivingGameOverlays(void)
 		case GAME_GETAWAY:
 			table = &ScoreTables.GetawayTable[GameLevel][gSubGameNumber][0];
 
-			x = PrintString("Best: ", gOverlayXPos, 60);
+			x = PrintString(G_LTXT(GTXT_Best), gOverlayXPos, 60);
 			PrintScoreTableTime(x + 3, 60, table->time);
 			break;
 		case GAME_GATERACE:
@@ -558,15 +558,15 @@ void DrawDrivingGameOverlays(void)
 			if (NumPlayers == 1) 
 			{
 				table = &ScoreTables.GateRaceTable[GameLevel][gSubGameNumber][0];
-				x = PrintStringRightAligned("Gate:", gOverlayXOppPos + 50, 16);
+				x = PrintStringRightAligned(G_LTXT(GTXT_Gate), gOverlayXOppPos + 50, 16);
 
 				sprintf(string, "%d / %d", gPlayerScore.items, 100);
 				PrintString(string, x + 3, 16);
 
-				x = PrintString("Best:", gOverlayXPos, 36);
+				x = PrintString(G_LTXT(GTXT_Best), gOverlayXPos, 36);
 				PrintScoreTableTime(x + 3, 36, table->time);
 
-				x = PrintString("Gate:", gOverlayXPos, 52);
+				x = PrintString(G_LTXT(GTXT_Gate), gOverlayXPos, 52);
 
 				if (table->items == -1)
 					sprintf(string, "-");
@@ -577,11 +577,11 @@ void DrawDrivingGameOverlays(void)
 			}
 			else
 			{
-				x = PrintString("Gate:", gOverlayXPos, 36);
+				x = PrintString(G_LTXT(GTXT_Gate), gOverlayXPos, 36);
 				sprintf(string, "%d / %d", gPlayerScore.items, 100);
 				
 				PrintString(string, x + 3, 36);
-				x = PrintString("Gate:", gOverlayXPos, 150);
+				x = PrintString(G_LTXT(GTXT_Gate), gOverlayXPos, 150);
 				
 				sprintf(string, "%d / %d", gPlayerScore.P2items, 100);
 				PrintString(string, x + 3, 150);
@@ -591,12 +591,12 @@ void DrawDrivingGameOverlays(void)
 
 			if (NumPlayers > 1) 
 			{
-				x = PrintString("Checks", gOverlayXPos, 36);
+				x = PrintString(G_LTXT(GTXT_Checks), gOverlayXPos, 36);
 				
 				sprintf(string, "%d/5", gPlayerScore.items);
 				PrintString(string, x + 3, 36);
 				
-				x = PrintString("Checks", gOverlayXPos, 150);
+				x = PrintString(G_LTXT(GTXT_Checks), gOverlayXPos, 150);
 				
 				sprintf(string, "%d/5", gPlayerScore.P2items);
 				PrintString(string, x + 3, 150);
@@ -604,12 +604,12 @@ void DrawDrivingGameOverlays(void)
 			else
 			{
 				table = &ScoreTables.CheckpointTable[GameLevel][gSubGameNumber][0];
-				x = PrintStringRightAligned("Checks", gOverlayXOppPos + 70, 16);
+				x = PrintStringRightAligned(G_LTXT(GTXT_Checks), gOverlayXOppPos + 70, 16);
 
 				sprintf(string, "%d/5", gPlayerScore.items);
 				PrintString(string, x + 3, 16);
 
-				x = PrintString("Best:", gOverlayXPos, 36);
+				x = PrintString(G_LTXT(GTXT_Best), gOverlayXPos, 36);
 				PrintScoreTableTime(x + 3, 36, table->time);
 			}
 		
@@ -617,14 +617,14 @@ void DrawDrivingGameOverlays(void)
 		case GAME_TRAILBLAZER:
 			
 			table = &ScoreTables.TrailblazerTable[GameLevel][gSubGameNumber][0];
-			x = PrintStringRightAligned("Cones:", gOverlayXOppPos + 55, 16);
+			x = PrintStringRightAligned(G_LTXT(GTXT_Cones), gOverlayXOppPos + 55, 16);
 		
 			sprintf(string, "%d / %d", gPlayerScore.items, 100);
 			PrintString(string, x + 3, 16);
 		
-			x = PrintString("Best", gOverlayXPos, 36);
+			x = PrintString(G_LTXT(GTXT_Best), gOverlayXPos, 36);
 			PrintScoreTableTime(x + 3, 36, table->time);
-			x = PrintString("Cones:", gOverlayXPos, 52);
+			x = PrintString(G_LTXT(GTXT_Cones), gOverlayXPos, 52);
 
 			if (table->items != -1)
 				sprintf(string, "%d", table->items);
@@ -636,15 +636,15 @@ void DrawDrivingGameOverlays(void)
 			break;
 		case GAME_SURVIVAL:
 			table = &ScoreTables.SurvivalTable[GameLevel][gSubGameNumber][0];
-			x = PrintString("Best:", gOverlayXPos, 36);
+			x = PrintString(G_LTXT(GTXT_Best), gOverlayXPos, 36);
 			PrintScoreTableTime(x + 3, 36, table->time);
 			break;
 		case GAME_CAPTURETHEFLAG:
-			x = PrintString("Flags:", gOverlayXPos, 16);
+			x = PrintString(G_LTXT(GTXT_Flags), gOverlayXPos, 16);
 			sprintf(string, "%d", gPlayerScore.items);
 			PrintString(string, x + 3, 16);
 		
-			x = PrintString("Flags:", gOverlayXPos, 132);
+			x = PrintString(G_LTXT(GTXT_Flags), gOverlayXPos, 132);
 			sprintf(string, "%d", gPlayerScore.P2items);
 			PrintString(string, x + 3, 132);
 			break;
@@ -654,7 +654,7 @@ void DrawDrivingGameOverlays(void)
 			i = 0;
 			do
 			{
-				sprintf(string, "%s %d:", "Lap", i+1);
+				sprintf(string, "%s %d:", G_LTXT(GTXT_Lap), i+1);
 				
 				x = PrintString(string, gOverlayXPos, y);
 				PrintScoreTableTime(x + 3, y, gLapTimes[0][i]);
@@ -671,7 +671,7 @@ void DrawDrivingGameOverlays(void)
 				i = 0;
 				do
 				{
-					sprintf(string, "%s %d:", "Lap", i+1);
+					sprintf(string, "%s %d:", G_LTXT(GTXT_Lap), i+1);
 
 					x = PrintString(string, gOverlayXPos, y);
 					PrintScoreTableTime(x + 3, y, gLapTimes[1][i]);
@@ -731,10 +731,18 @@ void DisplayOverlays(void)
 		}
 #endif
 
-		DrawPercentageBar(&PlayerDamageBar);
-		DrawPercentageBar(&Player2DamageBar);
+		if(!gInvincibleCar)
+		{
+			DrawPercentageBar(&PlayerDamageBar);
+			DrawPercentageBar(&Player2DamageBar);
+		}
+
+		if(!gPlayerImmune)
+		{
+			DrawPercentageBar(&FelonyBar);
+		}
+
 		DrawPercentageBar(&DamageBar);
-		DrawPercentageBar(&FelonyBar);
 
 		DrawDrivingGameOverlays();
 		DrawOverheadMap();

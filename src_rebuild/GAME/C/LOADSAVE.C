@@ -102,7 +102,7 @@ void LoadCurrentProfile()
 	}
 
 	SetTextColour(128, 128, 64);
-	ShowSavingWaitMessage("Loading configuration...", 0);
+	ShowSavingWaitMessage(G_LTXT(GTXT_LoadingConfiguration), 0);
 
 	{
 		RECT16 rect;
@@ -137,17 +137,18 @@ void LoadCurrentProfile()
 	}
 	else
 	{
-		ShowSavingWaitMessage("No saved data", 0);
+		ShowSavingWaitMessage(G_LTXT(GTXT_NoSavedData), 0);
+		error = 0;
 	}
 
 	if (error)
 	{
 		SetTextColour(128, 0, 0);
-		ShowSavingWaitMessage("Loading error", 0);
+		ShowSavingWaitMessage(G_LTXT(GTXT_LoadingError), 0);
 	}
 	else
 	{
-		ShowSavingWaitMessage("OK", 0);
+		ShowSavingWaitMessage(G_LTXT(GTXT_OK), 0);
 	}
 
 	SetMasterVolume(gMasterVolume);
@@ -165,7 +166,7 @@ void SaveCurrentProfile()
 	strcat(filePath, "/config.dat");
 
 	SetTextColour(128, 128, 64);
-	ShowSavingWaitMessage("Saving configuration...", 0);
+	ShowSavingWaitMessage(G_LTXT(GTXT_SavingConfiguration), 0);
 
 	dataSize = 0;
 	if (SaveConfigData(_other_buffer))
@@ -186,11 +187,11 @@ void SaveCurrentProfile()
 	if (error)
 	{
 		SetTextColour(128, 0, 0);
-		ShowSavingWaitMessage("Saving error", 0);
+		ShowSavingWaitMessage(G_LTXT(GTXT_SavingError), 0);
 	}
 	else
 	{
-		ShowSavingWaitMessage("OK", 0);
+		ShowSavingWaitMessage(G_LTXT(GTXT_OK), 0);
 	}
 }
 
@@ -205,7 +206,7 @@ int LoadCurrentGame()
 	strcat(filePath, "/progress.dat");
 
 	SetTextColour(128, 128, 64);
-	ShowSavingWaitMessage("Loading progress...", 0);
+	ShowSavingWaitMessage(G_LTXT(GTXT_LoadingProgress), 0);
 
 	// load config
 	FILE* fp = fopen(filePath, "rb");
@@ -240,7 +241,7 @@ void SaveCurrentGame()
 	strcat(filePath, "/progress.dat");
 
 	SetTextColour(128, 128, 64);
-	ShowSavingWaitMessage("Saving progress...", 0);
+	ShowSavingWaitMessage(G_LTXT(GTXT_SavingProgress), 0);
 
 	dataSize = 0;
 	if (SaveGameData(_other_buffer))

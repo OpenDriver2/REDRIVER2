@@ -1514,7 +1514,7 @@ void StepGame(void)
 			color = 32 - color;
 
 		SetTextColour((color & 0x1f) << 3, 0, 0);
-		PrintStringFeature("Fast forward", 100, 0x1e, 0x1000, 0x1000, 0);
+		PrintStringFeature(G_LTXT(GTXT_Fastforward), 100, 0x1e, 0x1000, 0x1000, 0);
 	}
 
 	// check for pause mode
@@ -2244,7 +2244,7 @@ void RenderGame2(int view)
 			colour = 32 - colour;
 
 		SetTextColour((colour & 0x1f) << 3, 0, 0);
-		PrintString("DEMO", 32, 15);
+		PrintString(G_LTXT(GTXT_DEMO), 32, 15);
 	}
 
 	i = 0;

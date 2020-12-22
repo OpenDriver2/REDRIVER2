@@ -131,7 +131,7 @@ void DrawMission(void)
 		if (gOutOfTape)
 		{
 			SetTextColour(128, 128, 64);
-			PrintString("Out of tape", gOverlayXPos, 236);
+			PrintString(G_LTXT(GTXT_OutOfTape), gOverlayXPos, 236);
 		}
 	}
 }

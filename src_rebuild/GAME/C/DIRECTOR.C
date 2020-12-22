@@ -55,29 +55,29 @@ TEXTURE_DETAILS frameadv; // address 0xC1D80
 
 REPLAY_ICON replay_icons[] =
 {
-	{ 20, 26, &pause, "Pause", 20, 48 },
-	{ 20, 26, &playpause, "Play", 20, 48 },
-	{ 44, 26, &autocam, "Auto Director", 44, 48 },
-	{ 68, 26, &playcam, "Fast Forward", 68, 48 },
-	{ 92, 26, &frameadv, "Frame Advance", 92, 48 },
-	{ 116, 26, &restart, "Rewind to beginning", 116, 48 },
-	{ 140, 26, &addcam, "Add Camera", 140, 48 },
-	{ 164, 26, &editcam, "Edit Camera", 164, 48 },
-	{ 188, 26, &save2card, "Save Replay", 188, 48 },
-	{ 212, 26, &ok, "Exit", 212, 48 },
-	{ 140, 50, &incar, "In Car", 164, 48 },
-	{ 140, 74, &chasecar, "Chase Camera", 164, 72 },
-	{ 140, 98, &fixedcam, "Tripod Camera", 164, 96 },
-	{ 140, 122, &ok, "Accept", 164, 120 },
-	{ 140, 122, &clock, "Move Camera Start", 164, 120 },
-	{ 140, 146, &delcam, "Delete Camera", 164, 144 },
-	{ 140, 170, &ok, "Accept", 164, 168 },
-	{ 164, 50, &choosecar, "You or Pursuer", 164, 72 },
-	{ 164, 74, &movecampos, "Move Camera", 164, 96 },
-	{ 164, 98, &movecampos, "Move Camera", 164, 120 },
-	{ 188, 98, &lookcar, "Lock to Car", 188, 120 },
-	{ 212, 98, &movecam, "Rotate", 212, 120 },
-	{ 236, 98, &lenschan, "Zoom", 236, 120 }
+	{ 20, 26, &pause, G_LTXT_ID(GTXT_Pause), 20, 48 },
+	{ 20, 26, &playpause, G_LTXT_ID(GTXT_Play), 20, 48 },
+	{ 44, 26, &autocam, G_LTXT_ID(GTXT_AutoDirector), 44, 48 },
+	{ 68, 26, &playcam, G_LTXT_ID(GTXT_FastForward), 68, 48 },
+	{ 92, 26, &frameadv, G_LTXT_ID(GTXT_FrameAdvance), 92, 48 },
+	{ 116, 26, &restart, G_LTXT_ID(GTXT_Rewindtobeginning), 116, 48 },
+	{ 140, 26, &addcam, G_LTXT_ID(GTXT_AddCamera), 140, 48 },
+	{ 164, 26, &editcam, G_LTXT_ID(GTXT_EditCamera), 164, 48 },
+	{ 188, 26, &save2card, G_LTXT_ID(GTXT_SaveReplay), 188, 48 },
+	{ 212, 26, &ok, G_LTXT_ID(GTXT_Exit), 212, 48 },
+	{ 140, 50, &incar, G_LTXT_ID(GTXT_InCar), 164, 48 },
+	{ 140, 74, &chasecar, G_LTXT_ID(GTXT_ChaseCamera), 164, 72 },
+	{ 140, 98, &fixedcam, G_LTXT_ID(GTXT_TripodCamera), 164, 96 },
+	{ 140, 122, &ok, G_LTXT_ID(GTXT_Accept), 164, 120 },
+	{ 140, 122, &clock, G_LTXT_ID(GTXT_MoveCameraStart), 164, 120 },
+	{ 140, 146, &delcam, G_LTXT_ID(GTXT_DeleteCamera), 164, 144 },
+	{ 140, 170, &ok, G_LTXT_ID(GTXT_Accept), 164, 168 },
+	{ 164, 50, &choosecar, G_LTXT_ID(GTXT_YouorPursuer), 164, 72 },
+	{ 164, 74, &movecampos, G_LTXT_ID(GTXT_MoveCamera), 164, 96 },
+	{ 164, 98, &movecampos, G_LTXT_ID(GTXT_MoveCamera), 164, 120 },
+	{ 188, 98, &lookcar, G_LTXT_ID(GTXT_LocktoCar), 188, 120 },
+	{ 212, 98, &movecam, G_LTXT_ID(GTXT_Rotate), 212, 120 },
+	{ 236, 98, &lenschan, G_LTXT_ID(GTXT_Zoom), 236, 120 }
 };
 
 unsigned char menu0[] = { 0, 0xFF };
@@ -856,7 +856,7 @@ void ShowIcons(unsigned char* menu, int selected, int x_offset)
 		if (selected == count)
 		{
 			SetTextColour(128, 128, 64);
-			PrintStringBoxed(replay_icons[*menu].TextPtr, replay_icons[*menu].tx + x_offset + 1, replay_icons[*menu].ty);
+			PrintStringBoxed(GET_GAME_TXT(replay_icons[*menu].TextPtr), replay_icons[*menu].tx + x_offset + 1, replay_icons[*menu].ty);
 		}
 
 		icon = (SPRT*)current->primptr;
@@ -999,7 +999,7 @@ void ShowReplayMenu(void)
 			strobe = 32 - strobe;
 
 		SetTextColour((strobe << 3), 0, 0);
-		PrintString("Auto direct", 100, 30);
+		PrintString(G_LTXT(GTXT_Autodirect), 100, 30);
 	}
 }
 

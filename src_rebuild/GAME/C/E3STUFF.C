@@ -500,7 +500,7 @@ void SetPleaseWait(char *buffer)
 
 	gShowMap = 1;
 	SetTextColour(128, 128, 128);
-	PrintStringCentred("Please wait...",128);
+	PrintStringCentred(G_LTXT(GTXT_PleaseWait),128);
 	gShowMap = 0;
 
 	VSync(0);

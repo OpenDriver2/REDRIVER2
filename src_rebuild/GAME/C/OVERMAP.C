@@ -1478,6 +1478,7 @@ void SetFullscreenMapMatrix(void)
 // [D] [T]
 void DrawFullscreenMap(void)
 {
+	char str[64];
 	TILE *polys;
 	TILE_1 *tile1;
 	POLY_FT4 *back;
@@ -1769,7 +1770,8 @@ void DrawFullscreenMap(void)
 	SetTextColour(128, 128, 128);
 
 	// print string with special characters representing some images inserted into it
-	PrintStringCentred("\x80 Exit \x81 Rotation \x8a Move", 226);
+	sprintf(str, "\x80 %s \x81 %s \x8a %s", G_LTXT(GTXT_Exit), G_LTXT(GTXT_Rotation), G_LTXT(GTXT_Move));
+	PrintStringCentred(str, 226);
 }
 
 // [D] [T]

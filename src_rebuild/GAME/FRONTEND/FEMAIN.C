@@ -104,79 +104,78 @@ int CutAmountsTotal[5] = {
 
 char* CutSceneNames[28] =
 {
-	"Red River",
-	"The morgue",
-	"The Witness",
-	"Lenny's apartment",
-	"The Cuba Connection",
-	"The Intruder",
-	"Meeting Caine",
-	"Leaving Town",
+	M_LTXT_ID(MTXT_RedRiver),
+	M_LTXT_ID(MTXT_Themorgue),
+	M_LTXT_ID(MTXT_TheWitness),
+	M_LTXT_ID(MTXT_Lennysapartment),
+	M_LTXT_ID(MTXT_TheCubaConnection),
+	M_LTXT_ID(MTXT_TheIntruder),
+	M_LTXT_ID(MTXT_MeetingCaine),
+	M_LTXT_ID(MTXT_LeavingTown),
 
-	"Looking for a lead",
-	"Moving out",
-	"Watching the truck",
-	"Rosanna Soto Clue",
-	"The Dockyard",
-	"The Hit",
-	"Seizing Jericho",
+	M_LTXT_ID(MTXT_Lookingforalead),
+	M_LTXT_ID(MTXT_Movingout),
+	M_LTXT_ID(MTXT_Watchingthetruck),
+	M_LTXT_ID(MTXT_RosannaSotoClue),
+	M_LTXT_ID(MTXT_TheDockyard),
+	M_LTXT_ID(MTXT_TheHit),
+	M_LTXT_ID(MTXT_SeizingJericho),
 
-	"Vasquez in Vegas",
-	"Trading Jericho",
-	"Bank job",
-	"The Pool Hall",
-	"Caine's Warpath",
+	M_LTXT_ID(MTXT_VasquezinVegas),
+	M_LTXT_ID(MTXT_TradingJericho),
+	M_LTXT_ID(MTXT_CBankjob),
+	M_LTXT_ID(MTXT_ThePoolHall),
+	M_LTXT_ID(MTXT_CainesWarpath),
 
-	"Caine in Rio",
-	"Warning Jones",
-	"The Shootout",
-	"Lenny's getaway",
-	"Lenny gets it",
-	"Back in Chicago",
-	"Vasquez meets Caine",
-	"Credits",
+	M_LTXT_ID(MTXT_CaineinRio),
+	M_LTXT_ID(MTXT_WarningJones),
+	M_LTXT_ID(MTXT_TheShootout),
+	M_LTXT_ID(MTXT_Lennysgetaway),
+	M_LTXT_ID(MTXT_Lennygetsit),
+	M_LTXT_ID(MTXT_BackinChicago),
+	M_LTXT_ID(MTXT_VasquezmeetsCaine),
+	M_LTXT_ID(MTXT_Credits),
 };
 
-#ifndef PSX
 char *areaNames[4][8] = {
 	{
-		"Downtown",
-		"Wrigleyville",
-		"Greektown",
-		"Grant Park",
-		"Meigs Field",
-		"Ukrainian Village",
-		"River North",
-		"Cabrini Green",
+		M_LTXT_ID(MTXT_Downtown),
+		M_LTXT_ID(MTXT_Wrigleyville),
+		M_LTXT_ID(MTXT_Greektown),
+		M_LTXT_ID(MTXT_GrantPark),
+		M_LTXT_ID(MTXT_MeigsField),
+		M_LTXT_ID(MTXT_UkrainianVillage),
+		M_LTXT_ID(MTXT_RiverNorth),
+		M_LTXT_ID(MTXT_CabriniGreen),
 	},
 	{
-		"Necropolis de Colon",
-		"Capitolio",
-		"Old Havana",
-		"The Docks",
-		"Vedado",
-		"Plaza",
-		"Plaza de la Revolucion",
+		M_LTXT_ID(MTXT_NecropolisdeColon),
+		M_LTXT_ID(MTXT_Capitolio),
+		M_LTXT_ID(MTXT_OldHavana),
+		M_LTXT_ID(MTXT_TheDocks),
+		M_LTXT_ID(MTXT_Vedado),
+		M_LTXT_ID(MTXT_Plaza),
+		M_LTXT_ID(MTXT_PlazadelaRevolucion),
 		NULL,
 	},
 	{
-		"Downtown",
-		"Upper Strip",
-		"Lakeside",
-		"Mid Strip",
-		"North Vegas",
-		"Lakes",
-		"Ghost Town",
+		M_LTXT_ID(MTXT_Downtown),
+		M_LTXT_ID(MTXT_UpperStrip),
+		M_LTXT_ID(MTXT_Lakeside),
+		M_LTXT_ID(MTXT_MidStrip),
+		M_LTXT_ID(MTXT_NorthVegas),
+		M_LTXT_ID(MTXT_Lakes),
+		M_LTXT_ID(MTXT_GhostTown),
 		NULL,
 	},
 	{
-		"Centro",
-		"Copacabana",
-		"Santa Tereza",
-		"Lagoa Rodrigo de Freitas",
-		"Praca da Bandeira",
-		"Leblon",
-		"Flamengo",
+		M_LTXT_ID(MTXT_Centro),
+		M_LTXT_ID(MTXT_Copacabana),
+		M_LTXT_ID(MTXT_SantaTereza),
+		M_LTXT_ID(MTXT_LagoaRodrigodeFreitas),
+		M_LTXT_ID(MTXT_PracadaBandeira),
+		M_LTXT_ID(MTXT_Leblon),
+		M_LTXT_ID(MTXT_Flamengo),
 		NULL,
 	},
 };
@@ -235,62 +234,6 @@ static char gameAreas[64] = {
 
 #define GAMEMODE_AREA(level, offset, index) gameAreas[offset + level * 2 + index]
 #define GAMEMODE_AREA_NAME(level, offset, index) AREA_NAME(level, GAMEMODE_AREA(level, offset, index))
-#else
-static char* gameNames[64] = {
-	// Getaway (0-6)
-	"Downtown",						"Wrigleyville",
-	"Necropolis De Colon",			"Capitolio",
-	"Downtown",						"Upper Strip",
-	"Centro",						"Copacabana",
-
-	// Gate race (8-14)
-	"Greektown",					"Grant Park",
-	"Necropolis de Colon",			"Old Havana",
-	"Lakeside",						"Mid Strip",
-	"Copacabana",					"Santa Tereza",
-
-	// Checkpoint (16-22)
-	"Downtown",						"Meigs Field",
-	"The Docks",					"Old Havana",
-	"North Vegas",					"Lakeside",
-	"Lagoa Rodrigo de Freitas",		"Praca da Bandeira",
-	
-	// Trailblazer (24-30)
-	"Grant Park",					"Downtown",
-	"Old Havana",					"Vedado",
-	"Downtown",						"Upper Strip",
-	"Leblon",						"Praca da Bandeira",
-
-	// [MP] Cops 'n Robbers (32-38)
-	"Ukrainian Village",			"Downtown",
-	"Vedado",						"Necropolis de Colon",
-	"Mid Strip",					"Downtown",
-	"Copacabana",					"Centro",
-
-	// [MP] Capture the Flag (40-46)
-	"Cabrini Green",				"River North",
-	"Old Havana",					"Plaza",
-	"Lakes",						"Ghost Town",
-	"Flamengo",						"Centro",
-	
-	// [MP] Take a Ride (48-54)
-	"River North",					"Cabrini Green",
-	"Plaza",						"Old Havana",
-	"Downtown",						"Lakes",
-	"Centro",						"Flamengo",
-
-	// [MP] Checkpoint (56-62)
-	"River North",					"Cabrini Green",
-	"Old Havana",					"Plaza de la Revolucion",
-	"Ghost Town",					"North Vegas",
-	"Centro",						"Flamengo",
-};
-
-#define AREA_NAME(level, index) "???"
-
-#define GAMEMODE_AREA(level, offset, index) (0)
-#define GAMEMODE_AREA_NAME(level, offset, index) gameNames[offset + level * 2 + index]
-#endif
 
 int CarAvailability[4][10] = {
 	{1,1,1,1,0,0,0,0,0,0},
@@ -883,10 +826,10 @@ void DrawScreen(PSXSCREEN *pScr)
 #ifndef PSX
 		if(bQuitToSystem)
 		{
-			FEPrintString("Quit to system?", 220, 256, 0, 128, 128, 128);
+			FEPrintString(G_LTXT(GTXT_QuitToSystem), 220, 256, 0, 128, 128, 128);
 
-			FEPrintString("Yes", 240, 288, 0, 128, 128, bQuitToSystemSel ? 0 : 128);
-			FEPrintString("No", 340, 288, 0, 128, 128, bQuitToSystemSel ? 128 : 0);
+			FEPrintString(G_LTXT(GTXT_YES), 240, 288, 0, 128, 128, bQuitToSystemSel ? 0 : 128);
+			FEPrintString(G_LTXT(GTXT_NO), 340, 288, 0, 128, 128, bQuitToSystemSel ? 128 : 0);
 		}
 #endif
 
@@ -1896,7 +1839,7 @@ int CarSelectScreen(int bSetup)
 
 		if (currPlayer != 1) {
 			if (NumPlayers == 2)
-				FEPrintStringSized("Player 2", 400, 260, 0xc00, 0, 128, 128, 128);
+				FEPrintStringSized(G_LTXT(GTXT_Player2), 400, 260, 0xc00, 0, 128, 128, 128);
 
 			return 0;
 		}
@@ -2139,7 +2082,7 @@ int MissionSelectScreen(int bSetup)
 		case 1:
 			pCurrScreen->buttons[1].u = 2;
 			pCurrScreen->buttons[1].d = 2;
-			sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
+			sprintf(pCurrScreen->buttons[1].Name, GET_MISSION_TXT(MissionName[currMission]));
 			sprintf(pCurrScreen->buttons[2].Name, NullStr);
 			sprintf(pCurrScreen->buttons[3].Name, NullStr);
 			sprintf(pCurrScreen->buttons[4].Name, NullStr);
@@ -2149,8 +2092,8 @@ int MissionSelectScreen(int bSetup)
 			pCurrScreen->buttons[1].d = 3;
 			pCurrScreen->buttons[2].u = 2;
 			pCurrScreen->buttons[2].d = 2;
-			sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
-			sprintf(pCurrScreen->buttons[2].Name, MissionName[currMission + 1]);
+			sprintf(pCurrScreen->buttons[1].Name, GET_MISSION_TXT(MissionName[currMission]));
+			sprintf(pCurrScreen->buttons[2].Name, GET_MISSION_TXT(MissionName[currMission + 1]));
 			sprintf(pCurrScreen->buttons[3].Name, NullStr);
 			sprintf(pCurrScreen->buttons[4].Name, NullStr);
 			break;
@@ -2161,9 +2104,9 @@ int MissionSelectScreen(int bSetup)
 			pCurrScreen->buttons[2].d = 4;
 			pCurrScreen->buttons[3].u = 3;
 			pCurrScreen->buttons[3].d = 2;
-			sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
-			sprintf(pCurrScreen->buttons[2].Name, MissionName[currMission + 1]);
-			sprintf(pCurrScreen->buttons[3].Name, MissionName[currMission + 2]);
+			sprintf(pCurrScreen->buttons[1].Name, GET_MISSION_TXT(MissionName[currMission]));
+			sprintf(pCurrScreen->buttons[2].Name, GET_MISSION_TXT(MissionName[currMission + 1]));
+			sprintf(pCurrScreen->buttons[3].Name, GET_MISSION_TXT(MissionName[currMission + 2]));
 			sprintf(pCurrScreen->buttons[4].Name, NullStr);
 			break;
 		case 4:
@@ -2175,10 +2118,10 @@ int MissionSelectScreen(int bSetup)
 			pCurrScreen->buttons[3].d = 5;
 			pCurrScreen->buttons[4].u = 4;
 			pCurrScreen->buttons[4].d = 2;
-			sprintf(pCurrScreen->buttons[1].Name, MissionName[currMission]);
-			sprintf(pCurrScreen->buttons[2].Name, MissionName[currMission + 1]);
-			sprintf(pCurrScreen->buttons[3].Name, MissionName[currMission + 2]);
-			sprintf(pCurrScreen->buttons[4].Name, MissionName[currMission + 3]);
+			sprintf(pCurrScreen->buttons[1].Name, GET_MISSION_TXT(MissionName[currMission]));
+			sprintf(pCurrScreen->buttons[2].Name, GET_MISSION_TXT(MissionName[currMission + 1]));
+			sprintf(pCurrScreen->buttons[3].Name, GET_MISSION_TXT(MissionName[currMission + 2]));
+			sprintf(pCurrScreen->buttons[4].Name, GET_MISSION_TXT(MissionName[currMission + 3]));
 			break;
 		}
 
@@ -2886,10 +2829,10 @@ CVECTOR scoreCol = { 120, 120, 120 };
 CVECTOR otherCol = {125, 115, 34};
 
 char* CityNames[4] = {
-	"Chicago",
-	"Havana",
-	"Las Vegas",
-	"Rio De Janeiro"
+	M_LTXT_ID(MTXT_Chicago),
+	M_LTXT_ID(MTXT_Havana),
+	M_LTXT_ID(MTXT_LasVegas),
+	M_LTXT_ID(MTXT_RioDeJaneiro)
 };
 
 // [D] [T]
@@ -2907,7 +2850,8 @@ void DisplayScoreTable(void)
 
 	sprintf(text, ScreenNames[ScreenDepth - 1]);
 	FEPrintString(text, 20, 200, 2, otherCol.r, otherCol.g, otherCol.b);
-	sprintf(text, CityNames[GameLevel]);
+
+	sprintf(text, GET_MISSION_TXT(CityNames[GameLevel]));
 	FEPrintString(text, 280, 200, 2, otherCol.r, otherCol.g, otherCol.b);
 
 	if (GameType == GAME_TAKEADRIVE && NumPlayers == 2)
@@ -3182,15 +3126,14 @@ int MainScreen(int bSetup)
 	return 0;
 }
 
-
 static char* cheatText[] =
 {
-	"Sorry, no secrets",
-	"Mountain track",
-	"Circuit",
-	"Invincibility",
-	"Immunity",
-	"Bonus Gallery"
+	G_LTXT_ID(GTXT_NoSecrets),
+	G_LTXT_ID(GTXT_MountainTrack),
+	G_LTXT_ID(GTXT_Circuit),
+	G_LTXT_ID(GTXT_Invincibility),
+	G_LTXT_ID(GTXT_Immunity),
+	G_LTXT_ID(GTXT_BonusGallery)
 };
 
 // [D] [T] [A] adding bonus gallery
@@ -3215,13 +3158,15 @@ int CheatScreen(int bSetup)
 	};
 
 	if (bSetup == 0)
+	{
 		return 0;
+	}
 
 	if (gFurthestMission == 40) 
 		numOpen = 5;
 	else 
 		numOpen = AvailableCheats.cheat1 + AvailableCheats.cheat2 + AvailableCheats.cheat3 + AvailableCheats.cheat4;
-
+	
 	// "Sorry no secrets"
 	if (numOpen == 0)
 	{
@@ -3231,7 +3176,7 @@ int CheatScreen(int bSetup)
 		pCurrScreen->buttons[0].d = 1;
 		pCurrScreen->buttons[0].action = 0x400;
 
-		sprintf(pCurrScreen->buttons[0].Name, cheatText[0]);
+		sprintf(pCurrScreen->buttons[0].Name, GET_GAME_TXT(cheatText[0]));
 
 		return 0;
 	}
@@ -3252,7 +3197,7 @@ int CheatScreen(int bSetup)
 	do {
 		if (evilRuss[i] || gFurthestMission == 40)
 		{
-			sprintf(pCurrScreen->buttons[i].Name, cheatText[i + 1]);
+			sprintf(pCurrScreen->buttons[i].Name, GET_GAME_TXT(cheatText[i + 1]));
 			cheatOn[k++] = i;
 		}
 		i++;

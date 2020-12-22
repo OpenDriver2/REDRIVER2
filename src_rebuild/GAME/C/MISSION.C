@@ -36,49 +36,49 @@
 char* MissionName[37] =
 {
 	// Chicago
-	"Surveillance tip off",
-	"Chase the witness",
-	"Train pursuit",
-	"Tailing the drop",
-	"Escape to the safe house",
-	"Chase the intruder",
-	"Caine's compound",
-	"Leaving Chicago",
+	M_LTXT_ID(MTXT_Surveillancetipoff),
+	M_LTXT_ID(MTXT_Chasethewitness),
+	M_LTXT_ID(MTXT_Trainpursuit),
+	M_LTXT_ID(MTXT_Tailingthedrop),
+	M_LTXT_ID(MTXT_Escapetothesafehouse),
+	M_LTXT_ID(MTXT_Chasetheintruder),
+	M_LTXT_ID(MTXT_Cainescompound),
+	M_LTXT_ID(MTXT_LeavingChicago),
 
 	// Havana
-	"Follow up the lead",
-	"Hijack the truck",
-	"Stop the truck",
-	"Find the clue",
-	"Escape to ferry",
-	"To the docks",
-	"Back to Jones",
-	"Tail Jericho",
-	"Pursue Jericho",
-	"Escape the Brazilians",
+	M_LTXT_ID(MTXT_Followupthelead),
+	M_LTXT_ID(MTXT_Hijackthetruck),
+	M_LTXT_ID(MTXT_Stopthetruck),
+	M_LTXT_ID(MTXT_Findtheclue),
+	M_LTXT_ID(MTXT_Escapetoferry),
+	M_LTXT_ID(MTXT_Tothedocks),
+	M_LTXT_ID(MTXT_BacktoJones),
+	M_LTXT_ID(MTXT_TailJericho),
+	M_LTXT_ID(MTXT_PursueJericho),
+	M_LTXT_ID(MTXT_EscapetheBrazilians),
 
 	// Vegas
-	"Casino getaway",
-	"Beat the train",
-	"Car bomb",
-	"Car bomb getaway",
-	"Bank job",
-	"Steal the ambulance",
-	"Stake Out",
-	"Steal the keys",
-	"C4 deal",
-	"Destroy the yard",
+	M_LTXT_ID(MTXT_Casinogetaway),
+	M_LTXT_ID(MTXT_Beatthetrain),
+	M_LTXT_ID(MTXT_Carbomb),
+	M_LTXT_ID(MTXT_Carbombgetaway),
+	M_LTXT_ID(MTXT_Bankjob),
+	M_LTXT_ID(MTXT_Stealtheambulance),
+	M_LTXT_ID(MTXT_StakeOut),
+	M_LTXT_ID(MTXT_Stealthekeys),
+	M_LTXT_ID(MTXT_C4deal),
+	M_LTXT_ID(MTXT_Destroytheyard),
 
 	// Rio
-	"Bus crash",
-	"Steal the cop car",
-	"Caine's cash",
-	"Save Jones",
-	"Boat jump",
-	"Jones in trouble",
-	"Chase the Gun Man",
-	"Lenny escaping",
-	"Lenny gets caught",
+	M_LTXT_ID(MTXT_Buscrash),
+	M_LTXT_ID(MTXT_Stealthecopcar),
+	M_LTXT_ID(MTXT_Cainescash),
+	M_LTXT_ID(MTXT_SaveJones),
+	M_LTXT_ID(MTXT_Boatjump),
+	M_LTXT_ID(MTXT_Jonesintrouble),
+	M_LTXT_ID(MTXT_ChasetheGunMan),
+	M_LTXT_ID(MTXT_Lennyescaping),
+	M_LTXT_ID(MTXT_Lennygetscaught),
 };
 
 int gCopDifficultyLevel = 1;
@@ -726,7 +726,7 @@ void LoadMission(int missionnum)
 		if (loadsize > 7) 
 			loadsize--;
 
-		gMissionTitle = MissionName[loadsize - 1];
+		gMissionTitle = GET_MISSION_TXT(MissionName[loadsize - 1]);
 	}
 	else
 	{

@@ -370,24 +370,6 @@ enum ModelFlags2
 	MODEL_FLAG_SIDEWALK			= 0x8000,
 };
 
-struct MODEL
-{
-	u_short shape_flags;
-	u_short flags2;
-	short instance_number;
-	u_char tri_verts;
-	unsigned char zBias;
-	short bounding_sphere;
-	u_short num_point_normals;
-	u_short num_vertices;
-	u_short num_polys;
-	int vertices;
-	int poly_block;
-	int normals;
-	int point_normals;
-	int collision_block;
-};
-
 struct COLLISION_PACKET
 {
 	short type;
@@ -495,6 +477,43 @@ struct POLYGT3
 	RGB color;
 };
 
+struct MODEL
+{
+	u_short shape_flags;
+	u_short flags2;
+	short instance_number;
+	u_char tri_verts;
+	unsigned char zBias;
+	short bounding_sphere;
+	u_short num_point_normals;
+	u_short num_vertices;
+	u_short num_polys;
+	int vertices;
+	int poly_block;
+	int normals;
+	int point_normals;
+	int collision_block;
+
+	SVECTOR* pVertex(int i) const
+	{
+		return (SVECTOR *)(((u_char *)this) + vertices) + i;
+	}
+
+	SVECTOR* pNormal(int i) const
+	{
+		return (SVECTOR *)(((u_char *)this) + point_normals) + i;
+	}
+
+	COLLISION_PACKET* pCollisionPacket(int i) const
+	{
+		return (COLLISION_PACKET *)(((u_char *)this) + collision_block) + i;
+	}
+
+	char* pPolyAt(int ofs) const
+	{
+		return (char *)(((u_char *)this) + poly_block + ofs);		
+	}
+};
 
 //---------------------------------------------------------------------------------------
 // TODO: DEBRIS.H

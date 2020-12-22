@@ -628,7 +628,7 @@ int main(int argc, char** argv)
 	extern int g_pgxpTextureCorrection;
 	extern int g_pgxpZBuffer;
 	extern int g_bilinearFiltering;
-	extern int g_enableSwapInterval;
+	extern int gUserLanguage;
 
 	if (config)
 	{
@@ -648,7 +648,8 @@ int main(int argc, char** argv)
 		ini_sget(config, "game", "driver1music", "%d", &gDriver1Music);
 		ini_sget(config, "game", "widescreenOverlays", "%d", &gWidescreenOverlayAlign);
 		ini_sget(config, "game", "fastLoadingScreens", "%d", &gFastLoadingScreens);
-		
+		ini_sget(config, "game", "languageId", "%d", &gUserLanguage);
+
 		if (dataFolderStr)
 		{
 			strcpy(gDataFolder, dataFolderStr);
@@ -695,6 +696,9 @@ int main(int argc, char** argv)
 
 	Emulator_Initialise("REDRIVER2", windowWidth, windowHeight, fullScreen);
 
+	// init language
+	InitStringMng();
+	
 	if (config)
 	{
 		LoadKeyMappings(config, "kbcontrols_game", g_gameMappings);
@@ -704,5 +708,8 @@ int main(int argc, char** argv)
 		
 		ini_free(config);
 	}
-	redriver2_main(argc, argv);		
+
+	redriver2_main(argc, argv);
+
+	DeinitStringMng();
 }
