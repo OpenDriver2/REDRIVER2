@@ -4,6 +4,8 @@
 #include "EMULATOR_PRIVATE.H"
 #include <assert.h>
 
+
+#include "ABS.H"
 #include "LIBMATH.H"
 
 #include "INLINE_C.H"
@@ -1345,12 +1347,12 @@ MATRIX* MulRotMatrix(MATRIX* m0)
 
 void SetBackColor(long rbk, long gbk, long bbk)
 {
-	PSYX_UNIMPLEMENTED();
+	gte_SetBackColor(rbk,gbk,bbk);
 }
 
 void SetFarColor(long rfc, long gfc, long bfc)
 {
-	PSYX_UNIMPLEMENTED();
+	gte_SetFarColor(rfc, gfc, bfc);
 }
 
 #define	APPLYMATRIX(m,v0,v1)	{\
@@ -1867,6 +1869,24 @@ void SetFogNear(long a, long h)
 	assert(h != -1 && depthQ != 0x8000);
 	SetDQA(depthQ / h);
 	SetDQB(20971520);
+}
+
+void SetFogNearFar(long a, long b, long h)
+{
+	if (b - a < 100)
+		return;
+
+	assert((b - a));
+	assert((b - a) != -1 && (-a * b) != 32768);
+	assert((b - a));
+	assert((b - a) != -1 && (b << 12) != 32768);
+	assert(h != 0);
+	assert(h != -1 && (((-a * b) / (b - a)) << 8) != 32768);
+
+	int dqa = (-a * b / (b - a) << 8) / h;
+
+	SetDQA(MAX(MIN(dqa, 32767), -32767));
+	SetDQB((b << 12) / (b - a) << 12);
 }
 
 int rsin(int a)
