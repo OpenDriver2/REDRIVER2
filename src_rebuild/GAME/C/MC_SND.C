@@ -124,7 +124,7 @@ xa_request xa_data[26] = {
 
 int cutscene_timer = 0;
 static LONGVECTOR3 pos;
-static int bodgevar = 0;
+static intptr_t bodgevar = 0;
 
 // [D] [T]
 char GetMissionSound(char id)
@@ -482,7 +482,7 @@ void DoMissionSound(void)
 			{
 				for (i = 0; i < 16; i++)
 				{
-					if (MissionTargets[i].base.type == Target_Car)
+					if (MissionTargets[i].type == Target_Car)
 					{
 						holdall = MissionTargets[i].car.slot;
 						break;
@@ -634,7 +634,7 @@ void DoMissionSound(void)
 			{
 				for (i = 0; i < 16; i++)
 				{
-					if (MissionTargets[i].base.type == Target_Car)
+					if (MissionTargets[i].type == Target_Car)
 					{
 						if (holdall == -1)
 						{
@@ -749,7 +749,7 @@ void DoMissionSound(void)
 }
 
 // [D] [T]
-void SetMSoundVar(int var, VECTOR* V)
+void SetMSoundVar(intptr_t var, VECTOR* V)
 {
 	if (V)
 	{

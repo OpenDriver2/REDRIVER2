@@ -2267,7 +2267,7 @@ void StepHelicopter(EVENT* ev)
 		HelicopterData.lastX = ev->position.vx;
 		HelicopterData.lastZ = ev->position.vz;
 
-		SetMSoundVar((int)&ev->position, NULL);
+		SetMSoundVar((intptr_t)&ev->position, NULL);
 
 		if ((ev->flags & 0x100) && (Random2(0) & 3) == (CameraCnt & 3U))
 		{
@@ -3893,38 +3893,38 @@ void MultiCarEvent(MS_TARGET* target)
 	EVENT* first;
 	int n;
 	EVENT* ev;
-	MULTICAR_DATA* data;
+	MULTICAR_DATA* mcd;
 	int i;
 
 	first = firstEvent;
 
-	data = (MULTICAR_DATA*)(target->data + 1);
-
+	// [A] validate
+	if (target->type != Target_MultiCar)
+		return;
+	
 	firstEvent = multiCar.event + multiCar.count;
-	n = target->data[1];
 
-	i = 0;
-	while (n != 0x80000000)
+	for (i = 0; i < 5; i++)
 	{
+		mcd = &target->multiCar[i];
+
+		if (mcd->x == 0x80000000)
+			break;
+		
 		n = (multiCar.event - event) + multiCar.count;
 
 		ev = event + n;
 
-		ev->position.vx = data->x;
+		ev->position.vx = mcd->x;
+		ev->position.vz = mcd->z;
+		
 		ev->position.vy = -312;
-		ev->position.vz = data->z;
-		ev->rotation = data->rot;
+	
+		ev->rotation = mcd->rot;
 
 		VisibilityLists(VIS_ADD, n);
 
 		multiCar.count++;
-		data++;
-		i++;
-
-		if (i > 4)
-			break;
-
-		n = data->x;
 	}
 
 	//firstEvent->next = first; // [A] bug fix

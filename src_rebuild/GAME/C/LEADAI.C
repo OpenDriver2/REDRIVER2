@@ -1583,19 +1583,19 @@ void BlockToMap(MAP_DATA* data)
 				{
 					y = corners[i][2];
 
-					if (0 < (int)(((corners[left][2] - y) + 2048u & 0xfff) - 2048))
+					if ((int)(((corners[left][2] - y) + 2048U & 0xfff) - 2048) > 0)
 						left = i;
 
-					if (0 < (int)(((y - corners[right][2]) + 2048u & 0xfff) - 2048))
+					if ((int)(((y - corners[right][2]) + 2048U & 0xfff) - 2048) > 0)
 						right = i;
 
 					int quad2 = y + 2048 >> 10;
 
-					if ((quad1 != quad2) && (quad1 + (quad1 - (corners[0][2] + 2048 >> 0x1f) >> 1) * -2 == quad2 + (quad2 - (y + 2048 >> 0x1f) >> 1) * -2))
+					if (quad1 != quad2 && quad1 + (quad1 - (corners[0][2] + 2048 >> 0x1f) >> 1) * -2 == quad2 + (quad2 - (y + 2048 >> 0x1f) >> 1) * -2)
 						overlap = true;
 
 					//fdist = fdist + 3;
-				};
+				}
 
 				if (overlap)
 				{
@@ -2168,7 +2168,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 
 	iVar16 = 40;
 	laneAvoid = -1;
-	piVar7 = roadAhead + 0x28;
+	piVar7 = roadAhead + 40;
 
 	do {
 		*piVar7 = 0x5000;
@@ -2649,15 +2649,24 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 		}
 	}
 
-	if (intention - 2U < 3)
+	int lastTarget;
+	int spdThresh;
+
+	lastTarget = cp->ai.l.lastTarget;
+	spdThresh = ((cp->hd.speed + 100) / 50) * 1024;
+
+	if (cp->ai.l.boringness > 32 && ABS((lastTarget - laneAvoid) * 100) < cp->ai.l.width / 3 ||
+		(intention - 2U < 3) ||
+		(roadAhead[MAX(0, MIN(40, lastTarget - 1))] <= spdThresh &&
+		roadAhead[MAX(0, MIN(40, lastTarget))] <= spdThresh &&
+		roadAhead[MAX(0, MIN(40, lastTarget + 1))] <= spdThresh))
 	{
-	LAB_LEAD__000ead84:
 		cellz = 21;
 		uVar17 = 21;
 		uVar6 = 0;
 		iVar13 = 84;
 		iVar16 = roadAhead[21];
-		
+
 		do {
 			if (iVar16 < *(int*)((int)roadAhead + iVar13))
 			{
@@ -2669,7 +2678,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 				uVar6 = -uVar6;
 
 			uVar6 = uVar6 + 1;
-			
+
 			if ((uVar6 & 1) == 0)
 				uVar6 = -uVar6;
 
@@ -2683,19 +2692,19 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 				cp->ai.l.roadForward = LeadValues.hDist + (cp->hd.speed - 100) * LeadValues.hDistMul;
 			else
 				cp->ai.l.roadForward = LeadValues.tDist + cp->hd.speed * LeadValues.tDistMul;
-			
+
 			if (cp->ai.l.roadForward > iVar16)
 			{
 				if (cp->ai.l.roadForward > -1)
 					cp->ai.l.roadForward = -1;
 				else
 					cp->ai.l.roadForward -= 1;
-				
+
 				if (intention == 3)
 					cp->ai.l.roadPosition = -20000;
 				else
 					cp->ai.l.roadPosition = 20000;
-				
+
 				if (cp->ai.l.roadForward > -21)
 					return;
 
@@ -2706,41 +2715,6 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	}
 	else
 	{
-		iVar16 = cp->ai.l.boringness;
-		cellz = cp->ai.l.lastTarget;
-
-		if (cp->ai.l.boringness < 31)
-		{
-			int spdThresh;
-
-			spdThresh = ((cp->hd.speed + 100) / 50) * 1024;
-
-			if(	roadAhead[MAX(0, MIN(40, cellz - 1))] <= spdThresh &&
-				roadAhead[MAX(0, MIN(40, cellz))] <= spdThresh &&
-				roadAhead[MAX(0, MIN(40, cellz + 1))] <= spdThresh)
-			{
-				goto LAB_LEAD__000ead84;
-			}
-		}
-		else
-		{
-			if (ABS((cellz - laneAvoid) * 100) < cp->ai.l.width / 3)
-			{
-				goto LAB_LEAD__000ead84;
-			}
-
-			int spdThresh;
-
-			spdThresh = ((cp->hd.speed + 100) / 50) * 1024;
-
-			if(	roadAhead[MAX(0, MIN(40, cellz - 1))] <= spdThresh &&
-				roadAhead[MAX(0, MIN(40, cellz))] <= spdThresh &&
-				roadAhead[MAX(0, MIN(40, cellz + 1))] <= spdThresh)
-			{
-				goto LAB_LEAD__000ead84;
-			}
-		}
-		
 		iVar16 = roadAhead[cellz];
 		uVar6 = cellz - 2;
 		iVar13 = cellz + 2;

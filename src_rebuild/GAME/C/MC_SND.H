@@ -15,7 +15,7 @@ extern void DoCutsceneSound(); // 0x0005D950
 extern void InitializeMissionSound(); // 0x0005DD10
 extern void DoMissionSound(); // 0x0005E020
 
-extern void SetMSoundVar(int var, VECTOR *V); // 0x0005F25C
+extern void SetMSoundVar(intptr_t var, VECTOR *V); // 0x0005F25C
 
 extern char SilenceThisCar(int car); // 0x0005EE00
 extern void AdjustPlayerCarVolume(); // 0x0005F294

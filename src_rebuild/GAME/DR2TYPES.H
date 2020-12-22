@@ -1149,16 +1149,6 @@ enum Station
 	EVENT_LEAVING = 2,
 };
 
-struct MULTICAR_DATA
-{
-	int x;
-	int z;
-	u_char palette;
-	u_char model;
-	short rot;
-};
-
-
 //---------------------------------------------------------------------------------------
 // TODO: MISSION.H
 
@@ -1223,94 +1213,103 @@ typedef struct _MISSION
 	int msgDoorsLocked;
 } MS_MISSION;
 
-struct _ROUTE_INFO
+typedef struct _ROUTE_INFO
 {
 	int nJunctions;
 	char data[1000][4];
 	LEAD_PARAMETERS parameters;
-};
+} ROUTE_INFO;
 
 enum TARGET_TYPE
 {
 	Target_Point = 1,
 	Target_Car = 2,
-	Target_Event = 3
+	Target_Event = 3,
+	Target_Car2 = 4,
+	Target_MultiCar = 5
 };
 
-struct MS_TARGET_BASE
+struct MULTICAR_DATA
 {
-	int type;			// data 0
-	int target_flags;	// data 1
-	int display_flags;	// data 2
-	int posX;			// data 3
-	int posZ;			// data 4
-};
-
-struct MS_TARGET_CAR_TAILING
-{
-	int closeMessages;		// data 13
-	int farMessages;		// data 14
-};
-
-struct MS_TARGET_CAR_CHASING
-{
-	int maxDamage;			// data 13
-	int tooFarMessage;		// data 14
-	int gettingFarMessage;	// data 15
-};
-
-struct MS_TARGET_CAR
-{
-	MS_TARGET_BASE base;
-	int rotation;		// data 5
-	int slot;			// data 6
-	int model;			// data 7
-	int palette;		// data 8
-	int type;			// data 9
-	int flags;			// data 10
-	int cutscene;		// data 11
-	int maxDistance;	// data 12
-	union
-	{
-		MS_TARGET_CAR_TAILING tail;
-		MS_TARGET_CAR_CHASING chasing;
-	};
-};
-
-struct MS_TARGET_POINT
-{
-	MS_TARGET_BASE base;
-	int radius;				// data 5
-	int posY;				// data 6
-	int height;				// data 7
-	int loseTailMessage;	// data 8
-	int actionFlag;			// data 9
-	int boatX;				// data 10
-	int boatZ;				// data 11
-};
-
-struct MS_TARGET_EVENT
-{
-	int type;			// data 0
-	int target_flags;	// data 1
-	int display_flags;	// data 2
-	int _unused;
-	VECTOR* eventPos;	// data 4
-	int _unused2[10];
-	int loseMessage;	// data 14
+	int x;
+	int z;
+	u_char palette;
+	u_char model;
+	short rot;
 };
 
 typedef struct _TARGET
 {
+	int type;			// data 0
+
 	union
 	{
-		int data[16];
-		MS_TARGET_BASE base;
-		MS_TARGET_POINT point;
-		MS_TARGET_CAR car;
-		MS_TARGET_EVENT event;
+		MULTICAR_DATA multiCar[5];
+
+		struct
+		{
+			int target_flags;	// data 1
+			int display_flags;	// data 2
+
+			union
+			{
+				struct
+				{
+					int posX;				// data 3
+					int posZ;				// data 4
+					int radius;				// data 5
+					int posY;				// data 6
+					int height;				// data 7
+					int loseTailMessage;	// data 8
+					int actionFlag;			// data 9
+					int boatX;				// data 10
+					int boatZ;				// data 11
+				} point;
+
+				struct
+				{
+					int posX;			// data 3
+					int posZ;			// data 4
+					int rotation;		// data 5
+					int slot;			// data 6
+					int model;			// data 7
+					int palette;		// data 8
+					int type;			// data 9
+					int flags;			// data 10
+					int cutscene;		// data 11
+					int maxDistance;	// data 12
+					union
+					{
+						struct
+						{
+							int closeMessages;		// data 13
+							int farMessages;		// data 14
+						} tail;
+						struct
+						{
+							int maxDamage;			// data 13
+							int tooFarMessage;		// data 14
+							int gettingFarMessage;	// data 15
+						} chasing;
+					};
+				} car;
+				
+				struct
+				{
+					int eventId;			// data 3
+					union
+					{
+						VECTOR* eventPos;	// data 4
+						int unused[10];
+					};
+					int loseMessage;		// data 14
+				} event;
+			};
+		};
 	};
 } MS_TARGET;
+
+assert_sizeof(MS_TARGET, 64);
 
 //---------------------------------------------------------------------------------------
 

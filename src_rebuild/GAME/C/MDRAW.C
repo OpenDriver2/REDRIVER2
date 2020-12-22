@@ -144,16 +144,16 @@ void DrawOverheadTarget(MS_TARGET *target)
 	if (TargetComplete(target, -1))
 		return;
 
-	if ((target->base.target_flags & 0x600) == 0)  // invisible flag
+	if ((target->target_flags & 0x600) == 0)  // invisible flag
 		return;
 
-	switch(target->base.type)
+	switch(target->type)
 	{
 		case Target_Point:	// point or car target
 		case Target_Car:
 		{
-			tv.vx = target->base.posX;
-			tv.vz = target->base.posZ;
+			tv.vx = target->car.posX;
+			tv.vz = target->car.posZ;
 			tv.vy = 0;
 			break;
 		}
@@ -164,10 +164,10 @@ void DrawOverheadTarget(MS_TARGET *target)
 			return;
 	}
 
-	if (target->base.display_flags & 0x10)
+	if (target->display_flags & 0x10)
 		DrawTargetBlip(&tv, 64, 64, 64, 0x11);
 
-	if (target->base.display_flags & 0x40)
+	if (target->display_flags & 0x40)
 		DrawTargetArrow(&tv, 1);
 }
 
@@ -179,16 +179,16 @@ void DrawFullscreenTarget(MS_TARGET *target)
 	if (TargetComplete(target, -1))
 		return;
 
-	if ((target->base.target_flags & 0x600) == 0)
+	if ((target->target_flags & 0x600) == 0)
 		return;
 
-	switch(target->base.type)
+	switch(target->type)
 	{
 		case Target_Point:	// point or car target
 		case Target_Car:
 		{
-			tv.vx = target->base.posX;
-			tv.vz = target->base.posZ;
+			tv.vx = target->car.posX;
+			tv.vz = target->car.posZ;
 			tv.vy = 0;
 			break;
 		}
@@ -199,10 +199,10 @@ void DrawFullscreenTarget(MS_TARGET *target)
 			return;
 	}
 
-	if (target->base.display_flags & 0x10)
+	if (target->display_flags & 0x10)
 		DrawTargetBlip(&tv, 64, 64, 64, 0x14);
 
-	if (target->base.display_flags & 0x40)
+	if (target->display_flags & 0x40)
 		DrawTargetArrow(&tv, 4);
 }
 
@@ -222,16 +222,16 @@ void DrawWorldTarget(MS_TARGET *target)
 
 	flags = 2;
 	
-	switch(target->base.type)
+	switch(target->type)
 	{
 		case Target_Point:
 		{
-			tv.vx = target->base.posX;
-			tv.vz = target->base.posZ;
+			tv.vx = target->point.posX;
+			tv.vz = target->point.posZ;
 			tv.vy = 10000;
 
 			// Capture the Flag target properties
-			switch(target->base.target_flags & 0x30000)
+			switch(target->target_flags & 0x30000)
 			{
 				case 0x20000:
 				{
@@ -297,10 +297,10 @@ void DrawWorldTarget(MS_TARGET *target)
 
 	if (gMultiplayerLevels != 0 && doSpooling == 0 || Long2DDistance(player[0].spoolXZ, &tv) <= 15900)
 	{
-		if (target->base.display_flags & 0x20)
+		if (target->display_flags & 0x20)
 			flags |= 0x1;
 
-		if (target->base.display_flags & 0x80)
+		if (target->display_flags & 0x80)
 			flags |= 0x20;
 
 		if (flags) 
@@ -343,16 +343,16 @@ void DrawMultiplayerTarget(MS_TARGET *target)
 		b = 0;
 	}
 
-	switch(target->base.type)
+	switch(target->type)
 	{
 		case Target_Point:
 		{
-			tv.vx = target->base.posX;
-			tv.vz = target->base.posZ;
+			tv.vx = target->point.posX;
+			tv.vz = target->point.posZ;
 			tv.vy = 10000;
 
 			// Capture the Flag target properties
-			switch(target->base.target_flags & 0x30000)
+			switch(target->target_flags & 0x30000)
 			{
 				case 0x10000:
 				{
@@ -409,7 +409,7 @@ void DrawMultiplayerTarget(MS_TARGET *target)
 			return;
 	}
 
-	if (target->base.display_flags & 0x10)
+	if (target->display_flags & 0x10)
 	{
 		DrawTargetBlip(&tv, r, g, b, 0x30);
 	}

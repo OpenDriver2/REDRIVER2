@@ -119,7 +119,7 @@ void StoreCarPosition(MS_TARGET *target, SAVED_CAR_POS *data)
 
 	data->direction = car_data[slot].hd.direction;
 
-	if (target->base.target_flags & 0x40)
+	if (target->target_flags & 0x40)
 		data->active = -127;
 	else
 		data->active = 1;
@@ -196,7 +196,7 @@ void StoreEndData(void)
 		carpos = MissionEndData.CarPos;
 
 		do {
-			if (target->base.type == Target_Car && (target->base.target_flags & 0x10))
+			if (target->type == Target_Car && (target->target_flags & 0x10))
 			{
 				StoreCarPosition(target, carpos);
 				carpos++;
