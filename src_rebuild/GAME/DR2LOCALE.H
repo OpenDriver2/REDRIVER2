@@ -10,9 +10,15 @@ enum GameStrId
 	GTXT_Proximity,
 
 	GTXT_Best,
+	
+	GTXT_Cone,
 	GTXT_Gate,
-	GTXT_Checks,
+	GTXT_Check,
+	
 	GTXT_Cones,
+	GTXT_Gates,
+	GTXT_Checks,
+	
 	GTXT_Flags,
 	GTXT_Lap,
 

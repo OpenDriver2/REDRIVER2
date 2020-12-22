@@ -566,7 +566,7 @@ void DrawDrivingGameOverlays(void)
 				x = PrintString(G_LTXT(GTXT_Best), gOverlayXPos, 36);
 				PrintScoreTableTime(x + 3, 36, table->time);
 
-				x = PrintString(G_LTXT(GTXT_Gate), gOverlayXPos, 52);
+				x = PrintString(G_LTXT(GTXT_Gates), gOverlayXPos, 52);
 
 				if (table->items == -1)
 					sprintf(string, "-");
@@ -617,7 +617,7 @@ void DrawDrivingGameOverlays(void)
 		case GAME_TRAILBLAZER:
 			
 			table = &ScoreTables.TrailblazerTable[GameLevel][gSubGameNumber][0];
-			x = PrintStringRightAligned(G_LTXT(GTXT_Cones), gOverlayXOppPos + 55, 16);
+			x = PrintStringRightAligned(G_LTXT(GTXT_Cone), gOverlayXOppPos + 55, 16);
 		
 			sprintf(string, "%d / %d", gPlayerScore.items, 100);
 			PrintString(string, x + 3, 16);
