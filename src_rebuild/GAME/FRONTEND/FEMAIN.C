@@ -910,7 +910,7 @@ void DisplayOnScreenText(void)
 		}
 
 		if (bInCutSelect) {
-			text = CutSceneNames[cutSelection + CutAmountsTotal[currCity]];
+			text = GET_MISSION_TXT(CutSceneNames[cutSelection + CutAmountsTotal[currCity]]);
 
 			FEPrintStringSized(text, 100, 226, 0xc00, 1, 64, 64, 64);
 		}
