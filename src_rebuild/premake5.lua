@@ -47,7 +47,8 @@ workspace "REDRIVER2"
 
     filter "configurations:Debug"
         defines { 
-            "DEBUG", 
+            "_DEBUG", 
+	        "DEBUG"
         }
         symbols "On"
 

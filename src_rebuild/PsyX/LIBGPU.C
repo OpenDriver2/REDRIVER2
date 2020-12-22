@@ -367,7 +367,7 @@ u_long* ClearOTagR(u_long* ot, int n)
 	setlen(ot, 0);
 
 	// initialize a linked list with it's previous items
-	for (int i = P_LEN; i < n * P_LEN; i += P_LEN)
+	for (int i = 1 * P_LEN; i < n * P_LEN; i += P_LEN)
 	{
 		setaddr(&ot[i], &ot[i - P_LEN]);
 		setlen(&ot[i], 0);

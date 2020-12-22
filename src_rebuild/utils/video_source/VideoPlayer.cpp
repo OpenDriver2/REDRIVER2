@@ -158,7 +158,6 @@ void SetupMovieRectangle(int image_w, int image_h)
 	int windowWidth, windowHeight;
 	Emulator_GetScreenSize(windowWidth, windowHeight);
 
-	
 	float psxScreenW = 320.0f;
 	float psxScreenH = 200.0f;	// FIXME: NTSC scaling
 
@@ -183,16 +182,38 @@ void SetupMovieRectangle(int image_w, int image_h)
 	u_char r = 1;
 	u_char b = 1;
 
+#ifdef USE_PGXP
+	Emulator_SetViewPort(0, 0, windowWidth, windowHeight);
+
 	Vertex blit_vertices[] =
 	{
-		{ clipRectX+ clipRectW,  clipRectY + clipRectH,    0, 0,    r, t,    0, 0,    0, 0, 0, 0 },
-		{ clipRectX, clipRectY,    0, 0,    l, b,    0, 0,    0, 0, 0, 0 },
-		{ clipRectX, clipRectY + clipRectH,    0, 0,    l, t,    0, 0,    0, 0, 0, 0 },
+		{ clipRectX+ clipRectW,  clipRectY + clipRectH,		0, 0,    r, t,    0, 0,		0, 0, 		0, 0 },
+		{ clipRectX, clipRectY,    							0, 0,    l, b,    0, 0,		0, 0, 		0, 0 },
+		{ clipRectX, clipRectY + clipRectH,    				0, 0,    l, t,    0, 0,		0, 0, 		0, 0 },
 
-		{ clipRectX + clipRectW, clipRectY,    0, 0,    r, b,    0, 0,    0, 0, 0, 0 },
-		{ clipRectX, clipRectY,    0, 0,    l, b,    0, 0,    0, 0, 0, 0 },
-		{ clipRectX + clipRectW,  clipRectY + clipRectH,    0, 0,    r, t,    0, 0,    0, 0, 0, 0 },
+		{ clipRectX + clipRectW, clipRectY,    				0, 0,    r, b,    0, 0,     0, 0, 		0, 0 },
+		{ clipRectX, clipRectY,    							0, 0,    l, b,    0, 0,		0, 0, 		0, 0 },
+		{ clipRectX + clipRectW,  clipRectY + clipRectH,    0, 0,    r, t,    0, 0,		0, 0, 		0, 0 },
 	};
+#else
+	Emulator_SetViewPort(0, 0, windowWidth, windowHeight);
+
+	clipRectX *= 2;
+	clipRectY *= 2;
+	clipRectW *= 2;
+	clipRectH *= 2;
+
+	Vertex blit_vertices[] =
+	{
+		{ clipRectX+ clipRectW,  clipRectY + clipRectH,		0, 0,    r, t,    0, 0,		0, 0, 		0, 0 },
+		{ clipRectX, clipRectY,    							0, 0,    l, b,    0, 0,		0, 0, 		0, 0 },
+		{ clipRectX, clipRectY + clipRectH,    				0, 0,    l, t,    0, 0,		0, 0, 		0, 0 },
+
+		{ clipRectX + clipRectW, clipRectY,    				0, 0,    r, b,    0, 0,     0, 0, 		0, 0 },
+		{ clipRectX, clipRectY,    							0, 0,    l, b,    0, 0,		0, 0, 		0, 0 },
+		{ clipRectX + clipRectW,  clipRectY + clipRectH,    0, 0,    r, t,    0, 0,		0, 0, 		0, 0 },
+	};
+#endif
 
 	Emulator_UpdateVertexBuffer(blit_vertices, 6);
 }
@@ -437,14 +458,18 @@ void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number, int cr
 	
 	glBindTexture(GL_TEXTURE_2D, g_FMVTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, image_w, image_h, 0, GL_RGB, GL_UNSIGNED_BYTE, g_FMVDecodedImageBuffer);
-	
-	Emulator_SetViewPort(0, 0, windowWidth, windowHeight);
-	Emulator_SetTexture(g_FMVTexture, (TexFormat)-1);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
 	Emulator_SetShader(g_FMVShader);
+	Emulator_SetTexture(g_FMVTexture, (TexFormat)-1);
+
+	Emulator_SetScissorState(0);
+	Emulator_EnableDepth(0);
+	Emulator_SetStencilMode(0);
+	Emulator_SetBlendMode(BM_NONE);
 	
 	SetupMovieRectangle(stream_format.image_width, stream_format.image_height);
 
-	Emulator_SetBlendMode(BM_NONE);
 	Emulator_DrawTriangles(0, 2);
 
 	DisplaySubtitles(frame_number);
