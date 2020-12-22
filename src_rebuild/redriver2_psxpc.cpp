@@ -19,6 +19,7 @@
 #include "utils/ini.h"
 
 #include <SDL_scancode.h>
+#include <SDL_messagebox.h>
 
 #include "C/CUTSCENE.H"
 #include "C/GLAUNCH.H"
@@ -696,8 +697,21 @@ int main(int argc, char** argv)
 
 	Emulator_Initialise("REDRIVER2", windowWidth, windowHeight, fullScreen);
 
+	// verify installation
+	if (!FileExists("DATA\\FEFONT.BNK") || !FileExists("GFX\\FONT2.FNT"))
+	{
+		char str[320];
+		sprintf(str, "Cannot initialize REDRIVER2\n\nGame files not found by folder '%s'\n", gDataFolder);
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR!", str, NULL);
+		return -1;
+	}
+
 	// init language
-	InitStringMng();
+	if (!InitStringMng())
+	{
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR!", "Unable to load language files!\n\nSee console for details", NULL);
+		return -1;
+	}
 	
 	if (config)
 	{
@@ -712,4 +726,6 @@ int main(int argc, char** argv)
 	redriver2_main(argc, argv);
 
 	DeinitStringMng();
+
+	return 0;
 }

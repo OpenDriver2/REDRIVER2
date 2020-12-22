@@ -1,4 +1,4 @@
-#include "DR2LOCALE.H"
+#include "DRIVER2.H"
 
 #ifndef PSX
 #include <stdio.h>
@@ -24,7 +24,7 @@ char* LanguageNames[5] =
 
 #ifndef PSX
 // [D] Driver 1 PC function
-void InitStringMng()
+int InitStringMng()
 {
 	char filename[32];
 
@@ -32,10 +32,14 @@ void InitStringMng()
 		gUserLanguage = 0;
 
 	sprintf(filename, "%s_GAME.LTXT", LanguageNames[gUserLanguage]);
-	InitStringLanguage(filename, 0);
+	if(InitStringLanguage(filename, 0) == -1)
+		return 0;
 	
 	sprintf(filename, "%s_MISSION.LTXT", LanguageNames[gUserLanguage]);
-	InitStringLanguage(filename, 1);
+	if(InitStringLanguage(filename, 1) == -1)
+		return 0;
+
+	return 1;
 }
 
 void DeinitStringMng()
@@ -60,8 +64,11 @@ int InitStringLanguage(char *filename, int mission)
 	int size;
 
 	FILE* fp = fopen(filename, "rb");
-	if(!fp)
+	if (!fp)
+	{
+		printError("ERROR! Cannot open language file '%s'!\n", filename);
 		return -1;
+	}
 
 	fseek(fp, 0, SEEK_END);
 	size = ftell(fp);

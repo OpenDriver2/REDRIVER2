@@ -236,7 +236,7 @@ extern char* gMissionLangTable[MAX_LANGUAGE_TEXT];
 #define GET_GAME_TXT(st)		(((int)st < MAX_LANGUAGE_TEXT && st) ? gGameLangTable[(int)st] : st)
 #define GET_MISSION_TXT(st)		(((int)st < MAX_LANGUAGE_TEXT && st) ? gMissionLangTable[(int)st] : st)
 
-extern void InitStringMng();
+extern int InitStringMng();
 extern void DeinitStringMng();
 extern int InitStringLanguage(char* filename, int mission);
 
