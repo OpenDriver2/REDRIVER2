@@ -8,7 +8,7 @@
 void Emulator_InitHPCTimer(timerCtx_t* timer)
 {
 #ifdef _WIN32
-	QueryPerformanceFrequency(&timer->performanceFrequency);
+	QueryPerformanceCounter(&timer->clockStart);
 #else
 	gettimeofday(&timer->timeStart, NULL);
 #endif // _WIN32
@@ -20,7 +20,8 @@ double Emulator_GetHPCTime(timerCtx_t* timer, int reset)
 #ifdef _WIN32
 	LARGE_INTEGER curr;
 
-	QueryPerformanceCounter( &curr);
+	QueryPerformanceFrequency(&timer->performanceFrequency);
+	QueryPerformanceCounter(&curr);
 
 	double value = double(curr.QuadPart - timer->clockStart.QuadPart) / double(timer->performanceFrequency.QuadPart);
 
