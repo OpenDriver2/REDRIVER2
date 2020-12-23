@@ -660,13 +660,14 @@ void GameInit(void)
 		padid = -i;
 
 		if (i < NumPlayers)
+		{
+			gStartOnFoot = (plStart->type == 2);
 			padid = i;
-
-		gStartOnFoot = (plStart->type == 2);
+		}
 
 		InitPlayer(&player[i], &car_data[i], plStart->controlType, plStart->rotation, (LONGVECTOR4 *)&plStart->position, plStart->model, plStart->palette, &padid);
 
-		if (gStartOnFoot == 0)
+		if (!(plStart->type == 2))
 		{
 			car_data[i].ap.damage[0] = plStart->damage[0];
 			car_data[i].ap.damage[1] = plStart->damage[1];

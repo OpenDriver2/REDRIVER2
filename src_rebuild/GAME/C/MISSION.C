@@ -330,6 +330,7 @@ void SetupResidentModels()
 	// check if start data is required
 	if (MissionHeader->type & 1)
 	{
+		// check if start data is required
 		RestoreStartData();
 
 		if (PlayerStartInfo[0]->model > 4)
@@ -702,12 +703,6 @@ void LoadMission(int missionnum)
 	if (FileExists(filename))
 	{
 		LoadfileSeg(filename, (char*)(MissionTargets + 4), 0, 640);
-	}
-
-	// check if start data is required
-	if (MissionHeader->type & 1)
-	{
-		RestoreStartData();
 	}
 
 	PreProcessTargets();
@@ -3135,13 +3130,13 @@ void MakePhantomCarEqualPlayerCar(void)
 		Mission.PhantomCarId = player[0].playerCarId;
 }
 
-
 // [D]
 void SetCarToBeStolen(MS_TARGET *target, int player)
 {
 	if (target->car.flags & 0x800000)
 		MakePhantomCarEqualPlayerCar();
 
+	target->target_flags |= 0x10;
 	target->car.type = 1;
 	target->car.flags = 0x30;
 	target->car.maxDistance = 0;

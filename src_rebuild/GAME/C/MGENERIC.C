@@ -8,6 +8,7 @@
 #include "REPLAYS.H"
 
 #include "STRINGS.H"
+#include "SYSTEM.H"
 
 
 // [D] [T]
@@ -73,9 +74,9 @@ void RestorePlayerPosition(SAVED_PLAYER_POS *data)
 	if (gCurrentMissionNumber != 16) 
 	{
 		PlayerStartInfo[0]->position.vx = data->vx;
-		PlayerStartInfo[0]->position.vx = data->vy;
+		PlayerStartInfo[0]->position.vy = data->vy;
 		PlayerStartInfo[0]->position.vz = data->vz;
-		PlayerStartInfo[0]->rotation = data->direction;
+		PlayerStartInfo[0]->rotation = data->direction & 0xfff;
 	}
 
 	PlayerStartInfo[0]->totaldamage = data->totaldamage;
@@ -147,7 +148,7 @@ void RestoreCarPosition(SAVED_CAR_POS *data)
 
 	if (data->active & 0x80) 
 	{
-		memcpy(&ReplayStreams[numPlayersToCreate].SourceType, PlayerStartInfo[0], sizeof(STREAM_SOURCE));
+		memcpy(PlayerStartInfo[numPlayersToCreate], PlayerStartInfo[0], sizeof(STREAM_SOURCE));
 
 		PlayerStartInfo[numPlayersToCreate]->type = 3;
 
@@ -157,7 +158,7 @@ void RestoreCarPosition(SAVED_CAR_POS *data)
 		PlayerStartInfo[0]->position.vx = data->vx;
 		PlayerStartInfo[0]->position.vy = data->vy;
 		PlayerStartInfo[0]->position.vz = data->vz;
-		PlayerStartInfo[0]->rotation = data->direction;
+		PlayerStartInfo[0]->rotation = data->direction & 0xfff;
 		PlayerStartInfo[0]->totaldamage = data->totaldamage;
 		PlayerStartInfo[0]->damage[0] = data->damage[0];
 		PlayerStartInfo[0]->damage[1] = data->damage[1];
@@ -174,7 +175,7 @@ void RestoreCarPosition(SAVED_CAR_POS *data)
 		ReplayStreams[numPlayersToCreate].SourceType.position.vy = data->vy;
 		ReplayStreams[numPlayersToCreate].SourceType.position.vx = data->vx;
 		ReplayStreams[numPlayersToCreate].SourceType.position.vz = data->vz;
-		ReplayStreams[numPlayersToCreate].SourceType.rotation = data->direction;
+		ReplayStreams[numPlayersToCreate].SourceType.rotation = data->direction & 0xfff;
 		ReplayStreams[numPlayersToCreate].SourceType.totaldamage = data->totaldamage;
 		ReplayStreams[numPlayersToCreate].SourceType.damage[0] = data->damage[0];
 		ReplayStreams[numPlayersToCreate].SourceType.damage[1] = data->damage[1];
@@ -194,19 +195,21 @@ void StoreEndData(void)
 	int i;
 	SAVED_CAR_POS* carpos;
 
+	ClearMem((char*)&MissionEndData, sizeof(MissionEndData));
+	
 	if (gCurrentMissionNumber > 40)
 		return;
 
 	numStored = 0;
 	StorePlayerPosition(&MissionEndData.PlayerPos);
 
-	for(i = 0; i < 16; i++)
+	for(i = 0; i < 16 && numStored < 6; i++)
 	{
 		target = &MissionTargets[i];
 		carpos = &MissionEndData.CarPos[numStored];
 
 		if (target->type == Target_Car && 
-			(target->target_flags & 0x12))
+			(target->target_flags & 0x10))
 		{
 			StoreCarPosition(target, carpos);
 			numStored++;
