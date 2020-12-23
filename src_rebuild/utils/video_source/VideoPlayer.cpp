@@ -10,7 +10,6 @@
 #include "C/FMV_FONT.h"
 #include "STRINGS.H"
 
-#include <SDL_timer.h>
 #include <AL/al.h>
 #include <jpeglib.h>
 #include "PLATFORM.H"
