@@ -41,16 +41,20 @@ void StorePlayerPosition(SAVED_PLAYER_POS *data)
 		data->damage[3] = car_data[player[0].playerCarId].ap.damage[3];
 		data->damage[4] = car_data[player[0].playerCarId].ap.damage[4];
 		data->damage[5] = car_data[player[0].playerCarId].ap.damage[5];
-		return;
+	}
+	else
+	{
+		data->totaldamage = 0;
+	
+		data->damage[0] = 0;
+		data->damage[1] = 0;
+		data->damage[2] = 0;
+		data->damage[3] = 0;
+		data->damage[4] = 0;
+		data->damage[5] = 0;
 	}
 
-	data->totaldamage = 0;
-	data->damage[0] = 0;
-	data->damage[1] = 0;
-	data->damage[2] = 0;
-	data->damage[3] = 0;
-	data->damage[4] = 0;
-	data->damage[5] = 0;
+
 }
 
 
@@ -119,16 +123,19 @@ void StoreCarPosition(MS_TARGET *target, SAVED_CAR_POS *data)
 
 	data->direction = car_data[slot].hd.direction;
 
+	data->active = 1;
+	
 	if (target->target_flags & 0x40)
-		data->active = -127;
-	else
-		data->active = 1;
+		data->active |= 0x80;
 }
 
 
 // [D] [T]
 void RestoreCarPosition(SAVED_CAR_POS *data)
 {
+	if(!data->active)
+		return;
+	
 	ReplayStreams[numPlayersToCreate].InitialPadRecordBuffer = (PADRECORD*)ReplayStart;
 	ReplayStreams[numPlayersToCreate].PadRecordBuffer = (PADRECORD*)ReplayStart;
 	ReplayStreams[numPlayersToCreate].PadRecordBufferEnd = (PADRECORD*)ReplayStart;
@@ -138,24 +145,7 @@ void RestoreCarPosition(SAVED_CAR_POS *data)
 
 	PlayerStartInfo[numPlayersToCreate] = &ReplayStreams[numPlayersToCreate].SourceType;
 
-	if ((data->active & 0x80U) == 0) 
-	{
-		ReplayStreams[numPlayersToCreate].SourceType.type = 1;
-		ReplayStreams[numPlayersToCreate].SourceType.model = data->model;
-		ReplayStreams[numPlayersToCreate].SourceType.palette = data->palette;
-		ReplayStreams[numPlayersToCreate].SourceType.position.vy = data->vy;
-		ReplayStreams[numPlayersToCreate].SourceType.position.vx = data->vx;
-		ReplayStreams[numPlayersToCreate].SourceType.position.vz = data->vz;
-		ReplayStreams[numPlayersToCreate].SourceType.rotation = data->direction;
-		ReplayStreams[numPlayersToCreate].SourceType.totaldamage = data->totaldamage;
-		ReplayStreams[numPlayersToCreate].SourceType.damage[0] = data->damage[0];
-		ReplayStreams[numPlayersToCreate].SourceType.damage[1] = data->damage[1];
-		ReplayStreams[numPlayersToCreate].SourceType.damage[2] = data->damage[2];
-		ReplayStreams[numPlayersToCreate].SourceType.damage[3] = data->damage[3];
-		ReplayStreams[numPlayersToCreate].SourceType.damage[4] = data->damage[4];
-		ReplayStreams[numPlayersToCreate].SourceType.damage[5] = data->damage[5];
-	}
-	else 
+	if (data->active & 0x80) 
 	{
 		memcpy(&ReplayStreams[numPlayersToCreate].SourceType, PlayerStartInfo[0], sizeof(STREAM_SOURCE));
 
@@ -176,34 +166,51 @@ void RestoreCarPosition(SAVED_CAR_POS *data)
 		PlayerStartInfo[0]->damage[4] = data->damage[4];
 		PlayerStartInfo[0]->damage[5] = data->damage[5];
 	}
+	else 
+	{
+		ReplayStreams[numPlayersToCreate].SourceType.type = 1;
+		ReplayStreams[numPlayersToCreate].SourceType.model = data->model;
+		ReplayStreams[numPlayersToCreate].SourceType.palette = data->palette;
+		ReplayStreams[numPlayersToCreate].SourceType.position.vy = data->vy;
+		ReplayStreams[numPlayersToCreate].SourceType.position.vx = data->vx;
+		ReplayStreams[numPlayersToCreate].SourceType.position.vz = data->vz;
+		ReplayStreams[numPlayersToCreate].SourceType.rotation = data->direction;
+		ReplayStreams[numPlayersToCreate].SourceType.totaldamage = data->totaldamage;
+		ReplayStreams[numPlayersToCreate].SourceType.damage[0] = data->damage[0];
+		ReplayStreams[numPlayersToCreate].SourceType.damage[1] = data->damage[1];
+		ReplayStreams[numPlayersToCreate].SourceType.damage[2] = data->damage[2];
+		ReplayStreams[numPlayersToCreate].SourceType.damage[3] = data->damage[3];
+		ReplayStreams[numPlayersToCreate].SourceType.damage[4] = data->damage[4];
+		ReplayStreams[numPlayersToCreate].SourceType.damage[5] = data->damage[5];
+	}
 	numPlayersToCreate++;
 }
 
 // [D] [T]
 void StoreEndData(void)
 {
+	int numStored;
 	MS_TARGET* target;
 	int i;
 	SAVED_CAR_POS* carpos;
 
-	if (gCurrentMissionNumber < 40)
+	if (gCurrentMissionNumber > 40)
+		return;
+
+	numStored = 0;
+	StorePlayerPosition(&MissionEndData.PlayerPos);
+
+	for(i = 0; i < 16; i++)
 	{
-		StorePlayerPosition(&MissionEndData.PlayerPos);
+		target = &MissionTargets[i];
+		carpos = &MissionEndData.CarPos[numStored];
 
-		i = 15;
-
-		target = MissionTargets;
-		carpos = MissionEndData.CarPos;
-
-		do {
-			if (target->type == Target_Car && (target->target_flags & 0x10))
-			{
-				StoreCarPosition(target, carpos);
-				carpos++;
-			}
-			i--;
-			target++;
-		} while (-1 < i);
+		if (target->type == Target_Car && 
+			(target->target_flags & 0x12))
+		{
+			StoreCarPosition(target, carpos);
+			numStored++;
+		}
 	}
 }
 
@@ -213,18 +220,13 @@ void RestoreStartData(void)
 	SAVED_CAR_POS* data;
 	int i;
 
-	if (gHaveStoredData != 0)
+	if (!gHaveStoredData)
+		return;
+
+	RestorePlayerPosition(&MissionStartData.PlayerPos);
+
+	for (i = 0; i < 6; i++)
 	{
-		RestorePlayerPosition(&MissionStartData.PlayerPos);
-
-		data = MissionStartData.CarPos;
-		i = 5;
-		do {
-			if (data->active != 0)
-				RestoreCarPosition(data);
-
-			i--;
-			data++;
-		} while (-1 < i);
+		RestoreCarPosition(&MissionStartData.CarPos[i]);
 	}
 }
