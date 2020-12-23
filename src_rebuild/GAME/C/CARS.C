@@ -1477,7 +1477,7 @@ void DrawCar(CAR_DATA* cp, int view)
 	else if (cp->controlType == CONTROL_TYPE_CIV_AI)
 		CivCarFX(cp);
 
-	if (gLightsOn != 0 && lightsOnDelay[cp->id] == 0)
+	if (gLightsOn && lightsOnDelay[cp->id] == 0)
 	{
 		if (cp->controlType == CONTROL_TYPE_CIV_AI)
 		{
@@ -1488,26 +1488,16 @@ void DrawCar(CAR_DATA* cp, int view)
 			AddNightLights(cp);
 	}
 
-	if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
+	if(CarHasSiren(cp->ap.model))
 	{
-		if (MissionHeader->residentModels[3] == 0)
+		if ((IS_ROADBLOCK_CAR(cp) || cp->controlType == CONTROL_TYPE_PURSUER_AI) ||		// any regular cop car including roadblock
+			gInGameCutsceneActive && cp->controlType == CONTROL_TYPE_CUTSCENE && force_siren[CAR_INDEX(cp)] != 0 ||		// any car with siren in cutscene
+			gCurrentMissionNumber == 26 && cp->controlType == CONTROL_TYPE_CUTSCENE && cp->ap.model == 4)				// Vegas ambulance
 		{
 			if (cp->ai.p.dying < 75)
 				AddCopCarLight(cp);
-
-			return;
 		}
 	}
-
-	// optimzed check for hndType, controlType, controlFlags
-	if (!IS_ROADBLOCK_CAR(cp) && (gInGameCutsceneActive == 0 || cp->controlType != CONTROL_TYPE_CUTSCENE || force_siren[CAR_INDEX(cp)] == 0))
-	{
-		if (gCurrentMissionNumber != 26 || cp->ap.model != 4 || cp->controlType != CONTROL_TYPE_CUTSCENE)
-			return;
-	}
-
-	if (cp->ai.p.dying < 75)
-		AddCopCarLight(cp);
 }
 
 // [D] [T]
