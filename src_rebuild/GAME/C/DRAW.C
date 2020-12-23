@@ -292,7 +292,16 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 
 		count--;
 
-		if (wetness == 0 && gTimeOfDay != 3 && (pco->value & 0x20) == 0 && z < 7000 && numShadows < 40)
+#ifdef PSX
+#define MAX_TREE_SHADOW_DISTANCE 7000
+#else
+#define MAX_TREE_SHADOW_DISTANCE 14000
+#endif
+		
+		if (wetness == 0 && gTimeOfDay != 3 &&
+			(pco->value & 0x20) == 0 && 
+			z < MAX_TREE_SHADOW_DISTANCE &&
+			numShadows < 40)
 		{
 			gte_SetRotMatrix(&shadowMatrix);
 
