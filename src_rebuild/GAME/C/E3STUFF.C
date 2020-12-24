@@ -242,6 +242,8 @@ void ShowBonusGallery()
 
 	SetupDefDrawEnv(&draw, 0, 0, 640, 512);
 	SetupDefDispEnv(&disp, 0, 0, 640, 512);
+	draw.dfe = 1;
+
 	VSync(0);
 	PutDispEnv(&disp);
 	PutDrawEnv(&draw);
