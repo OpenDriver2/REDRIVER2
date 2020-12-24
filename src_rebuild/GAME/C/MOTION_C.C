@@ -612,7 +612,7 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	prims->y3 = v2[1] - FIXEDH(sn) - dy1;
 
 #ifdef USE_PGXP
-	if (!bDoingShadow)
+	if (!bDoingShadow) // [A] Psy-X is currently incorrectly offsets the offscreen PGXP geometry. We don't need it anyway.
 	{
 		PGXPVData vdata1, vdata2;
 		PGXP_GetCacheData(vdata1, PGXP_LOOKUP_VALUE(v1[0], v1[1]), 0);
@@ -773,11 +773,11 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 
 	if (bDoingShadow)
 	{
-		prims->r0 = 255;
-		prims->g0 = 255;
-		prims->b0 = 255;
+		prims->r0 = 254;
+		prims->g0 = 254;
+		prims->b0 = 254;
 	}
-	else if (gNight == 1)
+	else if (gNight)
 	{
 		prims->r0 = 64;
 		prims->g0 = 64;
@@ -1731,9 +1731,9 @@ void InitTannerShadow(void)
 	int i;
 
 	if (gTimeOfDay == 3)
-		brightness = 10;
+		brightness = 12;
 	else
-		brightness = 15;
+		brightness = 32;
 
 	poly = ft4TannerShadow;
 	tile = tileTannerClear;
@@ -1745,12 +1745,23 @@ void InitTannerShadow(void)
 
 	for (i = 0; i < 2; i++)
 	{
-		poly->u0 = poly->u2 = tannerShadow_texture.coords.u0 + 63;
-		poly->v0 = poly->v1 = tannerShadow_texture.coords.v0 + 32;
-		poly->u1 = poly->u3 = tannerShadow_texture.coords.u0;
-		poly->v2 = poly->v3 = tannerShadow_texture.coords.v0 + 127;
+		int offs = 0;
+		if(GameLevel == 2) // [A] bug fix for vegas
+			offs = 18;
 		
-		poly->tpage = getTPage(2, 2, rectTannerWindow.x, rectTannerWindow.y);
+		poly->u0 = tannerShadow_texture.coords.u1 / 4;
+		poly->v0 = tannerShadow_texture.coords.v1 + offs;
+		
+		poly->u1 = tannerShadow_texture.coords.u0 / 4;
+		poly->v1 = tannerShadow_texture.coords.v0 + offs;
+		
+		poly->u2 = tannerShadow_texture.coords.u3 / 4;
+		poly->v2 = tannerShadow_texture.coords.v3 + offs - 18;
+
+		poly->u3 = tannerShadow_texture.coords.u2 / 4;
+		poly->v3 = tannerShadow_texture.coords.v2 + offs - 18;
+
+		poly->tpage = getTPage(2, 0, rectTannerWindow.x, rectTannerWindow.y);
 
 		setPolyFT4(poly);
 		setSemiTrans(poly, 1);
@@ -1911,7 +1922,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 	SetBasePos(&myVector);
 	old_tr = tracking_car;
 
-	gte_SetGeomOffset(32, 82);
+	gte_SetGeomOffset(32, 64);
 
 	tracking_car = 1;
 	PlaceCameraAtLocation(&player[0], 0);
