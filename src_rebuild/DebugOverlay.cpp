@@ -78,7 +78,7 @@ void DrawDebugOverlays()
 	gDebug_numLines = 0;
 
 	DR_TPAGE* tp = (DR_TPAGE*)current->primptr;
-	setDrawTPage(tp, 0, 0, 0);
+	setDrawTPage(tp, 1, 1, 0);
 	addPrim(current->ot + 2, tp);
 	current->primptr += sizeof(DR_TPAGE);
 

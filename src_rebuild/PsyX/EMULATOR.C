@@ -1444,13 +1444,19 @@ void Emulator_Perspective3D(const float fov, const float width, const float heig
 #endif
 }
 
-void Emulator_SetupClipMode(const RECT16& rect)
+void Emulator_SetupClipMode(const RECT16& rect, int enable)
 {
 	// [A] isinterlaced dirty hack for widescreen
-	bool enabled = activeDispEnv.isinter || (rect.x - activeDispEnv.disp.x > 0 ||
+	bool scissorOn = enable && (activeDispEnv.isinter ||
+		(rect.x - activeDispEnv.disp.x > 0 ||
 		rect.y - activeDispEnv.disp.y > 0 ||
 		rect.w < activeDispEnv.disp.w - 1 ||
-		rect.h < activeDispEnv.disp.h - 1);
+		rect.h < activeDispEnv.disp.h - 1));
+
+	Emulator_SetScissorState(scissorOn);
+
+	if (!scissorOn)
+		return;
 	
 	float psxScreenW = activeDispEnv.disp.w;
 	float psxScreenH = activeDispEnv.disp.h;
@@ -1462,7 +1468,6 @@ void Emulator_SetupClipMode(const RECT16& rect)
 	float clipRectH = (float)(rect.h) / psxScreenH;
 
 	// then map to screen
-
 	{
 		clipRectX -= 0.5f;
 #ifdef USE_PGXP
@@ -1476,11 +1481,6 @@ void Emulator_SetupClipMode(const RECT16& rect)
 
 		clipRectX += 0.5f;
 	}
-
-	Emulator_SetScissorState(enabled);
-
-	if(!enabled)
-		return;
 
 #if defined(RENDERER_OGL) || defined(OGLES)	
 	float flipOffset = g_windowHeight - clipRectH * (float)g_windowHeight;

@@ -645,6 +645,7 @@ typedef struct {
 	u_short tpage;		/* texture page */
 	u_char	dtd;		/* dither flag (0:off, 1:on) */
 	u_char	dfe;		/* flag to draw on display area (0:off 1:on) */
+	u_char	drt;		
 	u_char	isbg;		/* enable to auto-clear */
 	u_char	r0, g0, b0;	/* initital background color */
 	DR_ENV	dr_env;		/* reserved */

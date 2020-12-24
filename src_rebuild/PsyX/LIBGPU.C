@@ -23,12 +23,14 @@ int g_GPUDisabledState = 0;
 
 struct VertexBufferSplit
 {
-	TextureID      textureId;
-	unsigned short vIndex;
-	unsigned short vCount;
-	BlendMode      blendMode;
-	TexFormat      texFormat;
-	RECT16         clipRect;
+	RECT16			clipRect;
+	BlendMode		blendMode;
+	TexFormat		texFormat;
+	TextureID		textureId;
+	int				flags;
+	u_short			startVertex;
+	u_short			numVerts;
+	
 };
 
 //#define DEBUG_POLY_COUNT
@@ -351,14 +353,10 @@ DRAWENV* SetDefDrawEnv(DRAWENV* env, int x, int y, int w, int h)//(F)
 	env->b0 = 0;
 	env->dtd = 1;
 
-	if (GetVideoMode() == 0)
-	{
-		env->dfe = h < 0x121 ? 1 : 0;
-	}
+	if (GetVideoMode() == MODE_NTSC)
+		env->dfe = h < 289 ? 1 : 0;
 	else
-	{
-		env->dfe = h < 0x101 ? 1 : 0;
-	}
+		env->dfe = h < 257 ? 1 : 0;
 
 	env->ofs[0] = x;
 	env->ofs[1] = y;
@@ -436,20 +434,24 @@ void AddSplit(bool semiTrans, int page, TextureID textureId)
 	BlendMode blendMode = semiTrans ? GET_TPAGE_BLEND(page) : BM_NONE;
 	TexFormat texFormat = GET_TPAGE_FORMAT(page);
 
+	int flags = (activeDrawEnv.dfe << 0);
+
 	RECT16& clipRect = activeDrawEnv.clip;
 
+	// FIXME: compare drawing environment too?
 	if (curSplit.blendMode == blendMode &&
 		curSplit.texFormat == texFormat && 
 		curSplit.textureId == textureId &&
 		curSplit.clipRect.x == clipRect.x &&
 		curSplit.clipRect.y == clipRect.y &&
 		curSplit.clipRect.w == clipRect.w &&
-		curSplit.clipRect.h == clipRect.h)
+		curSplit.clipRect.h == clipRect.h &&
+		curSplit.flags != flags)
 	{
 		return;
 	}
 
-	curSplit.vCount = g_vertexIndex - curSplit.vIndex;
+	curSplit.numVerts = g_vertexIndex - curSplit.startVertex;
 
 	VertexBufferSplit& split = g_splits[++g_splitIndex];
 	
@@ -460,9 +462,10 @@ void AddSplit(bool semiTrans, int page, TextureID textureId)
 	split.clipRect.y = clipRect.y;
 	split.clipRect.w = clipRect.w;
 	split.clipRect.h = clipRect.h;
+	split.flags = flags;
 
-	split.vIndex = g_vertexIndex;
-	split.vCount = 0;
+	split.startVertex = g_vertexIndex;
+	split.numVerts = 0;
 }
 
 void TriangulateQuad()
@@ -488,10 +491,10 @@ void TriangulateQuad()
 
 void DrawSplit(const VertexBufferSplit& split)
 {
-	Emulator_SetupClipMode(split.clipRect);
+	Emulator_SetupClipMode(split.clipRect, (split.flags & 0x1));
 	Emulator_SetTexture(split.textureId, split.texFormat);
 	Emulator_SetBlendMode(split.blendMode);
-	Emulator_DrawTriangles(split.vIndex, split.vCount / 3);
+	Emulator_DrawTriangles(split.startVertex, split.numVerts / 3);
 }
 
 //
@@ -555,7 +558,7 @@ void AggregatePTAGsToSplits(u_long* p, bool singlePrimitive)
 	
 		// single primitive
 		ParsePrimitive((uintptr_t)p);
-		g_splits[g_splitIndex].vCount = g_vertexIndex - g_splits[g_splitIndex].vIndex;
+		g_splits[g_splitIndex].numVerts = g_vertexIndex - g_splits[g_splitIndex].startVertex;
 	}
 	else
 	{
@@ -1232,6 +1235,8 @@ int ParsePrimitive(uintptr_t primPtr)
 						activeDrawEnv.tpage = (code & 0x1FF);
 						activeDrawEnv.dtd = (code >> 9) & 1;
 						activeDrawEnv.dfe = (code >> 10) & 1;
+						if(!activeDrawEnv.dfe)
+							printf("drEnv.dfe is off\n");
 						break;
 					}
 					case 0xE2:
@@ -1250,36 +1255,17 @@ int ParsePrimitive(uintptr_t primPtr)
 					}
 					case 0xE4:
 					{
-						RECT16 emuScreen;
 						activeDrawEnv.clip.w = code & 1023;
 						activeDrawEnv.clip.h = (code >> 10) & 1023;
 
 						activeDrawEnv.clip.w -= activeDrawEnv.clip.x;
 						activeDrawEnv.clip.h -= activeDrawEnv.clip.y;
-
-#if 0
-						Emulator_GetPSXWidescreenMappedViewport(&emuScreen);
-						
-						// if new clip rectangle is outside the screen frame - we gonna render to FBO now
-						// [A] isinterlaced dirty hack for widescreen
-						int insideScreen = (activeDrawEnv.clip.x - activeDispEnv.disp.y >= emuScreen.x && activeDrawEnv.clip.x + activeDrawEnv.clip.w <= emuScreen.w,
-											activeDrawEnv.clip.y - activeDispEnv.disp.y >= emuScreen.y && activeDrawEnv.clip.y + activeDrawEnv.clip.h <= emuScreen.h);
-						
-						if(insideScreen)
-						{
-							// switch back to main backbuffer
-						}
-						else
-						{
-							eprintf("outside screen\n");
-						}
-#endif
 						break;
 					}
 					case 0xE5:
 					{
-						activeDrawEnv.ofs[0] = code & 2047;//sign_x_to_s32(11, (*cb & 2047));
-						activeDrawEnv.ofs[1] = (code >> 11) & 2047; //sign_x_to_s32(11, ((*cb >> 11) & 2047));
+						activeDrawEnv.ofs[0] = code & 2047;
+						activeDrawEnv.ofs[1] = (code >> 11) & 2047;
 
 						break;
 					}
@@ -1302,11 +1288,7 @@ int ParsePrimitive(uintptr_t primPtr)
 		}
 	}
 
-#ifdef USE_EXTENDED_PRIM_POINTERS
-	return (pTag->len + 2) * sizeof(long);
-#else
-	return (pTag->len + 1) * sizeof(long);
-#endif
+	return (pTag->len + P_LEN) * sizeof(long);
 }
 
 int ParseLinkedPrimitiveList(uintptr_t packetStart, uintptr_t packetEnd)
@@ -1325,7 +1307,7 @@ int ParseLinkedPrimitiveList(uintptr_t packetStart, uintptr_t packetEnd)
 		currentAddress += lastSize;
 	}
 
-	g_splits[g_splitIndex].vCount = g_vertexIndex - g_splits[g_splitIndex].vIndex;
+	g_splits[g_splitIndex].numVerts = g_vertexIndex - g_splits[g_splitIndex].startVertex;
 
 	return lastSize;
 }

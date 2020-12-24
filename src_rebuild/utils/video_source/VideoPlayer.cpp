@@ -688,7 +688,7 @@ int FMV_main(RENDER_ARGS* args)
 	PutDrawEnv(&draw);
 	PutDispEnv(&disp);
 
-	Emulator_SetupClipMode(draw.clip);
+	Emulator_SetupClipMode(draw.clip, draw.dfe);
 
 	for (int i = 0; i < args->nRenders; i++)
 	{

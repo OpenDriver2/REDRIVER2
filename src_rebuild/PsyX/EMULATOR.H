@@ -217,7 +217,7 @@ extern void Emulator_DestroyTexture(TextureID texture);
 extern void Emulator_Clear(int x, int y, int w, int h, unsigned char r, unsigned char g, unsigned char b);
 extern void Emulator_SetViewPort(int x, int y, int width, int height);
 extern void Emulator_SetTexture(TextureID texture, TexFormat texFormat);
-extern void Emulator_SetupClipMode(const RECT16& rect);
+extern void Emulator_SetupClipMode(const RECT16& rect, int enable);
 extern void Emulator_SetWireframe(bool enable);
 extern void Emulator_UpdateVertexBuffer(const Vertex* vertices, int count);
 extern void Emulator_DrawTriangles(int start_vertex, int triangles);
