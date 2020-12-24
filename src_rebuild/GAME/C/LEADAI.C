@@ -514,7 +514,7 @@ u_int LeadPadResponse(CAR_DATA* cp)
 
 #ifdef COLLISION_DEBUG
 	extern int gShowCollisionDebug;
-	//if (gShowCollisionDebug == 3)
+	if (gShowCollisionDebug == 3)
 	{
 		extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
 		extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);

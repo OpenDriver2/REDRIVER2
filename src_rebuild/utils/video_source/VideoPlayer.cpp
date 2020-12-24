@@ -331,7 +331,7 @@ void InitSubtitles(const char* filename)
 	{
 		fread(&g_NumSubtitles, sizeof(int), 1, subFile);
 
-		fread(g_Subtitles, sizeof(g_Subtitles), g_NumSubtitles, subFile);
+		fread(g_Subtitles, sizeof(SUBTITLE), g_NumSubtitles, subFile);
 
 		fclose(subFile);
 	}

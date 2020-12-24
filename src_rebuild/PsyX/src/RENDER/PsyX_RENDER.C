@@ -191,7 +191,9 @@ int GR_InitialiseRender(char* windowName, int width, int height, int fullscreen)
 	g_windowWidth = width;
 	g_windowHeight = height;
 
-#if !defined(RO_DOUBLE_BUFFERED)
+#if defined(RO_DOUBLE_BUFFERED)
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+#else
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
 #endif
 
@@ -1268,15 +1270,13 @@ void GR_UpdateVRAM()
 
 void GR_SwapWindow()
 {
-#if defined(RO_DOUBLE_BUFFERED)
 #if defined(RENDERER_OGL)
 	SDL_GL_SwapWindow(g_window);
 #elif defined(OGLES)
 	eglSwapBuffers(eglDisplay, eglSurface);
 #endif
-#else
-	glFinish();
-#endif
+
+	//glFinish();
 }
 
 void GR_EnableDepth(int enable)

@@ -138,7 +138,7 @@ void LoadCurrentProfile()
 	else
 	{
 		ShowSavingWaitMessage(G_LTXT(GTXT_NoSavedData), 0);
-		error = 0;
+		return;
 	}
 
 	if (error)

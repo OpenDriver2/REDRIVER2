@@ -19,7 +19,7 @@
 // denting
 #define MAX_DAMAGE_ZONE_VERTS	50
 #define MAX_DAMAGE_ZONE_POLYS	70
-#define MAX_DAMAGE_LEVELS		255
+#define MAX_DAMAGE_LEVELS		256
 
 #ifndef PSX
 #define MAX_DENTING_VERTS		256
