@@ -126,8 +126,8 @@ void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
 
 	MVERTEX subdiVerts[5][5];
 
-	plotContext.colour = 0x2e000000;
-	plotContext.flags = 0x2;
+	plotContext.colour = 0x2E000000;
+	plotContext.flags = PLOT_INV_CULL;
 	plotContext.clut = texture_cluts[src->texture_set][src->texture_id] << 0x10;
 	plotContext.tpage = texture_pages[src->texture_set] << 0x10;
 

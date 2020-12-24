@@ -81,18 +81,6 @@
 #define CTR_CLOCK_SYS_ONE (0)
 #define CTR_CLOCK_SYS_ONE_EIGHTH (1)
 
-#define GET_TPAGE_X(tpage)      (((tpage << 6) & 0x7C0) % (VRAM_WIDTH))
-#define GET_TPAGE_Y(tpage)      (((((tpage << 4) & 0x100) + ((tpage >> 2) & 0x200))) % (VRAM_HEIGHT))
-#define GET_TPAGE_FORMAT(tpage) ((TexFormat)((tpage >> 7) & 0x3))
-#define GET_TPAGE_BLEND(tpage)  ((BlendMode)(((page >> 5) & 3) + 1))
-
-// TODO
-#define GET_TPAGE_DITHER(tpage) 1
-//#define GET_TPAGE_DITHER(tpage) 1((tpage >> 9) & 0x1)
-
-#define GET_CLUT_X(clut)        ((clut & 0x3F) << 4)
-#define GET_CLUT_Y(clut)        (clut >> 6)
-
 typedef struct
 {
 	unsigned int i_cycle;
@@ -195,6 +183,11 @@ extern void Emulator_SetPolygonOffset(float ofs);
 extern void Emulator_SetStencilMode(int drawPrim);
 extern void Emulator_EnableDepth(int enable);
 extern void Emulator_SetScissorState(int enable);
+extern void Emulator_SetOffscreenState(const RECT16& offscreenRect, int enable);
+extern void Emulator_SetupClipMode(const RECT16& clipRect, int enable);
+extern void Emulator_SetViewPort(int x, int y, int width, int height);
+extern void Emulator_SetTexture(TextureID texture, TexFormat texFormat);
+extern void Emulator_SetWireframe(bool enable);
 
 extern void Emulator_LineSwapSourceVerts(VERTTYPE* &p0, VERTTYPE* &p1, unsigned char* &c0, unsigned char* &c1);
 extern void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, ushort gteidx);
@@ -215,10 +208,6 @@ extern void Emulator_GenerateColourArrayQuad(struct Vertex* vertex, unsigned cha
 
 extern void Emulator_DestroyTexture(TextureID texture);
 extern void Emulator_Clear(int x, int y, int w, int h, unsigned char r, unsigned char g, unsigned char b);
-extern void Emulator_SetViewPort(int x, int y, int width, int height);
-extern void Emulator_SetTexture(TextureID texture, TexFormat texFormat);
-extern void Emulator_SetupClipMode(const RECT16& rect, int enable);
-extern void Emulator_SetWireframe(bool enable);
 extern void Emulator_UpdateVertexBuffer(const Vertex* vertices, int count);
 extern void Emulator_DrawTriangles(int start_vertex, int triangles);
 

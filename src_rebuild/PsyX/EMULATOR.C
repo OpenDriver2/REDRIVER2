@@ -37,12 +37,15 @@ int g_PreviousBlendMode = BM_NONE;
 int g_PreviousDepthMode = 0;
 int g_PreviousStencilMode = 0;
 int g_PreviousScissorState = 0;
+int g_PreviousOffscreenState = 0;
 RECT16 g_PreviousFramebuffer = {0,0,0,0};
+RECT16 g_PreviousOffscreen = { 0,0,0,0 };
 
 ShaderID g_PreviousShader = -1;
 
 TextureID g_vramTexture;
 TextureID g_fbTexture;
+TextureID g_offscreenRTTexture;
 
 TextureID g_whiteTexture;
 TextureID g_lastBoundTexture;
@@ -66,7 +69,8 @@ int g_bilinearFiltering = 0;
 GLuint g_glVertexArray;
 GLuint g_glVertexBuffer;
 
-GLuint g_glFramebuffer;
+GLuint g_glBlitFramebuffer;
+GLuint g_glOffscreenFramebuffer;
 #endif
 
 KeyboardMapping g_keyboard_mapping;
@@ -939,7 +943,6 @@ void Emulator_GenerateColourArrayQuad(struct Vertex* vertex, unsigned char* col0
 ShaderID g_gte_shader_4;
 ShaderID g_gte_shader_8;
 ShaderID g_gte_shader_16;
-ShaderID g_blit_shader;
 
 #if defined(OGLES) || defined(RENDERER_OGL)
 GLint u_Projection;
@@ -1130,24 +1133,6 @@ const char* gte_shader_16 =
 	GPU_FRAGMENT_SAMPLE_SHADER(16)
 	"#endif\n";
 
-const char* blit_shader =
-	"varying vec4 v_texcoord;\n"
-	"#ifdef VERTEX\n"
-	"	attribute vec4 a_position;\n"
-	"	attribute vec4 a_texcoord;\n"
-	"	void main() {\n"
-	"		v_texcoord = a_texcoord * vec4(8.0 / 1024.0, 8.0 / 512.0, 0.0, 0.0);\n"
-	"		gl_Position = vec4(a_position.xy, 0.0, 1.0);\n"
-	"	}\n"
-	"#else\n"
-	GPU_FETCH_VRAM_FUNC
-	"	void main() {\n"
-	"		vec2 color_rg = VRAM(v_texcoord.xy);\n"
-	GPU_PACK_RG
-	GPU_DECODE_RG
-	"	}\n"
-	"#endif\n";
-
 void Shader_CheckShaderStatus(GLuint shader)
 {
     char info[1024];
@@ -1277,7 +1262,6 @@ void Emulator_CreateGlobalShaders()
 	g_gte_shader_4  = Shader_Compile(gte_shader_4);
 	g_gte_shader_8  = Shader_Compile(gte_shader_8);
 	g_gte_shader_16 = Shader_Compile(gte_shader_16);
-	g_blit_shader   = Shader_Compile(blit_shader);
 
 #if defined(RENDERER_OGL) || defined(OGLES)
 	u_Projection = glGetUniformLocation(g_gte_shader_4, "Projection");
@@ -1330,14 +1314,44 @@ int Emulator_Initialise()
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 		
-		glGenFramebuffers(1, &g_glFramebuffer);
-		glBindFramebuffer(GL_FRAMEBUFFER, g_glFramebuffer);
+		glGenFramebuffers(1, &g_glBlitFramebuffer);
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, g_glBlitFramebuffer);
 
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, g_fbTexture, 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, g_fbTexture, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
 
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		}
+	}
+
+	// gen offscreen RT
+	{
+		// offscreen texture render target
+		glGenTextures(1, &g_offscreenRTTexture);
+		{
+			glBindTexture(GL_TEXTURE_2D, g_offscreenRTTexture);
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+			// default to VRAM size
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, VRAM_WIDTH, VRAM_HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
+
+		glGenFramebuffers(1, &g_glOffscreenFramebuffer);
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, g_glOffscreenFramebuffer);
+
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, g_offscreenRTTexture, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		}
 	}
 
 	// gen VRAM textures.
@@ -1529,14 +1543,6 @@ void Emulator_SetShader(const ShaderID &shader)
 
 		g_PreviousShader = shader;
 	}
-
-#ifdef USE_PGXP
-	float emuScreenAspect = float(g_windowWidth) / float(g_windowHeight);
-	Emulator_Ortho2D(-0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f, -0.5f, -1.0f, 1.0f);
-	Emulator_Perspective3D(0.9265f, 1.0f, 1.0f / (emuScreenAspect * PSX_SCREEN_ASPECT), 1.0f, 1000.0f);
-#else
-	Emulator_Ortho2D(0, activeDispEnv.disp.w, activeDispEnv.disp.h, 0, -1.0f, 1.0f);
-#endif
 }
 
 void Emulator_SetTexture(TextureID texture, TexFormat texFormat)
@@ -1601,7 +1607,7 @@ void Emulator_SaveVRAM(const char* outputFileName, int x, int y, int width, int 
 #if defined(RENDERER_OGL) || defined(OGLES)
 	
 	#define FLIP_Y (VRAM_HEIGHT - i - 1)
-	
+
 #endif
 
 	FILE* fp = fopen(outputFileName, "wb");
@@ -1634,6 +1640,45 @@ void Emulator_SaveVRAM(const char* outputFileName, int x, int y, int width, int 
 bool vram_need_update = true;
 bool framebuffer_need_update = false;
 
+void Emulator_CopyRGBAFramebufferToVRAM(u_int* src, int x, int y, int w, int h, int update_vram, int flip_y)
+{
+	ushort* fb = (ushort*)malloc(w * h * sizeof(ushort));
+	uint* data_src = (uint*)src;
+	ushort* data_dst = (ushort*)fb;
+
+	for (int i = 0; i < h; i++)
+	{
+		for (int j = 0; j < w; j++)
+		{
+			uint c = *data_src++;
+
+			u_char b = ((c >> 3) & 0x1F);
+			u_char g = ((c >> 11) & 0x1F);
+			u_char r = ((c >> 19) & 0x1F);
+
+			*data_dst++ = r | (g << 5) | (b << 10) | 0x8000;
+		}
+	}
+
+	ushort* ptr = (ushort*)vram + VRAM_WIDTH * y + x;
+
+	for (int fy = 0; fy < h; fy++)
+	{
+		int py = flip_y ? (h - fy - 1) : fy;
+		ushort* fb_ptr = fb + (h * py / h) * w;
+
+		for (int fx = 0; fx < w; fx++)
+			ptr[fx] = fb_ptr[w * fx / w];
+
+		ptr += VRAM_WIDTH;
+	}
+
+	free(fb);
+
+	if (update_vram)
+		vram_need_update = true;
+}
+
 void Emulator_ReadFramebufferDataToVRAM()
 {
 	int x, y, w, h;
@@ -1649,7 +1694,6 @@ void Emulator_ReadFramebufferDataToVRAM()
 	
 	// now we can read it back to VRAM texture
 	{
-		ushort* fb = (ushort*)malloc(w * h * sizeof(ushort));
 		uint* data = (uint*)malloc(w * h * sizeof(uint));
 
 #if defined(RENDERER_OGL) || defined(OGLES)
@@ -1659,40 +1703,10 @@ void Emulator_ReadFramebufferDataToVRAM()
 		glBindTexture(GL_TEXTURE_2D, 0);
 #endif
 
-		uint* data_src = (uint*)data;
-		ushort* data_dst = (ushort*)fb;
-
-		for (int i = 0; i < h; i++)
-		{
-			for (int j = 0; j < w; j++)
-			{
-				uint c = *data_src++;
-				
-				u_char b = ((c >> 3) & 0x1F);
-				u_char g = ((c >> 11) & 0x1F);
-				u_char r = ((c >> 19) & 0x1F);
-
-				*data_dst++ = r | (g << 5) | (b << 10) | 0x8000;
-			}
-		}
-
-		ushort* ptr = (ushort*)vram + VRAM_WIDTH * y + x;
-
-		for (int fy = 0; fy < h; fy++)
-		{
-			ushort* fb_ptr = fb + (h * fy / h) * w;
-
-			for (int fx = 0; fx < w; fx++)
-				ptr[fx] = fb_ptr[w * fx / w];
-
-			ptr += VRAM_WIDTH;
-		}
-
-		free(fb);
+		Emulator_CopyRGBAFramebufferToVRAM(data, x, y, w, h, 0, 0);
+		
 		free(data);
 	}
-
-	// vram_need_update = true;
 }
 
 void Emulator_SetScissorState(int enable)
@@ -1709,6 +1723,88 @@ void Emulator_SetScissorState(int enable)
 	g_PreviousScissorState = enable;
 }
 
+void Emulator_SetOffscreenState(const RECT16& offscreenRect, int enable)
+{
+	if(enable)
+	{
+		// setup render target viewport
+		// as offscreen involves rendering into VRAM, we need to convert coordinates
+		float fX1 = float(offscreenRect.x) / float(VRAM_WIDTH);
+		float fY1 = float(offscreenRect.y) / float(VRAM_HEIGHT);
+		float fX2 = float(offscreenRect.w) / float(VRAM_WIDTH);
+		float fY2 = float(offscreenRect.h) / float(VRAM_HEIGHT);
+
+#ifdef USE_PGXP
+		Emulator_Ortho2D((fX1 - fX2 * 4.0f) * 0.5f, (fX1 + fX2) * 0.52f, (fY1 + fY2) * 0.5f, (fY1 - fY2 * 2.5f) * 0.5f, -1.0f, 1.0f);
+		//Emulator_Ortho2D(offscreenRect.x, offscreenRect.x + offscreenRect.w, offscreenRect.y + offscreenRect.h, offscreenRect.y, -1.0f, 1.0f);
+		Emulator_Perspective3D(0.9265f, 1.0f, 1.0f, 1.0f, 1000.0f);
+#else
+		Emulator_Ortho2D(0, activeDispEnv.disp.w, activeDispEnv.disp.h, 0, -1.0f, 1.0f);
+#endif
+	}
+	else
+	{
+		// setup default viewport
+#ifdef USE_PGXP
+		float emuScreenAspect = float(g_windowWidth) / float(g_windowHeight);
+		Emulator_Ortho2D(-0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f, -0.5f, -1.0f, 1.0f);
+		Emulator_Perspective3D(0.9265f, 1.0f, 1.0f / (emuScreenAspect * PSX_SCREEN_ASPECT), 1.0f, 1000.0f);
+#else
+		Emulator_Ortho2D(0, activeDispEnv.disp.w, activeDispEnv.disp.h, 0, -1.0f, 1.0f);
+#endif
+	}
+	
+	if(g_PreviousOffscreenState == enable)
+		return;
+	
+	g_PreviousOffscreenState = enable;
+
+#if defined(RENDERER_OGL) || defined(OGLES)
+	if(enable)
+	{
+		// set storage size first
+		if (g_PreviousOffscreen.w != offscreenRect.w &&
+			g_PreviousOffscreen.h != offscreenRect.h)
+		{
+			glBindTexture(GL_TEXTURE_2D, g_offscreenRTTexture);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, offscreenRect.w, offscreenRect.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
+
+		g_PreviousOffscreen = offscreenRect;
+
+		Emulator_SetViewPort(0, 0, offscreenRect.w, offscreenRect.h);
+		glBindFramebuffer(GL_FRAMEBUFFER, g_glOffscreenFramebuffer);
+
+		// clear it out
+		glClearColor(0.5f, 0.5f, 0.5f, 0.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+	}
+	else
+	{
+		Emulator_SetViewPort(0, 0, g_windowWidth, g_windowHeight);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glFlush();
+		
+		// copy rendering results to VRAM texture
+		{
+			uint* data = (uint*)malloc(g_PreviousOffscreen.w * g_PreviousOffscreen.h * sizeof(uint));
+
+#if defined(RENDERER_OGL) || defined(OGLES)
+			// reat the texture
+			glBindTexture(GL_TEXTURE_2D, g_offscreenRTTexture);
+			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+			glBindTexture(GL_TEXTURE_2D, g_lastBoundTexture);
+
+			Emulator_CopyRGBAFramebufferToVRAM(data, g_PreviousOffscreen.x, g_PreviousOffscreen.y, g_PreviousOffscreen.w, g_PreviousOffscreen.h, 1, 1);
+#endif
+
+			free(data);
+		}
+	}
+#endif
+}
+
 void Emulator_StoreFrameBuffer(int x, int y, int w, int h)
 {
 #if defined(RENDERER_OGL) || defined(OGLES)
@@ -1716,8 +1812,6 @@ void Emulator_StoreFrameBuffer(int x, int y, int w, int h)
 	if (g_PreviousFramebuffer.w != w &&
 		g_PreviousFramebuffer.h != h)
 	{
-		Emulator_SetScissorState(0);
-		
 		glBindTexture(GL_TEXTURE_2D, g_fbTexture);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -1728,13 +1822,13 @@ void Emulator_StoreFrameBuffer(int x, int y, int w, int h)
 	g_PreviousFramebuffer.w = w;
 	g_PreviousFramebuffer.h = h;
 
-	glBindFramebuffer(GL_FRAMEBUFFER, g_glFramebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, g_glBlitFramebuffer);
 
 	// before drawing set source and target
 	{
 		// setup draw and read framebuffers
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);					// source is backbuffer
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_glFramebuffer);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_glBlitFramebuffer);
 
 		glBlitFramebuffer(0, 0, g_windowWidth, g_windowHeight, x, y + h, x + w, y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
@@ -1746,6 +1840,7 @@ void Emulator_StoreFrameBuffer(int x, int y, int w, int h)
 	// after drawing
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glFlush();
+
 	Emulator_ReadFramebufferDataToVRAM();
 #endif
 }
@@ -1797,34 +1892,6 @@ void Emulator_UpdateVRAM()
 	glBindTexture(GL_TEXTURE_2D, g_vramTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, VRAM_WIDTH, VRAM_HEIGHT, 0, VRAM_FORMAT, GL_UNSIGNED_BYTE, vram);
 	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, VRAM_WIDTH, VRAM_HEIGHT, VRAM_FORMAT, GL_UNSIGNED_BYTE, vram);
-#endif
-}
-
-void Emulator_BlitVRAM()
-{
-#if 0
-	Emulator_SetTexture(g_vramTexture, (TexFormat)-1);	// avoid shader setup
-	Emulator_SetShader(g_blit_shader);
-
-	u_char l = activeDispEnv.disp.x / 8;
-	u_char t = activeDispEnv.disp.y / 8;
-	u_char r = activeDispEnv.disp.w / 8 + l;
-	u_char b = activeDispEnv.disp.h / 8 + t;
-
-	Vertex blit_vertices[] =
-	{
-		{ +1, +1,    0, 0,    r, t,    0, 0,    0, 0, 0, 0 },
-		{ -1, -1,    0, 0,    l, b,    0, 0,    0, 0, 0, 0 },
-		{ -1, +1,    0, 0,    l, t,    0, 0,    0, 0, 0, 0 },
-
-		{ +1, -1,    0, 0,    r, b,    0, 0,    0, 0, 0, 0 },
-		{ -1, -1,    0, 0,    l, b,    0, 0,    0, 0, 0, 0 },
-		{ +1, +1,    0, 0,    r, t,    0, 0,    0, 0, 0, 0 },
-	};
-
-	Emulator_UpdateVertexBuffer(blit_vertices, 6);
-	Emulator_SetBlendMode(BM_NONE);
-	Emulator_DrawTriangles(0, 2);
 #endif
 }
 
@@ -2137,6 +2204,8 @@ void Emulator_ShutDown()
 #if defined(RENDERER_OGL) || defined(OGLES)
 	Emulator_DestroyTexture(g_vramTexture);
 	Emulator_DestroyTexture(g_whiteTexture);
+	Emulator_DestroyTexture(g_fbTexture);
+	Emulator_DestroyTexture(g_offscreenRTTexture);
 #endif
 
 	SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER);
