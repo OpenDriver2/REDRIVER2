@@ -84,13 +84,24 @@ KeyboardMapping g_keyboard_mapping;
 inline void ScreenCoordsToEmulator(Vertex* vertex, int count)
 {
 #ifdef USE_PGXP
+	float curW;
+	float curH;
+
+	if (activeDrawEnv.dfe)
+	{
+		curW = activeDispEnv.disp.w;
+		curH = activeDispEnv.disp.h;
+	}
+	else
+	{
+		curW = activeDrawEnv.clip.w;
+		curH = activeDrawEnv.clip.h;
+	}
+
 	while (count--)
 	{
-		float psxScreenW = activeDispEnv.disp.w;
-		float psxScreenH = activeDispEnv.disp.h;
-
-		vertex[count].x = RemapVal(vertex[count].x, 0.0f, psxScreenW, 0.0f, 1.0f);
-		vertex[count].y = RemapVal(vertex[count].y, 0.0f, psxScreenH, 0.0f, 1.0f);
+		vertex[count].x = RemapVal(vertex[count].x, 0.0f, curW, 0.0f, 1.0f);
+		vertex[count].y = RemapVal(vertex[count].y, 0.0f, curH, 0.0f, 1.0f);
 		// FIXME: what about Z?
 
 		// also center
@@ -504,8 +515,19 @@ void Emulator_GenerateLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p
 	VERTTYPE dx = p1[0] - p0[0];
 	VERTTYPE dy = p1[1] - p0[1];
 
-	float ofsX = activeDrawEnv.ofs[0] % activeDispEnv.disp.w;
-	float ofsY = activeDrawEnv.ofs[1] % activeDispEnv.disp.h;
+	float ofsX;
+	float ofsY;
+
+	if (activeDrawEnv.dfe)
+	{
+		ofsX = activeDrawEnv.ofs[0] % activeDispEnv.disp.w;
+		ofsY = activeDrawEnv.ofs[1] % activeDispEnv.disp.h;
+	}
+	else
+	{
+		ofsX = 0.0f;
+		ofsY = 0.0f;
+	}
 
 	if (dx > abs((short)dy)) { // horizontal
 		vertex[0].x = p0[0] + ofsX;
@@ -562,8 +584,6 @@ inline void Emulator_ApplyVertexPGXP(Vertex* v, VERTTYPE* p, float ofsX, float o
 			gteOfsY -= activeDispEnv.disp.h;
 		gteOfsY -= activeDispEnv.disp.h / 2;
 
-		
-		
 		v->x = vd.px;
 		v->y = vd.py;
 		v->z = vd.pz;
@@ -587,9 +607,20 @@ void Emulator_GenerateVertexArrayTriangle(struct Vertex* vertex, VERTTYPE* p0, V
 	assert(p1);
 	assert(p2);
 
-	float ofsX = activeDrawEnv.ofs[0] % activeDispEnv.disp.w;
-	float ofsY = activeDrawEnv.ofs[1] % activeDispEnv.disp.h;
+	float ofsX;
+	float ofsY;
 
+	if(activeDrawEnv.dfe)
+	{
+		ofsX = activeDrawEnv.ofs[0] % activeDispEnv.disp.w;
+		ofsY = activeDrawEnv.ofs[1] % activeDispEnv.disp.h;
+	}
+	else
+	{
+		ofsX = 0.0f;
+		ofsY = 0.0f;
+	}
+	
 	vertex[0].x = p0[0] + ofsX;
 	vertex[0].y = p0[1] + ofsY;
 
@@ -613,8 +644,19 @@ void Emulator_GenerateVertexArrayQuad(struct Vertex* vertex, VERTTYPE* p0, VERTT
 	assert(p2);
 	assert(p3);
 
-	float ofsX = activeDrawEnv.ofs[0] % activeDispEnv.disp.w;
-	float ofsY = activeDrawEnv.ofs[1] % activeDispEnv.disp.h;
+	float ofsX;
+	float ofsY;
+
+	if (activeDrawEnv.dfe)
+	{
+		ofsX = activeDrawEnv.ofs[0] % activeDispEnv.disp.w;
+		ofsY = activeDrawEnv.ofs[1] % activeDispEnv.disp.h;
+	}
+	else
+	{
+		ofsX = 0.0f;
+		ofsY = 0.0f;
+	}
 
 	vertex[0].x = p0[0] + ofsX;
 	vertex[0].y = p0[1] + ofsY;
@@ -640,8 +682,19 @@ void Emulator_GenerateVertexArrayRect(struct Vertex* vertex, VERTTYPE* p0, short
 {
 	assert(p0);
 
-	float ofsX = activeDrawEnv.ofs[0] % activeDispEnv.disp.w;
-	float ofsY = activeDrawEnv.ofs[1] % activeDispEnv.disp.h;
+	float ofsX;
+	float ofsY;
+
+	if (activeDrawEnv.dfe)
+	{
+		ofsX = activeDrawEnv.ofs[0] % activeDispEnv.disp.w;
+		ofsY = activeDrawEnv.ofs[1] % activeDispEnv.disp.h;
+	}
+	else
+	{
+		ofsX = 0.0f;
+		ofsY = 0.0f;
+	}
 
 	vertex[0].x = p0[0] + ofsX;
 	vertex[0].y = p0[1] + ofsY;
@@ -1655,8 +1708,11 @@ void Emulator_CopyRGBAFramebufferToVRAM(u_int* src, int x, int y, int w, int h, 
 			u_char b = ((c >> 3) & 0x1F);
 			u_char g = ((c >> 11) & 0x1F);
 			u_char r = ((c >> 19) & 0x1F);
+			//u_char a = ((c >> 24) & 0x1F);
 
-			*data_dst++ = r | (g << 5) | (b << 10) | 0x8000;
+			int a = r == g == b == 0 ? 0 : 1;
+
+			*data_dst++ = r | (g << 5) | (b << 10) | (a << 15);
 		}
 	}
 
@@ -1728,18 +1784,10 @@ void Emulator_SetOffscreenState(const RECT16& offscreenRect, int enable)
 	if(enable)
 	{
 		// setup render target viewport
-		// as offscreen involves rendering into VRAM, we need to convert coordinates
-		float fX1 = float(offscreenRect.x) / float(VRAM_WIDTH);
-		float fY1 = float(offscreenRect.y) / float(VRAM_HEIGHT);
-		float fX2 = float(offscreenRect.w) / float(VRAM_WIDTH);
-		float fY2 = float(offscreenRect.h) / float(VRAM_HEIGHT);
-
 #ifdef USE_PGXP
-		Emulator_Ortho2D((fX1 - fX2 * 4.0f) * 0.5f, (fX1 + fX2) * 0.52f, (fY1 + fY2) * 0.5f, (fY1 - fY2 * 2.5f) * 0.5f, -1.0f, 1.0f);
-		//Emulator_Ortho2D(offscreenRect.x, offscreenRect.x + offscreenRect.w, offscreenRect.y + offscreenRect.h, offscreenRect.y, -1.0f, 1.0f);
-		Emulator_Perspective3D(0.9265f, 1.0f, 1.0f, 1.0f, 1000.0f);
+		Emulator_Ortho2D(-0.5f, 0.5f, 0.5f, -0.5f, -1.0f, 1.0f);
 #else
-		Emulator_Ortho2D(0, activeDispEnv.disp.w, activeDispEnv.disp.h, 0, -1.0f, 1.0f);
+		Emulator_Ortho2D(0, offscreenRect.w, offscreenRect.h, 0, -1.0f, 1.0f);
 #endif
 	}
 	else
