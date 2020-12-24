@@ -103,38 +103,6 @@ ACTIVE_CHEATS ActiveCheats = { 0 };
 int gInFrontend = 0;
 int AttractMode = 0;
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ GameStart()
- // line 834, offset 0x00052a28
-	/* begin block 1 */
-		// Start line: 836
-		// Start offset: 0x00052A28
-		// Variables:
-	// 		RECT rect; // stack offset -16
-	// 		int oldVMode; // $s0
-	// 		int SurvivalCopSettingsBackup; // $s0
-	/* end block 1 */
-	// End offset: 0x00052E98
-	// End Line: 1011
-
-	/* begin block 2 */
-		// Start line: 1668
-	/* end block 2 */
-	// End Line: 1669
-
-	/* begin block 3 */
-		// Start line: 1669
-	/* end block 3 */
-	// End Line: 1670
-
-	/* begin block 4 */
-		// Start line: 1674
-	/* end block 4 */
-	// End Line: 1675
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 int gLoadedReplay = 0;
 int gHaveStoredData = 0;
 
@@ -147,7 +115,6 @@ int gMissionLadderPos = 0;
 int gFurthestMission = 0;
 
 int gWantNight = 0;
-
 
 // [D] [T]
 void GameStart(void)
@@ -314,63 +281,12 @@ void GameStart(void)
 }
 
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ StartRender(int renderNum /*$a0*/)
- // line 1018, offset 0x000536b0
-	/* begin block 1 */
-		// Start line: 2036
-	/* end block 1 */
-	// End Line: 2037
-
-	/* begin block 2 */
-		// Start line: 2537
-	/* end block 2 */
-	// End Line: 2538
-
 // [D] [T]
 void StartRender(int renderNum)
 {
 	PlayFMV(renderNum);
 	ReInitFrontend();
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ReInitFrontend()
- // line 1030, offset 0x00052e98
-	/* begin block 1 */
-		// Start line: 1032
-		// Start offset: 0x00052E98
-		// Variables:
-	// 		RECT rect; // stack offset -24
-	/* end block 1 */
-	// End offset: 0x00052FE8
-	// End Line: 1103
-
-	/* begin block 2 */
-		// Start line: 2068
-	/* end block 2 */
-	// End Line: 2069
-
-	/* begin block 3 */
-		// Start line: 2088
-	/* end block 3 */
-	// End Line: 2089
-
-	/* begin block 4 */
-		// Start line: 2089
-	/* end block 4 */
-	// End Line: 2090
-
-	/* begin block 5 */
-		// Start line: 2091
-	/* end block 5 */
-	// End Line: 2092
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void ReInitFrontend(void)
@@ -422,73 +338,6 @@ void ReInitFrontend(void)
 	//LoadedLevel = 0xff;
 	bRedrawFrontend = 1;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ RunMissionLadder(int newgame /*$a1*/)
- // line 1105, offset 0x00052fe8
-	/* begin block 1 */
-		// Start line: 1106
-		// Start offset: 0x00052FE8
-		// Variables:
-	// 		MISSION_STEP *CurrentStep; // $s0
-	// 		RENDER_ARGS RenderArgs; // stack offset -48
-	// 		int quit; // $s3
-
-		/* begin block 1.1 */
-			// Start line: 1143
-			// Start offset: 0x000530A4
-		/* end block 1.1 */
-		// End offset: 0x000530A4
-		// End Line: 1143
-
-		/* begin block 1.2 */
-			// Start line: 1148
-			// Start offset: 0x000530B4
-		/* end block 1.2 */
-		// End offset: 0x000530BC
-		// End Line: 1149
-
-		/* begin block 1.3 */
-			// Start line: 1153
-			// Start offset: 0x000530CC
-		/* end block 1.3 */
-		// End offset: 0x000530E8
-		// End Line: 1157
-
-		/* begin block 1.4 */
-			// Start line: 1163
-			// Start offset: 0x00053134
-
-			/* begin block 1.4.1 */
-				// Start line: 1172
-				// Start offset: 0x00053198
-			/* end block 1.4.1 */
-			// End offset: 0x000531AC
-			// End Line: 1175
-		/* end block 1.4 */
-		// End offset: 0x0005328C
-		// End Line: 1212
-	/* end block 1 */
-	// End offset: 0x000532B8
-	// End Line: 1215
-
-	/* begin block 2 */
-		// Start line: 2243
-	/* end block 2 */
-	// End Line: 2244
-
-	/* begin block 3 */
-		// Start line: 2246
-	/* end block 3 */
-	// End Line: 2247
-
-	/* begin block 4 */
-		// Start line: 2249
-	/* end block 4 */
-	// End Line: 2250
 
 // [D] [T]
 void RunMissionLadder(int newgame)
@@ -584,43 +433,6 @@ void RunMissionLadder(int newgame)
 	} while (!quit);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ GetRandomChase()
- // line 1222, offset 0x000535d8
-	/* begin block 1 */
-		// Start line: 1224
-		// Start offset: 0x000535D8
-		// Variables:
-	// 		int bump; // $s1
-	/* end block 1 */
-	// End offset: 0x0005369C
-	// End Line: 1250
-
-	/* begin block 2 */
-		// Start line: 2708
-	/* end block 2 */
-	// End Line: 2709
-
-	/* begin block 3 */
-		// Start line: 2444
-	/* end block 3 */
-	// End Line: 2445
-
-	/* begin block 4 */
-		// Start line: 2709
-	/* end block 4 */
-	// End Line: 2710
-
-	/* begin block 5 */
-		// Start line: 2711
-	/* end block 5 */
-	// End Line: 2712
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void GetRandomChase(void)
 {
@@ -649,34 +461,6 @@ void GetRandomChase(void)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ FindPrevMissionFromLadderPos(int pos /*$a0*/)
- // line 1252, offset 0x000536d8
-	/* begin block 1 */
-		// Start line: 1254
-		// Start offset: 0x000536D8
-	/* end block 1 */
-	// End offset: 0x00053740
-	// End Line: 1268
-
-	/* begin block 2 */
-		// Start line: 3004
-	/* end block 2 */
-	// End Line: 3005
-
-	/* begin block 3 */
-		// Start line: 3005
-	/* end block 3 */
-	// End Line: 3006
-
-	/* begin block 4 */
-		// Start line: 3007
-	/* end block 4 */
-	// End Line: 3008
-
 // [D] [T]
 int FindPrevMissionFromLadderPos(int pos)
 {
@@ -698,44 +482,6 @@ int FindPrevMissionFromLadderPos(int pos)
 
 	return 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ LaunchGame()
- // line 1279, offset 0x000532b8
-	/* begin block 1 */
-		// Start line: 1281
-		// Start offset: 0x000532B8
-		// Variables:
-	// 		RECT rect; // stack offset -16
-	// 		int quit; // $s0
-	/* end block 1 */
-	// End offset: 0x000535D8
-	// End Line: 1415
-
-	/* begin block 2 */
-		// Start line: 2544
-	/* end block 2 */
-	// End Line: 2545
-
-	/* begin block 3 */
-		// Start line: 2609
-	/* end block 3 */
-	// End Line: 2610
-
-	/* begin block 4 */
-		// Start line: 2610
-	/* end block 4 */
-	// End Line: 2611
-
-	/* begin block 5 */
-		// Start line: 2617
-	/* end block 5 */
-	// End Line: 2618
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 int fakeOtherPlayer = 0;
 int gMissionCompletionState = 0;
@@ -869,35 +615,6 @@ void LaunchGame(void)
 	SetDispMask(1);
 }
 
-// decompiled code
-// original method signature: 
-// int /*$ra*/ FindMissionLadderPos(int mission /*$a0*/)
- // line 1417, offset 0x00053740
-	/* begin block 1 */
-		// Start line: 1418
-		// Start offset: 0x00053740
-		// Variables:
-	// 		MISSION_STEP *step; // $a1
-	// 		int pos; // $a2
-	/* end block 1 */
-	// End offset: 0x00053814
-	// End Line: 1457
-
-	/* begin block 2 */
-		// Start line: 3184
-	/* end block 2 */
-	// End Line: 3185
-
-	/* begin block 3 */
-		// Start line: 3334
-	/* end block 3 */
-	// End Line: 3335
-
-	/* begin block 4 */
-		// Start line: 3336
-	/* end block 4 */
-	// End Line: 3337
-
 // [D] [T]
 int FindMissionLadderPos(int mission)
 {
@@ -952,8 +669,3 @@ int FindMissionLadderPos(int mission)
 
 	return 0;
 }
-
-
-
-
-

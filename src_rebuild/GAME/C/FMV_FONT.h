@@ -467,8 +467,8 @@ u_char fmvFont[] = {
 
 struct UVWH
 {
-	uchar u, v;
-	uchar w, h;
+	u_char u, v;
+	u_char w, h;
 };
 
 UVWH fmvFontUV[256] =

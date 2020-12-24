@@ -18,40 +18,9 @@ EXOBJECT explosion[MAX_EXPLOSION_OBJECTS];
 
 MATRIX SS = { 0 };
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitExObjects()
- // line 110, offset 0x00057b0c
-	/* begin block 1 */
-		// Start line: 112
-		// Start offset: 0x00057B0C
-		// Variables:
-	// 		int i; // $v1
-	/* end block 1 */
-	// End offset: 0x00057B50
-	// End Line: 121
+SVECTOR globemesh[54];
 
-	/* begin block 2 */
-		// Start line: 1292
-	/* end block 2 */
-	// End Line: 1293
-
-	/* begin block 3 */
-		// Start line: 220
-	/* end block 3 */
-	// End Line: 221
-
-	/* begin block 4 */
-		// Start line: 1293
-	/* end block 4 */
-	// End Line: 1294
-
-	/* begin block 5 */
-		// Start line: 1295
-	/* end block 5 */
-	// End Line: 1296
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
+void initExplosion(void);
 
 // [D] [T]
 void InitExObjects(void)
@@ -63,31 +32,6 @@ void InitExObjects(void)
 
 	initExplosion();
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ AddExplosion(VECTOR pos /*stack 0*/, int type /*stack 16*/)
- // line 129, offset 0x00056d54
-	/* begin block 1 */
-		// Start line: 130
-		// Start offset: 0x00056D54
-		// Variables:
-	// 		int i; // $t1
-	/* end block 1 */
-	// End offset: 0x00056E44
-	// End Line: 169
-
-	/* begin block 2 */
-		// Start line: 258
-	/* end block 2 */
-	// End Line: 259
-
-	/* begin block 3 */
-		// Start line: 263
-	/* end block 3 */
-	// End Line: 264
 
 // [D] [T]
 void AddExplosion(VECTOR pos, int type)
@@ -129,50 +73,6 @@ void AddExplosion(VECTOR pos, int type)
 
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ HandleExplosion()
- // line 178, offset 0x00056e44
-	/* begin block 1 */
-		// Start line: 180
-		// Start offset: 0x00056E44
-		// Variables:
-	// 		int i; // $s5
-	// 		CAR_DATA *cp; // $s0
-
-		/* begin block 1.1 */
-			// Start line: 212
-			// Start offset: 0x00056F4C
-		/* end block 1.1 */
-		// End offset: 0x00056F84
-		// End Line: 220
-	/* end block 1 */
-	// End offset: 0x00056F94
-	// End Line: 223
-
-	/* begin block 2 */
-		// Start line: 387
-	/* end block 2 */
-	// End Line: 388
-
-	/* begin block 3 */
-		// Start line: 397
-	/* end block 3 */
-	// End Line: 398
-
-	/* begin block 4 */
-		// Start line: 398
-	/* end block 4 */
-	// End Line: 399
-
-	/* begin block 5 */
-		// Start line: 402
-	/* end block 5 */
-	// End Line: 403
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void HandleExplosion(void)
@@ -239,106 +139,6 @@ void HandleExplosion(void)
 		i++;
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawAllExplosions()
- // line 232, offset 0x00057b50
-	/* begin block 1 */
-		// Start line: 234
-		// Start offset: 0x00057B50
-		// Variables:
-	// 		int i; // $s1
-
-		/* begin block 1.1 */
-			// Start line: 240
-			// Start offset: 0x00057B94
-			// Variables:
-		// 		int hscale; // $v1
-		// 		int rscale; // $a0
-		/* end block 1.1 */
-		// End offset: 0x00057BC0
-		// End Line: 244
-	/* end block 1 */
-	// End offset: 0x00057BF0
-	// End Line: 246
-
-	/* begin block 2 */
-		// Start line: 1426
-	/* end block 2 */
-	// End Line: 1427
-
-	/* begin block 3 */
-		// Start line: 1538
-	/* end block 3 */
-	// End Line: 1539
-
-	/* begin block 4 */
-		// Start line: 1539
-	/* end block 4 */
-	// End Line: 1540
-
-	/* begin block 5 */
-		// Start line: 1541
-	/* end block 5 */
-	// End Line: 1542
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
-// [D] [T]
-void DrawAllExplosions(void)
-{
-	int i;
-	i = 0;
-	while (i < MAX_EXPLOSION_OBJECTS)
-	{
-		if (explosion[i].time != -1)
-			DrawExplosion(explosion[i].time, explosion[i].pos, explosion[i].hscale, explosion[i].rscale);
-
-		i++;
-	}
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ initExplosion()
- // line 557, offset 0x00056fc0
-	/* begin block 1 */
-		// Start line: 559
-		// Start offset: 0x00056FC0
-		// Variables:
-	// 		int i; // $t0
-	/* end block 1 */
-	// End offset: 0x000572A8
-	// End Line: 582
-
-	/* begin block 2 */
-		// Start line: 1167
-	/* end block 2 */
-	// End Line: 1168
-
-	/* begin block 3 */
-		// Start line: 1180
-	/* end block 3 */
-	// End Line: 1181
-
-	/* begin block 4 */
-		// Start line: 1181
-	/* end block 4 */
-	// End Line: 1182
-
-	/* begin block 5 */
-		// Start line: 1189
-	/* end block 5 */
-	// End Line: 1190
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
-SVECTOR globemesh[54];
 
 // [D] [T]
 void initExplosion(void)
@@ -422,89 +222,6 @@ void initExplosion(void)
 	} while (i < 18);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawExplosion(int time /*stack 0*/, VECTOR position /*stack 4*/, int hscale /*stack 20*/, int rscale /*stack 24*/)
- // line 588, offset 0x000572a8
-	/* begin block 1 */
-		// Start line: 589
-		// Start offset: 0x000572A8
-		// Variables:
-	// 		int i; // $t1
-	// 		int j; // $s3
-	// 		POLY_FT4 *poly; // $a2
-	// 		SVECTOR *src; // $t0
-	// 		VECTOR v; // stack offset -136
-	// 		int rgb; // $s0
-	// 		int z; // stack offset -56
-	// 		int sf1; // $t0
-	// 		int sf2; // $a0
-	// 		unsigned long u0; // $s2
-	// 		unsigned long u1; // $s1
-	// 		unsigned long u2; // $s5
-	// 		unsigned long u3; // $s4
-
-		/* begin block 1.1 */
-			// Start line: 589
-			// Start offset: 0x000572A8
-			// Variables:
-		// 		int transparency; // $t2
-		// 		int green; // $t1
-		// 		int blue; // $v1
-		/* end block 1.1 */
-		// End offset: 0x000572A8
-		// End Line: 589
-
-		/* begin block 1.2 */
-			// Start line: 631
-			// Start offset: 0x000573F0
-			// Variables:
-		// 		MATRIX workmatrix; // stack offset -120
-		// 		int sf; // $v0
-		// 		int s; // $v1
-		// 		int c; // $a3
-		/* end block 1.2 */
-		// End offset: 0x00057444
-		// End Line: 638
-
-		/* begin block 1.3 */
-			// Start line: 685
-			// Start offset: 0x00057720
-			// Variables:
-		// 		int transparency; // $a0
-		// 		int red; // $a1
-		// 		int green; // $a2
-		// 		int blue; // $v1
-		/* end block 1.3 */
-		// End offset: 0x00057720
-		// End Line: 685
-
-		/* begin block 1.4 */
-			// Start line: 698
-			// Start offset: 0x000577A4
-			// Variables:
-		// 		MATRIX workmatrix; // stack offset -88
-		// 		int sf; // $v0
-		// 		int s; // $v1
-		// 		int c; // $a3
-		/* end block 1.4 */
-		// End offset: 0x000577F8
-		// End Line: 707
-	/* end block 1 */
-	// End offset: 0x00057B0C
-	// End Line: 755
-
-	/* begin block 2 */
-		// Start line: 1271
-	/* end block 2 */
-	// End Line: 1272
-
-	/* begin block 3 */
-		// Start line: 1278
-	/* end block 3 */
-	// End Line: 1279
 
 // [D] [T]
 void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
@@ -704,6 +421,20 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 	} while (i < 2);
 }
 
+
+// [D] [T]
+void DrawAllExplosions(void)
+{
+	int i;
+	i = 0;
+	while (i < MAX_EXPLOSION_OBJECTS)
+	{
+		if (explosion[i].time != -1)
+			DrawExplosion(explosion[i].time, explosion[i].pos, explosion[i].hscale, explosion[i].rscale);
+
+		i++;
+	}
+}
 
 
 

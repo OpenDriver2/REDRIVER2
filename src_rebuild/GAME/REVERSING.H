@@ -40,10 +40,21 @@ template<int x> struct compile_time_assert_test {};
 
 #endif
 
-#undef eprintf
-#define eprintf(fmt, ...) printMsg("[GAME] " fmt, ##__VA_ARGS__)
+#ifndef FUNCNAME
 
-#define UNIMPLEMENTED()	{ static bool _stop = false; if(!_stop) eprintf("Unimplemented!\n"); _stop = true; }
+#ifdef _MSC_VER
+#define FUNCNAME __FUNCTION__
+#else
+#define FUNCNAME __func__
+#endif
+
+#endif
+
+#if defined(_DEBUG)
+#define UNIMPLEMENTED()	{ static bool _stop = false; if(!_stop) printMsg("[GAME] %s - unimplemented!\n", FUNCNAME); _stop = true; }
+#else
+#define UNIMPLEMENTED()
+#endif
 
 //----------------------------------------
 

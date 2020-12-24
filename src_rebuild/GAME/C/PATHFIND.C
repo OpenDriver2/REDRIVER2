@@ -13,9 +13,24 @@
 #include "MAP.H"
 #include "SDL.h"
 
+struct tNode
+{
+	int vx;
+	int vy;
+	int vz;
+	u_short dist;
+	u_short ptoey;
+};
+
+struct XZDIR
+{
+	short dx;
+	short dz;
+};
+
 ushort distanceCache[16384];
 char omap[128][16];				// obstacle map
-long dunyet[32][2];				// scanned cell map
+int dunyet[32][2];				// scanned cell map
 int pathIterations;
 
 int pathFrames;
@@ -31,7 +46,7 @@ int lastDistanceFound;
 tNode heap[201];
 unsigned int numHeapEntries = 0;
 
-PATHFIND_237fake ends[6][2] = {
+XZDIR ends[6][2] = {
 	{
 		{0, 0},
 		{512, 0}
@@ -62,7 +77,7 @@ PATHFIND_237fake ends[6][2] = {
 	}
 };
 
-PATHFIND_238fake dirs[6] = {
+XZDIR dirs[6] = {
 	{
 		512,0
 	},
@@ -154,7 +169,7 @@ void DebugDisplayObstacleMap()
 			//local_v0_152 = dunyet[(bPos.vx >> 10 & 0x1fU)][((bPos.vz >> 10) & 1)];
 
 			// NEW METHOD
-			// long val = dunyet[px >> 2 & 0x1f][pz >> 6 & 1]; // dunyet[px >> 2 & 0x1f][pz >> 2 & 1];
+			// int val = dunyet[px >> 2 & 0x1f][pz >> 6 & 1]; // dunyet[px >> 2 & 0x1f][pz >> 2 & 1];
 			// val = val >> (pz >> 2 & 0x1f) & 1;
 
 			n.vx = px << 8;
@@ -163,7 +178,7 @@ void DebugDisplayObstacleMap()
 
 			int dist = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (n.vy & 1U) * 0x2040 ^ (n.vy & 2U) << 0xc];// distanceCache[((pos_x+i & 127) * 128) + (j + pos_z & 127)];
 
-			long prev = DONEMAP_V(px >> 2, pz >> 2);
+			int prev = DONEMAP_V(px >> 2, pz >> 2);
 			int val = DONEMAP_GETVALUE(px >> 2, pz >> 2, prev, 0);
 
 			if (val != 0)
@@ -190,66 +205,6 @@ void DebugDisplayObstacleMap()
 	SDL_FreeSurface(windowSurf);
 #endif
 }
-
-// decompiled code
-// original method signature: 
-// tNode /*$ra*/ popNode()
- // line 314, offset 0x000e7000
-	/* begin block 1 */
-		// Start line: 315
-		// Start offset: 0x000E7000
-		// Variables:
-	// 		unsigned int lNumHeapEntries; // $s0
-	// 		tNode res; // stack offset -24
-	// 		unsigned short f; // $t8
-	// 		unsigned int child; // $a1
-	// 		unsigned int here; // $t5
-
-		/* begin block 1.1 */
-			// Start line: 325                                                                  
-			// Start offset: 0x000E7058
-			// Variables:
-		// 		unsigned int lastEntry; // $t4
-
-			/* begin block 1.1.1 */
-				// Start line: 329
-				// Start offset: 0x000E7070
-				// Variables:
-			// 		int d; // $t3
-			// 		int d2; // $t2
-			// 		int d3; // $a3
-			// 		int d4; // $t1
-			/* end block 1.1.1 */
-			// End offset: 0x000E70B8
-			// End Line: 346
-		/* end block 1.1 */
-		// End offset: 0x000E7110
-		// End Line: 347
-
-		/* begin block 1.2 */
-			// Start line: 349
-			// Start offset: 0x000E7110
-			// Variables:
-		// 		int d; // $a2
-		// 		int d2; // $a3
-		// 		int d3; // $t1
-		// 		int d4; // $t2
-		/* end block 1.2 */
-		// End offset: 0x000E715C
-		// End Line: 358
-	/* end block 1 */
-	// End offset: 0x000E715C
-	// End Line: 361
-
-	/* begin block 2 */
-		// Start line: 628
-	/* end block 2 */
-	// End Line: 629
-
-	/* begin block 3 */
-		// Start line: 630
-	/* end block 3 */
-	// End Line: 631
 
 // [D] [T]
 tNode* popNode(tNode* __return_storage_ptr__)
@@ -294,46 +249,6 @@ tNode* popNode(tNode* __return_storage_ptr__)
 	return __return_storage_ptr__;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ WunCell(VECTOR *pbase /*$s0*/)
- // line 426, offset 0x000e7194
-	/* begin block 1 */
-		// Start line: 427
-		// Start offset: 0x000E7194
-		// Variables:
-	// 		int i; // $s2
-	// 		int j; // $s4
-	// 		VECTOR v[2]; // stack offset -88
-	// 		VECTOR pos; // stack offset -56
-
-		/* begin block 1.1 */
-			// Start line: 440
-			// Start offset: 0x000E723C
-
-			/* begin block 1.1.1 */
-				// Start line: 440
-				// Start offset: 0x000E723C
-				// Variables:
-			// 		int z; // $a1
-			// 		int x; // $a2
-			/* end block 1.1.1 */
-			// End offset: 0x000E72C8
-			// End Line: 446
-		/* end block 1.1 */
-		// End offset: 0x000E72C8
-		// End Line: 446
-	/* end block 1 */
-	// End offset: 0x000E735C
-	// End Line: 450
-
-	/* begin block 2 */
-		// Start line: 910
-	/* end block 2 */
-	// End Line: 911
-
 // [D] [T]
 void WunCell(VECTOR* pbase)
 {
@@ -372,65 +287,12 @@ void WunCell(VECTOR* pbase)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InvalidateMap()
- // line 453, offset 0x000e735c
-	/* begin block 1 */
-		// Start line: 455
-		// Start offset: 0x000E735C
-		// Variables:
-	// 		VECTOR bPos; // stack offset -16
-	// 		int count; // $t4
-	// 		int dir; // $t1
-	// 		int p; // $t2
-	// 		int q; // $t3
-
-		/* begin block 1.1 */
-			// Start line: 465
-			// Start offset: 0x000E73A8
-			// Variables:
-		// 		int tile; // $a0
-		// 		int mask; // $a1
-		// 		int diff; // $a1
-		// 		int i; // $v0
-		/* end block 1.1 */
-		// End offset: 0x000E73A8
-		// End Line: 468
-	/* end block 1 */
-	// End offset: 0x000E74B0
-	// End Line: 487
-
-	/* begin block 2 */
-		// Start line: 1011
-	/* end block 2 */
-	// End Line: 1012
-
-	/* begin block 3 */
-		// Start line: 1015
-	/* end block 3 */
-	// End Line: 1016
-
-	/* begin block 4 */
-		// Start line: 1016
-	/* end block 4 */
-	// End Line: 1017
-
-	/* begin block 5 */
-		// Start line: 1023
-	/* end block 5 */
-	// End Line: 1024
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [A] function that invalidates map at ends
 // fixes bug with not being able to update navigation cells
 void InvalidateMapEnds()
 {
 	int x, z;
-	long tile;
+	int tile;
 	int i;
 	XZPAIR pos;
 	pos.x = (player[0].pos[0] & 0xfffffc00) >> 10;
@@ -461,7 +323,7 @@ void InvalidateMap(void)
 	int count;
 	int px, pz;
 	VECTOR bPos;
-	long tile, i;
+	int tile, i;
 
 	q = 0;
 	p = 0;
@@ -519,61 +381,6 @@ void InvalidateMap(void)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ BloodyHell()
- // line 495, offset 0x000e74b0
-	/* begin block 1 */
-		// Start line: 497
-		// Start offset: 0x000E74B0
-		// Variables:
-	// 		VECTOR bPos; // stack offset -48
-	// 		int count; // $s4
-	// 		int dir; // $s0
-	// 		int p; // $s1
-	// 		int q; // $s2
-	// 		unsigned int howMany; // $s3
-		// Labels:
-		//		0x0000069C	raa
-
-		/* begin block 1.1 */
-			// Start line: 517
-			// Start offset: 0x000E755C
-			// Variables:
-		// 		int tile; // $a0
-		// 		int mask; // $a1
-		// 		int diff; // $v0
-		// 		int i; // $v0
-		/* end block 1.1 */
-		// End offset: 0x000E75E4
-		// End Line: 537
-	/* end block 1 */
-	// End offset: 0x000E76C4
-	// End Line: 565
-
-	/* begin block 2 */
-		// Start line: 1125
-	/* end block 2 */
-	// End Line: 1126
-
-	/* begin block 3 */
-		// Start line: 1134
-	/* end block 3 */
-	// End Line: 1135
-
-	/* begin block 4 */
-		// Start line: 1135
-	/* end block 4 */
-	// End Line: 1136
-
-	/* begin block 5 */
-		// Start line: 1146
-	/* end block 5 */
-	// End Line: 1147
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 unsigned int cellsThisFrame;
 unsigned int cellsPerFrame = 4;
 
@@ -587,7 +394,7 @@ void BloodyHell(void)
 	uint howMany;
 	int count;
 	VECTOR bPos;
-	long tile, i;
+	int tile, i;
 
 	cellsThisFrame = 0;
 	
@@ -673,66 +480,6 @@ void BloodyHell(void)
 	} while( count < 840 );
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ blocked(tNode *v1 /*$a3*/, tNode *v2 /*$a2*/)
- // line 567, offset 0x000e76c4
-	/* begin block 1 */
-		// Start line: 568
-		// Start offset: 0x000E76C4
-		// Variables:
-	// 		VECTOR pos; // stack offset -24
-	// 		int res; // $a0
-
-		/* begin block 1.1 */
-			// Start line: 575
-			// Start offset: 0x000E76E0
-
-			/* begin block 1.1.1 */
-				// Start line: 575
-				// Start offset: 0x000E76E0
-				// Variables:
-			// 		int z; // $a2
-			// 		int x; // $v1
-			/* end block 1.1.1 */
-			// End offset: 0x000E774C
-			// End Line: 578
-		/* end block 1.1 */
-		// End offset: 0x000E774C
-		// End Line: 578
-
-		/* begin block 1.2 */
-			// Start line: 585
-			// Start offset: 0x000E7790
-
-			/* begin block 1.2.1 */
-				// Start line: 585
-				// Start offset: 0x000E7790
-				// Variables:
-			// 		int z; // $v1
-			// 		int x; // $a0
-			/* end block 1.2.1 */
-			// End offset: 0x000E7790
-			// End Line: 585
-		/* end block 1.2 */
-		// End offset: 0x000E7790
-		// End Line: 585
-	/* end block 1 */
-	// End offset: 0x000E7814
-	// End Line: 590
-
-	/* begin block 2 */
-		// Start line: 1339
-	/* end block 2 */
-	// End Line: 1340
-
-	/* begin block 3 */
-		// Start line: 1342
-	/* end block 3 */
-	// End Line: 1343
-
 int slowWallTests = 0;
 
 // [D] [T]
@@ -749,22 +496,6 @@ int blocked(tNode* v1, tNode* v2)
 	return OMAP_GETVALUE(x, z);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ setDistance(tNode *n /*$a0*/, unsigned short dist /*$a1*/)
- // line 659, offset 0x000e90a4
-	/* begin block 1 */
-		// Start line: 1316
-	/* end block 1 */
-	// End Line: 1317
-
-	/* begin block 2 */
-		// Start line: 1318
-	/* end block 2 */
-	// End Line: 1319
-
 // [D] [T]
 void setDistance(tNode* n, ushort dist)
 {
@@ -772,135 +503,6 @@ void setDistance(tNode* n, ushort dist)
 
 	distanceCache[(n->vx >> 2 & 0x3f80U | n->vz >> 9 & 0x7fU) ^ (n->vy & 1U) * 0x2040 ^ (n->vy & 2U) << 0xc] = dist | 1;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ iterate()
- // line 712, offset 0x000e7814
-	/* begin block 1 */
-		// Start line: 714
-		// Start offset: 0x000E7814
-		// Variables:
-	// 		int dir; // $s2
-	// 		tNode itHere; // stack offset -48
-	// 		tNode *nbr; // $s4
-
-		/* begin block 1.1 */
-			// Start line: 724
-			// Start offset: 0x000E7870
-			// Variables:
-		// 		int nearBy; // $v1
-		// 		int computed; // $s1
-
-			/* begin block 1.1.1 */
-				// Start line: 726
-				// Start offset: 0x000E7870
-				// Variables:
-			// 		int dx; // $v0
-			// 		int dz; // $a0
-			/* end block 1.1.1 */
-			// End offset: 0x000E7870
-			// End Line: 727
-
-			/* begin block 1.1.2 */
-				// Start line: 727
-				// Start offset: 0x000E7870
-
-				/* begin block 1.1.2.1 */
-					// Start line: 727
-					// Start offset: 0x000E7870
-					// Variables:
-				// 		int res; // $a0
-				/* end block 1.1.2.1 */
-				// End offset: 0x000E7870
-				// End Line: 727
-			/* end block 1.1.2 */
-			// End offset: 0x000E7870
-			// End Line: 727
-		/* end block 1.1 */
-		// End offset: 0x000E797C
-		// End Line: 763
-
-		/* begin block 1.2 */
-			// Start line: 768
-			// Start offset: 0x000E79B4
-			// Variables:
-		// 		int nr; // $a0
-		// 		int nl; // $v1
-
-			/* begin block 1.2.1 */
-				// Start line: 770
-				// Start offset: 0x000E7A08
-				// Variables:
-			// 		unsigned int a; // $v1
-
-				/* begin block 1.2.1.1 */
-					// Start line: 770
-					// Start offset: 0x000E7A08
-
-					/* begin block 1.2.1.1.1 */
-						// Start line: 713
-						// Start offset: 0x000E7A44
-						// Variables:
-					// 		unsigned int r; // $v0
-					/* end block 1.2.1.1.1 */
-					// End offset: 0x000E7A68
-					// End Line: 713
-				/* end block 1.2.1.1 */
-				// End offset: 0x000E7A68
-				// End Line: 713
-			/* end block 1.2.1 */
-			// End offset: 0x000E7A68
-			// End Line: 713
-
-			/* begin block 1.2.2 */
-				// Start line: 773
-				// Start offset: 0x000E7AAC
-				// Variables:
-			// 		tNode *pnode; // $s0
-
-				/* begin block 1.2.2.1 */
-					// Start line: 773
-					// Start offset: 0x000E7AAC
-					// Variables:
-				// 		unsigned int parent; // $a2
-				// 		unsigned int i; // $a3
-				/* end block 1.2.2.1 */
-				// End offset: 0x000E7B98
-				// End Line: 773
-			/* end block 1.2.2 */
-			// End offset: 0x000E7B98
-			// End Line: 773
-		/* end block 1.2 */
-		// End offset: 0x000E7B98
-		// End Line: 774
-	/* end block 1 */
-	// End offset: 0x000E7BA8
-	// End Line: 776
-
-	/* begin block 2 */
-		// Start line: 1525
-	/* end block 2 */
-	// End Line: 1526
-
-	/* begin block 3 */
-		// Start line: 1648
-	/* end block 3 */
-	// End Line: 1649
-
-	/* begin block 4 */
-		// Start line: 1649
-	/* end block 4 */
-	// End Line: 1650
-
-	/* begin block 5 */
-		// Start line: 1651
-	/* end block 5 */
-	// End Line: 1652
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void iterate(void)
@@ -1038,47 +640,6 @@ void iterate(void)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitPathFinding()
- // line 801, offset 0x000e7bd0
-	/* begin block 1 */
-		// Start line: 803
-		// Start offset: 0x000E7BD0
-		// Variables:
-	// 		int i; // $a0
-
-		/* begin block 1.1 */
-			// Start line: 802
-			// Start offset: 0x000E7BD0
-		/* end block 1.1 */
-		// End offset: 0x000E7BD0
-		// End Line: 802
-
-		/* begin block 1.2 */
-			// Start line: 802
-			// Start offset: 0x000E7BD0
-		/* end block 1.2 */
-		// End offset: 0x000E7BD0
-		// End Line: 802
-	/* end block 1 */
-	// End offset: 0x000E7CA8
-	// End Line: 819
-
-	/* begin block 2 */
-		// Start line: 1602
-	/* end block 2 */
-	// End Line: 1603
-
-	/* begin block 3 */
-		// Start line: 1603
-	/* end block 3 */
-	// End Line: 1604
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void InitPathFinding(void)
 {
@@ -1106,291 +667,6 @@ void InitPathFinding(void)
 	pathFrames = 0;
 	pathIterations = 129;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ getInterpolatedDistance(VECTOR *pos /*$s2*/)
- // line 821, offset 0x000e7ca8
-	/* begin block 1 */
-		// Start line: 822
-		// Start offset: 0x000E7CA8
-		// Variables:
-	// 		tNode n; // stack offset -72
-	// 		int fx; // $s4
-	// 		int fz; // $s5
-	// 		int a; // $s3
-	// 		int b; // $s2
-	// 		int c; // $v1
-	// 		int min; // $s0
-	// 		int flag; // $fp
-
-		/* begin block 1.1 */
-			// Start line: 822
-			// Start offset: 0x000E7CA8
-			// Variables:
-		// 		VECTOR *where; // $s2
-		// 		tNode *node; // $s0
-
-			/* begin block 1.1.1 */
-				// Start line: 822
-				// Start offset: 0x000E7CA8
-				// Variables:
-			// 		int x; // $v1
-
-				/* begin block 1.1.1.1 */
-					// Start line: 822
-					// Start offset: 0x000E7CA8
-					// Variables:
-				// 		tNode *pos; // $s0
-
-					/* begin block 1.1.1.1.1 */
-						// Start line: 822
-						// Start offset: 0x000E7CA8
-						// Variables:
-					// 		VECTOR sp; // stack offset -56
-
-						/* begin block 1.1.1.1.1.1 */
-							// Start line: 822
-							// Start offset: 0x000E7CA8
-
-							/* begin block 1.1.1.1.1.1.1 */
-								// Start line: 822
-								// Start offset: 0x000E7CA8
-								// Variables:
-							// 		int z; // $v0
-							// 		int x; // $a0
-							/* end block 1.1.1.1.1.1.1 */
-							// End offset: 0x000E7CA8
-							// End Line: 822
-						/* end block 1.1.1.1.1.1 */
-						// End offset: 0x000E7CA8
-						// End Line: 822
-
-						/* begin block 1.1.1.1.1.2 */
-							// Start line: 822
-							// Start offset: 0x000E7D78
-							// Variables:
-						// 		int res; // $v0
-						/* end block 1.1.1.1.1.2 */
-						// End offset: 0x000E7D9C
-						// End Line: 822
-					/* end block 1.1.1.1.1 */
-					// End offset: 0x000E7DA0
-					// End Line: 822
-				/* end block 1.1.1.1 */
-				// End offset: 0x000E7DA0
-				// End Line: 822
-			/* end block 1.1.1 */
-			// End offset: 0x000E7DA0
-			// End Line: 822
-		/* end block 1.1 */
-		// End offset: 0x000E7DA0
-		// End Line: 822
-
-		/* begin block 1.2 */
-			// Start line: 822
-			// Start offset: 0x000E7DA0
-
-			/* begin block 1.2.1 */
-				// Start line: 822
-				// Start offset: 0x000E7DA0
-				// Variables:
-			// 		int res; // $v0
-			/* end block 1.2.1 */
-			// End offset: 0x000E7DA0
-			// End Line: 822
-		/* end block 1.2 */
-		// End offset: 0x000E7DA0
-		// End Line: 822
-
-		/* begin block 1.3 */
-			// Start line: 822
-			// Start offset: 0x000E7DA0
-
-			/* begin block 1.3.1 */
-				// Start line: 822
-				// Start offset: 0x000E7DA0
-				// Variables:
-			// 		VECTOR sp; // stack offset -56
-
-				/* begin block 1.3.1.1 */
-					// Start line: 822
-					// Start offset: 0x000E7DA0
-
-					/* begin block 1.3.1.1.1 */
-						// Start line: 822
-						// Start offset: 0x000E7DA0
-						// Variables:
-					// 		int x; // $a3
-					// 		int z; // $v0
-					/* end block 1.3.1.1.1 */
-					// End offset: 0x000E7DA0
-					// End Line: 822
-				/* end block 1.3.1.1 */
-				// End offset: 0x000E7DA0
-				// End Line: 822
-
-				/* begin block 1.3.1.2 */
-					// Start line: 822
-					// Start offset: 0x000E7E84
-					// Variables:
-				// 		int res; // $v0
-				/* end block 1.3.1.2 */
-				// End offset: 0x000E7EA8
-				// End Line: 822
-			/* end block 1.3.1 */
-			// End offset: 0x000E7EAC
-			// End Line: 822
-		/* end block 1.3 */
-		// End offset: 0x000E7EAC
-		// End Line: 822
-
-		/* begin block 1.4 */
-			// Start line: 839
-			// Start offset: 0x000E7EAC
-
-			/* begin block 1.4.1 */
-				// Start line: 839
-				// Start offset: 0x000E7EAC
-				// Variables:
-			// 		int res; // $a0
-			/* end block 1.4.1 */
-			// End offset: 0x000E7EAC
-			// End Line: 839
-		/* end block 1.4 */
-		// End offset: 0x000E7EAC
-		// End Line: 839
-
-		/* begin block 1.5 */
-			// Start line: 848
-			// Start offset: 0x000E7F28
-
-			/* begin block 1.5.1 */
-				// Start line: 848
-				// Start offset: 0x000E7F28
-				// Variables:
-			// 		VECTOR sp; // stack offset -56
-
-				/* begin block 1.5.1.1 */
-					// Start line: 848
-					// Start offset: 0x000E7F28
-
-					/* begin block 1.5.1.1.1 */
-						// Start line: 848
-						// Start offset: 0x000E7F28
-						// Variables:
-					// 		int x; // $v1
-					// 		int z; // $v0
-					/* end block 1.5.1.1.1 */
-					// End offset: 0x000E7F28
-					// End Line: 848
-				/* end block 1.5.1.1 */
-				// End offset: 0x000E7F28
-				// End Line: 848
-
-				/* begin block 1.5.1.2 */
-					// Start line: 822
-					// Start offset: 0x000E7F8C
-					// Variables:
-				// 		int res; // $v0
-				/* end block 1.5.1.2 */
-				// End offset: 0x000E7FB0
-				// End Line: 822
-			/* end block 1.5.1 */
-			// End offset: 0x000E7FB4
-			// End Line: 822
-		/* end block 1.5 */
-		// End offset: 0x000E7FB4
-		// End Line: 822
-
-		/* begin block 1.6 */
-			// Start line: 850
-			// Start offset: 0x000E7FB4
-
-			/* begin block 1.6.1 */
-				// Start line: 850
-				// Start offset: 0x000E7FB4
-				// Variables:
-			// 		int res; // $a0
-			/* end block 1.6.1 */
-			// End offset: 0x000E7FB4
-			// End Line: 850
-		/* end block 1.6 */
-		// End offset: 0x000E7FB4
-		// End Line: 850
-
-		/* begin block 1.7 */
-			// Start line: 864
-			// Start offset: 0x000E807C
-
-			/* begin block 1.7.1 */
-				// Start line: 864
-				// Start offset: 0x000E807C
-				// Variables:
-			// 		VECTOR sp; // stack offset -56
-
-				/* begin block 1.7.1.1 */
-					// Start line: 864
-					// Start offset: 0x000E807C
-
-					/* begin block 1.7.1.1.1 */
-						// Start line: 864
-						// Start offset: 0x000E807C
-						// Variables:
-					// 		int x; // $v1
-					// 		int z; // $v0
-					/* end block 1.7.1.1.1 */
-					// End offset: 0x000E807C
-					// End Line: 864
-				/* end block 1.7.1.1 */
-				// End offset: 0x000E807C
-				// End Line: 864
-
-				/* begin block 1.7.1.2 */
-					// Start line: 822
-					// Start offset: 0x000E80D8
-					// Variables:
-				// 		int res; // $v0
-				/* end block 1.7.1.2 */
-				// End offset: 0x000E80FC
-				// End Line: 822
-			/* end block 1.7.1 */
-			// End offset: 0x000E8100
-			// End Line: 822
-		/* end block 1.7 */
-		// End offset: 0x000E8100
-		// End Line: 822
-
-		/* begin block 1.8 */
-			// Start line: 865
-			// Start offset: 0x000E8100
-
-			/* begin block 1.8.1 */
-				// Start line: 865
-				// Start offset: 0x000E8100
-				// Variables:
-			// 		int res; // $a0
-			/* end block 1.8.1 */
-			// End offset: 0x000E8100
-			// End Line: 865
-		/* end block 1.8 */
-		// End offset: 0x000E8100
-		// End Line: 865
-	/* end block 1 */
-	// End offset: 0x000E822C
-	// End Line: 880
-
-	/* begin block 2 */
-		// Start line: 1651
-	/* end block 2 */
-	// End Line: 1652
-
-	/* begin block 3 */
-		// Start line: 1654
-	/* end block 3 */
-	// End Line: 1655
 
 extern int sdLevel; // D2ROADS
 
@@ -1546,77 +822,6 @@ int getInterpolatedDistance(VECTOR* pos)
 	return lastDistanceFound;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ addCivs()
- // line 891, offset 0x000e822c
-	/* begin block 1 */
-		// Start line: 893
-		// Start offset: 0x000E822C
-		// Variables:
-	// 		CAR_DATA *cp; // $t5
-
-		/* begin block 1.1 */
-			// Start line: 898
-			// Start offset: 0x000E8260
-			// Variables:
-		// 		int where; // $a3
-
-			/* begin block 1.1.1 */
-				// Start line: 900
-				// Start offset: 0x000E8260
-				// Variables:
-			// 		int vx; // $a3
-			// 		int vz; // $a1
-			// 		int x; // $a3
-			// 		int z; // $t0
-			/* end block 1.1.1 */
-			// End offset: 0x000E8260
-			// End Line: 900
-
-			/* begin block 1.1.2 */
-				// Start line: 900
-				// Start offset: 0x000E8260
-				// Variables:
-			// 		int vx; // $t1
-			// 		int vz; // $t2
-			// 		int x; // $t1
-			// 		int z; // $a1
-			/* end block 1.1.2 */
-			// End offset: 0x000E8354
-			// End Line: 922
-		/* end block 1.1 */
-		// End offset: 0x000E8354
-		// End Line: 923
-	/* end block 1 */
-	// End offset: 0x000E836C
-	// End Line: 925
-
-	/* begin block 2 */
-		// Start line: 1793
-	/* end block 2 */
-	// End Line: 1794
-
-	/* begin block 3 */
-		// Start line: 1805
-	/* end block 3 */
-	// End Line: 1806
-
-	/* begin block 4 */
-		// Start line: 1806
-	/* end block 4 */
-	// End Line: 1807
-
-	/* begin block 5 */
-		// Start line: 1807
-	/* end block 5 */
-	// End Line: 1808
-
-/* WARNING: Type propagation algorithm not settling */
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void addCivs(void)
 {
@@ -1661,413 +866,11 @@ void addCivs(void)
 	} while (cp < &car_data[MAX_CARS - 1]);
 }
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ UpdateCopMap()
- // line 933, offset 0x000e836c
-	/* begin block 1 */
-		// Start line: 935
-		// Start offset: 0x000E836C
-
-		/* begin block 1.1 */
-			// Start line: 939
-			// Start offset: 0x000E83C0
-		/* end block 1.1 */
-		// End offset: 0x000E83C0
-		// End Line: 939
-
-		/* begin block 1.2 */
-			// Start line: 946
-			// Start offset: 0x000E83FC
-			// Variables:
-		// 		tNode startNode; // stack offset -72
-
-			/* begin block 1.2.1 */
-				// Start line: 952
-				// Start offset: 0x000E843C
-				// Variables:
-			// 		CAR_DATA *cp; // $a0
-			/* end block 1.2.1 */
-			// End offset: 0x000E843C
-			// End Line: 952
-
-			/* begin block 1.2.2 */
-				// Start line: 934
-				// Start offset: 0x000E8500
-
-				/* begin block 1.2.2.1 */
-					// Start line: 934
-					// Start offset: 0x000E8500
-
-					/* begin block 1.2.2.1.1 */
-						// Start line: 934
-						// Start offset: 0x000E8500
-
-						/* begin block 1.2.2.1.1.1 */
-							// Start line: 934
-							// Start offset: 0x000E8500
-							// Variables:
-						// 		int i; // $a1
-
-							/* begin block 1.2.2.1.1.1.1 */
-								// Start line: 934
-								// Start offset: 0x000E8524
-								// Variables:
-							// 		int d; // $v0
-							/* end block 1.2.2.1.1.1.1 */
-							// End offset: 0x000E8554
-							// End Line: 934
-						/* end block 1.2.2.1.1.1 */
-						// End offset: 0x000E8564
-						// End Line: 934
-					/* end block 1.2.2.1.1 */
-					// End offset: 0x000E8564
-					// End Line: 934
-				/* end block 1.2.2.1 */
-				// End offset: 0x000E8564
-				// End Line: 934
-			/* end block 1.2.2 */
-			// End offset: 0x000E8564
-			// End Line: 934
-
-			/* begin block 1.2.3 */
-				// Start line: 934
-				// Start offset: 0x000E8564
-
-				/* begin block 1.2.3.1 */
-					// Start line: 934
-					// Start offset: 0x000E8564
-					// Variables:
-				// 		int x; // $v0
-
-					/* begin block 1.2.3.1.1 */
-						// Start line: 934
-						// Start offset: 0x000E8564
-
-						/* begin block 1.2.3.1.1.1 */
-							// Start line: 934
-							// Start offset: 0x000E8564
-							// Variables:
-						// 		VECTOR sp; // stack offset -56
-
-							/* begin block 1.2.3.1.1.1.1 */
-								// Start line: 934
-								// Start offset: 0x000E8564
-
-								/* begin block 1.2.3.1.1.1.1.1 */
-									// Start line: 934
-									// Start offset: 0x000E8564
-									// Variables:
-								// 		int z; // $v0
-								// 		int x; // $v1
-								/* end block 1.2.3.1.1.1.1.1 */
-								// End offset: 0x000E8564
-								// End Line: 934
-							/* end block 1.2.3.1.1.1.1 */
-							// End offset: 0x000E8564
-							// End Line: 934
-
-							/* begin block 1.2.3.1.1.1.2 */
-								// Start line: 934
-								// Start offset: 0x000E8604
-								// Variables:
-							// 		int res; // $v0
-							/* end block 1.2.3.1.1.1.2 */
-							// End offset: 0x000E8628
-							// End Line: 934
-						/* end block 1.2.3.1.1.1 */
-						// End offset: 0x000E862C
-						// End Line: 934
-					/* end block 1.2.3.1.1 */
-					// End offset: 0x000E862C
-					// End Line: 934
-				/* end block 1.2.3.1 */
-				// End offset: 0x000E862C
-				// End Line: 934
-			/* end block 1.2.3 */
-			// End offset: 0x000E862C
-			// End Line: 934
-
-			/* begin block 1.2.4 */
-				// Start line: 934
-				// Start offset: 0x000E862C
-				// Variables:
-			// 		tNode n; // stack offset -56
-			// 		int fx; // $v1
-			// 		int fz; // $v0
-
-				/* begin block 1.2.4.1 */
-					// Start line: 934
-					// Start offset: 0x000E8660
-
-					/* begin block 1.2.4.1.1 */
-						// Start line: 934
-						// Start offset: 0x000E8660
-						// Variables:
-					// 		int dz; // $a0
-					// 		int dx; // $v0
-					/* end block 1.2.4.1.1 */
-					// End offset: 0x000E8660
-					// End Line: 934
-				/* end block 1.2.4.1 */
-				// End offset: 0x000E8660
-				// End Line: 934
-
-				/* begin block 1.2.4.2 */
-					// Start line: 934
-					// Start offset: 0x000E8660
-
-					/* begin block 1.2.4.2.1 */
-						// Start line: 934
-						// Start offset: 0x000E8660
-						// Variables:
-					// 		unsigned int parent; // $a2
-					// 		unsigned int i; // $a3
-					/* end block 1.2.4.2.1 */
-					// End offset: 0x000E8774
-					// End Line: 934
-				/* end block 1.2.4.2 */
-				// End offset: 0x000E8774
-				// End Line: 934
-
-				/* begin block 1.2.4.3 */
-					// Start line: 986
-					// Start offset: 0x000E8774
-
-					/* begin block 1.2.4.3.1 */
-						// Start line: 986
-						// Start offset: 0x000E8774
-						// Variables:
-					// 		int dz; // $a0
-					// 		int dx; // $v0
-					/* end block 1.2.4.3.1 */
-					// End offset: 0x000E8774
-					// End Line: 986
-				/* end block 1.2.4.3 */
-				// End offset: 0x000E8774
-				// End Line: 986
-
-				/* begin block 1.2.4.4 */
-					// Start line: 986
-					// Start offset: 0x000E8774
-
-					/* begin block 1.2.4.4.1 */
-						// Start line: 986
-						// Start offset: 0x000E8774
-						// Variables:
-					// 		unsigned int parent; // $a2
-					// 		unsigned int i; // $a3
-					/* end block 1.2.4.4.1 */
-					// End offset: 0x000E88B4
-					// End Line: 987
-				/* end block 1.2.4.4 */
-				// End offset: 0x000E88B4
-				// End Line: 987
-
-				/* begin block 1.2.4.5 */
-					// Start line: 989
-					// Start offset: 0x000E88B4
-
-					/* begin block 1.2.4.5.1 */
-						// Start line: 989
-						// Start offset: 0x000E88B4
-						// Variables:
-					// 		int dz; // $a0
-					// 		int dx; // $v0
-					/* end block 1.2.4.5.1 */
-					// End offset: 0x000E88B4
-					// End Line: 989
-				/* end block 1.2.4.5 */
-				// End offset: 0x000E88B4
-				// End Line: 989
-
-				/* begin block 1.2.4.6 */
-					// Start line: 989
-					// Start offset: 0x000E88B4
-
-					/* begin block 1.2.4.6.1 */
-						// Start line: 989
-						// Start offset: 0x000E88B4
-						// Variables:
-					// 		unsigned int parent; // $a2
-					// 		unsigned int i; // $a3
-					/* end block 1.2.4.6.1 */
-					// End offset: 0x000E89BC
-					// End Line: 990
-				/* end block 1.2.4.6 */
-				// End offset: 0x000E89BC
-				// End Line: 990
-
-				/* begin block 1.2.4.7 */
-					// Start line: 934
-					// Start offset: 0x000E89C4
-
-					/* begin block 1.2.4.7.1 */
-						// Start line: 934
-						// Start offset: 0x000E89C4
-						// Variables:
-					// 		int dz; // $a0
-					// 		int dx; // $v0
-					/* end block 1.2.4.7.1 */
-					// End offset: 0x000E89C4
-					// End Line: 934
-				/* end block 1.2.4.7 */
-				// End offset: 0x000E89C4
-				// End Line: 934
-
-				/* begin block 1.2.4.8 */
-					// Start line: 934
-					// Start offset: 0x000E89C4
-
-					/* begin block 1.2.4.8.1 */
-						// Start line: 934
-						// Start offset: 0x000E89C4
-						// Variables:
-					// 		unsigned int parent; // $a2
-					// 		unsigned int i; // $a3
-					/* end block 1.2.4.8.1 */
-					// End offset: 0x000E8AD8
-					// End Line: 934
-				/* end block 1.2.4.8 */
-				// End offset: 0x000E8AD8
-				// End Line: 934
-
-				/* begin block 1.2.4.9 */
-					// Start line: 996
-					// Start offset: 0x000E8AD8
-
-					/* begin block 1.2.4.9.1 */
-						// Start line: 996
-						// Start offset: 0x000E8AD8
-						// Variables:
-					// 		int dz; // $a0
-					// 		int dx; // $v0
-					/* end block 1.2.4.9.1 */
-					// End offset: 0x000E8AD8
-					// End Line: 996
-				/* end block 1.2.4.9 */
-				// End offset: 0x000E8AD8
-				// End Line: 996
-
-				/* begin block 1.2.4.10 */
-					// Start line: 996
-					// Start offset: 0x000E8AD8
-
-					/* begin block 1.2.4.10.1 */
-						// Start line: 996
-						// Start offset: 0x000E8AD8
-						// Variables:
-					// 		unsigned int parent; // $a2
-					// 		unsigned int i; // $a3
-					/* end block 1.2.4.10.1 */
-					// End offset: 0x000E8C18
-					// End Line: 997
-				/* end block 1.2.4.10 */
-				// End offset: 0x000E8C18
-				// End Line: 997
-
-				/* begin block 1.2.4.11 */
-					// Start line: 999
-					// Start offset: 0x000E8C18
-
-					/* begin block 1.2.4.11.1 */
-						// Start line: 999
-						// Start offset: 0x000E8C18
-						// Variables:
-					// 		int dz; // $a0
-					// 		int dx; // $v0
-					/* end block 1.2.4.11.1 */
-					// End offset: 0x000E8C18
-					// End Line: 999
-				/* end block 1.2.4.11 */
-				// End offset: 0x000E8C18
-				// End Line: 999
-
-				/* begin block 1.2.4.12 */
-					// Start line: 999
-					// Start offset: 0x000E8C18
-
-					/* begin block 1.2.4.12.1 */
-						// Start line: 999
-						// Start offset: 0x000E8C18
-						// Variables:
-					// 		unsigned int parent; // $a2
-					// 		unsigned int i; // $a3
-					/* end block 1.2.4.12.1 */
-					// End offset: 0x000E8D18
-					// End Line: 999
-				/* end block 1.2.4.12 */
-				// End offset: 0x000E8D18
-				// End Line: 999
-			/* end block 1.2.4 */
-			// End offset: 0x000E8D18
-			// End Line: 999
-		/* end block 1.2 */
-		// End offset: 0x000E8D18
-		// End Line: 999
-
-		/* begin block 1.3 */
-			// Start line: 1010
-			// Start offset: 0x000E8D54
-			// Variables:
-		// 		int i; // $s0
-
-			/* begin block 1.3.1 */
-				// Start line: 934
-				// Start offset: 0x000E8DF4
-			/* end block 1.3.1 */
-			// End offset: 0x000E8DFC
-			// End Line: 934
-		/* end block 1.3 */
-		// End offset: 0x000E8DFC
-		// End Line: 1024
-
-		/* begin block 1.4 */
-			// Start line: 1027
-			// Start offset: 0x000E8DFC
-			// Variables:
-		// 		int i; // $a1
-		// 		int maxRet; // $a0
-		/* end block 1.4 */
-		// End offset: 0x000E8E70
-		// End Line: 1038
-
-		/* begin block 1.5 */
-			// Start line: 1041
-			// Start offset: 0x000E8E70
-			// Variables:
-		// 		int dx; // $a0
-		// 		int dy; // $v1
-		// 		int dz; // $v0
-		/* end block 1.5 */
-		// End offset: 0x000E8F00
-		// End Line: 1045
-	/* end block 1 */
-	// End offset: 0x000E8F00
-	// End Line: 1046
-
-	/* begin block 2 */
-		// Start line: 1938
-	/* end block 2 */
-	// End Line: 1939
-
-	/* begin block 3 */
-		// Start line: 1947
-	/* end block 3 */
-	// End Line: 1948
-
-	/* begin block 4 */
-		// Start line: 1948
-	/* end block 4 */
-	// End Line: 1949
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void UpdateCopMap(void)
 {
 	int d;
-	long dist;
+	int dist;
 	int dx, dy, dz;
 	int i, maxret;
 	int res;
@@ -2367,84 +1170,6 @@ void UpdateCopMap(void)
 
 	playerTargetDistanceSq = dx * dx + dy * dy + dz * dz;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ getHeadingToPlayer(int vx /*$s4*/, int vy /*$a1*/, int vz /*$s3*/)
- // line 1050, offset 0x000e8f00
-	/* begin block 1 */
-		// Start line: 1051
-		// Start offset: 0x000E8F00
-		// Variables:
-	// 		int d1; // $s2
-	// 		int d2; // $s1
-	// 		int d3; // $s0
-	// 		VECTOR pos; // stack offset -48
-
-		/* begin block 1.1 */
-			// Start line: 1051
-			// Start offset: 0x000E8F00
-			// Variables:
-		// 		int dx; // $a3
-		// 		int dy; // $v1
-		// 		int dz; // $v0
-		// 		int playerHereDistSq; // $a3
-
-			/* begin block 1.1.1 */
-				// Start line: 1071
-				// Start offset: 0x000E8F98
-			/* end block 1.1.1 */
-			// End offset: 0x000E8F98
-			// End Line: 1073
-		/* end block 1.1 */
-		// End offset: 0x000E8F98
-		// End Line: 1074
-
-		/* begin block 1.2 */
-			// Start line: 1098
-			// Start offset: 0x000E8FF8
-		/* end block 1.2 */
-		// End offset: 0x000E9024
-		// End Line: 1100
-
-		/* begin block 1.3 */
-			// Start line: 1102
-			// Start offset: 0x000E9030
-		/* end block 1.3 */
-		// End offset: 0x000E9058
-		// End Line: 1110
-
-		/* begin block 1.4 */
-			// Start line: 1106
-			// Start offset: 0x000E9058
-		/* end block 1.4 */
-		// End offset: 0x000E90A4
-		// End Line: 1111
-	/* end block 1 */
-	// End offset: 0x000E90A4
-	// End Line: 1112
-
-	/* begin block 2 */
-		// Start line: 2208
-	/* end block 2 */
-	// End Line: 2209
-
-	/* begin block 3 */
-		// Start line: 2209
-	/* end block 3 */
-	// End Line: 2210
-
-	/* begin block 4 */
-		// Start line: 2214
-	/* end block 4 */
-	// End Line: 2215
-
-	/* begin block 5 */
-		// Start line: 2228
-	/* end block 5 */
-	// End Line: 2229
 
 // [D] [T]
 int getHeadingToPlayer(int vx, int vy, int vz)

@@ -62,6 +62,19 @@ char gUserReplayFolderList[MAX_USER_REPLAYS][48];
 int gNumUserChases = 0;
 int gUserChaseLoaded = -1;
 
+int LoadInGameCutscene(int subindex);
+int TriggerInGameCutsceneSystem(int cutscene);
+void SetNullPlayer(int plr);
+void SetNullPlayerDontKill(int plr);
+void DestroyPlayer(int plr, int fully);
+void FindNextCutChange(int cameracnt);
+int LoadCutsceneToReplayBuffer(int residentCutscene);
+int LoadCutsceneToBuffer(int subindex);
+void ShowCutsceneError();
+int LoadCutsceneInformation(int cutscene);
+void FreeCutsceneBuffer();
+int IsCutsceneResident(int cutscene);
+
 // [A] user replay folders initialization
 void InitUserReplays(const char* str)
 {
@@ -105,26 +118,6 @@ void InitUserReplays(const char* str)
 
 #endif
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitInGameCutsceneVariables()
- // line 566, offset 0x000325c0
-	/* begin block 1 */
-		// Start line: 2383
-	/* end block 1 */
-	// End Line: 2384
-
-	/* begin block 2 */
-		// Start line: 1132
-	/* end block 2 */
-	// End Line: 1133
-
-	/* begin block 3 */
-		// Start line: 2384
-	/* end block 3 */
-	// End Line: 2385
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void InitInGameCutsceneVariables(void)
@@ -156,43 +149,6 @@ void InitInGameCutsceneVariables(void)
 
 	FreeCutsceneBuffer();
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ HandleInGameCutscene()
- // line 594, offset 0x0003262c
-	/* begin block 1 */
-		// Start line: 596
-		// Start offset: 0x0003262C
-
-		/* begin block 1.1 */
-			// Start line: 631
-			// Start offset: 0x0003270C
-		/* end block 1.1 */
-		// End offset: 0x00032730
-		// End Line: 642
-	/* end block 1 */
-	// End offset: 0x00032740
-	// End Line: 644
-
-	/* begin block 2 */
-		// Start line: 2446
-	/* end block 2 */
-	// End Line: 2447
-
-	/* begin block 3 */
-		// Start line: 2447
-	/* end block 3 */
-	// End Line: 2448
-
-	/* begin block 4 */
-		// Start line: 2452
-	/* end block 4 */
-	// End Line: 2453
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void HandleInGameCutscene(void)
@@ -264,38 +220,6 @@ void HandleInGameCutscene(void)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawInGameCutscene()
- // line 646, offset 0x00031398
-	/* begin block 1 */
-		// Start line: 648
-		// Start offset: 0x00031398
-		// Variables:
-	// 		TILE *tile; // $s0
-	/* end block 1 */
-	// End offset: 0x000314E8
-	// End Line: 676
-
-	/* begin block 2 */
-		// Start line: 1292
-	/* end block 2 */
-	// End Line: 1293
-
-	/* begin block 3 */
-		// Start line: 1293
-	/* end block 3 */
-	// End Line: 1294
-
-	/* begin block 4 */
-		// Start line: 1300
-	/* end block 4 */
-	// End Line: 1301
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void DrawInGameCutscene(void)
 {
@@ -363,40 +287,6 @@ void DrawInGameCutscene(void)
 	current->primptr += sizeof(TILE) * 2;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ TriggerChase(int *car /*$s2*/, int cutscene /*$a1*/)
- // line 683, offset 0x000314e8
-	/* begin block 1 */
-		// Start line: 684
-		// Start offset: 0x000314E8
-		// Variables:
-	// 		void *inform; // $s3
-	// 		int i; // $a0
-	// 		int length; // $s1
-
-		/* begin block 1.1 */
-			// Start line: 695
-			// Start offset: 0x00031558
-		/* end block 1.1 */
-		// End offset: 0x000316A4
-		// End Line: 721
-	/* end block 1 */
-	// End offset: 0x000316EC
-	// End Line: 725
-
-	/* begin block 2 */
-		// Start line: 1380
-	/* end block 2 */
-	// End Line: 1381
-
-	/* begin block 3 */
-		// Start line: 1388
-	/* end block 3 */
-	// End Line: 1389
-
 // [D] [T]
 void TriggerChase(int *car, int cutscene)
 {
@@ -444,36 +334,6 @@ void TriggerChase(int *car, int cutscene)
 	car_data[*car].inform = inform;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ TriggerInGameCutscene(int cutscene /*$s0*/)
- // line 732, offset 0x00032740
-	/* begin block 1 */
-		// Start line: 733
-		// Start offset: 0x00032740
-
-		/* begin block 1.1 */
-			// Start line: 762
-			// Start offset: 0x000327F0
-		/* end block 1.1 */
-		// End offset: 0x0003282C
-		// End Line: 769
-	/* end block 1 */
-	// End offset: 0x0003282C
-	// End Line: 770
-
-	/* begin block 2 */
-		// Start line: 2637
-	/* end block 2 */
-	// End Line: 2638
-
-	/* begin block 3 */
-		// Start line: 2726
-	/* end block 3 */
-	// End Line: 2727
-
 static int SavedCameraView = 0;
 static int SavedWorldCentreCarId = 0;
 static VECTOR *SavedSpoolXZ = NULL;
@@ -519,39 +379,6 @@ void TriggerInGameCutscene(int cutscene)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CalcInGameCutsceneSize()
- // line 778, offset 0x0003283c
-	/* begin block 1 */
-		// Start line: 817
-		// Start offset: 0x0003283C
-		// Variables:
-	// 		CUTSCENE_HEADER header; // stack offset -136
-	// 		char filename[64]; // stack offset -72
-	/* end block 1 */
-	// End offset: 0x000328C8
-	// End Line: 830
-
-	/* begin block 2 */
-		// Start line: 2827
-	/* end block 2 */
-	// End Line: 2828
-
-	/* begin block 3 */
-		// Start line: 2865
-	/* end block 3 */
-	// End Line: 2866
-
-	/* begin block 4 */
-		// Start line: 2868
-	/* end block 4 */
-	// End Line: 2869
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 int CalcInGameCutsceneSize(void)
 {
@@ -570,46 +397,6 @@ int CalcInGameCutsceneSize(void)
 
 	return header.maxsize;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ReleaseInGameCutscene()
- // line 838, offset 0x000316ec
-	/* begin block 1 */
-		// Start line: 840
-		// Start offset: 0x000316EC
-
-		/* begin block 1.1 */
-			// Start line: 845
-			// Start offset: 0x00031748
-			// Variables:
-		// 		STREAM_SOURCE *pinfo; // $a0
-		// 		int i; // $s0
-		/* end block 1.1 */
-		// End offset: 0x00031978
-		// End Line: 917
-	/* end block 1 */
-	// End offset: 0x00031A20
-	// End Line: 943
-
-	/* begin block 2 */
-		// Start line: 1601
-	/* end block 2 */
-	// End Line: 1602
-
-	/* begin block 3 */
-		// Start line: 1715
-	/* end block 3 */
-	// End Line: 1716
-
-	/* begin block 4 */
-		// Start line: 1716
-	/* end block 4 */
-	// End Line: 1717
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void ReleaseInGameCutscene(void)
@@ -717,48 +504,11 @@ void ReleaseInGameCutscene(void)
 	xa_timeout = 120;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ PreLoadInGameCutscene(int chase /*$a0*/)
- // line 951, offset 0x000328c8
-	/* begin block 1 */
-		// Start line: 3054
-	/* end block 1 */
-	// End Line: 3055
-
-	/* begin block 2 */
-		// Start line: 3176
-	/* end block 2 */
-	// End Line: 3177
-
-	/* begin block 3 */
-		// Start line: 3177
-	/* end block 3 */
-	// End Line: 3178
-
 // [D] [T]
 int PreLoadInGameCutscene(int chase)
 {
 	return LoadInGameCutscene(chase) != 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CutsceneCameraChange(int cameracnt /*$s0*/)
- // line 965, offset 0x000328e8
-	/* begin block 1 */
-		// Start line: 3204
-	/* end block 1 */
-	// End Line: 3205
-
-	/* begin block 2 */
-		// Start line: 3212
-	/* end block 2 */
-	// End Line: 3213
 
 // [D] [T]
 int CutsceneCameraChange(int cameracnt)
@@ -793,115 +543,26 @@ int CutsceneCameraChange(int cameracnt)
 	return 1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ LoadInGameCutscene(int subindex /*$s1*/)
- // line 1010, offset 0x000329b4
-	/* begin block 1 */
-		// Start line: 1011
-		// Start offset: 0x000329B4
-		// Variables:
-	// 		int ret; // $s0
-	/* end block 1 */
-	// End offset: 0x00032A34
-	// End Line: 1033
-
-	/* begin block 2 */
-		// Start line: 3298
-	/* end block 2 */
-	// End Line: 3299
-
-	/* begin block 3 */
-		// Start line: 3301
-	/* end block 3 */
-	// End Line: 3302
-
 // [D] [T]
 int LoadInGameCutscene(int subindex)
 {
 	if (CutsceneInReplayBuffer)
 		return LoadCutsceneToBuffer(subindex);
 
-	if (LoadCutsceneToBuffer(subindex) != 0)
+	if (LoadCutsceneToBuffer(subindex))
 	{
-		if (LoadCutsceneToReplayBuffer(0) != 0)
+		if (LoadCutsceneToReplayBuffer(0))
 		{
 			CutsceneInReplayBuffer = 1;
 			PreLoadedCutscene = subindex;
 		}
 
 		FreeCutsceneBuffer();
+		return 1;
 	}
+
+	return 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ TriggerInGameCutsceneSystem(int cutscene /*$a0*/)
- // line 1040, offset 0x00031a20
-	/* begin block 1 */
-		// Start line: 1041
-		// Start offset: 0x00031A20
-		// Variables:
-	// 		static char padid[8]; // offset 0x0
-	// 		int bDamageOverride; // stack offset -64
-	// 		int i; // $s2
-	// 		int id; // $v1
-
-		/* begin block 1.1 */
-			// Start line: 1058
-			// Start offset: 0x00031A64
-
-			/* begin block 1.1.1 */
-				// Start line: 1094
-				// Start offset: 0x00031BC4
-				// Variables:
-			// 		int car; // $v1
-			// 		int model; // $v1
-			// 		int palette; // $a1
-			/* end block 1.1.1 */
-			// End offset: 0x00031C1C
-			// End Line: 1105
-
-			/* begin block 1.1.2 */
-				// Start line: 1125
-				// Start offset: 0x00031CAC
-
-				/* begin block 1.1.2.1 */
-					// Start line: 1130
-					// Start offset: 0x00031D0C
-					// Variables:
-				// 		int car; // $v1
-				/* end block 1.1.2.1 */
-				// End offset: 0x00031D90
-				// End Line: 1144
-			/* end block 1.1.2 */
-			// End offset: 0x00031D90
-			// End Line: 1152
-		/* end block 1.1 */
-		// End offset: 0x00031EA0
-		// End Line: 1186
-	/* end block 1 */
-	// End offset: 0x00031EDC
-	// End Line: 1191
-
-	/* begin block 2 */
-		// Start line: 2105
-	/* end block 2 */
-	// End Line: 2106
-
-	/* begin block 3 */
-		// Start line: 2203
-	/* end block 3 */
-	// End Line: 2204
-
-	/* begin block 4 */
-		// Start line: 2209
-	/* end block 4 */
-	// End Line: 2210
 
 // [D] [T]
 int TriggerInGameCutsceneSystem(int cutscene)
@@ -980,7 +641,7 @@ int TriggerInGameCutsceneSystem(int cutscene)
 						InitPlayer(&player[player_id], cp,
 							stream->SourceType.controlType, 
 							stream->SourceType.rotation,
-							(LONGVECTOR* )&stream->SourceType.position,
+							(LONGVECTOR4* )&stream->SourceType.position,
 							stream->SourceType.model,
 							stream->SourceType.palette,
 							&padid[player_id]);
@@ -1006,7 +667,7 @@ int TriggerInGameCutsceneSystem(int cutscene)
 					else 
 					{
 						slot = CreateStationaryCivCar(stream->SourceType.rotation, 0, 1024, 
-							(LONGVECTOR* )&stream->SourceType.position,
+							(LONGVECTOR4* )&stream->SourceType.position,
 							stream->SourceType.model, 
 							stream->SourceType.palette, 0);
 
@@ -1054,34 +715,6 @@ int TriggerInGameCutsceneSystem(int cutscene)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetNullPlayer(int plr /*$a0*/)
- // line 1199, offset 0x00031edc
-	/* begin block 1 */
-		// Start line: 1200
-		// Start offset: 0x00031EDC
-	/* end block 1 */
-	// End offset: 0x00031F60
-	// End Line: 1213
-
-	/* begin block 2 */
-		// Start line: 2628
-	/* end block 2 */
-	// End Line: 2629
-
-	/* begin block 3 */
-		// Start line: 2637
-	/* end block 3 */
-	// End Line: 2638
-
-	/* begin block 4 */
-		// Start line: 2640
-	/* end block 4 */
-	// End Line: 2641
-
 // [D] [T]
 void SetNullPlayer(int plr)
 {
@@ -1100,34 +733,6 @@ void SetNullPlayer(int plr)
 	player[plr].playerType = 3;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetNullPlayerDontKill(int plr /*$a0*/)
- // line 1221, offset 0x00031f60
-	/* begin block 1 */
-		// Start line: 1222
-		// Start offset: 0x00031F60
-	/* end block 1 */
-	// End offset: 0x00031FE0
-	// End Line: 1235
-
-	/* begin block 2 */
-		// Start line: 2675
-	/* end block 2 */
-	// End Line: 2676
-
-	/* begin block 3 */
-		// Start line: 2684
-	/* end block 3 */
-	// End Line: 2685
-
-	/* begin block 4 */
-		// Start line: 2687
-	/* end block 4 */
-	// End Line: 2688
-
 // [D] [T]
 void SetNullPlayerDontKill(int plr)
 {
@@ -1145,22 +750,6 @@ void SetNullPlayerDontKill(int plr)
 
 	player[plr].playerType = 3;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DestroyPlayer(int plr /*$s0*/, int fully /*$a1*/)
- // line 1244, offset 0x00031fe0
-	/* begin block 1 */
-		// Start line: 2723
-	/* end block 1 */
-	// End Line: 2724
-
-	/* begin block 2 */
-		// Start line: 2733
-	/* end block 2 */
-	// End Line: 2734
 
 // [D] [T]
 void DestroyPlayer(int plr, int fully)
@@ -1184,38 +773,6 @@ void DestroyPlayer(int plr, int fully)
 	player[plr].playerCarId = -1;
 	player[plr].pPed = NULL;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ FindNextCutChange(int cameracnt /*$a0*/)
- // line 1274, offset 0x00032a34
-	/* begin block 1 */
-		// Start line: 1275
-		// Start offset: 0x00032A34
-		// Variables:
-	// 		int found; // $t0
-	// 		int count; // $a3
-	// 		int nextframe; // $a2
-	/* end block 1 */
-	// End offset: 0x00032A98
-	// End Line: 1291
-
-	/* begin block 2 */
-		// Start line: 3587
-	/* end block 2 */
-	// End Line: 3588
-
-	/* begin block 3 */
-		// Start line: 3829
-	/* end block 3 */
-	// End Line: 3830
-
-	/* begin block 4 */
-		// Start line: 3830
-	/* end block 4 */
-	// End Line: 3831
 
 // [D] [T]
 void FindNextCutChange(int cameracnt)
@@ -1243,41 +800,6 @@ void FindNextCutChange(int cameracnt)
 	if (!found)
 		CutNextChange->next = -2;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ LoadCutsceneToReplayBuffer(int residentCutscene /*$a0*/)
- // line 1299, offset 0x00032118
-	/* begin block 1 */
-		// Start line: 1301
-		// Start offset: 0x00032118
-		// Variables:
-	// 		REPLAY_SAVE_HEADER *rheader; // $a1
-	// 		REPLAY_STREAM_HEADER *sheader; // $t1
-	// 		char filename[64]; // stack offset -88
-	// 		char *pt; // $s1
-	// 		int i; // $a0
-	// 		int size; // $s0
-	/* end block 1 */
-	// End offset: 0x0003243C
-	// End Line: 1355
-
-	/* begin block 2 */
-		// Start line: 2846
-	/* end block 2 */
-	// End Line: 2847
-
-	/* begin block 3 */
-		// Start line: 2847
-	/* end block 3 */
-	// End Line: 2848
-
-	/* begin block 4 */
-		// Start line: 2852
-	/* end block 4 */
-	// End Line: 2853
 
 // [D] [T]
 int LoadCutsceneToReplayBuffer(int residentCutscene)
@@ -1415,38 +937,6 @@ int LoadUserCutscene(int subindex, int userId = -1)
 }
 #endif
 
-// decompiled code
-// original method signature: 
-// int /*$ra*/ LoadCutsceneToBuffer(int subindex /*$s3*/)
- // line 1362, offset 0x0003243c
-	/* begin block 1 */
-		// Start line: 1363
-		// Start offset: 0x0003243C
-		// Variables:
-	// 		CUTSCENE_HEADER header; // stack offset -440
-	// 		REPLAY_SAVE_HEADER rheader; // stack offset -376
-	// 		char filename[64]; // stack offset -88
-	// 		int offset; // $a2
-	// 		int size; // $s0
-	/* end block 1 */
-	// End offset: 0x000325C0
-	// End Line: 1440
-
-	/* begin block 2 */
-		// Start line: 3041
-	/* end block 2 */
-	// End Line: 3042
-
-	/* begin block 3 */
-		// Start line: 3049
-	/* end block 3 */
-	// End Line: 3050
-
-	/* begin block 4 */
-		// Start line: 3090
-	/* end block 4 */
-	// End Line: 3091
-
 // [D] [T]
 int LoadCutsceneToBuffer(int subindex)
 {
@@ -1520,29 +1010,6 @@ int LoadCutsceneToBuffer(int subindex)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ShowCutsceneError()
- // line 1442, offset 0x00032c08
-	/* begin block 1 */
-		// Start line: 4288
-	/* end block 1 */
-	// End Line: 4289
-
-	/* begin block 2 */
-		// Start line: 2884
-	/* end block 2 */
-	// End Line: 2885
-
-	/* begin block 3 */
-		// Start line: 4309
-	/* end block 3 */
-	// End Line: 4310
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [A] From Code Review
 void ShowCutsceneError(void)
 {
@@ -1568,36 +1035,6 @@ void ShowCutsceneError(void)
 
 	VSync(20);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ LoadCutsceneInformation(int cutscene /*$s2*/)
- // line 1471, offset 0x00032a98
-	/* begin block 1 */
-		// Start line: 1472
-		// Start offset: 0x00032A98
-		// Variables:
-	// 		int i; // $s1
-	/* end block 1 */
-	// End offset: 0x00032B54
-	// End Line: 1498
-
-	/* begin block 2 */
-		// Start line: 4048
-	/* end block 2 */
-	// End Line: 4049
-
-	/* begin block 3 */
-		// Start line: 4229
-	/* end block 3 */
-	// End Line: 4230
-
-	/* begin block 4 */
-		// Start line: 4232
-	/* end block 4 */
-	// End Line: 4233
 
 // [D] [T]
 int LoadCutsceneInformation(int cutscene)
@@ -1628,43 +1065,6 @@ int LoadCutsceneInformation(int cutscene)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ FreeCutsceneBuffer()
- // line 1505, offset 0x00032b54
-	/* begin block 1 */
-		// Start line: 1507
-		// Start offset: 0x00032B54
-		// Variables:
-	// 		int i; // $v1
-	/* end block 1 */
-	// End offset: 0x00032BC0
-	// End Line: 1518
-
-	/* begin block 2 */
-		// Start line: 4307
-	/* end block 2 */
-	// End Line: 4308
-
-	/* begin block 3 */
-		// Start line: 4315
-	/* end block 3 */
-	// End Line: 4316
-
-	/* begin block 4 */
-		// Start line: 4316
-	/* end block 4 */
-	// End Line: 4317
-
-	/* begin block 5 */
-		// Start line: 4318
-	/* end block 5 */
-	// End Line: 4319
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void FreeCutsceneBuffer(void)
 {
@@ -1686,36 +1086,6 @@ void FreeCutsceneBuffer(void)
 	gCustomCutsceneBuffer = _other_buffer2;
 #endif
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ IsCutsceneResident(int cutscene /*$a0*/)
- // line 1520, offset 0x00032bc0
-	/* begin block 1 */
-		// Start line: 1521
-		// Start offset: 0x00032BC0
-		// Variables:
-	// 		int i; // $a1
-	/* end block 1 */
-	// End offset: 0x00032C08
-	// End Line: 1533
-
-	/* begin block 2 */
-		// Start line: 4349
-	/* end block 2 */
-	// End Line: 4350
-
-	/* begin block 3 */
-		// Start line: 4352
-	/* end block 3 */
-	// End Line: 4353
-
-	/* begin block 4 */
-		// Start line: 4355
-	/* end block 4 */
-	// End Line: 4356
 
 // [D] [T]
 int IsCutsceneResident(int cutscene)

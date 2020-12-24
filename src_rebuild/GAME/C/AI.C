@@ -8,66 +8,12 @@
 #include "PLAYERS.H"
 #include "REPLAYS.H"
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ StoreGameFlags()
- // line 275, offset 0x0001bbb8
-	/* begin block 1 */
-		// Start line: 615
-	/* end block 1 */
-	// End Line: 616
-
-	/* begin block 2 */
-		// Start line: 550
-	/* end block 2 */
-	// End Line: 551
-
-	/* begin block 3 */
-		// Start line: 616
-	/* end block 3 */
-	// End Line: 617
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void StoreGameFlags(void)
 {
 	ReplayParameterPtr->weather = gWeather;
 	ReplayParameterPtr->timeofday = gTimeOfDay;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ TannerCanEnterCar(CAR_DATA *cp /*$a0*/, int distToCarSq /*$a1*/)
- // line 297, offset 0x0001bbe8
-	/* begin block 1 */
-		// Start line: 298
-		// Start offset: 0x0001BBE8
-
-		/* begin block 1.1 */
-			// Start line: 310
-			// Start offset: 0x0001BC7C
-			// Variables:
-		// 		SVECTOR *carCollBox; // $v0
-		// 		int carRange; // $a0
-		/* end block 1.1 */
-		// End offset: 0x0001BCCC
-		// End Line: 317
-	/* end block 1 */
-	// End offset: 0x0001BCD4
-	// End Line: 320
-
-	/* begin block 2 */
-		// Start line: 659
-	/* end block 2 */
-	// End Line: 660
-
-	/* begin block 3 */
-		// Start line: 660
-	/* end block 3 */
-	// End Line: 661
 
 // [D] [T]
 int TannerCanEnterCar(CAR_DATA *cp, int distToCarSq)
@@ -95,31 +41,6 @@ int TannerCanEnterCar(CAR_DATA *cp, int distToCarSq)
 
 	return 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ TannerStuckInCar(int doSpeedCheck /*$a0*/)
- // line 324, offset 0x0001ba90
-	/* begin block 1 */
-		// Start line: 325
-		// Start offset: 0x0001BA90
-		// Variables:
-	// 		CAR_DATA *cp; // $a2
-	/* end block 1 */
-	// End offset: 0x0001BBB8
-	// End Line: 341
-
-	/* begin block 2 */
-		// Start line: 648
-	/* end block 2 */
-	// End Line: 649
-
-	/* begin block 3 */
-		// Start line: 649
-	/* end block 3 */
-	// End Line: 650
 
 // [D]
 int TannerStuckInCar(int doSpeedCheck, int player_id)

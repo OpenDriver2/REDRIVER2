@@ -10,6 +10,21 @@
 #include "XAPLAY.H"
 #include "GLAUNCH.H"
 
+typedef struct __io
+{
+	char in;
+	char out;
+} io;
+
+typedef struct __xa_request
+{
+	short delay;
+	char bank;
+	char track;
+	char mission;
+	char cutscene;
+} xa_request;
+
 char missionstarts[42] = {
 	0xFF, 0xFF, 0, 2, 4, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
 	6, 8, 0xFF, 9, 0xFF, 12, 13, 0xFF, 14, 0xFF, 19,
@@ -18,7 +33,7 @@ char missionstarts[42] = {
 	46, 48, 49
 };
 
-__io id_map[49] =
+io id_map[49] =
 {
 	{0, 0},{0, 1},
 	
@@ -77,7 +92,7 @@ __io id_map[49] =
 	{39, 0},
 };
 
-__xa_request xa_data[26] = {
+xa_request xa_data[26] = {
 	{16, 0, 0, 1, 0},
 	{25, 0, 1, 2, 0},
 	{30, 0, 2, 3, 0},
@@ -108,29 +123,8 @@ __xa_request xa_data[26] = {
 };
 
 int cutscene_timer = 0;
-long pos[3];
-static int bodgevar = 0;
-
-// decompiled code
-// original method signature: 
-// char /*$ra*/ GetMissionSound(char id /*$s1*/)
- // line 88, offset 0x0005d814
-	/* begin block 1 */
-		// Start line: 89
-		// Start offset: 0x0005D814
-		// Variables:
-	// 		char c; // $s0
-	// 		char start; // $s2
-	// 		char end; // $a0
-	// 		char rnd; // $t1
-	/* end block 1 */
-	// End offset: 0x0005D950
-	// End Line: 106
-
-	/* begin block 2 */
-		// Start line: 176
-	/* end block 2 */
-	// End Line: 177
+static LONGVECTOR3 pos;
+static intptr_t bodgevar = 0;
 
 // [D] [T]
 char GetMissionSound(char id)
@@ -173,37 +167,12 @@ char GetMissionSound(char id)
 	return -1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ RequestXA()
- // line 145, offset 0x0005f12c
-	/* begin block 1 */
-		// Start line: 146
-		// Start offset: 0x0005F12C
-	/* end block 1 */
-	// End offset: 0x0005F1B4
-	// End Line: 157
-
-	/* begin block 2 */
-		// Start line: 290
-	/* end block 2 */
-	// End Line: 291
-
-	/* begin block 3 */
-		// Start line: 927
-	/* end block 3 */
-	// End Line: 928
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
-__xa_request xa;
+xa_request xa;
 
 // [D] [T]
 void RequestXA(void)
 {
-	__xa_request* pXA;
+	xa_request* pXA;
 
 	xa.delay = 0xFFFF;
 	xa.bank = 0;
@@ -225,36 +194,6 @@ void RequestXA(void)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ HandleRequestedXA()
- // line 164, offset 0x0005f1b4
-	/* begin block 1 */
-		// Start line: 166
-		// Start offset: 0x0005F1B4
-	/* end block 1 */
-	// End offset: 0x0005F224
-	// End Line: 170
-
-	/* begin block 2 */
-		// Start line: 957
-	/* end block 2 */
-	// End Line: 958
-
-	/* begin block 3 */
-		// Start line: 965
-	/* end block 3 */
-	// End Line: 966
-
-	/* begin block 4 */
-		// Start line: 966
-	/* end block 4 */
-	// End Line: 967
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void HandleRequestedXA(void)
 {
@@ -271,36 +210,6 @@ void HandleRequestedXA(void)
 		xa.delay--;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitializeCutsceneSound(int cutscene /*$a0*/)
- // line 176, offset 0x0005f224
-	/* begin block 1 */
-		// Start line: 177
-		// Start offset: 0x0005F224
-		// Variables:
-	// 		int i; // $a0
-	/* end block 1 */
-	// End offset: 0x0005F25C
-	// End Line: 181
-
-	/* begin block 2 */
-		// Start line: 982
-	/* end block 2 */
-	// End Line: 983
-
-	/* begin block 3 */
-		// Start line: 989
-	/* end block 3 */
-	// End Line: 990
-
-	/* begin block 4 */
-		// Start line: 991
-	/* end block 4 */
-	// End Line: 992
-
 // [D] [T]
 void InitializeCutsceneSound(int cutscene)
 {
@@ -315,69 +224,6 @@ void InitializeCutsceneSound(int cutscene)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DoCutsceneSound()
- // line 187, offset 0x0005d950
-	/* begin block 1 */
-		// Start line: 188
-		// Start offset: 0x0005D950
-
-		/* begin block 1.1 */
-			// Start line: 191
-			// Start offset: 0x0005D99C
-
-			/* begin block 1.1.1 */
-				// Start line: 224
-				// Start offset: 0x0005DA88
-
-				/* begin block 1.1.1.1 */
-					// Start line: 226
-					// Start offset: 0x0005DAB0
-					// Variables:
-				// 		long *here; // $t0
-				/* end block 1.1.1.1 */
-				// End offset: 0x0005DAEC
-				// End Line: 228
-			/* end block 1.1.1 */
-			// End offset: 0x0005DAEC
-			// End Line: 229
-
-			/* begin block 1.1.2 */
-				// Start line: 244
-				// Start offset: 0x0005DB9C
-
-				/* begin block 1.1.2.1 */
-					// Start line: 245
-					// Start offset: 0x0005DBAC
-					// Variables:
-				// 		CAR_DATA *you; // $s0
-				/* end block 1.1.2.1 */
-				// End offset: 0x0005DBF0
-				// End Line: 248
-			/* end block 1.1.2 */
-			// End offset: 0x0005DC1C
-			// End Line: 250
-		/* end block 1.1 */
-		// End offset: 0x0005DD00
-		// End Line: 269
-	/* end block 1 */
-	// End offset: 0x0005DD10
-	// End Line: 271
-
-	/* begin block 2 */
-		// Start line: 295
-	/* end block 2 */
-	// End Line: 296
-
-	/* begin block 3 */
-		// Start line: 377
-	/* end block 3 */
-	// End Line: 378
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 int jericho_in_back = 0;
 static int rio_alarm = 0;
@@ -497,7 +343,10 @@ void DoCutsceneSound(void)
 
 				if (cutscene_timer == 180)
 				{
-					Start3DTrackingSound(-1, SOUND_BANK_MISSION, GetMissionSound(26), (VECTOR*)car_data[2].hd.where.t, car_data[2].st.n.linearVelocity);
+					Start3DTrackingSound(-1, SOUND_BANK_MISSION,
+						GetMissionSound(26), 
+						(VECTOR*)car_data[2].hd.where.t,
+						(LONGVECTOR3*)car_data[2].st.n.linearVelocity);
 				}
 
 				if (cutscene_timer < 641)
@@ -521,38 +370,6 @@ void DoCutsceneSound(void)
 
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitializeMissionSound()
- // line 279, offset 0x0005dd10
-	/* begin block 1 */
-		// Start line: 280
-		// Start offset: 0x0005DD10
-		// Variables:
-	// 		int i; // $a1
-	/* end block 1 */
-	// End offset: 0x0005E020
-	// End Line: 308
-
-	/* begin block 2 */
-		// Start line: 559
-	/* end block 2 */
-	// End Line: 560
-
-	/* begin block 3 */
-		// Start line: 568
-	/* end block 3 */
-	// End Line: 569
-
-	/* begin block 4 */
-		// Start line: 573
-	/* end block 4 */
-	// End Line: 574
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 char es_mobile[1];
 static int holdall;
@@ -615,111 +432,11 @@ void InitializeMissionSound(void)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DoMissionSound()
- // line 321, offset 0x0005e020
-	/* begin block 1 */
-		// Start line: 322
-		// Start offset: 0x0005E020
-		// Variables:
-	// 		int i; // $a2
-
-		/* begin block 1.1 */
-			// Start line: 400
-			// Start offset: 0x0005E1E4
-			// Variables:
-		// 		long *pos; // $s5
-		// 		long *vel; // $s4
-
-			/* begin block 1.1.1 */
-				// Start line: 404
-				// Start offset: 0x0005E25C
-				// Variables:
-			// 		int chan; // $s1
-			/* end block 1.1.1 */
-			// End offset: 0x0005E25C
-			// End Line: 404
-		/* end block 1.1 */
-		// End offset: 0x0005E25C
-		// End Line: 404
-
-		/* begin block 1.2 */
-			// Start line: 475
-			// Start offset: 0x0005E348
-			// Variables:
-		// 		VECTOR Q[3]; // stack offset -96
-		// 		VECTOR P; // stack offset -48
-		/* end block 1.2 */
-		// End offset: 0x0005E410
-		// End Line: 478
-
-		/* begin block 1.3 */
-			// Start line: 480
-			// Start offset: 0x0005E424
-			// Variables:
-		// 		int i; // $s0
-		/* end block 1.3 */
-		// End offset: 0x0005E5B8
-		// End Line: 484
-
-		/* begin block 1.4 */
-			// Start line: 523
-			// Start offset: 0x0005E6F0
-			// Variables:
-		// 		VECTOR Q[3]; // stack offset -96
-		// 		VECTOR P; // stack offset -48
-		/* end block 1.4 */
-		// End offset: 0x0005E7B8
-		// End Line: 526
-
-		/* begin block 1.5 */
-			// Start line: 528
-			// Start offset: 0x0005E7CC
-			// Variables:
-		// 		int i; // $s0
-		/* end block 1.5 */
-		// End offset: 0x0005E968
-		// End Line: 532
-
-		/* begin block 1.6 */
-			// Start line: 557
-			// Start offset: 0x0005EA74
-			// Variables:
-		// 		long V[3]; // stack offset -96
-		// 		long *C; // $a1
-		/* end block 1.6 */
-		// End offset: 0x0005EB98
-		// End Line: 566
-	/* end block 1 */
-	// End offset: 0x0005EE00
-	// End Line: 628
-
-	/* begin block 2 */
-		// Start line: 645
-	/* end block 2 */
-	// End Line: 646
-
-	/* begin block 3 */
-		// Start line: 659
-	/* end block 3 */
-	// End Line: 660
-
-	/* begin block 4 */
-		// Start line: 661
-	/* end block 4 */
-	// End Line: 662
-
-/* WARNING: Type propagation algorithm not settling */
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void DoMissionSound(void)
 {
 	int chan;
-	LONGVECTOR V;
+	LONGVECTOR4 V;
 	VECTOR* P;
 	int i;
 	static int channel = 0;
@@ -765,9 +482,9 @@ void DoMissionSound(void)
 			{
 				for (i = 0; i < 16; i++)
 				{
-					if (MissionTargets[i].data[0] == 2)
+					if (MissionTargets[i].type == Target_Car)
 					{
-						holdall = MissionTargets[i].data[6];
+						holdall = MissionTargets[i].car.slot;
 						break;
 					}
 				}
@@ -784,7 +501,10 @@ void DoMissionSound(void)
 						chan = GetFreeChannel();
 
 						StartSound(chan, SOUND_BANK_MISSION, GetMissionSound(20), -1500, 4096);
-						SetChannelPosition3(chan, (VECTOR*)car_data[carId].hd.where.t, car_data[carId].st.n.linearVelocity, -1500, 4096 - Mission.timer[0].count / 750, 0);
+						SetChannelPosition3(chan, 
+							(VECTOR*)car_data[carId].hd.where.t, 
+							(LONGVECTOR3*)car_data[carId].st.n.linearVelocity, 
+							-1500, 4096 - Mission.timer[0].count / 750, 0);
 					}
 				}
 			}
@@ -914,7 +634,7 @@ void DoMissionSound(void)
 			{
 				for (i = 0; i < 16; i++)
 				{
-					if (MissionTargets[i].data[0] == 2)
+					if (MissionTargets[i].type == Target_Car)
 					{
 						if (holdall == -1)
 						{
@@ -922,7 +642,7 @@ void DoMissionSound(void)
 						}
 						else if (holdall == 20)
 						{
-							holdall = MissionTargets[i].data[6];
+							holdall = MissionTargets[i].car.slot;
 						}
 					}
 				}
@@ -945,7 +665,7 @@ void DoMissionSound(void)
 			else
 			{
 				int dx, dz;
-				long* C = (long*)bodgevar; // Ahhh, Reflections...
+				long* C = (long*)bodgevar; // Ahhh, Reflections...	// LONGVECTOR3
 
 				dx = C[0] - car_data[player[0].playerCarId].hd.where.t[0];
 				dz = C[2] - car_data[player[0].playerCarId].hd.where.t[2];
@@ -956,7 +676,7 @@ void DoMissionSound(void)
 					V[1] = pos[1] - C[1];
 					V[2] = pos[2] - C[2];
 
-					SetChannelPosition3(holdall, (VECTOR*)C, (long*)V, 0, 4096, 0);
+					SetChannelPosition3(holdall, (VECTOR*)C, (LONGVECTOR3*)V, 0, 4096, 0);
 
 					pos[0] = C[0];
 					pos[1] = C[1];
@@ -1028,24 +748,8 @@ void DoMissionSound(void)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetMSoundVar(int var /*$a0*/, VECTOR *V /*$a1*/)
- // line 636, offset 0x0005f25c
-	/* begin block 1 */
-		// Start line: 1453
-	/* end block 1 */
-	// End Line: 1454
-
-	/* begin block 2 */
-		// Start line: 1909
-	/* end block 2 */
-	// End Line: 1910
-
 // [D] [T]
-void SetMSoundVar(int var, VECTOR* V)
+void SetMSoundVar(intptr_t var, VECTOR* V)
 {
 	if (V)
 	{
@@ -1056,24 +760,6 @@ void SetMSoundVar(int var, VECTOR* V)
 
 	bodgevar = var;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// char /*$ra*/ SilenceThisCar(int car /*$a1*/)
- // line 652, offset 0x0005ee00
-	/* begin block 1 */
-		// Start line: 1316
-	/* end block 1 */
-	// End Line: 1317
-
-	/* begin block 2 */
-		// Start line: 1341
-	/* end block 2 */
-	// End Line: 1342
-
-/* WARNING: Type propagation algorithm not settling */
 
 // [D]
 char SilenceThisCar(int car)
@@ -1239,18 +925,6 @@ char SilenceThisCar(int car)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ AdjustPlayerCarVolume()
- // line 749, offset 0x0005f294
-	/* begin block 1 */
-		// Start line: 2136
-	/* end block 1 */
-	// End Line: 2137
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D]
 void AdjustPlayerCarVolume(void)

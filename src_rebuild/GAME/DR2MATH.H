@@ -4,6 +4,7 @@
 #include "ABS.H"
 
 // Driver 2 math definitions
+extern short rcossin_tbl[8192];
 
 #define ONE				4096
 #define ONE_BITS		12
@@ -12,22 +13,18 @@
 #define PH_ONE_BITS		8
 
 // math constants
-#if 0
-
-// DO NOT USE IT unless you don't care about replays and chases
-#define	FIXED(a)		(int(a) / ONE)
-#define	HFIXED(a)		(int(a) / (ONE*2))
-#define	PH_FIXED(a)		(int(a) / (PH_ONE))
-
-#else
-
 #define FixHalfRound(x, bits)		(((x) + (1 << (bits-1))) >> bits)
 #define FixFloorSigned(x, bits)		((x) / (1 << bits)) // in disassembly: ((int(x) < 0 ? int(x) + (1 << bits)-1 : int(x)) >> bits)
 
 #define	FIXEDH(a)		FixHalfRound(a, ONE_BITS)		// Fixed Half Round number
 #define	FIXED(a)		((a) >> ONE_BITS)				// Fixed number (unsigned)
 
-#endif
+#define RSIN(a)			rcossin_tbl[(a & 0xFFFU) * 2]
+#define RCOS(a)			rcossin_tbl[(a & 0xFFFU) * 2 + 1]
+
+// Remap a value in the range [A,B] to [C,D].
+#define RemapVal( val, A, B, C, D) \
+	(C + (D - C) * (val - A) / (B - A))
 
 #define SetVec(_v, _x, _y, _z) \
 { \

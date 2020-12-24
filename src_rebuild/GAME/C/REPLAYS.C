@@ -30,7 +30,7 @@ char *ReplayStart;
 char *replayptr = NULL;
 int ReplaySize = 0;
 
-unsigned long PingBufferPos = 0;
+int PingBufferPos = 0;
 PING_PACKET *PingBuffer = NULL;
 
 SXYPAIR *PlayerWayRecordPtr = NULL;
@@ -40,39 +40,9 @@ int TimeToWay = 0;
 short PlayerWaypoints = 0;
 int way_distance = 0;
 int gUseStoredPings = 1;
+char ReplayMode = 0;
 
-#define MISSIOH_IDENT (('D' << 24) | ('2' << 16) | ('R' << 8) | 'P' )
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitPadRecording()
- // line 498, offset 0x0001a09c
-	/* begin block 1 */
-		// Start line: 500
-		// Start offset: 0x0001A09C
-		// Variables:
-	// 		int i; // $s0
-	// 		int remain; // $s0
-	/* end block 1 */
-	// End offset: 0x0001A234
-	// End Line: 650
-
-	/* begin block 2 */
-		// Start line: 996
-	/* end block 2 */
-	// End Line: 997
-
-	/* begin block 3 */
-		// Start line: 997
-	/* end block 3 */
-	// End Line: 998
-
-	/* begin block 4 */
-		// Start line: 1001
-	/* end block 4 */
-	// End Line: 1002
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
+#define REPLAY_IDENT (('D' << 24) | ('2' << 16) | ('R' << 8) | 'P' )
 
 // [D] [T]
 void InitPadRecording(void)
@@ -134,33 +104,6 @@ void InitPadRecording(void)
 	InitInGameCutsceneVariables();
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ SaveReplayToBuffer(char *buffer /*$s0*/)
- // line 657, offset 0x0001a234
-	/* begin block 1 */
-		// Start line: 658
-		// Start offset: 0x0001A234
-		// Variables:
-	// 		REPLAY_SAVE_HEADER *header; // $s2
-	// 		int i; // $a2
-	// 		int size; // $s1
-	// 		int numstreams; // $s6
-	/* end block 1 */
-	// End offset: 0x0001A798
-	// End Line: 733
-
-	/* begin block 2 */
-		// Start line: 1340
-	/* end block 2 */
-	// End Line: 1341
-
-	/* begin block 3 */
-		// Start line: 1348
-	/* end block 3 */
-	// End Line: 1349
 
 // [D] [T]
 int SaveReplayToBuffer(char *buffer)
@@ -256,44 +199,6 @@ int SaveReplayToBuffer(char *buffer)
 	return pt - buffer;
 #endif
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ LoadReplayFromBuffer(char *buffer /*$s1*/)
- // line 740, offset 0x0001a798
-	/* begin block 1 */
-		// Start line: 742
-		// Start offset: 0x0001A798
-		// Variables:
-	// 		REPLAY_SAVE_HEADER *header; // $s3
-	// 		REPLAY_STREAM_HEADER *sheader; // $t0
-	// 		int i; // $a1
-	// 		int size; // $s0
-	/* end block 1 */
-	// End offset: 0x0001AD50
-	// End Line: 813
-
-	/* begin block 2 */
-		// Start line: 1574
-	/* end block 2 */
-	// End Line: 1575
-
-	/* begin block 3 */
-		// Start line: 1582
-	/* end block 3 */
-	// End Line: 1583
-
-	/* begin block 4 */
-		// Start line: 1583
-	/* end block 4 */
-	// End Line: 1584
-
-	/* begin block 5 */
-		// Start line: 1587
-	/* end block 5 */
-	// End Line: 1588
 
 #ifdef CUTSCENE_RECORDER
 #include "../utils/ini.h"
@@ -616,29 +521,6 @@ int LoadUserAttractReplay(int mission, int userId)
 }
 #endif
 
-// decompiled code
-// original method signature: 
-// int /*$ra*/ LoadAttractReplay(int mission /*$a2*/)
- // line 1059, offset 0x0001b118
-	/* begin block 1 */
-		// Start line: 1060
-		// Start offset: 0x0001B118
-		// Variables:
-	// 		char filename[32]; // stack offset -40
-	/* end block 1 */
-	// End offset: 0x0001B17C
-	// End Line: 1071
-
-	/* begin block 2 */
-		// Start line: 2231
-	/* end block 2 */
-	// End Line: 2232
-
-	/* begin block 3 */
-		// Start line: 2118
-	/* end block 3 */
-	// End Line: 2119
-
 // [D] [T]
 int LoadAttractReplay(int mission)
 {
@@ -673,32 +555,6 @@ int LoadAttractReplay(int mission)
 
 	return LoadReplayFromBuffer(_other_buffer);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// char /*$ra*/ GetPingInfo(char *cookieCount /*$a2*/)
- // line 1182, offset 0x0001b090
-	/* begin block 1 */
-		// Start line: 1183
-		// Start offset: 0x0001B090
-		// Variables:
-	// 		_PING_PACKET *pp; // $a1
-	// 		char retCarId; // $v0
-	/* end block 1 */
-	// End offset: 0x0001B118
-	// End Line: 1206
-
-	/* begin block 2 */
-		// Start line: 2864
-	/* end block 2 */
-	// End Line: 2865
-
-	/* begin block 3 */
-		// Start line: 2364
-	/* end block 3 */
-	// End Line: 2365
 
 // [D] [T]
 char GetPingInfo(char *cookieCount)
@@ -771,40 +627,6 @@ int IsPingInfoAvailable()
 	return PingBuffer != NULL && PingBufferPos < MAX_REPLAY_PINGS;
 }
 
-// decompiled code
-// original method signature: 
-// int /*$ra*/ valid_region(int x /*$a0*/, int z /*$a1*/)
- // line 1222, offset 0x0001af34
-	/* begin block 1 */
-		// Start line: 1224
-		// Start offset: 0x0001AF34
-		// Variables:
-	// 		XYPAIR region_coords; // stack offset -8
-	// 		int region; // $a0
-	/* end block 1 */
-	// End offset: 0x0001AFFC
-	// End Line: 1269
-
-	/* begin block 2 */
-		// Start line: 2441
-	/* end block 2 */
-	// End Line: 2442
-
-	/* begin block 3 */
-		// Start line: 2828
-	/* end block 3 */
-	// End Line: 2829
-
-	/* begin block 4 */
-		// Start line: 2829
-	/* end block 4 */
-	// End Line: 2830
-
-	/* begin block 5 */
-		// Start line: 2832
-	/* end block 5 */
-	// End Line: 2833
-
 // [D] [T]
 int valid_region(int x, int z)
 {
@@ -838,39 +660,89 @@ int valid_region(int x, int z)
 	return 0;
 }
 
+// [D] [T]
+int Get(int stream, u_int *pt0)
+{
+	REPLAY_STREAM* rstream;
 
+	if (stream < NumReplayStreams)
+	{
+		rstream = &ReplayStreams[stream];
 
-// decompiled code
-// original method signature: 
-// int /*$ra*/ cjpPlay(int stream /*$a0*/, unsigned long *ppad /*$s2*/, char *psteer /*$s0*/, char *ptype /*$s1*/)
- // line 1271, offset 0x0001affc
-	/* begin block 1 */
-		// Start line: 1272
-		// Start offset: 0x0001AFFC
-		// Variables:
-	// 		int ret; // $a0
-	// 		unsigned long t0; // stack offset -24
-	// 		int t1; // $v1
-	/* end block 1 */
-	// End offset: 0x0001B090
-	// End Line: 1291
+		if (rstream->PadRecordBuffer + 1 <= rstream->PadRecordBufferEnd)
+		{
+			uint t0 = (rstream->PadRecordBuffer->pad << 8) | rstream->PadRecordBuffer->analogue;
+			*pt0 = t0;
 
-	/* begin block 2 */
-		// Start line: 2928
-	/* end block 2 */
-	// End Line: 2929
+			if (rstream->playbackrun < rstream->PadRecordBuffer->run)
+			{
+				rstream->playbackrun++;
+			}
+			else
+			{
+				rstream->PadRecordBuffer++;
+				rstream->playbackrun = 0;
+			}
 
-	/* begin block 3 */
-		// Start line: 2931
-	/* end block 3 */
-	// End Line: 2932
+			return 1;
+		}
+	}
+
+	*pt0 = 0x10;
+
+	return 0;
+}
 
 // [D] [T]
-int cjpPlay(int stream, ulong *ppad, char *psteer, char *ptype)
+int Put(int stream, u_int*pt0)
+{
+	REPLAY_STREAM *rstream;
+	u_int t0;
+	PADRECORD *padbuf;
+
+	rstream = &ReplayStreams[stream];
+
+	if (rstream->PadRecordBuffer + 1 >= rstream->PadRecordBufferEnd)
+		return 0;
+
+	padbuf = rstream->PadRecordBuffer;
+	t0 = *pt0;
+
+	if (CameraCnt != 0 && padbuf->run != 0xEE)
+	{
+		if (padbuf->pad == ((t0 >> 8) & 0xff) &&
+			padbuf->analogue == (t0 & 0xff) &&
+			padbuf->run != 0x8F)
+		{
+			padbuf->run++;
+			return 1;
+		}
+
+		padbuf++;
+
+		padbuf->pad = (t0 >> 8) & 0xFF;
+		padbuf->analogue = t0 & 0xFF;
+		padbuf->run = 0;
+
+		rstream->PadRecordBuffer = padbuf;
+		rstream->padCount++;
+
+		return 1;
+	}
+
+	padbuf->pad = (t0 >> 8) & 0xFF;
+	padbuf->analogue = t0 & 0xFF;
+	padbuf->run = 0;
+
+	return 1;
+}
+
+// [D] [T]
+int cjpPlay(int stream, u_int *ppad, char *psteer, char *ptype)
 {
 	int ret;
 	int t1;
-	ulong t0;
+	u_int t0;
 
 #ifdef CUTSCENE_RECORDER
 	if (stream < 0)
@@ -897,40 +769,12 @@ int cjpPlay(int stream, ulong *ppad, char *psteer, char *ptype)
 	return ret;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ cjpRecord(int stream /*$s1*/, unsigned long *ppad /*$s4*/, char *psteer /*$s2*/, char *ptype /*$s3*/)
- // line 1310, offset 0x0001ad50
-	/* begin block 1 */
-		// Start line: 1311
-		// Start offset: 0x0001AD50
-		// Variables:
-	// 		unsigned long t0; // stack offset -32
-	// 		int t1; // $s0
-	/* end block 1 */
-	// End offset: 0x0001AF14
-	// End Line: 1370
-
-	/* begin block 2 */
-		// Start line: 2348
-	/* end block 2 */
-	// End Line: 2349
-
-	/* begin block 3 */
-		// Start line: 2846
-	/* end block 3 */
-	// End Line: 2847
-
-char ReplayMode = 0;
-
 // [D] [T]
-void cjpRecord(int stream, ulong *ppad, char *psteer, char *ptype)
+void cjpRecord(int stream, u_int *ppad, char *psteer, char *ptype)
 {
 	int tmp;
 	int t1;
-	ulong t0;
+	u_int t0;
 
 	if (stream > -1 && stream < NumReplayStreams) 
 	{
@@ -992,32 +836,6 @@ void cjpRecord(int stream, ulong *ppad, char *psteer, char *ptype)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ AllocateReplayStream(REPLAY_STREAM *stream /*$a0*/, int maxpad /*$a1*/)
- // line 1383, offset 0x0001b17c
-	/* begin block 1 */
-		// Start line: 3101
-	/* end block 1 */
-	// End Line: 3102
-
-	/* begin block 2 */
-		// Start line: 3414
-	/* end block 2 */
-	// End Line: 3415
-
-	/* begin block 3 */
-		// Start line: 3415
-	/* end block 3 */
-	// End Line: 3416
-
-	/* begin block 4 */
-		// Start line: 3417
-	/* end block 4 */
-	// End Line: 3418
-
 // [D] [T]
 void AllocateReplayStream(REPLAY_STREAM *stream, int maxpad)
 {
@@ -1040,169 +858,6 @@ void AllocateReplayStream(REPLAY_STREAM *stream, int maxpad)
 
 	replayptr = (char *)(((uint)replayptr + (maxpad+1) * sizeof(PADRECORD)) & -4);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ Get(int stream /*$a0*/, unsigned long *pt0 /*$a1*/)
- // line 1402, offset 0x0001b1f0
-	/* begin block 1 */
-		// Start line: 1403
-		// Start offset: 0x0001B1F0
-		// Variables:
-	// 		REPLAY_STREAM *rstream; // $a2
-	// 		unsigned long t0; // $a0
-	/* end block 1 */
-	// End offset: 0x0001B280
-	// End Line: 1438
-
-	/* begin block 2 */
-		// Start line: 3459
-	/* end block 2 */
-	// End Line: 3460
-
-	/* begin block 3 */
-		// Start line: 3466
-	/* end block 3 */
-	// End Line: 3467
-
-// [D] [T]
-int Get(int stream, ulong *pt0)
-{
-	REPLAY_STREAM* rstream;
-
-	if (stream < NumReplayStreams)
-	{
-		rstream = &ReplayStreams[stream];
-
-		if (rstream->PadRecordBuffer+1 <= rstream->PadRecordBufferEnd)
-		{
-			ulong t0 = (rstream->PadRecordBuffer->pad << 8) | rstream->PadRecordBuffer->analogue;
-			*pt0 = t0;
-
-			if (rstream->playbackrun < rstream->PadRecordBuffer->run)
-			{
-				rstream->playbackrun++;
-			}
-			else 
-			{
-				rstream->PadRecordBuffer++;
-				rstream->playbackrun = 0;
-			}
-
-			return 1;
-		}
-	}
-
-	*pt0 = 0x10;
-
-	return 0;
-}
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ Put(int stream /*$a0*/, unsigned long *pt0 /*$a1*/)
- // line 1440, offset 0x0001b280
-	/* begin block 1 */
-		// Start line: 1442
-		// Start offset: 0x0001B280
-		// Variables:
-	// 		REPLAY_STREAM *rstream; // $a0
-	// 		unsigned char **pstream; // $a3
-	// 		unsigned long t0; // $a1
-	/* end block 1 */
-	// End offset: 0x0001B364
-	// End Line: 1477
-
-	/* begin block 2 */
-		// Start line: 3534
-	/* end block 2 */
-	// End Line: 3535
-
-	/* begin block 3 */
-		// Start line: 3537
-	/* end block 3 */
-	// End Line: 3538
-
-	/* begin block 4 */
-		// Start line: 3538
-	/* end block 4 */
-	// End Line: 3539
-
-	/* begin block 5 */
-		// Start line: 3544
-	/* end block 5 */
-	// End Line: 3545
-
-// [D] [T]
-int Put(int stream, ulong *pt0)
-{
-	REPLAY_STREAM *rstream;
-	ulong t0;
-	PADRECORD *padbuf;
-
-	rstream = &ReplayStreams[stream];
-
-	if (rstream->PadRecordBuffer+1 >= rstream->PadRecordBufferEnd)
-		return 0;
-
-	padbuf = rstream->PadRecordBuffer;
-	t0 = *pt0;
-
-	if (CameraCnt != 0 && padbuf->run != 0xEE)
-	{
-		if (padbuf->pad == ((t0 >> 8) & 0xff) &&
-			padbuf->analogue == (t0 & 0xff) && 
-			padbuf->run != 0x8F)
-		{
-			padbuf->run++;
-			return 1;
-		}
-
-		padbuf++;
-
-		padbuf->pad = (t0 >> 8) & 0xFF;
-		padbuf->analogue = t0 & 0xFF;
-		padbuf->run = 0;
-
-		rstream->PadRecordBuffer = padbuf;
-		rstream->padCount++;
-		
-		return 1;
-	}
-
-	padbuf->pad = (t0 >> 8) & 0xFF;
-	padbuf->analogue = t0 & 0xFF;
-	padbuf->run = 0;
-
-	return 1;
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ RecordWaypoint()
- // line 1479, offset 0x0001b364
-	/* begin block 1 */
-		// Start line: 3613
-	/* end block 1 */
-	// End Line: 3614
-
-	/* begin block 2 */
-		// Start line: 3616
-	/* end block 2 */
-	// End Line: 3617
-
-	/* begin block 3 */
-		// Start line: 3617
-	/* end block 3 */
-	// End Line: 3618
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void RecordWaypoint(void)

@@ -13,32 +13,11 @@
 #include "SOUND.H"
 #include "FELONY.H"
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitPlayer(PLAYER *locPlayer /*$s1*/, CAR_DATA *cp /*$s2*/, char carCtrlType /*$s3*/, int direction /*$s6*/, LONGVECTOR* startPos /*stack 16*/, int externModel /*stack 20*/, int palette /*stack 24*/, char *padid /*stack 28*/)
- // line 75, offset 0x000739d8
-	/* begin block 1 */
-		// Start line: 76
-		// Start offset: 0x000739D8
-	/* end block 1 */
-	// End offset: 0x00073C0C
-	// End Line: 127
-
-	/* begin block 2 */
-		// Start line: 454
-	/* end block 2 */
-	// End Line: 455
-
-	/* begin block 3 */
-		// Start line: 150
-	/* end block 3 */
-	// End Line: 151
-
 PEDESTRIAN *pPlayerPed = NULL;
 PLAYER player[8];
 
 // [D] [T]
-void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction, LONGVECTOR* startPos, int externModel, int palette, char *padid)
+void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction, LONGVECTOR4* startPos, int externModel, int palette, char *padid)
 {
 	int model;
 	uint playerType;
@@ -63,7 +42,7 @@ void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction
 
 		InitCar(cp, direction, startPos, carCtrlType, model, palette & 0xff, &locPlayer->padid);
 
-		cp->controlFlags |= CONTROL_FLAG_WAS_PARKED;
+		cp->controlFlags |= CONTROL_FLAG_WAS_PARKED | CONTROL_FLAG_PLAYER_START_CAR; // [A] car is owned by player
 		
 		locPlayer->worldCentreCarId = cp->id;
 		locPlayer->cameraView = 0;// (NumPlayers == 2) << 1; // [A]
@@ -104,26 +83,6 @@ void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction
 
 	locPlayer->padid = *padid;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ChangeCarPlayerToPed(int playerID /*$s0*/)
- // line 130, offset 0x00073334
-	/* begin block 1 */
-		// Start line: 131
-		// Start offset: 0x00073334
-		// Variables:
-	// 		CAR_DATA *lcp; // $s2
-	/* end block 1 */
-	// End offset: 0x0007350C
-	// End Line: 181
-
-	/* begin block 2 */
-		// Start line: 260
-	/* end block 2 */
-	// End Line: 261
 
 // [D] [T]
 void ChangeCarPlayerToPed(int playerID)
@@ -169,42 +128,15 @@ void ChangeCarPlayerToPed(int playerID)
 
 	first_offence = 1;
 
-	if (CarHasSiren(lcp->ap.model) != 0)
+	if (CarHasSiren(lcp->ap.model))
 		player[playerID].horn.on = 0;
+
+	// [A] carry over felony from car to Tanner if cops see player
+	if (CopsCanSeePlayer)
+		pedestrianFelony = lcp->felonyRating;
+	else
+		pedestrianFelony = 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ChangePedPlayerToCar(int playerID /*$s4*/, CAR_DATA *newCar /*$s2*/)
- // line 184, offset 0x0007350c
-	/* begin block 1 */
-		// Start line: 185
-		// Start offset: 0x0007350C
-		// Variables:
-	// 		PLAYER *lPlayer; // $s1
-	// 		int siren; // $s5
-	// 		long *pos; // $s3
-	// 		int carParked; // $s6
-	/* end block 1 */
-	// End offset: 0x00073898
-	// End Line: 244
-
-	/* begin block 2 */
-		// Start line: 400
-	/* end block 2 */
-	// End Line: 401
-
-	/* begin block 3 */
-		// Start line: 404
-	/* end block 3 */
-	// End Line: 405
-
-	/* begin block 4 */
-		// Start line: 408
-	/* end block 4 */
-	// End Line: 409
 
 extern int lastCarCameraView;
 
@@ -250,77 +182,47 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 	lPlayer->headTimer = 0;
 	lPlayer->pPed = NULL;
 
-	newCar->controlType = CONTROL_TYPE_PLAYER;
-	newCar->ai.padid = &lPlayer->padid;
-	newCar->hndType = 0;
-
-	if (playerID == 0)
+	// only allow non-cutscene players to get into cars
+	if(lPlayer->padid >= 0)
 	{
-		if (gCurrentMissionNumber != 32 && MissionHeader->residentModels[newCar->ap.model] == 0)
+		newCar->controlType = CONTROL_TYPE_PLAYER;
+		newCar->ai.padid = &lPlayer->padid;
+		newCar->hndType = 0;
+
+		if (playerID == 0 &&
+			!(newCar->controlFlags & CONTROL_FLAG_PLAYER_START_CAR))	// [A] bug fix: don't give felony if player owns his cop car
 		{
-			NoteFelony(&felonyData, 11, 4096);
+			if (gCurrentMissionNumber != 32 && MissionHeader->residentModels[newCar->ap.model] == 0)
+			{
+				NoteFelony(&felonyData, 11, 4096);
+			}
 		}
+
+		if (gCurrentMissionNumber == 33 && newCar->ap.model == 4)
+		{
+			makeLimoPullOver = 0;
+		}
+
+		StartPlayerCarSounds(playerID, newCar->ap.model, (VECTOR*)newCar->hd.where.t);
+
+		if (carParked)
+			RequestSlightPauseBeforeCarSoundStarts(playerID);
+		else
+			HaveCarSoundStraightAway(playerID);
+
+		// [A] carry over felony from Tanner to car if cops see player. Force in Destroy the yard
+		if (CopsCanSeePlayer || gCurrentMissionNumber == 30)
+		{
+			if (newCar->felonyRating < pedestrianFelony)
+				newCar->felonyRating = pedestrianFelony;
+		}
+		else
+			pedestrianFelony = 0;
 	}
 
-	if (gCurrentMissionNumber == 33 && newCar->ap.model == 4) 
-	{
-		makeLimoPullOver = 0;
-	}
-
-	// door close sound
+	// play door close sound
 	Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 3, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], 0, 0x1000);
-
-	StartPlayerCarSounds(playerID, newCar->ap.model, (VECTOR*)newCar->hd.where.t);
-
-	if (carParked)
-		RequestSlightPauseBeforeCarSoundStarts(playerID);
-	else
-		HaveCarSoundStraightAway(playerID);
-
-	// [A] carry over felony from Tanner to car if cops see player. Force in Destroy the yard
-	if(CopsCanSeePlayer || gCurrentMissionNumber == 30)
-		newCar->felonyRating = pedestrianFelony;
-	else
-		pedestrianFelony = 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ UpdatePlayers()
- // line 247, offset 0x00073898
-	/* begin block 1 */
-		// Start line: 249
-		// Start offset: 0x00073898
-		// Variables:
-	// 		PLAYER *locPlayer; // $t0
-	// 		CAR_DATA *cp; // $v1
-	/* end block 1 */
-	// End offset: 0x000739D8
-	// End Line: 286
-
-	/* begin block 2 */
-		// Start line: 550
-	/* end block 2 */
-	// End Line: 551
-
-	/* begin block 3 */
-		// Start line: 554
-	/* end block 3 */
-	// End Line: 555
-
-	/* begin block 4 */
-		// Start line: 555
-	/* end block 4 */
-	// End Line: 556
-
-	/* begin block 5 */
-		// Start line: 561
-	/* end block 5 */
-	// End Line: 562
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void UpdatePlayers(void)
@@ -370,22 +272,6 @@ void UpdatePlayers(void)
 	} while (locPlayer <= &player[7]);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ RequestSlightPauseBeforeCarSoundStarts(char player_id /*$a0*/)
- // line 298, offset 0x00073c0c
-	/* begin block 1 */
-		// Start line: 771
-	/* end block 1 */
-	// End Line: 772
-
-	/* begin block 2 */
-		// Start line: 943
-	/* end block 2 */
-	// End Line: 944
-
 // [D] [T]
 void RequestSlightPauseBeforeCarSoundStarts(char player_id)
 {
@@ -395,34 +281,12 @@ void RequestSlightPauseBeforeCarSoundStarts(char player_id)
 	player[player_id].revsvol = -10000;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ HaveCarSoundStraightAway(char player_id /*$a0*/)
- // line 305, offset 0x00073c54
-	/* begin block 1 */
-		// Start line: 960
-	/* end block 1 */
-	// End Line: 961
-
 // [D] [T]
 void HaveCarSoundStraightAway(char player_id)
 {
 	player[player_id].car_is_sounding = 0;
 	player[player_id].car_sound_timer = -1;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ MakeTheCarShutUp(char player_id /*$a0*/)
- // line 310, offset 0x00073c8c
-	/* begin block 1 */
-		// Start line: 971
-	/* end block 1 */
-	// End Line: 972
 
 // [D] [T]
 void MakeTheCarShutUp(char player_id)

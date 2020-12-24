@@ -12,14 +12,14 @@
 
 struct RNCheader
 {
-    unsigned long identifier;    //must contain 'R', 'N', 'C', method
-    unsigned long unpackSize;     //unpacked data size
-    unsigned long packSize;      //packed data size (excludes this header)
-    unsigned short unpackChecksum;  //unpacked data checksum
-    unsigned short packChecksum;   //packed data checksum
-    unsigned char leeway;         //not used
-    unsigned char blocks;    //number of sections
-    //unsigned char start;		//first byte of data
+    u_int identifier;    //must contain 'R', 'N', 'C', method
+    u_int unpackSize;     //unpacked data size
+    u_int packSize;      //packed data size (excludes this header)
+    u_short unpackChecksum;  //unpacked data checksum
+    u_short packChecksum;   //packed data checksum
+    u_char leeway;         //not used
+    u_char blocks;    //number of sections
+    //u_char start;		//first byte of data
 };
 
 #define RNC_HEADER_LENGTH	18

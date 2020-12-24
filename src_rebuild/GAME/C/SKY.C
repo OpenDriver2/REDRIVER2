@@ -12,6 +12,21 @@
 #include "LIBGTE.H"
 #include "INLINE_C.H"
 
+struct RGB16
+{
+	short r;
+	short g;
+	short b;
+	short pad;
+};
+
+struct FLAREREC
+{
+	RGB16 transparency;
+	char size;
+	short gapmod;
+};
+
 int sky_y_offset[4] = { 14, 14, 14, 14 };
 
 unsigned char HorizonLookup[4][4] = {
@@ -95,56 +110,6 @@ VECTOR tunnelPos[3][2] =
 		{ -113300, -400, -132501, 0 }
 	}
 };
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ LoadSky()
- // line 145, offset 0x000775c8
-	/* begin block 1 */
-		// Start line: 147
-		// Start offset: 0x000775C8
-		// Variables:
-	// 		RECT rect; // stack offset -96
-	// 		char name[16]; // stack offset -88
-	// 		int x; // $s6
-	// 		int y; // $a1
-	// 		int i; // $t1
-	// 		int u; // $v1
-	// 		int v; // $s2
-	// 		int skynum; // $a2
-	// 		int offset; // stack offset -72
-
-		/* begin block 1.1 */
-			// Start line: 156
-			// Start offset: 0x00077608
-			// Variables:
-		// 		int flipped; // $t0
-		// 		int single; // $s5
-		// 		int ry; // $a2
-		/* end block 1.1 */
-		// End offset: 0x000777D0
-		// End Line: 258
-	/* end block 1 */
-	// End offset: 0x0007795C
-	// End Line: 319
-
-	/* begin block 2 */
-		// Start line: 290
-	/* end block 2 */
-	// End Line: 291
-
-	/* begin block 3 */
-		// Start line: 291
-	/* end block 3 */
-	// End Line: 292
-
-	/* begin block 4 */
-		// Start line: 294
-	/* end block 4 */
-	// End Line: 295
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 UV skytexuv[28] = { 0 };
 short skyclut[28];
@@ -325,88 +290,8 @@ void LoadSky(void)
 	DrawSync(0);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawSkyDome()
- // line 327, offset 0x0007795c
-	/* begin block 1 */
-		// Start line: 852
-	/* end block 1 */
-	// End Line: 853
-
-	/* begin block 2 */
-		// Start line: 861
-	/* end block 2 */
-	// End Line: 862
-
-	/* begin block 3 */
-		// Start line: 862
-	/* end block 3 */
-	// End Line: 863
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
-void DrawSkyDome(void)
-{
-	calc_sky_brightness();
-
-#ifdef PSX
-	// FIXME: use frustrum angle instead?
-	if (((camera_angle.vy - 1450U) & 0xFFF) > 2250)
-		PlotHorizonMDL(modelpointers[0],HorizonLookup[GameLevel][0]);
-
-	if (((camera_angle.vy - 651U) & 0xFFF) < 1799)
-		PlotHorizonMDL(modelpointers[2],HorizonLookup[GameLevel][1]);
-
-	if (((camera_angle.vy - 1701U) & 0xFFF) < 1749)
-		PlotHorizonMDL(modelpointers[3],HorizonLookup[GameLevel][2]);
-
-	if (((camera_angle.vy - 400U) & 0xFFF) > 2300)
-		PlotHorizonMDL(modelpointers[1],HorizonLookup[GameLevel][3]);
-#else
-	// draw full sky - no need in frustrum culling
-	PlotHorizonMDL(modelpointers[0],HorizonLookup[GameLevel][0]);
-	PlotHorizonMDL(modelpointers[2],HorizonLookup[GameLevel][1]);
-	PlotHorizonMDL(modelpointers[3],HorizonLookup[GameLevel][2]);
-	PlotHorizonMDL(modelpointers[1],HorizonLookup[GameLevel][3]);
-#endif
-
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DisplaySun(DVECTOR *pos /*$a0*/, CVECTOR *col /*$a1*/, int flare_col /*$a2*/)
- // line 527, offset 0x000780bc
-	/* begin block 1 */
-		// Start line: 528
-		// Start offset: 0x000780BC
-		// Variables:
-	// 		POLY_FT4 *polys; // $a1
-	// 		POLY_FT3 *null; // $a3
-	// 		VECTOR output; // stack offset -32
-	// 		int width; // $t5
-	// 		int height; // $t4
-	/* end block 1 */
-	// End offset: 0x00078544
-	// End Line: 600
-
-	/* begin block 2 */
-		// Start line: 1431
-	/* end block 2 */
-	// End Line: 1432
-
-	/* begin block 3 */
-		// Start line: 1452
-	/* end block 3 */
-	// End Line: 1453
-
-// [D] [T]
-#ifdef PGXP
+#ifdef USE_PGXP
 void DisplaySun(DVECTORF* pos, CVECTOR* col, int flare_col)
 #else
 void DisplaySun(DVECTOR* pos, CVECTOR* col, int flare_col)
@@ -519,41 +404,8 @@ void DisplaySun(DVECTOR* pos, CVECTOR* col, int flare_col)
 	current->primptr += sizeof(POLY_FT4);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DisplayMoon(DVECTOR *pos /*$t4*/, CVECTOR *col /*$t6*/, int flip /*$a2*/)
- // line 609, offset 0x00078544
-	/* begin block 1 */
-		// Start line: 610
-		// Start offset: 0x00078544
-		// Variables:
-	// 		POLY_FT3 *null; // $a0
-	// 		VECTOR output; // stack offset -16
-	// 		int width; // $t5
-	// 		int height; // $t3
-	/* end block 1 */
-	// End offset: 0x000787B0
-	// End Line: 649
-
-	/* begin block 2 */
-		// Start line: 1774
-	/* end block 2 */
-	// End Line: 1775
-
-	/* begin block 3 */
-		// Start line: 1784
-	/* end block 3 */
-	// End Line: 1785
-
-	/* begin block 4 */
-		// Start line: 1792
-	/* end block 4 */
-	// End Line: 1793
-
 // [D] [T]
-#ifdef PGXP
+#ifdef USE_PGXP
 void DisplayMoon(DVECTORF* pos, CVECTOR* col, int flip)
 #else
 void DisplayMoon(DVECTOR* pos, CVECTOR* col, int flip)
@@ -620,99 +472,24 @@ void DisplayMoon(DVECTOR* pos, CVECTOR* col, int flip)
 	current->primptr += sizeof(POLY_FT4);
 }
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawLensFlare()
- // line 351, offset 0x00077a8c
-	/* begin block 1 */
-		// Start line: 353
-		// Start offset: 0x00077A8C
-		// Variables:
-	// 		static char last_attempt_failed; // offset 0x0
-	// 		static short buffer[160]; // offset 0x0
-	// 		DVECTOR sun_pers_conv_position; // stack offset -64
-	// 		RECT source; // stack offset -56
-	// 		DR_MOVE *sample_sun; // $s0
-	// 		int distance_to_sun; // $s0
-	// 		int xpos; // $t1
-	// 		int ypos; // $v0
-	// 		int xgap; // $s4
-	// 		int ygap; // $s2
-	// 		int flarez; // stack offset -40
-	// 		int shade; // $t4
-	// 		int sun_intensity; // $s3
-	// 		POLY_FT4 *polys; // $a1
-	// 		CVECTOR col; // stack offset -48
-	// 		int r; // $a2
-	// 		int g; // $a3
-	// 		int b; // $a0
-
-		/* begin block 1.1 */
-			// Start line: 387
-			// Start offset: 0x00077B58
-			// Variables:
-		// 		int bufferX; // $a0
-		// 		int bufferY; // $v1
-		// 		unsigned short *pwBuffer; // $s0
-		/* end block 1.1 */
-		// End offset: 0x00077BC0
-		// End Line: 405
-
-		/* begin block 1.2 */
-			// Start line: 446
-			// Start offset: 0x00077D34
-			// Variables:
-		// 		int temp; // $v0
-
-			/* begin block 1.2.1 */
-				// Start line: 458
-				// Start offset: 0x00077DD0
-				// Variables:
-			// 		FLAREREC *pFlareInfo; // $t3
-			// 		int flaresize; // $t0
-			/* end block 1.2.1 */
-			// End offset: 0x00077FAC
-			// End Line: 495
-		/* end block 1.2 */
-		// End offset: 0x00077FAC
-		// End Line: 496
-	/* end block 1 */
-	// End offset: 0x00078098
-	// End Line: 518
-
-	/* begin block 2 */
-		// Start line: 909
-	/* end block 2 */
-	// End Line: 910
-
-	/* begin block 3 */
-		// Start line: 910
-	/* end block 3 */
-	// End Line: 911
-
-	/* begin block 4 */
-		// Start line: 923
-	/* end block 4 */
-	// End Line: 924
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 extern VECTOR dummy;
 
 // [D] [T]
 void DrawLensFlare(void)
 {
 	static char last_attempt_failed; // offset 0x0
-	static short buffer[160];
+	static ushort buffer[16*10];
+
+	RECT16 viewp = { -1,-1,321,257 };
 
 	int flarez;
-	long distance_to_sun;
+	int distance_to_sun;
 	int bufferY;
 	int bufferX;
 	POLY_FT4 *poly;
 	FLAREREC *pFlareInfo;
 	int shade;
-	short *pwBuffer;
+	ushort *pwBuffer;
 	DR_MOVE* sample_sun;
 	int ygap;
 	int xgap;
@@ -721,7 +498,7 @@ void DrawLensFlare(void)
 	
 	int haze_col;
 
-#ifdef PGXP
+#ifdef USE_PGXP
 	DVECTORF sun_pers_conv_position;
 #else
 	DVECTOR sun_pers_conv_position;
@@ -755,6 +532,7 @@ void DrawLensFlare(void)
 	{
 		pwBuffer = buffer;
 		StoreImage(&source, (u_long*)buffer);
+
 		bufferY = 0;
 		do
 		{
@@ -763,8 +541,7 @@ void DrawLensFlare(void)
 
 			do
 			{
-
-				if (*pwBuffer == -1 || *pwBuffer == 0x7fff)
+				if (*pwBuffer == 0xFFFF || *pwBuffer == 0x7fff)
 					flare_col++;
 
 				bufferX++;
@@ -877,17 +654,23 @@ void DrawLensFlare(void)
 				while (pFlareInfo < flare_info + 8);
 			}
 		}
-		sun_pers_conv_position.vx = sun_pers_conv_position.vx + -8;
-		sun_pers_conv_position.vy = sun_pers_conv_position.vy + -4;
 
+#ifdef USE_PGXP
+		// remap
+		PsyX_GetPSXWidescreenMappedViewport(&viewp);
+		sun_pers_conv_position.vx = RemapVal(sun_pers_conv_position.vx, float(viewp.x), float(viewp.w), 0.0f, 320.0f);
+#endif
+		
+		sun_pers_conv_position.vx = sun_pers_conv_position.vx - 8;
+		sun_pers_conv_position.vy = sun_pers_conv_position.vy - 4;
+		
 		// store framebuffer image of sun separately in VRAM
-		if (sun_pers_conv_position.vx > -1 && 
+		if (sun_pers_conv_position.vx > -1 &&
 			sun_pers_conv_position.vy > -1 &&
 			sun_pers_conv_position.vx + 16 < 321 &&
 			sun_pers_conv_position.vy + 10 < 257)
 		{
 			last_attempt_failed = 0;
-
 
 			source.x = sun_pers_conv_position.vx;
 			source.y = sun_pers_conv_position.vy + last->disp.disp.y;
@@ -905,71 +688,10 @@ void DrawLensFlare(void)
 	}
 }
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ TunnelSkyFade()
- // line 679, offset 0x000787b0
-	/* begin block 1 */
-		// Start line: 681
-		// Start offset: 0x000787B0
-		// Variables:
-	// 		int tun; // $a3
-
-		/* begin block 1.1 */
-			// Start line: 695
-			// Start offset: 0x000787D8
-			// Variables:
-		// 		int diffX; // $v1
-		// 		int diffZ; // $v0
-		// 		int dX; // $v1
-		// 		int dZ; // $v0
-		// 		int len; // $a1
-		// 		VECTOR *v1; // $t1
-		// 		VECTOR *v2; // $t0
-
-			/* begin block 1.1.1 */
-				// Start line: 725
-				// Start offset: 0x00078874
-				// Variables:
-			// 		int l2; // $v1
-			/* end block 1.1.1 */
-			// End offset: 0x000788E8
-			// End Line: 745
-		/* end block 1.1 */
-		// End offset: 0x0007895C
-		// End Line: 776
-	/* end block 1 */
-	// End offset: 0x0007895C
-	// End Line: 777
-
-	/* begin block 2 */
-		// Start line: 1921
-	/* end block 2 */
-	// End Line: 1922
-
-	/* begin block 3 */
-		// Start line: 1952
-	/* end block 3 */
-	// End Line: 1953
-
-	/* begin block 4 */
-		// Start line: 1953
-	/* end block 4 */
-	// End Line: 1954
-
-	/* begin block 5 */
-		// Start line: 1955
-	/* end block 5 */
-	// End Line: 1956
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 int gTunnelNum = -1;
 int skyFade;
-static long skyred = 128;
-static long skygreen = 128;
-static long skyblue = 128;
+
+RGB16 skycolor = { 128,128,128 };
 
 int tunnelDir[3][2] =
 {
@@ -1051,24 +773,6 @@ void TunnelSkyFade(void)
 		skyFade = 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ calc_sky_brightness()
- // line 785, offset 0x00078964
-	/* begin block 1 */
-		// Start line: 2223
-	/* end block 1 */
-	// End Line: 2224
-
-	/* begin block 2 */
-		// Start line: 2224
-	/* end block 2 */
-	// End Line: 2225
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void calc_sky_brightness(void)
 {
@@ -1079,32 +783,32 @@ void calc_sky_brightness(void)
 	{
 		if (gTimeOfDay == 0)
 		{
-			skyred = dawn + 41;
-			skyblue = dawn + 28;
+			skycolor.r = dawn + 41;
+			skycolor.b = dawn + 28;
 		}
 		else if (gTimeOfDay == 2)
 		{
-			skyred = 143 - dawn;
-			skyblue = 128 - dawn;
+			skycolor.r = 143 - dawn;
+			skycolor.b = 128 - dawn;
 		}
 
-		if (skyred < 26)
-			skyred = 26;
-		else if (skyred > 128)
-			skyred = 128;
+		if (skycolor.r < 26)
+			skycolor.r = 26;
+		else if (skycolor.r > 128)
+			skycolor.r = 128;
 
-		if (skyblue < 26)
-			skyblue = 26;
-		else if (skyblue > 128)
-			skyblue = 128;
+		if (skycolor.b < 26)
+			skycolor.b = 26;
+		else if (skycolor.b > 128)
+			skycolor.b = 128;
 
-		skygreen = skyblue;
+		skycolor.g = skycolor.b;
 	}
 	else
 	{
-		skyblue = 128;
-		skygreen = 128;
-		skyred = 128;
+		skycolor.b = 128;
+		skycolor.g = 128;
+		skycolor.r = 128;
 	}
 	
 	if (gTunnelNum == -1 || 
@@ -1116,47 +820,20 @@ void calc_sky_brightness(void)
 
 	TunnelSkyFade();
 
-	if (skyred > skyFade)
-		skyred = skyFade;
+	if (skycolor.r > skyFade)
+		skycolor.r = skyFade;
 
-	if (skygreen > skyFade)
-		skygreen = skyFade;
+	if (skycolor.g > skyFade)
+		skycolor.g = skyFade;
 
-	if (skyblue > skyFade)
-		skyblue = skyFade;
+	if (skycolor.b > skyFade)
+		skycolor.b = skyFade;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ PlotSkyPoly(int skytexnum /*$t5*/, unsigned char r /*$a1*/, unsigned char g /*$a2*/, unsigned char b /*$a3*/, int offset /*stack 16*/)
- // line 855, offset 0x00078b18
-	/* begin block 1 */
-		// Start line: 856
-		// Start offset: 0x00078B18
-		// Variables:
-	// 		POLYFT4 *src; // $t1
-	// 		DVECTOR *outpoints; // $t0
-	// 		POLY_FT4 *prims; // $t2
-	/* end block 1 */
-	// End offset: 0x00078EBC
-	// End Line: 894
-
-	/* begin block 2 */
-		// Start line: 2366
-	/* end block 2 */
-	// End Line: 2367
-
-	/* begin block 3 */
-		// Start line: 2369
-	/* end block 3 */
-	// End Line: 2370
 
 // offset: 0x1f800020
 extern _pct plotContext;
 
-#ifdef PGXP
+#ifdef USE_PGXP
 DVECTORF scratchPad_skyVertices[35];	// 1f800044
 #else
 DVECTOR scratchPad_skyVertices[35];	// 1f800044
@@ -1173,7 +850,7 @@ void PlotSkyPoly(POLYFT4* polys, int skytexnum, unsigned char r, unsigned char g
 	src = polys;
 	poly = (POLY_FT4*)current->primptr;
 
-#ifdef PGXP
+#ifdef USE_PGXP
 	DVECTORF* outpoints = scratchPad_skyVertices;
 #else
 	DVECTOR* outpoints = scratchPad_skyVertices;
@@ -1206,7 +883,7 @@ void PlotSkyPoly(POLYFT4* polys, int skytexnum, unsigned char r, unsigned char g
 
 		addPrim(current->ot + 0x107f, poly);
 
-#ifdef PGXP
+#if defined(USE_PGXP) && defined(USE_EXTENDED_PRIM_POINTERS)
 		poly->pgxp_index = outpoints[src->v0].pgxp_index;
 #endif 
 
@@ -1214,46 +891,12 @@ void PlotSkyPoly(POLYFT4* polys, int skytexnum, unsigned char r, unsigned char g
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ PlotHorizonMDL(MODEL *model /*$s6*/, int horizontaboffset /*$a1*/)
- // line 896, offset 0x00078ec4
-	/* begin block 1 */
-		// Start line: 897
-		// Start offset: 0x00078EC4
-		// Variables:
-	// 		SVECTOR *verts; // $v1
-	// 		char *polys; // $s1
-	// 		int i; // $s0
-	// 		int p; // stack offset -56
-	// 		int flag; // stack offset -52
-	// 		short *zbuff; // $t5
-	// 		int z; // stack offset -48
-	// 		unsigned char r; // $s5
-	// 		unsigned char g; // $s4
-	// 		unsigned char b; // $s3
-	/* end block 1 */
-	// End offset: 0x000790B4
-	// End Line: 945
-
-	/* begin block 2 */
-		// Start line: 2514
-	/* end block 2 */
-	// End Line: 2515
-
-	/* begin block 3 */
-		// Start line: 2520
-	/* end block 3 */
-	// End Line: 2521
-
 // [D] [T]
 void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 {
 	SVECTOR* verts;
 
-#ifdef PGXP
+#ifdef USE_PGXP
 	DVECTORF* dv0;
 	DVECTORF* dv1;
 	DVECTORF* dv2;
@@ -1318,7 +961,7 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 		if(count == 15)
 			gte_stszotz(&z);
 
-#ifdef PGXP
+#ifdef USE_PGXP
 		// store PGXP index
 		// HACK: -1 is needed here for some reason
 		dv0->pgxp_index = dv1->pgxp_index = dv2->pgxp_index = PGXP_GetIndex() - 1;
@@ -1339,9 +982,9 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 	{
 		polys = (unsigned char*)model->poly_block;
 
-		red = skyred;
-		green = skygreen;
-		blue = skyblue;
+		red = skycolor.r;
+		green = skycolor.g;
+		blue = skycolor.b;
 		
 		count = 0;
 
@@ -1362,7 +1005,31 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 	}
 }
 
+// [D] [T]
+void DrawSkyDome(void)
+{
+	calc_sky_brightness();
 
+#ifdef PSX
+	// FIXME: use frustrum angle instead?
+	if (((camera_angle.vy - 1450U) & 0xFFF) > 2250)
+		PlotHorizonMDL(modelpointers[0], HorizonLookup[GameLevel][0]);
 
+	if (((camera_angle.vy - 651U) & 0xFFF) < 1799)
+		PlotHorizonMDL(modelpointers[2], HorizonLookup[GameLevel][1]);
 
+	if (((camera_angle.vy - 1701U) & 0xFFF) < 1749)
+		PlotHorizonMDL(modelpointers[3], HorizonLookup[GameLevel][2]);
+
+	if (((camera_angle.vy - 400U) & 0xFFF) > 2300)
+		PlotHorizonMDL(modelpointers[1], HorizonLookup[GameLevel][3]);
+#else
+	// draw full sky - no need in frustrum culling
+	PlotHorizonMDL(modelpointers[0], HorizonLookup[GameLevel][0]);
+	PlotHorizonMDL(modelpointers[2], HorizonLookup[GameLevel][1]);
+	PlotHorizonMDL(modelpointers[3], HorizonLookup[GameLevel][2]);
+	PlotHorizonMDL(modelpointers[1], HorizonLookup[GameLevel][3]);
+#endif
+
+}
 

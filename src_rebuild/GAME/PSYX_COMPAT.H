@@ -5,10 +5,11 @@
 
 // Necessary includes
 #ifndef PSX
-#include "EMULATOR_PRIVATE.H"
+#include "PSYX_PUBLIC.H"
 #endif
 
 // Necessary types
+// It's size should match P_LEN*4
 #ifdef PSX
 typedef u_long OTTYPE;
 #else

@@ -31,41 +31,6 @@ int num_tyre_tracks[4];
 TYRE_TRACK track_buffer[4][64];
 int smoke_count[4];
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitTyreTracks()
- // line 253, offset 0x00077524
-	/* begin block 1 */
-		// Start line: 255
-		// Start offset: 0x00077524
-		// Variables:
-	// 		int loop; // $a0
-	/* end block 1 */
-	// End offset: 0x00077558
-	// End Line: 262
-
-	/* begin block 2 */
-		// Start line: 2806
-	/* end block 2 */
-	// End Line: 2807
-
-	/* begin block 3 */
-		// Start line: 506
-	/* end block 3 */
-	// End Line: 507
-
-	/* begin block 4 */
-		// Start line: 2807
-	/* end block 4 */
-	// End Line: 2808
-
-	/* begin block 5 */
-		// Start line: 2809
-	/* end block 5 */
-	// End Line: 2810
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void InitTyreTracks(void)
 {
@@ -80,36 +45,6 @@ void InitTyreTracks(void)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ GetTyreTrackPositions(CAR_DATA *cp /*$s3*/, int player_id /*$s7*/)
- // line 272, offset 0x00075408
-	/* begin block 1 */
-		// Start line: 273
-		// Start offset: 0x00075408
-		// Variables:
-	// 		CAR_COSMETICS *car_cos; // $s4
-	// 		VECTOR WheelPos; // stack offset -88
-	// 		VECTOR target_pos; // stack offset -72
-	// 		VECTOR normal; // stack offset -56
-	// 		int loop; // $s2
-
-		/* begin block 1.1 */
-			// Start line: 283
-			// Start offset: 0x00075458
-		/* end block 1.1 */
-		// End offset: 0x00075480
-		// End Line: 288
-	/* end block 1 */
-	// End offset: 0x00075540
-	// End Line: 298
-
-	/* begin block 2 */
-		// Start line: 544
-	/* end block 2 */
-	// End Line: 545
 
 // [D] [T]
 void GetTyreTrackPositions(CAR_DATA *cp, int player_id)
@@ -155,26 +90,6 @@ void GetTyreTrackPositions(CAR_DATA *cp, int player_id)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetTyreTrackOldPositions(int player_id /*$a0*/)
- // line 306, offset 0x00077558
-	/* begin block 1 */
-		// Start line: 2871
-	/* end block 1 */
-	// End Line: 2872
-
-	/* begin block 2 */
-		// Start line: 2916
-	/* end block 2 */
-	// End Line: 2917
-
-	/* begin block 3 */
-		// Start line: 2917
-	/* end block 3 */
-	// End Line: 2918
-
 // [D] [T]
 void SetTyreTrackOldPositions(int player_id)
 {
@@ -188,73 +103,6 @@ void SetTyreTrackOldPositions(int player_id)
 	tyre_save_positions[idx + 1].vy = tyre_new_positions[idx + 1].vy;
 	tyre_save_positions[idx + 1].vz = tyre_new_positions[idx + 1].vz;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ AddTyreTrack(int wheel /*$s2*/, int tracksAndSmoke /*$s6*/, int padid /*$s0*/)
- // line 330, offset 0x00075540
-	/* begin block 1 */
-		// Start line: 331
-		// Start offset: 0x00075540
-		// Variables:
-	// 		VECTOR New1; // stack offset -168
-	// 		VECTOR New2; // stack offset -152
-	// 		VECTOR New3; // stack offset -136
-	// 		VECTOR New4; // stack offset -120
-	// 		VECTOR *old; // $s5
-	// 		VECTOR *new; // $s3
-	// 		TYRE_TRACK *tt_p; // $s1
-	// 		int x; // $v1
-	// 		int z; // $a1
-	// 		int c; // $t1
-	// 		int s; // $t0
-	// 		unsigned int index; // $a2
-	// 		static int Cont[4]; // offset 0x0
-	// 		VECTOR psxoffset; // stack offset -104
-	// 		VECTOR SmokeDrift; // stack offset -88
-	// 		VECTOR SmokePosition; // stack offset -72
-	// 		char trackSurface; // $s0
-
-		/* begin block 1.1 */
-			// Start line: 364
-			// Start offset: 0x00075610
-			// Variables:
-		// 		ROUTE_DATA routeData; // stack offset -56
-		// 		sdPlane *SurfaceDataPtr; // $v0
-		/* end block 1.1 */
-		// End offset: 0x0007569C
-		// End Line: 399
-
-		/* begin block 1.2 */
-			// Start line: 404
-			// Start offset: 0x000756A8
-		/* end block 1.2 */
-		// End offset: 0x000756D0
-		// End Line: 411
-
-		/* begin block 1.3 */
-			// Start line: 421
-			// Start offset: 0x0007572C
-			// Variables:
-		// 		VECTOR grass_vector; // stack offset -48
-		/* end block 1.3 */
-		// End offset: 0x0007572C
-		// End Line: 421
-	/* end block 1 */
-	// End offset: 0x000759B8
-	// End Line: 506
-
-	/* begin block 2 */
-		// Start line: 679
-	/* end block 2 */
-	// End Line: 680
-
-	/* begin block 3 */
-		// Start line: 712
-	/* end block 3 */
-	// End Line: 713
 
 // [D] [T]
 void AddTyreTrack(int wheel, int tracksAndSmoke, int padid)
@@ -411,48 +259,6 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int padid)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawTyreTracks()
- // line 517, offset 0x000759e0
-	/* begin block 1 */
-		// Start line: 519
-		// Start offset: 0x000759E0
-		// Variables:
-	// 		VECTOR p[4]; // stack offset -136
-	// 		SVECTOR ps[4]; // stack offset -72
-	// 		TYRE_TRACK *tt_p; // $t0
-	// 		int z; // stack offset -40
-	// 		int temp; // $a2
-	// 		int loop; // $t7
-	// 		int wheel_loop; // $s0
-	// 		int index; // $t2
-	// 		char last_duff; // $s1
-	// 		POLY_FT4 *poly; // $a3
-	// 		POLY_FT4 *lasttyre; // $t8
-	/* end block 1 */
-	// End offset: 0x00075F34
-	// End Line: 645
-
-	/* begin block 2 */
-		// Start line: 1219
-	/* end block 2 */
-	// End Line: 1220
-
-	/* begin block 3 */
-		// Start line: 1220
-	/* end block 3 */
-	// End Line: 1221
-
-	/* begin block 4 */
-		// Start line: 1228
-	/* end block 4 */
-	// End Line: 1229
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void DrawTyreTracks(void)
 {
@@ -589,53 +395,6 @@ void DrawTyreTracks(void)
 	} while (wheel_loop < 4);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitShadow()
- // line 659, offset 0x00075f34
-	/* begin block 1 */
-		// Start line: 661
-		// Start offset: 0x00075F34
-		// Variables:
-	// 		TPAN pos; // stack offset -16
-	// 		TEXINF *texinf; // $v0
-	// 		int i; // $a2
-	// 		int j; // $a3
-
-		/* begin block 1.1 */
-			// Start line: 682
-			// Start offset: 0x00076090
-		/* end block 1.1 */
-		// End offset: 0x00076090
-		// End Line: 684
-	/* end block 1 */
-	// End offset: 0x00076108
-	// End Line: 697
-
-	/* begin block 2 */
-		// Start line: 1652
-	/* end block 2 */
-	// End Line: 1653
-
-	/* begin block 3 */
-		// Start line: 1667
-	/* end block 3 */
-	// End Line: 1668
-
-	/* begin block 4 */
-		// Start line: 1668
-	/* end block 4 */
-	// End Line: 1669
-
-	/* begin block 5 */
-		// Start line: 1672
-	/* end block 5 */
-	// End Line: 1673
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T] [A] now better shadow code
 void InitShadow(void)
 {
@@ -677,285 +436,10 @@ void InitShadow(void)
 	*(ushort*)&shadowpoly.uv3 = *(ushort*)&shadowuv.u2;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SubdivShadow(long z0 /*$t7*/, long z1 /*$t9*/, long z2 /*$t8*/, long z3 /*$t6*/, POLY_FT4 *sps /*stack 16*/)
- // line 717, offset 0x00076108
-	/* begin block 1 */
-		// Start line: 718
-		// Start offset: 0x00076108
-		// Variables:
-	// 		POLY_FT4 *spd; // $t3
-	// 		int i; // $t4
-
-		/* begin block 1.1 */
-			// Start line: 735
-			// Start offset: 0x000761B8
-			// Variables:
-		// 		unsigned long A0; // $v1
-		// 		unsigned long A1; // $a1
-		// 		unsigned long E0; // $a3
-		// 		unsigned long E1; // $t0
-		// 		unsigned long C0; // $a0
-		// 		unsigned long C1; // $a2
-		// 		unsigned long B0; // $v1
-		// 		unsigned long B1; // $a1
-		// 		unsigned long D0; // $a0
-		// 		unsigned long D1; // $a2
-		/* end block 1.1 */
-		// End offset: 0x000761B8
-		// End Line: 735
-
-		/* begin block 1.2 */
-			// Start line: 735
-			// Start offset: 0x000761B8
-			// Variables:
-		// 		unsigned long A0; // $a1
-		// 		unsigned long A1; // $a2
-		// 		unsigned long E0; // $a3
-		// 		unsigned long E1; // $t0
-		// 		unsigned long C0; // $a0
-		// 		unsigned long C1; // $v1
-		// 		unsigned long B0; // $a1
-		// 		unsigned long B1; // $a2
-		// 		unsigned long D0; // $a0
-		// 		unsigned long D1; // $v1
-		/* end block 1.2 */
-		// End offset: 0x000761B8
-		// End Line: 735
-	/* end block 1 */
-	// End offset: 0x000766CC
-	// End Line: 861
-
-	/* begin block 2 */
-		// Start line: 1788
-	/* end block 2 */
-	// End Line: 1789
-
-	/* begin block 3 */
-		// Start line: 1809
-	/* end block 3 */
-	// End Line: 1810
-
 // [D] [A] - this is a fuckery
 void SubdivShadow(long z0, long z1, long z2, long z3, POLY_FT4 *sps)
 {
-#if 0
-	ushort uVar1;
-	ushort uVar3;
-	ulong uVar4;
-	ushort uVar5;
-	ushort uVar6;
-	uint iVar7;
-	uint uVar8;
-	ushort uVar9;
-	POLY_FT4 *pPVar10;
-	uint uVar11;
-	uint iVar12;
-	uint iVar13;
-	uint uVar14;
-	uint uVar15;
-	uint uVar16;
-	uint uVar17;
-	uint iVar18;
-	uint iVar19;
-	uint uVar20;
-	uint iVar21;
-	uint iVar22;
-	uint uVar23;
-	POLY_FT4 *spd;
-	uint iVar24;
-
-	spd = (POLY_FT4 *)current->primptr;
-	current->primptr += sizeof(POLY_FT4)*8;
-
-	uVar4 = sps->tag;
-	
-	spd[7].tag = uVar4;
-	spd[6].tag = uVar4;
-	spd[5].tag = uVar4;
-	spd[4].tag = uVar4;
-	spd[3].tag = uVar4;
-	spd[2].tag = uVar4;
-	spd[1].tag = uVar4;
-	spd->tag = uVar4;
-
-
-	uVar6 = *(uint *)&sps->r0;
-	*(uint *)&spd[7].r0 = uVar6;
-	*(uint *)&spd[6].r0 = uVar6;
-	*(uint *)&spd[5].r0 = uVar6;
-	*(uint *)&spd[4].r0 = uVar6;
-	*(uint *)&spd[3].r0 = uVar6;
-	*(uint *)&spd[2].r0 = uVar6;
-	*(uint *)&spd[1].r0 = uVar6;
-	*(uint *)&spd->r0 = uVar6;
-
-	pPVar10 = spd;
-
-	iVar24 = 7;
-	do {
-		*(uint *)&pPVar10->u0 = *(uint *)&sps->u0;
-		*(uint *)&pPVar10->u1 = *(uint *)&sps->u1;
-		*(uint *)&pPVar10->u2 = *(uint *)&sps->u2;
-		*(uint *)&pPVar10->u3 = *(uint *)&sps->u3;
-
-		pPVar10->tpage = sps->tpage;
-		pPVar10->clut = sps->clut;
-
-		pPVar10 = pPVar10 + 1;
-		iVar24 = iVar24 + -1;
-	} while (-1 < iVar24);
-
-	iVar12 = *(uint *)&sps->x1;
-	iVar18 = *(uint *)&sps->x2;
-	iVar21 = *(uint *)&sps->x3;
-	iVar7 = *(uint *)&sps->x0 +0x8000800;
-	iVar13 = iVar12 +0x8000800;
-	*(uint *)&spd->x0 = *(uint *)&sps->x0;
-	iVar24 = ((uint)(iVar7 + iVar13) >> 1) +0xf7fff800;
-	iVar19 = iVar18 +0x8000800;
-	*(uint *)&spd[4].x1 = iVar12;
-	uVar11 = (uint)(iVar7 + iVar19) >> 1;
-	uVar8 = iVar7 + uVar11 >> 1;
-	*(uint *)&spd->x1 = iVar24;
-	*(uint *)&spd[4].x0 = iVar24;
-	iVar24 = uVar8 +0xf7fff800;
-	iVar22 = iVar21 +0x8000800;
-	uVar16 = (uint)(iVar13 + iVar22) >> 1;
-	uVar14 = iVar13 + uVar16 >> 1;
-	iVar7 = (uVar8 + uVar14 >> 1) +0xf7fff800;
-	iVar12 = uVar14+0xf7fff800;
-	*(uint *)&spd->x2 = iVar24;
-	*(uint *)&spd[1].x0 = iVar24;
-	iVar24 = (uVar11 + uVar16 >> 1) +0xf7fff800;
-	*(uint *)&spd->x3 = iVar7;
-	*(uint *)&spd[4].x2 = iVar7;
-	*(uint *)&spd[1].x1 = iVar7;
-	*(uint *)&spd[5].x0 = iVar7;
-	uVar8 = iVar19 + uVar11 >> 1;
-	*(uint *)&spd[1].x3 = iVar24;
-	*(uint *)&spd[5].x2 = iVar24;
-	*(uint *)&spd[2].x1 = iVar24;
-	*(uint *)&spd[6].x0 = iVar24;
-	iVar24 = uVar8 +0xf7fff800;
-	uVar14 = iVar22 + uVar16 >> 1;
-	iVar7 = (uVar8 + uVar14 >> 1) +0xf7fff800;
-	iVar13 = uVar14 +0xf7fff800;
-	*(uint *)&spd[2].x2 = iVar24;
-	*(uint *)&spd[3].x0 = iVar24;
-	iVar24 = ((uint)(iVar19 + iVar22) >> 1) +0xf7fff800;
-	*(uint *)&spd[4].x3 = iVar12;
-	*(uint *)&spd[5].x1 = iVar12;
-	*(uint *)&spd[1].x2 = uVar11 +0xf7fff800;
-	*(uint *)&spd[5].x3 = uVar16 +0xf7fff800;
-	*(uint *)&spd[2].x0 = uVar11 +0xf7fff800;
-	*(uint *)&spd[6].x1 = uVar16 +0xf7fff800;
-	*(uint *)&spd[2].x3 = iVar7;
-	*(uint *)&spd[6].x2 = iVar7;
-	*(uint *)&spd[6].x3 = iVar13;
-	*(uint *)&spd[3].x1 = iVar7;
-	*(uint *)&spd[7].x0 = iVar7;
-	*(uint *)&spd[7].x1 = iVar13;
-	*(uint *)&spd[3].x2 = iVar18;
-	*(uint *)&spd[3].x3 = iVar24;
-	*(uint *)&spd[7].x2 = iVar24;
-	*(uint *)&spd[7].x3 = iVar21;
-
-	uVar1 = *(ushort *)&sps->u3;
-	uVar11 = (uint)*(ushort *)&sps->u0 & 0xfeff;
-	uVar16 = (uint)*(ushort *)&sps->u1 & 0xfeff;
-	uVar20 = (uint)*(ushort *)&sps->u2 & 0xfeff;
-	uVar14 = uVar11 + uVar20 >> 1 & 0xfeff;
-	*(ushort *)&spd->u0 = (ushort)uVar11;
-	uVar15 = uVar11 + uVar14 >> 1;
-	uVar23 = (uint)uVar1 & 0xfeff;
-	uVar8 = uVar16 + uVar23 >> 1 & 0xfeff;
-	*(ushort *)&spd[4].u1 = (ushort)uVar16;
-	uVar17 = uVar16 + uVar8 >> 1;
-	uVar3 = (ushort)(uVar11 + uVar16 >> 1);
-	*(ushort *)&spd->u1 = uVar3;
-	*(ushort *)&spd[4].u0 = uVar3;
-	uVar3 = (ushort)(uVar15 + uVar17 >> 1);
-	*(ushort *)&spd->u3 = uVar3;
-	*(ushort *)&spd[4].u2 = uVar3;
-	*(ushort *)&spd[1].u1 = uVar3;
-	*(ushort *)&spd[5].u0 = uVar3;
-	*(ushort *)&spd[1].u2 = (ushort)uVar14;
-	*(ushort *)&spd[2].u0 = (ushort)uVar14;
-	uVar16 = uVar20 + uVar14 >> 1;
-	*(ushort *)&spd[5].u3 = (ushort)uVar8;
-	*(ushort *)&spd[6].u1 = (ushort)uVar8;
-	uVar11 = uVar23 + uVar8 >> 1;
-	uVar3 = (ushort)(uVar14 + uVar8 >> 1);
-	*(ushort *)&spd[1].u3 = uVar3;
-	*(ushort *)&spd[5].u2 = uVar3;
-	*(ushort *)&spd[2].u1 = uVar3;
-	*(ushort *)&spd[6].u0 = uVar3;
-	uVar3 = (ushort)uVar15;
-	*(ushort *)&spd->u2 = uVar3;
-	uVar5 = (ushort)uVar17;
-	*(ushort *)&spd[4].u3 = uVar5;
-	*(ushort *)&spd[1].u0 = uVar3;
-	*(ushort *)&spd[5].u1 = uVar5;
-	uVar9 = (ushort)uVar16;
-	*(ushort *)&spd[2].u2 = uVar9;
-	uVar3 = (ushort)(uVar16 + uVar11 >> 1);
-	*(ushort *)&spd[2].u3 = uVar3;
-	*(ushort *)&spd[6].u2 = uVar3;
-	uVar5 = (ushort)uVar11;
-	*(ushort *)&spd[6].u3 = uVar5;
-	*(ushort *)&spd[3].u0 = uVar9;
-	*(ushort *)&spd[3].u1 = uVar3;
-	*(ushort *)&spd[7].u0 = uVar3;
-	*(ushort *)&spd[7].u1 = uVar5;
-	*(short *)&spd[3].u2 = (short)uVar20;
-	
-	uVar3 = (ushort)(uVar20 + uVar23 >> 1);
-	*(ushort *)&spd[3].u3 = uVar3;
-	*(ushort *)&spd[7].u2 = uVar3;
-	*(short *)&spd[7].u3 = (short)uVar23;
-	
-#ifndef PSX
-	setPolyFT4(&spd[7]);
-	setPolyFT4(&spd[6]);
-	setPolyFT4(&spd[5]);
-	setPolyFT4(&spd[4]);
-	setPolyFT4(&spd[3]);
-	setPolyFT4(&spd[2]);
-	setPolyFT4(&spd[1]);
-	setPolyFT4(&spd[0]);
-#endif // PSX
-
-	iVar24 = z0 * 7 + z3 >> 6;
-	addPrim(current->ot + iVar24, &spd[0]);
-	
-	//spd->tag = spd->tag & 0xff000000 | current->ot[iVar24] & 0xffffff;
-	//pDVar2->ot[iVar24] = pDVar2->ot[iVar24] & 0xff000000 | (uint)spd & 0xffffff;
-	iVar24 = z0 * 5 + z3 * 3 >> 6;
-	addPrim(current->ot + iVar24, &spd[1]);  // spd[1].tag = spd[1].tag & 0xff000000 | pDVar2->ot[iVar24] & 0xffffff;
-	iVar7 = z0 * 3 + z3 * 5 >> 6;
-	//pDVar2->ot[iVar24] = pDVar2->ot[iVar24] & 0xff000000 | (uint)(spd + 1) & 0xffffff;
-	iVar24 = z0 + z3 * 7 >> 6;
-	addPrim(current->ot + iVar7, &spd[2]);  // spd[2].tag = spd[2].tag & 0xff000000 | pDVar2->ot[iVar7] & 0xffffff;
-	//pDVar2->ot[iVar7] = pDVar2->ot[iVar7] & 0xff000000 | (uint)(spd + 2) & 0xffffff;
-	iVar7 = z1 * 7 + z2 >> 6;
-	addPrim(current->ot + iVar24, &spd[3]);  // spd[3].tag = spd[3].tag & 0xff000000 | pDVar2->ot[iVar24] & 0xffffff;
-	//pDVar2->ot[iVar24] = pDVar2->ot[iVar24] & 0xff000000 | (uint)(spd + 3) & 0xffffff;
-	addPrim(current->ot + iVar7, &spd[4]);  // spd[4].tag = spd[4].tag & 0xff000000 | pDVar2->ot[iVar7] & 0xffffff;
-	iVar24 = z1 * 5 + z2 * 3 >> 6;
-	//pDVar2->ot[iVar7] = pDVar2->ot[iVar7] & 0xff000000 | (uint)(spd + 4) & 0xffffff;
-	addPrim(current->ot + iVar24, &spd[5]);  // spd[5].tag = spd[5].tag & 0xff000000 | pDVar2->ot[iVar24] & 0xffffff;
-	iVar7 = z1 * 3 + z2 * 5 >> 6;
-	//pDVar2->ot[iVar24] = pDVar2->ot[iVar24] & 0xff000000 | (uint)(spd + 5) & 0xffffff;
-	iVar24 = z1 + z2 * 7 >> 6;
-	addPrim(current->ot + iVar7, &spd[6]);  // spd[6].tag = spd[6].tag & 0xff000000 | pDVar2->ot[iVar7] & 0xffffff;
-	//pDVar2->ot[iVar7] = pDVar2->ot[iVar7] & 0xff000000 | (uint)(spd + 6) & 0xffffff;
-	addPrim(current->ot + iVar24, &spd[7]);  // spd[7].tag = spd[7].tag & 0xff000000 | pDVar2->ot[iVar24] & 0xffffff;
-	//pDVar2->ot[iVar24] = pDVar2->ot[iVar24] & 0xff000000 | (uint)(spd + 7) & 0xffffff;
-#else
+	// [A] we already have better car shadow code. This is UNUSED anyway
 	POLY_FT4 *spd;
 
 	spd = (POLY_FT4 *)current->primptr;
@@ -964,44 +448,8 @@ void SubdivShadow(long z0, long z1, long z2, long z3, POLY_FT4 *sps)
 	memcpy(spd, sps, sizeof(POLY_FT4));
 
 	addPrim(current->ot + (z0 * 2 + z3 * 6 >> 6), spd);
-#endif // PSX
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ PlaceShadowForCar(VECTOR *shadowPoints /*$t0*/, int slot /*$s0*/, VECTOR *CarPos /*$a2*/, int zclip /*$a3*/)
- // line 864, offset 0x000766cc
-	/* begin block 1 */
-		// Start line: 865
-		// Start offset: 0x000766CC
-		// Variables:
-	// 		SVECTOR points[4]; // stack offset -64
-	// 		long z; // $a0
-	// 		long z0; // stack offset -32
-	// 		long z1; // stack offset -28
-	// 		long z2; // stack offset -24
-	// 		long z3; // stack offset -20
-	// 		POLY_FT4 *spt; // $a3
-	/* end block 1 */
-	// End offset: 0x00076A40
-	// End Line: 933
-
-	/* begin block 2 */
-		// Start line: 2526
-	/* end block 2 */
-	// End Line: 2527
-
-	/* begin block 3 */
-		// Start line: 2530
-	/* end block 3 */
-	// End Line: 2531
-
-	/* begin block 4 */
-		// Start line: 2535
-	/* end block 4 */
-	// End Line: 2536
 
 extern VECTOR dummy;
 extern _pct plotContext; // scratchpad addr: 0x1F8000C0
@@ -1061,66 +509,6 @@ void PlaceShadowForCar(VECTOR *shadowPoints, int subdiv, int zOfs, int flag)
 
 	current->primptr = plotContext.primptr;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ clipAgainstZ()
- // line 1038, offset 0x00076a40
-	/* begin block 1 */
-		// Start line: 1040
-		// Start offset: 0x00076A40
-		// Variables:
-	// 		int srccount; // $t4
-	// 		int dstcount; // $t5
-	// 		SVECTOR *current; // $t2
-	// 		SVECTOR *previous; // $t1
-	// 		SVECTOR *dst; // $a3
-	// 		int flags; // $t3
-
-		/* begin block 1.1 */
-			// Start line: 1057
-			// Start offset: 0x00076AC0
-			// Variables:
-		// 		int q; // $a2
-		/* end block 1.1 */
-		// End offset: 0x00076AC0
-		// End Line: 1057
-
-		/* begin block 1.2 */
-			// Start line: 1063
-			// Start offset: 0x00076BB8
-			// Variables:
-		// 		int q; // $a2
-		/* end block 1.2 */
-		// End offset: 0x00076BB8
-		// End Line: 1063
-	/* end block 1 */
-	// End offset: 0x00076CD4
-	// End Line: 1079
-
-	/* begin block 2 */
-		// Start line: 2837
-	/* end block 2 */
-	// End Line: 2838
-
-	/* begin block 3 */
-		// Start line: 2906
-	/* end block 3 */
-	// End Line: 2907
-
-	/* begin block 4 */
-		// Start line: 2907
-	/* end block 4 */
-	// End Line: 2908
-
-	/* begin block 5 */
-		// Start line: 2908
-	/* end block 5 */
-	// End Line: 2909
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 static int numcv;
 static int lastcv;
@@ -1209,7 +597,6 @@ int clipAgainstZ(void)
 		prev = curr--;
 	} while (true);
 }
-
 
 
 // decompiled code
@@ -1400,35 +787,6 @@ void clippedPoly(void)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ sQuad(SVECTOR *v0 /*$a0*/, SVECTOR *v1 /*$s5*/, SVECTOR *v2 /*$s6*/, SVECTOR *v3 /*$s4*/)
- // line 1160, offset 0x00077138
-	/* begin block 1 */
-		// Start line: 1161
-		// Start offset: 0x00077138
-		// Variables:
-	// 		int z1; // $v0
-	// 		int z[4]; // stack offset -48
-
-		/* begin block 1.1 */
-			// Start line: 1168
-			// Start offset: 0x000771B4
-			// Variables:
-		// 		POLY_G4 *pf4; // $t2
-		/* end block 1.1 */
-		// End offset: 0x000772B4
-		// End Line: 1190
-	/* end block 1 */
-	// End offset: 0x00077524
-	// End Line: 1222
-
-	/* begin block 2 */
-		// Start line: 3251
-	/* end block 2 */
-	// End Line: 3252
-
 // [D] [T]
 void sQuad(SVECTOR *v0, SVECTOR *v1, SVECTOR *v2, SVECTOR *v3, int light_col, int LightSortCorrect)
 {
@@ -1439,7 +797,8 @@ void sQuad(SVECTOR *v0, SVECTOR *v1, SVECTOR *v2, SVECTOR *v3, int light_col, in
 
 	poly = (POLY_G4*)current->primptr;
 
-	if (false) // (v0->vz < 1001 || v1->vz < 1001 || v2->vz < 1001 || v3->vz < 1001)
+#if 0
+	if (v0->vz < 1001 || v1->vz < 1001 || v2->vz < 1001 || v3->vz < 1001)
 	{
 		if (v0->vz > 0 || v1->vz > 0 || v2->vz > 0 || v3->vz > 0)
 		{
@@ -1464,7 +823,8 @@ void sQuad(SVECTOR *v0, SVECTOR *v1, SVECTOR *v2, SVECTOR *v3, int light_col, in
 			clippedPoly();
 		}
 	}
-	else 
+	else
+#endif
 	{
 		gte_ldv3(v0, v1, v3);
 

@@ -43,29 +43,6 @@ int FelonyIncreaseTimer = 0;
 int FelonyDecreaseTimer = 0;
 
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitFelonyDelayArray(FELONY_DELAY *pFelonyDelay /*$a0*/, short *pMaximum /*$a1*/, int count /*$a2*/)
- // line 413, offset 0x0004d364
-	/* begin block 1 */
-		// Start line: 414
-		// Start offset: 0x0004D364
-		// Variables:
-	// 		FELONY_DELAY *pCurrent; // $a0
-	/* end block 1 */
-	// End offset: 0x0004D3A0
-	// End Line: 422
-
-	/* begin block 2 */
-		// Start line: 826
-	/* end block 2 */
-	// End Line: 827
-
-	/* begin block 3 */
-		// Start line: 1334
-	/* end block 3 */
-	// End Line: 1335
-
 // [D] [T]
 void InitFelonyDelayArray(FELONY_DELAY *pFelonyDelay, short *pMaximum, int count)
 {
@@ -82,40 +59,6 @@ void InitFelonyDelayArray(FELONY_DELAY *pFelonyDelay, short *pMaximum, int count
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitFelonyData(FELONY_DATA *pFelonyData /*$s0*/)
- // line 431, offset 0x0004d3a0
-	/* begin block 1 */
-		// Start line: 432
-		// Start offset: 0x0004D3A0
-
-		/* begin block 1.1 */
-			// Start line: 432
-			// Start offset: 0x0004D3A0
-			// Variables:
-		// 		FELONY_VALUE *pSrc; // $v1
-		// 		FELONY_VALUE *pDest; // $s0
-		// 		FELONY_VALUE *pEnd; // $a0
-		/* end block 1.1 */
-		// End offset: 0x0004D420
-		// End Line: 445
-	/* end block 1 */
-	// End offset: 0x0004D420
-	// End Line: 446
-
-	/* begin block 2 */
-		// Start line: 1363
-	/* end block 2 */
-	// End Line: 1364
-
-	/* begin block 3 */
-		// Start line: 1373
-	/* end block 3 */
-	// End Line: 1374
-
 // [D] [T]
 void InitFelonyData(FELONY_DATA *pFelonyData)
 {	
@@ -125,57 +68,11 @@ void InitFelonyData(FELONY_DATA *pFelonyData)
 	memcpy(&pFelonyData->value, &initialFelonyValue, sizeof(initialFelonyValue));
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ GetCarHeading(int direction /*$a0*/)
- // line 450, offset 0x0004d420
-	/* begin block 1 */
-		// Start line: 1408
-	/* end block 1 */
-	// End Line: 1409
-
-	/* begin block 2 */
-		// Start line: 1409
-	/* end block 2 */
-	// End Line: 1410
-
-	/* begin block 3 */
-		// Start line: 1414
-	/* end block 3 */
-	// End Line: 1415
-
-	/* begin block 4 */
-		// Start line: 1415
-	/* end block 4 */
-	// End Line: 1416
-
 // [D] [T]
 int GetCarHeading(int direction)
 {
 	return (direction + 0x200U & 0xfff) >> 10;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// char /*$ra*/ GetCarDirectionOfTravel(CAR_DATA *cp /*$s0*/)
- // line 454, offset 0x0004d430
-	/* begin block 1 */
-		// Start line: 455
-		// Start offset: 0x0004D430
-		// Variables:
-	// 		int direction; // $v0
-	/* end block 1 */
-	// End offset: 0x0004D478
-	// End Line: 466
-
-	/* begin block 2 */
-		// Start line: 1422
-	/* end block 2 */
-	// End Line: 1423
 
 // [D] [T]
 char GetCarDirectionOfTravel(CAR_DATA *cp)
@@ -189,54 +86,6 @@ char GetCarDirectionOfTravel(CAR_DATA *cp)
 
 	return direction;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ NoteFelony(FELONY_DATA *pFelonyData /*$a3*/, char type /*$s3*/, short scale /*$t0*/)
- // line 476, offset 0x0004c330
-	/* begin block 1 */
-		// Start line: 477
-		// Start offset: 0x0004C330
-		// Variables:
-	// 		int felonyTooLowForRoadblocks; // $s4
-
-		/* begin block 1.1 */
-			// Start line: 478
-			// Start offset: 0x0004C3A8
-			// Variables:
-		// 		FELONY_DELAY *pFelonyDelay; // $v1
-		/* end block 1.1 */
-		// End offset: 0x0004C3CC
-		// End Line: 495
-
-		/* begin block 1.2 */
-			// Start line: 512
-			// Start offset: 0x0004C400
-			// Variables:
-		// 		int additionalFelonyPoints; // $a0
-		/* end block 1.2 */
-		// End offset: 0x0004C514
-		// End Line: 528
-
-		/* begin block 1.3 */
-			// Start line: 553
-			// Start offset: 0x0004C630
-			// Variables:
-		// 		char rnd; // $s1
-		// 		int dir; // $a3
-		/* end block 1.3 */
-		// End offset: 0x0004C804
-		// End Line: 583
-	/* end block 1 */
-	// End offset: 0x0004C894
-	// End Line: 588
-
-	/* begin block 2 */
-		// Start line: 952
-	/* end block 2 */
-	// End Line: 953
 
 // [D]
 void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale)
@@ -378,37 +227,6 @@ void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ AdjustFelony(FELONY_DATA *pFelonyData /*$a0*/)
- // line 597, offset 0x0004c8b4
-	/* begin block 1 */
-		// Start line: 598
-		// Start offset: 0x0004C8B4
-
-		/* begin block 1.1 */
-			// Start line: 649
-			// Start offset: 0x0004CBE8
-			// Variables:
-		// 		FELONY_DELAY *pFelonyDelay; // $v1
-		/* end block 1.1 */
-		// End offset: 0x0004CC28
-		// End Line: 658
-	/* end block 1 */
-	// End offset: 0x0004CC28
-	// End Line: 659
-
-	/* begin block 2 */
-		// Start line: 1231
-	/* end block 2 */
-	// End Line: 1232
-
-	/* begin block 3 */
-		// Start line: 1242
-	/* end block 3 */
-	// End Line: 1243
-
 // [D] [T]
 void AdjustFelony(FELONY_DATA *pFelonyData)
 {
@@ -452,102 +270,6 @@ void AdjustFelony(FELONY_DATA *pFelonyData)
 		pFelonyDelay++;
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ CheckPlayerMiscFelonies()
- // line 668, offset 0x0004cc28
-	/* begin block 1 */
-		// Start line: 670
-		// Start offset: 0x0004CC28
-		// Variables:
-	// 		FELONY_DATA *pFelonyData; // $s4
-	// 		DRIVER2_CURVE *cv; // $s5
-	// 		DRIVER2_STRAIGHT *st; // $s6
-	// 		CAR_DATA *cp; // $s3
-	// 		VECTOR *carPos; // $s2
-	// 		int surfInd; // $s0
-
-		/* begin block 1.1 */
-			// Start line: 690
-			// Start offset: 0x0004CCC0
-			// Variables:
-		// 		char i; // $a1
-
-			/* begin block 1.1.1 */
-				// Start line: 699
-				// Start offset: 0x0004CD64
-				// Variables:
-			// 		DRIVER2_JUNCTION *jn; // $a2
-			// 		short exitId; // $s1
-			/* end block 1.1.1 */
-			// End offset: 0x0004CE0C
-			// End Line: 715
-		/* end block 1.1 */
-		// End offset: 0x0004CE0C
-		// End Line: 716
-
-		/* begin block 1.2 */
-			// Start line: 716
-			// Start offset: 0x0004CE0C
-			// Variables:
-		// 		char goingWrongWay; // $s7
-		// 		int lane; // $s0
-		// 		int dx; // $v1
-		// 		int dz; // $a0
-
-			/* begin block 1.2.1 */
-				// Start line: 738
-				// Start offset: 0x0004CFAC
-			/* end block 1.2.1 */
-			// End offset: 0x0004D0D8
-			// End Line: 748
-		/* end block 1.2 */
-		// End offset: 0x0004D0F8
-		// End Line: 758
-
-		/* begin block 1.3 */
-			// Start line: 779
-			// Start offset: 0x0004D198
-			// Variables:
-		// 		int maxSpeed; // $a0
-		// 		int limit; // $v1
-		/* end block 1.3 */
-		// End offset: 0x0004D250
-		// End Line: 805
-	/* end block 1 */
-	// End offset: 0x0004D250
-	// End Line: 806
-
-	/* begin block 2 */
-		// Start line: 1367
-	/* end block 2 */
-	// End Line: 1368
-
-	/* begin block 3 */
-		// Start line: 1368
-	/* end block 3 */
-	// End Line: 1369
-
-	/* begin block 4 */
-		// Start line: 1378
-	/* end block 4 */
-	// End Line: 1379
-
-	/* begin block 5 */
-		// Start line: 1379
-	/* end block 5 */
-	// End Line: 1380
-
-	/* begin block 6 */
-		// Start line: 1380
-	/* end block 6 */
-	// End Line: 1381
-
-/* WARNING: Removing unreachable block (ram,0x0004d214) */
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 short playerLastRoad = 0;
 
@@ -607,43 +329,15 @@ void CheckPlayerMiscFelonies(void)
 
 	if(GetSurfaceRoadInfo(&roadInfo, surfInd))
 	{
-		int lane_count;
 		int lane;
-		int dx;
-		int dz;
 		int crd;
 
-		lane_count = ROAD_WIDTH_IN_LANES(&roadInfo);
+		lane = GetLaneByPositionOnRoad(&roadInfo, carPos);
 
 		if(roadInfo.straight)
-		{
-			dx = carPos->vx - roadInfo.straight->Midx;
-			dz = carPos->vz - roadInfo.straight->Midz;
-
-			lane = ROAD_LANES_COUNT(&roadInfo) - (FIXEDH(dx * rcossin_tbl[(roadInfo.straight->angle & 0xfff) * 2 + 1] - dz * rcossin_tbl[(roadInfo.straight->angle & 0xfff) * 2]) + 512 >> 9);
-
-			if (lane < 0)
-				lane = 0;
-
-			if (lane_count <= lane)
-				lane = lane_count - 1;
-
-			crd = (roadInfo.straight->angle - cp->hd.direction) + 0x400U >> 0xb & 1;
-		}
+			crd = (roadInfo.straight->angle - cp->hd.direction) + 1024U >> 0xb & 1;
 		else
-		{
-			dx = carPos->vx - roadInfo.curve->Midx;
-			dz = carPos->vz - roadInfo.curve->Midz;
-
-			lane = (SquareRoot0(dx * dx + dz * dz) >> 9) - roadInfo.curve->inside * 2;
-			if (lane < 0)
-				lane = 0;
-			
-			if (lane >= lane_count)
-				lane = lane_count - 1;
-
 			crd = NotTravellingAlongCurve(carPos->vx, carPos->vz, cp->hd.direction, roadInfo.curve);
-		}
 
 		// check if on correct lane
 		if (ROAD_IS_AI_LANE(&roadInfo, lane))
@@ -664,14 +358,14 @@ void CheckPlayerMiscFelonies(void)
 		printInfo("ROAD %d lane: %d / %d, (%d). AI drive: %d, flg: %d%d%d, dir: %d, spd: %d (wrong way: %d)\n",
 			roadInfo.surfId,
 			lane + 1,
-			((u_char)roadInfo.NumLanes & 0xF) * 2,			// lane count. * 2 for both sides as roads are symmetric
+			ROAD_WIDTH_IN_LANES(&roadInfo),					// lane count. * 2 for both sides as roads are symmetric
 			IS_NARROW_ROAD(&roadInfo),
-			((u_char)roadInfo.AILanes >> (lane / 2) & 1U),	// lane AI driveable flag
+			ROAD_IS_AI_LANE(&roadInfo, lane),				// lane AI driveable flag
 			(roadInfo.NumLanes & 0x20) > 0,					// flag 0 - first lane?
 			(roadInfo.NumLanes & 0x40) > 0,					// flag 1 - leftmost park
 			(roadInfo.NumLanes & 0x80) > 0,					// flag 2 - rightmost park
-			((u_char)roadInfo.LaneDirs >> (lane / 2) & 1U),	// direction bit
-			((u_char)roadInfo.NumLanes >> 4) & 3,			// speed limit id
+			ROAD_LANE_DIRECTION_BIT(&roadInfo, lane),		// direction bit
+			ROAD_SPEED_LIMIT(&roadInfo),					// speed limit id
 			goingWrongWay);
 #endif
 
@@ -721,24 +415,6 @@ void CheckPlayerMiscFelonies(void)
 		NoteFelony(&felonyData, 2, 4096);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitFelonySystem()
- // line 810, offset 0x0004d280
-	/* begin block 1 */
-		// Start line: 1682
-	/* end block 1 */
-	// End Line: 1683
-
-	/* begin block 2 */
-		// Start line: 1687
-	/* end block 2 */
-	// End Line: 1688
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void InitFelonySystem(void)
 {
@@ -750,16 +426,6 @@ void InitFelonySystem(void)
 	InitFelonyData(&felonyData);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ CarHitByPlayer(CAR_DATA *victim /*$a0*/, int howHard /*$a2*/)
- // line 824, offset 0x0004d2b8
-	/* begin block 1 */
-		// Start line: 1714
-	/* end block 1 */
-	// End Line: 1715
 
 // [D] [T]
 void CarHitByPlayer(CAR_DATA *victim, int howHard)

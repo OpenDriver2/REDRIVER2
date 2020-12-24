@@ -26,8 +26,9 @@ ROAD_MAP_LUMP_DATA roadMapLumpData;
 short* RoadMapDataRegions[4];
 
 int NumTempJunctions = 0;
+int NumDriver2Junctions = 0;
 DRIVER2_JUNCTION *Driver2JunctionsPtr = NULL;
-ulong *Driver2TempJunctionsPtr = NULL;
+u_int* Driver2TempJunctionsPtr = NULL;
 
 DRIVER2_CURVE *Driver2CurvesPtr = NULL;
 int NumDriver2Curves = 0;
@@ -117,26 +118,45 @@ int GetSurfaceRoadInfo(DRIVER2_ROAD_INFO* outRoadInfo, int surfId)
 	return 0;
 }
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ProcessStraightsDriver2Lump(char *lump_file /*$s0*/, int lump_size /*$a1*/)
- // line 64, offset 0x000136c0
-	/* begin block 1 */
-		// Start line: 65
-		// Start offset: 0x000136C0
-	/* end block 1 */
-	// End offset: 0x000136F4
-	// End Line: 69
+// [A]
+int GetLaneByPositionOnRoad(DRIVER2_ROAD_INFO* roadInfo, VECTOR* pos)
+{
+	int dx, dz, lane;
+	int lane_count;
 
-	/* begin block 2 */
-		// Start line: 659
-	/* end block 2 */
-	// End Line: 660
+	lane_count = ROAD_WIDTH_IN_LANES(roadInfo);
+	lane = -1;
 
-	/* begin block 3 */
-		// Start line: 128
-	/* end block 3 */
-	// End Line: 129
+	if (roadInfo->straight)
+	{
+		dx = pos->vx - roadInfo->straight->Midx;
+		dz = pos->vz - roadInfo->straight->Midz;
+
+		lane = ROAD_LANES_COUNT(roadInfo) - (FIXEDH(dx * rcossin_tbl[(roadInfo->straight->angle & 0xfff) * 2 + 1] -
+													dz * rcossin_tbl[(roadInfo->straight->angle & 0xfff) * 2]) + 512 >> 9);
+
+		if (lane < 0)
+			lane = 0;
+
+		if (lane_count <= lane)
+			lane = lane_count - 1;
+	}
+	else if(roadInfo->curve)
+	{
+		dx = pos->vx - roadInfo->curve->Midx;
+		dz = pos->vz - roadInfo->curve->Midz;
+
+		lane = (SquareRoot0(dx * dx + dz * dz) >> 9) - roadInfo->curve->inside * 2;
+	
+		if (lane < 0)
+			lane = 0;
+
+		if (lane >= lane_count)
+			lane = lane_count - 1;
+	}
+
+	return lane;
+}
 
 // [D] [T]
 void ProcessStraightsDriver2Lump(char *lump_file, int lump_size)
@@ -178,80 +198,12 @@ void ProcessStraightsDriver2Lump(char *lump_file, int lump_size)
 #endif
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ProcessCurvesDriver2Lump(char *lump_file /*$s0*/, int lump_size /*$a1*/)
- // line 80, offset 0x000136f4
-	/* begin block 1 */
-		// Start line: 81
-		// Start offset: 0x000136F4
-	/* end block 1 */
-	// End offset: 0x00013728
-	// End Line: 85
-
-	/* begin block 2 */
-		// Start line: 681
-	/* end block 2 */
-	// End Line: 682
-
-	/* begin block 3 */
-		// Start line: 693
-	/* end block 3 */
-	// End Line: 694
-
 // [D] [T]
 void ProcessCurvesDriver2Lump(char *lump_file, int lump_size)
 {
 	Getlong((char *)&NumDriver2Curves, lump_file);
 	Driver2CurvesPtr = (DRIVER2_CURVE *)(lump_file + 4);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ProcessJunctionsDriver2Lump(char *lump_file /*$s1*/, int lump_size /*$a1*/, int fix /*$s0*/)
- // line 94, offset 0x00013728
-	/* begin block 1 */
-		// Start line: 95
-		// Start offset: 0x00013728
-
-		/* begin block 1.1 */
-			// Start line: 102
-			// Start offset: 0x0001375C
-			// Variables:
-		// 		int loop; // $v1
-		// 		OLD_DRIVER2_JUNCTION *old; // $a1
-		// 		DRIVER2_JUNCTION *p; // $a0
-
-			/* begin block 1.1.1 */
-				// Start line: 107
-				// Start offset: 0x00013778
-				// Variables:
-			// 		int i; // $a1
-			/* end block 1.1.1 */
-			// End offset: 0x000137A4
-			// End Line: 113
-		/* end block 1.1 */
-		// End offset: 0x000137B8
-		// End Line: 114
-	/* end block 1 */
-	// End offset: 0x000137CC
-	// End Line: 115
-
-	/* begin block 2 */
-		// Start line: 713
-	/* end block 2 */
-	// End Line: 714
-
-	/* begin block 3 */
-		// Start line: 723
-	/* end block 3 */
-	// End Line: 724
-
-int NumDriver2Junctions = 0;
 
 // [D] [T]
 void ProcessJunctionsDriver2Lump(char *lump_file, int lump_size, int fix)
@@ -283,147 +235,10 @@ void ProcessJunctionsDriver2Lump(char *lump_file, int lump_size, int fix)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ MapHeight(VECTOR *pos /*$s0*/)
- // line 146, offset 0x000137cc
-	/* begin block 1 */
-		// Start line: 147
-		// Start offset: 0x000137CC
-		// Variables:
-	// 		int height; // $v0
-	// 		sdPlane *plane; // $v0
-	/* end block 1 */
-	// End offset: 0x0001380C
-	// End Line: 162
-
-	/* begin block 2 */
-		// Start line: 808
-	/* end block 2 */
-	// End Line: 809
-
-	/* begin block 3 */
-		// Start line: 840
-	/* end block 3 */
-	// End Line: 841
-
-// [D] [T]
-int MapHeight(VECTOR *pos)
-{
-	sdPlane *plane;
-
-	plane = sdGetCell(pos);
-
-	if (plane)
-		return sdHeightOnPlane(pos, plane);
-
-	return 0;
-}
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ FindSurfaceD2(VECTOR *pos /*$s0*/, VECTOR *normal /*$s1*/, VECTOR *out /*$s3*/, sdPlane **plane /*$s2*/)
- // line 164, offset 0x00012ef4
-	/* begin block 1 */
-		// Start line: 328
-	/* end block 1 */
-	// End Line: 329
-
-// [D] [T]
-int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, sdPlane **plane)
-{
-	*plane = sdGetCell(pos);
-	out->vx = pos->vx;
-	out->vz = pos->vz;
-	out->vy = sdHeightOnPlane(pos, *plane);
-
-	if (*plane == NULL || (*plane)->b == 0)
-	{
-		normal->vx = 0;
-		normal->vy = 0x1000;
-		normal->vz = 0;
-	}
-	else 
-	{
-		normal->vx = (int)(*plane)->a >> 2; // [A] was (int)((uint)(ushort)(*plane)->a << 0x10) >> 0x12;
-		normal->vy = (int)(*plane)->b >> 2;
-		normal->vz = (int)(*plane)->c >> 2;
-	}
-
-	if (*plane == NULL)
-	{
-		return 0x1000;
-	}
-	else if ((*plane)->surface == 4)
-	{
-		// [A] was "if(gInGameCutsceneActive == 0 || gCurrentMissionNumber != 23 || gInGameCutsceneID != 0) "
-		if (gInGameCutsceneActive && gCurrentMissionNumber == 23 && gInGameCutsceneID == 0)
-			out->vy += rcossin_tbl[(pos->vx + pos->vz) * 4 & 0x1fff] >> 9;
-		else
-			out->vy += (rcossin_tbl[(pos->vx + pos->vz) * 4 & 0x1fff] >> 8) / 3;
-
-		return 0x800;
-	}
-
-	return 0x1000;
-}
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ sdHeightOnPlane(VECTOR *pos /*$t0*/, sdPlane *plane /*$a1*/)
- // line 205, offset 0x000130d4
-	/* begin block 1 */
-		// Start line: 206
-		// Start offset: 0x000130D4
-
-		/* begin block 1.1 */
-			// Start line: 216
-			// Start offset: 0x00013134
-			// Variables:
-		// 		int angle; // $v0
-		// 		int i; // $v0
-		// 		DRIVER2_CURVE *curve; // $s0
-		/* end block 1.1 */
-		// End offset: 0x0001319C
-		// End Line: 228
-
-		/* begin block 1.2 */
-			// Start line: 231
-			// Start offset: 0x0001319C
-			// Variables:
-		// 		int val; // $a3
-
-			/* begin block 1.2.1 */
-				// Start line: 240
-				// Start offset: 0x000131BC
-				// Variables:
-			// 		int lx; // $v0
-			// 		int ly; // $v1
-			/* end block 1.2.1 */
-			// End offset: 0x00013218
-			// End Line: 244
-		/* end block 1.2 */
-		// End offset: 0x0001322C
-		// End Line: 247
-	/* end block 1 */
-	// End offset: 0x0001322C
-	// End Line: 248
-
-	/* begin block 2 */
-		// Start line: 410
-	/* end block 2 */
-	// End Line: 411
-
 // [D] [T]
 int sdHeightOnPlane(VECTOR *pos, sdPlane *plane)
 {
-	long angle;
+	int angle;
 	int i, d;
 	DRIVER2_CURVE *curve;
 	int lx;
@@ -462,40 +277,120 @@ int sdHeightOnPlane(VECTOR *pos, sdPlane *plane)
 	return 0;
 }
 
+// [D] [T]
+short* sdGetBSP(sdNode *node, XYPAIR *pos)
+{
+	int ang, dot;
 
+	while (node->value < 0) // & 0x80000000U)
+	{
+		ang = (node->n.angle & 0xfff) * 2;
+		dot = pos->y * rcossin_tbl[ang + 1] - pos->x * rcossin_tbl[ang];
 
-// decompiled code
-// original method signature: 
-// int /*$ra*/ GetSurfaceIndex(VECTOR *pos /*$a0*/)
- // line 250, offset 0x0001380c
-	/* begin block 1 */
-		// Start line: 252
-		// Start offset: 0x0001380C
-		// Variables:
-	// 		sdPlane *plane; // $v0
-	/* end block 1 */
-	// End offset: 0x00013848
-	// End Line: 260
+		if (dot < node->n.dist * 4096)
+			node++;
+		else
+			node += node->n.offset;
+	} 
 
-	/* begin block 2 */
-		// Start line: 959
-	/* end block 2 */
-	// End Line: 960
+	return (short *)node;
+}
 
-	/* begin block 3 */
-		// Start line: 1048
-	/* end block 3 */
-	// End Line: 1049
+int sdLevel = 0; // pathfinding value
 
-	/* begin block 4 */
-		// Start line: 1049
-	/* end block 4 */
-	// End Line: 1050
+// [D] [T]
+sdPlane* sdGetCell(VECTOR *pos)
+{
+	int nextLevel;
+	sdPlane *plane;
+	short *surface;
+	short *BSPSurface;
+	short *buffer;
+	XYPAIR cell;
+	XYPAIR cellPos;
 
-	/* begin block 5 */
-		// Start line: 1051
-	/* end block 5 */
-	// End Line: 1052
+	sdLevel = 0;
+
+	cellPos.x = pos->vx - 512;
+	cellPos.y = pos->vz - 512;
+
+	// [A] WARNING!
+	// retail version of game with exe dated before 20th October 2000 (so called 1.0) is only supported
+	// the later version of the game do have problem with height or BSP, so Havana's secret base ground is not solid
+
+	buffer = RoadMapDataRegions[(cellPos.x >> 16 & 1U) ^ (cells_across / (MAP_REGION_SIZE*2) & 1U) +
+							    (cellPos.y >> 15 & 2U) ^ (cells_down / MAP_REGION_SIZE) & 2U];
+
+	plane = NULL;
+	
+	if (*buffer == 2) 
+	{
+		short* bspData = (short*)((char*)buffer + buffer[2]);
+		sdNode* nodeData = (sdNode*)((char*)buffer + buffer[3]);
+		sdPlane* planeData = (sdPlane*)((char*)buffer + buffer[1]);
+		
+		surface = &buffer[(cellPos.x >> 10 & 0x3fU) + 
+						  (cellPos.y >> 10 & 0x3fU) * MAP_REGION_SIZE*2 + 4];
+
+		// no surface poitners
+		if (*surface == -1)
+			return GetSeaPlane();
+
+		// check surface has overlapping planes flag (aka multiple levels)
+		if ((*surface & 0x6000) == 0x2000)
+		{
+			surface = &bspData[(*surface & 0x1fff)];
+			do {
+				if(-256 - pos->vy > *surface)
+				{
+					surface += 2;
+					sdLevel++;
+				}
+				else
+					break;
+			} while (*surface != -0x8000);
+			
+			surface += 1;
+		}
+
+		// iterate surfaces if BSP
+		do {
+			nextLevel = 0;
+
+			// check if it's has BSP properties
+			if (*surface & 0x4000)
+			{
+				cell.x = cellPos.x & 0x3ff;
+				cell.y = cellPos.y & 0x3ff;
+				
+				// get closest surface by BSP lookup
+				BSPSurface = sdGetBSP(&nodeData[(*surface & 0x3fff)], &cell);
+
+				if (*BSPSurface == 0x7fff)
+				{
+					sdLevel++;
+					nextLevel = 1;
+					
+					BSPSurface = surface + 2; // get to the next node
+				}
+
+				surface = BSPSurface;
+			}
+		} while (nextLevel);
+
+		plane = &planeData[*surface];
+
+		if (((int)plane & 3) == 0 && *(int *)plane != -1) 
+		{
+			if (plane->surface - 16U < 16)
+				plane = EventSurface(pos, plane);
+		}
+		else 
+			plane = GetSeaPlane();
+	}
+
+	return plane;
+}
 
 // [D] [T]
 int GetSurfaceIndex(VECTOR *pos)
@@ -504,37 +399,12 @@ int GetSurfaceIndex(VECTOR *pos)
 
 	if (plane == NULL)
 		return -32;
- 
+
 	return plane->surface - 32;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// sdPlane * /*$ra*/ FindRoadInBSP(_sdNode *node /*$s0*/, sdPlane *base /*$s1*/)
- // line 266, offset 0x000138f0
-	/* begin block 1 */
-		// Start line: 268
-		// Start offset: 0x00013908
-		// Variables:
-	// 		sdPlane *plane; // $v0
-	/* end block 1 */
-	// End offset: 0x00013980
-	// End Line: 293
-
-	/* begin block 2 */
-		// Start line: 409
-	/* end block 2 */
-	// End Line: 410
-
-	/* begin block 3 */
-		// Start line: 1463
-	/* end block 3 */
-	// End Line: 1464
-
 // [D] [T]
-sdPlane * FindRoadInBSP(_sdNode *node, sdPlane *base)
+sdPlane * FindRoadInBSP(sdNode *node, sdPlane *base)
 {
 	sdPlane *plane;
 
@@ -546,7 +416,7 @@ sdPlane * FindRoadInBSP(_sdNode *node, sdPlane *base)
 			return (base->surface < 32) ? NULL : base;
 		}
 
-		plane = FindRoadInBSP(node+1, base);
+		plane = FindRoadInBSP(node + 1, base);
 
 		if (plane != NULL)
 			break;
@@ -557,56 +427,10 @@ sdPlane * FindRoadInBSP(_sdNode *node, sdPlane *base)
 	return plane;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ RoadInCell(VECTOR *pos /*$s5*/)
- // line 295, offset 0x0001322c
-	/* begin block 1 */
-		// Start line: 296
-		// Start offset: 0x0001322C
-		// Variables:
-	// 		char *buffer; // $s2
-	// 		XYPAIR cellPos; // stack offset -48
-	// 		XYPAIR cell; // stack offset -40
-	// 		short *surface; // $a0
-	// 		sdPlane *plane; // $s0
-
-		/* begin block 1.1 */
-			// Start line: 331
-			// Start offset: 0x00013318
-			// Variables:
-		// 		int moreLevels; // $s3
-		// 		short *check; // $s1
-		// 		sdPlane *base; // $s4
-		/* end block 1.1 */
-		// End offset: 0x000133E4
-		// End Line: 372
-	/* end block 1 */
-	// End offset: 0x0001346C
-	// End Line: 389
-
-	/* begin block 2 */
-		// Start line: 549
-	/* end block 2 */
-	// End Line: 550
-
-	/* begin block 3 */
-		// Start line: 550
-	/* end block 3 */
-	// End Line: 551
-
-	/* begin block 4 */
-		// Start line: 598
-	/* end block 4 */
-	// End Line: 599
-
 // [D] [T]
 int RoadInCell(VECTOR *pos)
 {
 	int moreLevels;
-	short sVar2;
 	sdPlane *plane;
 	short *check;
 	short *buffer;
@@ -616,7 +440,7 @@ int RoadInCell(VECTOR *pos)
 	cellPos.y = pos->vz - 512;
 	buffer = RoadMapDataRegions[cellPos.x >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + (cellPos.y >> 0xf & 2U) ^ cells_down >> 5 & 2U];
 
-	if (*buffer == 2) 
+	if (*buffer == 2)
 	{
 		check = (short *)(buffer + (cellPos.x >> 10 & 0x3fU) + (cellPos.y >> 10 & 0x3fU) * 64 + 4);
 
@@ -663,7 +487,7 @@ int RoadInCell(VECTOR *pos)
 		if (plane == NULL)
 			return -1;
 
-		if (plane->surface > 31) 
+		if (plane->surface > 31)
 		{
 			pos->vy = sdHeightOnPlane(pos, plane) + 256;
 			return plane->surface - 32;
@@ -673,196 +497,54 @@ int RoadInCell(VECTOR *pos)
 	return -1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// sdPlane * /*$ra*/ sdGetCell(VECTOR *pos /*$s3*/)
- // line 400, offset 0x0001346c
-	/* begin block 1 */
-		// Start line: 401
-		// Start offset: 0x0001346C
-		// Variables:
-	// 		char *buffer; // $s1
-	// 		short *surface; // $s0
-	// 		int nextLevel; // $s2
-	// 		sdPlane *plane; // $a1
-	// 		XYPAIR cell; // stack offset -40
-	// 		XYPAIR cellPos; // stack offset -32
-
-		/* begin block 1.1 */
-			// Start line: 441
-			// Start offset: 0x0001355C
-			// Variables:
-		// 		int y; // $a0
-		/* end block 1.1 */
-		// End offset: 0x000135B8
-		// End Line: 456
-
-		/* begin block 1.2 */
-			// Start line: 463
-			// Start offset: 0x000135CC
-			// Variables:
-		// 		short *BSPsurface; // $a0
-		/* end block 1.2 */
-		// End offset: 0x00013634
-		// End Line: 481
-	/* end block 1 */
-	// End offset: 0x000136C0
-	// End Line: 502
-
-	/* begin block 2 */
-		// Start line: 828
-	/* end block 2 */
-	// End Line: 829
-
-	/* begin block 3 */
-		// Start line: 840
-	/* end block 3 */
-	// End Line: 841
-
-	/* begin block 4 */
-		// Start line: 852
-	/* end block 4 */
-	// End Line: 853
-
-int sdLevel = 0; // pathfinding value
-
 // [D] [T]
-sdPlane * sdGetCell(VECTOR *pos)
+int MapHeight(VECTOR *pos)
 {
-	int nextLevel;
 	sdPlane *plane;
-	short *surface;
-	short *BSPSurface;
-	short *buffer;
-	XYPAIR cell;
-	XYPAIR cellPos;
 
-	sdLevel = 0;
+	plane = sdGetCell(pos);
 
-	cellPos.x = pos->vx - 512;
-	cellPos.y = pos->vz - 512;
+	if (plane)
+		return sdHeightOnPlane(pos, plane);
 
-	// [A] WARNING!
-	// retail version of game with exe dated before 20th October 2000 (so called 1.0) is only supported
-	// the later version of the game do have problem with height or BSP, so Havana's secret base ground is not solid
-
-	buffer = RoadMapDataRegions[cellPos.x >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + (cellPos.y >> 0xf & 2U) ^cells_down >> 5 & 2U];
-
-	plane = NULL;
-
-	if (*buffer == 2) 
-	{
-		surface = buffer + (cellPos.x >> 10 & 0x3fU) + (cellPos.y >> 10 & 0x3fU) * 64 + 4;
-		
-		if (*surface != -1)
-		{
-			//buffer[1] = planes offset
-			//buffer[2] = heights (levels) offset
-			//buffer[3] = BSP nodes offset
-
-			if ((*surface & 0x6000) == 0x2000) 
-			{
-				surface = (short *)((int)buffer + (*surface & 0x1fff) * sizeof(short) + buffer[2]);
-				do {
-					if (-256 - pos->vy <= *surface)
-						break;
-
-					surface += 2;
-					sdLevel++;
-				} while (*surface != -0x8000);
-				surface += 1;
-			}
-
-			do {
-				nextLevel = 0;
-				BSPSurface = surface;
-				if ((*surface & 0x4000U) != 0)
-				{
-					cellPos.x = cellPos.x & 0x3ff;
-					cellPos.y = cellPos.y & 0x3ff;
-					BSPSurface = sdGetBSP((_sdNode *) ((int)buffer +(*surface & 0x3fff) * sizeof(_sdNode) + buffer[3]), &cellPos);
-
-					if (*BSPSurface == 0x7fff)
-					{
-						sdLevel++;
-						nextLevel = 1;
-						BSPSurface = surface + 2;
-					}
-				}
-
-				surface = BSPSurface;
-			} while (nextLevel);
-
-			plane = (sdPlane *)((int)buffer + *BSPSurface * sizeof(sdPlane) + buffer[1]);
-
-			if ((((uint)plane & 3) == 0) && (*(int *)plane != -1)) 
-			{
-				if (plane->surface - 16U < 16)
-					plane = EventSurface(pos, plane);
-			}
-			else 
-			{
-				plane = GetSeaPlane();
-			}
-		}
-		else
-		{
-			plane = GetSeaPlane();
-		}
-	}
-	return plane;
+	return 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// short * /*$ra*/ sdGetBSP(_sdNode *node /*$a3*/, XYPAIR *pos /*$a1*/)
- // line 505, offset 0x00013848
-	/* begin block 1 */
-		// Start line: 506
-		// Start offset: 0x00013848
-
-		/* begin block 1.1 */
-			// Start line: 509
-			// Start offset: 0x00013870
-			// Variables:
-		// 		int dot; // $a0
-		/* end block 1.1 */
-		// End offset: 0x000138D4
-		// End Line: 522
-	/* end block 1 */
-	// End offset: 0x000138F0
-	// End Line: 524
-
-	/* begin block 2 */
-		// Start line: 1560
-	/* end block 2 */
-	// End Line: 1561
 
 // [D] [T]
-short* sdGetBSP(_sdNode *node, XYPAIR *pos)
+int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, sdPlane **plane)
 {
-	if (node->value < 0)
-	{
-		do
-		{
-			int ang = ((node->n.angle * 4) & 0x3ffc) / 2;
-			int dot = pos->y * rcossin_tbl[ang + 1] - pos->x * rcossin_tbl[ang];
+	*plane = sdGetCell(pos);
+	out->vx = pos->vx;
+	out->vz = pos->vz;
+	out->vy = sdHeightOnPlane(pos, *plane);
 
-			if (dot < node->n.dist * 4096)
-				node++;
-			else
-				node += node->n.offset;
-		} while (node->value & 0x80000000U);
+	if (*plane == NULL || (*plane)->b == 0)
+	{
+		normal->vx = 0;
+		normal->vy = 4096;
+		normal->vz = 0;
+	}
+	else
+	{
+		normal->vx = (int)(*plane)->a >> 2; // [A] was (int)((uint)(ushort)(*plane)->a << 0x10) >> 0x12;
+		normal->vy = (int)(*plane)->b >> 2;
+		normal->vz = (int)(*plane)->c >> 2;
 	}
 
-	return (short *)node;
+	if (*plane == NULL)
+	{
+		return 4096;
+	}
+	else if ((*plane)->surface == 4)
+	{
+		// [A] was "if(gInGameCutsceneActive == 0 || gCurrentMissionNumber != 23 || gInGameCutsceneID != 0) "
+		if (gInGameCutsceneActive && gCurrentMissionNumber == 23 && gInGameCutsceneID == 0)
+			out->vy += rcossin_tbl[(pos->vx + pos->vz) * 4 & 0x1fff] >> 9;
+		else
+			out->vy += (rcossin_tbl[(pos->vx + pos->vz) * 4 & 0x1fff] >> 8) / 3;
+
+		return 2048;
+	}
+
+	return 4096;
 }
-
-
-
-
-

@@ -11,9 +11,7 @@
 #include "MAIN.H"
 #include "GLAUNCH.H"
 #include "DR2ROADS.H"
-#include "ROADBITS.H"
 #include "SPOOL.H"
-#include "MODELS.H"
 #include "OBJCOLL.H"
 #include "OVERLAY.H"
 #include "PRES.H"
@@ -23,6 +21,16 @@
 
 #include "RAND.H"
 #include "STRINGS.H"
+
+struct REPLAY_ICON
+{
+	short x;
+	short y;
+	TEXTURE_DETAILS* texture;
+	char* TextPtr;
+	short tx;
+	short ty;
+};
 
 TEXTURE_DETAILS delcam; // address 0xC0EE0
 TEXTURE_DETAILS incar; // address 0xBF950
@@ -47,29 +55,29 @@ TEXTURE_DETAILS frameadv; // address 0xC1D80
 
 REPLAY_ICON replay_icons[] =
 {
-	{ 20, 26, &pause, "Pause", 20, 48 },
-	{ 20, 26, &playpause, "Play", 20, 48 },
-	{ 44, 26, &autocam, "Auto Director", 44, 48 },
-	{ 68, 26, &playcam, "Fast Forward", 68, 48 },
-	{ 92, 26, &frameadv, "Frame Advance", 92, 48 },
-	{ 116, 26, &restart, "Rewind to beginning", 116, 48 },
-	{ 140, 26, &addcam, "Add Camera", 140, 48 },
-	{ 164, 26, &editcam, "Edit Camera", 164, 48 },
-	{ 188, 26, &save2card, "Save Replay", 188, 48 },
-	{ 212, 26, &ok, "Exit", 212, 48 },
-	{ 140, 50, &incar, "In Car", 164, 48 },
-	{ 140, 74, &chasecar, "Chase Camera", 164, 72 },
-	{ 140, 98, &fixedcam, "Tripod Camera", 164, 96 },
-	{ 140, 122, &ok, "Accept", 164, 120 },
-	{ 140, 122, &clock, "Move Camera Start", 164, 120 },
-	{ 140, 146, &delcam, "Delete Camera", 164, 144 },
-	{ 140, 170, &ok, "Accept", 164, 168 },
-	{ 164, 50, &choosecar, "You or Pursuer", 164, 72 },
-	{ 164, 74, &movecampos, "Move Camera", 164, 96 },
-	{ 164, 98, &movecampos, "Move Camera", 164, 120 },
-	{ 188, 98, &lookcar, "Lock to Car", 188, 120 },
-	{ 212, 98, &movecam, "Rotate", 212, 120 },
-	{ 236, 98, &lenschan, "Zoom", 236, 120 }
+	{ 20, 26, &pause, G_LTXT_ID(GTXT_Pause), 20, 48 },
+	{ 20, 26, &playpause, G_LTXT_ID(GTXT_Play), 20, 48 },
+	{ 44, 26, &autocam, G_LTXT_ID(GTXT_AutoDirector), 44, 48 },
+	{ 68, 26, &playcam, G_LTXT_ID(GTXT_FastForward), 68, 48 },
+	{ 92, 26, &frameadv, G_LTXT_ID(GTXT_FrameAdvance), 92, 48 },
+	{ 116, 26, &restart, G_LTXT_ID(GTXT_Rewindtobeginning), 116, 48 },
+	{ 140, 26, &addcam, G_LTXT_ID(GTXT_AddCamera), 140, 48 },
+	{ 164, 26, &editcam, G_LTXT_ID(GTXT_EditCamera), 164, 48 },
+	{ 188, 26, &save2card, G_LTXT_ID(GTXT_SaveReplay), 188, 48 },
+	{ 212, 26, &ok, G_LTXT_ID(GTXT_Exit), 212, 48 },
+	{ 140, 50, &incar, G_LTXT_ID(GTXT_InCar), 164, 48 },
+	{ 140, 74, &chasecar, G_LTXT_ID(GTXT_ChaseCamera), 164, 72 },
+	{ 140, 98, &fixedcam, G_LTXT_ID(GTXT_TripodCamera), 164, 96 },
+	{ 140, 122, &ok, G_LTXT_ID(GTXT_Accept), 164, 120 },
+	{ 140, 122, &clock, G_LTXT_ID(GTXT_MoveCameraStart), 164, 120 },
+	{ 140, 146, &delcam, G_LTXT_ID(GTXT_DeleteCamera), 164, 144 },
+	{ 140, 170, &ok, G_LTXT_ID(GTXT_Accept), 164, 168 },
+	{ 164, 50, &choosecar, G_LTXT_ID(GTXT_YouorPursuer), 164, 72 },
+	{ 164, 74, &movecampos, G_LTXT_ID(GTXT_MoveCamera), 164, 96 },
+	{ 164, 98, &movecampos, G_LTXT_ID(GTXT_MoveCamera), 164, 120 },
+	{ 188, 98, &lookcar, G_LTXT_ID(GTXT_LocktoCar), 188, 120 },
+	{ 212, 98, &movecam, G_LTXT_ID(GTXT_Rotate), 212, 120 },
+	{ 236, 98, &lenschan, G_LTXT_ID(GTXT_Zoom), 236, 120 }
 };
 
 unsigned char menu0[] = { 0, 0xFF };
@@ -111,45 +119,20 @@ extern int vblcounter;	// sound
 
 int time_taken = 0;
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitDirectorVariables()
- // line 445, offset 0x0003e79c
-	/* begin block 1 */
-		// Start line: 447
-		// Start offset: 0x0003E79C
-		// Variables:
-	// 		int count; // $a0
-	/* end block 1 */
-	// End offset: 0x0003E808
-	// End Line: 467
-
-	/* begin block 2 */
-		// Start line: 3194
-	/* end block 2 */
-	// End Line: 3195
-
-	/* begin block 3 */
-		// Start line: 890
-	/* end block 3 */
-	// End Line: 891
-
-	/* begin block 4 */
-		// Start line: 3195
-	/* end block 4 */
-	// End Line: 3196
-
-	/* begin block 5 */
-		// Start line: 3199
-	/* end block 5 */
-	// End Line: 3200
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 char GreyIcons[24];
 int CursorX = 0;
 int ClearCameras = 0;
 int DirectorMenuActive = 0;
+
+
+void setCamera(PLAYBACKCAMERA* Change);
+void deleteCamera(int count);
+PLAYBACKCAMERA* FindFreeCamera();
+void DoAutoDirect();
+int SelectCameraCar(int current);
+int NoMoreCamerasErrorMessage();
+int FirstCamera();
+void SetCameraReturnedFromCutscene(int CameraCnt);
 
 
 // [D] [T]
@@ -179,37 +162,6 @@ void InitDirectorVariables(void)
 	FastForwardCameraCnt = 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DeleteCurrentCamera(int CameraCnt /*$a0*/)
- // line 476, offset 0x0003e808
-	/* begin block 1 */
-		// Start line: 478
-		// Start offset: 0x0003E808
-		// Variables:
-	// 		int prev; // $a1
-	// 		int next; // $a0
-	/* end block 1 */
-	// End offset: 0x0003E88C
-	// End Line: 491
-
-	/* begin block 2 */
-		// Start line: 3255
-	/* end block 2 */
-	// End Line: 3256
-
-	/* begin block 3 */
-		// Start line: 3265
-	/* end block 3 */
-	// End Line: 3266
-
-	/* begin block 4 */
-		// Start line: 3266
-	/* end block 4 */
-	// End Line: 3267
-
 // [D] [T]
 void DeleteCurrentCamera(int CameraCnt)
 {
@@ -233,22 +185,6 @@ void DeleteCurrentCamera(int CameraCnt)
 		LastChange = PlaybackCamera + prev;
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ setCamera(PLAYBACKCAMERA *Change /*$a0*/)
- // line 493, offset 0x0003e89c
-	/* begin block 1 */
-		// Start line: 3304
-	/* end block 1 */
-	// End Line: 3305
-
-	/* begin block 2 */
-		// Start line: 3305
-	/* end block 2 */
-	// End Line: 3306
 
 // [D] [T]
 void setCamera(PLAYBACKCAMERA* Change)
@@ -275,46 +211,6 @@ void setCamera(PLAYBACKCAMERA* Change)
 	}
 	player[0].cameraCarId = Change->angle.pad;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ EditCamera(int CameraCnt /*$a0*/)
- // line 513, offset 0x0003b2e4
-	/* begin block 1 */
-		// Start line: 515
-		// Start offset: 0x0003B2E4
-		// Variables:
-	// 		int count; // $t0
-
-		/* begin block 1.1 */
-			// Start line: 543
-			// Start offset: 0x0003B414
-			// Variables:
-		// 		int prev; // $a2
-		// 		int next; // $v1
-		/* end block 1.1 */
-		// End offset: 0x0003B51C
-		// End Line: 570
-	/* end block 1 */
-	// End offset: 0x0003B548
-	// End Line: 572
-
-	/* begin block 2 */
-		// Start line: 1026
-	/* end block 2 */
-	// End Line: 1027
-
-	/* begin block 3 */
-		// Start line: 1027
-	/* end block 3 */
-	// End Line: 1028
-
-	/* begin block 4 */
-		// Start line: 1029
-	/* end block 4 */
-	// End Line: 1030
 
 // [D] [T]
 void EditCamera(int CameraCnt)
@@ -384,36 +280,6 @@ void EditCamera(int CameraCnt)
 	} while (count < MAX_REPLAY_CAMERAS);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ RecordCamera(int CameraCnt /*$s0*/)
- // line 574, offset 0x0003b548
-	/* begin block 1 */
-		// Start line: 575
-		// Start offset: 0x0003B548
-		// Variables:
-	// 		PLAYBACKCAMERA *TempChange; // $a1
-	/* end block 1 */
-	// End offset: 0x0003B794
-	// End Line: 632
-
-	/* begin block 2 */
-		// Start line: 1208
-	/* end block 2 */
-	// End Line: 1209
-
-	/* begin block 3 */
-		// Start line: 1211
-	/* end block 3 */
-	// End Line: 1212
-
-	/* begin block 4 */
-		// Start line: 1214
-	/* end block 4 */
-	// End Line: 1215
-
 // [D] [T]
 void RecordCamera(int CameraCnt)
 {
@@ -471,34 +337,6 @@ void RecordCamera(int CameraCnt)
 	FindNextChange(CameraCnt);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ FindNextChange(int CameraCnt /*$a0*/)
- // line 634, offset 0x0003e94c
-	/* begin block 1 */
-		// Start line: 635
-		// Start offset: 0x0003E94C
-		// Variables:
-	// 		int count; // $a3
-	// 		int nextframe; // $a2
-	// 		int found; // $t0
-	// 		PLAYBACKCAMERA *RestoreChange; // $t1
-	/* end block 1 */
-	// End offset: 0x0003E9B8
-	// End Line: 655
-
-	/* begin block 2 */
-		// Start line: 3594
-	/* end block 2 */
-	// End Line: 3595
-
-	/* begin block 3 */
-		// Start line: 3595
-	/* end block 3 */
-	// End Line: 3596
-
 // [D] [T]
 void FindNextChange(int CameraCnt)
 {
@@ -531,28 +369,6 @@ void FindNextChange(int CameraCnt)
 		RestoreChange->next = -2;
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CheckCameraChange(int CameraCnt /*$s0*/)
- // line 658, offset 0x0003b794
-	/* begin block 1 */
-		// Start line: 1371
-	/* end block 1 */
-	// End Line: 1372
-
-	/* begin block 2 */
-		// Start line: 1398
-	/* end block 2 */
-	// End Line: 1399
-
-	/* begin block 3 */
-		// Start line: 1400
-	/* end block 3 */
-	// End Line: 1401
-
 
 // [D] [T]
 int CheckCameraChange(int CameraCnt)
@@ -607,26 +423,6 @@ int CheckCameraChange(int CameraCnt)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetPlaybackCamera(PLAYBACKCAMERA *camera /*$a0*/)
- // line 710, offset 0x0003ec0c
-	/* begin block 1 */
-		// Start line: 5354
-	/* end block 1 */
-	// End Line: 5355
-
-	/* begin block 2 */
-		// Start line: 1420
-	/* end block 2 */
-	// End Line: 1421
-
-	/* begin block 3 */
-		// Start line: 5355
-	/* end block 3 */
-	// End Line: 5356
-
 // [D] [T]
 void SetPlaybackCamera(PLAYBACKCAMERA* camera)
 {
@@ -656,36 +452,6 @@ void SetPlaybackCamera(PLAYBACKCAMERA* camera)
 	player[0].cameraCarId = camera->angle.pad;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ IsMovingCamera(PLAYBACKCAMERA *lastcam /*$t3*/, PLAYBACKCAMERA *nextcam /*$t0*/, int cameracnt /*$a2*/)
- // line 731, offset 0x0003b8c8
-	/* begin block 1 */
-		// Start line: 732
-		// Start offset: 0x0003B8C8
-		// Variables:
-	// 		PLAYBACKCAMERA cam; // stack offset -56
-	// 		long xdist; // $t5
-	// 		long ydist; // $t6
-	// 		long zdist; // $t4
-	// 		long xangle; // $a3
-	// 		long yangle; // $t1
-	// 		long zangle; // $t2
-	// 		int s; // $a0
-	// 		int e; // $v1
-	// 		int f; // $t8
-	// 		int t; // $a2
-	// 		int nextcview; // $a0
-	/* end block 1 */
-	// End offset: 0x0003BBA8
-	// End Line: 792
-
-	/* begin block 2 */
-		// Start line: 1546
-	/* end block 2 */
-	// End Line: 1547
 
 // [D] [T]
 int IsMovingCamera(PLAYBACKCAMERA* lastcam, PLAYBACKCAMERA* nextcam, int cameracnt)
@@ -758,47 +524,6 @@ int IsMovingCamera(PLAYBACKCAMERA* lastcam, PLAYBACKCAMERA* nextcam, int camerac
 	return 1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ CameraBar(int CameraCnt /*stack 0*/)
- // line 794, offset 0x0003bba8
-	/* begin block 1 */
-		// Start line: 795
-		// Start offset: 0x0003BBA8
-		// Variables:
-	// 		POLY_G4 *camera; // $a2
-	// 		LINE_F2 *bar; // $t2
-	// 		int x; // $a2
-	// 		int min_x; // $t1
-	// 		int max_x; // $t0
-	// 		int min_y; // $s3
-	// 		char red; // $s0
-	// 		char green; // $s4
-	// 		char blue; // $fp
-	// 		int bar_x; // $s1
-	// 		int first; // stack offset -48
-	// 		int last; // $s7
-	// 		unsigned long idx; // $t9
-	/* end block 1 */
-	// End offset: 0x0003C184
-	// End Line: 927
-
-	/* begin block 2 */
-		// Start line: 1690
-	/* end block 2 */
-	// End Line: 1691
-
-	/* begin block 3 */
-		// Start line: 1693
-	/* end block 3 */
-	// End Line: 1694
-
-	/* begin block 4 */
-		// Start line: 1697
-	/* end block 4 */
-	// End Line: 1698
 
 // [D] [T]
 void CameraBar(int CameraCnt)
@@ -1025,42 +750,6 @@ void CameraBar(int CameraCnt)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// PLAYBACKCAMERA * /*$ra*/ FindFreeCamera()
- // line 929, offset 0x0003e9b8
-	/* begin block 1 */
-		// Start line: 931
-		// Start offset: 0x0003E9B8
-		// Variables:
-	// 		int count; // $a1
-	/* end block 1 */
-	// End offset: 0x0003E9F8
-	// End Line: 941
-
-	/* begin block 2 */
-		// Start line: 3920
-	/* end block 2 */
-	// End Line: 3921
-
-	/* begin block 3 */
-		// Start line: 4195
-	/* end block 3 */
-	// End Line: 4196
-
-	/* begin block 4 */
-		// Start line: 4196
-	/* end block 4 */
-	// End Line: 4197
-
-	/* begin block 5 */
-		// Start line: 4198
-	/* end block 5 */
-	// End Line: 4199
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 PLAYBACKCAMERA* FindFreeCamera(void)
 {
@@ -1078,27 +767,6 @@ PLAYBACKCAMERA* FindFreeCamera(void)
 	return NULL;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ deleteCamera(int count /*$a0*/)
- // line 943, offset 0x0003e9f8
-	/* begin block 1 */
-		// Start line: 4224
-	/* end block 1 */
-	// End Line: 4225
-
-	/* begin block 2 */
-		// Start line: 4227
-	/* end block 2 */
-	// End Line: 4228
-
-	/* begin block 3 */
-		// Start line: 4228
-	/* end block 3 */
-	// End Line: 4229
-
 // [D] [T]
 void deleteCamera(int count)
 {
@@ -1107,39 +775,6 @@ void deleteCamera(int count)
 	PlaybackCamera[count].FrameCnt = 100000;
 	PlaybackCamera[count].next = -2;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DeleteAllCameras()
- // line 951, offset 0x0003ea40
-	/* begin block 1 */
-		// Start line: 953
-		// Start offset: 0x0003EA40
-		// Variables:
-	// 		PLAYBACKCAMERA nextcamera; // stack offset -48
-	// 		int count; // $s0
-	/* end block 1 */
-	// End offset: 0x0003EAA4
-	// End Line: 964
-
-	/* begin block 2 */
-		// Start line: 4248
-	/* end block 2 */
-	// End Line: 4249
-
-	/* begin block 3 */
-		// Start line: 4249
-	/* end block 3 */
-	// End Line: 4250
-
-	/* begin block 4 */
-		// Start line: 4252
-	/* end block 4 */
-	// End Line: 4253
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void DeleteAllCameras(void)
@@ -1161,60 +796,6 @@ void DeleteAllCameras(void)
 	LastChange->next = -2;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ShowIcons(char *menu /*$s3*/, int selected /*stack 4*/, int x_offset /*$s7*/)
- // line 966, offset 0x0003c1b0
-	/* begin block 1 */
-		// Start line: 967
-		// Start offset: 0x0003C1B0
-		// Variables:
-	// 		static int FlashCnt; // offset 0x0
-	// 		REPLAY_ICON *IconPtr; // $s0
-	// 		SPRT *icon; // $a2
-	// 		int count; // $s6
-
-		/* begin block 1.1 */
-			// Start line: 1027
-			// Start offset: 0x0003C340
-			// Variables:
-		// 		TEXTURE_DETAILS *Icon_texture; // $s1
-		// 		int min_x; // $v1
-		// 		int min_y; // $a0
-
-			/* begin block 1.1.1 */
-				// Start line: 1035
-				// Start offset: 0x0003C364
-			/* end block 1.1.1 */
-			// End offset: 0x0003C384
-			// End Line: 1037
-
-			/* begin block 1.1.2 */
-				// Start line: 1048
-				// Start offset: 0x0003C3E4
-				// Variables:
-			// 		int ramp; // $a0
-			/* end block 1.1.2 */
-			// End offset: 0x0003C448
-			// End Line: 1059
-		/* end block 1.1 */
-		// End offset: 0x0003C470
-		// End Line: 1066
-	/* end block 1 */
-	// End offset: 0x0003C5BC
-	// End Line: 1096
-
-	/* begin block 2 */
-		// Start line: 2127
-	/* end block 2 */
-	// End Line: 2128
-
-	/* begin block 3 */
-		// Start line: 2136
-	/* end block 3 */
-	// End Line: 2137
 
 // [D] [T]
 void ShowIcons(unsigned char* menu, int selected, int x_offset)
@@ -1275,7 +856,7 @@ void ShowIcons(unsigned char* menu, int selected, int x_offset)
 		if (selected == count)
 		{
 			SetTextColour(128, 128, 64);
-			PrintStringBoxed(replay_icons[*menu].TextPtr, replay_icons[*menu].tx + x_offset + 1, replay_icons[*menu].ty);
+			PrintStringBoxed(GET_GAME_TXT(replay_icons[*menu].TextPtr), replay_icons[*menu].tx + x_offset + 1, replay_icons[*menu].ty);
 		}
 
 		icon = (SPRT*)current->primptr;
@@ -1351,115 +932,6 @@ void ShowIcons(unsigned char* menu, int selected, int x_offset)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ShowReplayOptions()
- // line 1098, offset 0x0003eaa4
-	/* begin block 1 */
-		// Start line: 1100
-		// Start offset: 0x0003EAA4
-		// Variables:
-	// 		static int toggle_icons; // offset 0x6c
-	/* end block 1 */
-	// End offset: 0x0003EAE0
-	// End Line: 1133
-
-	/* begin block 2 */
-		// Start line: 4409
-	/* end block 2 */
-	// End Line: 4410
-
-	/* begin block 3 */
-		// Start line: 4544
-	/* end block 3 */
-	// End Line: 4545
-
-	/* begin block 4 */
-		// Start line: 4545
-	/* end block 4 */
-	// End Line: 4546
-
-	/* begin block 5 */
-		// Start line: 4550
-	/* end block 5 */
-	// End Line: 4551
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
-// [D] [T]
-void ShowReplayOptions(void)
-{
-	if (gInGameCutsceneActive || quick_replay)
-		return;
-
-	// [A] handle sound here
-	if (DirectorMenuActive)	// not a FastForward
-		PauseSound();
-	else if(PlayMode != 2 && PlayMode != 3)
-		UnPauseSound();
-	
-	if (!gDoOverlays && !DirectorMenuActive)
-		return;
-
-	ShowReplayMenu();
-	CameraBar(CameraCnt);
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ShowReplayMenu()
- // line 1135, offset 0x0003c5bc
-	/* begin block 1 */
-		// Start line: 1137
-		// Start offset: 0x0003C5BC
-
-		/* begin block 1.1 */
-			// Start line: 1139
-			// Start offset: 0x0003C5E4
-		/* end block 1.1 */
-		// End offset: 0x0003C608
-		// End Line: 1143
-
-		/* begin block 1.2 */
-			// Start line: 1147
-			// Start offset: 0x0003C620
-		/* end block 1.2 */
-		// End offset: 0x0003C63C
-		// End Line: 1151
-
-		/* begin block 1.3 */
-			// Start line: 1178
-			// Start offset: 0x0003C750
-			// Variables:
-		// 		int strobe; // $v0
-		/* end block 1.3 */
-		// End offset: 0x0003C798
-		// End Line: 1182
-	/* end block 1 */
-	// End offset: 0x0003C7A8
-	// End Line: 1184
-
-	/* begin block 2 */
-		// Start line: 2486
-	/* end block 2 */
-	// End Line: 2487
-
-	/* begin block 3 */
-		// Start line: 2526
-	/* end block 3 */
-	// End Line: 2527
-
-	/* begin block 4 */
-		// Start line: 2527
-	/* end block 4 */
-	// End Line: 2528
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void ShowReplayMenu(void)
 {
@@ -1527,160 +999,28 @@ void ShowReplayMenu(void)
 			strobe = 32 - strobe;
 
 		SetTextColour((strobe << 3), 0, 0);
-		PrintString("Auto direct", 100, 30);
+		PrintString(G_LTXT(GTXT_Autodirect), 100, 30);
 	}
 }
 
+// [D] [T]
+void ShowReplayOptions(void)
+{
+	if (gInGameCutsceneActive || quick_replay)
+		return;
 
+	// [A] handle sound here
+	if (DirectorMenuActive)	// not a FastForward
+		PauseSound();
+	else if (PlayMode != 2 && PlayMode != 3)
+		UnPauseSound();
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ControlReplay()
- // line 1186, offset 0x0003c7a8
-	/* begin block 1 */
-		// Start line: 1188
-		// Start offset: 0x0003C7A8
-		// Variables:
-	// 		static int debounce; // offset 0x70
-	// 		static int first_time; // offset 0x74
-	// 		int move; // $s0
+	if (!gDoOverlays && (!DirectorMenuActive || EditMode > 0))
+		return;
 
-		/* begin block 1.1 */
-			// Start line: 1271
-			// Start offset: 0x0003CA00
-			// Variables:
-		// 		int speed; // $s2
-
-			/* begin block 1.1.1 */
-				// Start line: 1281
-				// Start offset: 0x0003CA68
-			/* end block 1.1.1 */
-			// End offset: 0x0003CA8C
-			// End Line: 1285
-
-			/* begin block 1.1.2 */
-				// Start line: 1288
-				// Start offset: 0x0003CAA4
-				// Variables:
-			// 		int prev; // $v1
-			/* end block 1.1.2 */
-			// End offset: 0x0003CADC
-			// End Line: 1291
-
-			/* begin block 1.1.3 */
-				// Start line: 1327
-				// Start offset: 0x0003CC34
-				// Variables:
-			// 		ROUTE_DATA routeData; // stack offset -96
-			// 		int road_height; // $s1
-			/* end block 1.1.3 */
-			// End offset: 0x0003CCB0
-			// End Line: 1338
-
-			/* begin block 1.1.4 */
-				// Start line: 1347
-				// Start offset: 0x0003CCBC
-				// Variables:
-			// 		VECTOR old_camera; // stack offset -88
-			// 		int x; // $s5
-			// 		int z; // $s4
-			// 		int d; // $s3
-			// 		int angle; // $s1
-			// 		char cameraCar; // $a0
-			// 		int dx; // $s1
-			// 		int dz; // $s0
-			// 		VECTOR basePos; // stack offset -72
-			// 		VECTOR tmpPos; // stack offset -56
-
-				/* begin block 1.1.4.1 */
-					// Start line: 1372
-					// Start offset: 0x0003CD38
-					// Variables:
-				// 		EVENT *event; // $a1
-				/* end block 1.1.4.1 */
-				// End offset: 0x0003CD68
-				// End Line: 1376
-
-				/* begin block 1.1.4.2 */
-					// Start line: 1410
-					// Start offset: 0x0003CE64
-					// Variables:
-				// 		int temp; // $v0
-				/* end block 1.1.4.2 */
-				// End offset: 0x0003CE70
-				// End Line: 1414
-
-				/* begin block 1.1.4.3 */
-					// Start line: 1431
-					// Start offset: 0x0003CF28
-				/* end block 1.1.4.3 */
-				// End offset: 0x0003CF74
-				// End Line: 1450
-
-				/* begin block 1.1.4.4 */
-					// Start line: 1454
-					// Start offset: 0x0003CF74
-					// Variables:
-				// 		ROUTE_DATA routeData; // stack offset -40
-				// 		int road_height; // $s1
-				/* end block 1.1.4.4 */
-				// End offset: 0x0003D064
-				// End Line: 1475
-			/* end block 1.1.4 */
-			// End offset: 0x0003D088
-			// End Line: 1477
-		/* end block 1.1 */
-		// End offset: 0x0003D1C8
-		// End Line: 1506
-
-		/* begin block 1.2 */
-			// Start line: 1560
-			// Start offset: 0x0003D50C
-
-			/* begin block 1.2.1 */
-				// Start line: 1682
-				// Start offset: 0x0003D808
-			/* end block 1.2.1 */
-			// End offset: 0x0003D808
-			// End Line: 1682
-
-			/* begin block 1.2.2 */
-				// Start line: 1791
-				// Start offset: 0x0003DA6C
-				// Variables:
-			// 		int prev1; // $a1
-			/* end block 1.2.2 */
-			// End offset: 0x0003DAAC
-			// End Line: 1801
-		/* end block 1.2 */
-		// End offset: 0x0003DE0C
-		// End Line: 1975
-	/* end block 1 */
-	// End offset: 0x0003DE38
-	// End Line: 1988
-
-	/* begin block 2 */
-		// Start line: 2625
-	/* end block 2 */
-	// End Line: 2626
-
-	/* begin block 3 */
-		// Start line: 2628
-	/* end block 3 */
-	// End Line: 2629
-
-	/* begin block 4 */
-		// Start line: 2629
-	/* end block 4 */
-	// End Line: 2630
-
-	/* begin block 5 */
-		// Start line: 2636
-	/* end block 5 */
-	// End Line: 2637
-
-/* WARNING: Type propagation algorithm not settling */
-/* WARNING: Unknown calling convention yet parameter storage is locked */
+	ShowReplayMenu();
+	CameraBar(CameraCnt);
+}
 
 // [D] [T]
 void ControlReplay(void)
@@ -1754,7 +1094,14 @@ void ControlReplay(void)
 		debounce = 1;
 	}
 
-	if ((padd & 0x8000) == 0 && (padd & 0x7040) == 0)
+	if ((padd & 0x100) && debounce == 0)
+	{
+		// Retro: Press Select to toggle overlays
+		gDoOverlays ^= 1;
+		debounce = 1;
+	}
+	
+	if ((padd & 0x8000) == 0 && (padd & 0x7140) == 0)
 	{
 		debounce = 0;
 	}
@@ -1812,9 +1159,11 @@ void ControlReplay(void)
 			if ((padd & 1) && gCameraOffset.vy < 50)
 				gCameraOffset.vy += speed * 16;
 
+			// OBSOLETE DRIVER 1 CODE
+			/*
 			ROADS_GetRouteData(player[0].cameraPos.vx, player[0].cameraPos.vz, &routeData1);
 
-			if ((modelpointers[routeData1.type]->flags2 & 0x100) != 0)
+			if (modelpointers[routeData1.type]->flags2 & MODEL_FLAG_HASROOF)
 			{
 				int road_height;
 				road_height = -450 - MapHeight(&player[0].cameraPos);
@@ -1827,6 +1176,7 @@ void ControlReplay(void)
 					player[0].cameraPos.vy = road_height;
 				}
 			}
+			*/
 		}
 		else if (EditMode == 3)
 		{
@@ -1944,12 +1294,14 @@ void ControlReplay(void)
 			if (player[0].cameraPos.vy < height - 1050)
 				player[0].cameraPos.vy = height - 1050;
 
+			// OBSOLETE DRIVER 1 CODE
+			/*
 			ROADS_GetRouteData(player[0].cameraPos.vx, player[0].cameraPos.vz, &routeData);
 
-			if ((modelpointers[routeData.type]->flags2 & 0x100) != 0 && player[0].cameraPos.vy < height - 450)
+			if ((modelpointers[routeData.type]->flags2 & MODEL_FLAG_HASROOF) && player[0].cameraPos.vy < height - 450)
 			{
 				player[0].cameraPos.vy = height - 450;
-			}
+			}*/
 
 			if (cameraview == 1 && OK_To_Zoom() == 0)
 			{
@@ -2605,73 +1957,7 @@ void ControlReplay(void)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DoAutoDirect()
- // line 1990, offset 0x0003de60
-	/* begin block 1 */
-		// Start line: 1992
-		// Start offset: 0x0003DE60
-		// Variables:
-	// 		VECTOR pos; // stack offset -40
-
-		/* begin block 1.1 */
-			// Start line: 1998
-			// Start offset: 0x0003DEFC
-			// Variables:
-		// 		int new_view; // $v1
-
-			/* begin block 1.1.1 */
-				// Start line: 2015
-				// Start offset: 0x0003DF94
-			/* end block 1.1.1 */
-			// End offset: 0x0003DF9C
-			// End Line: 2025
-
-			/* begin block 1.1.2 */
-				// Start line: 2048
-				// Start offset: 0x0003E058
-				// Variables:
-			// 		int tmp; // $v0
-			/* end block 1.1.2 */
-			// End offset: 0x0003E0D0
-			// End Line: 2057
-
-			/* begin block 1.1.3 */
-				// Start line: 2059
-				// Start offset: 0x0003E0D0
-				// Variables:
-			// 		int tmp; // $v0
-			/* end block 1.1.3 */
-			// End offset: 0x0003E0F4
-			// End Line: 2065
-		/* end block 1.1 */
-		// End offset: 0x0003E2C4
-		// End Line: 2095
-	/* end block 1 */
-	// End offset: 0x0003E328
-	// End Line: 2106
-
-	/* begin block 2 */
-		// Start line: 4340
-	/* end block 2 */
-	// End Line: 4341
-
-	/* begin block 3 */
-		// Start line: 4341
-	/* end block 3 */
-	// End Line: 4342
-
-	/* begin block 4 */
-		// Start line: 4342
-	/* end block 4 */
-	// End Line: 4343
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
-long* savemapinfo = NULL;
+int* savemapinfo = NULL;
 static int mapstuff = 0;
 static int cammapht2 = 0;
 
@@ -2805,53 +2091,6 @@ void DoAutoDirect(void)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ SelectCameraCar(int current /*$t1*/)
- // line 2108, offset 0x0003e328
-	/* begin block 1 */
-		// Start line: 2109
-		// Start offset: 0x0003E328
-		// Variables:
-	// 		int count; // $a2
-
-		/* begin block 1.1 */
-			// Start line: 2123
-			// Start offset: 0x0003E3A0
-			// Variables:
-		// 		EVENT *event; // $a0
-		// 		CAR_DATA *car; // $a3
-		// 		XZPAIR pos; // stack offset -16
-
-			/* begin block 1.1.1 */
-				// Start line: 2168
-				// Start offset: 0x0003E484
-				// Variables:
-			// 		int dist; // $v0
-			// 		int dx; // $a1
-			// 		int dz; // $a0
-			/* end block 1.1.1 */
-			// End offset: 0x0003E50C
-			// End Line: 2180
-		/* end block 1.1 */
-		// End offset: 0x0003E50C
-		// End Line: 2181
-	/* end block 1 */
-	// End offset: 0x0003E53C
-	// End Line: 2184
-
-	/* begin block 2 */
-		// Start line: 4589
-	/* end block 2 */
-	// End Line: 4590
-
-	/* begin block 3 */
-		// Start line: 4592
-	/* end block 3 */
-	// End Line: 4593
-
 // [D] [T]
 int SelectCameraCar(int current)
 {
@@ -2941,65 +2180,6 @@ int SelectCameraCar(int current)
 
 	return player[0].playerCarId;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ InvalidCamera(int car_num /*$a2*/)
- // line 2186, offset 0x0003e53c
-	/* begin block 1 */
-		// Start line: 2187
-		// Start offset: 0x0003E53C
-
-		/* begin block 1.1 */
-			// Start line: 2193
-			// Start offset: 0x0003E568
-			// Variables:
-		// 		char invalidCamera; // $a3
-
-			/* begin block 1.1.1 */
-				// Start line: 2200
-				// Start offset: 0x0003E5D0
-				// Variables:
-			// 		char numEventModels; // $a0
-			// 		EVENT *event; // $v1
-			// 		XZPAIR pos; // stack offset -24
-
-				/* begin block 1.1.1.1 */
-					// Start line: 2208
-					// Start offset: 0x0003E628
-					// Variables:
-				// 		int dist; // $v0
-				// 		int dx; // $v1
-				// 		int dz; // $a0
-				/* end block 1.1.1.1 */
-				// End offset: 0x0003E6C0
-				// End Line: 2224
-			/* end block 1.1.1 */
-			// End offset: 0x0003E6C0
-			// End Line: 2225
-		/* end block 1.1 */
-		// End offset: 0x0003E6F8
-		// End Line: 2236
-	/* end block 1 */
-	// End offset: 0x0003E79C
-	// End Line: 2260
-
-	/* begin block 2 */
-		// Start line: 4846
-	/* end block 2 */
-	// End Line: 4847
-
-	/* begin block 3 */
-		// Start line: 4849
-	/* end block 3 */
-	// End Line: 4850
-
-	/* begin block 4 */
-		// Start line: 4851
-	/* end block 4 */
-	// End Line: 4852
 
 // [D] [T]
 int InvalidCamera(int car_num)
@@ -3097,40 +2277,6 @@ int InvalidCamera(int car_num)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ NoMoreCamerasErrorMessage()
- // line 2263, offset 0x0003eaf0
-	/* begin block 1 */
-		// Start line: 2265
-		// Start offset: 0x0003EAF0
-
-		/* begin block 1.1 */
-			// Start line: 2267
-			// Start offset: 0x0003EB08
-			// Variables:
-		// 		int strobe; // $v0
-		/* end block 1.1 */
-		// End offset: 0x0003EB5C
-		// End Line: 2272
-	/* end block 1 */
-	// End offset: 0x0003EB6C
-	// End Line: 2275
-
-	/* begin block 2 */
-		// Start line: 6874
-	/* end block 2 */
-	// End Line: 6875
-
-	/* begin block 3 */
-		// Start line: 6875
-	/* end block 3 */
-	// End Line: 6876
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 int NoMoreCamerasErrorMessage(void)
 {
@@ -3149,41 +2295,6 @@ int NoMoreCamerasErrorMessage(void)
 	return 1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ FirstCamera()
- // line 2279, offset 0x0003eb6c
-	/* begin block 1 */
-		// Start line: 2281
-		// Start offset: 0x0003EB6C
-	/* end block 1 */
-	// End offset: 0x0003EB9C
-	// End Line: 2287
-
-	/* begin block 2 */
-		// Start line: 6901
-	/* end block 2 */
-	// End Line: 6902
-
-	/* begin block 3 */
-		// Start line: 6906
-	/* end block 3 */
-	// End Line: 6907
-
-	/* begin block 4 */
-		// Start line: 6907
-	/* end block 4 */
-	// End Line: 6908
-
-	/* begin block 5 */
-		// Start line: 6909
-	/* end block 5 */
-	// End Line: 6910
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 int FirstCamera(void)
 {
@@ -3193,36 +2304,6 @@ int FirstCamera(void)
 	return 1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ dist(VECTOR *pos1 /*$a0*/, VECTOR *pos2 /*$a1*/)
- // line 2289, offset 0x0003eb9c
-	/* begin block 1 */
-		// Start line: 2290
-		// Start offset: 0x0003EB9C
-		// Variables:
-	// 		int dx; // $v0
-	// 		int dz; // $a0
-	/* end block 1 */
-	// End offset: 0x0003EC0C
-	// End Line: 2296
-
-	/* begin block 2 */
-		// Start line: 6923
-	/* end block 2 */
-	// End Line: 6924
-
-	/* begin block 3 */
-		// Start line: 6926
-	/* end block 3 */
-	// End Line: 6927
-
-	/* begin block 4 */
-		// Start line: 6928
-	/* end block 4 */
-	// End Line: 6929
 
 // [D] [T]
 int dist(VECTOR* pos1, VECTOR* pos2)
@@ -3236,36 +2317,6 @@ int dist(VECTOR* pos1, VECTOR* pos2)
 	return SquareRoot0(dx * dx + dz * dz) << 4;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetCameraReturnedFromCutscene(int CameraCnt /*$s0*/)
- // line 2303, offset 0x0003ecc4
-	/* begin block 1 */
-		// Start line: 2304
-		// Start offset: 0x0003ECC4
-		// Variables:
-	// 		PLAYBACKCAMERA *next; // $a1
-	// 		int count; // $a2
-	/* end block 1 */
-	// End offset: 0x0003ED7C
-	// End Line: 2331
-
-	/* begin block 2 */
-		// Start line: 6966
-	/* end block 2 */
-	// End Line: 6967
-
-	/* begin block 3 */
-		// Start line: 8545
-	/* end block 3 */
-	// End Line: 8546
-
-	/* begin block 4 */
-		// Start line: 8546
-	/* end block 4 */
-	// End Line: 8547
 
 // [D] [T]
 void SetCameraReturnedFromCutscene(int CameraCnt)

@@ -27,43 +27,8 @@
 
 #include "RAND.H"
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitCarPhysics(CAR_DATA *cp /*$s0*/, LONGVECTOR* startpos /*$t0*/, int direction /*$a2*/)
- // line 998, offset 0x0005381c
-	/* begin block 1 */
-		// Start line: 999
-		// Start offset: 0x0005381C
-		// Variables:
-	// 		int ty; // $v1
-	// 		int dz; // $s1
-	// 		int odz; // $a3
-
-		/* begin block 1.1 */
-			// Start line: 1004
-			// Start offset: 0x00053890
-			// Variables:
-		// 		unsigned long *dst; // $a1
-		/* end block 1.1 */
-		// End offset: 0x00053890
-		// End Line: 1004
-	/* end block 1 */
-	// End offset: 0x000539E8
-	// End Line: 1040
-
-	/* begin block 2 */
-		// Start line: 1996
-	/* end block 2 */
-	// End Line: 1997
-
-	/* begin block 3 */
-		// Start line: 2000
-	/* end block 3 */
-	// End Line: 2001
-
-
 // [D] [T]
-void InitCarPhysics(CAR_DATA* cp, long(*startpos)[4], int direction)
+void InitCarPhysics(CAR_DATA* cp, LONGVECTOR4* startpos, int direction)
 {
 	int ty;
 	int odz;
@@ -123,36 +88,6 @@ void InitCarPhysics(CAR_DATA* cp, long(*startpos)[4], int direction)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ TempBuildHandlingMatrix(CAR_DATA *cp /*$s0*/, int init /*$a1*/)
- // line 1055, offset 0x000539e8
-	/* begin block 1 */
-		// Start line: 1056
-		// Start offset: 0x000539E8
-		// Variables:
-	// 		int ty; // $v1
-	// 		int dz; // $a3
-	/* end block 1 */
-	// End offset: 0x00053B08
-	// End Line: 1075
-
-	/* begin block 2 */
-		// Start line: 2158
-	/* end block 2 */
-	// End Line: 2159
-
-	/* begin block 3 */
-		// Start line: 2174
-	/* end block 3 */
-	// End Line: 2175
-
-	/* begin block 4 */
-		// Start line: 2178
-	/* end block 4 */
-	// End Line: 2179
-
 // [D] [T]
 void TempBuildHandlingMatrix(CAR_DATA* cp, int init)
 {
@@ -178,37 +113,6 @@ void TempBuildHandlingMatrix(CAR_DATA* cp, int init)
 	RebuildCarMatrix(&cp->st, cp);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ UpdateCarPoints(CAR_COSMETICS *carCos /*$a0*/)
- // line 1079, offset 0x00053b08
-	/* begin block 1 */
-		// Start line: 1080
-		// Start offset: 0x00053B08
-		// Variables:
-	// 		SVECTOR *groundCollPoints; // $a1
-	// 		SVECTOR *wheelPoints; // $a3
-	// 		int i; // $a2
-	/* end block 1 */
-	// End offset: 0x00053C00
-	// End Line: 1103
-
-	/* begin block 2 */
-		// Start line: 2233
-	/* end block 2 */
-	// End Line: 2234
-
-	/* begin block 3 */
-		// Start line: 2238
-	/* end block 3 */
-	// End Line: 2239
-
-	/* begin block 4 */
-		// Start line: 2239
-	/* end block 4 */
-	// End Line: 2240
 
 SVECTOR delta = { 0 };
 int doWheels = 1;
@@ -254,36 +158,6 @@ void UpdateCarPoints(CAR_COSMETICS* carCos)
 	delta.vy = 0;
 	delta.vz = 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ FixCarCos(CAR_COSMETICS *carCos /*$s0*/, int externalModelNumber /*$a1*/)
- // line 1106, offset 0x00056c24
-	/* begin block 1 */
-		// Start line: 1107
-		// Start offset: 0x00056C24
-		// Variables:
-	// 		int current; // $v0
-	/* end block 1 */
-	// End offset: 0x00056CB8
-	// End Line: 1130
-
-	/* begin block 2 */
-		// Start line: 5974
-	/* end block 2 */
-	// End Line: 5975
-
-	/* begin block 3 */
-		// Start line: 2212
-	/* end block 3 */
-	// End Line: 2213
-
-	/* begin block 4 */
-		// Start line: 5977
-	/* end block 4 */
-	// End Line: 5978
 
 // [D] [T]
 void FixCarCos(CAR_COSMETICS* carCos, int externalModelNumber)
@@ -385,299 +259,6 @@ void FixCarCos(CAR_COSMETICS* carCos, int externalModelNumber)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ GlobalTimeStep()
- // line 1192, offset 0x00053c00
-	/* begin block 1 */
-		// Start line: 1194
-		// Start offset: 0x00053C00
-		// Variables:
-	// 		int i; // $fp
-	// 		int RKstep; // stack offset -84
-	// 		int subframe; // stack offset -80
-	// 		CAR_DATA *c0; // $s0
-	// 		static RigidBodyState _tp[20]; // offset 0x0
-	// 		static RigidBodyState _d0[20]; // offset 0x410
-	// 		static RigidBodyState _d1[20]; // offset 0x820
-
-		/* begin block 1.1 */
-			// Start line: 1268
-			// Start offset: 0x00053C6C
-			// Variables:
-		// 		CAR_DATA *c0; // $t2
-		// 		RigidBodyState *st; // $t1
-
-			/* begin block 1.1.1 */
-				// Start line: 1283
-				// Start offset: 0x00053D2C
-				// Variables:
-			// 		int s; // $v0
-			/* end block 1.1.1 */
-			// End offset: 0x00053D90
-			// End Line: 1293
-
-			/* begin block 1.1.2 */
-				// Start line: 1301
-				// Start offset: 0x00053E18
-				// Variables:
-			// 		LONGVECTOR AV; // stack offset -248
-			// 		LONGQUATERNION delta_orientation; // stack offset -232
-			/* end block 1.1.2 */
-			// End offset: 0x00053FF8
-			// End Line: 1321
-		/* end block 1.1 */
-		// End offset: 0x00053FF8
-		// End Line: 1322
-
-		/* begin block 1.2 */
-			// Start line: 1334
-			// Start offset: 0x00054024
-			// Variables:
-		// 		RigidBodyState *thisDelta; // stack offset -76
-
-			/* begin block 1.2.1 */
-				// Start line: 1340
-				// Start offset: 0x00054038
-				// Variables:
-			// 		CAR_DATA *c0; // $s4
-
-				/* begin block 1.2.1.1 */
-					// Start line: 1348
-					// Start offset: 0x00054094
-					// Variables:
-				// 		RigidBodyState *thisState_i; // $s6
-				// 		int j; // stack offset -72
-
-					/* begin block 1.2.1.1.1 */
-						// Start line: 1193
-						// Start offset: 0x000540EC
-						// Variables:
-					// 		RigidBodyState *state; // $s6
-					// 		RigidBodyState *delta; // $a3
-					// 		CAR_DATA *cp; // $s4
-
-						/* begin block 1.2.1.1.1.1 */
-							// Start line: 1193
-							// Start offset: 0x000540EC
-							// Variables:
-						// 		LONGVECTOR AV; // stack offset -248
-						/* end block 1.2.1.1.1.1 */
-						// End offset: 0x000540EC
-						// End Line: 1193
-					/* end block 1.2.1.1.1 */
-					// End offset: 0x000540EC
-					// End Line: 1193
-
-					/* begin block 1.2.1.1.2 */
-						// Start line: 1367
-						// Start offset: 0x000542D8
-						// Variables:
-					// 		CAR_DATA *c1; // $s3
-					// 		RigidBodyState *thisState_j; // $s0
-
-						/* begin block 1.2.1.1.2.1 */
-							// Start line: 1375
-							// Start offset: 0x00054340
-							// Variables:
-						// 		int strength; // $s5
-						// 		LONGVECTOR centre0; // stack offset -248
-						// 		LONGVECTOR centre1; // stack offset -232
-						// 		LONGVECTOR normal; // stack offset -216
-						// 		LONGVECTOR collisionpoint; // stack offset -200
-
-							/* begin block 1.2.1.1.2.1.1 */
-								// Start line: 1378
-								// Start offset: 0x00054340
-								// Variables:
-							// 		BOUND_BOX *bb1; // $a2
-							// 		BOUND_BOX *bb2; // $a0
-							/* end block 1.2.1.1.2.1.1 */
-							// End offset: 0x00054440
-							// End Line: 1409
-
-							/* begin block 1.2.1.1.2.1.2 */
-								// Start line: 1414
-								// Start offset: 0x00054440
-								// Variables:
-							// 		int depth; // stack offset -88
-							/* end block 1.2.1.1.2.1.2 */
-							// End offset: 0x00054460
-							// End Line: 1419
-
-							/* begin block 1.2.1.1.2.1.3 */
-								// Start line: 1419
-								// Start offset: 0x00054460
-								// Variables:
-							// 		LONGVECTOR lever0; // stack offset -184
-							// 		LONGVECTOR lever1; // stack offset -168
-							// 		LONGVECTOR torque; // stack offset -152
-							// 		LONGVECTOR pointVel0; // stack offset -136
-							// 		LONGVECTOR pointVel1; // stack offset -120
-							// 		int strikeVel; // stack offset -68
-
-								/* begin block 1.2.1.1.2.1.3.1 */
-									// Start line: 1419
-									// Start offset: 0x00054460
-									// Variables:
-								// 		int is; // $v0
-								// 		int wanted; // $v1
-								/* end block 1.2.1.1.2.1.3.1 */
-								// End offset: 0x00054460
-								// End Line: 1419
-
-								/* begin block 1.2.1.1.2.1.3.2 */
-									// Start line: 1487
-									// Start offset: 0x00054870
-									// Variables:
-								// 		VECTOR velocity; // stack offset -104
-
-									/* begin block 1.2.1.1.2.1.3.2.1 */
-										// Start line: 1506
-										// Start offset: 0x00054924
-										// Variables:
-									// 		int debris1; // $s0
-									// 		int debris2; // $s2
-									/* end block 1.2.1.1.2.1.3.2.1 */
-									// End offset: 0x0005497C
-									// End Line: 1518
-								/* end block 1.2.1.1.2.1.3.2 */
-								// End offset: 0x0005497C
-								// End Line: 1519
-
-								/* begin block 1.2.1.1.2.1.3.3 */
-									// Start line: 1526
-									// Start offset: 0x000549BC
-									// Variables:
-								// 		int do1; // $a0
-								// 		int do2; // $t5
-								// 		int m1; // $t3
-								// 		int m2; // $a1
-
-									/* begin block 1.2.1.1.2.1.3.3.1 */
-										// Start line: 1548
-										// Start offset: 0x00054A50
-										// Variables:
-									// 		LONGVECTOR force; // stack offset -104
-									// 		int strength1; // $a0
-									// 		int twistY; // $t4
-									/* end block 1.2.1.1.2.1.3.3.1 */
-									// End offset: 0x00054CA0
-									// End Line: 1577
-
-									/* begin block 1.2.1.1.2.1.3.3.2 */
-										// Start line: 1581
-										// Start offset: 0x00054CA8
-										// Variables:
-									// 		LONGVECTOR force; // stack offset -104
-									// 		int strength2; // $a1
-									// 		int twistY; // $t2
-									/* end block 1.2.1.1.2.1.3.3.2 */
-									// End offset: 0x00054EDC
-									// End Line: 1610
-								/* end block 1.2.1.1.2.1.3.3 */
-								// End offset: 0x00054EDC
-								// End Line: 1611
-							/* end block 1.2.1.1.2.1.3 */
-							// End offset: 0x00054F58
-							// End Line: 1618
-						/* end block 1.2.1.1.2.1 */
-						// End offset: 0x00054F58
-						// End Line: 1619
-					/* end block 1.2.1.1.2 */
-					// End offset: 0x00054F58
-					// End Line: 1620
-				/* end block 1.2.1.1 */
-				// End offset: 0x00054F7C
-				// End Line: 1621
-			/* end block 1.2.1 */
-			// End offset: 0x00054F7C
-			// End Line: 1622
-
-			/* begin block 1.2.2 */
-				// Start line: 1626
-				// Start offset: 0x00054FA4
-				// Variables:
-			// 		CAR_DATA *c0; // $a1
-
-				/* begin block 1.2.2.1 */
-					// Start line: 1630
-					// Start offset: 0x00054FC4
-					// Variables:
-				// 		RigidBodyState *st; // $t2
-				// 		RigidBodyState *tp; // $a0
-				// 		RigidBodyState *d0; // $a2
-				// 		RigidBodyState *d1; // $v1
-				// 		int j; // $t1
-				/* end block 1.2.2.1 */
-				// End offset: 0x000550B0
-				// End Line: 1646
-			/* end block 1.2.2 */
-			// End offset: 0x000550B0
-			// End Line: 1647
-		/* end block 1.2 */
-		// End offset: 0x000550C8
-		// End Line: 1648
-
-		/* begin block 1.3 */
-			// Start line: 1652
-			// Start offset: 0x000550F4
-			// Variables:
-		// 		int carsDentedThisFrame; // $s2
-
-			/* begin block 1.3.1 */
-				// Start line: 1655
-				// Start offset: 0x00055104
-
-				/* begin block 1.3.1.1 */
-					// Start line: 1656
-					// Start offset: 0x00055104
-					// Variables:
-				// 		unsigned long *dst; // $a1
-				/* end block 1.3.1.1 */
-				// End offset: 0x00055104
-				// End Line: 1656
-
-				/* begin block 1.3.1.2 */
-					// Start line: 1670
-					// Start offset: 0x00055188
-				/* end block 1.3.1.2 */
-				// End offset: 0x00055198
-				// End Line: 1673
-			/* end block 1.3.1 */
-			// End offset: 0x00055198
-			// End Line: 1675
-		/* end block 1.3 */
-		// End offset: 0x000551EC
-		// End Line: 1679
-	/* end block 1 */
-	// End offset: 0x000551EC
-	// End Line: 1699
-
-	/* begin block 2 */
-		// Start line: 2396
-	/* end block 2 */
-	// End Line: 2397
-
-	/* begin block 3 */
-		// Start line: 2486
-	/* end block 3 */
-	// End Line: 2487
-
-	/* begin block 4 */
-		// Start line: 2487
-	/* end block 4 */
-	// End Line: 2488
-
-	/* begin block 5 */
-		// Start line: 2530
-	/* end block 5 */
-	// End Line: 2531
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 int ghost_mode = 0;
 int playerghost = 0;
 int playerhitcopsanyway = 0;
@@ -690,7 +271,7 @@ void GlobalTimeStep(void)
 	static RigidBodyState _d1[MAX_CARS]; // offset 0x820
 
 	int howHard;
-	long tmp;
+	int tmp;
 	RigidBodyState* thisState_i;
 	RigidBodyState* thisState_j;
 	RigidBodyState* thisDelta;
@@ -702,14 +283,14 @@ void GlobalTimeStep(void)
 	RigidBodyState* tp;
 	RigidBodyState* d0;
 	RigidBodyState* d1;
-	LONGVECTOR AV;
+	LONGVECTOR4 AV;
 	LONGQUATERNION delta_orientation;
-	LONGVECTOR normal;
-	LONGVECTOR collisionpoint;
-	LONGVECTOR lever0;
-	LONGVECTOR lever1;
-	LONGVECTOR torque;
-	LONGVECTOR pointVel0;
+	LONGVECTOR4 normal;
+	LONGVECTOR4 collisionpoint;
+	LONGVECTOR4 lever0;
+	LONGVECTOR4 lever1;
+	LONGVECTOR4 torque;
+	LONGVECTOR4 pointVel0;
 	VECTOR velocity;
 	int depth;
 	int RKstep;
@@ -794,7 +375,7 @@ void GlobalTimeStep(void)
 
 		if (cp->hd.mayBeColliding == 0)
 		{
-			long* orient = st->n.orientation;
+			long* orient = st->n.orientation;	// LONGQUATERNION
 
 			st->n.fposition[0] += st->n.linearVelocity[0] >> 8;
 			st->n.fposition[1] += st->n.linearVelocity[1] >> 8;
@@ -854,7 +435,7 @@ void GlobalTimeStep(void)
 						thisDelta = _d1;
 					}
 
-					long* orient = thisState_i->n.orientation;
+					long* orient = thisState_i->n.orientation;	// LONGQUATERNION
 
 					thisDelta[i].n.fposition[0] = thisState_i->n.linearVelocity[0] >> 8;
 					thisDelta[i].n.fposition[1] = thisState_i->n.linearVelocity[1] >> 8;
@@ -1204,52 +785,6 @@ void GlobalTimeStep(void)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetShadowPoints(CAR_DATA *c0 /*$s4*/)
- // line 1704, offset 0x000551ec
-	/* begin block 1 */
-		// Start line: 1705
-		// Start offset: 0x000551EC
-		// Variables:
-	// 		int j; // $s2
-	// 		CAR_COSMETICS *car_cos; // $v1
-	// 		sdPlane *surfacePtr; // stack offset -48
-
-		/* begin block 1.1 */
-			// Start line: 1718
-			// Start offset: 0x000552A8
-			// Variables:
-		// 		SVECTOR disp; // stack offset -104
-		// 		VECTOR pointPos; // stack offset -96
-		// 		VECTOR surfaceNormal; // stack offset -80
-		// 		VECTOR surfacePoint; // stack offset -64
-		/* end block 1.1 */
-		// End offset: 0x00055388
-		// End Line: 1739
-	/* end block 1 */
-	// End offset: 0x000553CC
-	// End Line: 1741
-
-	/* begin block 2 */
-		// Start line: 4674
-	/* end block 2 */
-	// End Line: 4675
-
-	/* begin block 3 */
-		// Start line: 4694
-	/* end block 3 */
-	// End Line: 4695
-
-	/* begin block 4 */
-		// Start line: 4700
-	/* end block 4 */
-	// End Line: 4701
-
-/* WARNING: Could not reconcile some variable overlaps */
-
 // [D] [T]
 void SetShadowPoints(CAR_DATA* c0, VECTOR* outpoints)
 {
@@ -1283,44 +818,6 @@ void SetShadowPoints(CAR_DATA* c0, VECTOR* outpoints)
 	} while (i < 4);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ LongQuaternion2Matrix(LONGQUATERNION* qua /*$a0*/, MATRIX *m /*$a1*/)
- // line 1753, offset 0x000553cc
-	/* begin block 1 */
-		// Start line: 1754
-		// Start offset: 0x000553CC
-		// Variables:
-	// 		int xx; // $t3
-	// 		int xy; // $a3
-	// 		int xz; // $t2
-	// 		int xw; // $t0
-	// 		int yy; // $t7
-	// 		int yz; // $a2
-	// 		int yw; // $t5
-	// 		int zz; // $v1
-	// 		int zw; // $a0
-	/* end block 1 */
-	// End offset: 0x000554F0
-	// End Line: 1778
-
-	/* begin block 2 */
-		// Start line: 4819
-	/* end block 2 */
-	// End Line: 4820
-
-	/* begin block 3 */
-		// Start line: 4832
-	/* end block 3 */
-	// End Line: 4833
-
-	/* begin block 4 */
-		// Start line: 4833
-	/* end block 4 */
-	// End Line: 4834
-
 // [D] [T]
 void LongQuaternion2Matrix(LONGQUATERNION *qua, MATRIX* m)
 {
@@ -1349,40 +846,6 @@ void LongQuaternion2Matrix(LONGQUATERNION *qua, MATRIX* m)
 	m->m[1][2] = yz - xw;
 	m->m[2][1] = yz + xw;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ initOBox(CAR_DATA *cp /*$a2*/)
- // line 1802, offset 0x000554f0
-	/* begin block 1 */
-		// Start line: 1803
-		// Start offset: 0x000554F0
-		// Variables:
-	// 		SVECTOR *boxDisp; // $a0
-
-		/* begin block 1.1 */
-			// Start line: 1803
-			// Start offset: 0x000554F0
-			// Variables:
-		// 		int length; // $a1
-		/* end block 1.1 */
-		// End offset: 0x000556E0
-		// End Line: 1842
-	/* end block 1 */
-	// End offset: 0x000556E0
-	// End Line: 1844
-
-	/* begin block 2 */
-		// Start line: 4994
-	/* end block 2 */
-	// End Line: 4995
-
-	/* begin block 3 */
-		// Start line: 5019
-	/* end block 3 */
-	// End Line: 5020
 
 // [D] [T]
 void initOBox(CAR_DATA* cp)
@@ -1438,41 +901,6 @@ void initOBox(CAR_DATA* cp)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ RebuildCarMatrix(RigidBodyState *st /*$a2*/, CAR_DATA *cp /*$s0*/)
- // line 1854, offset 0x00056ae4
-	/* begin block 1 */
-		// Start line: 1855
-		// Start offset: 0x00056AE4
-
-		/* begin block 1.1 */
-			// Start line: 1855
-			// Start offset: 0x00056AE4
-			// Variables:
-		// 		int sm; // $v1
-
-			/* begin block 1.1.1 */
-				// Start line: 1859
-				// Start offset: 0x00056B8C
-				// Variables:
-			// 		int osm; // $v0
-			/* end block 1.1.1 */
-			// End offset: 0x00056C00
-			// End Line: 1859
-		/* end block 1.1 */
-		// End offset: 0x00056C00
-		// End Line: 1859
-	/* end block 1 */
-	// End offset: 0x00056C24
-	// End Line: 1862
-
-	/* begin block 2 */
-		// Start line: 3708
-	/* end block 2 */
-	// End Line: 3709
-
 // [D] [T]
 void RebuildCarMatrix(RigidBodyState* st, CAR_DATA* cp)
 {
@@ -1519,29 +947,10 @@ void RebuildCarMatrix(RigidBodyState* st, CAR_DATA* cp)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ StepCarPhysics(CAR_DATA *cp /*$a2*/)
- // line 1875, offset 0x00056a0c
-	/* begin block 1 */
-		// Start line: 1876
-		// Start offset: 0x00056A0C
-		// Variables:
-	// 		_HANDLING_TYPE *hp; // $v0
-	/* end block 1 */
-	// End offset: 0x00056A64
-	// End Line: 1899
-
-	/* begin block 2 */
-		// Start line: 3750
-	/* end block 2 */
-	// End Line: 3751
-
 // [D] [T]
 void StepCarPhysics(CAR_DATA* cp)
 {
-	_HANDLING_TYPE* hp;
+	HANDLING_TYPE* hp;
 	int car_id;
 
 	int frontWheelSpeed;
@@ -1593,85 +1002,11 @@ void StepCarPhysics(CAR_DATA* cp)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitialiseCarHandling()
- // line 1911, offset 0x00056a6c
-	/* begin block 1 */
-		// Start line: 6067
-	/* end block 1 */
-	// End Line: 6068
-
-	/* begin block 2 */
-		// Start line: 6072
-	/* end block 2 */
-	// End Line: 6073
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void InitialiseCarHandling(void)
 {
 	return;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ CheckCarToCarCollisions()
- // line 1930, offset 0x000556e0
-	/* begin block 1 */
-		// Start line: 1932
-		// Start offset: 0x000556E0
-		// Variables:
-	// 		CAR_DATA *cp; // $t2
-	// 		BOUND_BOX *bp; // $t1
-	// 		BOUND_BOX *bb1; // $t0
-	// 		BOUND_BOX *bb2; // $a1
-	// 		int lbod; // $v1
-	// 		int wbod; // $a0
-	// 		int hbod; // $t0
-	// 		SVECTOR *colBox; // $a1
-	// 		int loop1; // $t4
-	// 		int loop2; // $a3
-
-		/* begin block 1.1 */
-			// Start line: 1947
-			// Start offset: 0x0005570C
-			// Variables:
-		// 		int wx; // $v1
-		// 		int wz; // $a2
-		/* end block 1.1 */
-		// End offset: 0x0005592C
-		// End Line: 1982
-	/* end block 1 */
-	// End offset: 0x00055A94
-	// End Line: 2014
-
-	/* begin block 2 */
-		// Start line: 5188
-	/* end block 2 */
-	// End Line: 5189
-
-	/* begin block 3 */
-		// Start line: 5190
-	/* end block 3 */
-	// End Line: 5191
-
-	/* begin block 4 */
-		// Start line: 5277
-	/* end block 4 */
-	// End Line: 5278
-
-	/* begin block 5 */
-		// Start line: 5278
-	/* end block 5 */
-	// End Line: 5279
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 
 // [D] [T]
 void CheckCarToCarCollisions(void)
@@ -1824,89 +1159,8 @@ void CheckCarToCarCollisions(void)
 	} while (loop1 < MAX_CARS);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ProcessCarPad(CAR_DATA *cp /*$s0*/, unsigned long pad /*$s3*/, char PadSteer /*$s4*/, char use_analogue /*$s5*/)
-// line 2027, offset 0x00055a9c
-/* begin block 1 */
-// Start line: 2028
-// Start offset: 0x00055A9C
-// Variables:
-// 		int player_id; // $s1
-
-/* begin block 1.1 */
-// Start line: 2158
-// Start offset: 0x00055CD8
-// Variables:
-// 		int int_steer; // $v0
-// 		int analog_angle; // $v1
-/* end block 1.1 */
-// End offset: 0x00055D90
-// End Line: 2180
-
-/* begin block 1.2 */
-// Start line: 2260
-// Start offset: 0x00055EF0
-// Variables:
-// 		int rws; // $v0
-/* end block 1.2 */
-// End offset: 0x00055F80
-// End Line: 2270
-
-/* begin block 1.3 */
-// Start line: 2282
-// Start offset: 0x00055FE4
-// Variables:
-// 		int playerCar; // $v0
-// 		int dist; // $a0
-// 		int dx; // $a0
-// 		int dz; // $v0
-/* end block 1.3 */
-// End offset: 0x00056080
-// End Line: 2299
-
-/* begin block 1.4 */
-// Start line: 2303
-// Start offset: 0x00056090
-// Variables:
-// 		int targetCarId; // $v1
-
-/* begin block 1.4.1 */
-// Start line: 2320
-// Start offset: 0x000560D4
-// Variables:
-// 		CAR_DATA *tp; // $a1
-// 		int cx; // $v1
-// 		int cz; // $v0
-// 		int chase_square_dist; // $v0
-
-/* begin block 1.4.1.1 */
-// Start line: 2327
-// Start offset: 0x0005610C
-// Variables:
-// 		int averagePower; // $a0
-/* end block 1.4.1.1 */
-// End offset: 0x00056148
-// End Line: 2329
-/* end block 1.4.1 */
-// End offset: 0x00056258
-// End Line: 2340
-/* end block 1.4 */
-// End offset: 0x00056258
-// End Line: 2342
-/* end block 1 */
-// End offset: 0x000562AC
-// End Line: 2375
-
-/* begin block 2 */
-// Start line: 5531
-/* end block 2 */
-// End Line: 5532
-
 // [D] [T]
-void ProcessCarPad(CAR_DATA* cp, ulong pad, char PadSteer, char use_analogue)
+void ProcessCarPad(CAR_DATA* cp, u_int pad, char PadSteer, char use_analogue)
 {
 	int player_id;
 	int int_steer;
@@ -2158,37 +1412,6 @@ void ProcessCarPad(CAR_DATA* cp, ulong pad, char PadSteer, char use_analogue)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitSkidding()
-// line 2389, offset 0x00056cb8
-/* begin block 1 */
-// Start line: 2390
-// Start offset: 0x00056CB8
-// Variables:
-// 		int i; // $a0
-/* end block 1 */
-// End offset: 0x00056CEC
-// End Line: 2395
-
-/* begin block 2 */
-// Start line: 8794
-/* end block 2 */
-// End Line: 8795
-
-/* begin block 3 */
-// Start line: 4778
-/* end block 3 */
-// End Line: 4779
-
-/* begin block 4 */
-// Start line: 8796
-/* end block 4 */
-// End Line: 8797
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void InitSkidding(void)
 {
@@ -2205,21 +1428,6 @@ void InitSkidding(void)
 	} while (i >= 0);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ TerminateSkidding(int player_id /*$a0*/)
-// line 2397, offset 0x000562ac
-/* begin block 1 */
-// Start line: 6265
-/* end block 1 */
-// End Line: 6266
-
-/* begin block 2 */
-// Start line: 6288
-/* end block 2 */
-// End Line: 6289
 
 // [D] [T]
 void TerminateSkidding(int player_id)
@@ -2253,72 +1461,70 @@ void TerminateSkidding(int player_id)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ CheckCarEffects(CAR_DATA *cp /*$s2*/, int player_id /*$s3*/)
-// line 2414, offset 0x00056350
-/* begin block 1 */
-// Start line: 2415
-// Start offset: 0x00056350
-// Variables:
-// 		int skidsound; // $s1
-// 		int cnt; // $a0
-// 		int wheels_on_ground; // $s5
-// 		char lay_down_tracks; // $s7
-// 		char desired_skid; // $a1
-// 		char desired_wheel; // $a1
-
-/* begin block 1.1 */
-// Start line: 2500
-// Start offset: 0x000565E8
-// Variables:
-// 		int pitch; // $v0
-/* end block 1.1 */
-// End offset: 0x00056644
-// End Line: 2504
-
-/* begin block 1.2 */
-// Start line: 2507
-// Start offset: 0x00056660
-// Variables:
-// 		int wnse; // $a0
-/* end block 1.2 */
-// End offset: 0x000566A8
-// End Line: 2510
-
-/* begin block 1.3 */
-// Start line: 2533
-// Start offset: 0x000567A8
-// Variables:
-// 		int pitch; // $t0
-/* end block 1.3 */
-// End offset: 0x00056810
-// End Line: 2537
-
-/* begin block 1.4 */
-// Start line: 2546
-// Start offset: 0x00056840
-/* end block 1.4 */
-// End offset: 0x00056868
-// End Line: 2550
-/* end block 1 */
-// End offset: 0x000568AC
-// End Line: 2560
-
-/* begin block 2 */
-// Start line: 6322
-/* end block 2 */
-// End Line: 6323
-
-/* begin block 3 */
-// Start line: 6325
-/* end block 3 */
-// End Line: 6326
-
 char rear_only = 0;
 char continuous_track = 0;
 int last_track_state = -1;
+char DebrisTimer = 0;
+
+// [D] [T]
+void nose_down(CAR_DATA* cp)
+{
+	cp->st.n.angularVelocity[0] += cp->hd.where.m[0][0] * 50;
+	cp->st.n.angularVelocity[1] += cp->hd.where.m[1][0] * 50;
+	cp->st.n.angularVelocity[2] += cp->hd.where.m[2][0] * 50;
+}
+
+// [D] [T]
+void jump_debris(CAR_DATA* cp)
+{
+	WHEEL* wheel;
+	int count;
+	VECTOR position;
+	VECTOR velocity;
+
+	count = 0;
+	wheel = cp->hd.wheel;
+
+	do
+	{
+
+		if (wheel->susCompression != 0)
+		{
+			DebrisTimer = 0;
+			cp->wasOnGround = 1;
+			return;
+		}
+
+		wheel++;
+		count++;
+	} while (count < 4);
+
+	if (cp->wasOnGround == 1)
+	{
+		cp->wasOnGround = 0;
+		DebrisTimer = 80;
+
+		nose_down(cp);
+	}
+
+	if (DebrisTimer != 0 && --DebrisTimer < 75)
+	{
+		memset(&velocity, 0, sizeof(velocity));
+
+		velocity.vx = cp->hd.where.t[0] + ((rand() & 0x1ff) - 256);
+		velocity.vy = 200 - cp->hd.where.t[1];
+
+		position.vz = cp->hd.where.t[2] + ((rand() & 0x1ff) - 256);
+		position.vx = velocity.vx;
+		position.vy = velocity.vy;
+		position.pad = velocity.pad;
+
+		velocity.vz = position.vz;
+
+		memset(&velocity, 0, sizeof(velocity));
+		Setup_Debris(&position, &velocity, 5, 0xb);
+	}
+}
 
 // [D] [T]
 void CheckCarEffects(CAR_DATA* cp, int player_id)
@@ -2430,7 +1636,7 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 	{
 		SetChannelPosition3(player[player_id].skidding.chan,
 			(VECTOR*)cp->hd.where.t,
-			cp->st.n.linearVelocity,
+			(LONGVECTOR3*)cp->st.n.linearVelocity,
 			(skidsound - 10000) * 3 / 4 - 5000,
 			skidsound * 1024 / 13000 + 3072 + player_id * 8, 0);
 	}
@@ -2499,7 +1705,8 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 			pitch = 3584;
 
 		SetChannelPosition3(player[player_id].wheelnoise.chan,
-			(VECTOR*)cp->hd.where.t, cp->st.n.linearVelocity,
+			(VECTOR*)cp->hd.where.t, 
+			(LONGVECTOR3*)cp->st.n.linearVelocity,
 			spd * 50 - 10000,
 			pitch + player_id * 8, 0);
 	}
@@ -2525,145 +1732,6 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 
 	SetTyreTrackOldPositions(player_id);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ jump_debris(CAR_DATA *cp /*$s1*/)
-// line 2575, offset 0x000568d8
-/* begin block 1 */
-// Start line: 2576
-// Start offset: 0x000568D8
-// Variables:
-// 		int count; // $a1
-
-/* begin block 1.1 */
-// Start line: 2599
-// Start offset: 0x00056964
-// Variables:
-// 		VECTOR position; // stack offset -48
-// 		VECTOR velocity; // stack offset -32
-/* end block 1.1 */
-// End offset: 0x000569F8
-// End Line: 2603
-/* end block 1 */
-// End offset: 0x000569F8
-// End Line: 2604
-
-/* begin block 2 */
-// Start line: 6655
-/* end block 2 */
-// End Line: 6656
-
-/* begin block 3 */
-// Start line: 6657
-/* end block 3 */
-// End Line: 6658
-
-char DebrisTimer = 0;
-
-// [D] [T]
-void jump_debris(CAR_DATA* cp)
-{
-	WHEEL* wheel;
-	int count;
-	VECTOR position;
-	VECTOR velocity;
-
-	count = 0;
-	wheel = cp->hd.wheel;
-
-	do
-	{
-
-		if (wheel->susCompression != 0)
-		{
-			DebrisTimer = 0;
-			cp->wasOnGround = 1;
-			return;
-		}
-
-		wheel++;
-		count++;
-	} while (count < 4);
-
-	if (cp->wasOnGround == 1)
-	{
-		cp->wasOnGround = 0;
-		DebrisTimer = 80;
-
-		nose_down(cp);
-	}
-
-	if (DebrisTimer != 0 && --DebrisTimer < 75)
-	{
-		memset(&velocity, 0, sizeof(velocity));
-
-		velocity.vx = cp->hd.where.t[0] + ((rand() & 0x1ff) - 0x100);
-		velocity.vy = 200 - cp->hd.where.t[1];
-
-		position.vz = cp->hd.where.t[2] + ((rand() & 0x1ff) - 0x100);
-		position.vx = velocity.vx;
-		position.vy = velocity.vy;
-		position.pad = velocity.pad;
-
-		velocity.vz = position.vz;
-
-		memset(&velocity, 0, sizeof(velocity));
-		Setup_Debris(&position, &velocity, 5, 0xb);
-	}
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ nose_down(CAR_DATA *cp /*$a0*/)
-// line 2607, offset 0x00056a74
-/* begin block 1 */
-// Start line: 7459
-/* end block 1 */
-// End Line: 7460
-
-/* begin block 2 */
-// Start line: 7461
-/* end block 2 */
-// End Line: 7462
-
-// [D] [T]
-void nose_down(CAR_DATA* cp)
-{
-	cp->st.n.angularVelocity[0] += cp->hd.where.m[0][0] * 50;
-	cp->st.n.angularVelocity[1] += cp->hd.where.m[1][0] * 50;
-	cp->st.n.angularVelocity[2] += cp->hd.where.m[2][0] * 50;
-}
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ GetPlayerId(CAR_DATA *cp /*$a0*/)
-// line 2664, offset 0x00056cec
-/* begin block 1 */
-// Start line: 2665
-// Start offset: 0x00056CEC
-// Variables:
-// 		int i; // $a1
-// 		int p_id; // $a3
-/* end block 1 */
-// End offset: 0x00056D54
-// End Line: 2669
-
-/* begin block 2 */
-// Start line: 9334
-/* end block 2 */
-// End Line: 9335
-
-/* begin block 3 */
-// Start line: 9345
-/* end block 3 */
-// End Line: 9346
 
 // [D] [T]
 int GetPlayerId(CAR_DATA* cp)

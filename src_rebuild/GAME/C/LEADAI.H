@@ -8,7 +8,7 @@ extern void InitLead(CAR_DATA *cp); // 0x000E7128
 
 extern void LeadUpdateState(CAR_DATA *cp); // 0x000E73E8
 
-extern unsigned long LeadPadResponse(CAR_DATA *cp); // 0x000E7994
+extern u_int LeadPadResponse(CAR_DATA *cp); // 0x000E7994
 
 extern void FakeMotion(CAR_DATA *cp); // 0x000E7DE8
 
@@ -34,9 +34,9 @@ extern void SetTarget(CAR_DATA *cp, int cr, int heading, int *nextJunction); // 
 
 extern void SelectExit(CAR_DATA *cp, DRIVER2_JUNCTION *junction); // 0x000EC5E4
 
-extern unsigned long FreeRoamer(CAR_DATA *cp); // 0x000EC99C
+extern u_int FreeRoamer(CAR_DATA *cp); // 0x000EC99C
 
-extern unsigned long hypot(long x, long y); // 0x000ECB28
+extern u_int hypot(int x, int y); // 0x000ECB28
 
 
 #endif

@@ -12,6 +12,8 @@
 #include "C/PRES.H"
 #include "C/SPOOL.H"
 #include "C/CARS.H"
+#include "C/COP_AI.H"
+#include "C/DR2ROADS.H"
 #include "C/PLAYERS.H"
 #include "C/GLAUNCH.H"
 
@@ -76,11 +78,11 @@ void DrawDebugOverlays()
 	gDebug_numLines = 0;
 
 	DR_TPAGE* tp = (DR_TPAGE*)current->primptr;
-	setDrawTPage(tp, 0, 0, 0);
+	setDrawTPage(tp, 1, 1, 0);
 	addPrim(current->ot + 2, tp);
 	current->primptr += sizeof(DR_TPAGE);
 
-	char tempBuf[128];
+	char tempBuf[1024];
 
 	int primTabLeft = current->primptr - current->primtab;
 
@@ -105,18 +107,94 @@ void DrawDebugOverlays()
 		sprintf(tempBuf, "Civs: %d - %d parked - max %d", numCivCars, numParkedCars, maxCivCars);
 		PrintString(tempBuf, 10, 40);
 
-		sprintf(tempBuf, "Cops: %d - %d active - max %d", numCopCars, numActiveCops, maxCopCars);
+		sprintf(tempBuf, "Cops: %d - %d active - max %d - seen: %d", numCopCars, numActiveCops, maxCopCars, CopsCanSeePlayer);
 		PrintString(tempBuf, 10, 50);
 
-		
-		int playerCar = player[0].playerCarId;
-		int speed = car_data[playerCar].hd.speed;
-
-		sprintf(tempBuf, "Car speed: %d", speed);
+		sprintf(tempBuf, "Mission %d Chase: %d", gCurrentMissionNumber, gRandomChase);
 		PrintString(tempBuf, 10, 60);
 
-		sprintf(tempBuf, "Mission %d Chase: %d", gCurrentMissionNumber, gRandomChase);
-		PrintString(tempBuf, 10, 70);
+		int playerCar = player[0].playerCarId;
+		if(playerCar >= 0)
+		{
+			
+			int speed = car_data[playerCar].hd.speed;
+
+			sprintf(tempBuf, "Car speed: %d     direction: %d", speed, car_data[playerCar].hd.direction);
+			PrintString(tempBuf, 10, 80);
+
+			VECTOR* carPos = (VECTOR*)car_data[playerCar].hd.where.t;
+			
+			DRIVER2_ROAD_INFO roadInfo;
+			roadInfo.surfId = GetSurfaceIndex(carPos);
+
+			
+			if (GetSurfaceRoadInfo(&roadInfo, roadInfo.surfId))
+			{
+				int dx, dz;
+				int segLen, distAlongSegment;
+				int theta;
+
+				if (roadInfo.straight)
+				{
+					dx = carPos->vx - roadInfo.straight->Midx;
+					dz = carPos->vz - roadInfo.straight->Midz;
+					
+					segLen = roadInfo.straight->length;
+					theta = (roadInfo.straight->angle - ratan2(dx, dz) & 0xfffU);
+					distAlongSegment = (segLen / 2) + FIXEDH(rcossin_tbl[theta * 2 + 1] * SquareRoot0(dx * dx + dz * dz));
+				}
+				else
+				{
+					dx = carPos->vx - roadInfo.curve->Midx;
+					dz = carPos->vz - roadInfo.curve->Midz;
+					
+					theta = ratan2(dx,dz);
+					segLen = (roadInfo.curve->end - roadInfo.curve->start & 0xfffU); // *roadInfo.curve->inside * 11 / 7; // don't use physical length
+
+					if (roadInfo.curve->inside < 10)
+						distAlongSegment = (theta & 0xfffU) - roadInfo.curve->start & 0xf80;
+					else if (roadInfo.curve->inside < 20)
+						distAlongSegment = (theta & 0xfffU) - roadInfo.curve->start & 0xfc0;
+					else
+						distAlongSegment = (theta & 0xfffU) - roadInfo.curve->start & 0xfe0;
+				}
+				
+				int lane = GetLaneByPositionOnRoad(&roadInfo, carPos);
+
+				sprintf(tempBuf, "%s %d flg %d%d%d spd %d len %d",
+					roadInfo.straight ? "STR" : "CRV",
+					roadInfo.surfId,
+					(roadInfo.NumLanes & 0x20) > 0,					// flag 0 - first lane?
+					(roadInfo.NumLanes & 0x40) > 0,					// flag 1 - leftmost park
+					(roadInfo.NumLanes & 0x80) > 0,					// flag 2 - rightmost park
+					ROAD_SPEED_LIMIT(&roadInfo),					// speed limit id
+					segLen
+					);
+
+				PrintString(tempBuf, 10, 180);
+
+				sprintf(tempBuf, "dir %d lane %d/%d AI %d dist: %d",
+					ROAD_LANE_DIR(&roadInfo, lane),					// direction bit
+					lane + 1,
+					ROAD_WIDTH_IN_LANES(&roadInfo),					// lane count. * 2 for both sides as roads are symmetric
+					ROAD_IS_AI_LANE(&roadInfo, lane),				// lane AI driveable flag
+					distAlongSegment
+				);
+
+				PrintString(tempBuf, 10, 195);
+			}
+			else if(IS_JUNCTION_SURFACE(roadInfo.surfId))
+			{
+				DRIVER2_JUNCTION* junc = GET_JUNCTION(roadInfo.surfId);
+				
+				sprintf(tempBuf, "JUN %d flg %d",roadInfo.surfId, junc->flags);
+				
+				PrintString(tempBuf, 10, 180);
+			}
+
+			
+		}
+
 	}
 }
 
@@ -155,7 +233,9 @@ void Debug_Line2D(SXYPAIR& pointA, SXYPAIR& pointB, CVECTOR& color)
 	line->g0 = color.g;
 	line->b0 = color.b;
 
+#if defined(USE_PGXP) && defined(USE_EXTENDED_PRIM_POINTERS)
 	line->pgxp_index = 0xFFFF;
+#endif
 
 	addPrim(current->ot, line);
 

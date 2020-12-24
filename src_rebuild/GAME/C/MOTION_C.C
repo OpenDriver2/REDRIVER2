@@ -17,11 +17,68 @@
 #include "CARS.H"
 #include "CONVERT.H"
 
-#ifdef PGXP
+#ifdef USE_PGXP
 #include <math.h>
 #endif
 
 #include "INLINE_C.H"
+#include "GTEMAC.H"
+
+enum LIMBS
+{
+	ROOT = 0,
+	LOWERBACK = 1,
+	JOINT_1 = 2,
+	NECK = 3,
+	HEAD = 4,
+	LSHOULDER = 5,
+	LELBOW = 6,
+	LHAND = 7,
+	LFINGERS = 8,
+	RSHOULDER = 9,
+	RELBOW = 10,
+	RHAND = 11,
+	RFINGERS = 12,
+	HIPS = 13,
+	LHIP = 14,
+	LKNEE = 15,
+	LFOOT = 16,
+	LTOE = 17,
+	RHIP = 18,
+	RKNEE = 19,
+	RFOOT = 20,
+	RTOE = 21,
+	JOINT = 22,
+};
+
+enum TEXTURE_PALS
+{
+	NO_PAL = 0,
+	JEANS_PAL = 1,
+	ARM_PAL = 2,
+	CHEST_PAL = 3,
+};
+
+struct BONE
+{
+	LIMBS id;
+	BONE* pParent;
+	char numChildren;
+	BONE(*pChildren[3]);
+	SVECTOR_NOPAD* pvOrigPos;
+	SVECTOR* pvRotation;
+	VECTOR vOffset;
+	VECTOR vCurrPos;
+	MODEL** pModel;
+};
+
+struct PED_DATA
+{
+	char cWidth;
+	u_char cAdj;
+	TEXTURE_DETAILS* ptd;
+	TEXTURE_PALS texPal;
+};
 
 #define NUM_BONES 23
 
@@ -393,24 +450,6 @@ SVECTOR vJerichoList[102];
 
 int vStored = 0;
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ProcessMotionLump(char *lump_ptr /*$a0*/, int lump_size /*$s0*/)
- // line 853, offset 0x00069a38
-	/* begin block 1 */
-		// Start line: 5200
-	/* end block 1 */
-	// End Line: 5201
-
-	/* begin block 2 */
-		// Start line: 1706
-	/* end block 2 */
-	// End Line: 1707
-
-	/* begin block 3 */
-		// Start line: 5202
-	/* end block 3 */
-	// End Line: 5203
 // [D] [T]
 void ProcessMotionLump(char* lump_ptr, int lump_size)
 {
@@ -428,53 +467,12 @@ void ProcessMotionLump(char* lump_ptr, int lump_size)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetupPedMotionData(PEDESTRIAN *pPed /*$a0*/)
- // line 944, offset 0x00069ab8
-	/* begin block 1 */
-		// Start line: 5388
-	/* end block 1 */
-	// End Line: 5389
-
-	/* begin block 2 */
-		// Start line: 5389
-	/* end block 2 */
-	// End Line: 5390
-
 // [D] [T]
 void SetupPedMotionData(PEDESTRIAN* pPed)
 {
 	pPed->motion = MotionCaptureData[pPed->type];
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetupPedestrian(PEDESTRIAN *pedptr /*$a0*/)
- // line 955, offset 0x00069b6c
-	/* begin block 1 */
-		// Start line: 2236
-	/* end block 1 */
-	// End Line: 2237
-
-	/* begin block 2 */
-		// Start line: 1910
-	/* end block 2 */
-	// End Line: 1911
-
-	/* begin block 3 */
-		// Start line: 6507
-	/* end block 3 */
-	// End Line: 6508
-
-	/* begin block 4 */
-		// Start line: 6512
-	/* end block 4 */
-	// End Line: 6513
 
 // [D] [T]
 void SetupPedestrian(PEDESTRIAN* pedptr)
@@ -488,60 +486,6 @@ void SetupPedestrian(PEDESTRIAN* pedptr)
 	pedptr->frame1 = 0;
 	pedptr->motion = MotionCaptureData[pedptr->type];
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawBodySprite(int boneId /*$s1*/, long v1 /*$a1*/, long v2 /*$a2*/, int sz /*$s7*/, int sy /*stack 16*/)
- // line 978, offset 0x0006520c
-	/* begin block 1 */
-		// Start line: 979
-		// Start offset: 0x0006520C
-		// Variables:
-	// 		TEXTURE_DETAILS *body_texture; // $s2
-	// 		int x0; // $s5
-	// 		int x1; // $s6
-	// 		int y0; // $fp
-	// 		int y1; // stack offset -48
-	// 		int dx1; // $s4
-	// 		int dy1; // $s3
-	// 		int z; // $a3
-	// 		int z2; // $a3
-	// 		int dx2; // $t5
-	// 		int dy2; // $t3
-	// 		int width; // $t0
-	// 		int sort_fix; // $a3
-	// 		int angle; // $t3
-	// 		int c; // $t0
-	// 		int s; // $a2
-	// 		int clut; // $a2
-	// 		int tpage; // $t0
-	// 		POLY_FT4 *prims; // $t2
-	// 		int z1; // stack offset -44
-	// 		int pal; // $v1
-
-		/* begin block 1.1 */
-			// Start line: 1103
-			// Start offset: 0x000655B0
-			// Variables:
-		// 		int tp; // $v1
-		/* end block 1.1 */
-		// End offset: 0x0006564C
-		// End Line: 1133
-	/* end block 1 */
-	// End offset: 0x0006594C
-	// End Line: 1209
-
-	/* begin block 2 */
-		// Start line: 1956
-	/* end block 2 */
-	// End Line: 1957
-
-	/* begin block 3 */
-		// Start line: 1974
-	/* end block 3 */
-	// End Line: 1975
 
 int bDoingShadow = 0;
 int gCurrentZ;
@@ -587,10 +531,10 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	bone = (LIMBS)(boneId & 0x7f);
 	body_texture = MainPed[bone].ptd;
 	
-	if (bDoingShadow == 0)
-		z = gCurrentZ + (scr_z / 2);
-	else
+	if (bDoingShadow)
 		z = sz + (scr_z / 2);
+	else
+		z = gCurrentZ + (scr_z / 2);
 
 	z2 = ((scr_z * 4096) / z) * 25 >> 5;
 
@@ -607,7 +551,7 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	{
 		width = MainPed[bone].cWidth + 4;
 	}
-	else if (bDoingShadow == 0)
+	else
 	{
 		if (pDrawingPed->flags & 0x8000)
 			width = MainPed[bone].cWidth - 3;
@@ -616,9 +560,12 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 		else
 			width = MainPed[bone].cWidth + 3;
 	}
-	else
+
+	if (bDoingShadow &&
+		(bone == RKNEE || bone == LKNEE || 
+		bone == LFOOT || bone == RFOOT))
 	{
-		width = MainPed[bone].cWidth;
+		width -= 5;
 	}
 
 	x = v1[0] - v2[0];
@@ -664,92 +611,99 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	prims->x3 = v2[0] - FIXEDH(cs) - dx1;
 	prims->y3 = v2[1] - FIXEDH(sn) - dy1;
 
-#ifdef PGXP
-
-	PGXPVData vdata1, vdata2;
-	PGXP_GetCacheData(vdata1, PGXP_LOOKUP_VALUE(v1[0], v1[1]), 0);
-	PGXP_GetCacheData(vdata2, PGXP_LOOKUP_VALUE(v2[0], v2[1]), 0);
-
+#ifdef USE_PGXP
+	if (!bDoingShadow) // [A] Psy-X is currently incorrectly offsets the offscreen PGXP geometry. We don't need it anyway.
 	{
-		float len;
-		
-		x = (v1[0] - v2[0]) * 4.0f;
-		y = (v1[1] - v2[1]) * 4.0f;
+		PGXPVData vdata1, vdata2;
+		PGXP_GetCacheData(vdata1, PGXP_LOOKUP_VALUE(v1[0], v1[1]), 0);
+		PGXP_GetCacheData(vdata2, PGXP_LOOKUP_VALUE(v2[0], v2[1]), 0);
 
-		// compute normalization lengths
-		len = 1.0 / sqrtf(float(x*x) + float(y*y) + 1.0);
-
-		angle = ratan2(y, x);
-
-		sn = rcossin_tbl[(-angle & 0xfffU) * 2] * width;
-		cs = rcossin_tbl[(-angle & 0xfffU) * 2 + 1] * width;
-
-		tmp = MainPed[bone].cAdj & 0xf;
-
-		dx2 = sn >> tmp;
-		dy2 = cs >> tmp;
-
-		if ((bone == RKNEE || bone == LKNEE) && pDrawingPed->type != PED_ACTION_JUMP && bDoingShadow == 0)
 		{
-			dx1 = -sn >> 3;
-			dy1 = -cs >> 3;
-		}
-		else
-		{
-			tmp2 = MainPed[bone].cAdj >> 4;
+			float len;
 
-			dx1 = sn >> tmp2;
-			dy1 = cs >> tmp2;
+			x = (v1[0] - v2[0]) * 4.0f;
+			y = (v1[1] - v2[1]) * 4.0f;
+
+			// compute normalization lengths
+			len = 1.0 / sqrtf(float(x*x) + float(y*y) + 1.0);
+
+			angle = ratan2(y, x);
+
+			sn = rcossin_tbl[(-angle & 0xfffU) * 2] * width;
+			cs = rcossin_tbl[(-angle & 0xfffU) * 2 + 1] * width;
+
+			tmp = MainPed[bone].cAdj & 0xf;
+
+			dx2 = sn >> tmp;
+			dy2 = cs >> tmp;
+
+			if ((bone == RKNEE || bone == LKNEE) && pDrawingPed->type != PED_ACTION_JUMP && bDoingShadow == 0)
+			{
+				dx1 = -sn >> 3;
+				dy1 = -cs >> 3;
+			}
+			else
+			{
+				tmp2 = MainPed[bone].cAdj >> 4;
+
+				dx1 = sn >> tmp2;
+				dy1 = cs >> tmp2;
+			}
+
+			dx1 = FIXED(dx1);
+			dx2 = FIXED(dx2);
+			dy1 = FIXED(dy1) + 2;
+			dy2 = FIXED(dy2) - 2;
+
+			if (bone == HEAD)
+			{
+				dx1 >>= 1;
+				dx2 >>= 1;
+			}
+
+			if (bone == JOINT_1)
+			{
+				dx1 -= 5;
+				dy2 -= 10;
+			}
 		}
 
-		dx1 = FIXED(dx1);
-		dx2 = FIXED(dx2);
-		dy1 = FIXED(dy1) + 2;
-		dy2 = FIXED(dy2) - 2;
+		PGXPVData v0data = { PGXP_LOOKUP_VALUE(prims->x0, prims->y0),
+			vdata1.px + (FIXEDH(sn) - dx1) * 0.01f,
+			vdata1.py + (FIXEDH(cs) + dy1) * 0.01f,
+			vdata1.pz, vdata1.scr_h, vdata1.ofx, vdata1.ofy };
 
-		if(bone == HEAD)
-		{
-			dx1 >>= 1;
-			dx2 >>= 1;
-		}
-		
-		if(bone == JOINT_1)
-		{
-			dx1 -= 5;
-			dy2 -= 10;
-		}
+
+		PGXPVData v1data = { PGXP_LOOKUP_VALUE(prims->x1, prims->y1),
+			vdata1.px - (FIXEDH(sn) - dx1) * 0.01f,
+			vdata1.py - (FIXEDH(cs) - dy1) * 0.01f,
+			vdata1.pz, vdata1.scr_h, vdata1.ofx, vdata1.ofy };
+
+
+		PGXPVData v2data = { PGXP_LOOKUP_VALUE(prims->x2, prims->y2),
+			vdata2.px + (FIXEDH(sn) + dx2) * 0.01f,
+			vdata2.py + (FIXEDH(cs) - dy2) * 0.01f,
+			vdata2.pz, vdata2.scr_h, vdata2.ofx, vdata2.ofy };
+
+
+		PGXPVData v3data = { PGXP_LOOKUP_VALUE(prims->x3, prims->y3),
+			vdata2.px - (FIXEDH(sn) + dx2) * 0.01f,
+			vdata2.py - (FIXEDH(cs) + dy2) * 0.01f,
+			vdata2.pz, vdata2.scr_h, vdata2.ofx, vdata2.ofy };
+
+		PGXP_EmitCacheData(v0data);
+		PGXP_EmitCacheData(v1data);
+		PGXP_EmitCacheData(v2data);
+		PGXP_EmitCacheData(v3data);
 	}
-
-	PGXPVData v0data = { PGXP_LOOKUP_VALUE(prims->x0, prims->y0),
-		vdata1.px + (FIXEDH(sn) - dx1) * 0.01f,
-		vdata1.py + (FIXEDH(cs) + dy1) * 0.01f,
-		vdata1.pz, vdata1.scr_h, vdata1.ofx, vdata1.ofy };
-
-
-	PGXPVData v1data = { PGXP_LOOKUP_VALUE(prims->x1, prims->y1),
-		vdata1.px - (FIXEDH(sn) - dx1) * 0.01f,
-		vdata1.py - (FIXEDH(cs) - dy1) * 0.01f,
-		vdata1.pz, vdata1.scr_h, vdata1.ofx, vdata1.ofy };
-
-
-	PGXPVData v2data = { PGXP_LOOKUP_VALUE(prims->x2, prims->y2),
-		vdata2.px + (FIXEDH(sn) + dx2) * 0.01f,
-		vdata2.py + (FIXEDH(cs) - dy2) * 0.01f,
-		vdata2.pz, vdata2.scr_h, vdata2.ofx, vdata2.ofy };
-
-
-	PGXPVData v3data = { PGXP_LOOKUP_VALUE(prims->x3, prims->y3),
-		vdata2.px - (FIXEDH(sn) + dx2) * 0.01f,
-		vdata2.py - (FIXEDH(cs) + dy2) * 0.01f,
-		vdata2.pz, vdata2.scr_h, vdata2.ofx, vdata2.ofy };
-
-	PGXP_EmitCacheData(v0data);
-	PGXP_EmitCacheData(v1data);
-	PGXP_EmitCacheData(v2data);
-	PGXP_EmitCacheData(v3data);
 #endif
 
-	if (bDoingShadow == 0)
+	if (bDoingShadow)
+	{
+		tpage = texture_pages[gShadowTexturePage];
+		clut = texture_cluts[gShadowTexturePage][gShadowTextureNum];
+	}
+	else
 	{
 		tpage = body_texture->tpageid;
 		clut = body_texture->clutid;
@@ -769,16 +723,21 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 				clut = civ_clut[0][body_texture->texture_number][pal];
 		}
 	}
-	else
-	{
-		tpage = gShadowTexturePage;
-		clut = texture_cluts[gShadowTexturePage][gShadowTextureNum];
-	}
 
 	prims->tpage = tpage;
 	prims->clut = clut;
 
-	if (bDoingShadow == 0)
+	if (bDoingShadow)
+	{
+		setSemiTrans(prims, 1);
+		prims->tpage |= 0x20;
+
+		*(ushort*)&prims->u0 = *(ushort*)&shadowuv.u0;
+		*(ushort*)&prims->u1 = *(ushort*)&shadowuv.u1;
+		*(ushort*)&prims->u2 = *(ushort*)&shadowuv.u2;
+		*(ushort*)&prims->u3 = *(ushort*)&shadowuv.u3;
+	}
+	else
 	{
 		if (bone == HEAD)
 		{
@@ -811,15 +770,14 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 			*(ushort*)&prims->u3 = *(ushort*)&body_texture->coords.u1;
 		}
 	}
-	else
-	{
-		*(ushort*)&prims->u0 = *(ushort*)&shadowuv.u0;
-		*(ushort*)&prims->u1 = *(ushort*)&shadowuv.u1;
-		*(ushort*)&prims->u2 = *(ushort*)&shadowuv.u2;
-		*(ushort*)&prims->u3 = *(ushort*)&shadowuv.u3;
-	}
 
-	if (gNight == 1)
+	if (bDoingShadow)
+	{
+		prims->r0 = 254;
+		prims->g0 = 254;
+		prims->b0 = 254;
+	}
+	else if (gNight)
 	{
 		prims->r0 = 64;
 		prims->g0 = 64;
@@ -832,59 +790,17 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 		prims->b0 = combointensity & 0xFF;
 	}
 
-	if (bDoingShadow == 0)
+	if (bDoingShadow != 0)
+	{
+		addPrim(current->ot + 0x107f, prims);
+		prims->pgxp_index = 0xffff;
+	}
+	else
 	{
 		x = sz + sy >> 4;
 		addPrim(current->ot + x + (width >> 6), prims);
 	}
-	else
-	{
-		addPrim(current->ot + 0x107f, prims);
-	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ StoreVertexLists()
- // line 1289, offset 0x0006594c
-	/* begin block 1 */
-		// Start line: 1291
-		// Start offset: 0x0006594C
-		// Variables:
-	// 		int i; // $t1
-	// 		int j; // $a3
-	// 		int numVerts; // $t3
-	// 		MODEL *pModel; // $t0
-	// 		SVECTOR *pVerts; // $a2
-	// 		int counter; // $t4
-	// 		BONE *pBone; // $a0
-	/* end block 1 */
-	// End offset: 0x00065AD8
-	// End Line: 1346
-
-	/* begin block 2 */
-		// Start line: 2632
-	/* end block 2 */
-	// End Line: 2633
-
-	/* begin block 3 */
-		// Start line: 2713
-	/* end block 3 */
-	// End Line: 2714
-
-	/* begin block 4 */
-		// Start line: 2714
-	/* end block 4 */
-	// End Line: 2715
-
-	/* begin block 5 */
-		// Start line: 2720
-	/* end block 5 */
-	// End Line: 2721
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void StoreVertexLists(void)
@@ -966,47 +882,6 @@ void StoreVertexLists(void)
 
 	vStored = 1;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetupTannerSkeleton()
- // line 1355, offset 0x00065ad8
-	/* begin block 1 */
-		// Start line: 1357
-		// Start offset: 0x00065AD8
-		// Variables:
-	// 		int i; // $t1
-	// 		BONE *pBone; // $a3
-	// 		char *pC; // $v0
-	// 		SVECTOR *store; // $t4
-	// 		SVECTOR_NOPAD *pSVNP; // $v1
-	/* end block 1 */
-	// End offset: 0x00065CD8
-	// End Line: 1413
-
-	/* begin block 2 */
-		// Start line: 2892
-	/* end block 2 */
-	// End Line: 2893
-
-	/* begin block 3 */
-		// Start line: 2902
-	/* end block 3 */
-	// End Line: 2903
-
-	/* begin block 4 */
-		// Start line: 2903
-	/* end block 4 */
-	// End Line: 2904
-
-	/* begin block 5 */
-		// Start line: 2913
-	/* end block 5 */
-	// End Line: 2914
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 #define BODY_OFFSET 8
 #define TORSO_OFFSET -2
@@ -1161,148 +1036,6 @@ void DrawSprite(PEDESTRIAN* pDrawingPed, BONE* pBone, VECTOR* vJPos)
 	DrawBodySprite(pDrawingPed, pBone->id, t0, t1, z, z1);
 }
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ newShowTanner()
- // line 1421, offset 0x00065cd8
-	/* begin block 1 */
-		// Start line: 1423
-		// Start offset: 0x00065CD8
-		// Variables:
-	// 		VECTOR *playerPos; // $a2
-	// 		VECTOR *camPos; // $a1
-	// 		VECTOR *vJPos; // $s1
-	// 		VECTOR v; // stack offset -128
-	// 		MODEL *pModel; // $t0
-	// 		SVECTOR *mVerts; // $a1
-	// 		int i; // $s2
-	// 		int j; // $a3
-	// 		int c; // $a3
-	// 		int id; // $a2
-	// 		int limbs; // $a0
-	// 		BONE *pBone; // $s0
-	// 		int lval; // $t1
-
-		/* begin block 1.1 */
-			// Start line: 1530
-			// Start offset: 0x000660A0
-			// Variables:
-		// 		BONE *pBone; // $s0
-		// 		VECTOR *v1; // $a2
-		// 		VECTOR *v2; // $a1
-
-			/* begin block 1.1.1 */
-				// Start line: 1530
-				// Start offset: 0x000660A0
-				// Variables:
-			// 		SVECTOR *data; // $t1
-			// 		long t1; // stack offset -92
-			// 		long t0; // stack offset -96
-			// 		int z2; // stack offset -80
-			// 		int z1; // stack offset -84
-			// 		int z; // stack offset -88
-			/* end block 1.1.1 */
-			// End offset: 0x000661C4
-			// End Line: 1530
-		/* end block 1.1 */
-		// End offset: 0x000661C4
-		// End Line: 1530
-
-		/* begin block 1.2 */
-			// Start line: 1536
-			// Start offset: 0x000661F8
-			// Variables:
-		// 		BONE *pBone; // $s0
-		// 		VECTOR *v1; // $a0
-		// 		VECTOR *v2; // $a2
-
-			/* begin block 1.2.1 */
-				// Start line: 1536
-				// Start offset: 0x000661F8
-				// Variables:
-			// 		SVECTOR *data; // $t0
-			// 		long t1; // stack offset -72
-			// 		long t0; // stack offset -76
-			// 		int z2; // stack offset -60
-			// 		int z1; // stack offset -64
-			// 		int z; // stack offset -68
-			/* end block 1.2.1 */
-			// End offset: 0x000661F8
-			// End Line: 1536
-		/* end block 1.2 */
-		// End offset: 0x000661F8
-		// End Line: 1536
-
-		/* begin block 1.3 */
-			// Start line: 1542
-			// Start offset: 0x00066330
-			// Variables:
-		// 		SVECTOR v1; // stack offset -112
-		// 		SVECTOR v2; // stack offset -104
-		/* end block 1.3 */
-		// End offset: 0x00066330
-		// End Line: 1544
-
-		/* begin block 1.4 */
-			// Start line: 1569
-			// Start offset: 0x0006648C
-			// Variables:
-		// 		BONE *pBone; // $s0
-		// 		VECTOR *v1; // $a2
-		// 		VECTOR *v2; // $a1
-
-			/* begin block 1.4.1 */
-				// Start line: 1569
-				// Start offset: 0x0006648C
-				// Variables:
-			// 		SVECTOR *data; // $t1
-			// 		long t1; // stack offset -52
-			// 		long t0; // stack offset -56
-			// 		int z2; // stack offset -40
-			// 		int z1; // stack offset -44
-			// 		int z; // stack offset -48
-			/* end block 1.4.1 */
-			// End offset: 0x0006648C
-			// End Line: 1569
-		/* end block 1.4 */
-		// End offset: 0x0006648C
-		// End Line: 1569
-
-		/* begin block 1.5 */
-			// Start line: 1575
-			// Start offset: 0x000665C8
-			// Variables:
-		// 		int bias; // $a3
-		/* end block 1.5 */
-		// End offset: 0x000665F4
-		// End Line: 1588
-	/* end block 1 */
-	// End offset: 0x00066648
-	// End Line: 1599
-
-	/* begin block 2 */
-		// Start line: 3093
-	/* end block 2 */
-	// End Line: 3094
-
-	/* begin block 3 */
-		// Start line: 3102
-	/* end block 3 */
-	// End Line: 3103
-
-	/* begin block 4 */
-		// Start line: 3103
-	/* end block 4 */
-	// End Line: 3104
-
-	/* begin block 5 */
-		// Start line: 3114
-	/* end block 5 */
-	// End Line: 3115
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 int bAllreadyRotated = 0;
 
 // [D] [T]
@@ -1404,7 +1137,6 @@ void newShowTanner(PEDESTRIAN* pDrawingPed)
 				{
 					if (id != LSHOULDER
 						&& id != RSHOULDER
-						&& id != HEAD
 						&& id != HIPS
 						&& id != LOWERBACK
 						&& id != ROOT
@@ -1514,26 +1246,6 @@ void newShowTanner(PEDESTRIAN* pDrawingPed)
 		Skel[i].id = (LIMBS)(Skel[i].id & 0x7f);
 }
 
-
-// decompiled code
-// original method signature: 
-// SVECTOR * /*$ra*/ GetModelVertPtr(int boneId /*$a1*/, int modelType /*$a1*/)
- // line 1774, offset 0x00066fb8
-	/* begin block 1 */
-		// Start line: 4462
-	/* end block 1 */
-	// End Line: 4463
-
-	/* begin block 2 */
-		// Start line: 4471
-	/* end block 2 */
-	// End Line: 4472
-
-	/* begin block 3 */
-		// Start line: 4472
-	/* end block 3 */
-	// End Line: 4473
-
 // [D] [T]
 SVECTOR* GetModelVertPtr(PEDESTRIAN* pDrawingPed, int boneId, int modelType)
 {
@@ -1573,77 +1285,6 @@ SVECTOR* GetModelVertPtr(PEDESTRIAN* pDrawingPed, int boneId, int modelType)
 
 	return vJerichoList + startVertex;
 }
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ newRotateBones(BONE *poBone /*$a0*/)
- // line 1606, offset 0x00066648
-	/* begin block 1 */
-		// Start line: 1608
-		// Start offset: 0x00066648
-		// Variables:
-	// 		MATRIX mStore[32]; // stack offset -1088
-	// 		MATRIX *pMatrix; // $s2
-	// 		MATRIX *oMatrix; // $s5
-	// 		SVECTOR *svBone; // $s6
-	// 		VECTOR *vBoneRotated; // $s3
-	// 		BONE *pBone; // $s1
-	// 		int id; // $s0
-	// 		SVECTOR *pVerts; // $a3
-	// 		SVECTOR *pmVerts; // $s0
-	// 		int numVerts; // $t0
-	// 		MODEL *pModel; // $v0
-	// 		int i; // $a2
-	// 		SVECTOR *pD; // $a0
-	// 		int c; // $s4
-	// 		int j; // $a1
-	// 		VECTOR sv; // stack offset -64
-
-		/* begin block 1.1 */
-			// Start line: 1609
-			// Start offset: 0x00066648
-			// Variables:
-		// 		int cx; // $t2
-		// 		int sx; // $a3
-		// 		int cy; // $a0
-		// 		int sy; // $t0
-		// 		int cz; // $t3
-		// 		int sz; // $t6
-		// 		int stmp; // $v0
-		/* end block 1.1 */
-		// End offset: 0x00066648
-		// End Line: 1609
-	/* end block 1 */
-	// End offset: 0x00066FB8
-	// End Line: 1766
-
-	/* begin block 2 */
-		// Start line: 3674
-	/* end block 2 */
-	// End Line: 3675
-
-	/* begin block 3 */
-		// Start line: 3682
-	/* end block 3 */
-	// End Line: 3683
-
-	/* begin block 4 */
-		// Start line: 3683
-	/* end block 4 */
-	// End Line: 3684
-
-	/* begin block 5 */
-		// Start line: 3684
-	/* end block 5 */
-	// End Line: 3685
-
-	/* begin block 6 */
-		// Start line: 3685
-	/* end block 6 */
-	// End Line: 3686
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 // [D] [T]
 void newRotateBones(PEDESTRIAN* pDrawingPed, BONE* poBone)
@@ -1772,91 +1413,6 @@ void newRotateBones(PEDESTRIAN* pDrawingPed, BONE* poBone)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawCiv(PEDESTRIAN *pPed /*$fp*/)
- // line 1834, offset 0x000670cc
-	/* begin block 1 */
-		// Start line: 1835
-		// Start offset: 0x000670CC
-		// Variables:
-	// 		int i; // $s5
-	// 		DVECTOR *outpoints; // $t9
-	// 		long *outlongs; // $s5
-	// 		SVECTOR *psrLerpData; // $t8
-	// 		long *zbuff; // $s4
-	// 		SVECTOR *pLerpData; // $s0
-	// 		SVECTOR pos; // stack offset -160
-	// 		VECTOR pos1; // stack offset -152
-	// 		SVECTOR *vert1; // $a1
-	// 		SVECTOR *vert2; // $a0
-	// 		SVECTOR temp1; // stack offset -136
-	// 		SVECTOR temp2; // stack offset -128
-	// 		int cnt3; // $a2
-	// 		int bHeadModel; // stack offset -56
-	// 		int shift; // $t0
-	// 		int frame; // $a2
-	// 		MATRIX workmatrix; // stack offset -120
-	// 		int j; // $s7
-
-		/* begin block 1.1 */
-			// Start line: 1908
-			// Start offset: 0x000672B8
-			// Variables:
-		// 		int cx; // $v1
-		// 		int sx; // $a0
-		// 		int cy; // $a1
-		// 		int sy; // $t0
-		// 		int cz; // $t3
-		// 		int sz; // $t6
-		// 		int stmp; // $t7
-		/* end block 1.1 */
-		// End offset: 0x000672B8
-		// End Line: 1908
-
-		/* begin block 1.2 */
-			// Start line: 1964
-			// Start offset: 0x000677C0
-			// Variables:
-		// 		SVECTOR sV; // stack offset -88
-		// 		SVECTOR sV2; // stack offset -80
-		// 		VECTOR v; // stack offset -72
-		/* end block 1.2 */
-		// End offset: 0x000677FC
-		// End Line: 1976
-
-		/* begin block 1.3 */
-			// Start line: 1985
-			// Start offset: 0x000677FC
-			// Variables:
-		// 		CVECTOR cv; // stack offset -88
-		// 		VECTOR pos; // stack offset -80
-		// 		int phase; // $s0
-		/* end block 1.3 */
-		// End offset: 0x000678A0
-		// End Line: 1998
-	/* end block 1 */
-	// End offset: 0x000678A0
-	// End Line: 2001
-
-	/* begin block 2 */
-		// Start line: 4582
-	/* end block 2 */
-	// End Line: 4583
-
-	/* begin block 3 */
-		// Start line: 4595
-	/* end block 3 */
-	// End Line: 4596
-
-	/* begin block 4 */
-		// Start line: 4601
-	/* end block 4 */
-	// End Line: 4602
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-
 // [D] [T]
 void DrawCiv(PEDESTRIAN* pPed)
 {
@@ -1876,8 +1432,8 @@ void DrawCiv(PEDESTRIAN* pPed)
 	VECTOR ppos;
 	int bHeadModel;
 
-	long sxyList[40];
-	long szList[40];
+	DVECTOR sxyList[40];
+	int szList[40];
 	SVECTOR srLerpData[40];
 
 	bHeadModel = 0;
@@ -2010,22 +1566,6 @@ void DrawCiv(PEDESTRIAN* pPed)
 	RoundShadow(&ppos, &cv, size);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetSkelModelPointers(int type /*$a0*/)
- // line 2011, offset 0x00069ad8
-	/* begin block 1 */
-		// Start line: 7522
-	/* end block 1 */
-	// End Line: 7523
-
-	/* begin block 2 */
-		// Start line: 7524
-	/* end block 2 */
-	// End Line: 7525
-
 // [D] [T]
 void SetSkelModelPointers(int type)
 {
@@ -2057,50 +1597,6 @@ void SetSkelModelPointers(int type)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawTanner(PEDESTRIAN *pPed /*$s2*/)
- // line 2041, offset 0x000678d0
-	/* begin block 1 */
-		// Start line: 2042
-		// Start offset: 0x000678D0
-		// Variables:
-	// 		VECTOR v; // stack offset -112
-	// 		CVECTOR cV; // stack offset -96
-	// 		MATRIX mRotStore; // stack offset -88
-	// 		MATRIX iMatrix; // stack offset -56
-
-		/* begin block 1.1 */
-			// Start line: 2042
-			// Start offset: 0x000678D0
-		/* end block 1.1 */
-		// End offset: 0x000679E0
-		// End Line: 2061
-
-		/* begin block 1.2 */
-			// Start line: 2067
-			// Start offset: 0x000679E0
-			// Variables:
-		// 		int cx; // $a2
-		// 		int sx; // $t0
-		// 		int cy; // $a0
-		// 		int sy; // $t2
-		// 		int cz; // $t5
-		// 		int sz; // $s0
-		// 		int stmp; // $v1
-		/* end block 1.2 */
-		// End offset: 0x000679E0
-		// End Line: 2067
-	/* end block 1 */
-	// End offset: 0x00067D44
-	// End Line: 2113
-
-	/* begin block 2 */
-		// Start line: 5129
-	/* end block 2 */
-	// End Line: 5130
 
 int iCurrBone = 0;
 
@@ -2149,60 +1645,6 @@ void DrawTanner(PEDESTRIAN* pPed)
 	}
 	bDoingShadow = 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ DrawCharacter(PEDESTRIAN *pPed /*$s1*/)
- // line 2120, offset 0x00067d44
-	/* begin block 1 */
-		// Start line: 2121
-		// Start offset: 0x00067D44
-		// Variables:
-	// 		MATRIX mRotStore; // stack offset -128
-	// 		MATRIX iMatrix; // stack offset -96
-	// 		CVECTOR cV; // stack offset -64
-	// 		VECTOR v; // stack offset -56
-
-		/* begin block 1.1 */
-			// Start line: 2121
-			// Start offset: 0x00067D44
-			// Variables:
-		// 		int cx; // $t0
-		// 		int sx; // $a3
-		// 		int cy; // $a0
-		// 		int sy; // $t2
-		// 		int cz; // $a2
-		// 		int sz; // $t7
-		// 		int stmp; // $v1
-		/* end block 1.1 */
-		// End offset: 0x00067D44
-		// End Line: 2121
-
-		/* begin block 1.2 */
-			// Start line: 2175
-			// Start offset: 0x00068134
-			// Variables:
-		// 		CVECTOR cv; // stack offset -40
-		// 		VECTOR pos; // stack offset -32
-		// 		int phase; // $s0
-		/* end block 1.2 */
-		// End offset: 0x000681D0
-		// End Line: 2189
-	/* end block 1 */
-	// End offset: 0x000681EC
-	// End Line: 2193
-
-	/* begin block 2 */
-		// Start line: 5336
-	/* end block 2 */
-	// End Line: 5337
-
-	/* begin block 3 */
-		// Start line: 5344
-	/* end block 3 */
-	// End Line: 5345
 
 // [D] [T]
 int DrawCharacter(PEDESTRIAN* pPed)
@@ -2275,43 +1717,6 @@ int DrawCharacter(PEDESTRIAN* pPed)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitTannerShadow()
- // line 2201, offset 0x000681ec
-	/* begin block 1 */
-		// Start line: 2203
-		// Start offset: 0x000681EC
-		// Variables:
-	// 		CVECTOR cV; // stack offset -8
-	// 		int i; // $a3
-	/* end block 1 */
-	// End offset: 0x00068358
-	// End Line: 2247
-
-	/* begin block 2 */
-		// Start line: 5576
-	/* end block 2 */
-	// End Line: 5577
-
-	/* begin block 3 */
-		// Start line: 5585
-	/* end block 3 */
-	// End Line: 5586
-
-	/* begin block 4 */
-		// Start line: 5586
-	/* end block 4 */
-	// End Line: 5587
-
-	/* begin block 5 */
-		// Start line: 5589
-	/* end block 5 */
-	// End Line: 5590
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 POLY_FT4 ft4TannerShadow[2];
 TILE tileTannerClear[2];
 extern TEXTURE_DETAILS tannerShadow_texture;
@@ -2324,6 +1729,7 @@ void InitTannerShadow(void)
 	TILE* tile;
 	POLY_FT4* poly;
 	int i;
+
 	if (gTimeOfDay == 3)
 		brightness = 12;
 	else
@@ -2339,11 +1745,22 @@ void InitTannerShadow(void)
 
 	for (i = 0; i < 2; i++)
 	{
-		poly->u0 = poly->u2 = tannerShadow_texture.coords.u0 + 63;
-		poly->v0 = poly->v1 = tannerShadow_texture.coords.v0 + 32;
-		poly->u1 = poly->u3 = tannerShadow_texture.coords.u0;
-		poly->v2 = poly->v3 = tannerShadow_texture.coords.v0 + 127;
+		int offs = 0;
+		if(GameLevel == 2) // [A] bug fix for vegas
+			offs = 18;
 		
+		poly->u0 = tannerShadow_texture.coords.u1 / 4;
+		poly->v0 = tannerShadow_texture.coords.v1 + offs;
+		
+		poly->u1 = tannerShadow_texture.coords.u0 / 4;
+		poly->v1 = tannerShadow_texture.coords.v0 + offs;
+		
+		poly->u2 = tannerShadow_texture.coords.u3 / 4;
+		poly->v2 = tannerShadow_texture.coords.v3 + offs - 18;
+
+		poly->u3 = tannerShadow_texture.coords.u2 / 4;
+		poly->v3 = tannerShadow_texture.coords.v2 + offs - 18;
+
 		poly->tpage = getTPage(2, 0, rectTannerWindow.x, rectTannerWindow.y);
 
 		setPolyFT4(poly);
@@ -2364,55 +1781,6 @@ void InitTannerShadow(void)
 		tile++;
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ TannerShadow(VECTOR *pPedPos /*$s6*/, SVECTOR *pLightPos /*$s7*/, CVECTOR *col /*$a2*/, short angle /*$a3*/)
- // line 2258, offset 0x00068358
-	/* begin block 1 */
-		// Start line: 2259
-		// Start offset: 0x00068358
-		// Variables:
-	// 		int z; // $a1
-	// 		int z0; // stack offset -72
-	// 		int z1; // stack offset -68
-	// 		int z2; // stack offset -64
-	// 		int z3; // stack offset -60
-	// 		SVECTOR vert[4]; // stack offset -272
-	// 		VECTOR d; // stack offset -240
-	// 		DR_ENV *pDE; // $s3
-	// 		DRAWENV drEnv; // stack offset -224
-	// 		VECTOR cp; // stack offset -128
-	// 		SVECTOR ca; // stack offset -112
-	// 		VECTOR v1; // stack offset -104
-	// 		int i; // $s4
-	// 		VECTOR myVector; // stack offset -88
-	// 		int avalue2; // $v0
-	// 		int w; // $v1
-
-		/* begin block 1.1 */
-			// Start line: 2375
-			// Start offset: 0x00068818
-		/* end block 1.1 */
-		// End offset: 0x00068818
-		// End Line: 2375
-	/* end block 1 */
-	// End offset: 0x00068B2C
-	// End Line: 2434
-
-	/* begin block 2 */
-		// Start line: 5725
-	/* end block 2 */
-	// End Line: 5726
-
-	/* begin block 3 */
-		// Start line: 5737
-	/* end block 3 */
-	// End Line: 5738
-
-/* WARNING: Could not reconcile some variable overlaps */
 
 // [D] [T]
 void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, CVECTOR* col, short angle)
@@ -2438,7 +1806,6 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 
 	// [A] not supported by emulator
 	// proposed change: double buffering of VRAM (one used as render target, second as texture)
-#ifdef PSX
 
 	memset(&d, 0, sizeof(VECTOR));
 	memset(&myVector, 0, sizeof(VECTOR));
@@ -2555,7 +1922,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 	SetBasePos(&myVector);
 	old_tr = tracking_car;
 
-	gte_SetGeomOffset(32, 128);
+	gte_SetGeomOffset(32, 64);
 
 	tracking_car = 1;
 	PlaceCameraAtLocation(&player[0], 0);
@@ -2575,92 +1942,16 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 
 	gte_SetGeomOffset(160, 128);
 
-
 	SetDefDrawEnv(&drEnv, rectTannerWindow.x, rectTannerWindow.y, rectTannerWindow.w, rectTannerWindow.h);
+	drEnv.dfe = 0; // we're drawing into VRAM - don't draw on screen
+	drEnv.dtd = 0; // [A] no need in dithering
+
 	dr_env = (DR_ENV*)current->primptr;
 	SetDrawEnv(dr_env, &drEnv);
 
 	addPrim(current->ot + 0x107f, dr_env);
 	current->primptr += sizeof(DR_ENV);
-#endif
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DoCivHead(SVECTOR *vert1 /*$s1*/, SVECTOR *vert2 /*$s3*/)
- // line 2442, offset 0x00068b2c
-	/* begin block 1 */
-		// Start line: 2443
-		// Start offset: 0x00068B2C
-		// Variables:
-	// 		VECTOR headpos; // stack offset -184
-	// 		SVECTOR final_rotation; // stack offset -168
-	// 		SVECTOR spos1; // stack offset -160
-	// 		MODEL *model; // $s5
-	// 		MATRIX work2matrix; // stack offset -152
-	// 		MATRIX mRotStore; // stack offset -120
-	// 		VECTOR pos1; // stack offset -88
-	// 		int pal; // $v1
-	// 		int ci; // $s6
-
-		/* begin block 1.1 */
-			// Start line: 2495
-			// Start offset: 0x00068D38
-			// Variables:
-		// 		int cx; // $v1
-		// 		int sx; // $a0
-		// 		int cy; // $a1
-		// 		int sy; // $t0
-		// 		int cz; // $t3
-		// 		int sz; // $t6
-		// 		int stmp; // $a3
-		/* end block 1.1 */
-		// End offset: 0x00068D38
-		// End Line: 2495
-
-		/* begin block 1.2 */
-			// Start line: 2507
-			// Start offset: 0x00068F98
-			// Variables:
-		// 		int cx; // $v1
-		// 		int sx; // $t3
-		// 		int cy; // $t1
-		// 		int sy; // $a3
-		// 		int stmp; // $v0
-		/* end block 1.2 */
-		// End offset: 0x00068F98
-		// End Line: 2507
-
-		/* begin block 1.3 */
-			// Start line: 2535
-			// Start offset: 0x00069274
-			// Variables:
-		// 		MATRIX comb; // stack offset -72
-		/* end block 1.3 */
-		// End offset: 0x00069274
-		// End Line: 2537
-	/* end block 1 */
-	// End offset: 0x0006940C
-	// End Line: 2554
-
-	/* begin block 2 */
-		// Start line: 6379
-	/* end block 2 */
-	// End Line: 6380
-
-	/* begin block 3 */
-		// Start line: 6388
-	/* end block 3 */
-	// End Line: 6389
-
-	/* begin block 4 */
-		// Start line: 6400
-	/* end block 4 */
-	// End Line: 6401
-
-/* WARNING: Could not reconcile some variable overlaps */
 
 extern _pct plotContext;
 
@@ -2723,294 +2014,5 @@ void DoCivHead(PEDESTRIAN* pPed, SVECTOR* vert1, SVECTOR* vert2)
 
 	combointensity = oldcombointensity;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawObject(MODEL *model /*$t8*/, MATRIX *matrix /*$a1*/, VECTOR *pos /*$a2*/, int z_correct /*$a3*/)
- // line 2562, offset 0x00069438
-	/* begin block 1 */
-		// Start line: 2563
-		// Start offset: 0x00069438
-		// Variables:
-	// 		DVECTOR *outpoints; // $t7
-	// 		short *zbuff; // $t5
-	// 		SVECTOR *verts; // $t6
-	// 		char *polys; // $s0
-	// 		int cnt3; // $t1
-	// 		int i; // $s1
-	// 		int z0; // stack offset -40
-	// 		int z1; // stack offset -36
-	// 		int z2; // stack offset -32
-	// 		long *outlongs; // $s2
-	// 		int z; // stack offset -28
-
-		/* begin block 1.1 */
-			// Start line: 2654
-			// Start offset: 0x000697D4
-		/* end block 1.1 */
-		// End offset: 0x00069840
-		// End Line: 2663
-	/* end block 1 */
-	// End offset: 0x00069874
-	// End Line: 2683
-
-	/* begin block 2 */
-		// Start line: 6676
-	/* end block 2 */
-	// End Line: 6677
-
-// [A] - not needed anymore
-void DrawObject(MODEL* model, MATRIX* matrix, VECTOR* pos, int z_correct)
-{
-	UNIMPLEMENTED();
-	/*
-	undefined4 uVar1;
-	int iVar2;
-	short sVar3;
-	short sVar4;
-	short sVar5;
-	short sVar6;
-	undefined4 in_zero;
-	undefined4 in_at;
-	uint uVar7;
-	uint uVar8;
-	undefined2 *puVar9;
-	int iVar10;
-	undefined4 *puVar11;
-	undefined4 *puVar12;
-	undefined4 *puVar13;
-	uint uVar14;
-	undefined4 *puVar15;
-	undefined4 *puVar16;
-	undefined4 *puVar17;
-	undefined4 *puVar18;
-	uint uVar19;
-	int local_28;
-	int local_24;
-	uint local_20;
-
-	uVar7 = 0xaaaaaaab;
-	puVar18 = (undefined4 *)model->vertices;
-	uVar8 = (uint)model->num_vertices / 3;
-	uVar19 = 0;
-	sVar3 = (short)z_correct;
-	if (uVar8 != 0) {
-		puVar13 = &DAT_1f80004c;
-		puVar12 = &DAT_1f800048;
-		puVar11 = &DAT_1f800044;
-		puVar9 = &DAT_1f800240;
-		puVar17 = puVar18 + 4;
-		puVar16 = puVar18 + 2;
-		uVar14 = uVar8;
-		puVar15 = puVar18;
-		do {
-			setCopReg(2, in_zero, *puVar15);
-			setCopReg(2, in_at, puVar15[1]);
-			setCopReg(2, uVar7, *puVar16);
-			setCopReg(2, uVar8, puVar16[1]);
-			setCopReg(2, puVar9, *puVar17);
-			setCopReg(2, puVar11, puVar17[1]);
-			copFunction(2, 0x280030);
-			puVar9[-3] = (short)(local_28 >> 3) + sVar3;
-			puVar9[-2] = (short)(local_24 >> 3) + sVar3;
-			puVar9[-1] = (short)((int)local_20 >> 3) + sVar3;
-			uVar1 = getCopReg(2, 0xc);
-			*puVar11 = uVar1;
-			uVar1 = getCopReg(2, 0xd);
-			*puVar12 = uVar1;
-			uVar1 = getCopReg(2, 0xe);
-			*puVar13 = uVar1;
-			local_28 = getCopReg(2, 0x11);
-			local_24 = getCopReg(2, 0x12);
-			uVar8 = getCopReg(2, 0x13);
-			if (zVal < local_28) {
-				zVal = local_28;
-			}
-			if (zVal < local_24) {
-				zVal = local_24;
-			}
-			uVar7 = (uint)(zVal < (int)uVar8);
-			if (zVal < (int)uVar8) {
-				zVal = uVar8;
-			}
-			uVar14 = uVar14 - 1;
-			puVar13 = puVar13 + 3;
-			puVar12 = puVar12 + 3;
-			puVar11 = puVar11 + 3;
-			puVar9 = puVar9 + 3;
-			puVar17 = puVar17 + 6;
-			puVar16 = puVar16 + 6;
-			puVar15 = puVar15 + 6;
-			uVar19 = uVar19 + 3;
-			local_20 = uVar8;
-		} while (0 < (int)uVar14);
-	}
-	iVar10 = (uint)model->num_vertices - uVar19;
-	sVar4 = (short)(local_28 >> 3);
-	sVar5 = (short)(local_24 >> 3);
-	sVar6 = (short)((int)local_20 >> 3);
-	if (iVar10 == 1) {
-		setCopReg(2, in_zero, puVar18[uVar19 * 2]);
-		setCopReg(2, in_at, (puVar18 + uVar19 * 2)[1]);
-		copFunction(2, 0x180001);
-		(&DAT_1f80023a)[uVar19] = sVar4 + sVar3;
-		(&DAT_1f80023c)[uVar19] = sVar5 + sVar3;
-		(&DAT_1f80023e)[uVar19] = sVar6 + sVar3;
-		uVar1 = getCopReg(2, 0xe);
-		(&DAT_1f800044)[uVar19] = uVar1;
-		iVar10 = getCopReg(2, 0x13);
-		if (zVal < iVar10) {
-			zVal = iVar10;
-		}
-		(&DAT_1f800240)[uVar19] = (short)(iVar10 >> 3);
-	}
-	else {
-		if (iVar10 < 2) {
-			if ((uint)model->num_vertices == uVar19) {
-				(&DAT_1f80023a)[uVar19] = sVar4 + sVar3;
-				(&DAT_1f80023c)[uVar19] = sVar5 + sVar3;
-				(&DAT_1f80023e)[uVar19] = sVar6 + sVar3;
-			}
-		}
-		else {
-			if (iVar10 == 2) {
-				setCopReg(2, in_zero, puVar18[uVar19 * 2]);
-				setCopReg(2, in_at, (puVar18 + uVar19 * 2)[1]);
-				copFunction(2, 0x180001);
-				(&DAT_1f80023a)[uVar19] = sVar4 + sVar3;
-				(&DAT_1f80023c)[uVar19] = sVar5 + sVar3;
-				(&DAT_1f80023e)[uVar19] = sVar6 + sVar3;
-				uVar1 = getCopReg(2, 0xe);
-				(&DAT_1f800044)[uVar19] = uVar1;
-				iVar10 = getCopReg(2, 0x13);
-				if (zVal < iVar10) {
-					zVal = iVar10;
-				}
-				(&DAT_1f800240)[uVar19] = (short)(iVar10 >> 3) + sVar3;
-				setCopReg(2, in_zero, puVar18[uVar19 * 2 + 2]);
-				setCopReg(2, in_at, (puVar18 + uVar19 * 2 + 2)[1]);
-				copFunction(2, 0x180001);
-				uVar1 = getCopReg(2, 0xe);
-				(&DAT_1f800048)[uVar19] = uVar1;
-				iVar10 = getCopReg(2, 0x13);
-				if (zVal < iVar10) {
-					zVal = iVar10;
-				}
-				(&DAT_1f800242)[uVar19] = (short)(iVar10 >> 3) + sVar3;
-			}
-		}
-	}
-	iVar10 = model->poly_block;
-	DAT_1f80001c = &DAT_1f800240;
-	uVar8 = (uint)model->num_polys;
-	DAT_1f800018 = model;
-	while (uVar8 = uVar8 - 1, uVar8 != 0xffffffff) {
-		setCopReg(2, 0x6000, (&DAT_1f800044)[*(byte *)(iVar10 + 4)]);
-		setCopReg(2, 0x7000, (&DAT_1f800044)[*(byte *)(iVar10 + 6)]);
-		setCopReg(2, 0x6800, (&DAT_1f800044)[*(byte *)(iVar10 + 5)]);
-		copFunction(2, 0x1400006);
-		iVar2 = getCopReg(2, 0x18);
-		DAT_1f80003c = iVar10;
-		if (0 < iVar2) {
-			wjmDraw3();
-		}
-		iVar10 = iVar10 + 0x14;
-	}
-	TransparentObject = '\0';
-	return;*/
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ wjmDraw3()
- // line 2690, offset 0x00069874
-	/* begin block 1 */
-		// Start line: 2692
-		// Start offset: 0x00069874
-		// Variables:
-	// 		POLYFT3 *src; // $a3
-	// 		short *zbuff; // $t2
-	// 		long *outlongs; // $a2
-	// 		POLY_FT3 *prims; // $t1
-	// 		unsigned long clut; // $t0
-	// 		unsigned long tpage; // $a1
-	// 		int z; // $a2
-	/* end block 1 */
-	// End offset: 0x00069A38
-	// End Line: 2724
-
-	/* begin block 2 */
-		// Start line: 6971
-	/* end block 2 */
-	// End Line: 6972
-
-	/* begin block 3 */
-		// Start line: 6979
-	/* end block 3 */
-	// End Line: 6980
-
-	/* begin block 4 */
-		// Start line: 6980
-	/* end block 4 */
-	// End Line: 6981
-
-	/* begin block 5 */
-		// Start line: 6982
-	/* end block 5 */
-	// End Line: 6983
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
-// [A] - not needed anymore
-void wjmDraw3(void)
-{
-	UNIMPLEMENTED();
-	/*
-	undefined2 uVar1;
-	int iVar2;
-	DB *pDVar3;
-	int i;
-	uint uVar5;
-	uint uVar6;
-	uint *puVar7;
-
-	i = DAT_1f80003c;
-	iVar2 = DAT_1f80001c;
-	puVar7 = (uint *)current->primptr;
-	puVar7[1] = combointensity;
-	*(char *)((int)puVar7 + 3) = '\a';
-	*(char *)((int)puVar7 + 7) = '$';
-	if (palnumber == -1) {
-		uVar5 = (uint)*(byte *)(i + 1);
-		uVar6 = (uint)(ushort)(&texture_cluts)[uVar5 * 0x20 + (uint)*(byte *)(i + 2)] << 0x10;
-	}
-	else {
-		uVar5 = (uint)*(byte *)(i + 1);
-		uVar6 = palnumber;
-	}
-	uVar1 = (&texture_pages)[uVar5];
-	puVar7[2] = (&DAT_1f800044)[*(byte *)(i + 4)];
-	puVar7[3] = *(ushort *)(i + 8) | uVar6;
-	puVar7[4] = (&DAT_1f800044)[*(byte *)(i + 5)];
-	puVar7[5] = CONCAT22(uVar1, *(undefined2 *)(i + 10));
-	puVar7[6] = (&DAT_1f800044)[*(byte *)(i + 6)];
-	puVar7[7] = (uint)*(ushort *)(i + 0xc);
-	pDVar3 = current;
-	iVar2 = ((int)*(short *)((uint)*(byte *)(i + 4) * 2 + iVar2) +
-		(int)*(short *)((uint)*(byte *)(i + 5) * 2 + iVar2) +
-		(int)*(short *)((uint)*(byte *)(i + 6) * 2 + iVar2)) / 3;
-	*puVar7 = *puVar7 & 0xff000000 | current->ot[iVar2] & 0xffffff;
-	pDVar3->ot[iVar2] = pDVar3->ot[iVar2] & 0xff000000 | (uint)puVar7 & 0xffffff;
-	pDVar3->primptr = pDVar3->primptr + 0x20;
-	return;
-	*/
-}
-
-
-
 
 

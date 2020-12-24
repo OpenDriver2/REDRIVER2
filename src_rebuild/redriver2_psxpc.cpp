@@ -14,11 +14,12 @@
 #include "C/CIV_AI.H"
 #include "C/MISSION.H"
 
-#include "EMULATOR_PRIVATE.H"
-
 #include "utils/ini.h"
 
 #include <SDL_scancode.h>
+#include <SDL_messagebox.h>
+
+#include "PSYX_GLOBALS.H"
 
 #include "C/CUTSCENE.H"
 #include "C/GLAUNCH.H"
@@ -222,12 +223,12 @@ void FreeCameraMouseHandler(int x, int y)
 		extern SVECTOR g_FreeCameraRotation;
 
 		int width, height;
-		Emulator_GetScreenSize(width, height);
+		PsyX_GetScreenSize(width, height);
 
 		cursorX = x;
 		cursorY = y;
 
-		Emulator_SetCursorPosition(width / 2, height / 2);
+		PsyX_SetCursorPosition(width / 2, height / 2);
 
 		g_FreeCameraRotation.vy -= cursorX - cursorOldX;
 		g_FreeCameraRotation.vx += cursorY - cursorOldY;
@@ -289,8 +290,6 @@ int gShowCollisionDebug = 0;
 
 #if defined(DEBUG_OPTIONS) || defined(_DEBUG)
 
-extern int g_texturelessMode;
-extern int g_wireframeMode;
 extern int gDisplayPosition;
 extern int gDisplayDrawStats;
 int gStopCivCars = 0;
@@ -388,7 +387,7 @@ void GameDebugKeys(int nKey, bool down)
 
 		CAR_DATA *pCar = &car_data[player[0].playerCarId];
 
-		LONGVECTOR startpos = {
+		LONGVECTOR4 startpos = {
 			pCar->hd.where.t[0],
 			pCar->hd.where.t[1],
 			pCar->hd.where.t[2],
@@ -519,7 +518,7 @@ int ParseKeyMapping(const char* str, int default_value)
 	return default_value;
 }
 
-void LoadKeyMappings(ini_t* config, char* section, KeyboardMapping& outMapping)
+void LoadKeyMappings(ini_t* config, char* section, PsyXKeyboardMapping& outMapping)
 {
 	const char* str;
 
@@ -572,12 +571,12 @@ void LoadKeyMappings(ini_t* config, char* section, KeyboardMapping& outMapping)
 	outMapping.kc_start = ParseKeyMapping(str, SDL_SCANCODE_RETURN);
 }
 
-KeyboardMapping g_gameMappings = { 0x123 };
-KeyboardMapping g_menuMappings = { 0x456 };
+PsyXKeyboardMapping g_gameMappings = { 0x123 };
+PsyXKeyboardMapping g_menuMappings = { 0x456 };
 
 void SwitchMappings(int menu)
 {
-	extern KeyboardMapping g_keyboard_mapping;
+	extern PsyXKeyboardMapping g_keyboard_mapping;
 
 	if(menu)
 		g_keyboard_mapping = g_menuMappings;
@@ -625,10 +624,8 @@ int main(int argc, char** argv)
 	int windowHeight = 600;
 	int fullScreen = 0;
 	int enableFreecamera = 0;
-	extern int g_pgxpTextureCorrection;
-	extern int g_pgxpZBuffer;
-	extern int g_bilinearFiltering;
-	extern int g_enableSwapInterval;
+
+	extern int gUserLanguage;
 
 	if (config)
 	{
@@ -648,7 +645,8 @@ int main(int argc, char** argv)
 		ini_sget(config, "game", "driver1music", "%d", &gDriver1Music);
 		ini_sget(config, "game", "widescreenOverlays", "%d", &gWidescreenOverlayAlign);
 		ini_sget(config, "game", "fastLoadingScreens", "%d", &gFastLoadingScreens);
-		
+		ini_sget(config, "game", "languageId", "%d", &gUserLanguage);
+
 		if (dataFolderStr)
 		{
 			strcpy(gDataFolder, dataFolderStr);
@@ -693,8 +691,24 @@ int main(int argc, char** argv)
 
 #endif
 
-	Emulator_Initialise("REDRIVER2", windowWidth, windowHeight, fullScreen);
+	PsyX_Initialise("REDRIVER2", windowWidth, windowHeight, fullScreen);
 
+	// verify installation
+	if (!FileExists("DATA\\FEFONT.BNK") || !FileExists("GFX\\FONT2.FNT"))
+	{
+		char str[320];
+		sprintf(str, "Cannot initialize REDRIVER2\n\nGame files not found by folder '%s'\n", gDataFolder);
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR!", str, NULL);
+		return -1;
+	}
+
+	// init language
+	if (!InitStringMng())
+	{
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR!", "Unable to load language files!\n\nSee console for details", NULL);
+		return -1;
+	}
+	
 	if (config)
 	{
 		LoadKeyMappings(config, "kbcontrols_game", g_gameMappings);
@@ -704,5 +718,10 @@ int main(int argc, char** argv)
 		
 		ini_free(config);
 	}
-	redriver2_main(argc, argv);		
+
+	redriver2_main(argc, argv);
+
+	DeinitStringMng();
+
+	return 0;
 }

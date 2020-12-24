@@ -47,8 +47,8 @@ unsigned short paddCamera;
 char cameraview = 0;
 int CameraCnt = 0;
 
-static LONGVECTOR basePos; // [A]
-static long baseDir = 0;
+static LONGVECTOR4 basePos; // [A]
+static int baseDir = 0;
 
 char tracking_car = 0;
 
@@ -115,49 +115,6 @@ void CalcCameraBasePos(PLAYER* lp)
 	}
 }
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitCamera(PLAYER *lp /*$s0*/)
- // line 422, offset 0x0001f5f4
-	/* begin block 1 */
-		// Start line: 423
-		// Start offset: 0x0001F5F4
-		// Variables:
-	// 		SVECTOR boxDisp; // stack offset -16
-
-		/* begin block 1.1 */
-			// Start line: 428
-			// Start offset: 0x0001F61C
-		/* end block 1.1 */
-		// End offset: 0x0001F61C
-		// End Line: 428
-
-		/* begin block 1.2 */
-			// Start line: 441
-			// Start offset: 0x0001F6AC
-			// Variables:
-		// 		CAR_DATA *lcp; // $a0
-		/* end block 1.2 */
-		// End offset: 0x0001F6AC
-		// End Line: 441
-
-		/* begin block 1.3 */
-			// Start line: 454
-			// Start offset: 0x0001F794
-			// Variables:
-		// 		EVENT *event; // $a1
-		/* end block 1.3 */
-		// End offset: 0x0001F794
-		// End Line: 455
-	/* end block 1 */
-	// End offset: 0x0001FA20
-	// End Line: 544
-
-	/* begin block 2 */
-		// Start line: 844
-	/* end block 2 */
-	// End Line: 845
-
 // [D] [T]
 void InitCamera(PLAYER *lp)
 {
@@ -213,7 +170,10 @@ void InitCamera(PLAYER *lp)
 			PlaceCameraAtLocation(lp, 0);
 		}
 
-		if (gCurrentMissionNumber == 22 && lp->cameraPos.vx < 0 && lp->cameraPos.vz < 0xc1c47 && lp->cameraPos.vz > 700000)
+		// "Beat the Train" hack
+		if (gCurrentMissionNumber == 22 && 
+			lp->cameraPos.vx < 0 && 
+			lp->cameraPos.vz < 793671 && lp->cameraPos.vz > 700000)
 		{
 			SetSpecialCamera(SPECIAL_CAMERA_SET, 0);
 		}
@@ -237,63 +197,6 @@ void InitCamera(PLAYER *lp)
 #endif
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ModifyCamera()
- // line 553, offset 0x0001fa20
-	/* begin block 1 */
-		// Start line: 555
-		// Start offset: 0x0001FA20
-		// Variables:
-	// 		PAD *locPad; // $a3
-	// 		PLAYER *lp; // $a2
-
-		/* begin block 1.1 */
-			// Start line: 568
-			// Start offset: 0x0001FAFC
-			// Variables:
-		// 		char *pNextCameraview; // $a0
-		/* end block 1.1 */
-		// End offset: 0x0001FB48
-		// End Line: 578
-
-		/* begin block 1.2 */
-			// Start line: 585
-			// Start offset: 0x0001FB64
-			// Variables:
-		// 		int cam_ang; // $a0
-		// 		int length; // $a1
-		/* end block 1.2 */
-		// End offset: 0x0001FC04
-		// End Line: 593
-	/* end block 1 */
-	// End offset: 0x0001FC10
-	// End Line: 596
-
-	/* begin block 2 */
-		// Start line: 1106
-	/* end block 2 */
-	// End Line: 1107
-
-	/* begin block 3 */
-		// Start line: 1116
-	/* end block 3 */
-	// End Line: 1117
-
-	/* begin block 4 */
-		// Start line: 1117
-	/* end block 4 */
-	// End Line: 1118
-
-	/* begin block 5 */
-		// Start line: 1120
-	/* end block 5 */
-	// End Line: 1121
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void ModifyCamera(void)
 {
@@ -309,113 +212,46 @@ void ModifyCamera(void)
 
 	int i;
 
-	if (NoPlayerControl == 0 && cameraview != 6 && events.cameraEvent == NULL) // && NumPlayers == 1)	// [A] allow switching cameras in multiplayer
+	if (NoPlayerControl || cameraview == 6 || events.cameraEvent != NULL) // || NumPlayers > 1)	// [A] allow switching cameras in multiplayer
+		return;
+
+	for(i = 0; i < NumPlayers; i++)
 	{
-		for(i = 0; i < NumPlayers; i++)
+		lp = &player[i];
+
+		if (Pads[i].mapped & 0x100)
 		{
-			lp = &player[i];
-
-			if ((Pads[i].mapped & 0x100) != 0)
+			// [A] if only new button is pressed
+			if (lp->viewChange != FrameCnt-1 && (Pads[i].mapnew & 0x100))
 			{
-				if (lp->viewChange != FrameCnt-1) 
+				pNextCameraView = inGameCamera;
+
+				while (*pNextCameraView++ != lp->cameraView)
 				{
-					pNextCameraView = inGameCamera;
-
-					while (*pNextCameraView++ != lp->cameraView)
-					{
-						if (pNextCameraView > inGameCamera + 2)
-							break;
-					}
-					lp->cameraView = *pNextCameraView;
+					if (pNextCameraView > inGameCamera + 2)
+						break;
 				}
-
+			
+				lp->cameraView = *pNextCameraView;
 				lp->viewChange = FrameCnt;
+			}
 
-				if (lp->cameraView == 1)
-				{
-					if (lp->cameraCarId < 1)
-						length = 360;
-					else
-						length = car_data[lp->cameraCarId].ap.carCos->colBox.vz;
+			if (lp->cameraView == 1)
+			{
+				if (lp->cameraCarId < 1)
+					length = 360;
+				else
+					length = car_data[lp->cameraCarId].ap.carCos->colBox.vz;
 
-					CalcCameraBasePos(lp);
+				CalcCameraBasePos(lp);
 
-					angle = baseDir + 2048 & 0xfff;
-					lp->cameraPos.vx = basePos[0] + FIXEDH(rcossin_tbl[angle * 2] * (length - 60));
-					lp->cameraPos.vz = basePos[2] + FIXEDH(rcossin_tbl[angle * 2 + 1] * (length - 60));
-				}
+				angle = baseDir + 2048 & 0xfff;
+				lp->cameraPos.vx = basePos[0] + FIXEDH(rcossin_tbl[angle * 2] * (length - 60));
+				lp->cameraPos.vz = basePos[2] + FIXEDH(rcossin_tbl[angle * 2 + 1] * (length - 60));
 			}
 		}
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CameraCollisionCheck()
- // line 609, offset 0x0001fc18
-	/* begin block 1 */
-		// Start line: 611
-		// Start offset: 0x0001FC18
-		// Variables:
-	// 		MODEL *model; // $v1
-	// 		COLLISION_PACKET *collide; // $t2
-	// 		CELL_OBJECT *cop; // $t3
-	// 		CELL_ITERATOR ci; // stack offset -168
-	// 		VECTOR nearpoint; // stack offset -144
-	// 		VECTOR surfacenormal; // stack offset -128
-	// 		VECTOR surfacepoint; // stack offset -112
-	// 		int cell_x; // $a0
-	// 		int cell_z; // $a1
-	// 		int xd; // $v1
-	// 		int zd; // $a0
-	// 		int num_cb; // $t5
-	// 		int box_loop; // $t4
-	// 		int sphere_sq; // $a2
-	// 		int camera_size; // $s0
-	// 		int count; // $s1
-	// 		VECTOR temp_cam; // stack offset -96
-
-		/* begin block 1.1 */
-			// Start line: 659
-			// Start offset: 0x0001FDF4
-			// Variables:
-		// 		MATRIX *mat; // $a2
-		// 		VECTOR offset; // stack offset -80
-		// 		VECTOR cam_vec; // stack offset -64
-		// 		VECTOR normal; // stack offset -48
-		// 		int xmin; // $a0
-		// 		int xmax; // $a3
-		// 		int ymin; // $t0
-		// 		int ymax; // $v1
-		// 		int zmin; // $a1
-		// 		int zmax; // $a2
-		// 		int tx; // $a3
-		// 		int tz; // $a1
-		/* end block 1.1 */
-		// End offset: 0x0001FFD0
-		// End Line: 694
-	/* end block 1 */
-	// End offset: 0x0002003C
-	// End Line: 702
-
-	/* begin block 2 */
-		// Start line: 1273
-	/* end block 2 */
-	// End Line: 1274
-
-	/* begin block 3 */
-		// Start line: 1274
-	/* end block 3 */
-	// End Line: 1275
-
-	/* begin block 4 */
-		// Start line: 1291
-	/* end block 4 */
-	// End Line: 1292
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 int CameraCollisionCheck(void)
@@ -456,7 +292,7 @@ int CameraCollisionCheck(void)
 				model = modelpointers[cop->type];
 				boxptr = (int *)model->collision_block;
 
-				if (boxptr != NULL && (model->flags2 & 0x800) == 0) 
+				if (boxptr != NULL && (model->flags2 & MODEL_FLAG_SMASHABLE) == 0)
 				{
 					xd = ABS(cop->pos.vx - camera_position.vx);
 					zd = ABS(cop->pos.vz - camera_position.vz);
@@ -514,7 +350,7 @@ int CameraCollisionCheck(void)
 		}
 		count++;
 
-		if (8 < count)
+		if (count > 8)
 			break;
 
 	} while (true);
@@ -522,61 +358,17 @@ int CameraCollisionCheck(void)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ TurnHead(PLAYER *lp /*$a0*/)
- // line 716, offset 0x00020a10
-	/* begin block 1 */
-		// Start line: 717
-		// Start offset: 0x00020A10
-	/* end block 1 */
-	// End offset: 0x00020B08
-	// End Line: 757
-
-	/* begin block 2 */
-		// Start line: 1432
-	/* end block 2 */
-	// End Line: 1433
-
-	/* begin block 3 */
-		// Start line: 2114
-	/* end block 3 */
-	// End Line: 2115
-
 // [D] [T]
 void TurnHead(PLAYER *lp)
 {
-	if ((paddCamera & 3) == 3) 
+	if ((paddCamera & 0x3) == 0x3)
 	{
-		if (pPlayerPed != NULL)
+		if (pPlayerPed != NULL)  // look back
 			pPlayerPed->head_rot = 0;
 	}
-	else if ((paddCamera & 1) == 0) 
+	else if (paddCamera & 0x1)
 	{
-		if ((paddCamera & 2) == 0) // look back
-		{
-			if (pPlayerPed != NULL)
-				pPlayerPed->head_rot = 0;
-
-			lp->headTimer = 0;
-			lp->headTarget = 0;
-		}
-		else
-		{
-			if (pPlayerPed != NULL)
-				pPlayerPed->head_rot = -512;
-
-			if (lp->headTimer > 1)
-				lp->headTarget = -0x4000000;
-			else
-				lp->headTimer++;
-		}
-	}
-	else
-	{
-		if (pPlayerPed != NULL) 
+		if (pPlayerPed != NULL)
 			pPlayerPed->head_rot = 512;
 
 		if (lp->headTimer > 1)
@@ -584,51 +376,27 @@ void TurnHead(PLAYER *lp)
 		else
 			lp->headTimer++;
 	}
+	else if (paddCamera & 0x2)
+	{
+		if (pPlayerPed != NULL)
+			pPlayerPed->head_rot = -512;
+
+		if (lp->headTimer > 1)
+			lp->headTarget = -0x4000000;
+		else
+			lp->headTimer++;
+	}
+	else
+	{
+		if (pPlayerPed != NULL)
+			pPlayerPed->head_rot = 0;
+
+		lp->headTimer = 0;
+		lp->headTarget = 0;
+	}
 
 	lp->headPos += (lp->headTarget - lp->headPos) / 2;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ PlaceCameraFollowCar(PLAYER *lp /*$s2*/)
- // line 777, offset 0x0002003c
-	/* begin block 1 */
-		// Start line: 778
-		// Start offset: 0x0002003C
-		// Variables:
-	// 		int carheight; // $a0
-	// 		int minimum_height; // $s1
-	// 		int cammapht; // $s0
-	// 		int new_angle; // $a0
-	// 		int camPosVy; // $s1
-	// 		VECTOR locCameraPos; // stack offset -48
-	// 		int lbody; // $a0
-	// 		int hbody; // $a3
-	// 		int camExpandSpeed; // $s6
-
-		/* begin block 1.1 */
-			// Start line: 800
-			// Start offset: 0x00020088
-			// Variables:
-		// 		CAR_DATA *camCar; // $v1
-		/* end block 1.1 */
-		// End offset: 0x0002011C
-		// End Line: 810
-	/* end block 1 */
-	// End offset: 0x0002050C
-	// End Line: 893
-
-	/* begin block 2 */
-		// Start line: 1667
-	/* end block 2 */
-	// End Line: 1668
-
-	/* begin block 3 */
-		// Start line: 1743
-	/* end block 3 */
-	// End Line: 1744
 
 short gCameraDistance = 1000;
 short gCameraMaxDistance = 0;
@@ -682,17 +450,19 @@ void PlaceCameraFollowCar(PLAYER *lp)
 		TurnHead(lp);
 
 	camera_angle.vx = 25;
+
 	camAngle = lp->cameraAngle - (lp->headPos >> 16) & 0xfff;
 
 	if (pauseflag == 0 || EditMode == 2)
 	{
-		if ((paddCamera & 3) == 3)
+		if ((paddCamera & 0x3) == 0x3)
 		{
-			camAngle = baseDir & 0xfff;
+			camAngle = baseDir & 0xfff; // look back
 		}
 		else
 		{
 			angleDelta = (((baseDir + gCameraAngle) - lp->cameraAngle) + 2048U & 0xfff) - 2048;
+
 			lp->cameraAngle += (angleDelta >> 3) & 0xfff;
 		}
 	}
@@ -763,120 +533,6 @@ void PlaceCameraFollowCar(PLAYER *lp)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ PlaceCameraAtLocation(PLAYER *lp /*$s1*/, int zoom /*$s2*/)
- // line 904, offset 0x00020904
-	/* begin block 1 */
-		// Start line: 905
-		// Start offset: 0x00020904
-		// Variables:
-	// 		int d; // $s0
-
-		/* begin block 1.1 */
-			// Start line: 911
-			// Start offset: 0x00020930
-			// Variables:
-		// 		VECTOR temp; // stack offset -32
-		/* end block 1.1 */
-		// End offset: 0x00020930
-		// End Line: 913
-	/* end block 1 */
-	// End offset: 0x000209F8
-	// End Line: 950
-
-	/* begin block 2 */
-		// Start line: 2237
-	/* end block 2 */
-	// End Line: 2238
-
-	/* begin block 3 */
-		// Start line: 1808
-	/* end block 3 */
-	// End Line: 1809
-
-	/* begin block 4 */
-		// Start line: 2240
-	/* end block 4 */
-	// End Line: 2241
-
-// [D] [T]
-void PlaceCameraAtLocation(PLAYER *lp, int zoom)
-{
-	int d;
-	VECTOR temp;
-
-	d = 0;
-
-	if (tracking_car != 0) 
-	{
-		CalcCameraBasePos(lp);
-
-		temp.vx = basePos[0];
-		temp.vy = -basePos[1];
-		temp.vz = basePos[2];
-
-		d = PointAtTarget(&lp->cameraPos, &temp, &camera_angle);
-
-		if (d > 16000)
-		{
-			lp->cameraView = 0;
-			return;
-		}
-
-		if (zoom == 0) 
-		{
-			scr_z = 256;
-		}
-		else 
-		{
-			scr_z = (d >> 4) + 256;
-
-			if (scr_z > 800)
-				scr_z = 800;
-		}
-	}
-
-	if (scr_z < 256)
-		scr_z = 256;
-
-	SetGeomScreen(scr_z);
-	switch_detail_distance = 10000 + (d >> 1);
-	BuildWorldMatrix();
-}
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ PointAtTarget(VECTOR *pPosition /*$a0*/, VECTOR *pTarget /*$a1*/, SVECTOR *pAngleVec /*$s0*/)
- // line 960, offset 0x00020b08
-	/* begin block 1 */
-		// Start line: 961
-		// Start offset: 0x00020B08
-		// Variables:
-	// 		VECTOR delta; // stack offset -32
-	// 		int d; // $s1
-	/* end block 1 */
-	// End offset: 0x00020BC0
-	// End Line: 976
-
-	/* begin block 2 */
-		// Start line: 2394
-	/* end block 2 */
-	// End Line: 2395
-
-	/* begin block 3 */
-		// Start line: 2598
-	/* end block 3 */
-	// End Line: 2599
-
-	/* begin block 4 */
-		// Start line: 2602
-	/* end block 4 */
-	// End Line: 2603
-
 // [D] [T]
 int PointAtTarget(VECTOR *pPosition, VECTOR *pTarget, SVECTOR *pAngleVec)
 {
@@ -894,46 +550,6 @@ int PointAtTarget(VECTOR *pPosition, VECTOR *pTarget, SVECTOR *pAngleVec)
 
 	return d;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ PlaceCameraInCar(PLAYER *lp /*$s3*/, int BumperCam /*$a1*/)
- // line 987, offset 0x0002050c
-	/* begin block 1 */
-		// Start line: 988
-		// Start offset: 0x0002050C
-		// Variables:
-	// 		CAR_DATA *cp; // $s2
-
-		/* begin block 1.1 */
-			// Start line: 1044
-			// Start offset: 0x000207BC
-		/* end block 1.1 */
-		// End offset: 0x000207CC
-		// End Line: 1045
-
-		/* begin block 1.2 */
-			// Start line: 1049
-			// Start offset: 0x000207E0
-		/* end block 1.2 */
-		// End offset: 0x00020800
-		// End Line: 1052
-	/* end block 1 */
-	// End offset: 0x00020904
-	// End Line: 1077
-
-	/* begin block 2 */
-		// Start line: 2104
-	/* end block 2 */
-	// End Line: 2105
-
-	/* begin block 3 */
-		// Start line: 2199
-	/* end block 3 */
-	// End Line: 2200
-
 
 // [D] [T]
 void PlaceCameraInCar(PLAYER *lp, int BumperCam)
@@ -962,7 +578,7 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 		viewer_position.vz = cp->ap.carCos->colBox.vz - 80;
 	}
 
-	if ((paddCamera & 3) == 3)
+	if ((paddCamera & 0x3) == 0x3)
 		viewer_position.vz = 0;
 
 	angle = baseDir & 0xfff;
@@ -973,7 +589,7 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 
 	TurnHead(lp);
 
-	if ((paddCamera & 3) == 3)
+	if ((paddCamera & 0x3) == 0x3)
 		camera_angle.vy = 2048 - baseDir & 0xfff;
 	else
 		camera_angle.vy = (lp->headPos >> 16) - baseDir & 0xfff;
@@ -998,14 +614,14 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 		InvertMatrix(&cp->hd.drawCarMat, &inv_camera_matrix);
 	}
 
-	if ((paddCamera & 3) == 3) 
+	if ((paddCamera & 0x3) == 0x3)
 	{
 		if (cp != NULL)
 			viewer_position.vz = 170;
 	}
 	else 
 	{
-		_RotMatrixY(&inv_camera_matrix, 0x800);
+		_RotMatrixY(&inv_camera_matrix, 2048);
 		_RotMatrixY(&inv_camera_matrix, (lp->headPos >> 16));
 	
 		if (cp != NULL) 
@@ -1037,44 +653,6 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 	switch_detail_distance = 10000;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ OK_To_Zoom()
- // line 1083, offset 0x00020bc0
-	/* begin block 1 */
-		// Start line: 1085
-		// Start offset: 0x00020BC0
-		// Variables:
-	// 		int old_z; // $s0
-	// 		VECTOR temp; // stack offset -24
-	/* end block 1 */
-	// End offset: 0x00020C70
-	// End Line: 1114
-
-	/* begin block 2 */
-		// Start line: 2753
-	/* end block 2 */
-	// End Line: 2754
-
-	/* begin block 3 */
-		// Start line: 2861
-	/* end block 3 */
-	// End Line: 2862
-
-	/* begin block 4 */
-		// Start line: 2862
-	/* end block 4 */
-	// End Line: 2863
-
-	/* begin block 5 */
-		// Start line: 2872
-	/* end block 5 */
-	// End Line: 2873
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 int OK_To_Zoom(void)
 {
@@ -1099,27 +677,6 @@ int OK_To_Zoom(void)
 	return CameraCollisionCheck() == 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetBasePos(VECTOR *pVec /*$a0*/)
- // line 1119, offset 0x00020c70
-	/* begin block 1 */
-		// Start line: 2945
-	/* end block 1 */
-	// End Line: 2946
-
-	/* begin block 2 */
-		// Start line: 2951
-	/* end block 2 */
-	// End Line: 2952
-
-	/* begin block 3 */
-		// Start line: 2952
-	/* end block 3 */
-	// End Line: 2953
-
 // [D] [T]
 void SetBasePos(VECTOR *pVec)
 {
@@ -1128,7 +685,47 @@ void SetBasePos(VECTOR *pVec)
 	basePos[2] = pVec->vz;
 }
 
+// [D] [T]
+void PlaceCameraAtLocation(PLAYER* lp, int zoom)
+{
+	int d;
+	VECTOR temp;
 
+	d = 0;
 
+	if (tracking_car != 0)
+	{
+		CalcCameraBasePos(lp);
 
+		temp.vx = basePos[0];
+		temp.vy = -basePos[1];
+		temp.vz = basePos[2];
 
+		d = PointAtTarget(&lp->cameraPos, &temp, &camera_angle);
+
+		if (d > 16000)
+		{
+			lp->cameraView = 0;
+			return;
+		}
+
+		if (zoom == 0)
+		{
+			scr_z = 256;
+		}
+		else
+		{
+			scr_z = (d >> 4) + 256;
+
+			if (scr_z > 800)
+				scr_z = 800;
+		}
+	}
+
+	if (scr_z < 256)
+		scr_z = 256;
+
+	SetGeomScreen(scr_z);
+	switch_detail_distance = 10000 + (d >> 1);
+	BuildWorldMatrix();
+}

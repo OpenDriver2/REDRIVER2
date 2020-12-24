@@ -24,73 +24,6 @@ char* CosmeticFiles[] = {
 
 CAR_COSMETICS car_cosmetics[MAX_CAR_MODELS];
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ LoadCosmetics(int level /*$a0*/)
- // line 188, offset 0x00031160
-	/* begin block 1 */
-		// Start line: 190
-		// Start offset: 0x00031160
-	/* end block 1 */
-	// End offset: 0x000311B0
-	// End Line: 203
-
-	/* begin block 2 */
-		// Start line: 376
-	/* end block 2 */
-	// End Line: 377
-
-	/* begin block 3 */
-		// Start line: 2374
-	/* end block 3 */
-	// End Line: 2375
-
-	/* begin block 4 */
-		// Start line: 2381
-	/* end block 4 */
-	// End Line: 2382
-
-// [D] [T]
-void LoadCosmetics(int level)
-{
-	LoadfileSeg(CosmeticFiles[level], _other_buffer, 0, 3120);
-	ProcessCosmeticsLump(_other_buffer, 0);
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ProcessCosmeticsLump(char *lump_ptr /*$s2*/, int lump_size /*$a1*/)
- // line 213, offset 0x000311b0
-	/* begin block 1 */
-		// Start line: 214
-		// Start offset: 0x000311B0
-		// Variables:
-	// 		int i; // $t0
-	// 		int model; // $a1
-	// 		int offset; // $a0
-
-		/* begin block 1.1 */
-			// Start line: 236
-			// Start offset: 0x00031238
-		/* end block 1.1 */
-		// End offset: 0x00031338
-		// End Line: 240
-	/* end block 1 */
-	// End offset: 0x00031360
-	// End Line: 243
-
-	/* begin block 2 */
-		// Start line: 2415
-	/* end block 2 */
-	// End Line: 2416
-
-	/* begin block 3 */
-		// Start line: 2426
-	/* end block 3 */
-	// End Line: 2427
-
 // [D] [T]
 void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 {
@@ -129,35 +62,12 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 	} while (i < MAX_CAR_MODELS);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ AddReverseLight(CAR_DATA *cp /*$s1*/)
- // line 252, offset 0x0002f994
-	/* begin block 1 */
-		// Start line: 253
-		// Start offset: 0x0002F994
-		// Variables:
-	// 		CAR_COSMETICS *car_cos; // $a1
-	// 		SVECTOR v1; // stack offset -32
-	// 		CVECTOR col; // stack offset -24
-	// 		short cogOffset; // $s2
-	/* end block 1 */
-	// End offset: 0x0002FAEC
-	// End Line: 283
-
-	/* begin block 2 */
-		// Start line: 504
-	/* end block 2 */
-	// End Line: 505
-
-	/* begin block 3 */
-		// Start line: 510
-	/* end block 3 */
-	// End Line: 511
-
-/* WARNING: Could not reconcile some variable overlaps */
+// [D] [T]
+void LoadCosmetics(int level)
+{
+	LoadfileSeg(CosmeticFiles[level], _other_buffer, 0, 3120);
+	ProcessCosmeticsLump(_other_buffer, 0);
+}
 
 // [D] [T]
 void AddReverseLight(CAR_DATA *cp)
@@ -190,38 +100,6 @@ void AddReverseLight(CAR_DATA *cp)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetupSpecCosmetics(char *loadbuffer /*$a0*/)
- // line 293, offset 0x00031360
-	/* begin block 1 */
-		// Start line: 298
-		// Start offset: 0x00031360
-		// Variables:
-	// 		int *to; // $a1
-	// 		int *from; // $a0
-	// 		int *end; // $v1
-	/* end block 1 */
-	// End offset: 0x00031398
-	// End Line: 311
-
-	/* begin block 2 */
-		// Start line: 2564
-	/* end block 2 */
-	// End Line: 2565
-
-	/* begin block 3 */
-		// Start line: 2615
-	/* end block 3 */
-	// End Line: 2616
-
-	/* begin block 4 */
-		// Start line: 2619
-	/* end block 4 */
-	// End Line: 2620
-
 // [D] [T]
 void SetupSpecCosmetics(char *loadbuffer)
 {
@@ -244,40 +122,6 @@ void SetupSpecCosmetics(char *loadbuffer)
 	// [A] don't forget
 	FixCarCos(&car_cosmetics[4], model);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ AddIndicatorLight(CAR_DATA *cp /*$s0*/, int Type /*$s6*/)
- // line 325, offset 0x0002faec
-	/* begin block 1 */
-		// Start line: 326
-		// Start offset: 0x0002FAEC
-		// Variables:
-	// 		CAR_COSMETICS *car_cos; // $a1
-	// 		CVECTOR col; // stack offset -56
-	// 		SVECTOR vfrnt; // stack offset -48
-	// 		SVECTOR vback; // stack offset -40
-	// 		char tempcol; // $s1
-	// 		char *life; // $a0
-	// 		char *life2; // $s3
-	// 		short cogOffset; // $s2
-	/* end block 1 */
-	// End offset: 0x0002FDBC
-	// End Line: 397
-
-	/* begin block 2 */
-		// Start line: 623
-	/* end block 2 */
-	// End Line: 624
-
-	/* begin block 3 */
-		// Start line: 666
-	/* end block 3 */
-	// End Line: 667
-
-/* WARNING: Could not reconcile some variable overlaps */
 
 // [D] [T]
 void AddIndicatorLight(CAR_DATA *cp, int Type)
@@ -354,39 +198,6 @@ void AddIndicatorLight(CAR_DATA *cp, int Type)
 		}
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ AddBrakeLight(CAR_DATA *cp /*$s5*/)
- // line 407, offset 0x0002fde4
-	/* begin block 1 */
-		// Start line: 408
-		// Start offset: 0x0002FDE4
-		// Variables:
-	// 		CAR_COSMETICS *car_cos; // $a1
-	// 		SVECTOR v1; // stack offset -88
-	// 		SVECTOR v2; // stack offset -80
-	// 		SVECTOR vec; // stack offset -72
-	// 		CVECTOR col; // stack offset -64
-	// 		char *life2; // $s2
-	// 		short doubleFlag; // stack offset -56
-	// 		short verticalFlag; // stack offset -52
-	// 		short offset; // $s1
-	// 		short loop; // $fp
-	// 		short damIndex; // $v0
-	// 		short cogOffset; // $a3
-	/* end block 1 */
-	// End offset: 0x00030118
-	// End Line: 504
-
-	/* begin block 2 */
-		// Start line: 867
-	/* end block 2 */
-	// End Line: 868
-
-/* WARNING: Could not reconcile some variable overlaps */
 
 // [D] [T]
 void AddBrakeLight(CAR_DATA *cp)
@@ -493,45 +304,6 @@ void AddBrakeLight(CAR_DATA *cp)
 		loop++;
 	} while (loop < 2);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ AddCopCarLight(CAR_DATA *cp /*$t0*/)
- // line 514, offset 0x00030148
-	/* begin block 1 */
-		// Start line: 515
-		// Start offset: 0x00030148
-		// Variables:
-	// 		int size; // $a3
-	// 		int light; // $s1
-	// 		int pos; // $s3
-	// 		int side; // $s4
-	// 		int num_lights; // $t5
-	// 		int count_speed; // $t4
-	// 		char col1; // $a2
-	// 		char col2; // $a1
-	// 		static char xpos1[8]; // offset 0x10
-	// 		int sign; // $t1
-	// 		char *coplife; // $s2
-	// 		SVECTOR v1; // stack offset -88
-	// 		CVECTOR col; // stack offset -80
-	// 		CAR_COSMETICS *car_cos; // $s0
-	// 		short cogOffset; // $fp
-	/* end block 1 */
-	// End offset: 0x00030514
-	// End Line: 644
-
-	/* begin block 2 */
-		// Start line: 1341
-	/* end block 2 */
-	// End Line: 1342
-
-	/* begin block 3 */
-		// Start line: 1347
-	/* end block 3 */
-	// End Line: 1348
 
 // [D] [T]
 void AddCopCarLight(CAR_DATA *cp)
@@ -647,47 +419,6 @@ void AddCopCarLight(CAR_DATA *cp)
 
 	} while (true);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ AddNightLights(CAR_DATA *cp /*$s6*/)
- // line 653, offset 0x00030544
-	/* begin block 1 */
-		// Start line: 654
-		// Start offset: 0x00030544
-		// Variables:
-	// 		static MATRIX work_matrix; // offset 0x0
-	// 		CAR_COSMETICS *car_cos; // $fp
-	// 		SVECTOR Position1; // stack offset -104
-	// 		SVECTOR Position2; // stack offset -96
-	// 		SVECTOR vec; // stack offset -88
-	// 		CVECTOR col; // stack offset -80
-	// 		int lit; // stack offset -72
-	// 		int lightFlag; // $t0
-	// 		char *life2; // stack offset -68
-	// 		short damIndex; // $s5
-	// 		short loop; // stack offset -64
-	// 		short offset; // $s2
-	// 		short doubleFlag; // stack offset -60
-	// 		short verticalFlag; // stack offset -56
-	// 		short cogOffset; // stack offset -52
-	/* end block 1 */
-	// End offset: 0x00030D9C
-	// End Line: 919
-
-	/* begin block 2 */
-		// Start line: 1653
-	/* end block 2 */
-	// End Line: 1654
-
-	/* begin block 3 */
-		// Start line: 1663
-	/* end block 3 */
-	// End Line: 1664
-
-/* WARNING: Could not reconcile some variable overlaps */
 
 int gPlayerCarLights = 0;
 int gcar_num = 0;
@@ -897,33 +628,6 @@ void AddNightLights(CAR_DATA *cp)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ AddSmokingEngine(CAR_DATA *cp /*$s0*/, int black_smoke /*$s2*/, int WheelSpeed /*$s3*/)
- // line 989, offset 0x00030d9c
-	/* begin block 1 */
-		// Start line: 990
-		// Start offset: 0x00030D9C
-		// Variables:
-	// 		VECTOR SmokePos; // stack offset -64
-	// 		CAR_COSMETICS *car_cos; // $a0
-	// 		VECTOR Drift; // stack offset -48
-	// 		SVECTOR svec; // stack offset -32
-	/* end block 1 */
-	// End offset: 0x00030F90
-	// End Line: 1038
-
-	/* begin block 2 */
-		// Start line: 3039
-	/* end block 2 */
-	// End Line: 3040
-
-/* WARNING: Could not reconcile some variable overlaps */
-
-int gDoSmoke = 1;
-
 // [D] [T]
 void AddSmokingEngine(CAR_DATA *cp, int black_smoke, int WheelSpeed)
 {
@@ -932,7 +636,7 @@ void AddSmokingEngine(CAR_DATA *cp, int black_smoke, int WheelSpeed)
 	VECTOR Drift;
 	SVECTOR svec;
 
-	if((CameraCnt & 3U) == (CAR_INDEX(cp) & 3U) && gDoSmoke != 0 && pauseflag == 0)
+	if((CameraCnt & 3U) == (CAR_INDEX(cp) & 3U) && pauseflag == 0)
 	{
 		car_cos = cp->ap.carCos;
 
@@ -980,7 +684,7 @@ void AddExhaustSmoke(CAR_DATA *cp, int black_smoke, int WheelSpeed)
 	if (WheelSpeed > 512 * 64)
 		return;
 
-	if ((CameraCnt & 3U) == (CAR_INDEX(cp) & 3U) && gDoSmoke != 0 && pauseflag == 0)
+	if ((CameraCnt & 3U) == (CAR_INDEX(cp) & 3U) && pauseflag == 0)
 	{
 		car_cos = cp->ap.carCos;
 
@@ -1014,29 +718,6 @@ void AddExhaustSmoke(CAR_DATA *cp, int black_smoke, int WheelSpeed)
 	}
 }
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ AddFlamingEngine(CAR_DATA *cp /*$s1*/)
- // line 1048, offset 0x00030fac
-	/* begin block 1 */
-		// Start line: 1049
-		// Start offset: 0x00030FAC
-		// Variables:
-	// 		VECTOR SmokePos; // stack offset -56
-	// 		SVECTOR svec; // stack offset -40
-	// 		CAR_COSMETICS *car_cos; // $a0
-	// 		VECTOR Drift; // stack offset -32
-	/* end block 1 */
-	// End offset: 0x0003114C
-	// End Line: 1084
-
-	/* begin block 2 */
-		// Start line: 3174
-	/* end block 2 */
-	// End Line: 3175
-
-/* WARNING: Could not reconcile some variable overlaps */
-
 // [D] [T]
 void AddFlamingEngine(CAR_DATA *cp)
 {
@@ -1045,7 +726,7 @@ void AddFlamingEngine(CAR_DATA *cp)
 	SVECTOR svec;
 	VECTOR Drift;
 
-	if ((CameraCnt & 1U) == (CAR_INDEX(cp) & 1U) && gDoSmoke != 0 && pauseflag == 0)
+	if ((CameraCnt & 1U) == (CAR_INDEX(cp) & 1U) && pauseflag == 0)
 	{
 		car_cos = cp->ap.carCos;
 

@@ -38,154 +38,18 @@ int regions_down;
 PACKED_CELL_OBJECT** pcoplist;
 CELL_OBJECT** coplist;
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ NewProcessRoadMapLump(ROAD_MAP_LUMP_DATA *pRoadMapLumpData /*$s0*/, char *pLumpFile /*$s1*/)
- // line 237, offset 0x0005d7bc
-	/* begin block 1 */
-		// Start line: 238
-		// Start offset: 0x0005D7BC
-	/* end block 1 */
-	// End offset: 0x0005D814
-	// End Line: 243
-
-	/* begin block 2 */
-		// Start line: 2217
-	/* end block 2 */
-	// End Line: 2218
-
-	/* begin block 3 */
-		// Start line: 474
-	/* end block 3 */
-	// End Line: 475
-
-// [D] [T]
-void NewProcessRoadMapLump(ROAD_MAP_LUMP_DATA *pRoadMapLumpData, char *pLumpFile)
-{
-	Getlong((char*)&pRoadMapLumpData->width, pLumpFile);
-	Getlong((char*)&pRoadMapLumpData->height, pLumpFile + 4);
-
-	pRoadMapLumpData->unitXMid = (pRoadMapLumpData->width + 1) * 512;
-	pRoadMapLumpData->unitZMid = pRoadMapLumpData->height * 512;
-}
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ProcessJunctionsLump(char *lump_file /*$a0*/, int lump_size /*$a1*/)
- // line 247, offset 0x0005d6cc
-	/* begin block 1 */
-		// Start line: 494
-	/* end block 1 */
-	// End Line: 495
-
-	/* begin block 2 */
-		// Start line: 1664
-	/* end block 2 */
-	// End Line: 1665
-
-// [D] [T]
-void ProcessJunctionsLump(char *lump_file, int lump_size)
-{
-	return;
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ProcessRoadsLump(char *lump_file /*$a0*/, int lump_size /*$a1*/)
- // line 252, offset 0x0005d6c4
-	/* begin block 1 */
-		// Start line: 1668
-	/* end block 1 */
-	// End Line: 1669
-
-	/* begin block 2 */
-		// Start line: 504
-	/* end block 2 */
-	// End Line: 505
-
-// [D] [T]
-void ProcessRoadsLump(char *lump_file, int lump_size)
-{
-	return;
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ProcessRoadBoundsLump(char *lump_file /*$a0*/, int lump_size /*$a1*/)
- // line 253, offset 0x0005d6d4
-	/* begin block 1 */
-		// Start line: 1675
-	/* end block 1 */
-	// End Line: 1676
-
-// [D] [T]
-void ProcessRoadBoundsLump(char *lump_file, int lump_size)
-{
-	return;
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ProcessJuncBoundsLump(char *lump_file /*$a0*/, int lump_size /*$a1*/)
- // line 254, offset 0x0005d6dc
-	/* begin block 1 */
-		// Start line: 1677
-	/* end block 1 */
-	// End Line: 1678
-
-// [D] [T]
-void ProcessJuncBoundsLump(char *lump_file, int lump_size)
-{
-	return;
-}
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitCellData()
- // line 311, offset 0x0005d36c
-	/* begin block 1 */
-		// Start line: 313
-		// Start offset: 0x0005D36C
-		// Variables:
-	// 		char *alloclist; // $a2
-	// 		int loop; // $v1
-	/* end block 1 */
-	// End offset: 0x0005D40C
-	// End Line: 360
-
-	/* begin block 2 */
-		// Start line: 622
-	/* end block 2 */
-	// End Line: 623
-
-	/* begin block 3 */
-		// Start line: 1465
-	/* end block 3 */
-	// End Line: 1466
-
-	/* begin block 4 */
-		// Start line: 1472
-	/* end block 4 */
-	// End Line: 1473
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
+OUT_CELL_FILE_HEADER cell_header;
 
 int cells_across = 1000;
 int cells_down = 1000;
 
-unsigned short *cell_ptrs;
+unsigned short* cell_ptrs;
 PACKED_CELL_OBJECT* cell_objects;
 int sizeof_cell_object_computed_values;
 CELL_DATA* cells;
 int num_straddlers;		// objects between regions
+
+#define MAX_REGIONS 1024
 
 // [D] [T]
 void InitCellData(void)
@@ -194,7 +58,7 @@ void InitCellData(void)
 
 	MALLOC_BEGIN();
 
-	cell_ptrs = (ushort *)D_MALLOC(4096 * sizeof(short));
+	cell_ptrs = (ushort*)D_MALLOC(4096 * sizeof(short));
 
 	// init cell pointers
 	for (loop = 0; loop < 4096; loop++)
@@ -209,38 +73,88 @@ void InitCellData(void)
 	sizeof_cell_object_computed_values = (num_straddlers + cell_objects_add[4] + 7) / sizeof(PACKED_CELL_OBJECT);
 }
 
+// [D] [T]
+void ProcessMapLump(char* lump_ptr, int lump_size)
+{
+	memcpy(&cell_header, lump_ptr, sizeof(OUT_CELL_FILE_HEADER));
+
+	cells_across = cell_header.cells_across;
+	cells_down = cell_header.cells_down;
+	num_regions = cell_header.num_regions;
+
+#ifdef PSX
+	if(num_regions > MAX_REGIONS)
+	{
+		printError("MAX_REGIONS is too small , allocate at least %d !", num_regions);
+		trap(0x400);
+	}
+
+	if(cell_header.cell_size != MAP_CELL_SIZE)
+	{
+		printError("Error LevEdit cellsize %d whilst PSX cellsize %d\n", cell_header.cell_size, MAP_CELL_SIZE);
+		trap(0x400);
+	}
+
+	if (cell_header.region_size != MAP_REGION_SIZE)
+	{
+		printError("Error LevEdit regionsize %d whilst PSX regionsize %d\n", cell_header.region_size, MAP_REGION_SIZE);
+		trap(0x400);
+	}
+#endif
+
+	view_dist = 10;
+	pvs_square = 21;
+	pvs_square_sq = 21 * 21;
+
+	units_across_halved = cells_across / 2 * MAP_CELL_SIZE;
+	units_down_halved = cells_down / 2 * MAP_CELL_SIZE;
+
+	regions_across = cells_across / MAP_REGION_SIZE;
+	regions_down = cells_down / MAP_REGION_SIZE;
+
+	lump_ptr += sizeof(OUT_CELL_FILE_HEADER);
+
+	num_straddlers = *(int*)lump_ptr;
+
+	InitCellData();
+	memcpy(cell_objects, lump_ptr + 4, num_straddlers * sizeof(PACKED_CELL_OBJECT));
+}
 
 
-// decompiled code
-// original method signature: 
-// int /*$ra*/ newPositionVisible(VECTOR *pos /*$a0*/, char *pvs /*$a1*/, int ccx /*$a2*/, int ccz /*$a3*/)
- // line 378, offset 0x0005d61c
-	/* begin block 1 */
-		// Start line: 379
-		// Start offset: 0x0005D61C
-		// Variables:
-	// 		int dx; // $a2
-	// 		int dz; // $a0
-	// 		int cellx; // $v1
-	// 		int cellz; // $v0
-	/* end block 1 */
-	// End offset: 0x0005D6C4
-	// End Line: 398
+// [D] [T]
+void NewProcessRoadMapLump(ROAD_MAP_LUMP_DATA *pRoadMapLumpData, char *pLumpFile)
+{
+	Getlong((char*)&pRoadMapLumpData->width, pLumpFile);
+	Getlong((char*)&pRoadMapLumpData->height, pLumpFile + 4);
 
-	/* begin block 2 */
-		// Start line: 1770
-	/* end block 2 */
-	// End Line: 1771
+	pRoadMapLumpData->unitXMid = (pRoadMapLumpData->width + 1) * 512;
+	pRoadMapLumpData->unitZMid = pRoadMapLumpData->height * 512;
+}
 
-	/* begin block 3 */
-		// Start line: 756
-	/* end block 3 */
-	// End Line: 757
+// [D] [T]
+void ProcessJunctionsLump(char *lump_file, int lump_size)
+{
+	return;
+}
 
-	/* begin block 4 */
-		// Start line: 1773
-	/* end block 4 */
-	// End Line: 1774
+
+// [D] [T]
+void ProcessRoadsLump(char *lump_file, int lump_size)
+{
+	return;
+}
+
+// [D] [T]
+void ProcessRoadBoundsLump(char *lump_file, int lump_size)
+{
+	return;
+}
+
+// [D] [T]
+void ProcessJuncBoundsLump(char *lump_file, int lump_size)
+{
+	return;
+}
 
 // [D] [T]
 int newPositionVisible(VECTOR *pos, char *pvs, int ccx, int ccz)
@@ -263,39 +177,6 @@ int newPositionVisible(VECTOR *pos, char *pvs, int ccx, int ccz)
 
 	return 0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ PositionVisible(VECTOR *pos /*$a0*/)
- // line 400, offset 0x0005d560
-	/* begin block 1 */
-		// Start line: 401
-		// Start offset: 0x0005D560
-		// Variables:
-	// 		int dx; // $a1
-	// 		int dz; // $a0
-	// 		int cellx; // $v1
-	// 		int cellz; // $v0
-	/* end block 1 */
-	// End offset: 0x0005D61C
-	// End Line: 420
-
-	/* begin block 2 */
-		// Start line: 1666
-	/* end block 2 */
-	// End Line: 1667
-
-	/* begin block 3 */
-		// Start line: 1767
-	/* end block 3 */
-	// End Line: 1768
-
-	/* begin block 4 */
-		// Start line: 1770
-	/* end block 4 */
-	// End Line: 1771
 
 // [D] [T]
 int PositionVisible(VECTOR *pos)
@@ -332,74 +213,6 @@ int PositionVisible(VECTOR *pos)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ CheckUnpackNewRegions()
- // line 438, offset 0x0005c824
-	/* begin block 1 */
-		// Start line: 440
-		// Start offset: 0x0005C824
-		// Variables:
-	// 		AREA_LOAD_INFO regions_to_unpack[3]; // stack offset -104
-	// 		int leftright_unpack; // $a1
-	// 		int topbottom_unpack; // $a2
-	// 		int num_regions_to_unpack; // $s5
-	// 		int x; // $a2
-	// 		int z; // $v1
-	// 		int loop; // $s6
-	// 		int barrel_region; // $s1
-	// 		int sortcount; // $s4
-	// 		int i; // $v1
-	// 		int j; // $a2
-	// 		SVECTOR sortregions[4]; // stack offset -80
-	// 		unsigned short sortorder[4]; // stack offset -48
-	// 		int force_load_boundary; // $a0
-
-		/* begin block 1.1 */
-			// Start line: 539
-			// Start offset: 0x0005C9F4
-			// Variables:
-		// 		int region_to_unpack; // $s0
-		// 		Spool *spoolptr; // $a1
-
-			/* begin block 1.1.1 */
-				// Start line: 559
-				// Start offset: 0x0005CA74
-			/* end block 1.1.1 */
-			// End offset: 0x0005CB00
-			// End Line: 579
-		/* end block 1.1 */
-		// End offset: 0x0005CB00
-		// End Line: 580
-
-		/* begin block 1.2 */
-			// Start line: 584
-			// Start offset: 0x0005CB28
-		/* end block 1.2 */
-		// End offset: 0x0005CB94
-		// End Line: 594
-	/* end block 1 */
-	// End offset: 0x0005CC00
-	// End Line: 598
-
-	/* begin block 2 */
-		// Start line: 876
-	/* end block 2 */
-	// End Line: 877
-
-	/* begin block 3 */
-		// Start line: 877
-	/* end block 3 */
-	// End Line: 878
-
-	/* begin block 4 */
-		// Start line: 878
-	/* end block 4 */
-	// End Line: 879
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // FIXME: move it somewhere else
 extern int saved_leadcar_pos;
@@ -452,7 +265,7 @@ int CheckUnpackNewRegions(void)
 			regions_to_unpack[0].zoffset = 0;
 		}
 	}
-	else if (0x20 - force_load_boundary < current_barrel_region_xcell)
+	else if (32 - force_load_boundary < current_barrel_region_xcell)
 	{
 		if (region_x < cells_across >> 5)
 		{
@@ -579,60 +392,6 @@ int CheckUnpackNewRegions(void)
 	return 1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ControlMap()
- // line 612, offset 0x0005cc00
-	/* begin block 1 */
-		// Start line: 614
-		// Start offset: 0x0005CC00
-		// Variables:
-	// 		int x; // $a2
-	// 		int z; // $a1
-
-		/* begin block 1.1 */
-			// Start line: 639
-			// Start offset: 0x0005CCE4
-		/* end block 1.1 */
-		// End offset: 0x0005CCEC
-		// End Line: 640
-
-		/* begin block 1.2 */
-			// Start line: 648
-			// Start offset: 0x0005CD10
-		/* end block 1.2 */
-		// End offset: 0x0005CD20
-		// End Line: 649
-	/* end block 1 */
-	// End offset: 0x0005CD80
-	// End Line: 654
-
-	/* begin block 2 */
-		// Start line: 1306
-	/* end block 2 */
-	// End Line: 1307
-
-	/* begin block 3 */
-		// Start line: 1321
-	/* end block 3 */
-	// End Line: 1322
-
-	/* begin block 4 */
-		// Start line: 1322
-	/* end block 4 */
-	// End Line: 1323
-
-	/* begin block 5 */
-		// Start line: 1327
-	/* end block 5 */
-	// End Line: 1328
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
-extern OUT_CELL_FILE_HEADER cell_header;
-
 // [D] [T]
 void ControlMap(void)
 {
@@ -665,77 +424,6 @@ void ControlMap(void)
 
 	StartSpooling();
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitMap()
- // line 677, offset 0x0005cd80
-	/* begin block 1 */
-		// Start line: 679
-		// Start offset: 0x0005CD80
-		// Variables:
-	// 		int i; // $s0
-	// 		int tpage; // $v0
-	// 		char result[8]; // stack offset -24
-
-		/* begin block 1.1 */
-			// Start line: 707
-			// Start offset: 0x0005CE30
-
-			/* begin block 1.1.1 */
-				// Start line: 716
-				// Start offset: 0x0005CE88
-				// Variables:
-			// 		int region; // $a3
-			// 		int barrel_region; // $a1
-			// 		Spool *spoolptr; // $v1
-
-				/* begin block 1.1.1.1 */
-					// Start line: 726
-					// Start offset: 0x0005CEF4
-				/* end block 1.1.1.1 */
-				// End offset: 0x0005CF20
-				// End Line: 732
-			/* end block 1.1.1 */
-			// End offset: 0x0005CF20
-			// End Line: 733
-		/* end block 1.1 */
-		// End offset: 0x0005CF90
-		// End Line: 742
-
-		/* begin block 1.2 */
-			// Start line: 678
-			// Start offset: 0x0005CF90
-		/* end block 1.2 */
-		// End offset: 0x0005CFA8
-		// End Line: 678
-	/* end block 1 */
-	// End offset: 0x0005CFA8
-	// End Line: 744
-
-	/* begin block 2 */
-		// Start line: 1451
-	/* end block 2 */
-	// End Line: 1452
-
-	/* begin block 3 */
-		// Start line: 1475
-	/* end block 3 */
-	// End Line: 1476
-
-	/* begin block 4 */
-		// Start line: 1476
-	/* end block 4 */
-	// End Line: 1477
-
-	/* begin block 5 */
-		// Start line: 1484
-	/* end block 5 */
-	// End Line: 1485
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void InitMap(void)
@@ -811,46 +499,6 @@ void InitMap(void)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ GetVisSetAtPosition(VECTOR *pos /*$a0*/, char *tgt /*$t3*/, int *ccx /*$a1*/, int *ccz /*$a3*/)
- // line 756, offset 0x0005d6e4
-	/* begin block 1 */
-		// Start line: 757
-		// Start offset: 0x0005D6E4
-		// Variables:
-	// 		int x; // $t2
-	// 		int z; // $t1
-	// 		int cx; // $t0
-	// 		int cz; // $a2
-	// 		int rx; // $a3
-	// 		int rz; // $a0
-
-		/* begin block 1.1 */
-			// Start line: 767
-			// Start offset: 0x0005D76C
-			// Variables:
-		// 		int barrel_region_x; // $v0
-		// 		int barrel_region_z; // $a0
-		/* end block 1.1 */
-		// End offset: 0x0005D7BC
-		// End Line: 778
-	/* end block 1 */
-	// End offset: 0x0005D7BC
-	// End Line: 779
-
-	/* begin block 2 */
-		// Start line: 2681
-	/* end block 2 */
-	// End Line: 2682
-
-	/* begin block 3 */
-		// Start line: 2685
-	/* end block 3 */
-	// End Line: 2686
-
 // [D] [T] [A]
 void GetVisSetAtPosition(VECTOR *pos, char *tgt, int *ccx, int *ccz)
 {
@@ -878,100 +526,6 @@ void GetVisSetAtPosition(VECTOR *pos, char *tgt, int *ccx, int *ccz)
 		(cz - rz * MAP_REGION_SIZE) * MAP_REGION_SIZE + cx - rx * MAP_REGION_SIZE,
 		tgt);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ PVSDecode(char *output /*$s2*/, char *celldata /*$s3*/, unsigned short sz /*$s0*/, int havanaCorruptCellBodge /*$s4*/)
- // line 824, offset 0x0005cfa8
-	/* begin block 1 */
-		// Start line: 825
-		// Start offset: 0x0005CFA8
-		// Variables:
-	// 		char *decodeBuf; // $s1
-
-		/* begin block 1.1 */
-			// Start line: 825
-			// Start offset: 0x0005CFA8
-			// Variables:
-		// 		int pixelIndex; // $t0
-		// 		int i; // $a0
-		// 		int ni; // $a3
-			// Labels:
-			//		0x000008EC	spod
-
-			/* begin block 1.1.1 */
-				// Start line: 835
-				// Start offset: 0x0005CFF4
-			/* end block 1.1.1 */
-			// End offset: 0x0005CFF4
-			// End Line: 835
-
-			/* begin block 1.1.2 */
-				// Start line: 842
-				// Start offset: 0x0005D03C
-				// Variables:
-			// 		int symIndex; // $a2
-			// 		int sym; // $a0
-
-				/* begin block 1.1.2.1 */
-					// Start line: 825
-					// Start offset: 0x0005D0A8
-					// Variables:
-				// 		unsigned char *pt; // $v0
-				/* end block 1.1.2.1 */
-				// End offset: 0x0005D0A8
-				// End Line: 825
-
-				/* begin block 1.1.2.2 */
-					// Start line: 825
-					// Start offset: 0x0005D0BC
-					// Variables:
-				// 		unsigned char *pt; // $v0
-				/* end block 1.1.2.2 */
-				// End offset: 0x0005D0BC
-				// End Line: 825
-			/* end block 1.1.2 */
-			// End offset: 0x0005D104
-			// End Line: 869
-		/* end block 1.1 */
-		// End offset: 0x0005D110
-		// End Line: 872
-
-		/* begin block 1.2 */
-			// Start line: 873
-			// Start offset: 0x0005D110
-			// Variables:
-		// 		int i; // $a2
-		// 		int j; // $v1
-		// 		int sz; // $a3
-		// 		char *op; // $a1
-		/* end block 1.2 */
-		// End offset: 0x0005D1E4
-		// End Line: 904
-
-		/* begin block 1.3 */
-			// Start line: 906
-			// Start offset: 0x0005D1E4
-			// Variables:
-		// 		int i; // $v1
-		/* end block 1.3 */
-		// End offset: 0x0005D224
-		// End Line: 911
-	/* end block 1 */
-	// End offset: 0x0005D224
-	// End Line: 913
-
-	/* begin block 2 */
-		// Start line: 1725
-	/* end block 2 */
-	// End Line: 1726
-
-	/* begin block 3 */
-		// Start line: 1806
-	/* end block 3 */
-	// End Line: 1807
 
 unsigned char nybblearray[512] = { 0 };
 
@@ -1107,77 +661,6 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 	memcpy(output, decodebuf, pvs_square_sq-1);	// 110*4
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ GetPVSRegionCell2(int source_region /*$a0*/, int region /*$a1*/, int cell /*$t2*/, char *output /*$a3*/)
- // line 928, offset 0x0005d224
-	/* begin block 1 */
-		// Start line: 929
-		// Start offset: 0x0005D224
-		// Variables:
-	// 		char *bp; // $a2
-	// 		char *tbp; // $a1
-	// 		int j; // $v1
-	// 		unsigned short length; // $t0
-
-		/* begin block 1.1 */
-			// Start line: 945
-			// Start offset: 0x0005D29C
-			// Variables:
-		// 		unsigned char *pt; // $a0
-		/* end block 1.1 */
-		// End offset: 0x0005D29C
-		// End Line: 945
-
-		/* begin block 1.2 */
-			// Start line: 945
-			// Start offset: 0x0005D29C
-		/* end block 1.2 */
-		// End offset: 0x0005D29C
-		// End Line: 945
-
-		/* begin block 1.3 */
-			// Start line: 929
-			// Start offset: 0x0005D32C
-			// Variables:
-		// 		char *output; // $a0
-
-			/* begin block 1.3.1 */
-				// Start line: 929
-				// Start offset: 0x0005D32C
-				// Variables:
-			// 		int k; // $v1
-			/* end block 1.3.1 */
-			// End offset: 0x0005D35C
-			// End Line: 929
-		/* end block 1.3 */
-		// End offset: 0x0005D35C
-		// End Line: 929
-	/* end block 1 */
-	// End offset: 0x0005D35C
-	// End Line: 963
-
-	/* begin block 2 */
-		// Start line: 2027
-	/* end block 2 */
-	// End Line: 2028
-
-	/* begin block 3 */
-		// Start line: 2029
-	/* end block 3 */
-	// End Line: 2030
-
-	/* begin block 4 */
-		// Start line: 2045
-	/* end block 4 */
-	// End Line: 2046
-
-	/* begin block 5 */
-		// Start line: 2054
-	/* end block 5 */
-	// End Line: 2055
 
 // [D] [T]
 void GetPVSRegionCell2(int source_region, int region, int cell, char *output)

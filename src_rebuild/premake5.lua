@@ -17,18 +17,38 @@ end
 	
 workspace "REDRIVER2"
     configurations { "Debug", "Release", "Release_dev" }
+	platforms { "x86" } --, "x86_64" }
 
     defines { VERSION } 
+
+	filter "system:Linux"
+		buildoptions {
+            "-Wno-narrowing",
+			"-Wno-endif-labels",
+			"-Wno-write-strings",
+			"-Wno-format-security",
+			"-Wno-unused-result",
+            "-fpermissive"
+        }
+		
+		cppdialect "C++11"
+		
+	filter {"system:Linux", "platforms:x86"}
+		buildoptions {
+			"-m32"
+		}
+		
+		linkoptions {
+			"-m32"
+		}
 
 	filter "system:Windows"
 		disablewarnings { "4996", "4554", "4244", "4101", "4838", "4309" }
 
-    filter "system:Windows or linux"
-        defines { "USE_32_BIT_ADDR", "PGXP" }
-
     filter "configurations:Debug"
         defines { 
-            "DEBUG", 
+            "_DEBUG", 
+	        "DEBUG"
         }
         symbols "On"
 
@@ -83,12 +103,12 @@ project "REDRIVER2"
 	end
 
     filter "system:Windows or linux"
-        defines { "OGL", "SIMPLE_SPOOL" }
+        defines { "SIMPLE_SPOOL" }
         dependson { "PsyX" }
         links { "Psy-X", "jpeg" }
 		
 		includedirs { 
-			"PsyX"
+			"PsyX/include"
 		}
 		
 		files {
@@ -100,7 +120,6 @@ project "REDRIVER2"
 		}
 
     filter "system:Windows"
-		
         files { 
             "Windows/resource.h", 
             "Windows/Resource.rc", 
@@ -118,14 +137,6 @@ project "REDRIVER2"
         }
         
     filter "system:linux"
-        buildoptions {
-            "-Wno-narrowing",
-            "-fpermissive",
-            "-m32"
-        }
-        
-        cppdialect "C++11"
-
         includedirs {
             "/usr/include/SDL2"
         }
@@ -135,11 +146,6 @@ project "REDRIVER2"
             "openal",
             "SDL2",
             "dl",
-        }
-
-        linkoptions {
-            "-z muldefs",
-            "-m32"
         }
 		
 	filter "system:psx"
@@ -168,7 +174,7 @@ project "REDRIVER2"
 		 symbols "On"
 
     filter "configurations:Release"
-        optimize "Full"
+        optimize "Speed"
 		
 	filter "configurations:Release_dev"
 		targetsuffix "_dev"
@@ -177,4 +183,4 @@ project "REDRIVER2"
             "COLLISION_DEBUG",
 			"CUTSCENE_RECORDER"
         }
-        optimize "Full"
+        optimize "Speed"

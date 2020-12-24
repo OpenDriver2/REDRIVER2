@@ -23,28 +23,30 @@ project "Psy-X"
     includedirs { 
         SDL2_DIR.."/include",
         OPENAL_DIR.."/include",
-		OPENAL_DIR.."/include",
+		"include"
     }
 
     filter "system:Windows"
-		defines { "_WINDOWS" }
+	defines { "_WINDOWS" }
         links { 
             "opengl32",
             "SDL2", 
             "OpenAL32"
         }
-    
-        libdirs { 
-            SDL2_DIR.."/lib/x86",
-            OPENAL_DIR.."/libs/Win32",
-        }
+		
+	filter {"system:Windows", "platforms:x86"}
+		libdirs { 
+			SDL2_DIR.."/lib/x86",
+			OPENAL_DIR.."/libs/Win32",
+		}
+		
+	filter {"system:Windows", "platforms:x86_64"}
+		libdirs { 
+			SDL2_DIR.."/lib/x64",
+			OPENAL_DIR.."/libs/Win64",
+		}
 
     filter "system:linux"
-        buildoptions {
-            "-Wno-narrowing",
-            "-m32",
-        }
-
         includedirs {
             "/usr/include/SDL2"
         }
@@ -55,12 +57,5 @@ project "Psy-X"
             "SDL2",
         }
 
-        linkoptions {
-            "-m32"
-        }
-
-    filter "configurations:Release"
-        optimize "Full"
-		
-	filter "configurations:Release_dev"
-        optimize "Full"
+    filter {"configurations:Release", "configurations:Release_dev"}
+        optimize "Speed"

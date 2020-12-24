@@ -39,5 +39,6 @@ void printError(char *fmt, ...);
 #include "DR2MATH.H"
 #include "DR2LIMITS.H"
 #include "DR2TYPES.H"
+#include "DR2LOCALE.H"
 
 #endif // DRIVER2_H

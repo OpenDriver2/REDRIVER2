@@ -16,7 +16,15 @@
 #include "INLINE_C.H"
 #include "LIBMATH.H"
 
-_HANDLING_TYPE handlingType[7] =
+struct CAR_LOCALS
+{
+	LONGVECTOR4 vel;
+	LONGVECTOR4 avel;
+	int extraangulardamping;
+	int aggressive;
+};
+
+HANDLING_TYPE handlingType[7] =
 {
 	// frictionScaleRatio, aggressiveBraking, fourWheelDrive, autoBrakeOn
 	{ 32, 1, 0, 1 },
@@ -27,57 +35,6 @@ _HANDLING_TYPE handlingType[7] =
 	{ 32, 1, 0, 1 },
 	{ 29, 0, 0, 0 }
 };
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ StepCars()
- // line 66, offset 0x00082bd0
-	/* begin block 1 */
-		// Start line: 68
-		// Start offset: 0x00082BD0
-		// Variables:
-	// 		CAR_DATA **ppCar; // $s0
-	// 		CAR_DATA **end; // $s1
-
-		/* begin block 1.1 */
-			// Start line: 73
-			// Start offset: 0x00082C0C
-		/* end block 1.1 */
-		// End offset: 0x00082C0C
-		// End Line: 76
-
-		/* begin block 1.2 */
-			// Start line: 80
-			// Start offset: 0x00082C34
-		/* end block 1.2 */
-		// End offset: 0x00082C34
-		// End Line: 81
-	/* end block 1 */
-	// End offset: 0x00082C64
-	// End Line: 83
-
-	/* begin block 2 */
-		// Start line: 1357
-	/* end block 2 */
-	// End Line: 1358
-
-	/* begin block 3 */
-		// Start line: 132
-	/* end block 3 */
-	// End Line: 133
-
-	/* begin block 4 */
-		// Start line: 1358
-	/* end block 4 */
-	// End Line: 1359
-
-	/* begin block 5 */
-		// Start line: 1359
-	/* end block 5 */
-	// End Line: 1360
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void StepCars(void)
@@ -95,412 +52,6 @@ void StepCars(void)
 		ControlCarRevs(*ppCar++);
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ StepOneCar(CAR_DATA *cp /*$s1*/)
- // line 98, offset 0x00081178
-	/* begin block 1 */
-		// Start line: 99
-		// Start offset: 0x00081178
-		// Variables:
-	// 		CAR_LOCALS _cl; // stack offset -248
-	// 		CAR_LOCALS *cl; // $s3
-	// 		int i; // $s0
-	// 		int speed; // $v1
-	// 		sdPlane *SurfacePtr; // stack offset -48
-
-		/* begin block 1.1 */
-			// Start line: 122
-			// Start offset: 0x00081214
-			// Variables:
-		// 		int a; // $v1
-		// 		int b; // $a0
-		/* end block 1.1 */
-		// End offset: 0x0008127C
-		// End Line: 131
-
-		/* begin block 1.2 */
-			// Start line: 133
-			// Start offset: 0x0008127C
-			// Variables:
-		// 		LONGVECTOR deepestNormal; // stack offset -208
-		// 		LONGVECTOR deepestLever; // stack offset -192
-		// 		LONGVECTOR deepestPoint; // stack offset -176
-		// 		int lift; // $s5
-		// 		int count; // $a0
-		// 		int friToUse; // $s6
-		// 		SVECTOR *carDisp; // $a1
-
-			/* begin block 1.2.1 */
-				// Start line: 156
-				// Start offset: 0x00081314
-				// Variables:
-			// 		LONGVECTOR pointPos; // stack offset -160
-			// 		LONGVECTOR surfacePoint; // stack offset -144
-			// 		LONGVECTOR surfaceNormal; // stack offset -128
-			// 		LONGVECTOR lever; // stack offset -112
-			// 		int newLift; // $a0
-			/* end block 1.2.1 */
-			// End offset: 0x00081410
-			// End Line: 196
-
-			/* begin block 1.2.2 */
-				// Start line: 201
-				// Start offset: 0x00081428
-				// Variables:
-			// 		LONGVECTOR pointVel; // stack offset -112
-			// 		LONGVECTOR reaction; // stack offset -96
-			// 		int strikeVel; // $a2
-			// 		int componant; // $t3
-			// 		static int frictionLimit[6]; // offset 0x0
-
-				/* begin block 1.2.2.1 */
-					// Start line: 209
-					// Start offset: 0x00081428
-					// Variables:
-				// 		int lever_dot_n; // $v1
-				// 		int twistY; // $v0
-				// 		int displacementsquared; // $a0
-				// 		int denom; // $a0
-				/* end block 1.2.2.1 */
-				// End offset: 0x00081428
-				// End Line: 209
-
-				/* begin block 1.2.2.2 */
-					// Start line: 226
-					// Start offset: 0x00081630
-					// Variables:
-				// 		int loss; // $v1
-				// 		int limit; // $a1
-				/* end block 1.2.2.2 */
-				// End offset: 0x0008166C
-				// End Line: 230
-
-				/* begin block 1.2.2.3 */
-					// Start line: 235
-					// Start offset: 0x000816B8
-
-					/* begin block 1.2.2.3.1 */
-						// Start line: 237
-						// Start offset: 0x000816CC
-						// Variables:
-					// 		VECTOR direction; // stack offset -80
-					/* end block 1.2.2.3.1 */
-					// End offset: 0x000816CC
-					// End Line: 237
-
-					/* begin block 1.2.2.3.2 */
-						// Start line: 242
-						// Start offset: 0x0008170C
-						// Variables:
-					// 		VECTOR direction; // stack offset -64
-					/* end block 1.2.2.3.2 */
-					// End offset: 0x00081744
-					// End Line: 244
-				/* end block 1.2.2.3 */
-				// End offset: 0x0008179C
-				// End Line: 249
-			/* end block 1.2.2 */
-			// End offset: 0x0008179C
-			// End Line: 250
-
-			/* begin block 1.2.3 */
-				// Start line: 256
-				// Start offset: 0x0008186C
-				// Variables:
-			// 		VECTOR offset; // stack offset -112
-			/* end block 1.2.3 */
-			// End offset: 0x00081944
-			// End Line: 269
-		/* end block 1.2 */
-		// End offset: 0x00081944
-		// End Line: 270
-	/* end block 1 */
-	// End offset: 0x0008198C
-	// End Line: 282
-
-	/* begin block 2 */
-		// Start line: 196
-	/* end block 2 */
-	// End Line: 197
-
-	/* begin block 3 */
-		// Start line: 211
-	/* end block 3 */
-	// End Line: 212
-
-int impulse;
-
-// [D] [T]
-void StepOneCar(CAR_DATA* cp)
-{
-	static int frictionLimit[6] = {
-		0x3ED000, 0x178E000,
-		0x3ED000, 0x13A1000,
-		0x75C6000,0x13A1000
-	};
-
-	CAR_COSMETICS* car_cos;
-	int friToUse;
-	int lift;
-	int a, b, speed;
-	int count, i;
-	CAR_LOCALS _cl;
-	LONGVECTOR deepestNormal;
-	LONGVECTOR deepestLever;
-	LONGVECTOR deepestPoint;
-	LONGVECTOR pointPos;
-	LONGVECTOR surfacePoint;
-	LONGVECTOR surfaceNormal;
-	LONGVECTOR lever;
-	LONGVECTOR reaction;
-	VECTOR direction;
-	sdPlane* SurfacePtr;
-
-	if (cp->controlType == CONTROL_TYPE_NONE)
-		return;
-
-	SurfacePtr = NULL;
-	_cl.aggressive = handlingType[cp->hndType].aggressiveBraking;
-	_cl.extraangulardamping = 0;
-
-	i = 0;
-	do {
-		_cl.vel[i] = cp->st.n.linearVelocity[i];
-		_cl.avel[i] = cp->st.n.angularVelocity[i];
-		cp->st.n.fposition[i] = (cp->st.n.fposition[i] & 0xF) + cp->hd.where.t[i] * 16;
-
-		i++;
-	} while (i < 3);
-
-	cp->hd.acc[0] = 0;
-	cp->hd.acc[1] = -7456; // apply gravity
-	cp->hd.acc[2] = 0;
-
-	// calculate car speed
-	a = ABS(FIXEDH(_cl.vel[0]));
-	b = ABS(FIXEDH(_cl.vel[2]));
-
-	if (a < b)
-		speed = b + a / 2;
-	else
-		speed = a + b / 2;
-
-	car_cos = cp->ap.carCos;
-	lift = 0;
-
-	cp->hd.speed = speed;
-
-	gte_SetRotMatrix(&cp->hd.where);
-	gte_SetTransMatrix(&cp->hd.where);
-
-	count = 12;
-
-	if (cp->hd.where.m[1][1] > 0x800 && (count = 4, cp->controlType == CONTROL_TYPE_CIV_AI))
-	{
-		count = (cp->totalDamage != 0) << 2;
-	}
-
-	count--;
-
-	// calculate lifting factor
-	while (count >= 0)
-	{
-		gte_ldv0(&car_cos->cPoints[count]);
-
-		gte_rtv0tr();
-
-		gte_stlvnl(pointPos);
-
-		lever[0] = pointPos[0] - cp->hd.where.t[0];
-		lever[1] = pointPos[1] - cp->hd.where.t[1];
-		lever[2] = pointPos[2] - cp->hd.where.t[2];
-
-		FindSurfaceD2((VECTOR*)pointPos, (VECTOR*)surfaceNormal, (VECTOR*)&surfacePoint, &SurfacePtr);
-
-		if ((surfacePoint[1] - pointPos[1]) - 1U < 799)
-		{
-			int newLift;
-
-			newLift = FIXEDH((surfacePoint[1] - pointPos[1]) * surfaceNormal[1]);
-
-			if (lift < newLift)
-			{
-				friToUse = 0;
-
-				deepestNormal[0] = surfaceNormal[0];
-				deepestNormal[1] = surfaceNormal[1];
-				deepestNormal[2] = surfaceNormal[2];
-
-				deepestLever[0] = lever[0];
-				deepestLever[1] = lever[1];
-				deepestLever[2] = lever[2];
-
-				deepestPoint[0] = surfacePoint[0];
-				deepestPoint[1] = surfacePoint[1];
-				deepestPoint[2] = surfacePoint[2];
-
-				lift = newLift;
-
-				if (count > 3)
-					friToUse = 3;
-			}
-		}
-
-		count--;
-	}
-
-	// do lifting
-	if (lift != 0)
-	{
-		int strikeVel; // $a2
-		int componant; // $t3
-
-		int lever_dot_n; // $v1
-		int twistY; // $v0
-		int displacementsquared; // $a0
-		int denom; // $a0
-
-		lever[0] = FIXEDH(_cl.avel[1] * deepestLever[2] - _cl.avel[2] * deepestLever[1]) + _cl.vel[0];
-		lever[1] = FIXEDH(_cl.avel[2] * deepestLever[0] - _cl.avel[0] * deepestLever[2]) + _cl.vel[1];
-		lever[2] = FIXEDH(_cl.avel[0] * deepestLever[1] - _cl.avel[1] * deepestLever[0]) + _cl.vel[2];
-
-		twistY = car_cos->twistRateY;
-
-		lever_dot_n = FIXEDH(deepestLever[0] * deepestNormal[0] + deepestLever[1] * deepestNormal[1] + deepestLever[2] * deepestNormal[2]);
-		displacementsquared = FIXEDH(((deepestLever[0] * deepestLever[0] + deepestLever[1] * deepestLever[1] + deepestLever[2] * deepestLever[2]) - lever_dot_n * lever_dot_n) * twistY) + 4096;
-
-		strikeVel = (lever[0] >> 6) * (deepestNormal[0] >> 6) + (lever[1] >> 6) * (deepestNormal[1] >> 6) + (lever[2] >> 6) * (deepestNormal[2] >> 6);
-		impulse = (strikeVel / displacementsquared) * -2048;
-
-		// apply friction
-		componant = 2;
-		do {
-			int loss;
-			int limit;
-
-			limit = frictionLimit[friToUse + 2 - componant];
-			loss = lever[componant] * 67;
-
-			if (loss <= limit)
-			{
-				if (loss < -limit)
-					limit = -limit;
-				else
-					limit = loss;
-			}
-
-			reaction[componant] = FIXEDH(impulse * deepestNormal[componant] - limit);
-			componant--;
-		} while (componant >= 0);
-
-		if (impulse > 20000)
-		{
-			if (gNight == 1)
-			{
-				direction.vx = 0;
-				direction.vy = 50;
-				direction.vz = 0;
-
-				Setup_Sparks((VECTOR*)&deepestPoint, &direction, 15, 1);
-			}
-			else
-			{
-				direction.vx = 0;
-				direction.vy = 40;
-				direction.vz = 0;
-
-				Setup_Debris((VECTOR*)&deepestPoint, &direction, 10, 0);
-			}
-
-			if (SurfacePtr && (SurfacePtr->surface != 9) && (SurfacePtr->surface != 6))
-			{
-				CollisionSound(GetPlayerId(cp), cp, (impulse / 6 + (impulse >> 0x1f) >> 3) - (impulse >> 0x1f), 0);
-			}
-		}
-
-		cp->hd.acc[0] += reaction[0];
-		cp->hd.acc[1] += reaction[1];
-		cp->hd.acc[2] += reaction[2];
-
-		cp->hd.aacc[0] += FIXEDH(deepestLever[1] * reaction[2] - deepestLever[2] * reaction[1]);
-		cp->hd.aacc[1] += FIXEDH(deepestLever[2] * reaction[0] - deepestLever[0] * reaction[2]);
-		cp->hd.aacc[2] += FIXEDH(deepestLever[0] * reaction[1] - deepestLever[1] * reaction[0]);
-
-		if (lift != 0)
-		{
-			lever[0] = FIXEDH(lift * deepestNormal[0]);
-			lever[1] = FIXEDH(lift * deepestNormal[1]);
-			lever[2] = FIXEDH(lift * deepestNormal[2]);
-
-			cp->hd.where.t[0] += lever[0];
-			cp->hd.where.t[1] += lever[1];
-			cp->hd.where.t[2] += lever[2];
-
-			cp->st.n.fposition[0] += lever[0] * 16;
-			cp->st.n.fposition[1] += lever[1] * 16;
-			cp->st.n.fposition[2] += lever[2] * 16;
-
-			gte_SetTransMatrix(&cp->hd.where);
-
-			_cl.extraangulardamping = 1;
-
-			if (lift > 120)
-				cp->st.n.linearVelocity[1] = 0;
-		}
-	}
-
-	AddWheelForcesDriver1(cp, &_cl);
-	ConvertTorqueToAngularAcceleration(cp, &_cl);
-
-	cp->hd.mayBeColliding = 0;
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ GetFrictionScalesDriver1(CAR_DATA *cp /*$t0*/, CAR_LOCALS *cl /*$a1*/, int *frontFS /*$a2*/, int *rearFS /*$a3*/)
- // line 288, offset 0x0008198c
-	/* begin block 1 */
-		// Start line: 289
-		// Start offset: 0x0008198C
-		// Variables:
-	// 		_HANDLING_TYPE *hp; // $t2
-
-		/* begin block 1.1 */
-			// Start line: 306
-			// Start offset: 0x00081A1C
-			// Variables:
-		// 		int q; // $v1
-		/* end block 1.1 */
-		// End offset: 0x00081A98
-		// End Line: 314
-
-		/* begin block 1.2 */
-			// Start line: 387
-			// Start offset: 0x00081DC8
-			// Variables:
-		// 		int traction; // $a0
-		/* end block 1.2 */
-		// End offset: 0x00081E20
-		// End Line: 393
-	/* end block 1 */
-	// End offset: 0x00081E20
-	// End Line: 394
-
-	/* begin block 2 */
-		// Start line: 800
-	/* end block 2 */
-	// End Line: 801
-
-	/* begin block 3 */
-		// Start line: 807
-	/* end block 3 */
-	// End Line: 808
 
 // [D] [T]
 void GetFrictionScalesDriver1(CAR_DATA* cp, CAR_LOCALS* cl, int* frontFS, int* rearFS)
@@ -621,45 +172,6 @@ void GetFrictionScalesDriver1(CAR_DATA* cp, CAR_LOCALS* cl, int* frontFS, int* r
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ConvertTorqueToAngularAcceleration(CAR_DATA *cp /*$a0*/, CAR_LOCALS *cl /*$t5*/)
- // line 412, offset 0x00081e20
-	/* begin block 1 */
-		// Start line: 413
-		// Start offset: 0x00081E20
-		// Variables:
-	// 		LONGVECTOR nose; // stack offset -16
-	// 		int zd; // $a3
-	// 		int i; // $t4
-	// 		int twistY; // $t0
-	// 		int twistZ; // $v1
-	/* end block 1 */
-	// End offset: 0x00081F50
-	// End Line: 439
-
-	/* begin block 2 */
-		// Start line: 1035
-	/* end block 2 */
-	// End Line: 1036
-
-	/* begin block 3 */
-		// Start line: 1036
-	/* end block 3 */
-	// End Line: 1037
-
-	/* begin block 4 */
-		// Start line: 1055
-	/* end block 4 */
-	// End Line: 1056
-
-	/* begin block 5 */
-		// Start line: 1065
-	/* end block 5 */
-	// End Line: 1066
-
 // [D] [T]
 void ConvertTorqueToAngularAcceleration(CAR_DATA* cp, CAR_LOCALS* cl)
 {
@@ -687,115 +199,6 @@ void ConvertTorqueToAngularAcceleration(CAR_DATA* cp, CAR_LOCALS* cl)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ AddWheelForcesDriver1(CAR_DATA *cp /*$s2*/, CAR_LOCALS *cl /*$s7*/)
- // line 442, offset 0x00081f50
-	/* begin block 1 */
-		// Start line: 443
-		// Start offset: 0x00081F50
-		// Variables:
-	// 		int oldSpeed; // $v1
-	// 		int frictionScale; // $fp
-	// 		int frontFS; // stack offset -96
-	// 		int rearFS; // stack offset -92
-	// 		int i; // stack offset -84
-	// 		int cdx; // stack offset -80
-	// 		int cdz; // stack offset -76
-	// 		int sdx; // stack offset -72
-	// 		int sdz; // stack offset -68
-	// 		int friction_coef; // $s6
-	// 		CAR_COSMETICS *car_cos; // stack offset -64
-	// 		sdPlane *SurfacePtr; // stack offset -88
-	// 		int player_id; // stack offset -60
-
-		/* begin block 1.1 */
-			// Start line: 469
-			// Start offset: 0x000820A4
-			// Variables:
-		// 		int oldCompression; // $s5
-		// 		int newCompression; // $s3
-		// 		int susForce; // $s0
-		// 		LONGVECTOR wheelPos; // stack offset -176
-		// 		LONGVECTOR surfacePoint; // stack offset -160
-		// 		LONGVECTOR surfaceNormal; // stack offset -144
-
-			/* begin block 1.1.1 */
-				// Start line: 488
-				// Start offset: 0x00082140
-				// Variables:
-			// 		short typ; // $v1
-			/* end block 1.1.1 */
-			// End offset: 0x000821D8
-			// End Line: 497
-
-			/* begin block 1.1.2 */
-				// Start line: 513
-				// Start offset: 0x00082284
-				// Variables:
-			// 		int iVar17; // $s1
-			/* end block 1.1.2 */
-			// End offset: 0x0008231C
-			// End Line: 525
-
-			/* begin block 1.1.3 */
-				// Start line: 537
-				// Start offset: 0x00082380
-				// Variables:
-			// 		VECTOR force; // stack offset -128
-			// 		LONGVECTOR pointVel; // stack offset -112
-			// 		int lfx; // $a2
-			// 		int lfz; // $t2
-			// 		int sidevel; // $t0
-			// 		int slidevel; // $t1
-
-				/* begin block 1.1.3.1 */
-					// Start line: 554
-					// Start offset: 0x0008248C
-				/* end block 1.1.3.1 */
-				// End offset: 0x000824F0
-				// End Line: 559
-
-				/* begin block 1.1.3.2 */
-					// Start line: 592
-					// Start offset: 0x00082630
-					// Variables:
-				// 		int hack; // $v0
-				// 		int hx; // $v0
-				// 		int hz; // $v1
-				/* end block 1.1.3.2 */
-				// End offset: 0x00082630
-				// End Line: 592
-
-				/* begin block 1.1.3.3 */
-					// Start line: 645
-					// Start offset: 0x000828F0
-					// Variables:
-				// 		int a; // $v1
-				/* end block 1.1.3.3 */
-				// End offset: 0x00082928
-				// End Line: 648
-			/* end block 1.1.3 */
-			// End offset: 0x00082A04
-			// End Line: 671
-		/* end block 1.1 */
-		// End offset: 0x00082ADC
-		// End Line: 679
-	/* end block 1 */
-	// End offset: 0x00082BD0
-	// End Line: 694
-
-	/* begin block 2 */
-		// Start line: 1168
-	/* end block 2 */
-	// End Line: 1169
-
-	/* begin block 3 */
-		// Start line: 1172
-	/* end block 3 */
-	// End Line: 1173
-
 // [D] [T]
 void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 {
@@ -813,11 +216,11 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 	int friction_coef;
 	int oldSpeed;
 	int wheelspd;
-	LONGVECTOR wheelPos;
-	LONGVECTOR surfacePoint;
-	LONGVECTOR surfaceNormal;
+	LONGVECTOR4 wheelPos;
+	LONGVECTOR4 surfacePoint;
+	LONGVECTOR4 surfaceNormal;
 	VECTOR force;
-	LONGVECTOR pointVel;
+	LONGVECTOR4 pointVel;
 	int frontFS;
 	int rearFS;
 	sdPlane* SurfacePtr;
@@ -1130,5 +533,228 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 	}
 }
 
+// [D] [T]
+void StepOneCar(CAR_DATA* cp)
+{
+	static int frictionLimit[6] = {
+		0x3ED000, 0x178E000,
+		0x3ED000, 0x13A1000,
+		0x75C6000,0x13A1000
+	};
 
+	volatile int impulse;
+	CAR_COSMETICS* car_cos;
+	int friToUse;
+	int lift;
+	int a, b, speed;
+	int count, i;
+	CAR_LOCALS _cl;
+	LONGVECTOR4 deepestNormal;
+	LONGVECTOR4 deepestLever;
+	LONGVECTOR4 deepestPoint;
+	LONGVECTOR4 pointPos;
+	LONGVECTOR4 surfacePoint;
+	LONGVECTOR4 surfaceNormal;
+	LONGVECTOR4 lever;
+	LONGVECTOR4 reaction;
+	VECTOR direction;
+	sdPlane* SurfacePtr;
 
+	if (cp->controlType == CONTROL_TYPE_NONE)
+		return;
+
+	SurfacePtr = NULL;
+	_cl.aggressive = handlingType[cp->hndType].aggressiveBraking;
+	_cl.extraangulardamping = 0;
+
+	i = 0;
+	do {
+		_cl.vel[i] = cp->st.n.linearVelocity[i];
+		_cl.avel[i] = cp->st.n.angularVelocity[i];
+		cp->st.n.fposition[i] = (cp->st.n.fposition[i] & 0xF) + cp->hd.where.t[i] * 16;
+
+		i++;
+	} while (i < 3);
+
+	cp->hd.acc[0] = 0;
+	cp->hd.acc[1] = -7456; // apply gravity
+	cp->hd.acc[2] = 0;
+
+	// calculate car speed
+	a = ABS(FIXEDH(_cl.vel[0]));
+	b = ABS(FIXEDH(_cl.vel[2]));
+
+	if (a < b)
+		speed = b + a / 2;
+	else
+		speed = a + b / 2;
+
+	car_cos = cp->ap.carCos;
+	lift = 0;
+
+	cp->hd.speed = speed;
+
+	gte_SetRotMatrix(&cp->hd.where);
+	gte_SetTransMatrix(&cp->hd.where);
+
+	count = 12;
+
+	if (cp->hd.where.m[1][1] > 0x800 && (count = 4, cp->controlType == CONTROL_TYPE_CIV_AI))
+	{
+		count = (cp->totalDamage != 0) << 2;
+	}
+
+	count--;
+
+	// calculate lifting factor
+	while (count >= 0)
+	{
+		gte_ldv0(&car_cos->cPoints[count]);
+
+		gte_rtv0tr();
+
+		gte_stlvnl(pointPos);
+
+		lever[0] = pointPos[0] - cp->hd.where.t[0];
+		lever[1] = pointPos[1] - cp->hd.where.t[1];
+		lever[2] = pointPos[2] - cp->hd.where.t[2];
+
+		FindSurfaceD2((VECTOR*)pointPos, (VECTOR*)surfaceNormal, (VECTOR*)&surfacePoint, &SurfacePtr);
+
+		if ((surfacePoint[1] - pointPos[1]) - 1U < 799)
+		{
+			int newLift;
+
+			newLift = FIXEDH((surfacePoint[1] - pointPos[1]) * surfaceNormal[1]);
+
+			if (lift < newLift)
+			{
+				friToUse = 0;
+
+				deepestNormal[0] = surfaceNormal[0];
+				deepestNormal[1] = surfaceNormal[1];
+				deepestNormal[2] = surfaceNormal[2];
+
+				deepestLever[0] = lever[0];
+				deepestLever[1] = lever[1];
+				deepestLever[2] = lever[2];
+
+				deepestPoint[0] = surfacePoint[0];
+				deepestPoint[1] = surfacePoint[1];
+				deepestPoint[2] = surfacePoint[2];
+
+				lift = newLift;
+
+				if (count > 3)
+					friToUse = 3;
+			}
+		}
+
+		count--;
+	}
+
+	// do lifting
+	if (lift != 0)
+	{
+		int strikeVel; // $a2
+		int componant; // $t3
+
+		int lever_dot_n; // $v1
+		int twistY; // $v0
+		int displacementsquared; // $a0
+		int denom; // $a0
+
+		lever[0] = FIXEDH(_cl.avel[1] * deepestLever[2] - _cl.avel[2] * deepestLever[1]) + _cl.vel[0];
+		lever[1] = FIXEDH(_cl.avel[2] * deepestLever[0] - _cl.avel[0] * deepestLever[2]) + _cl.vel[1];
+		lever[2] = FIXEDH(_cl.avel[0] * deepestLever[1] - _cl.avel[1] * deepestLever[0]) + _cl.vel[2];
+
+		twistY = car_cos->twistRateY;
+
+		lever_dot_n = FIXEDH(deepestLever[0] * deepestNormal[0] + deepestLever[1] * deepestNormal[1] + deepestLever[2] * deepestNormal[2]);
+		displacementsquared = FIXEDH(((deepestLever[0] * deepestLever[0] + deepestLever[1] * deepestLever[1] + deepestLever[2] * deepestLever[2]) - lever_dot_n * lever_dot_n) * twistY) + 4096;
+
+		strikeVel = (lever[0] >> 6) * (deepestNormal[0] >> 6) + (lever[1] >> 6) * (deepestNormal[1] >> 6) + (lever[2] >> 6) * (deepestNormal[2] >> 6);
+		impulse = (strikeVel / displacementsquared) * -2048;
+
+		// apply friction
+		componant = 2;
+		do {
+			int loss;
+			int limit;
+
+			limit = frictionLimit[friToUse + 2 - componant];
+			loss = lever[componant] * 67;
+
+			if (loss <= limit)
+			{
+				if (loss < -limit)
+					limit = -limit;
+				else
+					limit = loss;
+			}
+
+			reaction[componant] = FIXEDH(impulse * deepestNormal[componant] - limit);
+			componant--;
+		} while (componant >= 0);
+
+		if (impulse > 20000)
+		{
+			if (gNight == 1)
+			{
+				direction.vx = 0;
+				direction.vy = 50;
+				direction.vz = 0;
+
+				Setup_Sparks((VECTOR*)&deepestPoint, &direction, 15, 1);
+			}
+			else
+			{
+				direction.vx = 0;
+				direction.vy = 40;
+				direction.vz = 0;
+
+				Setup_Debris((VECTOR*)&deepestPoint, &direction, 10, 0);
+			}
+
+			if (SurfacePtr && (SurfacePtr->surface != 9) && (SurfacePtr->surface != 6))
+			{
+				CollisionSound(GetPlayerId(cp), cp, (impulse / 6 + (impulse >> 0x1f) >> 3) - (impulse >> 0x1f), 0);
+			}
+		}
+
+		cp->hd.acc[0] += reaction[0];
+		cp->hd.acc[1] += reaction[1];
+		cp->hd.acc[2] += reaction[2];
+
+		cp->hd.aacc[0] += FIXEDH(deepestLever[1] * reaction[2] - deepestLever[2] * reaction[1]);
+		cp->hd.aacc[1] += FIXEDH(deepestLever[2] * reaction[0] - deepestLever[0] * reaction[2]);
+		cp->hd.aacc[2] += FIXEDH(deepestLever[0] * reaction[1] - deepestLever[1] * reaction[0]);
+
+		if (lift != 0)
+		{
+			lever[0] = FIXEDH(lift * deepestNormal[0]);
+			lever[1] = FIXEDH(lift * deepestNormal[1]);
+			lever[2] = FIXEDH(lift * deepestNormal[2]);
+
+			cp->hd.where.t[0] += lever[0];
+			cp->hd.where.t[1] += lever[1];
+			cp->hd.where.t[2] += lever[2];
+
+			cp->st.n.fposition[0] += lever[0] * 16;
+			cp->st.n.fposition[1] += lever[1] * 16;
+			cp->st.n.fposition[2] += lever[2] * 16;
+
+			gte_SetTransMatrix(&cp->hd.where);
+
+			_cl.extraangulardamping = 1;
+
+			if (lift > 120)
+				cp->st.n.linearVelocity[1] = 0;
+		}
+	}
+
+	AddWheelForcesDriver1(cp, &_cl);
+	ConvertTorqueToAngularAcceleration(cp, &_cl);
+
+	cp->hd.mayBeColliding = 0;
+}

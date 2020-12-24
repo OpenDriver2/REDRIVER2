@@ -49,6 +49,11 @@ void SfxVolume(int direction);
 void MusicVolume(int direction);
 void SaveReplay(int direction);
 void SaveGame(int direction);
+void SkipCutscene(int direction);
+
+void EnterScoreName();
+void CreateScoreNames(SCORE_ENTRY *table, PLAYER_SCORE *score, int position);
+void DrawHighScoreMenu(int selection); 
 void EnterName();
 
 char EnterScoreText[32] = { 0 };
@@ -65,6 +70,14 @@ enum MenuItemType
 };
 
 #if defined(_DEBUG) || defined(DEBUG_OPTIONS)
+
+#ifdef CUTSCENE_RECORDER
+extern void NextCutsceneRecorderPlayer(int dir);
+extern char gCutsceneRecorderPauseText[64];
+
+extern void NextChase(int dir);
+extern char gCurrentChasePauseText[64];
+#endif
 
 void SetRightWayUp(int direction)
 {
@@ -220,14 +233,6 @@ MENU_ITEM DebugJustForFunItems[] =
 MENU_HEADER DebugJustForFunHeader =
 { "Just for fun", { 0, 0, 0, 0 }, 0u, DebugJustForFunItems };
 
-#ifdef CUTSCENE_RECORDER
-extern void NextCutsceneRecorderPlayer(int dir);
-extern char gCutsceneRecorderPauseText[64];
-
-extern void NextChase(int dir);
-extern char gCurrentChasePauseText[64];
-#endif
-
 MENU_ITEM DebugOptionsItems[] =
 {
 #ifdef CUTSCENE_RECORDER
@@ -253,131 +258,126 @@ MENU_HEADER DebugOptionsHeader =
 
 MENU_ITEM YesNoRestartItems[] =
 {
-	{ "NO", 1u, 2u, NULL, MENU_QUIT_BACKMENU, NULL },
-	{ "YES", 1u, 2u, NULL, MENU_QUIT_RESTART, NULL },
+	{ G_LTXT_ID(GTXT_NO), 1u, 2u, NULL, MENU_QUIT_BACKMENU, NULL },
+	{ G_LTXT_ID(GTXT_YES), 1u, 2u, NULL, MENU_QUIT_RESTART, NULL },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM YesNoQuitItems[] =
 {
-	{ "NO", 1u, 2u, NULL, MENU_QUIT_BACKMENU, NULL },
-	{ "YES", 1u, 2u, NULL, MENU_QUIT_QUIT, NULL },
+	{ G_LTXT_ID(GTXT_NO), 1u, 2u, NULL, MENU_QUIT_BACKMENU, NULL },
+	{ G_LTXT_ID(GTXT_YES), 1u, 2u, NULL, MENU_QUIT_QUIT, NULL },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_HEADER YesNoRestartHeader =
-{ "Are You Sure?", { 0, 0, 0, 0 }, 0u, YesNoRestartItems };
+{ G_LTXT_ID(GTXT_AreYouSure), { 0, 0, 0, 0 }, 0u, YesNoRestartItems };
 
 MENU_HEADER YesNoQuitHeader =
-{ "Are You Sure?", { 0, 0, 0, 0 }, 0u, YesNoQuitItems };
+{ G_LTXT_ID(GTXT_AreYouSure), { 0, 0, 0, 0 }, 0u, YesNoQuitItems };
 
 MENU_ITEM MainPauseItems[] =
 {
-	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
-	{ "Show Map", PAUSE_TYPE_FUNC, 2u, (pauseFunc)&PauseMap, MENU_QUIT_NONE, NULL },
-	{ "Restart", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Sfx Volume", PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
-	{ "Music Volume", PAUSE_TYPE_MUSICVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
-	{ "Film Director", 1u, 2u, NULL, MENU_QUIT_DIRECTOR, NULL},
-	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ G_LTXT_ID(GTXT_Continue), 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
+	{ G_LTXT_ID(GTXT_ShowMap), PAUSE_TYPE_FUNC, 2u, (pauseFunc)&PauseMap, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_Restart), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ G_LTXT_ID(GTXT_SfxVolume), PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_MusicVolume), PAUSE_TYPE_MUSICVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_FilmDirector), 1u, 2u, NULL, MENU_QUIT_DIRECTOR, NULL},
+	{ G_LTXT_ID(GTXT_QuickReplay),1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
 #if defined(_DEBUG) || defined(DEBUG_OPTIONS)
 	{ "Debug Options", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &DebugOptionsHeader },
 #endif
-	{ "Exit", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ G_LTXT_ID(GTXT_Exit), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM MultiplayerPauseItems[] =
 {
-	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
-	{ "Restart", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Sfx Volume", PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
-	{ "Music Volume", PAUSE_TYPE_MUSICVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
-	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Exit", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ G_LTXT_ID(GTXT_Continue), 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
+	{ G_LTXT_ID(GTXT_Restart), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ G_LTXT_ID(GTXT_SfxVolume), PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_MusicVolume), PAUSE_TYPE_MUSICVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_QuickReplay),1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ G_LTXT_ID(GTXT_Exit), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
-void SkipCutscene(int dir)
-{
-	gSkipInGameCutscene = 1;
-}
-
 MENU_ITEM CutscenePauseItems[] =
 {
-	{ "Continue", 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
-	{ "Skip Cutscene", PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SkipCutscene, MENU_QUIT_CONTINUE, NULL },
-	{ "Restart", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Sfx Volume", PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
-	{ "Music Volume", PAUSE_TYPE_MUSICVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_Continue), 1u, 2u, NULL, MENU_QUIT_CONTINUE, NULL },
+	{ G_LTXT_ID(GTXT_SkipCutscene), PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SkipCutscene, MENU_QUIT_CONTINUE, NULL },
+	{ G_LTXT_ID(GTXT_Restart), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ G_LTXT_ID(GTXT_SfxVolume), PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&SfxVolume, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_MusicVolume), PAUSE_TYPE_MUSICVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
 #if defined(_DEBUG) || defined(DEBUG_OPTIONS)
 	{ "Debug Options", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &DebugOptionsHeader },
 #endif
-	{ "Exit", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ G_LTXT_ID(GTXT_Exit), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM MissionCompleteItems[] =
 {
 #ifdef PSX
-	{ "Save Game", 3u, 2u, (pauseFunc)&SaveGame, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_SaveGame), 3u, 2u, (pauseFunc)&SaveGame, MENU_QUIT_NONE, NULL },
 #endif
-	{ "Continue", 1u, 2u, NULL, MENU_QUIT_NEXTMISSION, NULL },
-	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
-	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Save Replay", PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
-	{ "Restart", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Exit", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ G_LTXT_ID(GTXT_Continue), 1u, 2u, NULL, MENU_QUIT_NEXTMISSION, NULL },
+	{ G_LTXT_ID(GTXT_FilmDirector),1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ G_LTXT_ID(GTXT_QuickReplay),1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ G_LTXT_ID(GTXT_SaveReplay), PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_Restart), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ G_LTXT_ID(GTXT_Exit), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM MissionFailedItems[6] =
 {
-	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
-	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Exit", 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
-	{ "Retry Mission",PAUSE_TYPE_SUBMENU,2u,NULL,MENU_QUIT_NONE,&YesNoRestartHeader },
-	{ "Exit", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ G_LTXT_ID(GTXT_FilmDirector),1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ G_LTXT_ID(GTXT_QuickReplay),1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ G_LTXT_ID(GTXT_Exit), 3u, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_RetryMission),PAUSE_TYPE_SUBMENU,2u,NULL,MENU_QUIT_NONE,&YesNoRestartHeader },
+	{ G_LTXT_ID(GTXT_Exit), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM TakeARideFinishedItems[] =
 {
-	{ "Restart", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
-	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Save Replay", PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
-	{ "Exit", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ G_LTXT_ID(GTXT_Restart), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ G_LTXT_ID(GTXT_FilmDirector),1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ G_LTXT_ID(GTXT_QuickReplay),1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ G_LTXT_ID(GTXT_SaveReplay), PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_Exit), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM DrivingGameFinishedItems[] =
 {
-	{ "Play Again", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ G_LTXT_ID(GTXT_PlayAgain), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
 	{ EnterScoreText, 3u, 2u, (pauseFunc)&EnterName, MENU_QUIT_NONE, NULL },
-	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
-	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Save Replay", PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
-	{ "Exit", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ G_LTXT_ID(GTXT_FilmDirector),1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ G_LTXT_ID(GTXT_QuickReplay),1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ G_LTXT_ID(GTXT_SaveReplay), PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_Exit), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM MultiplayerFinishedItems[] =
 {
-	{ "Play Again", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Save Replay", PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
-	{ "Exit", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ G_LTXT_ID(GTXT_PlayAgain), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ G_LTXT_ID(GTXT_QuickReplay),1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ G_LTXT_ID(GTXT_SaveReplay), PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_Exit), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_ITEM ChaseGameFinishedItems[] =
 {
-	{ "Play Again", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ "Film Director",1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
-	{ "Quick Replay",1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
-	{ "Save Replay", PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
-	{ "Exit", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
+	{ G_LTXT_ID(GTXT_PlayAgain), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
+	{ G_LTXT_ID(GTXT_FilmDirector),1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
+	{ G_LTXT_ID(GTXT_QuickReplay),1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ G_LTXT_ID(GTXT_SaveReplay), PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
+	{ G_LTXT_ID(GTXT_Exit), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoQuitHeader },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
@@ -399,41 +399,41 @@ MENU_ITEM InvalidPadItems[] =
 
 MENU_ITEM InvalidMultiPadItems[] =
 {
-	{ "Exit", 1u, 2u, NULL, MENU_QUIT_QUIT, NULL },
+	{ G_LTXT_ID(GTXT_Exit), 1u, 2u, NULL, MENU_QUIT_QUIT, NULL },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 
 MENU_HEADER PauseMenuHeader =
-{ "Paused", { 0, 0, 0, 0 }, 0u, MainPauseItems };
+{ G_LTXT_ID(GTXT_Paused), { 0, 0, 0, 0 }, 0u, MainPauseItems };
 
 MENU_HEADER MultiplayerPauseHeader =
-{ "Paused", { 0, 0, 0, 0 }, 0u, MultiplayerPauseItems };
+{ G_LTXT_ID(GTXT_Paused), { 0, 0, 0, 0 }, 0u, MultiplayerPauseItems };
 
 MENU_HEADER CutscenePauseMenuHeader =
-{ "Paused", { 0, 0, 0, 0 }, 0u, CutscenePauseItems };
+{ G_LTXT_ID(GTXT_Paused), { 0, 0, 0, 0 }, 0u, CutscenePauseItems };
 
 MENU_HEADER MissionCompleteHeader =
-{ "Mission Successful", { 0, 0, 0, 0 }, 0u, MissionCompleteItems };
+{ G_LTXT_ID(GTXT_MissionSuccessful), { 0, 0, 0, 0 }, 0u, MissionCompleteItems };
 
 MENU_HEADER MissionFailedHeader =
-{ "Mission Failed", { 0, 0, 0, 0 }, 0u, MissionFailedItems };
+{ G_LTXT_ID(GTXT_MissionFailed), { 0, 0, 0, 0 }, 0u, MissionFailedItems };
 
 MENU_HEADER TakeARideFinishedHeader =
-{ "Game Over", { 0, 0, 0, 0 }, 0u, TakeARideFinishedItems };
+{ G_LTXT_ID(GTXT_GameOver), { 0, 0, 0, 0 }, 0u, TakeARideFinishedItems };
 
 MENU_HEADER DrivingGameFinishedHeader =
-{ "Game Over", { 0, 0, 0, 0 }, 0u, DrivingGameFinishedItems };
+{ G_LTXT_ID(GTXT_GameOver), { 0, 0, 0, 0 }, 0u, DrivingGameFinishedItems };
 
 MENU_HEADER MultiplayerFinishedHeader =
-{ "Game Over", { 0, 0, 0, 0 }, 0u, MultiplayerFinishedItems };
+{ G_LTXT_ID(GTXT_GameOver), { 0, 0, 0, 0 }, 0u, MultiplayerFinishedItems };
 
 MENU_HEADER ChaseGameFinishedHeader =
-{ "Game Over", { 0, 0, 0, 0 }, 0u, ChaseGameFinishedItems };
+{ G_LTXT_ID(GTXT_GameOver), { 0, 0, 0, 0 }, 0u, ChaseGameFinishedItems };
 
 MENU_HEADER NoPadHeader =
 {
-	"Insert a Controller in port 1",
+	G_LTXT_ID(GTXT_InsertController1),
 	{ 0, 0, 0, 0 },
 	0u,
 	NoPadItems
@@ -441,7 +441,7 @@ MENU_HEADER NoPadHeader =
 
 MENU_HEADER NoMultiPadHeader =
 {
-	"Insert a Controller in port 2",
+	G_LTXT_ID(GTXT_InsertController2),
 	{ 0, 0, 0, 0 },
 	0u,
 	NoMultiPadItems
@@ -449,7 +449,7 @@ MENU_HEADER NoMultiPadHeader =
 
 MENU_HEADER InvalidPadHeader =
 {
-	"Unsupported controller in port 1",
+	G_LTXT_ID(GTXT_IncorrectController1),
 	{ 0, 0, 0, 0 },
 	0u,
 	InvalidPadItems
@@ -457,7 +457,7 @@ MENU_HEADER InvalidPadHeader =
 
 MENU_HEADER InvalidMultiPadHeader =
 {
-	"Unsupported controller in port 2",
+	G_LTXT_ID(GTXT_IncorrectController2),
 	{ 0, 0, 0, 0 },
 	0u,
 	InvalidMultiPadItems
@@ -465,237 +465,10 @@ MENU_HEADER InvalidMultiPadHeader =
 
 int playerwithcontrol[3] = { 0 };
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ ShowPauseMenu(PAUSEMODE mode /*$s0*/)
- // line 1004, offset 0x0006bf50
-	/* begin block 1 */
-		// Start line: 1005
-		// Start offset: 0x0006BF50
-		// Variables:
-	// 		PAUSEMODE passed_mode; // $s2
-
-		/* begin block 1.1 */
-			// Start line: 1062
-			// Start offset: 0x0006C0C0
-		/* end block 1.1 */
-		// End offset: 0x0006C140
-		// End Line: 1085
-
-		/* begin block 1.2 */
-			// Start line: 1092
-			// Start offset: 0x0006C178
-			// Variables:
-		// 		RECT rect; // stack offset -32
-		/* end block 1.2 */
-		// End offset: 0x0006C1FC
-		// End Line: 1101
-	/* end block 1 */
-	// End offset: 0x0006C2AC
-	// End Line: 1137
-
-	/* begin block 2 */
-		// Start line: 2008
-	/* end block 2 */
-	// End Line: 2009
-
-// [D] [T]
-int ShowPauseMenu(PAUSEMODE mode)
+void SkipCutscene(int direction)
 {
-	PAUSEMODE passed_mode;
-	RECT16 rect;
-
-	ReadControllers();
-
-	if (mode == PAUSEMODE_PAUSEP1)
-	{
-		playerwithcontrol[0] = 1;
-		playerwithcontrol[1] = 0;
-		playerwithcontrol[2] = 0;
-	}
-	else if (mode == PAUSEMODE_PAUSEP2) 
-	{
-		playerwithcontrol[0] = 0;
-		playerwithcontrol[1] = 1;
-		playerwithcontrol[2] = 0;
-	}
-	else 
-	{
-		playerwithcontrol[0] = 0;
-		playerwithcontrol[1] = 0;
-		playerwithcontrol[2] = 1;
-	}
-
-	SetDispMask(1);
-
-	SfxVolume(0);
-	MusicVolume(0);
-
-	StopPadVibration(0);
-	StopPadVibration(1);
-
-	InitaliseMenu(mode);
-	gDrawPauseMenus = 1;
-
-	if (NoPlayerControl == 0 && OnScoreTable(NULL) != -1 && allownameentry) 
-	{
-		gScoreEntered = 0;
-	
-		sprintf(EnterScoreText, "Enter Score");
-		sprintf(EnterNameText, "Enter Name:");
-	}
-	else
-	{
-		gScoreEntered = 1;
-		
-		sprintf(EnterScoreText, "View Table");
-		sprintf(EnterNameText, "High Scores");
-	}
-
-	passed_mode = mode;
-
-	if (mode == PAUSEMODE_PADERROR)
-		mode = PAUSEMODE_PAUSE;
-
-	PauseReturnValue = 0;
-
-	do {
-		UpdatePadData();
-
-		if (passed_mode == PAUSEMODE_PADERROR)
-		{
-			if (pad_connected == 1) 
-			{
-				InitaliseMenu(mode);
-				passed_mode = mode;
-			}
-			else 
-			{
-				InitaliseMenu(PAUSEMODE_PADERROR);
-			}
-		}
-		else 
-		{
-			if (pad_connected != 1) 
-			{
-				passed_mode = PAUSEMODE_PADERROR;
-				InitaliseMenu(PAUSEMODE_PADERROR);
-			}
-		}
-
-		if (pad_connected < 1) 
-			playerwithcontrol[2] = 1;
-
-		ControlMenu();
-		DrawGame();
-
-	} while (PauseReturnValue == 0);
-
-	gDrawPauseMenus = 0;
-
-	if (NumPlayers > 1)
-	{
-		rect.x = 0;
-		rect.w = 320;
-		rect.h = 1;
-		rect.y = current->draw.clip.y + current->draw.clip.h;
-		
-		ClearImage2(&rect, 0, 0, 0);
-		DrawGame();
-		
-		ClearImage2(&rect, 0, 0, 0);
-		DrawGame();
-	}
-
-	switch (PauseReturnValue)
-	{
-		case 1:
-			pauseflag = 0;
-			break;
-		case 2:
-			EndGame(GAMEMODE_QUIT);
-			break;
-		case 3:
-			EndGame(GAMEMODE_RESTART);
-			break;
-		case 4:
-			EndGame(GAMEMODE_DIRECTOR);
-			break;
-		case 5:
-			EndGame(GAMEMODE_REPLAY);
-			break;
-		case 7:
-			EndGame(GAMEMODE_NEXTMISSION);
-			break;
-	}
-
-	return PauseReturnValue;
+	gSkipInGameCutscene = 1;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawPauseMenus()
- // line 1139, offset 0x0006dcd4
-	/* begin block 1 */
-		// Start line: 4357
-	/* end block 1 */
-	// End Line: 4358
-
-	/* begin block 2 */
-		// Start line: 2278
-	/* end block 2 */
-	// End Line: 2279
-
-	/* begin block 3 */
-		// Start line: 4358
-	/* end block 3 */
-	// End Line: 4359
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
-// [D] [T]
-void DrawPauseMenus(void)
-{
-#if !defined(PSX) && defined(DEBUG_OPTIONS)
-	extern int g_FreeCameraEnabled;
-
-	if (g_FreeCameraEnabled)
-		return;
-#endif
-
-	if (gDrawPauseMenus && gShowMap == 0) 
-	{
-		if (gEnteringScore == 0)
-			DrawVisibleMenus();
-		else 
-			DrawHighScoreMenu(gScorePosition);
-	}
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SaveReplay(int direction /*$a0*/)
- // line 1153, offset 0x0006d9b0
-	/* begin block 1 */
-		// Start line: 3753
-	/* end block 1 */
-	// End Line: 3754
-
-	/* begin block 2 */
-		// Start line: 2306
-	/* end block 2 */
-	// End Line: 2307
-
-	/* begin block 3 */
-		// Start line: 3754
-	/* end block 3 */
-	// End Line: 3755
 
 // [D] [T]
 void SaveReplay(int direction)
@@ -730,7 +503,7 @@ void SaveReplay(int direction)
 	}
 	else
 	{
-		sprintf(filename, "CHASE.D2RP", gCurrentMissionNumber);
+		sprintf(filename, "CHASE.D2RP");// , gCurrentMissionNumber);
 	}
 #else
 	sprintf(filename, "CHASE.D2RP", gCurrentMissionNumber);
@@ -745,73 +518,17 @@ void SaveReplay(int direction)
 #endif
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SaveGame(int direction /*$a0*/)
- // line 1158, offset 0x0006d9d4
-	/* begin block 1 */
-		// Start line: 3763
-	/* end block 1 */
-	// End Line: 3764
-
-	/* begin block 2 */
-		// Start line: 3764
-	/* end block 2 */
-	// End Line: 3765
-
 // [D] [T]
 void SaveGame(int direction)
 {
 	CallMemoryCard(0x20, 1);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ EnterName()
- // line 1163, offset 0x0006d9f8
-	/* begin block 1 */
-		// Start line: 3773
-	/* end block 1 */
-	// End Line: 3774
-
-	/* begin block 2 */
-		// Start line: 3774
-	/* end block 2 */
-	// End Line: 3775
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void EnterName(void)
 {
 	EnterScoreName();
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ MaxMenuStringLength(MENU_HEADER *pMenu /*$v0*/)
- // line 1185, offset 0x0006da18
-	/* begin block 1 */
-		// Start line: 1186
-		// Start offset: 0x0006DA18
-		// Variables:
-	// 		MENU_ITEM *pItems; // $s1
-	// 		int max; // $s2
-	// 		int temp; // $s0
-	/* end block 1 */
-	// End offset: 0x0006DAD0
-	// End Line: 1206
-
-	/* begin block 2 */
-		// Start line: 3817
-	/* end block 2 */
-	// End Line: 3818
 
 // [D] [T]
 int MaxMenuStringLength(MENU_HEADER *pMenu)
@@ -821,11 +538,11 @@ int MaxMenuStringLength(MENU_HEADER *pMenu)
 	MENU_ITEM *pItems;
 
 	pItems = pMenu->MenuItems;
-	max = StringWidth(pMenu->Title);
+	max = StringWidth(GET_GAME_TXT(pMenu->Title));
 
 	while ((pItems->Type & PAUSE_TYPE_ENDITEMS) == 0)
 	{
-		temp = StringWidth(pItems->Text);
+		temp = StringWidth(GET_GAME_TXT(pItems->Text));
 
 		if (pItems->Type & (PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_MUSICVOLUME)) 
 			temp = temp + StringWidth(" 100");
@@ -840,30 +557,39 @@ int MaxMenuStringLength(MENU_HEADER *pMenu)
 }
 
 
+// [D] [T]
+void SetupMenu(MENU_HEADER *menu, int back)
+{
+	int len;
+	MENU_ITEM *pItem;
+	int numItems;
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitaliseMenu(PAUSEMODE mode /*$a2*/)
- // line 1216, offset 0x0006c2ac
-	/* begin block 1 */
-		// Start line: 1217
-		// Start offset: 0x0006C2AC
-		// Variables:
-	// 		MENU_ITEM *pItem; // $a0
-	// 		int i; // $a1
-	/* end block 1 */
-	// End offset: 0x0006C6B8
-	// End Line: 1388
+	numItems = 0;
 
-	/* begin block 2 */
-		// Start line: 2361
-	/* end block 2 */
-	// End Line: 2362
+	ActiveMenuItem = 0;
 
-	/* begin block 3 */
-		// Start line: 2441
-	/* end block 3 */
-	// End Line: 2442
+	pItem = menu->MenuItems;
+	while (pItem->Type != PAUSE_TYPE_ENDITEMS)
+	{
+		if (back && pItem == ActiveItem[VisibleMenu])
+			ActiveMenuItem = numItems;
+
+		numItems++;
+		pItem++;
+	}
+
+	ActiveMenu = menu;
+	ActiveMenu->NumItems = numItems;
+
+	len = MaxMenuStringLength(ActiveMenu);
+
+	ActiveMenu->Bound.x = ((304 - len) / 2) - 4;
+	ActiveMenu->Bound.w = len + 24;
+	ActiveMenu->Bound.y = MAX(48, ((numItems + 1) * -15 + 256) / 2);
+	ActiveMenu->Bound.h = (numItems + 1) * 15 + 10;
+
+	ActiveItem[VisibleMenu] = &ActiveMenu->MenuItems[ActiveMenuItem];
+}
 
 // [D] [T]
 void InitaliseMenu(PAUSEMODE mode)
@@ -909,7 +635,11 @@ void InitaliseMenu(PAUSEMODE mode)
 					if (NumPlayers == 1)
 					{
 						pNewMenu = &DrivingGameFinishedHeader;
-						allownameentry = 0;
+						gMissionCompletionState = mode;
+					}
+					else
+					{
+						pNewMenu = &MultiplayerFinishedHeader;
 						gMissionCompletionState = mode;
 					}
 					break;
@@ -920,13 +650,23 @@ void InitaliseMenu(PAUSEMODE mode)
 					{
 						pNewMenu = &DrivingGameFinishedHeader;
 						gMissionCompletionState = mode;
-						allownameentry = NumPlayers;
+						allownameentry = 1;
+					}
+					else
+					{
+						pNewMenu = &MultiplayerFinishedHeader;
+						gMissionCompletionState = mode;
 					}
 					break;
 				default:
 					if (NumPlayers == 1)
 					{
 						pNewMenu = &TakeARideFinishedHeader;
+						gMissionCompletionState = mode;
+					}
+					else
+					{
+						pNewMenu = &MultiplayerFinishedHeader;
 						gMissionCompletionState = mode;
 					}
 					break;
@@ -951,7 +691,7 @@ void InitaliseMenu(PAUSEMODE mode)
 					{
 						pNewMenu = &DrivingGameFinishedHeader;
 						gMissionCompletionState = mode;
-						allownameentry = NumPlayers;
+						allownameentry = 1;
 					}
 					else
 					{
@@ -962,6 +702,18 @@ void InitaliseMenu(PAUSEMODE mode)
 				case GAME_PURSUIT:
 					pNewMenu = &ChaseGameFinishedHeader;
 					gMissionCompletionState = mode;
+					break;
+				default:
+					if (NumPlayers == 1)
+					{
+						pNewMenu = &TakeARideFinishedHeader;
+						gMissionCompletionState = mode;
+					}
+					else
+					{
+						pNewMenu = &MultiplayerFinishedHeader;
+						gMissionCompletionState = mode;
+					}
 					break;
 			}
 			break;
@@ -974,9 +726,9 @@ void InitaliseMenu(PAUSEMODE mode)
 					pNewMenu = &InvalidMultiPadHeader;
 
 				if (Pads[0].type == 1)
-					pNewMenu->Title = "Incorrect controller in Port 1";
+					pNewMenu->Title = G_LTXT(GTXT_IncorrectController1);
 				else
-					pNewMenu->Title = "Incorrect controller in Port 2";
+					pNewMenu->Title = G_LTXT(GTXT_IncorrectController2);
 			}
 			else 
 			{
@@ -986,9 +738,9 @@ void InitaliseMenu(PAUSEMODE mode)
 					pNewMenu = &NoMultiPadHeader;
 
 				if (Pads[0].type == 0)
-					pNewMenu->Title = "Please insert controller into Port 1";
+					pNewMenu->Title = G_LTXT(GTXT_InsertController1);
 				else
-					pNewMenu->Title = "Please insert controller into Port 2";
+					pNewMenu->Title = G_LTXT(GTXT_InsertController2);
 			}
 			break;
 	}
@@ -997,7 +749,8 @@ void InitaliseMenu(PAUSEMODE mode)
 	if(pNewMenu)
 	{
 		VisibleMenu = 0;
-		VisibleMenus[0] = pNewMenu;
+		VisibleMenus[VisibleMenu] = pNewMenu;
+
 		SetupMenu(pNewMenu, 0);
 	}
 	else
@@ -1005,126 +758,6 @@ void InitaliseMenu(PAUSEMODE mode)
 		printError("pNewMenu is NULL!\n");
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetupMenu(MENU_HEADER *menu /*$a0*/, int back /*$a1*/)
- // line 1401, offset 0x0006c6b8
-	/* begin block 1 */
-		// Start line: 1402
-		// Start offset: 0x0006C6B8
-		// Variables:
-	// 		MENU_ITEM *pItem; // $a2
-	// 		int count; // $a3
-	/* end block 1 */
-	// End offset: 0x0006C7F4
-	// End Line: 1431
-
-	/* begin block 2 */
-		// Start line: 2819
-	/* end block 2 */
-	// End Line: 2820
-
-	/* begin block 3 */
-		// Start line: 2833
-	/* end block 3 */
-	// End Line: 2834
-
-	/* begin block 4 */
-		// Start line: 2840
-	/* end block 4 */
-	// End Line: 2841
-
-// [D] [T]
-void SetupMenu(MENU_HEADER *menu, int back)
-{
-	int len;
-	MENU_ITEM *pItem;
-	int numItems;
-
-	numItems = 0;
-
-	ActiveMenuItem = 0;
-
-	pItem = menu->MenuItems;
-	while (pItem->Type != PAUSE_TYPE_ENDITEMS)
-	{
-		if (back && pItem == ActiveItem[VisibleMenu])
-			ActiveMenuItem = numItems;
-
-		numItems++;
-		pItem++;
-	}
-
-	ActiveMenu = menu;
-	ActiveMenu->NumItems = numItems;
-
-	len = MaxMenuStringLength(ActiveMenu);
-
-	ActiveMenu->Bound.x = ((304 - len) / 2) - 4;
-	ActiveMenu->Bound.w = len + 24;
-	ActiveMenu->Bound.y = MAX(48, ((numItems + 1) * -15 + 256) / 2);
-	ActiveMenu->Bound.h = (numItems + 1) * 15 + 10;
-
-	ActiveItem[VisibleMenu] = &ActiveMenu->MenuItems[ActiveMenuItem];
-}
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawVisibleMenus()
- // line 1443, offset 0x0006c7f4
-	/* begin block 1 */
-		// Start line: 1445
-		// Start offset: 0x0006C7F4
-		// Variables:
-	// 		MENU_HEADER *pActive; // $s5
-	// 		MENU_ITEM *pItem; // $s1
-	// 		POLY_FT3 *null; // $a0
-	// 		int i; // stack offset -48
-	// 		int ypos; // $s3
-	// 		int xpos; // $fp
-	// 		int width; // $s4
-
-		/* begin block 1.1 */
-			// Start line: 1473
-			// Start offset: 0x0006C8C0
-			// Variables:
-		// 		unsigned char r; // $s6
-		// 		unsigned char b; // $s7
-		// 		int x1; // $s0
-		// 		int x2; // $s2
-		/* end block 1.1 */
-		// End offset: 0x0006CA40
-		// End Line: 1509
-	/* end block 1 */
-	// End offset: 0x0006CBE8
-	// End Line: 1528
-
-	/* begin block 2 */
-		// Start line: 2919
-	/* end block 2 */
-	// End Line: 2920
-
-	/* begin block 3 */
-		// Start line: 2932
-	/* end block 3 */
-	// End Line: 2933
-
-	/* begin block 4 */
-		// Start line: 2933
-	/* end block 4 */
-	// End Line: 2934
-
-	/* begin block 5 */
-		// Start line: 2939
-	/* end block 5 */
-	// End Line: 2940
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void DrawVisibleMenus(void)
@@ -1156,7 +789,7 @@ void DrawVisibleMenus(void)
 	
 	if (pActive->Title)
 	{
-		OutputString(pActive->Title, 2, xpos, ypos, menuWidth, 128, 32, 32);
+		OutputString(GET_GAME_TXT(pActive->Title), 2, xpos, ypos, menuWidth, 128, 32, 32);
 
 		ypos += 15;
 	}
@@ -1182,11 +815,11 @@ void DrawVisibleMenus(void)
 
 		if(pItem->Type & (PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_MUSICVOLUME))
 		{
-			width = StringWidth(pItem->Text);
+			width = StringWidth(GET_GAME_TXT(pItem->Text));
 
 			itemXpos = xpos + ((menuWidth - width) - maxPercentageWidth) / 2;
 
-			OutputString(pItem->Text, 1, itemXpos, ypos, menuWidth, r, 128, b);
+			OutputString(GET_GAME_TXT(pItem->Text), 1, itemXpos, ypos, menuWidth, r, 128, b);
 			
 			if (pItem->Type & PAUSE_TYPE_SFXVOLUME)
 				OutputString(SfxVolumeText, 1, itemXpos + width + 10, ypos, menuWidth, r, 128, b);
@@ -1195,7 +828,7 @@ void DrawVisibleMenus(void)
 		}
 		else
 		{
-			OutputString(pItem->Text, pItem->Justify, xpos, ypos, menuWidth, r, 128, b);
+			OutputString(GET_GAME_TXT(pItem->Text), pItem->Justify, xpos, ypos, menuWidth, r, 128, b);
 		}
 
 		ypos += 15;
@@ -1248,70 +881,6 @@ void DrawVisibleMenus(void)
 
 
 }
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ControlMenu()
- // line 1543, offset 0x0006cbe8
-	/* begin block 1 */
-		// Start line: 1545
-		// Start offset: 0x0006CBE8
-		// Variables:
-	// 		static int debounce; // offset 0x30
-	// 		unsigned short paddata; // $a2
-	// 		unsigned short paddirect; // $a3
-
-		/* begin block 1.1 */
-			// Start line: 1596
-			// Start offset: 0x0006CCD4
-			// Variables:
-		// 		int doit; // $v1
-		/* end block 1.1 */
-		// End offset: 0x0006CD78
-		// End Line: 1621
-
-		/* begin block 1.2 */
-			// Start line: 1675
-			// Start offset: 0x0006CF54
-			// Variables:
-		// 		int i; // $a0
-		/* end block 1.2 */
-		// End offset: 0x0006CFB8
-		// End Line: 1682
-
-		/* begin block 1.3 */
-			// Start line: 1692
-			// Start offset: 0x0006CFD8
-			// Variables:
-		// 		int i; // $a0
-		/* end block 1.3 */
-		// End offset: 0x0006D034
-		// End Line: 1703
-	/* end block 1 */
-	// End offset: 0x0006D034
-	// End Line: 1705
-
-	/* begin block 2 */
-		// Start line: 3196
-	/* end block 2 */
-	// End Line: 3197
-
-	/* begin block 3 */
-		// Start line: 3212
-	/* end block 3 */
-	// End Line: 3213
-
-	/* begin block 4 */
-		// Start line: 3213
-	/* end block 4 */
-	// End Line: 3214
-
-	/* begin block 5 */
-		// Start line: 3233
-	/* end block 5 */
-	// End Line: 3234
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void ControlMenu(void)
@@ -1481,26 +1050,6 @@ void ControlMenu(void)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ PauseMap(int direction /*$a0*/)
- // line 1710, offset 0x0006dad0
-	/* begin block 1 */
-		// Start line: 4364
-	/* end block 1 */
-	// End Line: 4365
-
-	/* begin block 2 */
-		// Start line: 4869
-	/* end block 2 */
-	// End Line: 4870
-
-	/* begin block 3 */
-		// Start line: 4870
-	/* end block 3 */
-	// End Line: 4871
-
 // [D] [T]
 void PauseMap(int direction)
 {
@@ -1514,29 +1063,6 @@ void PauseMap(int direction)
 	if (gShowMap == 0)
 		InitOverheadMap();
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SfxVolume(int direction /*$a0*/)
- // line 1725, offset 0x0006db34
-	/* begin block 1 */
-		// Start line: 1726
-		// Start offset: 0x0006DB34
-	/* end block 1 */
-	// End offset: 0x0006DC04
-	// End Line: 1744
-
-	/* begin block 2 */
-		// Start line: 4902
-	/* end block 2 */
-	// End Line: 4903
-
-	/* begin block 3 */
-		// Start line: 4905
-	/* end block 3 */
-	// End Line: 4906
 
 // [D] [T]
 void SfxVolume(int direction)
@@ -1557,34 +1083,6 @@ void SfxVolume(int direction)
 	SetMasterVolume(gMasterVolume);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ MusicVolume(int direction /*$a0*/)
- // line 1746, offset 0x0006dc04
-	/* begin block 1 */
-		// Start line: 1747
-		// Start offset: 0x0006DC04
-	/* end block 1 */
-	// End offset: 0x0006DCD4
-	// End Line: 1765
-
-	/* begin block 2 */
-		// Start line: 4942
-	/* end block 2 */
-	// End Line: 4943
-
-	/* begin block 3 */
-		// Start line: 4945
-	/* end block 3 */
-	// End Line: 4946
-
-	/* begin block 4 */
-		// Start line: 4948
-	/* end block 4 */
-	// End Line: 4949
-
 // [D] [T]
 void MusicVolume(int direction)
 {
@@ -1603,45 +1101,6 @@ void MusicVolume(int direction)
 
 	SetXMVolume(gMusicVolume);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ EnterScoreName()
- // line 1787, offset 0x0006d044
-	/* begin block 1 */
-		// Start line: 1789
-		// Start offset: 0x0006D044
-		// Variables:
-	// 		SCORE_ENTRY *table; // stack offset -40
-	// 		char *username; // $s3
-	// 		unsigned short npad; // $a1
-	// 		int so; // $s0
-	// 		int co; // $s1
-	// 		int delay; // $s2
-	// 		char c; // $a0
-	// 		char toggle; // $s6
-	/* end block 1 */
-	// End offset: 0x0006D324
-	// End Line: 1941
-
-	/* begin block 2 */
-		// Start line: 3716
-	/* end block 2 */
-	// End Line: 3717
-
-	/* begin block 3 */
-		// Start line: 3717
-	/* end block 3 */
-	// End Line: 3718
-
-	/* begin block 4 */
-		// Start line: 3718
-	/* end block 4 */
-	// End Line: 3719
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void EnterScoreName(void)
@@ -1812,32 +1271,6 @@ void EnterScoreName(void)
 	} while (true);
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DrawHighScoreMenu(int selection /*stack 0*/)
- // line 2020, offset 0x0006d694
-	/* begin block 1 */
-		// Start line: 2021
-		// Start offset: 0x0006D694
-		// Variables:
-	// 		POLY_FT3 *null; // $a0
-	// 		char text[4]; // stack offset -48
-	// 		unsigned char r; // $s3
-	// 		unsigned char g; // $s5
-	// 		unsigned char b; // $s2
-	// 		int i; // $s0
-	// 		int ypos; // $s4
-	/* end block 1 */
-	// End offset: 0x0006D9B0
-	// End Line: 2075
-
-	/* begin block 2 */
-		// Start line: 4486
-	/* end block 2 */
-	// End Line: 4487
-
 // [D] [T]
 void DrawHighScoreMenu(int selection)
 {
@@ -1850,8 +1283,8 @@ void DrawHighScoreMenu(int selection)
 	char text[8];
 
 	OutputString(EnterNameText, 2, 160, 70, 0, 128, 32, 32);
-	OutputString("Name", 1, 40, 90, 0, 128, 128, 32);
-	OutputString("Time", 4, 280, 90, 0, 128, 128, 32);
+	OutputString(G_LTXT(GTXT_Name), 1, 40, 90, 0, 128, 128, 32);
+	OutputString(G_LTXT(GTXT_Time), 4, 280, 90, 0, 128, 128, 32);
 
 	ypos = 110;
 
@@ -1918,18 +1351,6 @@ void DrawHighScoreMenu(int selection)
 	current->primptr += sizeof(POLY_FT3);
 }
 
-//*Offset 0x6D324, from D : \driver2\game\C\PAUSE.C(lines 1943..2011)
-//* Stack frame base $sp, size 80
-//* Saved registers at offset - 4: s0 s1 s2 s3 s4 s5 s6 s7 fp ra
-//* /
-//void /*$ra*/ CreateScoreNames(SCORE_ENTRY* table /*$s0*/, PLAYER_SCORE* score /*stack 4*/, int position /*stack 8*/)
-//{ // line 1, offset 0x6d324
-//	char* text; // $s1
-//	int min; // $t1
-//	int frac; // $v0
-//	int i; // $s5
-//} // line 69, offset 0x6d664
-
 // [D] [T]
 void CreateScoreNames(SCORE_ENTRY* table, PLAYER_SCORE* score, int position)
 {
@@ -1952,6 +1373,7 @@ void CreateScoreNames(SCORE_ENTRY* table, PLAYER_SCORE* score, int position)
 			text = "Cones";
 			break;
 		default:
+			printError("CreateScoreNames: Invalid game type\n");
 			return;
 	}
 
@@ -1993,4 +1415,157 @@ void CreateScoreNames(SCORE_ENTRY* table, PLAYER_SCORE* score, int position)
 		i++;
 	} while (i < 5);
 
+}
+
+
+// [D] [T]
+int ShowPauseMenu(PAUSEMODE mode)
+{
+	PAUSEMODE passed_mode;
+	RECT16 rect;
+
+	ReadControllers();
+
+	if (mode == PAUSEMODE_PAUSEP1)
+	{
+		playerwithcontrol[0] = 1;
+		playerwithcontrol[1] = 0;
+		playerwithcontrol[2] = 0;
+	}
+	else if (mode == PAUSEMODE_PAUSEP2)
+	{
+		playerwithcontrol[0] = 0;
+		playerwithcontrol[1] = 1;
+		playerwithcontrol[2] = 0;
+	}
+	else
+	{
+		playerwithcontrol[0] = 0;
+		playerwithcontrol[1] = 0;
+		playerwithcontrol[2] = 1;
+	}
+
+	SetDispMask(1);
+
+	SfxVolume(0);
+	MusicVolume(0);
+
+	StopPadVibration(0);
+	StopPadVibration(1);
+
+	InitaliseMenu(mode);
+	gDrawPauseMenus = 1;
+
+	if (NoPlayerControl == 0 && OnScoreTable(NULL) != -1 && allownameentry)
+	{
+		gScoreEntered = 0;
+
+		sprintf(EnterScoreText, "Enter Score");
+		sprintf(EnterNameText, "Enter Name:");
+	}
+	else
+	{
+		gScoreEntered = 1;
+
+		sprintf(EnterScoreText, "View Table");
+		sprintf(EnterNameText, "High Scores");
+	}
+
+	passed_mode = mode;
+
+	if (mode == PAUSEMODE_PADERROR)
+		mode = PAUSEMODE_PAUSE;
+
+	PauseReturnValue = 0;
+
+	do {
+		UpdatePadData();
+
+		if (passed_mode == PAUSEMODE_PADERROR)
+		{
+			if (pad_connected == 1)
+			{
+				InitaliseMenu(mode);
+				passed_mode = mode;
+			}
+			else
+			{
+				InitaliseMenu(PAUSEMODE_PADERROR);
+			}
+		}
+		else
+		{
+			if (pad_connected != 1)
+			{
+				passed_mode = PAUSEMODE_PADERROR;
+				InitaliseMenu(PAUSEMODE_PADERROR);
+			}
+		}
+
+		if (pad_connected < 1)
+			playerwithcontrol[2] = 1;
+
+		ControlMenu();
+		DrawGame();
+
+	} while (PauseReturnValue == 0);
+
+	gDrawPauseMenus = 0;
+
+	if (NumPlayers > 1)
+	{
+		rect.x = 0;
+		rect.w = 320;
+		rect.h = 1;
+		rect.y = current->draw.clip.y + current->draw.clip.h;
+
+		ClearImage2(&rect, 0, 0, 0);
+		DrawGame();
+
+		ClearImage2(&rect, 0, 0, 0);
+		DrawGame();
+	}
+
+	switch (PauseReturnValue)
+	{
+	case 1:
+		pauseflag = 0;
+		break;
+	case 2:
+		EndGame(GAMEMODE_QUIT);
+		break;
+	case 3:
+		EndGame(GAMEMODE_RESTART);
+		break;
+	case 4:
+		EndGame(GAMEMODE_DIRECTOR);
+		break;
+	case 5:
+		EndGame(GAMEMODE_REPLAY);
+		break;
+	case 7:
+		EndGame(GAMEMODE_NEXTMISSION);
+		break;
+	}
+
+	return PauseReturnValue;
+}
+
+// [D] [T]
+void DrawPauseMenus(void)
+{
+#if !defined(PSX) && defined(DEBUG_OPTIONS)
+	extern int g_FreeCameraEnabled;
+
+	if (g_FreeCameraEnabled)
+		return;
+#endif
+
+	if (gDrawPauseMenus && gShowMap == 0)
+	{
+		if (gEnteringScore == 0)
+			DrawVisibleMenus();
+		else
+			DrawHighScoreMenu(gScorePosition);
+	}
 }

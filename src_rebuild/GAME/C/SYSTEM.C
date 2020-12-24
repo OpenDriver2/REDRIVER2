@@ -93,7 +93,7 @@ void sys_tempfree()
 }
 #else
 
-char g_allocatedMem[0x200000];			// 0x137400 (_ramsize). TODO: use real malloc
+char g_allocatedMem[0x200000];			// 0x137400 (_ramsize). TODO: use real malloc  size: 870332
 char* mallocptr = g_allocatedMem;
 const char* mallocptr_start = g_allocatedMem;
 
@@ -149,35 +149,6 @@ char g_CurrentLevelFileName[64];
 
 // TODO: to game vars
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ClearMem(char *mem /*$a0*/, int size /*$a1*/)
- // line 389, offset 0x0007f3e8
-	/* begin block 1 */
-		// Start line: 390
-		// Start offset: 0x0007F3E8
-		// Variables:
-	// 		char *end; // $v1
-	/* end block 1 */
-	// End offset: 0x0007F47C
-	// End Line: 416
-
-	/* begin block 2 */
-		// Start line: 2270
-	/* end block 2 */
-	// End Line: 2271
-
-	/* begin block 3 */
-		// Start line: 778
-	/* end block 3 */
-	// End Line: 779
-
-	/* begin block 4 */
-		// Start line: 2273
-	/* end block 4 */
-	// End Line: 2274
-
 // [D] [T]
 void ClearMem(char* mem, int size)
 {
@@ -213,32 +184,6 @@ void ClearMem(char* mem, int size)
 #endif // !PSX
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ setMem8(unsigned char *mem /*$a0*/, unsigned char val /*$a1*/, int size /*$a2*/)
- // line 427, offset 0x0007f47c
-	/* begin block 1 */
-		// Start line: 428
-		// Start offset: 0x0007F47C
-		// Variables:
-	// 		unsigned char *end; // $v1
-	// 		unsigned long lval; // $a3
-	/* end block 1 */
-	// End offset: 0x0007F524
-	// End Line: 459
-
-	/* begin block 2 */
-		// Start line: 2334
-	/* end block 2 */
-	// End Line: 2335
-
-	/* begin block 3 */
-		// Start line: 2346
-	/* end block 3 */
-	// End Line: 2347
-
 // [D] [T]
 void setMem8(unsigned char* mem, unsigned char val, int size)
 {
@@ -247,32 +192,6 @@ void setMem8(unsigned char* mem, unsigned char val, int size)
 
 	// TODO: check alignment/bounds?
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ setMem16(unsigned short *mem /*$a0*/, unsigned short val /*$a1*/, int size /*$a2*/)
- // line 469, offset 0x0007f524
-	/* begin block 1 */
-		// Start line: 470
-		// Start offset: 0x0007F524
-		// Variables:
-	// 		unsigned short *end; // $a3
-	// 		unsigned long lval; // $a2
-	/* end block 1 */
-	// End offset: 0x0007F5B4
-	// End Line: 495
-
-	/* begin block 2 */
-		// Start line: 2424
-	/* end block 2 */
-	// End Line: 2425
-
-	/* begin block 3 */
-		// Start line: 2435
-	/* end block 3 */
-	// End Line: 2436
 
 // [D] [T]
 void setMem16(ushort* mem, ushort val, int size)
@@ -283,24 +202,6 @@ void setMem16(ushort* mem, ushort val, int size)
 	// TODO: check alignment/bounds?
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ Init_FileSystem()
- // line 580, offset 0x0007f848
-	/* begin block 1 */
-		// Start line: 1160
-	/* end block 1 */
-	// End Line: 1161
-
-	/* begin block 2 */
-		// Start line: 4149
-	/* end block 2 */
-	// End Line: 4150
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [T]
 void Init_FileSystem(void)
 {
@@ -309,39 +210,6 @@ void Init_FileSystem(void)
 
 	// Driver 1 were looking up level files on CD...
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DoCDRetry()
- // line 622, offset 0x0007f870
-	/* begin block 1 */
-		// Start line: 624
-		// Start offset: 0x0007F870
-		// Variables:
-	// 		static int retries; // offset 0xc
-	// 		unsigned char result[8]; // stack offset -16
-	/* end block 1 */
-	// End offset: 0x0007F8B8
-	// End Line: 633
-
-	/* begin block 2 */
-		// Start line: 4231
-	/* end block 2 */
-	// End Line: 4232
-
-	/* begin block 3 */
-		// Start line: 4232
-	/* end block 3 */
-	// End Line: 4233
-
-	/* begin block 4 */
-		// Start line: 4235
-	/* end block 4 */
-	// End Line: 4236
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 int gNumCDRetries = 0;
 
@@ -356,26 +224,6 @@ void DoCDRetry(void)
 		gNumCDRetries = 0;
 	}
 }
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ Loadfile(char *name /*$a2*/, char *addr /*$s2*/)
- // line 646, offset 0x0007f354
-	/* begin block 1 */
-		// Start line: 647
-		// Start offset: 0x0007F354
-		// Variables:
-	// 		char namebuffer[64]; // stack offset -88
-	// 		unsigned char result[8]; // stack offset -24
-	// 		int nread; // $s0
-	/* end block 1 */
-	// End offset: 0x0007F3E8
-	// End Line: 670
-
-	/* begin block 2 */
-		// Start line: 1292
-	/* end block 2 */
-	// End Line: 1293
 
 // loads whole file into buffer
 // [D] [T]
@@ -431,36 +279,6 @@ int Loadfile(char* name, char* addr)
 	return 0;
 #endif // PSX
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ LoadfileSeg(char *name /*$v0*/, char *addr /*$s1*/, int offset /*$s5*/, int loadsize /*$fp*/)
- // line 759, offset 0x0007e9d0
-	/* begin block 1 */
-		// Start line: 760
-		// Start offset: 0x0007E9D0
-		// Variables:
-	// 		char namebuffer[64]; // stack offset -2192
-	// 		unsigned char result[8]; // stack offset -2128
-	// 		int sector; // $s2
-	// 		int nsectors; // $s5
-	// 		char sectorbuffer[2048]; // stack offset -2120
-	// 		CdlFILE info; // stack offset -72
-	// 		CdlLOC pos; // stack offset -48
-	// 		int i; // $a2
-	// 		int toload; // $s4
-	// 		int first; // $a0
-	/* end block 1 */
-	// End offset: 0x0007ECF0
-	// End Line: 879
-
-	/* begin block 2 */
-		// Start line: 1518
-	/* end block 2 */
-	// End Line: 1519
-
 
 // loads file partially into buffer
 // [D] [T]
@@ -598,30 +416,6 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ReportMode(int on /*$s0*/)
- // line 952, offset 0x0007f8b8
-	/* begin block 1 */
-		// Start line: 953
-		// Start offset: 0x0007F8B8
-		// Variables:
-	// 		static unsigned char param[8]; // offset 0x0
-	/* end block 1 */
-	// End offset: 0x0007F8F4
-	// End Line: 967
-
-	/* begin block 2 */
-		// Start line: 4571
-	/* end block 2 */
-	// End Line: 4572
-
-	/* begin block 3 */
-		// Start line: 4891
-	/* end block 3 */
-	// End Line: 4892
-
 // [D] [T]
 void ReportMode(int on)
 {
@@ -638,29 +432,6 @@ void ReportMode(int on)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ data_ready()
- // line 978, offset 0x0007fa44
-	/* begin block 1 */
-		// Start line: 5546
-	/* end block 1 */
-	// End Line: 5547
-
-	/* begin block 2 */
-		// Start line: 1956
-	/* end block 2 */
-	// End Line: 1957
-
-	/* begin block 3 */
-		// Start line: 5547
-	/* end block 3 */
-	// End Line: 5548
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 static unsigned char endread = 0;
 static unsigned char load_complete = 0;
 
@@ -673,33 +444,6 @@ void data_ready(void)
 		load_complete = 1;
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ sector_ready(unsigned char intr /*$a0*/, unsigned char *result /*$a1*/)
- // line 987, offset 0x0007fa74
-	/* begin block 1 */
-		// Start line: 988
-		// Start offset: 0x0007FA74
-
-		/* begin block 1.1 */
-			// Start line: 1004
-			// Start offset: 0x0007FAE4
-			// Variables:
-		// 		CdlLOC p; // stack offset -16
-		/* end block 1.1 */
-		// End offset: 0x0007FB34
-		// End Line: 1014
-	/* end block 1 */
-	// End offset: 0x0007FB44
-	// End Line: 1015
-
-	/* begin block 2 */
-		// Start line: 5564
-	/* end block 2 */
-	// End Line: 5565
 
 static int current_sector = 0; // offset 0xAB27C
 static char* current_address = NULL; // offset 0xAB288
@@ -745,30 +489,6 @@ void sector_ready(unsigned char intr, unsigned char* result)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ loadsectors(char *addr /*$a0*/, int sector /*$v0*/, int nsectors /*$a2*/)
- // line 1017, offset 0x0007f904
-	/* begin block 1 */
-		// Start line: 1018
-		// Start offset: 0x0007F904
-		// Variables:
-	// 		CdlLOC pos; // stack offset -16
-	/* end block 1 */
-	// End offset: 0x0007F984
-	// End Line: 1035
-
-	/* begin block 2 */
-		// Start line: 5021
-	/* end block 2 */
-	// End Line: 5022
-
-	/* begin block 3 */
-		// Start line: 5026
-	/* end block 3 */
-	// End Line: 5027
 #ifdef PSX
 // [D] [T]
 void loadsectors(char* addr, int sector, int nsectors)
@@ -820,43 +540,6 @@ void loadsectorsPC(char* filename, char* addr, int sector, int nsectors)
 }
 #endif // PSX
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ EnableDisplay()
- // line 1221, offset 0x0007f984
-	/* begin block 1 */
-		// Start line: 1223
-		// Start offset: 0x0007F984
-		// Variables:
-	// 		int i; // $s1
-	/* end block 1 */
-	// End offset: 0x0007F9F0
-	// End Line: 1230
-
-	/* begin block 2 */
-		// Start line: 5256
-	/* end block 2 */
-	// End Line: 5257
-
-	/* begin block 3 */
-		// Start line: 5443
-	/* end block 3 */
-	// End Line: 5444
-
-	/* begin block 4 */
-		// Start line: 5444
-	/* end block 4 */
-	// End Line: 5445
-
-	/* begin block 5 */
-		// Start line: 5446
-	/* end block 5 */
-	// End Line: 5447
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void EnableDisplay(void)
 {
@@ -869,69 +552,11 @@ void EnableDisplay(void)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ DisableDisplay()
- // line 1239, offset 0x0007f9f0
-	/* begin block 1 */
-		// Start line: 5472
-	/* end block 1 */
-	// End Line: 5473
-
-	/* begin block 2 */
-		// Start line: 5482
-	/* end block 2 */
-	// End Line: 5483
-
-	/* begin block 3 */
-		// Start line: 5483
-	/* end block 3 */
-	// End Line: 5484
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void DisableDisplay(void)
 {
 	SetDispMask(0);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SwapDrawBuffers()
- // line 1253, offset 0x0007f6fc
-	/* begin block 1 */
-		// Start line: 1255
-		// Start offset: 0x0007F6FC
-	/* end block 1 */
-	// End offset: 0x0007F7C0
-	// End Line: 1303
-
-	/* begin block 2 */
-		// Start line: 4524
-	/* end block 2 */
-	// End Line: 4525
-
-	/* begin block 3 */
-		// Start line: 2506
-	/* end block 3 */
-	// End Line: 2507
-
-	/* begin block 4 */
-		// Start line: 4525
-	/* end block 4 */
-	// End Line: 4526
-
-	/* begin block 5 */
-		// Start line: 4535
-	/* end block 5 */
-	// End Line: 4536
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 int DoNotSwap = 0;
 DB* MPlast[2];
@@ -973,31 +598,6 @@ void SwapDrawBuffers(void)
 	ClearCurrentDrawBuffers();
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SwapDrawBuffers2(int player /*$s0*/)
- // line 1310, offset 0x0007ecf0
-	/* begin block 1 */
-		// Start line: 1311
-		// Start offset: 0x0007ECF0
-		// Variables:
-	// 		int toggle; // $v1
-	/* end block 1 */
-	// End offset: 0x0007EDDC
-	// End Line: 1340
-
-	/* begin block 2 */
-		// Start line: 2221
-	/* end block 2 */
-	// End Line: 2222
-
-	/* begin block 3 */
-		// Start line: 2653
-	/* end block 3 */
-	// End Line: 2654
-
 // [D] [T]
 void SwapDrawBuffers2(int player)
 {
@@ -1032,24 +632,6 @@ void SwapDrawBuffers2(int player)
 	current->primptr = current->primtab;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ UpdatePadData()
- // line 1349, offset 0x0007fa10
-	/* begin block 1 */
-		// Start line: 5702
-	/* end block 1 */
-	// End Line: 5703
-
-	/* begin block 2 */
-		// Start line: 5703
-	/* end block 2 */
-	// End Line: 5704
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 short paddp;
 short padd;
 
@@ -1066,44 +648,6 @@ void UpdatePadData(void)
 	SwitchMappings(pauseflag || CurrentGameMode == GAMEMODE_DIRECTOR);
 #endif
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetupDrawBuffers()
- // line 1364, offset 0x0007eddc
-	/* begin block 1 */
-		// Start line: 1366
-		// Start offset: 0x0007EDDC
-		// Variables:
-	// 		RECT rect; // stack offset -24
-	// 		int i; // $v1
-	/* end block 1 */
-	// End offset: 0x0007EF0C
-	// End Line: 1411
-
-	/* begin block 2 */
-		// Start line: 2745
-	/* end block 2 */
-	// End Line: 2746
-
-	/* begin block 3 */
-		// Start line: 2770
-	/* end block 3 */
-	// End Line: 2771
-
-	/* begin block 4 */
-		// Start line: 2771
-	/* end block 4 */
-	// End Line: 2772
-
-	/* begin block 5 */
-		// Start line: 2775
-	/* end block 5 */
-	// End Line: 2776
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
 
 // [D] [T]
 void SetupDrawBuffers(void)
@@ -1143,39 +687,6 @@ void SetupDrawBuffers(void)
 	ClearImage(&rect, 0, 0, 0);
 	DrawSync(0);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetupDrawBufferData(int num_players /*stack 0*/)
- // line 1429, offset 0x0007ef0c
-	/* begin block 1 */
-		// Start line: 1430
-		// Start offset: 0x0007EF0C
-		// Variables:
-	// 		unsigned long *otpt; // $s2
-	// 		unsigned char *primpt; // $s1
-	// 		unsigned char *PRIMpt; // $fp
-	// 		int x[2]; // stack offset -72
-	// 		int y[2]; // stack offset -64
-	// 		int i; // $s3
-	// 		int j; // $s6
-	// 		int toggle; // $s7
-	// 		int height; // stack offset -56
-	/* end block 1 */
-	// End offset: 0x0007F118
-	// End Line: 1523
-
-	/* begin block 2 */
-		// Start line: 2915
-	/* end block 2 */
-	// End Line: 2916
-
-	/* begin block 3 */
-		// Start line: 2934
-	/* end block 3 */
-	// End Line: 2935
 
 // [D] [T]
 void SetupDrawBufferData(int num_players)
@@ -1219,18 +730,18 @@ void SetupDrawBufferData(int num_players)
 		for (j = 0; j < num_players; j++)
 		{
 			u_long* otpt;
-			unsigned char* primpt;
-			unsigned char* PRIMpt;
+			u_char* primpt;
+			u_char* PRIMpt;
 
 			if (toggle)
 			{
 				otpt = (u_long*)_OT2;
-				primpt = PRIMpt = (unsigned char*)_primTab2;
+				primpt = PRIMpt = (u_char*)_primTab2;
 			}
 			else
 			{
 				otpt = (u_long*)_OT1;
-				primpt = PRIMpt = (unsigned char*)_primTab1;
+				primpt = PRIMpt = (u_char*)_primTab1;
 			}
 
 			toggle ^= 1;
@@ -1254,22 +765,6 @@ void SetupDrawBufferData(int num_players)
 	aspect.m[2][2] = 4096;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitaliseDrawEnv(DB *pBuff /*$s0*/, int x /*$s4*/, int y /*$s3*/, int w /*$s1*/, int h /*stack 16*/)
- // line 1535, offset 0x0007f7c0
-	/* begin block 1 */
-		// Start line: 4857
-	/* end block 1 */
-	// End Line: 4858
-
-	/* begin block 2 */
-		// Start line: 5090
-	/* end block 2 */
-	// End Line: 5091
-
 // [D] [T]
 void InitaliseDrawEnv(DB* pBuff, int x, int y, int w, int h)
 {
@@ -1285,29 +780,6 @@ void InitaliseDrawEnv(DB* pBuff, int x, int y, int w, int h)
 	pBuff[1].draw.dfe = 1;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ResetCityType()
- // line 1566, offset 0x0007f5b4
-	/* begin block 1 */
-		// Start line: 3557
-	/* end block 1 */
-	// End Line: 3558
-
-	/* begin block 2 */
-		// Start line: 4629
-	/* end block 2 */
-	// End Line: 4630
-
-	/* begin block 3 */
-		// Start line: 4630
-	/* end block 3 */
-	// End Line: 4631
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 void ResetCityType(void)
 {
@@ -1320,40 +792,6 @@ CITYTYPE GetCityType()
 {
 	return lasttype;
 }
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetCityType(CITYTYPE type /*$a0*/)
- // line 1577, offset 0x0007f118
-	/* begin block 1 */
-		// Start line: 1578
-		// Start offset: 0x0007F118
-		// Variables:
-	// 		CdlFILE cdfile; // stack offset -120
-	// 		XYPAIR *info; // $s2
-	// 		char namebuffer[64]; // stack offset -96
-	// 		unsigned char result[8]; // stack offset -32
-	// 		int i; // $a2
-	// 		int sector; // $s0
-	/* end block 1 */
-	// End offset: 0x0007F338
-	// End Line: 1655
-
-	/* begin block 2 */
-		// Start line: 3260
-	/* end block 2 */
-	// End Line: 3261
-
-	/* begin block 3 */
-		// Start line: 3315
-	/* end block 3 */
-	// End Line: 3316
-
-	/* begin block 4 */
-		// Start line: 3317
-	/* end block 4 */
-	// End Line: 3318
 
 // [D] [T]
 void SetCityType(CITYTYPE type)
@@ -1468,29 +906,6 @@ void SetCityType(CITYTYPE type)
 #endif // PSX
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ FileExists(char *filename /*$a2*/)
- // line 1682, offset 0x0007f5c8
-	/* begin block 1 */
-		// Start line: 1683
-		// Start offset: 0x0007F5C8
-		// Variables:
-	// 		CdlFILE cdfile; // stack offset -176
-	// 		char namebuffer[128]; // stack offset -152
-	// 		unsigned char result[8]; // stack offset -24
-	// 		int retries; // $s1
-	/* end block 1 */
-	// End offset: 0x0007F640
-	// End Line: 1708
-
-	/* begin block 2 */
-		// Start line: 4861
-	/* end block 2 */
-	// End Line: 4862
-
 // [D] [T]
 int FileExists(char* filename)
 {
@@ -1528,32 +943,6 @@ int FileExists(char* filename)
 	return 0;
 #endif // PSX
 }
-
-
-
-// decompiled code
-// original method signature: 
-// CDTYPE /*$ra*/ DiscSwapped(char *filename /*$s1*/)
- // line 1723, offset 0x0007f640
-	/* begin block 1 */
-		// Start line: 1724
-		// Start offset: 0x0007F640
-		// Variables:
-	// 		CdlFILE cdfile; // stack offset -40
-	// 		int ret; // $v1
-	/* end block 1 */
-	// End offset: 0x0007F6FC
-	// End Line: 1762
-
-	/* begin block 2 */
-		// Start line: 4934
-	/* end block 2 */
-	// End Line: 4935
-
-	/* begin block 3 */
-		// Start line: 4950
-	/* end block 3 */
-	// End Line: 4951
 
 // [D] [T]
 CDTYPE DiscSwapped(char* filename)
@@ -1598,8 +987,3 @@ CDTYPE DiscSwapped(char* filename)
 	return ret;
 #endif
 }
-
-
-
-
-

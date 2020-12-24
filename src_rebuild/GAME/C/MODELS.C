@@ -20,34 +20,6 @@ int num_models_in_pack = 0;
 unsigned short *Low2HighDetailTable = NULL;
 unsigned short *Low2LowerDetailTable = NULL;
 
-// decompiled code
-// original method signature: 
-// void /*$ra*/ ProcessMDSLump(char *lump_file /*$a0*/, int lump_size /*$a1*/)
- // line 33, offset 0x00064cfc
-	/* begin block 1 */
-		// Start line: 34
-		// Start offset: 0x00064CFC
-		// Variables:
-	// 		int i; // $a2
-	// 		int size; // $v0
-	// 		int modelamt; // $a3
-	// 		char *mdsfile; // $a0
-	// 		MODEL *model; // $a0
-	// 		MODEL *parentmodel; // $a1
-	/* end block 1 */
-	// End offset: 0x00064E6C
-	// End Line: 94
-
-	/* begin block 2 */
-		// Start line: 66
-	/* end block 2 */
-	// End Line: 67
-
-	/* begin block 3 */
-		// Start line: 78
-	/* end block 3 */
-	// End Line: 79
-
 // [A]
 int staticModelSlotBitfield[48];
 
@@ -155,54 +127,6 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 		model->poly_block += (int)(char*)model;
 	}
 }
-
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ ProcessCarModelLump(char *lump_ptr /*$s2*/, int lump_size /*$a1*/)
- // line 212, offset 0x00064e6c
-	/* begin block 1 */
-		// Start line: 214
-		// Start offset: 0x00064E6C
-		// Variables:
-	// 		int offset; // $a0
-	// 		int i; // $s3
-	// 		int car_model; // $a0
-	// 		int specMemReq; // $s4
-
-		/* begin block 1.1 */
-			// Start line: 231
-			// Start offset: 0x00064EB0
-			// Variables:
-		// 		MODEL *model; // $v0
-		// 		int mem; // $a1
-		/* end block 1.1 */
-		// End offset: 0x00064F88
-		// End Line: 286
-	/* end block 1 */
-	// End offset: 0x00065134
-	// End Line: 348
-
-	/* begin block 2 */
-		// Start line: 381
-	/* end block 2 */
-	// End Line: 382
-
-	/* begin block 3 */
-		// Start line: 456
-	/* end block 3 */
-	// End Line: 457
-
-	/* begin block 4 */
-		// Start line: 457
-	/* end block 4 */
-	// End Line: 458
-
-	/* begin block 5 */
-		// Start line: 459
-	/* end block 5 */
-	// End Line: 460
 
 // [D] [T]
 int ProcessCarModelLump(char *lump_ptr, int lump_size)
@@ -331,39 +255,6 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 }
 
 
-
-// decompiled code
-// original method signature: 
-// MODEL * /*$ra*/ GetCarModel(char *src /*$s2*/, char **dest /*$s1*/, int KeepNormals /*$s3*/)
- // line 391, offset 0x00065134
-	/* begin block 1 */
-		// Start line: 392
-		// Start offset: 0x00065134
-		// Variables:
-	// 		MODEL *model; // $s0
-	// 		int size; // $a2
-	// 		char *mem; // $v1
-
-		/* begin block 1.1 */
-			// Start line: 419
-			// Start offset: 0x0006519C
-		/* end block 1.1 */
-		// End offset: 0x000651EC
-		// End Line: 429
-	/* end block 1 */
-	// End offset: 0x0006520C
-	// End Line: 432
-
-	/* begin block 2 */
-		// Start line: 513
-	/* end block 2 */
-	// End Line: 514
-
-	/* begin block 3 */
-		// Start line: 1174
-	/* end block 3 */
-	// End Line: 1175
-
 char* CarModelTypeNames[] = {
 	"CLEAN",
 	"DAMAGED",
@@ -436,50 +327,6 @@ MODEL* GetCarModel(char *src, char **dest, int KeepNormals, int modelNumber, int
 	return model;
 }
 
-
-// decompiled code
-// original method signature: 
-// MODEL * /*$ra*/ FindModelPtrWithName(char *name /*$s4*/)
- // line 289, offset 0x0005d40c
-	/* begin block 1 */
-		// Start line: 290
-		// Start offset: 0x0005D40C
-		// Variables:
-	// 		int dummy; // stack offset -32
-
-		/* begin block 1.1 */
-			// Start line: 290
-			// Start offset: 0x0005D40C
-			// Variables:
-		// 		char *name; // $s4
-		// 		int *num; // $s2
-
-			/* begin block 1.1.1 */
-				// Start line: 290
-				// Start offset: 0x0005D40C
-				// Variables:
-			// 		int count; // $s1
-			// 		char *temp; // $s0
-			/* end block 1.1.1 */
-			// End offset: 0x0005D4A4
-			// End Line: 290
-		/* end block 1.1 */
-		// End offset: 0x0005D4A4
-		// End Line: 290
-	/* end block 1 */
-	// End offset: 0x0005D4C4
-	// End Line: 293
-
-	/* begin block 2 */
-		// Start line: 1545
-	/* end block 2 */
-	// End Line: 1546
-
-	/* begin block 3 */
-		// Start line: 578
-	/* end block 3 */
-	// End Line: 579
-
 // [D] [T]
 MODEL* FindModelPtrWithName(char *name)
 {
@@ -489,50 +336,6 @@ MODEL* FindModelPtrWithName(char *name)
 	return idx >= 0 ? modelpointers[idx] : NULL;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ FindModelIdxWithName(char *name /*$s3*/)
- // line 295, offset 0x0005d4c4
-	/* begin block 1 */
-		// Start line: 296
-		// Start offset: 0x0005D4C4
-		// Variables:
-	// 		int i; // stack offset -32
-
-		/* begin block 1.1 */
-			// Start line: 296
-			// Start offset: 0x0005D4C4
-			// Variables:
-		// 		char *name; // $s3
-		// 		int *num; // $s2
-
-			/* begin block 1.1.1 */
-				// Start line: 296
-				// Start offset: 0x0005D4C4
-				// Variables:
-			// 		int count; // $s1
-			// 		char *temp; // $s0
-			/* end block 1.1.1 */
-			// End offset: 0x0005D540
-			// End Line: 296
-		/* end block 1.1 */
-		// End offset: 0x0005D540
-		// End Line: 296
-	/* end block 1 */
-	// End offset: 0x0005D560
-	// End Line: 300
-
-	/* begin block 2 */
-		// Start line: 1554
-	/* end block 2 */
-	// End Line: 1555
-
-	/* begin block 3 */
-		// Start line: 1557
-	/* end block 3 */
-	// End Line: 1558
 
 // [D] [T]
 int FindModelIdxWithName(char *name)
