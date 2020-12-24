@@ -19,6 +19,8 @@
 #include <SDL_scancode.h>
 #include <SDL_messagebox.h>
 
+#include "PSYX_GLOBALS.H"
+
 #include "C/CUTSCENE.H"
 #include "C/GLAUNCH.H"
 #include "C/LOADVIEW.H"
@@ -288,8 +290,6 @@ int gShowCollisionDebug = 0;
 
 #if defined(DEBUG_OPTIONS) || defined(_DEBUG)
 
-extern int g_texturelessMode;
-extern int g_wireframeMode;
 extern int gDisplayPosition;
 extern int gDisplayDrawStats;
 int gStopCivCars = 0;
@@ -624,9 +624,7 @@ int main(int argc, char** argv)
 	int windowHeight = 600;
 	int fullScreen = 0;
 	int enableFreecamera = 0;
-	extern int g_pgxpTextureCorrection;
-	extern int g_pgxpZBuffer;
-	extern int g_bilinearFiltering;
+
 	extern int gUserLanguage;
 
 	if (config)

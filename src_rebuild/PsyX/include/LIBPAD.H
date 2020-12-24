@@ -1,16 +1,6 @@
 #ifndef LIBPAD_H
 #define LIBPAD_H
 
-#ifndef TRUE
-#define TRUE		1
-#endif
-#ifndef FALSE
-#define FALSE		0
-#endif
-#ifndef NULL
-#define NULL		0
-#endif
-
 #define PadStateDiscon		0
 #define PadStateFindPad		1
 #define PadStateFindCTP1	2
