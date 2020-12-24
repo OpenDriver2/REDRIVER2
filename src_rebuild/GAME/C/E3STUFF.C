@@ -171,7 +171,7 @@ void FadeInHiresScreen(char *filename)
 		DrawOTag((u_long*)&ot);
 
 #ifndef PSX
-		Emulator_EndScene();
+		PsyX_EndScene();
 #endif
 
 		col += 4;
@@ -291,7 +291,7 @@ void ShowBonusGallery()
 		DrawOTag((u_long*)&ot);
 
 #ifndef PSX
-		Emulator_EndScene();
+		PsyX_EndScene();
 #endif
 
 		// wait for user input
@@ -415,7 +415,7 @@ void FadeOutHiresScreen(void)
 		DrawOTag((u_long*)&ot);
 
 #ifndef PSX
-		Emulator_EndScene();
+		PsyX_EndScene();
 #endif
 
 		col -= 4;
@@ -500,7 +500,7 @@ void SetPleaseWait(char *buffer)
 	DrawSync(0);
 
 #ifndef PSX
-	Emulator_BeginScene();
+	PsyX_BeginScene();
 	SetDispMask(1);
 #endif
 
@@ -524,7 +524,7 @@ void SetPleaseWait(char *buffer)
 #else
 	ResetCityType();
 
-	Emulator_EndScene();
+	PsyX_EndScene();
 #endif // PSX
 	
 }
@@ -634,7 +634,7 @@ void CheckForCorrectDisc(int disc)
 		PrintStringCentred(mess2, 0x8c);
 
 #ifndef PSX
-		Emulator_EndScene();
+		PsyX_EndScene();
 #endif
 
 		gShowMap = 0;

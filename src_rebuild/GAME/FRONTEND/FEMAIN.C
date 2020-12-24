@@ -1545,7 +1545,7 @@ void EndFrame(void)
 	VSync(0);
 
 #ifndef PSX
-	Emulator_EndScene();
+	PsyX_EndScene();
 #endif
 }
 

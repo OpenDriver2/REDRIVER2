@@ -40,7 +40,7 @@ void ShowSavingWaitMessage(char *message, int height)
 	LoadFont(NULL);
 
 #ifndef PSX
-	Emulator_BeginScene();
+	PsyX_BeginScene();
 	SetDispMask(1);
 #endif
 
@@ -51,8 +51,8 @@ void ShowSavingWaitMessage(char *message, int height)
 	VSync(0);
 
 #ifndef PSX
-	Emulator_EndScene();
-	Emulator_WaitForTimestep(40);
+	PsyX_EndScene();
+	PsyX_WaitForTimestep(40);
 #endif // PSX
 }
 

@@ -14,8 +14,6 @@
 #include "C/CIV_AI.H"
 #include "C/MISSION.H"
 
-#include "EMULATOR_PRIVATE.H"
-
 #include "utils/ini.h"
 
 #include <SDL_scancode.h>
@@ -223,12 +221,12 @@ void FreeCameraMouseHandler(int x, int y)
 		extern SVECTOR g_FreeCameraRotation;
 
 		int width, height;
-		Emulator_GetScreenSize(width, height);
+		PsyX_GetScreenSize(width, height);
 
 		cursorX = x;
 		cursorY = y;
 
-		Emulator_SetCursorPosition(width / 2, height / 2);
+		PsyX_SetCursorPosition(width / 2, height / 2);
 
 		g_FreeCameraRotation.vy -= cursorX - cursorOldX;
 		g_FreeCameraRotation.vx += cursorY - cursorOldY;
@@ -520,7 +518,7 @@ int ParseKeyMapping(const char* str, int default_value)
 	return default_value;
 }
 
-void LoadKeyMappings(ini_t* config, char* section, KeyboardMapping& outMapping)
+void LoadKeyMappings(ini_t* config, char* section, PsyXKeyboardMapping& outMapping)
 {
 	const char* str;
 
@@ -573,12 +571,12 @@ void LoadKeyMappings(ini_t* config, char* section, KeyboardMapping& outMapping)
 	outMapping.kc_start = ParseKeyMapping(str, SDL_SCANCODE_RETURN);
 }
 
-KeyboardMapping g_gameMappings = { 0x123 };
-KeyboardMapping g_menuMappings = { 0x456 };
+PsyXKeyboardMapping g_gameMappings = { 0x123 };
+PsyXKeyboardMapping g_menuMappings = { 0x456 };
 
 void SwitchMappings(int menu)
 {
-	extern KeyboardMapping g_keyboard_mapping;
+	extern PsyXKeyboardMapping g_keyboard_mapping;
 
 	if(menu)
 		g_keyboard_mapping = g_menuMappings;
@@ -695,7 +693,7 @@ int main(int argc, char** argv)
 
 #endif
 
-	Emulator_Initialise("REDRIVER2", windowWidth, windowHeight, fullScreen);
+	PsyX_Initialise("REDRIVER2", windowWidth, windowHeight, fullScreen);
 
 	// verify installation
 	if (!FileExists("DATA\\FEFONT.BNK") || !FileExists("GFX\\FONT2.FNT"))

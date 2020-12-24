@@ -56,7 +56,7 @@ void ShowLoading(void)
 	PutDispEnv(&load_disp);
 
 #ifndef PSX
-	Emulator_EndScene();
+	PsyX_EndScene();
 #endif
 }
 
@@ -126,7 +126,7 @@ void FadeGameScreen(int flag)
 		DrawPrim(&poly);
 
 #ifndef PSX
-		Emulator_EndScene();
+		PsyX_EndScene();
 #endif
 	}
 	else
@@ -161,7 +161,7 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 
 	load_draw.dfe = 1;
 #ifndef PSX
-	Emulator_EnableSwapInterval((gFastLoadingScreens == 0));
+	PsyX_EnableSwapInterval((gFastLoadingScreens == 0));
 
 	load_draw.clip.x = 0;
 	load_draw.clip.y = 0;
@@ -296,7 +296,7 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 			VSync(0);
 	
 #ifndef PSX
-		Emulator_EndScene();
+		PsyX_EndScene();
 #endif
 
 		PutDispEnv(&load_disp);
@@ -351,7 +351,7 @@ void CloseShutters(int speed, int width, int height)
 
 		VSync(0);
 #ifndef PSX
-		Emulator_EndScene();
+		PsyX_EndScene();
 #endif
 
 		if (h > 255) 

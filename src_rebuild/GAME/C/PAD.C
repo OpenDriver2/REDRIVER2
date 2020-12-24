@@ -415,7 +415,7 @@ void HandlePadVibration(int pad)
 void ReadControllers(void)
 {
 #ifndef PSX
-	Emulator_UpdateInput();
+	PsyX_UpdateInput();
 #endif
 
 	int pad;

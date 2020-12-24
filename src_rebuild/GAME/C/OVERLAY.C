@@ -715,7 +715,7 @@ void DisplayOverlays(void)
 		{
 			// align to PSX-mapped screen coordinates
 			RECT16 emuViewport;
-			Emulator_GetPSXWidescreenMappedViewport(&emuViewport);
+			PsyX_GetPSXWidescreenMappedViewport(&emuViewport);
 
 			// recalc pos
 			gOverlayXPos = 16 + emuViewport.x;

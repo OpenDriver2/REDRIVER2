@@ -108,7 +108,7 @@ project "REDRIVER2"
         links { "Psy-X", "jpeg" }
 		
 		includedirs { 
-			"PsyX"
+			"PsyX/include"
 		}
 		
 		files {

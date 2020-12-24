@@ -22,7 +22,8 @@ project "Psy-X"
 
     includedirs { 
         SDL2_DIR.."/include",
-        OPENAL_DIR.."/include"
+        OPENAL_DIR.."/include",
+		"include"
     }
 
     filter "system:Windows"

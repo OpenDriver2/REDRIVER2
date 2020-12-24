@@ -1640,7 +1640,7 @@ void DrawFullscreenMap(void)
 
 #ifndef PSX
 	RECT16 emuViewport;
-	Emulator_GetPSXWidescreenMappedViewport(&emuViewport);
+	PsyX_GetPSXWidescreenMappedViewport(&emuViewport);
 #endif
 
 	for(x = 0; x < width; x++)

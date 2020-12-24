@@ -657,7 +657,7 @@ void DrawLensFlare(void)
 
 #ifdef USE_PGXP
 		// remap
-		Emulator_GetPSXWidescreenMappedViewport(&viewp);
+		PsyX_GetPSXWidescreenMappedViewport(&viewp);
 		sun_pers_conv_position.vx = RemapVal(sun_pers_conv_position.vx, float(viewp.x), float(viewp.w), 0.0f, 320.0f);
 #endif
 		

@@ -1630,7 +1630,7 @@ void DrawGame(void)
 	}
 
 #ifndef PSX
-	Emulator_EnableSwapInterval(1);
+	PsyX_EnableSwapInterval(1);
 #endif
 
 	static int frame = 0;
@@ -1670,7 +1670,7 @@ void DrawGame(void)
 
 #ifndef PSX
 	if (!FadingScreen)
-		Emulator_EndScene();
+		PsyX_EndScene();
 #endif
 
 	FrameCnt++;
@@ -2176,7 +2176,7 @@ void RenderGame2(int view)
 
 #ifndef PSX
 	int screenW, screenH;
-	Emulator_GetScreenSize(screenW, screenH);
+	PsyX_GetScreenSize(screenW, screenH);
 
 	float aspectVar = float(screenH) / float(screenW);
 

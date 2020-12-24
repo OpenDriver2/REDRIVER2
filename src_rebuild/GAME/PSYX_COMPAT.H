@@ -5,7 +5,7 @@
 
 // Necessary includes
 #ifndef PSX
-#include "EMULATOR_PRIVATE.H"
+#include "PSYX_PUBLIC.H"
 #endif
 
 // Necessary types

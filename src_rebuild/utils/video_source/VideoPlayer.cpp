@@ -1,7 +1,8 @@
 #include "ReadAVI.h"	// WTF, ostream/fstream
 
-#include <EMULATOR.H>
-#include <EMULATOR_TIMER.H>
+#include <PSYX_RENDER.H>
+#include "COMMON/glad.h"
+
 #include "DRIVER2.H"
 
 #include "C/PAD.H"
@@ -13,6 +14,8 @@
 #include <AL/al.h>
 #include <jpeglib.h>
 #include "PLATFORM.H"
+
+#include <UTIL/TIMER.H>
 
 // Partially decompiled function from FMV EXE
 void InitFMVFont()
@@ -155,7 +158,7 @@ extern int g_swapInterval;
 void SetupMovieRectangle(int image_w, int image_h)
 {
 	int windowWidth, windowHeight;
-	Emulator_GetScreenSize(windowWidth, windowHeight);
+	PsyX_GetScreenSize(windowWidth, windowHeight);
 
 	float psxScreenW = 320.0f;
 	float psxScreenH = 200.0f;	// FIXME: NTSC scaling
@@ -182,7 +185,7 @@ void SetupMovieRectangle(int image_w, int image_h)
 	u_char b = 1;
 
 #ifdef USE_PGXP
-	Emulator_SetViewPort(0, 0, windowWidth, windowHeight);
+	GR_SetViewPort(0, 0, windowWidth, windowHeight);
 
 	Vertex blit_vertices[] =
 	{
@@ -195,7 +198,7 @@ void SetupMovieRectangle(int image_w, int image_h)
 		{ clipRectX + clipRectW,  clipRectY + clipRectH,    0, 0,    r, t,    0, 0,		0, 0, 		0, 0 },
 	};
 #else
-	Emulator_SetViewPort(0, 0, windowWidth, windowHeight);
+	GR_SetViewPort(0, 0, windowWidth, windowHeight);
 
 	clipRectX *= 2;
 	clipRectY *= 2;
@@ -214,7 +217,7 @@ void SetupMovieRectangle(int image_w, int image_h)
 	};
 #endif
 
-	Emulator_UpdateVertexBuffer(blit_vertices, 6);
+	GR_UpdateVertexBuffer(blit_vertices, 6);
 }
 
 // send audio buffer
@@ -255,10 +258,10 @@ const char* fmv_shader =
 TextureID g_FMVTexture = 0;
 ShaderID g_FMVShader = 0;
 
-extern void Shader_CheckShaderStatus(GLuint shader);
-extern void Shader_CheckProgramStatus(GLuint program);
-extern ShaderID Shader_Compile(const char* source);
-extern void Emulator_SetShader(const ShaderID& shader);
+extern void GR_Shader_CheckShaderStatus(GLuint shader);
+extern void GR_Shader_CheckProgramStatus(GLuint program);
+extern ShaderID GR_Shader_Compile(const char* source);
+extern void GR_SetShader(const ShaderID& shader);
 
 #define DECODE_BUFFER_ALLOC (3840 * 2160 * 3)	// RGB in 4K frame
 
@@ -284,7 +287,7 @@ void FMVPlayerInitGL()
 
 	if(!g_FMVShader)
 	{
-		g_FMVShader = Shader_Compile(fmv_shader);
+		g_FMVShader = GR_Shader_Compile(fmv_shader);
 	}
 #endif
 }
@@ -301,9 +304,9 @@ void FMVPlayerShutdownGL()
 	g_FMVDecodedImageBuffer = NULL;
 	
 	ClearImage(&rect, 0, 0, 0);
-	Emulator_SwapWindow();
+	GR_SwapWindow();
 
-	Emulator_DestroyTexture(g_FMVTexture);
+	GR_DestroyTexture(g_FMVTexture);
 }
 
 struct SUBTITLE
@@ -444,32 +447,32 @@ void DisplayCredits(int frame_number)
 	}
 }
 
-extern void Emulator_Ortho2D(float left, float right, float bottom, float top, float znear, float zfar);
+extern void GR_Ortho2D(float left, float right, float bottom, float top, float znear, float zfar);
 
 void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number, int credits, int image_w, int image_h)
 {
 	int windowWidth, windowHeight;
-	Emulator_GetScreenSize(windowWidth, windowHeight);
+	PsyX_GetScreenSize(windowWidth, windowHeight);
 
-	Emulator_BeginScene();
+	PsyX_BeginScene();
 
-	Emulator_Clear(0, 0, windowWidth, windowHeight, 0, 0, 0);
+	GR_Clear(0, 0, windowWidth, windowHeight, 0, 0, 0);
 	
 	glBindTexture(GL_TEXTURE_2D, g_FMVTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, image_w, image_h, 0, GL_RGB, GL_UNSIGNED_BYTE, g_FMVDecodedImageBuffer);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	Emulator_SetShader(g_FMVShader);
-	Emulator_SetTexture(g_FMVTexture, (TexFormat)-1);
+	GR_SetShader(g_FMVShader);
+	GR_SetTexture(g_FMVTexture, (TexFormat)-1);
 
-	Emulator_SetScissorState(0);
-	Emulator_EnableDepth(0);
-	Emulator_SetStencilMode(0);
-	Emulator_SetBlendMode(BM_NONE);
+	GR_SetScissorState(0);
+	GR_EnableDepth(0);
+	GR_SetStencilMode(0);
+	GR_SetBlendMode(BM_NONE);
 	
 	SetupMovieRectangle(stream_format.image_width, stream_format.image_height);
 
-	Emulator_DrawTriangles(0, 2);
+	GR_DrawTriangles(0, 2);
 
 	DisplaySubtitles(frame_number);
 
@@ -478,7 +481,7 @@ void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number, int cr
 		DisplayCredits(frame_number);
 	}
 
-	Emulator_EndScene();
+	PsyX_EndScene();
 }
 
 void DoPlayFMV(RENDER_ARG* arg, int subtitles)
@@ -538,7 +541,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 
 	timerCtx_t fmvTimer;
 
-	Emulator_InitHPCTimer(&fmvTimer);
+	Util_InitHPCTimer(&fmvTimer);
 
 	double nextFrameDelay = 0.0;
 
@@ -548,12 +551,12 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	int fade_out = 0;
 	int done_frames = 0;
 
-	Emulator_GetHPCTime(&fmvTimer, 1);
+	Util_GetHPCTime(&fmvTimer, 1);
 	
 	// main loop
 	while (true)
 	{
-		double delta = Emulator_GetHPCTime(&fmvTimer, 1);
+		double delta = Util_GetHPCTime(&fmvTimer, 1);
 
 		if (delta > 1.0)
 			delta = 0.0;
@@ -562,7 +565,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 
 		if (nextFrameDelay > 0) // wait for frame
 		{
-			Emulator_EndScene();
+			PsyX_EndScene();
 			continue;
 		}
 
@@ -688,7 +691,7 @@ int FMV_main(RENDER_ARGS* args)
 	PutDrawEnv(&draw);
 	PutDispEnv(&disp);
 
-	Emulator_SetupClipMode(draw.clip, draw.dfe);
+	GR_SetupClipMode(draw.clip, draw.dfe);
 
 	for (int i = 0; i < args->nRenders; i++)
 	{
