@@ -531,10 +531,10 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	bone = (LIMBS)(boneId & 0x7f);
 	body_texture = MainPed[bone].ptd;
 	
-	if (bDoingShadow == 0)
-		z = gCurrentZ + (scr_z / 2);
-	else
+	if (bDoingShadow)
 		z = sz + (scr_z / 2);
+	else
+		z = gCurrentZ + (scr_z / 2);
 
 	z2 = ((scr_z * 4096) / z) * 25 >> 5;
 
@@ -551,7 +551,7 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	{
 		width = MainPed[bone].cWidth + 4;
 	}
-	else if (bDoingShadow == 0)
+	else
 	{
 		if (pDrawingPed->flags & 0x8000)
 			width = MainPed[bone].cWidth - 3;
@@ -560,9 +560,12 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 		else
 			width = MainPed[bone].cWidth + 3;
 	}
-	else
+
+	if (bDoingShadow &&
+		(bone == RKNEE || bone == LKNEE || 
+		bone == LFOOT || bone == RFOOT))
 	{
-		width = MainPed[bone].cWidth;
+		width -= 5;
 	}
 
 	x = v1[0] - v2[0];
@@ -609,91 +612,98 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	prims->y3 = v2[1] - FIXEDH(sn) - dy1;
 
 #ifdef USE_PGXP
-
-	PGXPVData vdata1, vdata2;
-	PGXP_GetCacheData(vdata1, PGXP_LOOKUP_VALUE(v1[0], v1[1]), 0);
-	PGXP_GetCacheData(vdata2, PGXP_LOOKUP_VALUE(v2[0], v2[1]), 0);
-
+	if (!bDoingShadow)
 	{
-		float len;
-		
-		x = (v1[0] - v2[0]) * 4.0f;
-		y = (v1[1] - v2[1]) * 4.0f;
+		PGXPVData vdata1, vdata2;
+		PGXP_GetCacheData(vdata1, PGXP_LOOKUP_VALUE(v1[0], v1[1]), 0);
+		PGXP_GetCacheData(vdata2, PGXP_LOOKUP_VALUE(v2[0], v2[1]), 0);
 
-		// compute normalization lengths
-		len = 1.0 / sqrtf(float(x*x) + float(y*y) + 1.0);
-
-		angle = ratan2(y, x);
-
-		sn = rcossin_tbl[(-angle & 0xfffU) * 2] * width;
-		cs = rcossin_tbl[(-angle & 0xfffU) * 2 + 1] * width;
-
-		tmp = MainPed[bone].cAdj & 0xf;
-
-		dx2 = sn >> tmp;
-		dy2 = cs >> tmp;
-
-		if ((bone == RKNEE || bone == LKNEE) && pDrawingPed->type != PED_ACTION_JUMP && bDoingShadow == 0)
 		{
-			dx1 = -sn >> 3;
-			dy1 = -cs >> 3;
-		}
-		else
-		{
-			tmp2 = MainPed[bone].cAdj >> 4;
+			float len;
 
-			dx1 = sn >> tmp2;
-			dy1 = cs >> tmp2;
+			x = (v1[0] - v2[0]) * 4.0f;
+			y = (v1[1] - v2[1]) * 4.0f;
+
+			// compute normalization lengths
+			len = 1.0 / sqrtf(float(x*x) + float(y*y) + 1.0);
+
+			angle = ratan2(y, x);
+
+			sn = rcossin_tbl[(-angle & 0xfffU) * 2] * width;
+			cs = rcossin_tbl[(-angle & 0xfffU) * 2 + 1] * width;
+
+			tmp = MainPed[bone].cAdj & 0xf;
+
+			dx2 = sn >> tmp;
+			dy2 = cs >> tmp;
+
+			if ((bone == RKNEE || bone == LKNEE) && pDrawingPed->type != PED_ACTION_JUMP && bDoingShadow == 0)
+			{
+				dx1 = -sn >> 3;
+				dy1 = -cs >> 3;
+			}
+			else
+			{
+				tmp2 = MainPed[bone].cAdj >> 4;
+
+				dx1 = sn >> tmp2;
+				dy1 = cs >> tmp2;
+			}
+
+			dx1 = FIXED(dx1);
+			dx2 = FIXED(dx2);
+			dy1 = FIXED(dy1) + 2;
+			dy2 = FIXED(dy2) - 2;
+
+			if (bone == HEAD)
+			{
+				dx1 >>= 1;
+				dx2 >>= 1;
+			}
+
+			if (bone == JOINT_1)
+			{
+				dx1 -= 5;
+				dy2 -= 10;
+			}
 		}
 
-		dx1 = FIXED(dx1);
-		dx2 = FIXED(dx2);
-		dy1 = FIXED(dy1) + 2;
-		dy2 = FIXED(dy2) - 2;
+		PGXPVData v0data = { PGXP_LOOKUP_VALUE(prims->x0, prims->y0),
+			vdata1.px + (FIXEDH(sn) - dx1) * 0.01f,
+			vdata1.py + (FIXEDH(cs) + dy1) * 0.01f,
+			vdata1.pz, vdata1.scr_h, vdata1.ofx, vdata1.ofy };
 
-		if(bone == HEAD)
-		{
-			dx1 >>= 1;
-			dx2 >>= 1;
-		}
-		
-		if(bone == JOINT_1)
-		{
-			dx1 -= 5;
-			dy2 -= 10;
-		}
+
+		PGXPVData v1data = { PGXP_LOOKUP_VALUE(prims->x1, prims->y1),
+			vdata1.px - (FIXEDH(sn) - dx1) * 0.01f,
+			vdata1.py - (FIXEDH(cs) - dy1) * 0.01f,
+			vdata1.pz, vdata1.scr_h, vdata1.ofx, vdata1.ofy };
+
+
+		PGXPVData v2data = { PGXP_LOOKUP_VALUE(prims->x2, prims->y2),
+			vdata2.px + (FIXEDH(sn) + dx2) * 0.01f,
+			vdata2.py + (FIXEDH(cs) - dy2) * 0.01f,
+			vdata2.pz, vdata2.scr_h, vdata2.ofx, vdata2.ofy };
+
+
+		PGXPVData v3data = { PGXP_LOOKUP_VALUE(prims->x3, prims->y3),
+			vdata2.px - (FIXEDH(sn) + dx2) * 0.01f,
+			vdata2.py - (FIXEDH(cs) + dy2) * 0.01f,
+			vdata2.pz, vdata2.scr_h, vdata2.ofx, vdata2.ofy };
+
+		PGXP_EmitCacheData(v0data);
+		PGXP_EmitCacheData(v1data);
+		PGXP_EmitCacheData(v2data);
+		PGXP_EmitCacheData(v3data);
 	}
-
-	PGXPVData v0data = { PGXP_LOOKUP_VALUE(prims->x0, prims->y0),
-		vdata1.px + (FIXEDH(sn) - dx1) * 0.01f,
-		vdata1.py + (FIXEDH(cs) + dy1) * 0.01f,
-		vdata1.pz, vdata1.scr_h, vdata1.ofx, vdata1.ofy };
-
-
-	PGXPVData v1data = { PGXP_LOOKUP_VALUE(prims->x1, prims->y1),
-		vdata1.px - (FIXEDH(sn) - dx1) * 0.01f,
-		vdata1.py - (FIXEDH(cs) - dy1) * 0.01f,
-		vdata1.pz, vdata1.scr_h, vdata1.ofx, vdata1.ofy };
-
-
-	PGXPVData v2data = { PGXP_LOOKUP_VALUE(prims->x2, prims->y2),
-		vdata2.px + (FIXEDH(sn) + dx2) * 0.01f,
-		vdata2.py + (FIXEDH(cs) - dy2) * 0.01f,
-		vdata2.pz, vdata2.scr_h, vdata2.ofx, vdata2.ofy };
-
-
-	PGXPVData v3data = { PGXP_LOOKUP_VALUE(prims->x3, prims->y3),
-		vdata2.px - (FIXEDH(sn) + dx2) * 0.01f,
-		vdata2.py - (FIXEDH(cs) + dy2) * 0.01f,
-		vdata2.pz, vdata2.scr_h, vdata2.ofx, vdata2.ofy };
-
-	PGXP_EmitCacheData(v0data);
-	PGXP_EmitCacheData(v1data);
-	PGXP_EmitCacheData(v2data);
-	PGXP_EmitCacheData(v3data);
 #endif
 
-	if (bDoingShadow == 0)
+	if (bDoingShadow)
+	{
+		tpage = texture_pages[gShadowTexturePage];
+		clut = texture_cluts[gShadowTexturePage][gShadowTextureNum];
+	}
+	else
 	{
 		tpage = body_texture->tpageid;
 		clut = body_texture->clutid;
@@ -713,16 +723,21 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 				clut = civ_clut[0][body_texture->texture_number][pal];
 		}
 	}
-	else
-	{
-		tpage = gShadowTexturePage;
-		clut = texture_cluts[gShadowTexturePage][gShadowTextureNum];
-	}
 
 	prims->tpage = tpage;
 	prims->clut = clut;
 
-	if (bDoingShadow == 0)
+	if (bDoingShadow)
+	{
+		setSemiTrans(prims, 1);
+		prims->tpage |= 0x20;
+
+		*(ushort*)&prims->u0 = *(ushort*)&shadowuv.u0;
+		*(ushort*)&prims->u1 = *(ushort*)&shadowuv.u1;
+		*(ushort*)&prims->u2 = *(ushort*)&shadowuv.u2;
+		*(ushort*)&prims->u3 = *(ushort*)&shadowuv.u3;
+	}
+	else
 	{
 		if (bone == HEAD)
 		{
@@ -755,15 +770,14 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 			*(ushort*)&prims->u3 = *(ushort*)&body_texture->coords.u1;
 		}
 	}
-	else
-	{
-		*(ushort*)&prims->u0 = *(ushort*)&shadowuv.u0;
-		*(ushort*)&prims->u1 = *(ushort*)&shadowuv.u1;
-		*(ushort*)&prims->u2 = *(ushort*)&shadowuv.u2;
-		*(ushort*)&prims->u3 = *(ushort*)&shadowuv.u3;
-	}
 
-	if (gNight == 1)
+	if (bDoingShadow)
+	{
+		prims->r0 = 255;
+		prims->g0 = 255;
+		prims->b0 = 255;
+	}
+	else if (gNight == 1)
 	{
 		prims->r0 = 64;
 		prims->g0 = 64;
@@ -776,14 +790,15 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 		prims->b0 = combointensity & 0xFF;
 	}
 
-	if (bDoingShadow == 0)
+	if (bDoingShadow != 0)
 	{
-		x = sz + sy >> 4;
-		addPrim(current->ot + x + (width >> 6), prims);
+		addPrim(current->ot + 0x107f, prims);
+		prims->pgxp_index = 0xffff;
 	}
 	else
 	{
-		addPrim(current->ot + 0x107f, prims);
+		x = sz + sy >> 4;
+		addPrim(current->ot + x + (width >> 6), prims);
 	}
 }
 
@@ -1122,7 +1137,6 @@ void newShowTanner(PEDESTRIAN* pDrawingPed)
 				{
 					if (id != LSHOULDER
 						&& id != RSHOULDER
-						&& id != HEAD
 						&& id != HIPS
 						&& id != LOWERBACK
 						&& id != ROOT
@@ -1715,10 +1729,11 @@ void InitTannerShadow(void)
 	TILE* tile;
 	POLY_FT4* poly;
 	int i;
+
 	if (gTimeOfDay == 3)
-		brightness = 12;
+		brightness = 10;
 	else
-		brightness = 32;
+		brightness = 15;
 
 	poly = ft4TannerShadow;
 	tile = tileTannerClear;
@@ -1735,7 +1750,7 @@ void InitTannerShadow(void)
 		poly->u1 = poly->u3 = tannerShadow_texture.coords.u0;
 		poly->v2 = poly->v3 = tannerShadow_texture.coords.v0 + 127;
 		
-		poly->tpage = getTPage(2, 0, rectTannerWindow.x, rectTannerWindow.y);
+		poly->tpage = getTPage(2, 2, rectTannerWindow.x, rectTannerWindow.y);
 
 		setPolyFT4(poly);
 		setSemiTrans(poly, 1);
@@ -1780,7 +1795,6 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 
 	// [A] not supported by emulator
 	// proposed change: double buffering of VRAM (one used as render target, second as texture)
-#ifdef PSX
 
 	memset(&d, 0, sizeof(VECTOR));
 	memset(&myVector, 0, sizeof(VECTOR));
@@ -1897,7 +1911,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 	SetBasePos(&myVector);
 	old_tr = tracking_car;
 
-	gte_SetGeomOffset(32, 128);
+	gte_SetGeomOffset(32, 82);
 
 	tracking_car = 1;
 	PlaceCameraAtLocation(&player[0], 0);
@@ -1917,14 +1931,15 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 
 	gte_SetGeomOffset(160, 128);
 
-
 	SetDefDrawEnv(&drEnv, rectTannerWindow.x, rectTannerWindow.y, rectTannerWindow.w, rectTannerWindow.h);
+	drEnv.dfe = 0; // we're drawing into VRAM - don't draw on screen
+	drEnv.dtd = 0; // [A] no need in dithering
+
 	dr_env = (DR_ENV*)current->primptr;
 	SetDrawEnv(dr_env, &drEnv);
 
 	addPrim(current->ot + 0x107f, dr_env);
 	current->primptr += sizeof(DR_ENV);
-#endif
 }
 
 extern _pct plotContext;
