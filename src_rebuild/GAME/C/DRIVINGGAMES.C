@@ -17,7 +17,7 @@
 #include "SOUND.H"
 #include "GLAUNCH.H"
 
-#include "../ASM/ASMTEST.H"
+#include "ASM/RNDRASM.H"
 
 #include "INLINE_C.H"
 #include "RAND.H"

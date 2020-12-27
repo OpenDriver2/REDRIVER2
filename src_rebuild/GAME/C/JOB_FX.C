@@ -9,7 +9,7 @@
 #include "DEBRIS.H"
 #include "SYSTEM.H"
 
-#include "../ASM/ASMTEST.H"
+#include "ASM/RNDRASM.H"
 
 #include "INLINE_C.H"
 #include "RAND.H"

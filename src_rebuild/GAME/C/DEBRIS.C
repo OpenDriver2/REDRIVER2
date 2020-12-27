@@ -22,7 +22,7 @@
 #include "DENTING.H"
 #include "GAMESND.H"
 
-#include "../ASM/ASMTEST.H"
+#include "ASM/RNDRASM.H"
 
 #include "INLINE_C.H"
 #include "RAND.H"

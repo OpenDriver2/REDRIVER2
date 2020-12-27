@@ -5,7 +5,8 @@
 #include "MISSION.H"
 #include "DRAW.H"
 #include "TEXTURE.H"
-#include "../ASM/ASMTEST.H"
+
+#include "ASM/RNDRASM.H"
 
 #include "INLINE_C.H"
 

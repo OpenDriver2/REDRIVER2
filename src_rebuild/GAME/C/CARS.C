@@ -18,7 +18,7 @@
 #include "CUTSCENE.H"
 #include "CONVERT.H"
 #include "GLAUNCH.H"
-#include "../ASM/ASMTEST.H"
+#include "ASM/RNDRASM.H"
 
 #include "INLINE_C.H"
 #include "LIBAPI.H"

@@ -2,13 +2,16 @@
 #define RNDRASM_H
 
 
-extern void texture_pages() ; // 0x0009C574
+extern void SetCameraVector(); // 0x0001BCD4
 
-extern void texture_cluts() ; // 0x0009C674
+extern void Apply_Inv_CameraMatrix(VECTOR* v); // 0x0001BCFC
+extern int Apply_InvCameraMatrixSetTrans(VECTOR_NOPAD* pos);
+extern int Apply_InvCameraMatrixAndSetMatrix(VECTOR_NOPAD* pos, MATRIX2* mtx);
 
-extern void Apply_InvCameraMatrixAndSetMatrix() ; // 0x000419A8
+extern int FrustrumCheck16(PACKED_CELL_OBJECT* pcop, int bounding_sphere); // 0x0001BD30
 
-extern void Apply_InvCameraMatrixSetTrans() ; // 0x00041A50
+extern int FrustrumCheck(VECTOR* pos, int bounding_sphere); // 0x0001BDEC
+
 
 
 #endif

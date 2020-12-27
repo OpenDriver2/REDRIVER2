@@ -17,7 +17,7 @@
 #include "BCOLLIDE.H"
 #include "PEDEST.H"
 
-#include "../ASM/ASMTEST.H"
+#include "ASM/RNDRASM.H"
 
 #include "INLINE_C.H"
 #include "RAND.H"

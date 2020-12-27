@@ -15,7 +15,7 @@
 #include "TEXTURE.H"
 #include "CARS.H"
 #include "DEBRIS.H"
-#include "../ASM/ASMTEST.H"
+#include "ASM/RNDRASM.H"
 
 #include <string.h>
 

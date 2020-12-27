@@ -8,7 +8,8 @@
 #include "LIBAPI.H"
 #include "LIBMCRD.H"
 
-#include "../ASM/ASMTEST.H"
+#include "ASM/RNDRASM.H"
+
 #include "SYSTEM.H"
 #include "PAD.H"
 #include "SOUND.H"
@@ -2269,7 +2270,7 @@ void RenderGame2(int view)
 		DrawLensFlare();
 
 	// Retro calls this BSOD...
-	if (gDieWithFade != 0)
+	if (gDieWithFade)
 	{
 		fadeColour = (gDieWithFade << 4);
 
@@ -2313,7 +2314,7 @@ void RenderGame2(int view)
 
 	ScaleCamera();
 
-	if (notInDreaAndStevesEvilLair != 0)
+	if (notInDreaAndStevesEvilLair)
 	{
 		DrawSkyDome();
 

@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "CARS.H"
+#include "ASM/COMPRES.H"
 
 SXYPAIR tpagepos[20] =
 {
@@ -128,32 +129,6 @@ void IncrementTPageNum(RECT16 *tpage)
 				break;
 		}
 	}
-}
-
-// [D] [T]
-// Originally ASM function
-char* unpackTexture(char *dest, char *src)
-{
-	char *ptr = dest + 0x7fff;
-
-	do {
-		char pix = *src++;
-		
-		if ((pix & 0x80) != 0)
-		{
-			char p = *src++;
-
-			do (*ptr-- = p);
-			while (pix++ <= 0);
-		}
-		else
-		{
-			do (*ptr-- = *src++);
-			while (pix-- != 0);
-		}
-	} while (ptr >= dest);
-
-	return src;
 }
 
 #ifndef PSX
@@ -285,7 +260,7 @@ int LoadTPageAndCluts(RECT16 *tpage, RECT16 *cluts, int tpage2send, char *tpagea
 	temptpage.w = tpage->w;
 	temptpage.h = 256;
 
-	unpackTexture(_other_buffer, tpageaddress);
+	decomp_asm(_other_buffer, tpageaddress);
 	LoadImage(&temptpage, (u_long *)_other_buffer);
 
 	texture_pages[tpage2send] = GetTPage(0, 0, tpage->x, tpage->y);
