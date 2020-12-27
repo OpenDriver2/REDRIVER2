@@ -187,7 +187,7 @@ void SetupMovieRectangle(int image_w, int image_h)
 #ifdef USE_PGXP
 	GR_SetViewPort(0, 0, windowWidth, windowHeight);
 
-	Vertex blit_vertices[] =
+	GrVertex blit_vertices[] =
 	{
 		{ clipRectX+ clipRectW,  clipRectY + clipRectH,		0, 0,    r, t,    0, 0,		0, 0, 		0, 0 },
 		{ clipRectX, clipRectY,    							0, 0,    l, b,    0, 0,		0, 0, 		0, 0 },
@@ -205,7 +205,7 @@ void SetupMovieRectangle(int image_w, int image_h)
 	clipRectW *= 2;
 	clipRectH *= 2;
 
-	Vertex blit_vertices[] =
+	GrVertex blit_vertices[] =
 	{
 		{ clipRectX+ clipRectW,  clipRectY + clipRectH,		0, 0,    r, t,    0, 0,		0, 0, 		0, 0 },
 		{ clipRectX, clipRectY,    							0, 0,    l, b,    0, 0,		0, 0, 		0, 0 },

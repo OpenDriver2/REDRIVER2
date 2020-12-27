@@ -165,11 +165,11 @@ static void PsyX_Sys_InitialiseInput()
 	g_keyboard_mapping.kc_start = SDL_SCANCODE_RETURN;
 }
 
-int GR_InitialisePSX();
-int GR_InitialiseRender(char* windowName, int width, int height, int fullscreen);
-void GR_Shutdown();
-void GR_BeginScene();
-void GR_EndScene();
+extern int GR_InitialisePSX();
+extern int GR_InitialiseRender(char* windowName, int width, int height, int fullscreen);
+extern void GR_Shutdown();
+extern void GR_BeginScene();
+extern void GR_EndScene();
 
 void PsyX_Initialise(char* windowName, int width, int height, int fullscreen)
 {
@@ -300,6 +300,8 @@ void PsyX_EndScene()
 	assert(begin_scene_flag);
 	begin_scene_flag = false;
 
+	GR_EndScene();
+	
 	GR_StoreFrameBuffer(activeDispEnv.disp.x, activeDispEnv.disp.y, activeDispEnv.disp.w, activeDispEnv.disp.h);
 
 	GR_SwapWindow();

@@ -770,23 +770,23 @@ int GR_InitialisePSX()
 		glBindVertexArray(g_glVertexArray);
 
 		glBindBuffer(GL_ARRAY_BUFFER, g_glVertexBuffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * MAX_NUM_POLY_BUFFER_VERTICES, NULL, GL_DYNAMIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(GrVertex) * MAX_NUM_POLY_BUFFER_VERTICES, NULL, GL_DYNAMIC_DRAW);
 
 		glEnableVertexAttribArray(a_position);
 		glEnableVertexAttribArray(a_texcoord);
 		glEnableVertexAttribArray(a_color);
 
 #if defined(USE_PGXP)
-		glVertexAttribPointer(a_position, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->x);
-		glVertexAttribPointer(a_zw, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->z);
+		glVertexAttribPointer(a_position, 4, GL_FLOAT, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->x);
+		glVertexAttribPointer(a_zw, 4, GL_FLOAT, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->z);
 
 		glEnableVertexAttribArray(a_zw);
 #else
-		glVertexAttribPointer(a_position, 4, GL_SHORT, GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->x);
+		glVertexAttribPointer(a_position, 4, GL_SHORT, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->x);
 #endif
 
-		glVertexAttribPointer(a_texcoord, 4, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->u);
-		glVertexAttribPointer(a_color, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), &((Vertex*)NULL)->r);
+		glVertexAttribPointer(a_texcoord, 4, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->u);
+		glVertexAttribPointer(a_color, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(GrVertex), &((GrVertex*)NULL)->r);
 
 		glBindVertexArray(0);
 	}
@@ -1313,12 +1313,10 @@ void GR_EnableDepth(int enable)
 	if (enable && g_pgxpZBuffer)
 	{
 		glEnable(GL_DEPTH_TEST);
-		//glDepthMask(GL_TRUE);
 	}
 	else
 	{
 		glDisable(GL_DEPTH_TEST);
-		//glDepthMask(GL_FALSE);
 	}
 #endif
 }
@@ -1414,11 +1412,11 @@ void GR_SetWireframe(bool enable)
 #endif
 }
 
-void GR_UpdateVertexBuffer(const Vertex* vertices, int num_vertices)
+void GR_UpdateVertexBuffer(const GrVertex* vertices, int num_vertices)
 {
 	assert(num_vertices <= MAX_NUM_POLY_BUFFER_VERTICES);
 #if defined(RENDERER_OGL) || defined(OGLES)
-	glBufferSubData(GL_ARRAY_BUFFER, 0, num_vertices * sizeof(Vertex), vertices);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, num_vertices * sizeof(GrVertex), vertices);
 #else
 #error
 #endif
