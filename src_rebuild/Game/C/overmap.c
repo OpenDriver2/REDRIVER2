@@ -4,7 +4,7 @@
 #include "cars.h"
 #include "system.h"
 #include "mission.h"
-#include "MDRAW.H"
+#include "mdraw.h"
 #include "players.h"
 #include "overlay.h"
 #include "debris.h"
@@ -16,7 +16,7 @@
 #include "camera.h"
 #include "felony.h"
 #include "pad.h"
-#include "ASM/rnc_2.H"
+#include "ASM/rnc_2.h"
 
 #include "STRINGS.H"
 #include "INLINE_C.H"

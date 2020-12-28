@@ -5,7 +5,7 @@
 
 #include "driver2.h"
 
-#include "C/pad.H"
+#include "C/pad.h"
 #include "C/system.h"
 #include "C/E3stuff.h"
 #include "C/fmv_font.h"
@@ -14,7 +14,7 @@
 
 #include <AL/al.h>
 #include <jpeglib.h>
-#include "PLATFORM.H"
+#include "platform.h"
 
 #include <UTIL/TIMER.H>
 
@@ -190,13 +190,13 @@ void SetupMovieRectangle(int image_w, int image_h)
 
 	GrVertex blit_vertices[] =
 	{
-		{ clipRectX+ clipRectW,  clipRectY + clipRectH,		0, 0,    r, t,    0, 0,		0, 0, 		0, 0 },
-		{ clipRectX, clipRectY,    							0, 0,    l, b,    0, 0,		0, 0, 		0, 0 },
-		{ clipRectX, clipRectY + clipRectH,    				0, 0,    l, t,    0, 0,		0, 0, 		0, 0 },
-
-		{ clipRectX + clipRectW, clipRectY,    				0, 0,    r, b,    0, 0,     0, 0, 		0, 0 },
-		{ clipRectX, clipRectY,    							0, 0,    l, b,    0, 0,		0, 0, 		0, 0 },
-		{ clipRectX + clipRectW,  clipRectY + clipRectH,    0, 0,    r, t,    0, 0,		0, 0, 		0, 0 },
+		{ clipRectX+ clipRectW,  clipRectY + clipRectH,		0, 0,    0, 0, 0, 0,	r, t, 0, 0, },
+		{ clipRectX, clipRectY,    							0, 0,    0, 0, 0, 0,	l, b, 0, 0, },
+		{ clipRectX, clipRectY + clipRectH,    				0, 0,    0, 0, 0, 0,	l, t, 0, 0, },
+		
+		{ clipRectX + clipRectW, clipRectY,    				0, 0,    0, 0, 0, 0,	r, b, 0, 0, },
+		{ clipRectX, clipRectY,    							0, 0,    0, 0, 0, 0,	l, b, 0, 0, },
+		{ clipRectX + clipRectW,  clipRectY + clipRectH,    0, 0,    0, 0, 0, 0,	r, t, 0, 0, },
 	};
 #else
 	GR_SetViewPort(0, 0, windowWidth, windowHeight);

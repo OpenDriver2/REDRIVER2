@@ -1,6 +1,7 @@
 #include "driver2.h"
-#include "C/CAMERA.H"
-#include "C/DRAW.H"
+#include "C/camera.h"
+#include "C/draw.h"
+
 #include "INLINE_C.H"
 
 extern MATRIX frustrum_matrix;

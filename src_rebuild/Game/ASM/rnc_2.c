@@ -6,8 +6,8 @@
     Not for commercial use
 */
 
-#include "../DRIVER2.H"
-#include "../C/SYSTEM.H"
+#include "driver2.h"
+
 #include "STRINGS.H"
 
 struct RNCheader

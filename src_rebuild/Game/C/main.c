@@ -59,13 +59,14 @@
 #include "Frontend/FEmain.h"
 #include "xaplay.h"
 #include "shadow.h"
-
 #include "pause.h"
+
+#include "platform.h"
 
 #include "RAND.H"
 #include "STRINGS.H"
 
-#include <PLATFORM.H>
+
 #include "INLINE_C.H"
 
 

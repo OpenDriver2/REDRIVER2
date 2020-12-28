@@ -75,8 +75,7 @@ workspace "REDRIVER2"
 -- game iteslf
 project "REDRIVER2"
     kind "ConsoleApp"
-    language "C++"
-    compileas "C++"
+    language "c++"
     targetdir "bin/%{cfg.buildcfg}"
 
     includedirs { 
@@ -87,7 +86,7 @@ project "REDRIVER2"
 
     files {
         "Game/**.h",
-        "Game/**.c",
+        "Game/**.c"
     }
 	
 	-- exclude sources which belong to overlays
@@ -100,7 +99,7 @@ project "REDRIVER2"
 			"Game/C/leadai.c",
 			"Game/C/pathfind.c",
 		}
-	end
+    end
 
     filter "system:Windows or linux"
         defines { "SIMPLE_SPOOL" }
@@ -184,3 +183,6 @@ project "REDRIVER2"
 			"CUTSCENE_RECORDER"
         }
         optimize "Speed"
+
+    filter { "files:**.c", "files:**.C" }
+        compileas "C++"

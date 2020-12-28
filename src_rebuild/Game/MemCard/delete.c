@@ -1,5 +1,5 @@
 #include "driver2.h"
-#include "DELETE.H"
+#include "delete.h"
 
 
 // decompiled code

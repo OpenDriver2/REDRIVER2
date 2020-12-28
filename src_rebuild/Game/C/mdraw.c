@@ -1,5 +1,5 @@
 #include "driver2.h"
-#include "MDRAW.H"
+#include "mdraw.h"
 #include "pres.h"
 #include "mission.h"
 #include "overmap.h"

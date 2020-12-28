@@ -7,7 +7,7 @@
 
 
 #include "system.h"
-#include "PLATFORM.H"
+#include "platform.h"
 #include "xaplay.h"
 #include "loadview.h"
 #include "mission.h"

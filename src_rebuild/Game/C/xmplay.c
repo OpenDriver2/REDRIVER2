@@ -13,7 +13,7 @@ XMPLAY.C
 #include "ABS.H"
 
 #include "xmplay.h"
-#include "xmcalls.H"
+#include "xmcalls.h"
 
 #include "LIBETC.H"
 #include "LIBSPU.H"

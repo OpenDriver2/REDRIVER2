@@ -5,7 +5,7 @@
 #include "camera.h"
 #include "fmvplay.h"
 #include "pause.h"
-#include "PLATFORM.H"
+#include "platform.h"
 #include "sound.h"
 #include "pres.h"
 #include "system.h"

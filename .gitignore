@@ -4,6 +4,10 @@
 *.opendb
 *.idb
 *.obj
+*.o
+*.a
+*.dep
+*.d
 *.log
 *.vcxproj.user
 *.pdb

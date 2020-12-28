@@ -21,7 +21,7 @@
 #include "C/scores.h"
 #include "C/loadsave.h"
 
-#include "MEMCARD/MAIN.H"
+#include "MemCard/main.h"
 
 #include "STRINGS.H"
 
