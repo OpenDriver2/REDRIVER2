@@ -147,7 +147,7 @@ void RestoreCarPosition(SAVED_CAR_POS *data)
 
 	if (data->active & 0x80) 
 	{
-		memcpy(PlayerStartInfo[numPlayersToCreate], PlayerStartInfo[0], sizeof(STREAM_SOURCE));
+		memcpy((u_char*)PlayerStartInfo[numPlayersToCreate], (u_char*)PlayerStartInfo[0], sizeof(STREAM_SOURCE));
 
 		PlayerStartInfo[numPlayersToCreate]->type = 3;
 

@@ -1,4 +1,4 @@
-game/C/main.o: game/C/main.c GAME/driver2.h \
+Game/C/main.o: Game/C/main.c GAME/driver2.h \
  f:\learn\drvsyn\disasm\psxtoolchain\nxpsy-q\mips-gcc\lib\gcc\mipsel-unknown-elf\7.2.0\include\stdbool.h \
  ../../PSXToolchain/NxPsy-Q/include/stdio.h \
  ../../PSXToolchain/NxPsy-Q/include/KERNEL.H \
@@ -8,28 +8,28 @@ game/C/main.o: game/C/main.c GAME/driver2.h \
  ../../PSXToolchain/NxPsy-Q/include/LIBCD.H \
  ../../PSXToolchain/NxPsy-Q/include/LIBGTE.H \
  ../../PSXToolchain/NxPsy-Q/include/LIBGPU.H \
- ../../PSXToolchain/NxPsy-Q/include/LIBSPU.H GAME/PSYX_COMPAT.H \
+ ../../PSXToolchain/NxPsy-Q/include/LIBSPU.H GAME/psyx_compat.h \
  GAME/REVERSING.H GAME/VERSION.H GAME/DR2MATH.H \
  ../../PSXToolchain/NxPsy-Q/include/ABS.H GAME/DR2LIMITS.H \
- GAME/DR2TYPES.H GAME/DR2LOCALE.H game/C/main.h \
+ GAME/DR2TYPES.H GAME/DR2LOCALE.H Game/C/main.h \
  ../../PSXToolchain/NxPsy-Q/include/LIBETC.H \
  ../../PSXToolchain/NxPsy-Q/include/LIBAPI.H \
  ../../PSXToolchain/NxPsy-Q/include/LIBMCRD.H \
  ../../PSXToolchain/NxPsy-Q/include/kernel.h GAME/ASM/rndrasm.h \
- game/C/system.h game/C/pad.h ../../PSXToolchain/NxPsy-Q/include/LIBPAD.H \
- game/C/sound.h game/C/fmvplay.h game/C/E3stuff.h game/C/gamesnd.h \
- game/C/scores.h game/C/glaunch.h game/C/loadview.h game/C/replays.h \
- game/C/event.h game/C/mission.h game/C/cutscene.h game/C/texture.h \
- game/C/sky.h game/C/pres.h game/C/draw.h game/C/denting.h \
- game/C/cosmetic.h game/C/pedest.h game/C/spool.h game/C/map.h \
- game/C/objanim.h game/C/handling.h game/C/drivinggames.h \
- game/C/bomberman.h game/C/players.h game/C/ai.h game/C/civ_ai.h \
- game/C/cop_ai.h game/C/camera.h game/C/overlay.h game/C/debris.h \
- game/C/job_fx.h game/C/director.h game/C/convert.h game/C/tile.h \
- game/C/overmap.h game/C/motion_c.h game/C/dr2roads.h game/C/models.h \
- game/C/cars.h game/C/objcoll.h game/C/mc_snd.h game/C/felony.h \
- game/C/leadai.h game/C/loadsave.h GAME/Frontend/FEmain.h game/C/xaplay.h \
- game/C/shadow.h game/C/pause.h ../../PSXToolchain/NxPsy-Q/include/RAND.H \
+ Game/C/system.h Game/C/pad.h ../../PSXToolchain/NxPsy-Q/include/LIBPAD.H \
+ Game/C/sound.h Game/C/fmvplay.h Game/C/E3stuff.h Game/C/gamesnd.h \
+ Game/C/scores.h Game/C/glaunch.h Game/C/loadview.h Game/C/replays.h \
+ Game/C/event.h Game/C/mission.h Game/C/cutscene.h Game/C/texture.h \
+ Game/C/sky.h Game/C/pres.h Game/C/draw.h Game/C/denting.h \
+ Game/C/cosmetic.h Game/C/pedest.h Game/C/spool.h Game/C/map.h \
+ Game/C/objanim.h Game/C/handling.h Game/C/drivinggames.h \
+ Game/C/bomberman.h Game/C/players.h Game/C/ai.h Game/C/civ_ai.h \
+ Game/C/cop_ai.h Game/C/camera.h Game/C/overlay.h Game/C/debris.h \
+ Game/C/job_fx.h Game/C/director.h Game/C/convert.h Game/C/tile.h \
+ Game/C/overmap.h Game/C/motion_c.h Game/C/dr2roads.h Game/C/models.h \
+ Game/C/cars.h Game/C/objcoll.h Game/C/mc_snd.h Game/C/felony.h \
+ Game/C/leadai.h Game/C/loadsave.h GAME/Frontend/FEmain.h Game/C/xaplay.h \
+ Game/C/shadow.h Game/C/pause.h ../../PSXToolchain/NxPsy-Q/include/RAND.H \
  ../../PSXToolchain/NxPsy-Q/include/STRINGS.H \
  ../../PSXToolchain/NxPsy-Q/include/memory.h GAME/PLATFORM.H \
  ../../PSXToolchain/NxPsy-Q/include/INLINE_C.H

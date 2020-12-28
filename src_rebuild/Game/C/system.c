@@ -322,7 +322,6 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 	int sector;
 	int toload;
 	int nsectors;
-	char namebuffer[64];
 	u_char result[8];
 	char sectorbuffer[2048];
 	CdlLOC pos;

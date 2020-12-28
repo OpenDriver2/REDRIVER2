@@ -172,7 +172,7 @@ void InitPedestrians(void)
 	int loop;
 	SEATED_PEDESTRIANS* seatedptr;
 
-	memset(pedestrians, 0, sizeof(pedestrians));
+	memset((u_char*)pedestrians, 0, sizeof(pedestrians));
 	DestroyPedestrians();
 
 	PEDESTRIAN* lastPed = &pedestrians[0];

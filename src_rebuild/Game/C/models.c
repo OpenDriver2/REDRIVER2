@@ -306,7 +306,7 @@ MODEL* GetCarModel(char *src, char **dest, int KeepNormals, int modelNumber, int
 		size = ((MODEL*)mem)->poly_block;
 
 	// if loaded externally don't copy from source lump
-	memcpy(*dest, mem, size);
+	memcpy((u_char*)*dest, (u_char*)mem, size);
 
 	if (KeepNormals == 0)
 		size = model->normals;
@@ -348,7 +348,7 @@ int FindModelIdxWithName(char *name)
 
 	while (i < num_models_in_pack)
 	{
-		if (!strcmp(str, name))
+		if (!strcmp(str, (const char*)name))
 			return i;
 
 		while (*str++) {} // go to next string

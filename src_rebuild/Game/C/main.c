@@ -1865,9 +1865,9 @@ int redriver2_main(int argc, char** argv)
 
 	InitialiseScoreTables();
 
-	LoadCurrentProfile();
-
 #ifndef PSX
+	LoadCurrentProfile();
+	
 	int commandLinePropsShown;
 	commandLinePropsShown = 0;
 

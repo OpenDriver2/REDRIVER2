@@ -282,7 +282,7 @@ void GR_Shutdown()
 
 void GR_BeginScene()
 {
-	g_lastBoundTexture = NULL;
+	g_lastBoundTexture = 0;
 
 #if defined(RENDERER_OGL) || defined(OGLES)
 	glBindVertexArray(g_glVertexArray);

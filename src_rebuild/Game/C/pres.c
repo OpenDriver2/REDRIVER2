@@ -138,10 +138,10 @@ void LoadFont(char *buffer)
 	nchars = *(int *)file;
 
 	// copy character info
-	memcpy(fontinfo,file + 4,nchars * 8);
+	memcpy((u_char*)fontinfo,file + 4,nchars * 8);
 
 	file += sizeof(int) + nchars * 8;
-	memcpy(AsciiTable, file, 256);
+	memcpy((u_char*)AsciiTable, file, 256);
 
 	fontclutid = GetClut(fontclutpos.x,fontclutpos.y);
 

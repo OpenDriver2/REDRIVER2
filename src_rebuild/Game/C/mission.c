@@ -486,7 +486,7 @@ void LoadMission(int missionnum)
 
 		LoadfileSeg(filename, (char *)&missionTempHeader, header & 0x7ffff, sizeof(MS_MISSION));
 
-		memcpy(MissionHeader->residentModels, missionTempHeader.residentModels, sizeof(missionTempHeader.residentModels));
+		memcpy((u_char*)MissionHeader->residentModels, (u_char*)missionTempHeader.residentModels, sizeof(missionTempHeader.residentModels));
 		MissionHeader->time = missionTempHeader.time;
 		MissionHeader->weather = missionTempHeader.weather;
 		MissionHeader->cops = missionTempHeader.cops;
@@ -659,7 +659,7 @@ void LoadMission(int missionnum)
 
 			// store route info
 			NumTempJunctions = rinfo->nJunctions;
-			memcpy(Driver2TempJunctionsPtr, rinfo->data, NumTempJunctions << 2);
+			memcpy((u_char*)Driver2TempJunctionsPtr, (u_char*)rinfo->data, NumTempJunctions << 2);
 			LeadValues = rinfo->parameters;
 
 			mallocptr = MissionStrings + MissionHeader->route;
@@ -1342,9 +1342,9 @@ int Swap2Cars(int curslot, int newslot)
 	cp = &car_data[newslot];
 
 	// do data swap
-	memcpy(&cd, &car_data[newslot], sizeof(CAR_DATA));
-	memcpy(&car_data[newslot], &car_data[curslot], sizeof(CAR_DATA));
-	memcpy(&car_data[curslot], &cd, sizeof(CAR_DATA));
+	memcpy((u_char*)&cd, (u_char*)&car_data[newslot], sizeof(CAR_DATA));
+	memcpy((u_char*)&car_data[newslot], (u_char*)&car_data[curslot], sizeof(CAR_DATA));
+	memcpy((u_char*)&car_data[curslot], (u_char*)&cd, sizeof(CAR_DATA));
 
 	// swap ids
 	car_data[newslot].id = newslot;

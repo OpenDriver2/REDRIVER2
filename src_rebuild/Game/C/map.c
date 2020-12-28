@@ -76,7 +76,7 @@ void InitCellData(void)
 // [D] [T]
 void ProcessMapLump(char* lump_ptr, int lump_size)
 {
-	memcpy(&cell_header, lump_ptr, sizeof(OUT_CELL_FILE_HEADER));
+	memcpy((u_char*)&cell_header, lump_ptr, sizeof(OUT_CELL_FILE_HEADER));
 
 	cells_across = cell_header.cells_across;
 	cells_down = cell_header.cells_down;
@@ -117,7 +117,7 @@ void ProcessMapLump(char* lump_ptr, int lump_size)
 	num_straddlers = *(int*)lump_ptr;
 
 	InitCellData();
-	memcpy(cell_objects, lump_ptr + 4, num_straddlers * sizeof(PACKED_CELL_OBJECT));
+	memcpy((u_char*)cell_objects, lump_ptr + 4, num_straddlers * sizeof(PACKED_CELL_OBJECT));
 }
 
 
@@ -658,7 +658,7 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 	}
 	printf("=========================\n");
 #endif
-	memcpy(output, decodebuf, pvs_square_sq-1);	// 110*4
+	memcpy((u_char*)output, decodebuf, pvs_square_sq-1);	// 110*4
 }
 
 

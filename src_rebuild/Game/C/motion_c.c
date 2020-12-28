@@ -462,7 +462,7 @@ void ProcessMotionLump(char* lump_ptr, int lump_size)
 		MotionCaptureData[ThisMotion] = D_MALLOC(size);
 		MALLOC_END();
 
-		memcpy(MotionCaptureData[ThisMotion], lump_ptr, size);
+		memcpy((u_char*)MotionCaptureData[ThisMotion], (u_char*)lump_ptr, size);
 
 		ThisMotion++;
 	}
@@ -794,7 +794,10 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	if (bDoingShadow != 0)
 	{
 		addPrim(current->ot + 0x107f, prims);
+
+#ifdef PGXP
 		prims->pgxp_index = 0xffff;
+#endif
 	}
 	else
 	{
@@ -1808,8 +1811,8 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 	// [A] not supported by emulator
 	// proposed change: double buffering of VRAM (one used as render target, second as texture)
 
-	memset(&d, 0, sizeof(VECTOR));
-	memset(&myVector, 0, sizeof(VECTOR));
+	memset((u_char*)&d, 0, sizeof(VECTOR));
+	memset((u_char*)&myVector, 0, sizeof(VECTOR));
 
 	SetDefDrawEnv(&drEnv, 0, current->draw.clip.y, 320, 256);
 

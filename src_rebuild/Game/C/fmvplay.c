@@ -10,6 +10,7 @@
 #include "LIBETC.H"
 #include "LIBSPU.H"
 #include "LIBGPU.H"
+#include "LIBAPI.H"
 #include "LIBMCRD.H"
 
 
@@ -52,13 +53,13 @@ void PlayRender(RENDER_ARGS *args)
 	args->screeny = draw_mode_pal.framey;
 	args->subtitle = gSubtitles;
 #ifdef PSX
-	if (Loadfile("FMV\\FMV.EXE", &DAT_800ff800) != 0)
+	if (Loadfile("FMV\\FMV.EXE", 0xff800) != 0)
 	{
 		oldsp = GetSp();
 		EnterCriticalSection();
 		FlushCache();
 		ExitCriticalSection();
-		Exec(&DAT_800ff810, 1, args);
+		Exec(0xff810, 1, (char**)args);
 		SetSp(oldsp);
 	}
 #else

@@ -16,6 +16,7 @@
 #include "RAND.H"
 #include "STRINGS.H"
 #include "INLINE_C.H"
+#include "system.h"
 
 extern int gCameraBoxOverlap;
 
@@ -933,7 +934,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 							{
 								if (damage_lamp(cop))
 								{
-									memset(&lamp_velocity, 0, sizeof(lamp_velocity));
+									ClearMem((char*)&lamp_velocity, sizeof(lamp_velocity));
 
 									collisionResult.hit.vy -= 730;
 									Setup_Sparks(&collisionResult.hit, &lamp_velocity, 0x14, 0);

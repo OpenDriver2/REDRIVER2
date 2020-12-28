@@ -3,6 +3,7 @@
 #include "system.h"
 #include "map.h"
 #include "event.h"
+#include "mission.h"
 #include "spool.h"
 
 int cell_object_index = 0;

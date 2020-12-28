@@ -446,7 +446,7 @@ void SubdivShadow(long z0, long z1, long z2, long z3, POLY_FT4 *sps)
 	spd = (POLY_FT4 *)current->primptr;
 	current->primptr += sizeof(POLY_FT4);
 
-	memcpy(spd, sps, sizeof(POLY_FT4));
+	memcpy((u_char*)spd, (u_char*)sps, sizeof(POLY_FT4));
 
 	addPrim(current->ot + (z0 * 2 + z3 * 6 >> 6), spd);
 }

@@ -578,7 +578,7 @@ u_short GetTPage(int tp, int abr, int x, int y)
 u_short LoadClut(u_long* clut, int x, int y)
 {
 	RECT16 rect;//&var_18
-	setRECT16(&rect, x, y, 256, 1);
+	setRECT(&rect, x, y, 256, 1);
 	LoadImagePSX(&rect, clut);
 	return GetClut(x, y) & 0xFFFF;
 }

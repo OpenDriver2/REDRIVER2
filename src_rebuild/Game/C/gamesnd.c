@@ -2125,7 +2125,7 @@ void IdentifyZone(envsound* ep, envsoundinfo* E, int pl)
 				ldz = ep[i].pos2.vz - ep[i].pos.vz;
 				
 				// find inverse length of line
-				l_inv_len = 1.0 / sqrtf(ldx * ldx + ldz * ldz);
+				l_inv_len = 1.0 / sqrt(ldx * ldx + ldz * ldz);
 				
 				// find normal (perpendicular) by using cross product and normalize
 				ndx = ldz * l_inv_len;

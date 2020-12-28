@@ -482,7 +482,7 @@ void LoadPermanentTPages(int *sector)
 		nsectors += (permlist[i].y + 2047) / CDSECTOR_SIZE;
 
 #ifdef PSX
-	loadsectors(tpagebuffer, *sector, nsectors_00);
+	loadsectors(tpagebuffer, *sector, nsectors);
 #else
 	loadsectorsPC(g_CurrentLevelFileName, tpagebuffer, *sector, nsectors);
 #endif // PSX

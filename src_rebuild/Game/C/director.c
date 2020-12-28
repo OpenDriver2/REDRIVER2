@@ -508,7 +508,7 @@ int IsMovingCamera(PLAYBACKCAMERA* lastcam, PLAYBACKCAMERA* nextcam, int camerac
 	if (zangle > 2048)
 		zangle -= 4096;
 
-	memcpy(&cam, lastcam, sizeof(PLAYBACKCAMERA));
+	memcpy((u_char*)&cam, (u_char*)lastcam, sizeof(PLAYBACKCAMERA));
 
 	cam.position.vx = lastcam->position.vx + xdist;
 	cam.position.vy = lastcam->position.vy + ydist;

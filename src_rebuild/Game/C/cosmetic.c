@@ -53,7 +53,7 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 
 			ptr = (lump_ptr + offset);
 
-			memcpy(&car_cosmetics[i], ptr, sizeof(CAR_COSMETICS));
+			memcpy((char*)&car_cosmetics[i], ptr, sizeof(CAR_COSMETICS));
 
 			FixCarCos(&car_cosmetics[i], model);
 		}
@@ -103,20 +103,20 @@ void AddReverseLight(CAR_DATA *cp)
 // [D] [T]
 void SetupSpecCosmetics(char *loadbuffer)
 {
-#ifndef PSX
 	int model;
+	model = MissionHeader->residentModels[4];
+
+#ifndef PSX
 	int offset;
 
 	// [A] always load cosmetics from file
 	// fixes limo cosmetics as well
 	LoadfileSeg(CosmeticFiles[GameLevel], _other_buffer, 0, 3120);
-
-	model = MissionHeader->residentModels[4];
 	offset = *(int*)(_other_buffer + model * sizeof(int));
 
-	memcpy(&car_cosmetics[4], _other_buffer + offset, sizeof(CAR_COSMETICS));
+	memcpy((char*)&car_cosmetics[4], _other_buffer + offset, sizeof(CAR_COSMETICS));
 #else
-	memcpy(&car_cosmetics[4], loadbuffer, sizeof(CAR_COSMETICS));
+	memcpy((char*)&car_cosmetics[4], loadbuffer, sizeof(CAR_COSMETICS));
 #endif
 
 	// [A] don't forget

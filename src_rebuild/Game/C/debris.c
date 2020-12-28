@@ -3634,7 +3634,7 @@ void AddRainDrops(void)
 		rt->oldposition.vz = 0;
 		rt->oldposition.pad = RainIndex;
 
-		gte_stlvnl(&rt->position)
+		gte_stlvnl(&rt->position);
 
 		// OBSOLETE DRIVER 1 CODE
 		/*

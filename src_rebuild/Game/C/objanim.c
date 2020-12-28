@@ -231,7 +231,7 @@ void ColourCycle(void)
 						if (cyc->start1 != -1)
 						{
 							temp = bufaddr[cyc->start1];
-							memmove(bufaddr + cyc->start1, bufaddr + cyc->start1 + 1, (cyc->stop1 - cyc->start1) << 1);
+							memmove((u_char*)(bufaddr + cyc->start1), (u_char*)(bufaddr + cyc->start1 + 1), (cyc->stop1 - cyc->start1) << 1);
 
 							bufaddr[cyc->stop1] = temp;
 						}
@@ -242,7 +242,7 @@ void ColourCycle(void)
 						if (cyc->start2 != -1)
 						{
 							temp = bufaddr[cyc->start2];
-							memmove(bufaddr + cyc->start2, bufaddr + cyc->start2 + 1, (cyc->stop2 - cyc->start2) << 1);
+							memmove((u_char*)(bufaddr + cyc->start2), (u_char*)(bufaddr + cyc->start2 + 1), (cyc->stop2 - cyc->start2) << 1);
 
 							bufaddr[cyc->stop2] = temp;
 						}

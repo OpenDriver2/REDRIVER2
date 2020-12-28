@@ -55,8 +55,8 @@ void DentCar(CAR_DATA *cp)
 	int model;
 	int Poly;
 
-	short tempDamage[512];
-	memset(tempDamage, 0, sizeof(tempDamage));
+	short tempDamage[256];
+	memset((u_char*)tempDamage, 0, sizeof(tempDamage));
 
 	MaxDamage = 0;
 	model = cp->ap.model;
@@ -452,7 +452,7 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 	int model;
 	int i;
 	int offset;
-	char* mem;
+	u_char* mem;
 
 	i = 0;
 
@@ -473,23 +473,23 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 		if (model != -1) 
 		{
 			offset = *(int *)(lump_ptr + model * 4);
-			mem = lump_ptr;
+			mem = (u_char*)lump_ptr;
 #ifndef PSX
 			char* newDenting = LoadCarDentingFromFile(NULL, model);
 			if(newDenting)
 			{
-				mem = newDenting;
+				mem = (u_char*)newDenting;
 				offset = 0;
 			}
 #endif
 
-			memcpy(gCarDamageZoneVerts[i], mem + offset, NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_VERTS);
+			memcpy((u_char*)gCarDamageZoneVerts[i], mem + offset, NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_VERTS);
 			offset += NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_VERTS;
 			
-			memcpy(gHDCarDamageZonePolys[i], mem + offset, NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_POLYS);
+			memcpy((u_char*)gHDCarDamageZonePolys[i], mem + offset, NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_POLYS);
 			offset += NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_POLYS;
 			
-			memcpy(gHDCarDamageLevels[i], mem + offset, MAX_FILE_DAMAGE_LEVELS);
+			memcpy((u_char*)gHDCarDamageLevels[i], mem + offset, MAX_FILE_DAMAGE_LEVELS);
 		}
 
 		i++;
@@ -503,13 +503,13 @@ void SetupSpecDenting(char *loadbuffer)
 	int offset;
 
 	// [A] this is better
-	memcpy(gCarDamageZoneVerts[4], loadbuffer, NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_VERTS);
+	memcpy((u_char*)gCarDamageZoneVerts[4], (u_char*)loadbuffer, NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_VERTS);
 	offset = NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_VERTS;
 
-	memcpy(gHDCarDamageZonePolys[4], loadbuffer + offset, NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_POLYS);
+	memcpy((u_char*)gHDCarDamageZonePolys[4], (u_char*)loadbuffer + offset, NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_POLYS);
 	offset += NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_POLYS;
 
-	memcpy(gHDCarDamageLevels[4], loadbuffer + offset, MAX_FILE_DAMAGE_LEVELS);
+	memcpy((u_char*)gHDCarDamageLevels[4], (u_char*)loadbuffer + offset, MAX_FILE_DAMAGE_LEVELS);
 }
 
 // [D] [T]

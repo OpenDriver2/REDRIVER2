@@ -11,6 +11,18 @@
 
 #include "STRINGS.H"
 
+#ifdef PSX
+typedef struct PADRAW
+{
+	unsigned char status; // size=0, offset=0
+	unsigned char id; // size=0, offset=1
+	unsigned char buttons[2]; // size=2, offset=2
+	unsigned char analog[4]; // size=4, offset=4
+} *LPPADRAW;
+#endif
+
+void HandlePadVibration(int pad);
+
 u_char High_shake_data[] = { 1, 0xFF, 0xFF, 0xC8, 0x50, 0x50, 0x50, 0x50, 0x50, 0x46, 0x46, 0x46, 0x46, 0x46, 0xA, 0xA, 0xA, 0xA, 0xA, 0xA, 0 };
 u_char Med_shake_data[] = { 1, 0xC8, 0xC8, 0x64, 0x46, 0x46, 0x46, 0x46, 0x46, 0xA, 0xA, 0xA, 0 };
 u_char Low_shake_data[] = { 1, 0xA0, 0xA0, 0x46, 0x46, 0xA, 0xA, 0xA, 0xA, 0 };
@@ -421,7 +433,7 @@ void ReadControllers(void)
 	int pad;
 
 	if (DuplicatePadData.buffer)
-		memcpy(DuplicatePadData.buffer, &padbuffer, DuplicatePadData.size);
+		memcpy((u_char*)DuplicatePadData.buffer, (u_char*)&padbuffer, DuplicatePadData.size);
 
 	pad = 0;
 	do {

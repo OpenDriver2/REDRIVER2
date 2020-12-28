@@ -11,7 +11,10 @@
 #include <stdint.h>
 
 #include "map.h"
+
+#if defined(_DEBUG) && 0
 #include "SDL.h"
+#endif
 
 struct tNode
 {

@@ -9,6 +9,7 @@
 #include "sound.h"
 #include "pres.h"
 #include "system.h"
+#include "spool.h"
 
 #ifndef PSX
 #include "STRINGS.H"
@@ -28,6 +29,8 @@ CSoundSource_WaveCache* g_wavData = NULL;
 CSoundSource_OpenALCache* g_XAWave = NULL;
 
 #else
+
+#include "LIBSND.H"
 
 char* XANames[] = {
 	"%sXA\\XABNK01.XA;1",
@@ -153,7 +156,7 @@ void GetMissionXAData(int number)
 	CdlFILE fp;
 	char filename[64];
 
-	sprintf(fileName, XANames[number], gDataFolder);
+	sprintf(filename, XANames[number], gDataFolder);
 	
 	CdSearchFile(&fp, XANames[number]);
 	XAMissionMessages[number].start = CdPosToInt((CdlLOC *)&fp);
@@ -195,6 +198,8 @@ void SetXAVolume(int volume)
 
 CdlCB oldreadycallback;
 void* olddatacallback;
+
+void cbready(int intr, unsigned char *result);
 
 // [D] [T]
 void PrepareXA(void)

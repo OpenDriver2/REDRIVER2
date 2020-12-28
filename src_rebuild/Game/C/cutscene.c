@@ -55,13 +55,6 @@ PLAYBACKCAMERA *CutsceneCamera = NULL;
 
 static int CutsceneCameraOffset = 0;
 
-#ifndef PSX
-char* gCustomCutsceneBuffer;
-
-char gUserReplayFolderList[MAX_USER_REPLAYS][48];
-int gNumUserChases = 0;
-int gUserChaseLoaded = -1;
-
 int LoadInGameCutscene(int subindex);
 int TriggerInGameCutsceneSystem(int cutscene);
 void SetNullPlayer(int plr);
@@ -74,6 +67,14 @@ void ShowCutsceneError();
 int LoadCutsceneInformation(int cutscene);
 void FreeCutsceneBuffer();
 int IsCutsceneResident(int cutscene);
+
+
+#ifndef PSX
+char* gCustomCutsceneBuffer;
+
+char gUserReplayFolderList[MAX_USER_REPLAYS][48];
+int gNumUserChases = 0;
+int gUserChaseLoaded = -1;
 
 // [A] user replay folders initialization
 void InitUserReplays(const char* str)
@@ -417,7 +418,7 @@ void ReleaseInGameCutscene(void)
 		{
 			if (PlayerStartInfo[i]->flags & 4)
 			{
-				memcpy(&player[0], &player[i], sizeof(PLAYER));
+				memcpy((u_char*)&player[0], (u_char*)&player[i], sizeof(PLAYER));
 
 				if (player[0].playerType == 2)
 				{
@@ -833,7 +834,7 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 		REPLAY_STREAM* destStream = &ReplayStreams[i];
 
 		// copy source type
-		memcpy(&destStream->SourceType, &sheader->SourceType, sizeof(STREAM_SOURCE));
+		memcpy((u_char*)&destStream->SourceType, (u_char*)&sheader->SourceType, sizeof(STREAM_SOURCE));
 
 		// init buffers
 		destStream->InitialPadRecordBuffer = (PADRECORD*)replayptr;
@@ -857,12 +858,12 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 	// copy cutscene cameras and pings
 	CutsceneCamera = (PLAYBACKCAMERA *)replayptr;
 
-	memcpy(CutsceneCamera, pt, sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS);
+	memcpy((u_char*)CutsceneCamera, pt, sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS);
 	replayptr += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
 
 	pt += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
 
-	memcpy(PingBuffer, pt, sizeof(PING_PACKET) * MAX_REPLAY_PINGS);
+	memcpy((u_char*)PingBuffer, pt, sizeof(PING_PACKET) * MAX_REPLAY_PINGS);
 
 	PingBufferPos = 0;
 

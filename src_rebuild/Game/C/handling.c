@@ -1506,7 +1506,7 @@ void jump_debris(CAR_DATA* cp)
 
 	if (DebrisTimer != 0 && --DebrisTimer < 75)
 	{
-		memset(&velocity, 0, sizeof(velocity));
+		memset((u_char*)&velocity, 0, sizeof(velocity));
 
 		velocity.vx = cp->hd.where.t[0] + ((rand() & 0x1ff) - 256);
 		velocity.vy = 200 - cp->hd.where.t[1];
@@ -1518,7 +1518,7 @@ void jump_debris(CAR_DATA* cp)
 
 		velocity.vz = position.vz;
 
-		memset(&velocity, 0, sizeof(velocity));
+		memset((u_char*)&velocity, 0, sizeof(velocity));
 		Setup_Debris(&position, &velocity, 5, 0xb);
 	}
 }

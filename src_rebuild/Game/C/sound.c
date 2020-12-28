@@ -123,7 +123,9 @@ void InitSound(void)
 		if (bankaddr[i] == -1)
 		{
 			printError("Failed to SpuMalloc! Exiting...\n");
+#ifndef PSX
 			exit(-1);
+#endif
 		}
 
 		i--;
@@ -175,7 +177,7 @@ void ResetSound(void)
 
 	ct = 0;
 	do {
-		memset(&channels[ct], 0, sizeof(CHANNEL_DATA));
+		memset((u_char*)&channels[ct], 0, sizeof(CHANNEL_DATA));
 
 		channels[ct].attr.volmode.left = 0;
 		channels[ct].attr.volmode.right = 0;
@@ -893,7 +895,7 @@ int LoadSoundBank(char *address, int length, int bank)
 	slength = num_samples * sizeof(SAMPLE_DATA) + sizeof(int);
 
 	// copy sample info
-	memcpy(samples[bank], address + sizeof(int), num_samples * sizeof(SAMPLE_DATA));
+	memcpy((u_char*)samples[bank], (u_char*)(address + sizeof(int)), num_samples * sizeof(SAMPLE_DATA));
 
 	// transfer sample data
 	SpuSetTransferMode(SPU_TRANSFER_BY_DMA);
@@ -972,7 +974,7 @@ int LoadSoundBankDynamic(char *address, int length, int dbank)
 	num_samples = *(int *)address;
 	slength = num_samples * sizeof(SAMPLE_DATA) + sizeof(int);
 
-	memcpy(samples[dbank] + lsbTabs.count[dbank], address + sizeof(int), num_samples * sizeof(SAMPLE_DATA));
+	memcpy((u_char*)(samples[dbank] + lsbTabs.count[dbank]), (u_char*)(address + sizeof(int)), num_samples * sizeof(SAMPLE_DATA));
 
 	SpuSetTransferMode(SPU_TRANSFER_BY_DMA);
 

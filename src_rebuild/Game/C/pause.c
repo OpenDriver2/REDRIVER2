@@ -878,8 +878,6 @@ void DrawVisibleMenus(void)
 	addPrim(current->ot, null);
 
 	current->primptr += sizeof(POLY_FT3);
-
-
 }
 
 // [D] [T]

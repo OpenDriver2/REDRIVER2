@@ -14,6 +14,8 @@
 typedef int intptr_t;
 typedef u_long OTTYPE;
 
+typedef short VERTTYPE;
+
 #define RECT16 RECT
 
 #else

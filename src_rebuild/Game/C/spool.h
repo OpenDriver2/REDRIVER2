@@ -27,6 +27,7 @@ extern int RoadMapRegions[4];
 extern volatile int spoolactive;
 extern int spoolpos_reading;
 extern int chunk_complete;
+extern volatile int spoolactive;
 
 extern void ProcessSpoolInfoLump(char *lump_ptr, int lump_size); // 0x0007C464
 

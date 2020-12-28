@@ -65,7 +65,7 @@ void InitFelonyData(FELONY_DATA *pFelonyData)
 	InitFelonyDelayArray(pFelonyData->occurrenceDelay, initialOccurrenceDelay, numberOf(initialOccurrenceDelay));
 	InitFelonyDelayArray(pFelonyData->reoccurrenceDelay, initialReccurrenceDelay, numberOf(initialOccurrenceDelay));
 
-	memcpy(&pFelonyData->value, &initialFelonyValue, sizeof(initialFelonyValue));
+	memcpy((u_char*)&pFelonyData->value, (u_char*)&initialFelonyValue, sizeof(initialFelonyValue));
 }
 
 // [D] [T]

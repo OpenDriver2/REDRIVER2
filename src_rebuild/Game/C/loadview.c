@@ -177,7 +177,7 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 
 	DrawSync(0);
 
-	setRECT16(&dest, 320, 0, 160, 511);
+	setRECT(&dest, 320, 0, 160, 511);
 	LoadImage(&dest, (u_long *)&_frontend_buffer[544]);
 
 	DrawSync(0);

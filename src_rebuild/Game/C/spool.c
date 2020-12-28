@@ -469,7 +469,7 @@ void DrawCDicon(void)
 		palette++;
 	}
 
-	setRECT16(&dest, 960, 433, 16, 1);
+	setRECT(&dest, 960, 433, 16, 1);
 	LoadImage(&dest, (u_long *)palette);
 
 	DrawPrim(&cd_sprite);

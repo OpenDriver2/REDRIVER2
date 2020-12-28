@@ -8,7 +8,7 @@ extern MATRIX frustrum_matrix;
 // [D] [T]
 void SetCameraVector(void)
 {
-	gte_ldfc(&camera_position)
+	gte_ldfc(&camera_position);
 }
 
 // [D] [T]

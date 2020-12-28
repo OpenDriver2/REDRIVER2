@@ -84,11 +84,11 @@ void FadeInHiresScreen(char *filename)
 	SetDispMask(0);
 	ResetGraph(3);
 
-	setRECT16(&rect, 0, 0, 512, 512);
+	setRECT(&rect, 0, 0, 512, 512);
 	ClearImage2(&rect, 0, 0, 0);
 	DrawSync(0);
 
-	setRECT16(&rect, 512, 0, 512, 512);
+	setRECT(&rect, 512, 0, 512, 512);
 	ClearImage2(&rect, 0, 0, 0);
 	DrawSync(0);
 
@@ -134,7 +134,7 @@ void FadeInHiresScreen(char *filename)
 	LoadClut((u_long*)_overlay_buffer, 640, 511);
 
 	DrawSync(0);
-	setRECT16(&rect, 640, 0, 320, 511);
+	setRECT(&rect, 640, 0, 320, 511);
 
 	LoadImage(&rect, (u_long*)&_overlay_buffer[524]);
 
@@ -205,11 +205,11 @@ void ShowBonusGallery()
 	SetDispMask(0);
 	ResetGraph(3);
 
-	setRECT16(&rect, 0, 0, 512, 512);
+	setRECT(&rect, 0, 0, 512, 512);
 	ClearImage2(&rect, 0, 0, 0);
 	DrawSync(0);
 
-	setRECT16(&rect, 512, 0, 512, 512);
+	setRECT(&rect, 512, 0, 512, 512);
 	ClearImage2(&rect, 0, 0, 0);
 	DrawSync(0);
 
@@ -263,7 +263,7 @@ void ShowBonusGallery()
 		LoadClut((u_long*)_other_buffer, 640, 511);
 
 		DrawSync(0);
-		setRECT16(&rect, 640, 0, 320, 511);
+		setRECT(&rect, 640, 0, 320, 511);
 
 		LoadImage(&rect, (u_long*)&_other_buffer[524]);
 
@@ -427,7 +427,7 @@ void FadeOutHiresScreen(void)
 
 	DrawSync(0);
 
-	setRECT16(&rect, 0, 0, 640, 512);
+	setRECT(&rect, 0, 0, 640, 512);
 	ClearImage2(&rect, 0, 0, 0);
 	DrawSync(0);
 }

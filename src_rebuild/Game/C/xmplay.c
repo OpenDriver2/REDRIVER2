@@ -10,6 +10,7 @@ XMPLAY.C
 
 #include "TYPES.H"
 #include "STRINGS.H"
+#include "ABS.H"
 
 #include "xmplay.h"
 #include "xmcalls.H"
@@ -1622,7 +1623,7 @@ int dist;
 
 	dist=XMC->period-XMC->wantedperiod;
 
-	if(dist==0 || XMC->portspeed>abs(dist))/* if they are equal */
+	if(dist==0 || XMC->portspeed>ABS(dist))/* if they are equal */
 	{											      /* or if portamentospeed is too big */
 
 		XMC->period=XMC->wantedperiod;      /* make tmpperiod equal tperiod */
@@ -1740,7 +1741,7 @@ DoPan
 
 short DoPan(short envpan,short pan)
 {
-	return(pan + (((envpan-128)*(128-abs(pan-128)))/128));
+	return(pan + (((envpan-128)*(128- ABS(pan-128)))/128));
 }
 
 
@@ -2476,7 +2477,7 @@ IntVols
 int IntVols(int Vol1, int Vol2)
 {
 	int a;
-	a = abs(Vol2 - Vol1);
+	a = ABS(Vol2 - Vol1);
 	a >>= 2;
 	a += 1;
 

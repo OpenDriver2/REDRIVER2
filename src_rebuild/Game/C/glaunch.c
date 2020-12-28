@@ -314,14 +314,14 @@ void ReInitFrontend(void)
 	LoadBankFromLump(1, 0);
 
 #ifdef PSX
-	Loadfile("FRONTEND.BIN", &DAT_001c0000);
+	Loadfile("FRONTEND.BIN", 0x1c0000);
 #endif // PSX
 
 	SetFEDrawMode();
 	DrawSync(0);
 	EnableDisplay();
 
-	setRECT16(&rect, 0, 0, 320, 512);
+	setRECT(&rect, 0, 0, 320, 512);
 	ClearImage(&rect, 0, 0, 0);
 
 	DrawSync(0);

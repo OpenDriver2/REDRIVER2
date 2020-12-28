@@ -77,4 +77,26 @@ extern short rcossin_tbl[8192];
 
 #define numberOf(sexToys)					(sizeof(sexToys) / sizeof(sexToys[0]))
 
+#ifndef MIN
+#define MIN(a,b)	fst_min(a,b)
+#endif
+
+#ifndef MAX
+#define MAX(a,b)	fst_max(a,b)
+#endif
+
+inline int fst_min(int a, int b)
+{
+	int diff = a - b;
+	int dsgn = diff >> 31;
+	return b + (diff & dsgn);
+}
+
+inline int fst_max(int a, int b)
+{
+	int diff = a - b;
+	int dsgn = diff >> 31;
+	return a - (diff & dsgn);
+}
+
 #endif // DR2MATH_H

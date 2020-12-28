@@ -506,7 +506,7 @@ void LoadFrontendScreens(void)
 
 		for (int j = 0; j < PsxScreens[i].numButtons; j++)
 		{
-			memcpy(&PsxScreens[i].buttons[j], ptr, sizeof(PSXBUTTON));
+			memcpy((u_char*)&PsxScreens[i].buttons[j], (u_char*)ptr, sizeof(PSXBUTTON));
 			ptr += sizeof(PSXBUTTON);
 		}
 	}
