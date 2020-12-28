@@ -20,6 +20,20 @@
 #include "LIBETC.H"
 #include "STRINGS.H"
 
+#ifdef PSX
+
+char* _overlay_buffer = 0x1C0000;
+char* _frontend_buffer = 0xFB400;
+char* _other_buffer = 0xF3000;
+char* _other_buffer2 = 0xE7000;
+OTTYPE* _OT1 = 0xF3000;
+OTTYPE* _OT2 = 0xF7200;
+char* _primTab1 = 0xFB400;
+char* _primTab2 = 0x119400;
+char* _replay_buffer = 0x1FABBC;
+
+#else
+
 // Initialized in redriver2_main
 char* _overlay_buffer = NULL;		// 0x1C0000
 char* _frontend_buffer = NULL;	// 0xFB400
@@ -30,6 +44,9 @@ OTTYPE* _OT2 = NULL;				// 0xF7200
 char* _primTab1 = NULL;			// 0xFB400
 char* _primTab2 = NULL;			// 0x119400
 char* _replay_buffer = NULL;		// 0x1FABBC
+
+#endif
+
 char gDataFolder[32] = "DRIVER2\\";
 
 #ifdef USE_CRT_MALLOC
@@ -91,6 +108,11 @@ void sys_tempfree()
 	free(g_dynamicAllocs[g_numDynamicAllocs]);
 	g_dynamicAllocs[g_numDynamicAllocs] = NULL;
 }
+#elif defined(PSX)
+
+char* mallocptr;
+const char* mallocptr_start = 0x137400;
+
 #else
 
 char g_allocatedMem[0x200000];			// 0x137400 (_ramsize). TODO: use real malloc  size: 870332

@@ -40,12 +40,12 @@ void printError(char *fmt, ...);
 
 #endif // PSX
 
-#include "REVERSING.H"
+#include "reversing.h"
 
-#include "VERSION.H"
-#include "DR2MATH.H"
-#include "DR2LIMITS.H"
-#include "DR2TYPES.H"
-#include "DR2LOCALE.H"
+#include "version.h"
+#include "dr2math.h"
+#include "dr2limits.h"
+#include "dr2types.h"
+#include "dr2locale.h"
 
 #endif // DRIVER2_H

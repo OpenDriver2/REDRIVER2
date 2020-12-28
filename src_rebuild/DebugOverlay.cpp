@@ -4,19 +4,19 @@
 
 #include "Game/driver2.h"
 
-#include "C/mission.h"
-#include "C/convert.h"
-#include "C/camera.h"
-#include "C/dr2roads.h"
-#include "C/system.h"
-#include "C/pres.h"
-#include "C/spool.h"
-#include "C/cars.h"
-#include "C/cop_ai.h"
-#include "C/draw.h"
-#include "C/players.h"
-#include "C/glaunch.h"
-#include "C/dr2roads.h"
+#include "Game/C/mission.h"
+#include "Game/C/convert.h"
+#include "Game/C/camera.h"
+#include "Game/C/dr2roads.h"
+#include "Game/C/system.h"
+#include "Game/C/pres.h"
+#include "Game/C/spool.h"
+#include "Game/C/cars.h"
+#include "Game/C/cop_ai.h"
+#include "Game/C/draw.h"
+#include "Game/C/players.h"
+#include "Game/C/glaunch.h"
+#include "Game/C/dr2roads.h"
 
 
 #include <stdio.h>

@@ -485,8 +485,6 @@ void GameInit(void)
 #ifdef USE_CRT_MALLOC
 		sys_freeall();
 		mallocptr_start = D_MALLOC(0x200000);
-#else
-
 #endif // USE_CRT_MALLOC
 		mallocptr = (char*)mallocptr_start;
 #endif // PSX

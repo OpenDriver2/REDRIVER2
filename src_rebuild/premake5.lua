@@ -80,25 +80,25 @@ project "REDRIVER2"
     targetdir "bin/%{cfg.buildcfg}"
 
     includedirs { 
-        "GAME", 
+        "Game", 
     }
 
     defines { GAME_REGION }
 
     files {
-        "GAME/**.H",
-        "GAME/**.C",
+        "Game/**.h",
+        "Game/**.c",
     }
 	
 	-- exclude sources which belong to overlays
 	if os.target() == "psx" then
 		excludes {
-			"GAME/MEMCARD/**.C",
-			"GAME/MEMCARD/**.H",
-			"GAME/FRONTEND/**.C",
-			"GAME/FRONTEND/**.H",
-			"GAME/C/LEADAI.C",
-			"GAME/C/PATHFIND.C",
+			"Game/MemCard/**.c",
+			"Game/MemCard/**.h",
+			"Game/Frontend/**.c",
+			"Game/Frontend/**.h",
+			"Game/C/leadai.c",
+			"Game/C/pathfind.C",
 		}
 	end
 
