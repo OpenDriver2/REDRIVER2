@@ -1,4 +1,4 @@
-#include "DRIVER2.H"
+#include "driver2.h"
 
 #include "LIBGTE.H"
 #include "LIBGPU.H"

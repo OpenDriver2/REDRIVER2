@@ -1,0 +1,35 @@
+game/C/main.o: game/C/main.c GAME/driver2.h \
+ f:\learn\drvsyn\disasm\psxtoolchain\nxpsy-q\mips-gcc\lib\gcc\mipsel-unknown-elf\7.2.0\include\stdbool.h \
+ ../../PSXToolchain/NxPsy-Q/include/stdio.h \
+ ../../PSXToolchain/NxPsy-Q/include/KERNEL.H \
+ ../../PSXToolchain/NxPsy-Q/include/r3000.h \
+ ../../PSXToolchain/NxPsy-Q/include/asm.h \
+ ../../PSXToolchain/NxPsy-Q/include/TYPES.H \
+ ../../PSXToolchain/NxPsy-Q/include/LIBCD.H \
+ ../../PSXToolchain/NxPsy-Q/include/LIBGTE.H \
+ ../../PSXToolchain/NxPsy-Q/include/LIBGPU.H \
+ ../../PSXToolchain/NxPsy-Q/include/LIBSPU.H GAME/PSYX_COMPAT.H \
+ GAME/REVERSING.H GAME/VERSION.H GAME/DR2MATH.H \
+ ../../PSXToolchain/NxPsy-Q/include/ABS.H GAME/DR2LIMITS.H \
+ GAME/DR2TYPES.H GAME/DR2LOCALE.H game/C/main.h \
+ ../../PSXToolchain/NxPsy-Q/include/LIBETC.H \
+ ../../PSXToolchain/NxPsy-Q/include/LIBAPI.H \
+ ../../PSXToolchain/NxPsy-Q/include/LIBMCRD.H \
+ ../../PSXToolchain/NxPsy-Q/include/kernel.h GAME/ASM/rndrasm.h \
+ game/C/system.h game/C/pad.h ../../PSXToolchain/NxPsy-Q/include/LIBPAD.H \
+ game/C/sound.h game/C/fmvplay.h game/C/E3stuff.h game/C/gamesnd.h \
+ game/C/scores.h game/C/glaunch.h game/C/loadview.h game/C/replays.h \
+ game/C/event.h game/C/mission.h game/C/cutscene.h game/C/texture.h \
+ game/C/sky.h game/C/pres.h game/C/draw.h game/C/denting.h \
+ game/C/cosmetic.h game/C/pedest.h game/C/spool.h game/C/map.h \
+ game/C/objanim.h game/C/handling.h game/C/drivinggames.h \
+ game/C/bomberman.h game/C/players.h game/C/ai.h game/C/civ_ai.h \
+ game/C/cop_ai.h game/C/camera.h game/C/overlay.h game/C/debris.h \
+ game/C/job_fx.h game/C/director.h game/C/convert.h game/C/tile.h \
+ game/C/overmap.h game/C/motion_c.h game/C/dr2roads.h game/C/models.h \
+ game/C/cars.h game/C/objcoll.h game/C/mc_snd.h game/C/felony.h \
+ game/C/leadai.h game/C/loadsave.h GAME/Frontend/FEmain.h game/C/xaplay.h \
+ game/C/shadow.h game/C/pause.h ../../PSXToolchain/NxPsy-Q/include/RAND.H \
+ ../../PSXToolchain/NxPsy-Q/include/STRINGS.H \
+ ../../PSXToolchain/NxPsy-Q/include/memory.h GAME/PLATFORM.H \
+ ../../PSXToolchain/NxPsy-Q/include/INLINE_C.H

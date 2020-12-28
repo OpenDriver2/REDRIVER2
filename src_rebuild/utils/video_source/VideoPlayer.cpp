@@ -3,7 +3,7 @@
 #include <PSYX_RENDER.H>
 #include "COMMON/glad.h"
 
-#include "DRIVER2.H"
+#include "driver2.h"
 
 #include "C/PAD.H"
 #include "C/SYSTEM.H"

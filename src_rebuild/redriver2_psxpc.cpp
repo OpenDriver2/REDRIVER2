@@ -5,7 +5,7 @@
 
 #include "PLATFORM.H"
 
-#include "DRIVER2.H"
+#include "driver2.h"
 #include "C/MAIN.H"
 #include "C/SYSTEM.H"
 #include "C/GAMESND.H"
