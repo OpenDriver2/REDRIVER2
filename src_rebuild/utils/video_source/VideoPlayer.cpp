@@ -3,12 +3,13 @@
 #include <PSYX_RENDER.H>
 #include "COMMON/glad.h"
 
-#include "DRIVER2.H"
+#include "driver2.h"
 
-#include "C/PAD.H"
-#include "C/SYSTEM.H"
-#include "C/E3STUFF.H"
-#include "C/FMV_FONT.h"
+#include "C/pad.H"
+#include "C/system.h"
+#include "C/E3stuff.h"
+#include "C/fmv_font.h"
+
 #include "STRINGS.H"
 
 #include <AL/al.h>

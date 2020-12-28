@@ -18,6 +18,28 @@
 #define ONE					(1 << 12)
 #define	FIXED(a)			((a) >> 12)
 
+#ifndef MIN
+#define MIN(a,b)	fst_min(a,b)
+#endif
+
+#ifndef MAX
+#define MAX(a,b)	fst_max(a,b)
+#endif
+
+inline int fst_min(int a, int b)
+{
+	int diff = a - b;
+	int dsgn = diff >> 31;
+	return b + (diff & dsgn);
+}
+
+inline int fst_max(int a, int b)
+{
+	int diff = a - b;
+	int dsgn = diff >> 31;
+	return a - (diff & dsgn);
+}
+
 void InitGeom()
 {
 	C2_ZSF3 = 341;
