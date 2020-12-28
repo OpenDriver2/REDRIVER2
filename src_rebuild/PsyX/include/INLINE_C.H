@@ -79,7 +79,19 @@ int CFC2_S(int reg);
 #define gte_ldbkdir( r0, r1, r2 ) \
 	{	CTC2(r0, 13); \
 		CTC2(r1, 14); \
-		CTC2(r2, 15);}
+		CTC2(r2, 15);	}
+
+// mtc2 12,13,14
+#define gte_ldsxy3( r0, r1, r2 )\
+	{	MTC2(*(uint*)r0, 12);			\
+		MTC2(*(uint*)r2, 14);			\
+		MTC2(*(uint*)r1, 13);	}
+
+// mtc2 12,13,14
+#define gte_ldsxy3c( r0 ) \
+	{	MTC2(*(uint*)((char*)r0+0), 12 );		\
+		MTC2(*(uint*)((char*)r0+4), 13 );		\
+		MTC2(*(uint*)((char*)r0+8), 14 );	}
 
 // ctc2 24,25
 #define gte_SetGeomOffset( r0, r1 )\
@@ -88,16 +100,16 @@ int CFC2_S(int reg);
 
 // ctc2 13,14,15
 #define gte_SetBackColor( r0, r1, r2 ) \
-				{	CTC2(r0 << 4, 13); \
-					CTC2(r1 << 4, 14); \
-					CTC2(r2 << 4, 15); }
+		{	CTC2(r0 << 4, 13); \
+			CTC2(r1 << 4, 14); \
+			CTC2(r2 << 4, 15); }
 
 
 // ctc2 21, 22, 23
 #define gte_SetFarColor( r0, r1, r2 ) \
-				{	CTC2(r0 << 4, 21); \
-					CTC2(r1 << 4, 22); \
-					CTC2(r2 << 4, 23); }
+		{	CTC2(r0 << 4, 21); \
+			CTC2(r1 << 4, 22); \
+			CTC2(r2 << 4, 23); }
 
  // load ctc2 8-11
 #define gte_SetLightMatrix( r0 ) \
@@ -159,11 +171,12 @@ int CFC2_S(int reg);
  // please refer to official Psy-Q PSX SDK headers
  // and this: https://github.com/ogamespec/pops-gte/blob/master/docs/gte.txt
 
-#define gte_rtv0tr()		docop2(0x480012);
+#define gte_rt()			docop2(0x480012);
+#define gte_rtv0tr()		gte_rt()
 #define gte_rtv0()			docop2(0x486012);
 #define gte_lcir()			docop2(0x4DE012);
 #define gte_llir()			docop2(0x4BE012);
-
+#define gte_ll()			docop2(0x4A6412);
 #define gte_rtir()			docop2(0x49E012)
 #define gte_rtps()			docop2(0x180001)
 #define gte_rtpt()			docop2(0x280030)
@@ -302,9 +315,9 @@ int CFC2_S(int reg);
 
 // ctc2 5,6,7
 #define gte_ldtr( r0, r1, r2 ) \
-	{	CTC2(*(uint*)((char*)r0), 5);\
-		CTC2(*(uint*)((char*)r1), 6);\
-		CTC2(*(uint*)((char*)r2), 7);}
+	{	CTC2(r0, 5);\
+		CTC2(r1, 6);\
+		CTC2(r2, 7);}
 
 // cfc2 5,6,7
 #define gte_sttr( r0 ) \
