@@ -314,7 +314,7 @@ void ReInitFrontend(void)
 	LoadBankFromLump(1, 0);
 
 #ifdef PSX
-	Loadfile("FRONTEND.BIN", 0x1c0000);
+	Loadfile("FRONTEND.BIN", 0x801C0000);
 #endif // PSX
 
 	SetFEDrawMode();

@@ -479,14 +479,14 @@ void GameInit(void)
 	else
 	{
 #ifdef PSX
-		mallocptr = (char*)0x137400;
+		mallocptr = (char*)0x80137400;
 #else
 
 #ifdef USE_CRT_MALLOC
 		sys_freeall();
-		mallocptr_start = D_MALLOC(0x200000);
+		malloctab = D_MALLOC(0x200000);
 #endif // USE_CRT_MALLOC
-		mallocptr = (char*)mallocptr_start;
+		mallocptr = (char*)malloctab;
 #endif // PSX
 
 		MALLOC_BEGIN();
@@ -762,12 +762,12 @@ void GameInit(void)
 	}
 
 #ifdef DEBUG
-	printInfo("malloctab 0x%08x to 0x%08x (%d bytes) (Final: 0x%08x)\n", &mallocptr_start, mallocptr, mallocptr - mallocptr_start, mallocptr);
+	printInfo("malloctab 0x%08x to 0x%08x (%d bytes) (Final: 0x%08x)\n", &malloctab, mallocptr, mallocptr - malloctab, mallocptr);
 
-	if (mallocptr < mallocptr_start + PSX_MALLOC_SIZE)
-		printInfo("COOL: Level fits on blue station by %d bytes!\n", mallocptr_start + PSX_MALLOC_SIZE - mallocptr);
+	if (mallocptr < malloctab + PSX_MALLOC_SIZE)
+		printInfo("COOL: Level fits on blue station by %d bytes!\n", malloctab + PSX_MALLOC_SIZE - mallocptr);
 	else
-		printWarning("WARNING: Level too big to fit on blue station by %d bytes!\n", mallocptr - (mallocptr_start + PSX_MALLOC_SIZE));
+		printWarning("WARNING: Level too big to fit on blue station by %d bytes!\n", mallocptr - (malloctab + PSX_MALLOC_SIZE));
 #endif
 
 	gShowPlayerDamage = 1;
@@ -1816,9 +1816,12 @@ int redriver2_main(int argc, char** argv)
 	SsSetSerialVol(0, 0, 0);
 	SetDispMask(0);
 	SetGraphDebug(0);
+
 	SetVideoMode(video_mode);
+
 	CdInit();
 	SsSetSerialVol(0, 0, 0);
+
 	SpuInit();
 	InitGeom();
 	SetGeomOffset(160, 128);
@@ -1828,7 +1831,7 @@ int redriver2_main(int argc, char** argv)
 	InitControllers();
 	Init_FileSystem();
 	InitSound();
-
+	
 #ifndef PSX
 	if (argc <= 1)
 #endif
@@ -1850,7 +1853,7 @@ int redriver2_main(int argc, char** argv)
 
 	// Init frontend
 #ifdef PSX
-	Loadfile("FRONTEND.BIN", 0x1c0000);
+	Loadfile("FRONTEND.BIN", 0x801C0000);
 #endif // PSX
 
 	SpuSetMute(0);

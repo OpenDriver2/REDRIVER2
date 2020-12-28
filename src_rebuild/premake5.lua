@@ -98,7 +98,7 @@ project "REDRIVER2"
 			"Game/Frontend/**.c",
 			"Game/Frontend/**.h",
 			"Game/C/leadai.c",
-			"Game/C/pathfind.C",
+			"Game/C/pathfind.c",
 		}
 	end
 

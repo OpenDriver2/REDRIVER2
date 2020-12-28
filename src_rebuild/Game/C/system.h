@@ -17,7 +17,7 @@ extern char gDataFolder[32];
 
 #define PSX_MALLOC_SIZE 870332
 
-extern const char* mallocptr_start;
+extern const char* malloctab;
 extern char* mallocptr;
 
 #ifdef USE_CRT_MALLOC
@@ -52,13 +52,13 @@ extern void sys_freeall();
 #define MALLOC_END() \
 		D_TEMPFREE();\
 		if(mallocptr > _oldmalloc)\
-			printWarning("malloc(%d) in %s, line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __FUNCTION__, __LINE__, (mallocptr-mallocptr_start));\
+			printWarning("malloc(%d) in %s, line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __FUNCTION__, __LINE__, (mallocptr-malloctab));\
 	} // MALLOC_BEGIN block
 #else
 #define MALLOC_END() \
 		D_TEMPFREE();\
 		if(mallocptr > _oldmalloc)\
-			printWarning("malloc(%d) in " __FUNCTION__ ", line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __LINE__, (mallocptr-mallocptr_start));\
+			printWarning("malloc(%d) in " __FUNCTION__ ", line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __LINE__, (mallocptr-malloctab));\
 	} // MALLOC_BEGIN block
 #endif
 
