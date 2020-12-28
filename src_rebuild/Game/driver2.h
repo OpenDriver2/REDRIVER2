@@ -11,11 +11,11 @@
 #include "LIBGPU.H"
 #include "LIBSPU.H"
 
-#include "PSYX_COMPAT.H"
+#include "psyx_compat.h"
 
 #ifdef PSX
 // TODO: Include PSX STUFF
-#define trap(code) printf("ERROR OCCURED!\n")
+#define trap(code) printf("ERROR OCCURED %d!\n", code)
 
 #define printMsg					(void)
 #define printInfo					(void)

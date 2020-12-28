@@ -1,21 +1,26 @@
-#include "driver2.h"
-
 #include "LIBGTE.H"
 #include "LIBGPU.H"
 #include "INLINE_C.H"
-#include "C/MISSION.H"
 
-#include "C/CONVERT.H"
-#include "C/CAMERA.H"
-#include "C/DRAW.H"
-#include "C/SYSTEM.H"
-#include "C/PRES.H"
-#include "C/SPOOL.H"
-#include "C/CARS.H"
-#include "C/COP_AI.H"
-#include "C/DR2ROADS.H"
-#include "C/PLAYERS.H"
-#include "C/GLAUNCH.H"
+#include "Game/driver2.h"
+
+#include "C/mission.h"
+#include "C/convert.h"
+#include "C/camera.h"
+#include "C/dr2roads.h"
+#include "C/system.h"
+#include "C/pres.h"
+#include "C/spool.h"
+#include "C/cars.h"
+#include "C/cop_ai.h"
+#include "C/draw.h"
+#include "C/players.h"
+#include "C/glaunch.h"
+#include "C/dr2roads.h"
+
+
+#include <stdio.h>
+
 
 int gDisplayDrawStats = 0;
 
