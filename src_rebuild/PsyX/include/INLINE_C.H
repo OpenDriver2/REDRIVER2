@@ -2,7 +2,6 @@
 #define INLINE_C_H
 
 extern void gte_SetGeomScreen(int h);
-extern int gte_ldlzc(int input);
 
 extern int docop2(int op);
 
@@ -68,8 +67,38 @@ int CFC2_S(int reg);
 		MTC2(*(uint*)((char*)r0 + 4), 10);\
 		MTC2(*(uint*)((char*)r0 + 8), 11);}
 
+// mtc2 9,10,11
+#define gte_ldsv( r0 ) \
+	{	MTC2((*(ushort*)((char*)r0), 9);\
+		MTC2((*(ushort*)((char*)r0 + 2), 10);\
+		MTC2((*(ushort*)((char*)r0 + 4), 11); }
+
+// mtc2 9,10
+#define gte_ldbv( r0 ) \
+	{	MTC2(*((char*)r0), 9);\
+		MTC2(*((char*)r0 + 1), 10); }
+
+// mtc2 9,10,11
+#define gte_ldcv( r0 ) \
+	{	MTC2((*((char*)r0), 9);\
+		MTC2((*((char*)r0 + 1), 10);\
+		MTC2((*((char*)r0 + 2), 11); }
+
+// lwc2 6
 #define gte_ldrgb( r0 ) \
 	{	MTC2(*(uint*)((char*)r0), 6);	}
+
+// lwc2 6,20,21,22
+#define gte_ldrgb3( r0, r1, r2 ) \
+	{	MTC2(*(uint*)((char*)r0), 20); \
+		MTC2(*(uint*)((char*)r1), 21); \
+		MTC2(*(uint*)((char*)r2), 22); \
+		MTC2(*(uint*)((char*)r2), 6); }
+
+// mtc2 0, lwc2 1
+#define gte_ldlv0( r0 ) \
+	{	MTC2((*(ushort*)((char*)r0 + 4) << 16) | *(ushort*)((char*)r0));\
+		MTC2(*(ushort*)((char*)r0 + 8) << 16); }
 
 // mtc2 8
 #define gte_lddp( r0 )	\
@@ -92,6 +121,31 @@ int CFC2_S(int reg);
 	{	MTC2(*(uint*)((char*)r0+0), 12 );		\
 		MTC2(*(uint*)((char*)r0+4), 13 );		\
 		MTC2(*(uint*)((char*)r0+8), 14 );	}
+
+// mtc2 17,18,19
+#define gte_ldsz3( r0, r1, r2 ) \
+	{	MTC2(*(uint*)((char*)r0), 17 );		\
+		MTC2(*(uint*)((char*)r1), 18 );		\
+		MTC2(*(uint*)((char*)r2), 19 );	}
+
+// mtc2 16,17,18,19
+#define gte_ldsz4( r0, r1, r2, r3 ) \
+	{	MTC2(*(uint*)((char*)r0), 16 );		\
+		MTC2(*(uint*)((char*)r1), 17 );		\
+		MTC2(*(uint*)((char*)r2), 18 );		\
+		MTC2(*(uint*)((char*)r3), 19 );	}
+
+// ctc2 0,2,4
+#define gte_ldopv1( r0 ) \
+	{	CTC2(*(uint*)((char*)r0), 0);\
+		CTC2(*(uint*)((char*)r0 + 4), 2);\
+		CTC2(*(uint*)((char*)r0 + 8), 4);}
+
+// lwc2 9,10,11
+#define gte_ldopv2( r0 ) \
+	{	MTC2(*(uint*)((char*)r0), 9);\
+		MTC2(*(uint*)((char*)r0 + 4), 10);\
+		MTC2(*(uint*)((char*)r0 + 8), 11);}
 
 // ctc2 24,25
 #define gte_SetGeomOffset( r0, r1 )\
@@ -163,6 +217,22 @@ int CFC2_S(int reg);
 		CTC2(*(uint*)((char*)r0+12), 19);\
 		CTC2(*(uint*)((char*)r0+16), 20);}
 
+// mtc2 9,10,11
+#define gte_ldopv2SV( r0 ) \
+	{	MTC2(*(ushort*)((char*)r0), 9);\
+		MTC2(*(ushort*)((char*)r0 + 2), 10);\
+		MTC2(*(ushort*)((char*)r0 + 4), 11);}
+
+// ctc2 0,2,4
+#define gte_ldopv1SV( r0 )\
+	{	CTC2(*(ushort*)((char*)r0), 0);\
+		CTC2(*(ushort*)((char*)r0 + 2), 2);\
+		CTC2(*(ushort*)((char*)r0 + 4), 4);}
+
+// mtc2 30
+#define gte_ldlzc( r0 ) \
+	MTC2(*(uint*)((char*)r0), 30);
+
 /*
  * Type 2 functions
  */
@@ -171,12 +241,15 @@ int CFC2_S(int reg);
  // please refer to official Psy-Q PSX SDK headers
  // and this: https://github.com/ogamespec/pops-gte/blob/master/docs/gte.txt
 
-#define gte_rt()			docop2(0x480012);
+#define gte_nop()
+
+#define gte_rt()			docop2(0x480012)
 #define gte_rtv0tr()		gte_rt()
-#define gte_rtv0()			docop2(0x486012);
-#define gte_lcir()			docop2(0x4DE012);
-#define gte_llir()			docop2(0x4BE012);
-#define gte_ll()			docop2(0x4A6412);
+#define gte_rtv0()			docop2(0x486012)
+#define gte_lc()			docop2(0x4DA412)
+#define gte_lcir()			docop2(0x4DE012)
+#define gte_llir()			docop2(0x4BE012)
+#define gte_ll()			docop2(0x4A6412)
 #define gte_rtir()			docop2(0x49E012)
 #define gte_rtps()			docop2(0x180001)
 #define gte_rtpt()			docop2(0x280030)
@@ -195,7 +268,7 @@ int CFC2_S(int reg);
 #define gte_ncdt()			docop2(0xF80416)
 #define gte_cc()			docop2(0x138041C)
 #define gte_cdp()			docop2(0x1280414)
-#define gte_dcpl()			docop2(0x680029)
+#define gte_dpcl()			docop2(0x680029)
 #define gte_dpcs()			docop2(0x780010)
 #define gte_dpct()			docop2(0x180001)
 #define gte_intpl()			docop2(0x980011)
@@ -203,6 +276,39 @@ int CFC2_S(int reg);
 #define gte_gpf12()			docop2(0x198003D)
 #define gte_gpl0()			docop2(0x1A0003E)
 #define gte_gpl12()			docop2(0x1A8003E)
+
+#define gte_rt_b()				docop2(0x480012)
+#define gte_rtv0tr_b()			gte_rt_b()
+#define gte_rtv0_b()			docop2(0x486012)
+#define gte_lcir_b()			docop2(0x4DE012)
+#define gte_llir_b()			docop2(0x4BE012)
+#define gte_ll_b()				docop2(0x4A6412)
+#define gte_rtir_b()			docop2(0x49E012)
+#define gte_rtps_b()			docop2(0x180001)
+#define gte_rtpt_b()			docop2(0x280030)
+#define gte_nclip_b()			docop2(0x1400006)
+#define gte_avsz3_b()			docop2(0x158002D)
+#define gte_avsz4_b()			docop2(0x168002E)
+#define gte_sqr0_b()			docop2(0xA00428)
+#define gte_sqr12_b()			docop2(0xA80428)
+#define gte_op0_b()				docop2(0x170000C)
+#define gte_op12_b()			docop2(0x178000C)
+#define gte_ncs_b()				docop2(0xC8041E)
+#define gte_nct_b()				docop2(0xD80420)
+#define gte_nccs_b()			docop2(0x108041B)
+#define gte_ncct_b()			docop2(0x118043F)
+#define gte_ncds_b()			docop2(0xE80413)
+#define gte_ncdt_b()			docop2(0xF80416)
+#define gte_cc_b()				docop2(0x138041C)
+#define gte_cdp_b()				docop2(0x1280414)
+#define gte_dcpl_b()			docop2(0x680029)
+#define gte_dpcs_b()			docop2(0x780010)
+#define gte_dpct_b()			docop2(0x180001)
+#define gte_intpl_b()			docop2(0x980011)
+#define gte_gpf0_b()			docop2(0x190003D)
+#define gte_gpf12_b()			docop2(0x198003D)
+#define gte_gpl0_b()			docop2(0x1A0003E)
+#define gte_gpl12_b()			docop2(0x1A8003E)
 
 #define gte_mvmva(sf, mx, v, cv, lm) docop2( 0x0400012 | \
 	((sf)<<19) | ((mx)<<17) | ((v)<<15) | ((cv)<<13) | ((lm)<<10) )
@@ -301,6 +407,17 @@ int CFC2_S(int reg);
 		*(ushort*)((char*)r0 + 2) = MFC2(10) & 0xFFFF;\
 		*(ushort*)((char*)r0 + 4) = MFC2(11) & 0xFFFF;}
 
+// mfc2 9,10
+#define gte_stbv( r0 ) \
+	{	*((char*)r0) = MFC2(9) & 0xFF; \
+		*((char*)r0 + 1) = MFC2(10) & 0xFF;}
+
+// mfc2 9,10,11
+#define gte_stcv( r0 ) \
+	{	*((char*)r0) = MFC2(9) & 0xFF; \
+		*((char*)r0 + 1) = MFC2(10) & 0xFF;\
+		*((char*)r0 + 2) = MFC2(11) & 0xFF;}
+
 // swc2 17,18,19
 #define gte_stsz3( r0, r1, r2 ) \
 	{	*(uint*)((char*)r0) = MFC2(17);\
@@ -368,6 +485,10 @@ int CFC2_S(int reg);
 		*(uint*)((char*)r0 + 20) = CFC2(13);	\
 		*(uint*)((char*)r0 + 24) = CFC2(14);	\
 		*(uint*)((char*)r0 + 28) = CFC2(15);}
+
+// swc2 31
+#define gte_stlzc( r0 ) \
+	*(ushort*)((char*)r0) = MFC2(31);
 
 // cfc2 21,22,23
 #define gte_stfc( r0 )\
