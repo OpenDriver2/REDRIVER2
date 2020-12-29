@@ -57,9 +57,9 @@ void DeinitStringMng()
 // [D] Driver 1 PC function
 int InitStringLanguage(char *filename, int mission)
 {
-	char *buffer;
-	char *cptr;
-	char *ln;
+	unsigned char *buffer;
+	unsigned char *cptr;
+	unsigned char *ln;
 	int i;
 	int size;
 
@@ -74,14 +74,14 @@ int InitStringLanguage(char *filename, int mission)
 	size = ftell(fp);
 	fseek(fp, 0, SEEK_SET);
 
-	buffer = (char*)malloc(size);
+	buffer = (unsigned char*)malloc(size);
 	fread(buffer, 1, size, fp);
 	fclose(fp);
 	
 	if (mission)
-		gMisssionLanguageBuffer = buffer;
+		gMisssionLanguageBuffer = (char*)buffer;
 	else
-		gGameLanguageBuffer = buffer;
+		gGameLanguageBuffer = (char*)buffer;
 
 	cptr = buffer;
 	for (i = 0; i < MAX_LANGUAGE_TEXT; i++)
@@ -96,9 +96,9 @@ int InitStringLanguage(char *filename, int mission)
 		else
 		{
 			if (mission)
-				gMissionLangTable[i] = cptr;
+				gMissionLangTable[i] = (char*)cptr;
 			else
-				gGameLangTable[i] = cptr;
+				gGameLangTable[i] = (char*)cptr;
 
 			// go to next line
 			ln = cptr;
