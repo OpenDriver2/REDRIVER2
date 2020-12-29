@@ -1,4 +1,6 @@
 #include "driver2.h"
+#include "C/system.h"
+#include "platform.h"
 
 #ifndef PSX
 #include <stdio.h>
@@ -15,11 +17,11 @@ char* gMissionLangTable[MAX_LANGUAGE_TEXT];
 
 char* LanguageNames[5] =
 {
-	"ENGLISH",
-	"ITALIAN",
-	"GERMAN",
-	"FRENCH",
-	"SPANISH",
+	"EN",
+	"IT",
+	"GE",
+	"FR",
+	"SP",
 };
 
 #ifndef PSX
@@ -31,11 +33,15 @@ int InitStringMng()
 	if (gUserLanguage < 0 || gUserLanguage >= 6)
 		gUserLanguage = 0;
 
-	sprintf(filename, "%s_GAME.LTXT", LanguageNames[gUserLanguage]);
+	sprintf(filename, "%sLANG\\%s_GAME.LTXT", gDataFolder, LanguageNames[gUserLanguage]);
+	FixPathSlashes(filename);
+
 	if(InitStringLanguage(filename, 0) == -1)
 		return 0;
 	
-	sprintf(filename, "%s_MISSION.LTXT", LanguageNames[gUserLanguage]);
+	sprintf(filename, "%sLANG\\%s_MISSION.LTXT", gDataFolder, LanguageNames[gUserLanguage]);
+	FixPathSlashes(filename);
+	
 	if(InitStringLanguage(filename, 1) == -1)
 		return 0;
 
@@ -62,7 +68,7 @@ int InitStringLanguage(char *filename, int mission)
 	unsigned char *ln;
 	int i;
 	int size;
-
+	
 	FILE* fp = fopen(filename, "rb");
 	if (!fp)
 	{
