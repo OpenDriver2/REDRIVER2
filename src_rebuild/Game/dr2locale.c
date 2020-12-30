@@ -28,7 +28,7 @@ char* LanguageNames[5] =
 // [D] Driver 1 PC function
 int InitStringMng()
 {
-	char filename[32];
+	char filename[80];
 
 	if (gUserLanguage < 0 || gUserLanguage >= 6)
 		gUserLanguage = 0;

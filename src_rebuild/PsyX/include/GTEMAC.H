@@ -7,10 +7,10 @@
 
 #define gte_RotTransPers(r1,r2,r3,r4,r5)   			\
 				{	gte_ldv0(r1);   	\
-                                        gte_rtps();     	\
-                                        gte_stsxy(r2); 		\
-                                        gte_stdp(r3);   	\
-                                        gte_stflg(r4);		\
+                    gte_rtps();     	\
+                    gte_stsxy(r2); 		\
+                    gte_stdp(r3);   	\
+                    gte_stflg(r4);		\
 					gte_stszotz(r5);	}
 
 #define gte_RotTransPers3(r1,r2,r3,r4,r5,r6,r7,r8,r9)		\
