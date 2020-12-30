@@ -479,7 +479,7 @@ VECTOR* ApplyRotMatrixLV(VECTOR* v0, VECTOR* v1)
 	}
 
 	gte_ldlvl(&tmpLO);
-	docop2(0x41E012);	// gte_rtir_sf0 ?
+	gte_rtir_sf0();
 	gte_stlvnl(&tmpLO);
 
 	gte_ldlvl(&tmpHI);
@@ -577,7 +577,7 @@ VECTOR* ApplyMatrixLV(MATRIX* m, VECTOR* v0, VECTOR* v1)
 	}
 
 	gte_ldlvl(&tmpLO);
-	docop2(0x41E012);	// gte_rtir_sf0 ?
+	gte_rtir_sf0();
 	gte_stlvnl(&tmpLO);
 
 	gte_ldlvl(&tmpHI);
@@ -837,7 +837,7 @@ MATRIX* CompMatrixLV(MATRIX* m0, MATRIX* m1, MATRIX* m2)
 	}
 
 	gte_ldlvl(&tmpLO);
-	docop2(0x41E012);	// gte_rtir_sf0 ?
+	gte_rtir_sf0();
 	gte_stlvnl(&tmpLO);
 
 	gte_ldlvl(&tmpHI);

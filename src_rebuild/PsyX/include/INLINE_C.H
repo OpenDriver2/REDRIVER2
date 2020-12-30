@@ -5,19 +5,19 @@ extern void gte_SetGeomScreen(int h);
 
 extern int docop2(int op);
 
-// sets Cop2 data register value. LWC2 is the same kind
+// sets cop2 data register value. LWC2 is the same kind
 void MTC2(unsigned int value, int reg);
 void MTC2_S(int value, int reg);
 
-// sets Cop2 control register value
+// sets cop2 control register value
 void CTC2(unsigned int value, int reg);
 void CTC2_S(int value, int reg);
 
-// returns Cop2 register value. SWC2 is the same kind
+// returns cop2 register value. SWC2 is the same kind
 unsigned int MFC2(int reg);
 int MFC2_S(int reg);
 
-// returns Cop2 control register value
+// returns cop2 control register value
 unsigned int CFC2(int reg);
 int CFC2_S(int reg);
 
@@ -243,75 +243,282 @@ int CFC2_S(int reg);
 
 #define gte_nop()
 
-#define gte_rt()			docop2(0x480012)
-#define gte_rtv0tr()		gte_rt()
-#define gte_rtv0()			docop2(0x486012)
-#define gte_lc()			docop2(0x4DA412)
-#define gte_lcir()			docop2(0x4DE012)
-#define gte_llir()			docop2(0x4BE012)
-#define gte_ll()			docop2(0x4A6412)
-#define gte_rtir()			docop2(0x49E012)
-#define gte_rtps()			docop2(0x180001)
-#define gte_rtpt()			docop2(0x280030)
-#define gte_nclip()			docop2(0x1400006)
-#define gte_avsz3()			docop2(0x158002D)
-#define gte_avsz4()			docop2(0x168002E)
-#define gte_sqr0()			docop2(0xA00428)
-#define gte_sqr12()			docop2(0xA80428)
-#define gte_op0()			docop2(0x170000C)
-#define gte_op12()			docop2(0x178000C)
-#define gte_ncs()			docop2(0xC8041E)
-#define gte_nct()			docop2(0xD80420)
-#define gte_nccs()			docop2(0x108041B)
-#define gte_ncct()			docop2(0x118043F)
-#define gte_ncds()			docop2(0xE80413)
-#define gte_ncdt()			docop2(0xF80416)
-#define gte_cc()			docop2(0x138041C)
-#define gte_cdp()			docop2(0x1280414)
-#define gte_dpcl()			docop2(0x680029)
-#define gte_dpcs()			docop2(0x780010)
-#define gte_dpct()			docop2(0x180001)
-#define gte_intpl()			docop2(0x980011)
-#define gte_gpf0()			docop2(0x190003D)
-#define gte_gpf12()			docop2(0x198003D)
-#define gte_gpl0()			docop2(0x1A0003E)
-#define gte_gpl12()			docop2(0x1A8003E)
+#define gte_rtps() docop2(0x0180001);
 
-#define gte_rt_b()				docop2(0x480012)
-#define gte_rtv0tr_b()			gte_rt_b()
-#define gte_rtv0_b()			docop2(0x486012)
-#define gte_lcir_b()			docop2(0x4DE012)
-#define gte_llir_b()			docop2(0x4BE012)
-#define gte_ll_b()				docop2(0x4A6412)
-#define gte_rtir_b()			docop2(0x49E012)
-#define gte_rtps_b()			docop2(0x180001)
-#define gte_rtpt_b()			docop2(0x280030)
-#define gte_nclip_b()			docop2(0x1400006)
-#define gte_avsz3_b()			docop2(0x158002D)
-#define gte_avsz4_b()			docop2(0x168002E)
-#define gte_sqr0_b()			docop2(0xA00428)
-#define gte_sqr12_b()			docop2(0xA80428)
-#define gte_op0_b()				docop2(0x170000C)
-#define gte_op12_b()			docop2(0x178000C)
-#define gte_ncs_b()				docop2(0xC8041E)
-#define gte_nct_b()				docop2(0xD80420)
-#define gte_nccs_b()			docop2(0x108041B)
-#define gte_ncct_b()			docop2(0x118043F)
-#define gte_ncds_b()			docop2(0xE80413)
-#define gte_ncdt_b()			docop2(0xF80416)
-#define gte_cc_b()				docop2(0x138041C)
-#define gte_cdp_b()				docop2(0x1280414)
-#define gte_dcpl_b()			docop2(0x680029)
-#define gte_dpcs_b()			docop2(0x780010)
-#define gte_dpct_b()			docop2(0x180001)
-#define gte_intpl_b()			docop2(0x980011)
-#define gte_gpf0_b()			docop2(0x190003D)
-#define gte_gpf12_b()			docop2(0x198003D)
-#define gte_gpl0_b()			docop2(0x1A0003E)
-#define gte_gpl12_b()			docop2(0x1A8003E)
+#define gte_rtpt() docop2(0x0280030);
 
-#define gte_mvmva(sf, mx, v, cv, lm) docop2( 0x0400012 | \
+#define gte_rt() docop2(0x0480012);
+
+#define gte_rtv0() docop2(0x0486012);
+
+#define gte_rtv1() docop2(0x048E012);
+
+#define gte_rtv2() docop2(0x0496012);
+
+#define gte_rtir() docop2(0x049E012);
+
+#define gte_rtir_sf0() docop2(0x041E012);
+
+#define gte_rtv0tr() docop2(0x0480012);
+
+#define gte_rtv1tr() docop2(0x0488012);
+
+#define gte_rtv2tr() docop2(0x0490012);
+
+#define gte_rtirtr() op2 0x0498012);
+
+#define gte_rtv0bk() docop2(0x0482012);
+
+#define gte_rtv1bk() docop2(0x048A012);
+
+#define gte_rtv2bk() docop2(0x0492012);
+
+#define gte_rtirbk() docop2(0x049A012);
+
+#define gte_ll() docop2(0x04A6412);
+
+#define gte_llv0() docop2(0x04A6012);
+
+#define gte_llv1() docop2(0x04AE012);
+
+#define gte_llv2() docop2(0x04B6012);
+
+#define gte_llir() docop2(0x04BE012);
+
+#define gte_llv0tr() docop2(0x04A0012);
+
+#define gte_llv1tr() docop2(0x04A8012);
+
+#define gte_llv2tr() docop2(0x04B0012);
+
+#define gte_llirtr() docop2(0x04B8012);
+
+#define gte_llv0bk() docop2(0x04A2012);
+
+#define gte_llv1bk() docop2(0x4AA012);
+
+#define gte_llv2bk() docop2(0x04B2012);
+
+#define gte_llirbk() docop2(0x04BA012);
+
+#define gte_lc() docop2(0x04DA412);
+
+#define gte_lcv0() docop2(0x04C6012);
+
+#define gte_lcv1() docop2(0x04CE012);
+
+#define gte_lcv2() docop2(0x04D6012);
+
+#define gte_lcir() docop2(0x04DE012);
+
+#define gte_lcv0tr() docop2(0x04C0012);
+
+#define gte_lcv1tr() docop2(0x04C8012);
+
+#define gte_lcv2tr() docop2(0x04D0012);
+
+#define gte_lcirtr() docop2(0x04D8012);
+
+#define gte_lcv0bk() docop2(0x04C2012);
+
+#define gte_lcv1bk() docop2(0x04CA012);
+
+#define gte_lcv2bk() docop2(0x04D2012);
+
+#define gte_lcirbk() docop2(0x04DA012);
+
+#define gte_dpcl() docop2(0x0680029);
+
+#define gte_dpcs() docop2(0x0780010);
+
+#define gte_dpct() docop2(0x0F8002A);
+
+#define gte_intpl() docop2(0x0980011);
+
+#define gte_sqr12() docop2(0x0A80428);
+
+#define gte_sqr0() docop2(0x0A00428);
+
+#define gte_ncs() docop2(0x0C8041E);
+
+#define gte_nct() docop2(0x0D80420);
+
+#define gte_ncds() docop2(0x0E80413);
+
+#define gte_ncdt() docop2(0x0F80416);
+
+#define gte_nccs() docop2(0x0108041B);
+
+#define gte_ncct() docop2(0x0118043F);
+
+#define gte_cdp() docop2(0x01280414);
+
+#define gte_cc() docop2(0x0138041C);
+
+#define gte_nclip() docop2(0x01400006);
+
+#define gte_avsz3() docop2(0x0158002D);
+
+#define gte_avsz4() docop2(0x0168002E);
+
+#define gte_op12() docop2(0x0178000C);
+
+#define gte_op0() docop2(0x0170000C);
+
+#define gte_gpf12() docop2(0x0198003D);
+
+#define gte_gpf0() docop2(0x0190003D);
+
+#define gte_gpl12() docop2(0x01A8003E);
+
+#define gte_gpl0() docop2(0x01A0003E0);
+
+#define gte_mvmva_core( r0 ) docop2(r0)
+
+#define gte_mvmva(sf,mx,v,cv,lm) gte_mvmva_core( 0x0400012 | \
 	((sf)<<19) | ((mx)<<17) | ((v)<<15) | ((cv)<<13) | ((lm)<<10) )
+
+
+/*
+ * Type 2 functions without nop
+ */
+
+
+#define gte_rtps_b() docop2(0x0180001);
+
+#define gte_rtpt_b() docop2(0x0280030);
+
+#define gte_rt_b() docop2(0x0480012);
+
+#define gte_rtv0_b() docop2(0x0486012);
+
+#define gte_rtv1_b() docop2(0x048E012);
+
+#define gte_rtv2_b() docop2(0x0496012);
+
+#define gte_rtir_b() docop2(0x049E012);
+
+#define gte_rtir_sf0_b() docop2(0x041E012);
+
+#define gte_rtv0tr_b() docop2(0x0480012);
+
+#define gte_rtv1tr_b() docop2(0x0488012);
+
+#define gte_rtv2tr_b() docop2(0x0490012);
+
+#define gte_rtirtr_b() op2 0x0498012);
+
+#define gte_rtv0bk_b() docop2(0x0482012);
+
+#define gte_rtv1bk_b() docop2(0x048A012);
+
+#define gte_rtv2bk_b() docop2(0x0492012);
+
+#define gte_rtirbk_b() docop2(0x049A012);
+
+#define gte_ll_b() docop2(0x04A6412);
+
+#define gte_llv0_b() docop2(0x04A6012);
+
+#define gte_llv1_b() docop2(0x04AE012);
+
+#define gte_llv2_b() docop2(0x04B6012);
+
+#define gte_llir_b() docop2(0x04BE012);
+
+#define gte_llv0tr_b() docop2(0x04A0012);
+
+#define gte_llv1tr_b() docop2(0x04A8012);
+
+#define gte_llv2tr_b() docop2(0x04B0012);
+
+#define gte_llirtr_b() docop2(0x04B8012);
+
+#define gte_llv0bk_b() docop2(0x04A2012);
+
+#define gte_llv1bk_b() docop2(0x4AA012);
+
+#define gte_llv2bk_b() docop2(0x04B2012);
+
+#define gte_llirbk_b() docop2(0x04BA012);
+
+#define gte_lc_b() docop2(0x04DA412);
+
+#define gte_lcv0_b() docop2(0x04C6012);
+
+#define gte_lcv1_b() docop2(0x04CE012);
+
+#define gte_lcv2_b() docop2(0x04D6012);
+
+#define gte_lcir_b() docop2(0x04DE012);
+
+#define gte_lcv0tr_b() docop2(0x04C0012);
+
+#define gte_lcv1tr_b() docop2(0x04C8012);
+
+#define gte_lcv2tr_b() docop2(0x04D0012);
+
+#define gte_lcirtr_b() docop2(0x04D8012);
+
+#define gte_lcv0bk_b() docop2(0x04C2012);
+
+#define gte_lcv1bk_b() docop2(0x04CA012);
+
+#define gte_lcv2bk_b() docop2(0x04D2012);
+
+#define gte_lcirbk_b() docop2(0x04DA012);
+
+#define gte_dpcl_b() docop2(0x0680029);
+
+#define gte_dpcs_b() docop2(0x0780010);
+
+#define gte_dpct_b() docop2(0x0F8002A);
+
+#define gte_intpl_b() docop2(0x0980011);
+
+#define gte_sqr12_b() docop2(0x0A80428);
+
+#define gte_sqr0_b() docop2(0x0A00428);
+
+#define gte_ncs_b() docop2(0x0C8041E);
+
+#define gte_nct_b() docop2(0x0D80420);
+
+#define gte_ncds_b() docop2(0x0E80413);
+
+#define gte_ncdt_b() docop2(0x0F80416);
+
+#define gte_nccs_b() docop2(0x0108041B);
+
+#define gte_ncct_b() docop2(0x0118043F);
+
+#define gte_cdp_b() docop2(0x01280414);
+
+#define gte_cc_b() docop2(0x0138041C);
+
+#define gte_nclip_b() docop2(0x01400006);
+
+#define gte_avsz3_b() docop2(0x0158002D);
+
+#define gte_avsz4_b() docop2(0x0168002E);
+
+#define gte_op12_b() docop2(0x0178000C);
+
+#define gte_op0_b() docop2(0x0170000C);
+
+#define gte_gpf12_b() docop2(0x0198003D);
+
+#define gte_gpf0_b() docop2(0x0190003D);
+
+#define gte_gpl12_b() docop2(0x01A8003E);
+
+#define gte_gpl0_b() docop2(0x01A0003E0);
+
+#define gte_mvmva_core_b( r0 ) docop2(r0)
+
+#define gte_mvmva_b(sf,mx,v,cv,lm) gte_mvmva_core_b( 0x0400012 | \
+	((sf)<<19) | ((mx)<<17) | ((v)<<15) | ((cv)<<13) | ((lm)<<10) )
+
 
  /*
   * Type 3 functions
