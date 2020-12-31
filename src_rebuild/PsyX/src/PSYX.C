@@ -31,7 +31,6 @@ SDL_Window* g_window = NULL;
 
 #define SWAP_INTERVAL		1
 
-timerCtx_t g_swapTimer;
 int g_swapInterval = SWAP_INTERVAL;
 int g_enableSwapInterval = 1;
 
@@ -40,99 +39,84 @@ extern unsigned char* padData[];
 
 PsyXKeyboardMapping g_keyboard_mapping;
 
-SDL_Thread* g_vblankThread = NULL;
-SDL_mutex* g_vblankMutex = NULL;
-volatile bool g_stopVblank = false;
-volatile int g_vblanksDone = 0;
-volatile int g_lastVblankCnt = 0;
-timerCtx_t g_vblankTimer;
+timerCtx_t g_vblTimer;
+
+enum EPsxCounters
+{
+	PsxCounter_VBLANK,
+
+	PsxCounter_Num
+};
+
+volatile int g_psxSysCounters[PsxCounter_Num];
+
+SDL_Thread* g_intrThread = NULL;
+SDL_mutex* g_intrMutex = NULL;
+volatile bool g_stopIntrThread = false;
 
 extern void(*vsync_callback)(void);
 
-int PsyX_Sys_DoVSyncCallback()
+int PsyX_Sys_GetVBlankCount()
 {
-	SDL_LockMutex(g_vblankMutex);
-
-#if 1
-	int vblcnt = g_vblanksDone - g_lastVblankCnt;
-
-	static bool canDoCb = true;
-
-	if (canDoCb && vsync_callback)	// prevent recursive calls
-	{
-		canDoCb = false;
-
-		// do vblank callbacks
-		int i = vblcnt;
-		while (i)
-		{
-			vsync_callback();
-			i--;
-		}
-
-		canDoCb = true;
-	}
-#endif
-	g_lastVblankCnt = g_vblanksDone;
-
 	if (g_swapInterval == 0)
 	{
 		// extra speedup.
 		// does not affect `vsync_callback` count
-		g_vblanksDone += 1;
-		g_lastVblankCnt += 1;
+		g_psxSysCounters[PsxCounter_VBLANK] += 1;
 	}
-
-	SDL_UnlockMutex(g_vblankMutex);
-
-	return g_vblanksDone;
+	
+	return g_psxSysCounters[PsxCounter_VBLANK];
 }
 
-int vblankThreadMain(void* data)
+int intrThreadMain(void* data)
 {
-	Util_InitHPCTimer(&g_vblankTimer);
-	
+	Util_InitHPCTimer(&g_vblTimer);
+
 	do
 	{
-		const long vmode = GetVideoMode();
-		const double timestep = vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;
-		
-		double delta = Util_GetHPCTime(&g_vblankTimer, 0);
-		
-		if (delta > timestep)
+		// step counters
 		{
-			// do vblank events
-			SDL_LockMutex(g_vblankMutex);
+			const long vmode = GetVideoMode();
+			const double timestep = vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;
+			
+			double vblDelta = Util_GetHPCTime(&g_vblTimer, 0);
 
-			g_vblanksDone++;
-
-			Util_GetHPCTime(&g_vblankTimer, 1);
-
-#if 0
-			if(vsync_callback)
-				vsync_callback();
-#endif
-			SDL_UnlockMutex(g_vblankMutex);
+			if (vblDelta > timestep)
+			{
+				SDL_LockMutex(g_intrMutex);
+				
+				if (vsync_callback)
+					vsync_callback();
+				
+				SDL_UnlockMutex(g_intrMutex);
+				
+				// do vblank events
+				g_psxSysCounters[PsxCounter_VBLANK]++;
+			
+				Util_GetHPCTime(&g_vblTimer, 1);
+				//SDL_Delay(1);
+			}
 		}
-	} while (!g_stopVblank);
+
+		// TODO:...
+		
+	} while (!g_stopIntrThread);
 
 	return 0;
 }
 
 static int PsyX_Sys_InitialiseCore()
 {
-	Util_InitHPCTimer(&g_swapTimer);
-	
-	g_vblankThread = SDL_CreateThread(vblankThreadMain, "vbl", NULL);
+	g_intrThread = SDL_CreateThread(intrThreadMain, "psyX_intr", NULL);
 
-	if (NULL == g_vblankThread)
+	if (NULL == g_intrThread)
 	{
 		eprintf("SDL_CreateThread failed: %s\n", SDL_GetError());
 		return 0;
 	}
 
-	g_vblankMutex = SDL_CreateMutex();
-	if (NULL == g_vblankMutex)
+	g_intrMutex = SDL_CreateMutex();
+	if (NULL == g_intrMutex)
 	{
 		eprintf("SDL_CreateMutex failed: %s\n", SDL_GetError());
 		return 0;
@@ -447,39 +431,41 @@ unsigned int PsyX_CalcFPS()
 
 void PsyX_WaitForTimestep(int count)
 {
-	const long vmode = GetVideoMode();
-	const double timestep = vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;
-
+	SDL_LockMutex(g_intrMutex);
+	SDL_UnlockMutex(g_intrMutex);
+	
 #if defined(RENDERER_OGL) || defined(OGLES)
-	//glFinish(); // best time to complete GPU drawing
+	glFinish(); // best time to complete GPU drawing
 #endif
-
-	// additional wait for swap
+	
+	// wait for vblank
 	if (g_swapInterval > 0)
 	{
-		double delta;
+		//SDL_Delay(1);
+	
+		static int swapLastVbl = 0;
+
 		do
 		{
-			delta = Util_GetHPCTime(&g_swapTimer, 0);
-		} while (delta < timestep * count);
+		}while (g_psxSysCounters[PsxCounter_VBLANK] - swapLastVbl < count);
 
-		Util_GetHPCTime(&g_swapTimer, 1);
+		swapLastVbl = g_psxSysCounters[PsxCounter_VBLANK];
 	}
 }
 
 void PsyX_ShutDown()
 {
 	// quit vblank thread
-	if (g_vblankThread)
+	if (g_intrThread)
 	{
-		g_stopVblank = true;
+		g_stopIntrThread = true;
 
 		int returnValue;
-		SDL_WaitThread(g_vblankThread, &returnValue);
+		SDL_WaitThread(g_intrThread, &returnValue);
 	}
 
-	if (g_vblankMutex)
-		SDL_DestroyMutex(g_vblankMutex);
+	if (g_intrMutex)
+		SDL_DestroyMutex(g_intrMutex);
 
 	GR_Shutdown();
 

@@ -22,14 +22,14 @@ int ResetCallback(void)
 }
 
 extern unsigned int g_swapTime;
-extern int PsyX_Sys_DoVSyncCallback();
+extern int PsyX_Sys_GetVBlankCount();
 
 int VSync(int mode)
 {
 	if (mode < 0)
 	{
 		// don't wait but still return vblank count
-		return PsyX_Sys_DoVSyncCallback(); 
+		return PsyX_Sys_GetVBlankCount();
 	}
 
 	if (mode == 0)
@@ -41,7 +41,7 @@ int VSync(int mode)
 		// FIXME: wait many times?
 	}
 
-	return PsyX_Sys_DoVSyncCallback();
+	return PsyX_Sys_GetVBlankCount();
 }
 
 int VSyncCallback(void(*f)(void))
