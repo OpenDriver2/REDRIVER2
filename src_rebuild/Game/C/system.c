@@ -603,7 +603,7 @@ void SwapDrawBuffers(void)
 	DoNotSwap = 0;
 
 	PutDrawEnv(&current->draw);
-	DrawOTag((u_long*)(current->ot + 0x107f));
+	DrawOTag((u_long*)(current->ot + OTSIZE-1));
 
 	if ((FrameCnt & 1U) == 0)
 	{
@@ -632,7 +632,7 @@ void SwapDrawBuffers2(int player)
 	}
 
 	PutDrawEnv(&current->draw);
-	DrawOTag((u_long*)(current->ot + 0x107f));
+	DrawOTag((u_long*)(current->ot + OTSIZE - 1));
 
 	if (player == 1)
 	{

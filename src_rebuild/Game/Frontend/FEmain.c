@@ -25,6 +25,8 @@
 
 #include "STRINGS.H"
 
+#define FE_OTSIZE 16
+
 struct FE_CHARDATA
 {
 	u_char u;
@@ -797,7 +799,7 @@ void DrawScreen(PSXSCREEN *pScr)
 				setXY0(&HighlightSprt, rect.x, rect.y);
 
 				addPrim(current->ot + 6, &HighlightSprt);
-				addPrim(current->ot + 7, &HighlightDummy);
+				addPrim(current->ot + 6, &HighlightDummy);
 
 				draw = 1;
 			}
@@ -846,8 +848,8 @@ void DrawScreen(PSXSCREEN *pScr)
 		
 		if (bDrawExtra) 
 		{
-			addPrim(&current->ot[2], &extraSprt);
-			addPrim(&current->ot[3], &extraDummy);
+			addPrim(current->ot + 2, &extraSprt);
+			addPrim(current->ot + 2, &extraDummy);
 		}
 	}
 #ifdef PSX
@@ -1115,7 +1117,7 @@ void NewSelection(short dir)
 	setXY0(&HighlightSprt, rect.x, rect.y);
 
 	addPrim(current->ot + 6, &HighlightSprt);
-	addPrim(current->ot + 7, &HighlightDummy);
+	addPrim(current->ot + 6, &HighlightDummy);
 
 	if ((pNewB->action >> 8) == 3) {
 		FEPrintString(pNewB->Name, pNewB->x * 2 + pNewB->w, pNewB->y, 4, 32, 32, 32);
@@ -1542,8 +1544,9 @@ void EndFrame(void)
 	last->primptr = last->primtab;
 	last = db_hold;
 
-	DrawOTag((u_long*)&db_hold->ot[16]);
-	ClearOTagR((u_long*)current->ot, 16);
+	DrawOTag((u_long*)(db_hold->ot + FE_OTSIZE - 1));
+
+	ClearOTagR((u_long*)current->ot, FE_OTSIZE);
 	VSync(0);
 
 #ifndef PSX
@@ -1605,7 +1608,7 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 			// setTPage(font, 0, 0, 640, 256); // [A]
 			setClut(font, 960, 257); // [A] seems clut has a transparency bit; width is 256
 
-			addPrim(&current->ot[1], font);
+			addPrim(current->ot + 1, font);
 			font++;
 
 			// add space for next character
@@ -1625,7 +1628,7 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 	setXY3(null, -1, -1, -1, -1, -1, -1);
 	setTPage(null, 0, 0, 640, 256);
 
-	addPrim(&current->ot[1], null);
+	addPrim(current->ot + 1, null);
 	null++;
 
 	current->primptr = (char *)null;
@@ -1677,7 +1680,7 @@ int FEPrintStringSized(char *string, int x, int y, int scale, int transparent, i
 			setTPage(font, 0, 0, 640, 256);
 			setClut(font, 960, 257); // [A] seems clut has a transparency bit; width is 256
 
-			addPrim(&current->ot[1], font);
+			addPrim(current->ot + 1, font);
 			font++;
 
 			// make room for next character
@@ -1965,8 +1968,8 @@ int CarSelectScreen(int bSetup)
 #ifdef PSX
 		DisplayOnScreenText();
 
-		addPrim(&current->ot[2], &extraSprt);
-		addPrim(&current->ot[3], &extraDummy);
+		addPrim(current->ot + 2, &extraSprt);
+		addPrim(current->ot + 2, &extraDummy);
 
 		EndFrame();
 #endif
@@ -2356,8 +2359,8 @@ int MissionCityScreen(int bSetup)
 #ifdef PSX
 		DisplayOnScreenText();
 
-		addPrim(&current->ot[2], &extraSprt);
-		addPrim(&current->ot[3], &extraDummy);
+		addPrim(current->ot + 2, &extraSprt);
+		addPrim(current->ot + 2, &extraDummy);
 
 		EndFrame();
 #endif
@@ -2471,8 +2474,8 @@ int CutSceneSelectScreen(int bSetup)
 #ifdef PSX
 		DisplayOnScreenText();
 
-		addPrim(&current->ot[2], &extraSprt);
-		addPrim(&current->ot[3], &extraDummy);
+		addPrim(current->ot + 2, &extraSprt);
+		addPrim(current->ot + 2, &extraDummy);
 
 		EndFrame();
 #endif
@@ -2643,8 +2646,8 @@ int CutSceneCitySelectScreen(int bSetup)
 #ifdef PSX
 	DisplayOnScreenText();
 
-	addPrim(&current->ot[2], &extraSprt);
-	addPrim(&current->ot[3], &extraDummy);
+	addPrim(current->ot + 2, &extraSprt);
+	addPrim(current->ot + 2, &extraDummy);
 
 	EndFrame();
 #endif
