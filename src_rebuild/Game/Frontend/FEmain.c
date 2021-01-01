@@ -55,10 +55,34 @@ struct BOTCH
 	char** name;
 };
 
+char* NullStr = "\0";
+
 typedef int(*screenFunc)(int bSetup);
 
 extern ACTIVE_CHEATS AvailableCheats;
 extern ACTIVE_CHEATS ActiveCheats;
+
+extern int CentreScreen(int bSetup); // 0x001C31FC
+extern int CarSelectScreen(int bSetup); // 0x001C3430
+extern int CopDiffLevelScreen(int bSetup); // 0x001C6404
+extern int VibroOnOffScreen(int bSetup); // 0x001C3A60
+extern int MissionSelectScreen(int bSetup); // 0x001C3B1C
+extern int MissionCityScreen(int bSetup); // 0x001C4338
+extern int CutSceneSelectScreen(int bSetup); // 0x001C4600
+extern int CutSceneCitySelectScreen(int bSetup); // 0x001C4B30
+extern int SetVolumeScreen(int bSetup); // 0x001C50B0
+extern int ScoreScreen(int bSetup); // 0x001C59A0
+extern int SubtitlesOnOffScreen(int bSetup); // 0x001C64B0
+extern int CityCutOffScreen(int bSetup); // 0x001C64FC
+extern int ControllerScreen(int bSetup); // 0x001C6548
+extern int MainScreen(int bSetup); // 0x001C6614
+extern int CheatScreen(int bSetup); // 0x001C5B4C
+extern int ImmunityOnOffScreen(int bSetup); // 0x001C6654
+extern int InvincibleOnOffScreen(int bSetup); // 0x001C66A0
+extern int GamePlayScreen(int bSetup); // 0x001C66EC
+extern int GameNameScreen(int bSetup); // 0x001C60A0
+extern int CheatNumlayerSelect(int bSetup); // 0x001C6724
+extern int BonusGalleryScreen(int bSetup);
 
 screenFunc fpUserFunctions[] = {
 	CentreScreen,
@@ -239,6 +263,18 @@ static char gameAreas[64] = {
 #define GAMEMODE_AREA(level, offset, index) gameAreas[offset + level * 2 + index]
 #define GAMEMODE_AREA_NAME(level, offset, index) AREA_NAME(level, GAMEMODE_AREA(level, offset, index))
 
+char cutUnlock[] = {
+	2, 2, 2, 4, 5,
+	6, 7, 7, 7, 9,
+	11, 11, 11, 11, 12,
+	12, 13, 13, 14, 15,
+	17, 17, 17, 17, 18,
+	18, 19, 19, 19, 19,
+	21, 21, 21, 21, 22,
+	22, 22, 23, 23, 23,
+	28
+};
+
 int CarAvailability[4][10] = {
 	{1,1,1,1,0,0,0,0,0,0},
 	{1,1,1,1,0,0,0,0,0,0},
@@ -364,6 +400,13 @@ POLY_FT4 cd_sprite;
 SPRT extraSprt;
 POLY_FT3 extraDummy;
 
+int FEPrintStringSized(char* string, int x, int y, int scale, int transparent, int r, int g, int b);
+int FEPrintString(char* string, int x, int y, int justification, int r, int g, int b);
+
+void LoadFrontendScreens(void);
+void NewSelection(short dir);
+void EndFrame(void);
+
 // [D] [T]
 void SetVariable(int var)
 {
@@ -487,118 +530,6 @@ void SetVariable(int var)
 }
 
 // [D] [T]
-void LoadFrontendScreens(void)
-{
-	int iNumScreens;
-	char *ptr;
-	RECT16 rect;
-
-	ShowLoadingScreen("GFX\\FELOAD.TIM", 1, 12);
-	ShowLoading();
-
-	Loadfile("DATA\\SCRS.BIN", _frontend_buffer);
-
-	ptr = _frontend_buffer + 20; // skip header and number of screens
-	iNumScreens = (int)_frontend_buffer[16];
-
-	for (int i = 0; i < iNumScreens; i++)
-	{
-		PsxScreens[i].numButtons = *ptr++;
-		PsxScreens[i].userFunctionNum = *ptr++;
-
-		for (int j = 0; j < PsxScreens[i].numButtons; j++)
-		{
-			memcpy((u_char*)&PsxScreens[i].buttons[j], (u_char*)ptr, sizeof(PSXBUTTON));
-			ptr += sizeof(PSXBUTTON);
-		}
-	}
-
-	rect.w = 64;
-	rect.h = 256;
-
-	ShowLoading();
-	LoadBackgroundFile("DATA\\GFX.RAW");
-
-	for (int i = 0; i < 2; i++)
-	{
-		ShowLoading();
-		LoadfileSeg("DATA\\GFX.RAW", _frontend_buffer, 0x30000 + (i * 0x8000), 0x8000);
-
-		rect.x = 640 + (i * 64);
-		rect.y = 256;
-
-		LoadImage(&rect, (u_long *)_frontend_buffer);
-		DrawSync(0);
-	}
-
-	ShowLoading();	
-	LoadfileSeg("DATA\\GFX.RAW", _frontend_buffer, 0x58000, 0x8000);
-
-	rect.x = 960;
-	rect.y = 256;
-
-	// load font
-	LoadImage(&rect, (u_long *)_frontend_buffer);
-	DrawSync(0);
-
-	Loadfile("DATA\\FEFONT.BNK", (char*)&feFont);
-}
-
-// [D] [T]
-void LoadBackgroundFile(char *name)
-{
-	int iTpage;
-	int p;
-	RECT16 rect;
-	int pages[6];
-	int i;
-	
-	iTpage = 11;
-
-	pages[0] = 0;
-	pages[1] = 1;
-	pages[2] = 2;
-	pages[3] = 3;
-	pages[4] = 4;
-	pages[5] = 5;
-
-	mainScreenLoaded = (strcmp(name, "DATA\\GFX.RAW") == 0);
-
-	rect.w = 64;
-	rect.h = 256;
-
-	for (i = 0; i < 6; i++)
-	{
-		FEDrawCDicon();
-		
-		p = pages[i];
-
-		LoadfileSeg(name, _overlay_buffer, p * 0x8000, 0x8000);
-		FEDrawCDicon();
-
-		rect.y = (short)(p / 6);
-		rect.x = ((short)p + rect.y * -6) * 64 + 640;
-		rect.y *= 256;
-
-		LoadImage(&rect, (u_long *)_overlay_buffer);
-		FEDrawCDicon();
-	}
-
-	LoadfileSeg(name, _overlay_buffer, iTpage * 0x8000, 0x800);
-	FEDrawCDicon();
-
-	rect.h = 1;
-	rect.y = (short)(iTpage / 6);
-	rect.x = ((short)iTpage + rect.y * -6) * 64 + 640;
-	rect.y *= 256;
-
-	LoadImage(&rect, (u_long *)_overlay_buffer);
-	DrawSync(0);
-
-	SetupBackgroundPolys();
-}
-
-// [D] [T]
 void SetupBackgroundPolys(void)
 {
 	POLY_FT4 *poly;
@@ -698,6 +629,54 @@ DR_MOVE In;
 DR_MOVE Out;
 RECT16 storeRect = { 768, 475, 255, 36 };
 
+
+
+// [D] [T]
+void DisplayOnScreenText(void)
+{
+	char* text;
+
+	sprintf(ScreenTitle, NullStr);
+
+	if (padsConnected[0] == 0) {
+		int transparent = 0;
+
+		if (Pads[0].type == 0) {
+			text = "Please insert controller into Port 1";
+			transparent = 1;
+		}
+		else {
+			if (Pads[0].type != 1)
+				return;
+
+			text = "Incompatible controller in Port 1";
+		}
+
+		FEPrintStringSized(text, 40, 400, 0xc00, transparent, 64, 64, 64);
+	}
+	else
+	{
+		if (!bDoingScores && !bDoingCarSelect)
+		{
+			for (int i = 0; i < ScreenDepth; i++)
+			{
+				if (i > 0)
+					strcat(ScreenTitle, " - ");
+
+				strcat(ScreenTitle, ScreenNames[i]);
+			}
+
+			FEPrintStringSized(ScreenTitle, 40, 400, 0xc00, 1, 64, 64, 64);
+		}
+
+		if (bInCutSelect) {
+			text = GET_MISSION_TXT(CutSceneNames[cutSelection + CutAmountsTotal[currCity]]);
+
+			FEPrintStringSized(text, 100, 226, 0xc00, 1, 64, 64, 64);
+		}
+	}
+}
+
 // [D] [T]
 void DrawScreen(PSXSCREEN *pScr)
 {
@@ -786,20 +765,25 @@ void DrawScreen(PSXSCREEN *pScr)
 
 			if (button == pCurrButton)
 			{
+				SPRT* hghltSprt;
+				POLY_FT4* hghltDummy;
 				RECT16 rect;
 
 				rect.x = pCurrButton->s_x;
 				rect.y = pCurrButton->s_y;
-				rect.w = 255;
-				rect.h = 36;
 
-				SetDrawMove(&Out, &rect, storeRect.x, storeRect.y);
-				addPrim(current->ot + 8, &Out);
+				hghltSprt = (SPRT*)current->primptr;
+				current->primptr += sizeof(SPRT);
+				*hghltSprt = HighlightSprt;
 
-				setXY0(&HighlightSprt, rect.x, rect.y);
+				hghltDummy = (POLY_FT4*)current->primptr;
+				current->primptr += sizeof(POLY_FT4);
+				*hghltDummy = HighlightDummy;
+				
+				setXY0(hghltSprt, rect.x, rect.y);
 
-				addPrim(current->ot + 6, &HighlightSprt);
-				addPrim(current->ot + 6, &HighlightDummy);
+				addPrim(current->ot + 6, hghltSprt);
+				addPrim(current->ot + 6, hghltDummy);
 
 				draw = 1;
 			}
@@ -848,8 +832,24 @@ void DrawScreen(PSXSCREEN *pScr)
 		
 		if (bDrawExtra) 
 		{
+#ifdef PSX
 			addPrim(current->ot + 2, &extraSprt);
 			addPrim(current->ot + 2, &extraDummy);
+#else
+			SPRT* extrSprt;
+			POLY_FT3* extrDummy;
+			
+			extrSprt = (SPRT*)current->primptr;
+			current->primptr += sizeof(SPRT);
+			*extrSprt = extraSprt;
+
+			extrDummy = (POLY_FT3*)current->primptr;
+			current->primptr += sizeof(POLY_FT3);
+			*extrDummy = extraDummy;
+
+			addPrim(current->ot + 2, extrSprt);
+			addPrim(current->ot + 2, extrDummy);
+#endif
 		}
 	}
 #ifdef PSX
@@ -862,63 +862,68 @@ void DrawScreen(PSXSCREEN *pScr)
 #endif
 }
 
-char cutUnlock[] = { 
-	2, 2, 2, 4, 5, 
-	6, 7, 7, 7, 9,
-	11, 11, 11, 11, 12,
-	12, 13, 13, 14, 15,
-	17, 17, 17, 17, 18,
-	18, 19, 19, 19, 19,
-	21, 21, 21, 21, 22,
-	22, 22, 23, 23, 23,
-	28 };
+// [D] [T]
+void FEInitCdIcon(void)
+{
+	ushort* palette;
+	RECT16 rect;
 
-char* NullStr = "\0";
+	palette = cd_icon + 10;
+
+	for (int i = 0; i < 14; i++)
+	{
+		*palette &= 0x7fff;
+		palette++;
+	}
+
+	cd_icon[10] = 0;
+
+	rect.x = 960;
+	rect.y = 434;
+	rect.w = 8;
+	rect.h = 32;
+
+	cd_icon[24] |= 0x8000;
+	cd_icon[25] |= 0x8000;
+
+	LoadImage(&rect, (u_long*)(cd_icon + 0x18));
+
+	setPolyFT4(&cd_sprite);
+	setRGB0(&cd_sprite, 128, 128, 128);
+	setUVWH(&cd_sprite, 0, 178, 32, 32);
+	setXYWH(&cd_sprite, 80, 38, 38, 21);
+	setClut(&cd_sprite, 960, 433);
+	setTPage(&cd_sprite, 0, 0, 960, 256);
+
+	bCdIconSetup = 1;
+}
+
 
 // [D] [T]
-void DisplayOnScreenText(void)
+void FEDrawCDicon(void)
 {
-	char *text;
+	ushort* palette;
+	int i;
+	RECT16 dest;
 
-	sprintf(ScreenTitle, NullStr);
+	cd_icon[23] = cd_icon[11];
 
-	if (padsConnected[0] == 0) {
-		int transparent = 0;
+	palette = cd_icon + 10;
 
-		if (Pads[0].type == 0) {
-			text = "Please insert controller into Port 1";
-			transparent = 1;
-		}
-		else {
-			if (Pads[0].type != 1)
-				return;
-
-			text = "Incompatible controller in Port 1";
-		}
-
-		FEPrintStringSized(text, 40, 400, 0xc00, transparent, 64, 64, 64);
-	}
-	else 
+	for (i = 0; i < 12; i++)
 	{
-		if (!bDoingScores && !bDoingCarSelect) 
-		{
-			for (int i = 0; i < ScreenDepth; i++)
-			{
-				if (i > 0)
-					strcat(ScreenTitle, " - ");
-
-				strcat(ScreenTitle, ScreenNames[i]);
-			}
-
-			FEPrintStringSized(ScreenTitle, 40, 400, 0xc00, 1, 64, 64, 64);
-		}
-
-		if (bInCutSelect) {
-			text = GET_MISSION_TXT(CutSceneNames[cutSelection + CutAmountsTotal[currCity]]);
-
-			FEPrintStringSized(text, 100, 226, 0xc00, 1, 64, 64, 64);
-		}
+		palette[1] = palette[2];
+		palette++;
 	}
+
+	dest.x = 960;
+	dest.y = 433;
+	dest.w = 16;
+	dest.h = 1;
+
+	LoadImage(&dest, (u_long*)(cd_icon + 10));
+	DrawPrim(&cd_sprite);
+	DrawSync(0);
 }
 
 // [D] [T]
@@ -983,6 +988,117 @@ void SetupExtraPoly(char *fileName, int offset, int offset2)
 	}
 }
 
+// [D] [T]
+void LoadBackgroundFile(char* name)
+{
+	int iTpage;
+	int p;
+	RECT16 rect;
+	int pages[6];
+	int i;
+
+	iTpage = 11;
+
+	pages[0] = 0;
+	pages[1] = 1;
+	pages[2] = 2;
+	pages[3] = 3;
+	pages[4] = 4;
+	pages[5] = 5;
+
+	mainScreenLoaded = (strcmp(name, "DATA\\GFX.RAW") == 0);
+
+	rect.w = 64;
+	rect.h = 256;
+
+	for (i = 0; i < 6; i++)
+	{
+		FEDrawCDicon();
+
+		p = pages[i];
+
+		LoadfileSeg(name, _overlay_buffer, p * 0x8000, 0x8000);
+		FEDrawCDicon();
+
+		rect.y = (short)(p / 6);
+		rect.x = ((short)p + rect.y * -6) * 64 + 640;
+		rect.y *= 256;
+
+		LoadImage(&rect, (u_long*)_overlay_buffer);
+		FEDrawCDicon();
+	}
+
+	LoadfileSeg(name, _overlay_buffer, iTpage * 0x8000, 0x800);
+	FEDrawCDicon();
+
+	rect.h = 1;
+	rect.y = (short)(iTpage / 6);
+	rect.x = ((short)iTpage + rect.y * -6) * 64 + 640;
+	rect.y *= 256;
+
+	LoadImage(&rect, (u_long*)_overlay_buffer);
+	DrawSync(0);
+
+	SetupBackgroundPolys();
+}
+
+// [D] [T]
+void LoadFrontendScreens(void)
+{
+	int iNumScreens;
+	char* ptr;
+	RECT16 rect;
+
+	ShowLoadingScreen("GFX\\FELOAD.TIM", 1, 12);
+	ShowLoading();
+
+	Loadfile("DATA\\SCRS.BIN", _frontend_buffer);
+
+	ptr = _frontend_buffer + 20; // skip header and number of screens
+	iNumScreens = (int)_frontend_buffer[16];
+
+	for (int i = 0; i < iNumScreens; i++)
+	{
+		PsxScreens[i].numButtons = *ptr++;
+		PsxScreens[i].userFunctionNum = *ptr++;
+
+		for (int j = 0; j < PsxScreens[i].numButtons; j++)
+		{
+			memcpy((u_char*)&PsxScreens[i].buttons[j], (u_char*)ptr, sizeof(PSXBUTTON));
+			ptr += sizeof(PSXBUTTON);
+		}
+	}
+
+	rect.w = 64;
+	rect.h = 256;
+
+	ShowLoading();
+	LoadBackgroundFile("DATA\\GFX.RAW");
+
+	for (int i = 0; i < 2; i++)
+	{
+		ShowLoading();
+		LoadfileSeg("DATA\\GFX.RAW", _frontend_buffer, 0x30000 + (i * 0x8000), 0x8000);
+
+		rect.x = 640 + (i * 64);
+		rect.y = 256;
+
+		LoadImage(&rect, (u_long*)_frontend_buffer);
+		DrawSync(0);
+	}
+
+	ShowLoading();
+	LoadfileSeg("DATA\\GFX.RAW", _frontend_buffer, 0x58000, 0x8000);
+
+	rect.x = 960;
+	rect.y = 256;
+
+	// load font
+	LoadImage(&rect, (u_long*)_frontend_buffer);
+	DrawSync(0);
+
+	Loadfile("DATA\\FEFONT.BNK", (char*)&feFont);
+}
 
 // [D] [T]
 void ReInitScreens(void)
@@ -1076,8 +1192,10 @@ void NewSelection(short dir)
 	// any buttons pressed?
 	if (dir != 0)
 	{
+#ifdef PSX
 		SetDrawMove(&In, &storeRect, pCurrButton->s_x, pCurrButton->s_y);
 		addPrim(current->ot + 9, &In);
+#endif
 
 		if ((dir & 0x1000) != 0)
 		{
@@ -1372,6 +1490,44 @@ void PadChecks(void)
 	}
 }
 
+// [D] [T]
+void SetFEDrawMode(void)
+{
+	SetVideoMode(video_mode);
+
+	SetDefDrawEnv(&MPBuff[0][0].draw, draw_mode.x1, draw_mode.y1, 640, 512);
+	SetDefDispEnv(&MPBuff[0][0].disp, draw_mode.x1, draw_mode.y1, 640, 512);
+	SetDefDrawEnv(&MPBuff[0][1].draw, draw_mode.x1, draw_mode.y1, 640, 512);
+	SetDefDispEnv(&MPBuff[0][1].disp, draw_mode.x1, draw_mode.y1, 640, 512);
+
+	MPBuff[0][0].draw.isbg = 0;
+	MPBuff[0][0].disp.isinter = 1;
+	MPBuff[0][0].draw.dfe = 1;
+	MPBuff[0][0].disp.screen.h = 256;
+	MPBuff[0][0].primtab = _primTab1;
+	MPBuff[0][0].primptr = _primTab1;
+	MPBuff[0][0].ot = _OT1;
+
+	MPBuff[0][1].draw.isbg = 0;
+	MPBuff[0][1].disp.isinter = 1;
+	MPBuff[0][1].draw.dfe = 1;
+	MPBuff[0][1].disp.screen.h = 256;
+	MPBuff[0][1].primtab = _primTab2;
+	MPBuff[0][1].primptr = _primTab2;
+	MPBuff[0][1].ot = _OT2;
+
+	last = &MPBuff[0][1];
+	current = &MPBuff[0][0];
+
+	MPBuff[0][0].disp.screen.x = draw_mode.framex * 2;
+	MPBuff[0][0].disp.screen.y = draw_mode.framey;
+	MPBuff[0][1].disp.screen.y = draw_mode.framey;
+	MPBuff[0][1].disp.screen.x = MPBuff[0][0].disp.screen.x;
+
+	PutDispEnv(&MPBuff[0][0].disp);
+	PutDrawEnv(&current->draw);
+}
+
 // [A] - was inlined in DoFrontEnd
 void InitFrontend(void)
 {
@@ -1487,44 +1643,6 @@ void DoFrontEnd(void)
 			idle_timer = VSync(-1);
 		}
 	} while (bQuitToSystem != 2);
-}
-
-// [D] [T]
-void SetFEDrawMode(void)
-{
-	SetVideoMode(video_mode);
-
-	SetDefDrawEnv(&MPBuff[0][0].draw, draw_mode.x1, draw_mode.y1, 640, 512);
-	SetDefDispEnv(&MPBuff[0][0].disp, draw_mode.x1, draw_mode.y1, 640, 512);
-	SetDefDrawEnv(&MPBuff[0][1].draw, draw_mode.x1, draw_mode.y1, 640, 512);
-	SetDefDispEnv(&MPBuff[0][1].disp, draw_mode.x1, draw_mode.y1, 640, 512);
-
-	MPBuff[0][0].draw.isbg = 0;
-	MPBuff[0][0].disp.isinter = 1;
-	MPBuff[0][0].draw.dfe = 1;
-	MPBuff[0][0].disp.screen.h = 256;
-	MPBuff[0][0].primtab = _primTab1;
-	MPBuff[0][0].primptr = _primTab1;
-	MPBuff[0][0].ot = _OT1;
-
-	MPBuff[0][1].draw.isbg = 0;
-	MPBuff[0][1].disp.isinter = 1;
-	MPBuff[0][1].draw.dfe = 1;
-	MPBuff[0][1].disp.screen.h = 256;
-	MPBuff[0][1].primtab = _primTab2;
-	MPBuff[0][1].primptr = _primTab2;
-	MPBuff[0][1].ot = _OT2;
-
-	last = &MPBuff[0][1];
-	current = &MPBuff[0][0];
-
-	MPBuff[0][0].disp.screen.x = draw_mode.framex * 2;
-	MPBuff[0][0].disp.screen.y = draw_mode.framey;
-	MPBuff[0][1].disp.screen.y = draw_mode.framey;
-	MPBuff[0][1].disp.screen.x = MPBuff[0][0].disp.screen.x;
-
-	PutDispEnv(&MPBuff[0][0].disp);
-	PutDrawEnv(&current->draw);
 }
 
 // [D] [T]
@@ -3391,71 +3509,6 @@ int GameNameScreen(int bSetup)
 
 	return 0;
 }
-
-// [D] [T]
-void FEInitCdIcon(void)
-{
-	ushort *palette;
-	RECT16 rect;
-
-	palette = cd_icon + 10;
-
-	for (int i = 0; i < 14; i++)
-	{
-		*palette &= 0x7fff;
-		palette++;
-	}
-
-	cd_icon[10] = 0;
-	
-	rect.x = 960;
-	rect.y = 434;
-	rect.w = 8;
-	rect.h = 32;
-	
-	cd_icon[24] |= 0x8000;
-	cd_icon[25] |= 0x8000;
-
-	LoadImage(&rect, (u_long *)(cd_icon + 0x18));
-
-	setPolyFT4(&cd_sprite);
-	setRGB0(&cd_sprite, 128, 128, 128);
-	setUVWH(&cd_sprite, 0, 178, 32, 32);
-	setXYWH(&cd_sprite, 80, 38, 38, 21);
-	setClut(&cd_sprite, 960, 433);
-	setTPage(&cd_sprite, 0, 0, 960, 256);
-
-	bCdIconSetup = 1;
-}
-
-
-// [D] [T]
-void FEDrawCDicon(void)
-{
-	ushort *palette;
-	int i;
-	RECT16 dest;
-
-	cd_icon[23] = cd_icon[11];
-	
-	palette = cd_icon + 10;
-
-	for (i = 0; i < 12; i++)
-	{
-		palette[1] = palette[2];
-		palette++;
-	}
-	
-	dest.x = 960;
-	dest.y = 433;
-	dest.w = 16;
-	dest.h = 1;
-
-	LoadImage(&dest, (u_long *)(cd_icon + 10));
-	DrawPrim(&cd_sprite);
-	DrawSync(0);
-}
-
 // [D] [T]
 int CheatNumlayerSelect(int bSetup)
 {
