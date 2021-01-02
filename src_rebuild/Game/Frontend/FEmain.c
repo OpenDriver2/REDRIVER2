@@ -886,7 +886,7 @@ void FEInitCdIcon(void)
 	cd_icon[24] |= 0x8000;
 	cd_icon[25] |= 0x8000;
 
-	LoadImage(&rect, (u_long*)(cd_icon + 0x18));
+	LoadImage(&rect, (u_long*)(cd_icon + 24));
 
 	setPolyFT4(&cd_sprite);
 	setRGB0(&cd_sprite, 128, 128, 128);
@@ -906,6 +906,9 @@ void FEDrawCDicon(void)
 	int i;
 	RECT16 dest;
 
+	if(!bCdIconSetup)
+		return;
+
 	cd_icon[23] = cd_icon[11];
 
 	palette = cd_icon + 10;
@@ -924,6 +927,9 @@ void FEDrawCDicon(void)
 	LoadImage(&dest, (u_long*)(cd_icon + 10));
 	DrawPrim(&cd_sprite);
 	DrawSync(0);
+#ifndef PSX
+	PsyX_EndScene();
+#endif
 }
 
 // [D] [T]
@@ -1015,13 +1021,11 @@ void LoadBackgroundFile(char* name)
 	{
 		FEDrawCDicon();
 
-		p = pages[i];
-
-		LoadfileSeg(name, _overlay_buffer, p * 0x8000, 0x8000);
+		LoadfileSeg(name, _overlay_buffer, pages[i] * 0x8000, 0x8000);
 		FEDrawCDicon();
 
-		rect.y = (short)(p / 6);
-		rect.x = ((short)p + rect.y * -6) * 64 + 640;
+		rect.y = (pages[i] / 6);
+		rect.x = (pages[i] - rect.y * 6) * 64 + 640;
 		rect.y *= 256;
 
 		LoadImage(&rect, (u_long*)_overlay_buffer);
@@ -1032,8 +1036,8 @@ void LoadBackgroundFile(char* name)
 	FEDrawCDicon();
 
 	rect.h = 1;
-	rect.y = (short)(iTpage / 6);
-	rect.x = ((short)iTpage + rect.y * -6) * 64 + 640;
+	rect.y = (iTpage / 6);
+	rect.x = (iTpage - rect.y * 6) * 64 + 640;
 	rect.y *= 256;
 
 	LoadImage(&rect, (u_long*)_overlay_buffer);
