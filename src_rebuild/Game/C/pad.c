@@ -426,10 +426,6 @@ void HandlePadVibration(int pad)
 // [D] [T]
 void ReadControllers(void)
 {
-#ifndef PSX
-	PsyX_UpdateInput();
-#endif
-
 	int pad;
 
 	if (DuplicatePadData.buffer)

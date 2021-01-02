@@ -8,7 +8,7 @@ SDL_GameController* padHandle[MAX_CONTROLLERS];
 unsigned char* padData[MAX_CONTROLLERS];
 
 const unsigned char* keyboardState = NULL;
-
+int g_padCommStarted = 0;
 
 void PadInitDirect(unsigned char* pad1, unsigned char* pad2)
 {
@@ -87,12 +87,12 @@ int PadChkVsync()
 
 void PadStartCom()
 {
-	PSYX_UNIMPLEMENTED();
+	g_padCommStarted = 1;
 }
 
 void PadStopCom()
 {
-	PSYX_UNIMPLEMENTED();
+	g_padCommStarted = 0;
 }
 
 unsigned int PadEnableCom(unsigned int unk00)
@@ -295,6 +295,9 @@ extern int activeControllers;
 
 void InternalPadUpdates()
 {
+	if (g_padCommStarted == 0)
+		return;
+	
 	unsigned short kbInputs = UpdateKeyboardInput();
 
 	//Update pad

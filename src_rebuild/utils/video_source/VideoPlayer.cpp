@@ -481,7 +481,7 @@ void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number, int cr
 	{
 		DisplayCredits(frame_number);
 	}
-
+	
 	PsyX_EndScene();
 }
 
