@@ -1049,6 +1049,7 @@ void LoadBackgroundFile(char* name)
 // [D] [T]
 void LoadFrontendScreens(void)
 {
+	int size;
 	int iNumScreens;
 	char* ptr;
 	RECT16 rect;
@@ -1101,7 +1102,8 @@ void LoadFrontendScreens(void)
 	LoadImage(&rect, (u_long*)_frontend_buffer);
 	DrawSync(0);
 
-	Loadfile("DATA\\FEFONT.BNK", (char*)&feFont);
+	Loadfile("DATA\\FEFONT.BNK", _frontend_buffer);
+	memcpy((u_char*)&feFont, (u_char*)_frontend_buffer, sizeof(feFont));
 }
 
 // [D] [T]
