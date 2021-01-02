@@ -75,32 +75,31 @@ workspace "REDRIVER2"
 -- game iteslf
 project "REDRIVER2"
     kind "ConsoleApp"
-    language "C++"
-    compileas "C++"
+    language "c++"
     targetdir "bin/%{cfg.buildcfg}"
 
     includedirs { 
-        "GAME", 
+        "Game", 
     }
 
     defines { GAME_REGION }
 
     files {
-        "GAME/**.H",
-        "GAME/**.C",
+        "Game/**.h",
+        "Game/**.c"
     }
 	
 	-- exclude sources which belong to overlays
 	if os.target() == "psx" then
 		excludes {
-			"GAME/MEMCARD/**.C",
-			"GAME/MEMCARD/**.H",
-			"GAME/FRONTEND/**.C",
-			"GAME/FRONTEND/**.H",
-			"GAME/C/LEADAI.C",
-			"GAME/C/PATHFIND.C",
+			"Game/MemCard/**.c",
+			"Game/MemCard/**.h",
+			"Game/Frontend/**.c",
+			"Game/Frontend/**.h",
+			"Game/C/leadai.c",
+			"Game/C/pathfind.c",
 		}
-	end
+    end
 
     filter "system:Windows or linux"
         defines { "SIMPLE_SPOOL" }
@@ -184,3 +183,6 @@ project "REDRIVER2"
 			"CUTSCENE_RECORDER"
         }
         optimize "Speed"
+
+    filter { "files:**.c", "files:**.C" }
+        compileas "C++"

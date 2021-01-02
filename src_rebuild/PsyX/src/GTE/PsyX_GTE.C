@@ -43,6 +43,9 @@ static int m_sf;
 static long long m_mac0;
 static long long m_mac3;
 
+#define tgte_mvmva(sf, mx, v, cv, lm) ( 0x0400012 | \
+	((sf)<<19) | ((mx)<<17) | ((v)<<15) | ((cv)<<13) | ((lm)<<10) )
+
 unsigned int gte_leadingzerocount(unsigned int lzcs) {
 	unsigned int lzcr = 0;
 
@@ -53,6 +56,8 @@ unsigned int gte_leadingzerocount(unsigned int lzcs) {
 		lzcr++;
 		lzcs <<= 1;
 	}
+
+	const int t = tgte_mvmva(1, 2, 3, 1, 1);
 
 	return lzcr;
 }

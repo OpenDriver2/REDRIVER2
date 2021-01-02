@@ -48,7 +48,7 @@ struct GPUDrawSplit
 	u_short			numVerts;
 };
 
-struct Vertex g_vertexBuffer[MAX_NUM_POLY_BUFFER_VERTICES];
+struct GrVertex g_vertexBuffer[MAX_NUM_POLY_BUFFER_VERTICES];
 struct GPUDrawSplit g_splits[MAX_NUM_INDEX_BUFFERS];
 
 int g_vertexIndex = 0;
@@ -63,7 +63,7 @@ void ClearSplits()
 
 // remaps screen coordinates to [0..1]
 // without clamping
-inline void ScreenCoordsToEmulator(Vertex* vertex, int count)
+inline void ScreenCoordsToEmulator(GrVertex* vertex, int count)
 {
 #ifdef USE_PGXP
 	float curW;
@@ -109,7 +109,7 @@ void LineSwapSourceVerts(VERTTYPE*& p0, VERTTYPE*& p1, unsigned char*& c0, unsig
 	}
 }
 
-void MakeLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, ushort gteidx)
+void MakeLineArray(struct GrVertex* vertex, VERTTYPE* p0, VERTTYPE* p1, ushort gteidx)
 {
 	VERTTYPE dx = p1[0] - p0[0];
 	VERTTYPE dy = p1[1] - p0[1];
@@ -162,7 +162,7 @@ void MakeLineArray(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, ushort gte
 	ScreenCoordsToEmulator(vertex, 4);
 }
 
-inline void ApplyVertexPGXP(Vertex* v, VERTTYPE* p, float ofsX, float ofsY, ushort gteidx)
+inline void ApplyVertexPGXP(GrVertex* v, VERTTYPE* p, float ofsX, float ofsY, ushort gteidx)
 {
 #ifdef USE_PGXP
 	uint lookup = PGXP_LOOKUP_VALUE(p[0], p[1]);
@@ -197,7 +197,7 @@ inline void ApplyVertexPGXP(Vertex* v, VERTTYPE* p, float ofsX, float ofsY, usho
 #endif
 }
 
-void MakeVertexTriangle(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, VERTTYPE* p2, ushort gteidx)
+void MakeVertexTriangle(struct GrVertex* vertex, VERTTYPE* p0, VERTTYPE* p1, VERTTYPE* p2, ushort gteidx)
 {
 	assert(p0);
 	assert(p1);
@@ -233,7 +233,7 @@ void MakeVertexTriangle(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, VERTT
 	ScreenCoordsToEmulator(vertex, 3);
 }
 
-void MakeVertexQuad(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, VERTTYPE* p2, VERTTYPE* p3, ushort gteidx)
+void MakeVertexQuad(struct GrVertex* vertex, VERTTYPE* p0, VERTTYPE* p1, VERTTYPE* p2, VERTTYPE* p3, ushort gteidx)
 {
 	assert(p0);
 	assert(p1);
@@ -274,7 +274,7 @@ void MakeVertexQuad(struct Vertex* vertex, VERTTYPE* p0, VERTTYPE* p1, VERTTYPE*
 	ScreenCoordsToEmulator(vertex, 4);
 }
 
-void MakeVertexRect(struct Vertex* vertex, VERTTYPE* p0, short w, short h, ushort gteidx)
+void MakeVertexRect(struct GrVertex* vertex, VERTTYPE* p0, short w, short h, ushort gteidx)
 {
 	assert(p0);
 
@@ -311,7 +311,7 @@ void MakeVertexRect(struct Vertex* vertex, VERTTYPE* p0, short w, short h, ushor
 	ScreenCoordsToEmulator(vertex, 4);
 }
 
-void MakeTexcoordQuad(struct Vertex* vertex, unsigned char* uv0, unsigned char* uv1, unsigned char* uv2, unsigned char* uv3, short page, short clut, unsigned char dither)
+void MakeTexcoordQuad(struct GrVertex* vertex, unsigned char* uv0, unsigned char* uv1, unsigned char* uv2, unsigned char* uv3, short page, short clut, unsigned char dither)
 {
 	assert(uv0);
 	assert(uv1);
@@ -349,7 +349,7 @@ void MakeTexcoordQuad(struct Vertex* vertex, unsigned char* uv0, unsigned char* 
 	vertex[3].clut = clut;
 }
 
-void MakeTexcoordTriangle(struct Vertex* vertex, unsigned char* uv0, unsigned char* uv1, unsigned char* uv2, short page, short clut, unsigned char dither)
+void MakeTexcoordTriangle(struct GrVertex* vertex, unsigned char* uv0, unsigned char* uv1, unsigned char* uv2, short page, short clut, unsigned char dither)
 {
 	assert(uv0);
 	assert(uv1);
@@ -379,7 +379,7 @@ void MakeTexcoordTriangle(struct Vertex* vertex, unsigned char* uv0, unsigned ch
 	vertex[2].clut = clut;
 }
 
-void MakeTexcoordRect(struct Vertex* vertex, unsigned char* uv, short page, short clut, short w, short h)
+void MakeTexcoordRect(struct GrVertex* vertex, unsigned char* uv, short page, short clut, short w, short h)
 {
 	assert(uv);
 	//assert(int(uv[0]) + w <= 255);
@@ -420,7 +420,7 @@ void MakeTexcoordRect(struct Vertex* vertex, unsigned char* uv, short page, shor
 	vertex[3].clut = clut;
 }
 
-void MakeTexcoordLineZero(struct Vertex* vertex, unsigned char dither)
+void MakeTexcoordLineZero(struct GrVertex* vertex, unsigned char dither)
 {
 	const unsigned char bright = 1;
 
@@ -453,7 +453,7 @@ void MakeTexcoordLineZero(struct Vertex* vertex, unsigned char dither)
 	vertex[3].clut = 0;
 }
 
-void MakeTexcoordTriangleZero(struct Vertex* vertex, unsigned char dither)
+void MakeTexcoordTriangleZero(struct GrVertex* vertex, unsigned char dither)
 {
 	const unsigned char bright = 1;
 
@@ -480,7 +480,7 @@ void MakeTexcoordTriangleZero(struct Vertex* vertex, unsigned char dither)
 
 }
 
-void MakeTexcoordQuadZero(struct Vertex* vertex, unsigned char dither)
+void MakeTexcoordQuadZero(struct GrVertex* vertex, unsigned char dither)
 {
 	const unsigned char bright = 1;
 
@@ -513,7 +513,7 @@ void MakeTexcoordQuadZero(struct Vertex* vertex, unsigned char dither)
 	vertex[3].clut = 0;
 }
 
-void MakeColourLine(struct Vertex* vertex, unsigned char* col0, unsigned char* col1)
+void MakeColourLine(struct GrVertex* vertex, unsigned char* col0, unsigned char* col1)
 {
 	assert(col0);
 	assert(col1);
@@ -539,7 +539,7 @@ void MakeColourLine(struct Vertex* vertex, unsigned char* col0, unsigned char* c
 	vertex[3].a = 255;
 }
 
-void MakeColourTriangle(struct Vertex* vertex, unsigned char* col0, unsigned char* col1, unsigned char* col2)
+void MakeColourTriangle(struct GrVertex* vertex, unsigned char* col0, unsigned char* col1, unsigned char* col2)
 {
 	assert(col0);
 	assert(col1);
@@ -561,7 +561,7 @@ void MakeColourTriangle(struct Vertex* vertex, unsigned char* col0, unsigned cha
 	vertex[2].a = 255;
 }
 
-void MakeColourQuad(struct Vertex* vertex, unsigned char* col0, unsigned char* col1, unsigned char* col2, unsigned char* col3)
+void MakeColourQuad(struct GrVertex* vertex, unsigned char* col0, unsigned char* col1, unsigned char* col2, unsigned char* col3)
 {
 	assert(col0);
 	assert(col1);
@@ -667,7 +667,7 @@ void DrawAllSplits()
 	{
 		for (int i = 0; i < 3; i++)
 		{
-			struct Vertex* vert = &g_vertexBuffer[g_polygonSelected + i];
+			struct GrVertex* vert = &g_vertexBuffer[g_polygonSelected + i];
 			vert->r = 255;
 			vert->g = 0;
 			vert->b = 0;

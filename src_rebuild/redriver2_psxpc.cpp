@@ -3,16 +3,21 @@
 
 #include <SDL_keyboard.h>
 
-#include "PLATFORM.H"
+#include "platform.h"
 
-#include "DRIVER2.H"
-#include "C/MAIN.H"
-#include "C/SYSTEM.H"
-#include "C/GAMESND.H"
-#include "C/CAMERA.H"
-#include "C/CARS.H"
-#include "C/CIV_AI.H"
-#include "C/MISSION.H"
+#include "driver2.h"
+#include "C/main.h"
+#include "C/system.h"
+#include "C/gamesnd.h"
+#include "C/camera.h"
+#include "C/cars.h"
+#include "C/civ_ai.h"
+#include "C/mission.h"
+#include "C/cutscene.h"
+#include "C/glaunch.h"
+#include "C/loadview.h"
+#include "C/overlay.h"
+#include "C/players.h"
 
 #include "utils/ini.h"
 
@@ -20,13 +25,6 @@
 #include <SDL_messagebox.h>
 
 #include "PSYX_GLOBALS.H"
-
-#include "C/CUTSCENE.H"
-#include "C/GLAUNCH.H"
-#include "C/LOADVIEW.H"
-#include "C/OVERLAY.H"
-#include "C/PLAYERS.H"
-
 
 // eq engine console output
 typedef enum

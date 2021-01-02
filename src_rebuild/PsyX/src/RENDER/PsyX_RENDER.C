@@ -152,15 +152,61 @@ int GR_InitialiseGLContext(char* windowName, int fullscreen)
 
 	g_window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, g_windowWidth, g_windowHeight, windowFlags);
 
-#if defined(RENDERER_OGL)
-	SDL_GL_CreateContext(g_window);
-#endif
-
 	if (g_window == NULL)
 	{
-		eprinterr("Failed to initialise SDL window or GL context!\n");
+		eprinterr("Failed to initialise SDL window!\n");
 		return 0;
 	}
+	
+#if defined(OGLES)
+
+#if defined(__ANDROID__)
+	//Override to full screen.
+	SDL_DisplayMode displayMode;
+	if (SDL_GetCurrentDisplayMode(0, &displayMode) == 0)
+	{
+		screenWidth = displayMode.w;
+		windowWidth = displayMode.w;
+		screenHeight = displayMode.h;
+		windowHeight = displayMode.h;
+	}
+#endif
+	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, OGLES_VERSION);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+
+	if(!SDL_GL_CreateContext(g_window))
+	{
+		eprinterr("Failed to initialise - OpenGL ES %d.x is not supported.\n", OGLES_VERSION);
+		return 0;
+	}
+#elif defined(RENDERER_OGL)
+
+	int major_version = 3;
+	int minor_version = 3;
+	int profile = SDL_GL_CONTEXT_PROFILE_CORE;
+
+	// find best OpenGL version
+	do
+	{
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, major_version);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, minor_version);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, profile);
+
+		if (SDL_GL_CreateContext(g_window))
+			break;
+	
+		minor_version--;
+		
+	} while (minor_version >= 0);
+
+	if (minor_version == -1)
+	{
+		eprinterr("Failed to initialise - OpenGL 3.x is not supported. Please update video drivers.\n");
+		return 0;
+	}
+#endif
 
 	return 1;
 }
@@ -195,29 +241,6 @@ int GR_InitialiseRender(char* windowName, int width, int height, int fullscreen)
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 #else
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
-#endif
-
-#if defined(OGLES)
-
-#if defined(__ANDROID__)
-	//Override to full screen.
-	SDL_DisplayMode displayMode;
-	if (SDL_GetCurrentDisplayMode(0, &displayMode) == 0)
-	{
-		screenWidth = displayMode.w;
-		windowWidth = displayMode.w;
-		screenHeight = displayMode.h;
-		windowHeight = displayMode.h;
-	}
-#endif
-	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, OGLES_VERSION);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-#elif defined(RENDERER_OGL)
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
 #endif
 
 #if defined(RENDERER_OGL) || defined(OGLES)
@@ -259,7 +282,7 @@ void GR_Shutdown()
 
 void GR_BeginScene()
 {
-	g_lastBoundTexture = NULL;
+	g_lastBoundTexture = 0;
 
 #if defined(RENDERER_OGL) || defined(OGLES)
 	glBindVertexArray(g_glVertexArray);
@@ -747,23 +770,23 @@ int GR_InitialisePSX()
 		glBindVertexArray(g_glVertexArray);
 
 		glBindBuffer(GL_ARRAY_BUFFER, g_glVertexBuffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * MAX_NUM_POLY_BUFFER_VERTICES, NULL, GL_DYNAMIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(GrVertex) * MAX_NUM_POLY_BUFFER_VERTICES, NULL, GL_DYNAMIC_DRAW);
 
 		glEnableVertexAttribArray(a_position);
 		glEnableVertexAttribArray(a_texcoord);
 		glEnableVertexAttribArray(a_color);
 
 #if defined(USE_PGXP)
-		glVertexAttribPointer(a_position, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->x);
-		glVertexAttribPointer(a_zw, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->z);
+		glVertexAttribPointer(a_position, 4, GL_FLOAT, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->x);
+		glVertexAttribPointer(a_zw, 4, GL_FLOAT, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->z);
 
 		glEnableVertexAttribArray(a_zw);
 #else
-		glVertexAttribPointer(a_position, 4, GL_SHORT, GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->x);
+		glVertexAttribPointer(a_position, 4, GL_SHORT, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->x);
 #endif
 
-		glVertexAttribPointer(a_texcoord, 4, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(Vertex), &((Vertex*)NULL)->u);
-		glVertexAttribPointer(a_color, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(Vertex), &((Vertex*)NULL)->r);
+		glVertexAttribPointer(a_texcoord, 4, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->u);
+		glVertexAttribPointer(a_color, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(GrVertex), &((GrVertex*)NULL)->r);
 
 		glBindVertexArray(0);
 	}
@@ -1290,12 +1313,10 @@ void GR_EnableDepth(int enable)
 	if (enable && g_pgxpZBuffer)
 	{
 		glEnable(GL_DEPTH_TEST);
-		//glDepthMask(GL_TRUE);
 	}
 	else
 	{
 		glDisable(GL_DEPTH_TEST);
-		//glDepthMask(GL_FALSE);
 	}
 #endif
 }
@@ -1391,11 +1412,11 @@ void GR_SetWireframe(bool enable)
 #endif
 }
 
-void GR_UpdateVertexBuffer(const Vertex* vertices, int num_vertices)
+void GR_UpdateVertexBuffer(const GrVertex* vertices, int num_vertices)
 {
 	assert(num_vertices <= MAX_NUM_POLY_BUFFER_VERTICES);
 #if defined(RENDERER_OGL) || defined(OGLES)
-	glBufferSubData(GL_ARRAY_BUFFER, 0, num_vertices * sizeof(Vertex), vertices);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, num_vertices * sizeof(GrVertex), vertices);
 #else
 #error
 #endif

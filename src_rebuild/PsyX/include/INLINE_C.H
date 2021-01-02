@@ -2,23 +2,22 @@
 #define INLINE_C_H
 
 extern void gte_SetGeomScreen(int h);
-extern int gte_ldlzc(int input);
 
 extern int docop2(int op);
 
-// sets Cop2 data register value. LWC2 is the same kind
+// sets cop2 data register value. LWC2 is the same kind
 void MTC2(unsigned int value, int reg);
 void MTC2_S(int value, int reg);
 
-// sets Cop2 control register value
+// sets cop2 control register value
 void CTC2(unsigned int value, int reg);
 void CTC2_S(int value, int reg);
 
-// returns Cop2 register value. SWC2 is the same kind
+// returns cop2 register value. SWC2 is the same kind
 unsigned int MFC2(int reg);
 int MFC2_S(int reg);
 
-// returns Cop2 control register value
+// returns cop2 control register value
 unsigned int CFC2(int reg);
 int CFC2_S(int reg);
 
@@ -68,8 +67,38 @@ int CFC2_S(int reg);
 		MTC2(*(uint*)((char*)r0 + 4), 10);\
 		MTC2(*(uint*)((char*)r0 + 8), 11);}
 
+// mtc2 9,10,11
+#define gte_ldsv( r0 ) \
+	{	MTC2((*(ushort*)((char*)r0), 9);\
+		MTC2((*(ushort*)((char*)r0 + 2), 10);\
+		MTC2((*(ushort*)((char*)r0 + 4), 11); }
+
+// mtc2 9,10
+#define gte_ldbv( r0 ) \
+	{	MTC2(*((char*)r0), 9);\
+		MTC2(*((char*)r0 + 1), 10); }
+
+// mtc2 9,10,11
+#define gte_ldcv( r0 ) \
+	{	MTC2((*((char*)r0), 9);\
+		MTC2((*((char*)r0 + 1), 10);\
+		MTC2((*((char*)r0 + 2), 11); }
+
+// lwc2 6
 #define gte_ldrgb( r0 ) \
 	{	MTC2(*(uint*)((char*)r0), 6);	}
+
+// lwc2 6,20,21,22
+#define gte_ldrgb3( r0, r1, r2 ) \
+	{	MTC2(*(uint*)((char*)r0), 20); \
+		MTC2(*(uint*)((char*)r1), 21); \
+		MTC2(*(uint*)((char*)r2), 22); \
+		MTC2(*(uint*)((char*)r2), 6); }
+
+// mtc2 0, lwc2 1
+#define gte_ldlv0( r0 ) \
+	{	MTC2((*(ushort*)((char*)r0 + 4) << 16) | *(ushort*)((char*)r0));\
+		MTC2(*(ushort*)((char*)r0 + 8) << 16); }
 
 // mtc2 8
 #define gte_lddp( r0 )	\
@@ -79,7 +108,44 @@ int CFC2_S(int reg);
 #define gte_ldbkdir( r0, r1, r2 ) \
 	{	CTC2(r0, 13); \
 		CTC2(r1, 14); \
-		CTC2(r2, 15);}
+		CTC2(r2, 15);	}
+
+// mtc2 12,13,14
+#define gte_ldsxy3( r0, r1, r2 )\
+	{	MTC2(*(uint*)r0, 12);			\
+		MTC2(*(uint*)r2, 14);			\
+		MTC2(*(uint*)r1, 13);	}
+
+// mtc2 12,13,14
+#define gte_ldsxy3c( r0 ) \
+	{	MTC2(*(uint*)((char*)r0+0), 12 );		\
+		MTC2(*(uint*)((char*)r0+4), 13 );		\
+		MTC2(*(uint*)((char*)r0+8), 14 );	}
+
+// mtc2 17,18,19
+#define gte_ldsz3( r0, r1, r2 ) \
+	{	MTC2(*(uint*)((char*)r0), 17 );		\
+		MTC2(*(uint*)((char*)r1), 18 );		\
+		MTC2(*(uint*)((char*)r2), 19 );	}
+
+// mtc2 16,17,18,19
+#define gte_ldsz4( r0, r1, r2, r3 ) \
+	{	MTC2(*(uint*)((char*)r0), 16 );		\
+		MTC2(*(uint*)((char*)r1), 17 );		\
+		MTC2(*(uint*)((char*)r2), 18 );		\
+		MTC2(*(uint*)((char*)r3), 19 );	}
+
+// ctc2 0,2,4
+#define gte_ldopv1( r0 ) \
+	{	CTC2(*(uint*)((char*)r0), 0);\
+		CTC2(*(uint*)((char*)r0 + 4), 2);\
+		CTC2(*(uint*)((char*)r0 + 8), 4);}
+
+// lwc2 9,10,11
+#define gte_ldopv2( r0 ) \
+	{	MTC2(*(uint*)((char*)r0), 9);\
+		MTC2(*(uint*)((char*)r0 + 4), 10);\
+		MTC2(*(uint*)((char*)r0 + 8), 11);}
 
 // ctc2 24,25
 #define gte_SetGeomOffset( r0, r1 )\
@@ -88,16 +154,16 @@ int CFC2_S(int reg);
 
 // ctc2 13,14,15
 #define gte_SetBackColor( r0, r1, r2 ) \
-				{	CTC2(r0 << 4, 13); \
-					CTC2(r1 << 4, 14); \
-					CTC2(r2 << 4, 15); }
+		{	CTC2(r0 << 4, 13); \
+			CTC2(r1 << 4, 14); \
+			CTC2(r2 << 4, 15); }
 
 
 // ctc2 21, 22, 23
 #define gte_SetFarColor( r0, r1, r2 ) \
-				{	CTC2(r0 << 4, 21); \
-					CTC2(r1 << 4, 22); \
-					CTC2(r2 << 4, 23); }
+		{	CTC2(r0 << 4, 21); \
+			CTC2(r1 << 4, 22); \
+			CTC2(r2 << 4, 23); }
 
  // load ctc2 8-11
 #define gte_SetLightMatrix( r0 ) \
@@ -151,6 +217,22 @@ int CFC2_S(int reg);
 		CTC2(*(uint*)((char*)r0+12), 19);\
 		CTC2(*(uint*)((char*)r0+16), 20);}
 
+// mtc2 9,10,11
+#define gte_ldopv2SV( r0 ) \
+	{	MTC2(*(ushort*)((char*)r0), 9);\
+		MTC2(*(ushort*)((char*)r0 + 2), 10);\
+		MTC2(*(ushort*)((char*)r0 + 4), 11);}
+
+// ctc2 0,2,4
+#define gte_ldopv1SV( r0 )\
+	{	CTC2(*(ushort*)((char*)r0), 0);\
+		CTC2(*(ushort*)((char*)r0 + 2), 2);\
+		CTC2(*(ushort*)((char*)r0 + 4), 4);}
+
+// mtc2 30
+#define gte_ldlzc( r0 ) \
+	MTC2(*(uint*)((char*)r0), 30);
+
 /*
  * Type 2 functions
  */
@@ -159,40 +241,284 @@ int CFC2_S(int reg);
  // please refer to official Psy-Q PSX SDK headers
  // and this: https://github.com/ogamespec/pops-gte/blob/master/docs/gte.txt
 
-#define gte_rtv0tr()		docop2(0x480012);
-#define gte_rtv0()			docop2(0x486012);
-#define gte_lcir()			docop2(0x4DE012);
-#define gte_llir()			docop2(0x4BE012);
+#define gte_nop()
 
-#define gte_rtir()			docop2(0x49E012)
-#define gte_rtps()			docop2(0x180001)
-#define gte_rtpt()			docop2(0x280030)
-#define gte_nclip()			docop2(0x1400006)
-#define gte_avsz3()			docop2(0x158002D)
-#define gte_avsz4()			docop2(0x168002E)
-#define gte_sqr0()			docop2(0xA00428)
-#define gte_sqr12()			docop2(0xA80428)
-#define gte_op0()			docop2(0x170000C)
-#define gte_op12()			docop2(0x178000C)
-#define gte_ncs()			docop2(0xC8041E)
-#define gte_nct()			docop2(0xD80420)
-#define gte_nccs()			docop2(0x108041B)
-#define gte_ncct()			docop2(0x118043F)
-#define gte_ncds()			docop2(0xE80413)
-#define gte_ncdt()			docop2(0xF80416)
-#define gte_cc()			docop2(0x138041C)
-#define gte_cdp()			docop2(0x1280414)
-#define gte_dcpl()			docop2(0x680029)
-#define gte_dpcs()			docop2(0x780010)
-#define gte_dpct()			docop2(0x180001)
-#define gte_intpl()			docop2(0x980011)
-#define gte_gpf0()			docop2(0x190003D)
-#define gte_gpf12()			docop2(0x198003D)
-#define gte_gpl0()			docop2(0x1A0003E)
-#define gte_gpl12()			docop2(0x1A8003E)
+#define gte_rtps() docop2(0x0180001);
 
-#define gte_mvmva(sf, mx, v, cv, lm) docop2( 0x0400012 | \
+#define gte_rtpt() docop2(0x0280030);
+
+#define gte_rt() docop2(0x0480012);
+
+#define gte_rtv0() docop2(0x0486012);
+
+#define gte_rtv1() docop2(0x048E012);
+
+#define gte_rtv2() docop2(0x0496012);
+
+#define gte_rtir() docop2(0x049E012);
+
+#define gte_rtir_sf0() docop2(0x041E012);
+
+#define gte_rtv0tr() docop2(0x0480012);
+
+#define gte_rtv1tr() docop2(0x0488012);
+
+#define gte_rtv2tr() docop2(0x0490012);
+
+#define gte_rtirtr() op2 0x0498012);
+
+#define gte_rtv0bk() docop2(0x0482012);
+
+#define gte_rtv1bk() docop2(0x048A012);
+
+#define gte_rtv2bk() docop2(0x0492012);
+
+#define gte_rtirbk() docop2(0x049A012);
+
+#define gte_ll() docop2(0x04A6412);
+
+#define gte_llv0() docop2(0x04A6012);
+
+#define gte_llv1() docop2(0x04AE012);
+
+#define gte_llv2() docop2(0x04B6012);
+
+#define gte_llir() docop2(0x04BE012);
+
+#define gte_llv0tr() docop2(0x04A0012);
+
+#define gte_llv1tr() docop2(0x04A8012);
+
+#define gte_llv2tr() docop2(0x04B0012);
+
+#define gte_llirtr() docop2(0x04B8012);
+
+#define gte_llv0bk() docop2(0x04A2012);
+
+#define gte_llv1bk() docop2(0x4AA012);
+
+#define gte_llv2bk() docop2(0x04B2012);
+
+#define gte_llirbk() docop2(0x04BA012);
+
+#define gte_lc() docop2(0x04DA412);
+
+#define gte_lcv0() docop2(0x04C6012);
+
+#define gte_lcv1() docop2(0x04CE012);
+
+#define gte_lcv2() docop2(0x04D6012);
+
+#define gte_lcir() docop2(0x04DE012);
+
+#define gte_lcv0tr() docop2(0x04C0012);
+
+#define gte_lcv1tr() docop2(0x04C8012);
+
+#define gte_lcv2tr() docop2(0x04D0012);
+
+#define gte_lcirtr() docop2(0x04D8012);
+
+#define gte_lcv0bk() docop2(0x04C2012);
+
+#define gte_lcv1bk() docop2(0x04CA012);
+
+#define gte_lcv2bk() docop2(0x04D2012);
+
+#define gte_lcirbk() docop2(0x04DA012);
+
+#define gte_dpcl() docop2(0x0680029);
+
+#define gte_dpcs() docop2(0x0780010);
+
+#define gte_dpct() docop2(0x0F8002A);
+
+#define gte_intpl() docop2(0x0980011);
+
+#define gte_sqr12() docop2(0x0A80428);
+
+#define gte_sqr0() docop2(0x0A00428);
+
+#define gte_ncs() docop2(0x0C8041E);
+
+#define gte_nct() docop2(0x0D80420);
+
+#define gte_ncds() docop2(0x0E80413);
+
+#define gte_ncdt() docop2(0x0F80416);
+
+#define gte_nccs() docop2(0x0108041B);
+
+#define gte_ncct() docop2(0x0118043F);
+
+#define gte_cdp() docop2(0x01280414);
+
+#define gte_cc() docop2(0x0138041C);
+
+#define gte_nclip() docop2(0x01400006);
+
+#define gte_avsz3() docop2(0x0158002D);
+
+#define gte_avsz4() docop2(0x0168002E);
+
+#define gte_op12() docop2(0x0178000C);
+
+#define gte_op0() docop2(0x0170000C);
+
+#define gte_gpf12() docop2(0x0198003D);
+
+#define gte_gpf0() docop2(0x0190003D);
+
+#define gte_gpl12() docop2(0x01A8003E);
+
+#define gte_gpl0() docop2(0x01A0003E0);
+
+#define gte_mvmva_core( r0 ) docop2(r0)
+
+#define gte_mvmva(sf,mx,v,cv,lm) gte_mvmva_core( 0x0400012 | \
 	((sf)<<19) | ((mx)<<17) | ((v)<<15) | ((cv)<<13) | ((lm)<<10) )
+
+
+/*
+ * Type 2 functions without nop
+ */
+
+
+#define gte_rtps_b() docop2(0x0180001);
+
+#define gte_rtpt_b() docop2(0x0280030);
+
+#define gte_rt_b() docop2(0x0480012);
+
+#define gte_rtv0_b() docop2(0x0486012);
+
+#define gte_rtv1_b() docop2(0x048E012);
+
+#define gte_rtv2_b() docop2(0x0496012);
+
+#define gte_rtir_b() docop2(0x049E012);
+
+#define gte_rtir_sf0_b() docop2(0x041E012);
+
+#define gte_rtv0tr_b() docop2(0x0480012);
+
+#define gte_rtv1tr_b() docop2(0x0488012);
+
+#define gte_rtv2tr_b() docop2(0x0490012);
+
+#define gte_rtirtr_b() op2 0x0498012);
+
+#define gte_rtv0bk_b() docop2(0x0482012);
+
+#define gte_rtv1bk_b() docop2(0x048A012);
+
+#define gte_rtv2bk_b() docop2(0x0492012);
+
+#define gte_rtirbk_b() docop2(0x049A012);
+
+#define gte_ll_b() docop2(0x04A6412);
+
+#define gte_llv0_b() docop2(0x04A6012);
+
+#define gte_llv1_b() docop2(0x04AE012);
+
+#define gte_llv2_b() docop2(0x04B6012);
+
+#define gte_llir_b() docop2(0x04BE012);
+
+#define gte_llv0tr_b() docop2(0x04A0012);
+
+#define gte_llv1tr_b() docop2(0x04A8012);
+
+#define gte_llv2tr_b() docop2(0x04B0012);
+
+#define gte_llirtr_b() docop2(0x04B8012);
+
+#define gte_llv0bk_b() docop2(0x04A2012);
+
+#define gte_llv1bk_b() docop2(0x4AA012);
+
+#define gte_llv2bk_b() docop2(0x04B2012);
+
+#define gte_llirbk_b() docop2(0x04BA012);
+
+#define gte_lc_b() docop2(0x04DA412);
+
+#define gte_lcv0_b() docop2(0x04C6012);
+
+#define gte_lcv1_b() docop2(0x04CE012);
+
+#define gte_lcv2_b() docop2(0x04D6012);
+
+#define gte_lcir_b() docop2(0x04DE012);
+
+#define gte_lcv0tr_b() docop2(0x04C0012);
+
+#define gte_lcv1tr_b() docop2(0x04C8012);
+
+#define gte_lcv2tr_b() docop2(0x04D0012);
+
+#define gte_lcirtr_b() docop2(0x04D8012);
+
+#define gte_lcv0bk_b() docop2(0x04C2012);
+
+#define gte_lcv1bk_b() docop2(0x04CA012);
+
+#define gte_lcv2bk_b() docop2(0x04D2012);
+
+#define gte_lcirbk_b() docop2(0x04DA012);
+
+#define gte_dpcl_b() docop2(0x0680029);
+
+#define gte_dpcs_b() docop2(0x0780010);
+
+#define gte_dpct_b() docop2(0x0F8002A);
+
+#define gte_intpl_b() docop2(0x0980011);
+
+#define gte_sqr12_b() docop2(0x0A80428);
+
+#define gte_sqr0_b() docop2(0x0A00428);
+
+#define gte_ncs_b() docop2(0x0C8041E);
+
+#define gte_nct_b() docop2(0x0D80420);
+
+#define gte_ncds_b() docop2(0x0E80413);
+
+#define gte_ncdt_b() docop2(0x0F80416);
+
+#define gte_nccs_b() docop2(0x0108041B);
+
+#define gte_ncct_b() docop2(0x0118043F);
+
+#define gte_cdp_b() docop2(0x01280414);
+
+#define gte_cc_b() docop2(0x0138041C);
+
+#define gte_nclip_b() docop2(0x01400006);
+
+#define gte_avsz3_b() docop2(0x0158002D);
+
+#define gte_avsz4_b() docop2(0x0168002E);
+
+#define gte_op12_b() docop2(0x0178000C);
+
+#define gte_op0_b() docop2(0x0170000C);
+
+#define gte_gpf12_b() docop2(0x0198003D);
+
+#define gte_gpf0_b() docop2(0x0190003D);
+
+#define gte_gpl12_b() docop2(0x01A8003E);
+
+#define gte_gpl0_b() docop2(0x01A0003E0);
+
+#define gte_mvmva_core_b( r0 ) docop2(r0)
+
+#define gte_mvmva_b(sf,mx,v,cv,lm) gte_mvmva_core_b( 0x0400012 | \
+	((sf)<<19) | ((mx)<<17) | ((v)<<15) | ((cv)<<13) | ((lm)<<10) )
+
 
  /*
   * Type 3 functions
@@ -288,6 +614,17 @@ int CFC2_S(int reg);
 		*(ushort*)((char*)r0 + 2) = MFC2(10) & 0xFFFF;\
 		*(ushort*)((char*)r0 + 4) = MFC2(11) & 0xFFFF;}
 
+// mfc2 9,10
+#define gte_stbv( r0 ) \
+	{	*((char*)r0) = MFC2(9) & 0xFF; \
+		*((char*)r0 + 1) = MFC2(10) & 0xFF;}
+
+// mfc2 9,10,11
+#define gte_stcv( r0 ) \
+	{	*((char*)r0) = MFC2(9) & 0xFF; \
+		*((char*)r0 + 1) = MFC2(10) & 0xFF;\
+		*((char*)r0 + 2) = MFC2(11) & 0xFF;}
+
 // swc2 17,18,19
 #define gte_stsz3( r0, r1, r2 ) \
 	{	*(uint*)((char*)r0) = MFC2(17);\
@@ -302,9 +639,9 @@ int CFC2_S(int reg);
 
 // ctc2 5,6,7
 #define gte_ldtr( r0, r1, r2 ) \
-	{	CTC2(*(uint*)((char*)r0), 5);\
-		CTC2(*(uint*)((char*)r1), 6);\
-		CTC2(*(uint*)((char*)r2), 7);}
+	{	CTC2(r0, 5);\
+		CTC2(r1, 6);\
+		CTC2(r2, 7);}
 
 // cfc2 5,6,7
 #define gte_sttr( r0 ) \
@@ -355,6 +692,10 @@ int CFC2_S(int reg);
 		*(uint*)((char*)r0 + 20) = CFC2(13);	\
 		*(uint*)((char*)r0 + 24) = CFC2(14);	\
 		*(uint*)((char*)r0 + 28) = CFC2(15);}
+
+// swc2 31
+#define gte_stlzc( r0 ) \
+	*(ushort*)((char*)r0) = MFC2(31);
 
 // cfc2 21,22,23
 #define gte_stfc( r0 )\

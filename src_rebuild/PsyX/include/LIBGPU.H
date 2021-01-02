@@ -32,7 +32,7 @@ extern	int (*GPU_printf)(const char *fmt, ...);
 	GPU_printf("\t%5d,%5d,%5d\n",(x)->m[1][0],(x)->m[1][1],(x)->m[1][2]),\
 	GPU_printf("\t%5d,%5d,%5d\n",(x)->m[2][0],(x)->m[2][1],(x)->m[2][2])
 
-#define setRECT16(r, _x, _y, _w, _h) \
+#define setRECT(r, _x, _y, _w, _h) \
 	(r)->x = (_x),(r)->y = (_y),(r)->w = (_w),(r)->h = (_h)
 
 /*

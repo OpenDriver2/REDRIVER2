@@ -11,14 +11,14 @@ extern long ResetRCnt(long spec);
 extern long StartRCnt(long spec);
 extern long StopRCnt(long spec);
 
-extern long OpenEvent(unsigned long unk00,long,long,long (*func)());
-extern long CloseEvent(long unk00);
-extern long WaitEvent(long unk00);
-extern long TestEvent(long unk00);
-extern long EnableEvent(long unk00);
-extern long DisableEvent(long unk00);
-extern void DeliverEvent(unsigned long unk00, unsigned long);
-extern void UnDeliverEvent(unsigned long unk00, unsigned long);
+extern long OpenEvent(unsigned long desc,long spec,long mode,long(*func)());
+extern long CloseEvent(unsigned long event);
+extern long WaitEvent(unsigned long event);
+extern long TestEvent(unsigned long event);
+extern long EnableEvent(unsigned long event);
+extern long DisableEvent(unsigned long event);
+extern void DeliverEvent(unsigned long ev1, long ev2);
+extern void UnDeliverEvent(unsigned long ev1, long ev2);
 
 extern long OpenTh(long (*func)(), unsigned long , unsigned long);
 extern int CloseTh(long unk00);

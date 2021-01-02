@@ -3,7 +3,6 @@
 project "Psy-X"
     kind "StaticLib"
     language "C++"
-    compileas "C++"
     targetdir "bin/%{cfg.buildcfg}"
 	removeplatforms "psx" 
 
@@ -27,7 +26,7 @@ project "Psy-X"
     }
 
     filter "system:Windows"
-	defines { "_WINDOWS" }
+	    defines { "_WINDOWS" }
         links { 
             "opengl32",
             "SDL2", 
@@ -59,3 +58,6 @@ project "Psy-X"
 
     filter {"configurations:Release", "configurations:Release_dev"}
         optimize "Speed"
+
+    filter { "files:**.c", "files:**.C" }
+        compileas "C++"

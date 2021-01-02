@@ -18,6 +18,28 @@
 #define ONE					(1 << 12)
 #define	FIXED(a)			((a) >> 12)
 
+#ifndef MIN
+#define MIN(a,b)	fst_min(a,b)
+#endif
+
+#ifndef MAX
+#define MAX(a,b)	fst_max(a,b)
+#endif
+
+inline int fst_min(int a, int b)
+{
+	int diff = a - b;
+	int dsgn = diff >> 31;
+	return b + (diff & dsgn);
+}
+
+inline int fst_max(int a, int b)
+{
+	int diff = a - b;
+	int dsgn = diff >> 31;
+	return a - (diff & dsgn);
+}
+
 void InitGeom()
 {
 	C2_ZSF3 = 341;
@@ -100,49 +122,112 @@ void PopMatrix()
 	}
 }
 
-long RotTransPers(struct SVECTOR* v0, long* sxy, long* p, long* flag)
-{
-	gte_ldv0(v0);
-
-	gte_rtps();
-
-	gte_stsxy(sxy);
-	gte_stdp(p);
-	gte_stflg(flag);
-
-	int z;
-	gte_stsz(&z);
-
-	return z >> 2;
-}
-
 void RotTrans(struct SVECTOR* v0, VECTOR* v1, long* flag)
 {
-	long lVar1;
+	gte_RotTrans(v0, v1, flag);
+}
 
+void RotTransSV(SVECTOR* v0, SVECTOR* v1, long* flag)
+{
 	gte_ldv0(v0);
-
-	gte_rtv0tr();
-
-	gte_stlvnl(v1);
+	gte_rt();
+	gte_stsv(v1);
 	gte_stflg(flag);
+}
+
+long RotTransPers(struct SVECTOR* v0, long* sxy, long* p, long* flag)
+{
+	int sz;
+	gte_RotTransPers(v0, sxy, p, flag, &sz);
+
+	return sz;
+}
+
+long RotTransPers3(SVECTOR* v0, SVECTOR* v1, SVECTOR* v2, long* sxy0, long* sxy1, long* sxy2, long* p, long* flag)
+{
+	int sz;
+	gte_RotTransPers3(v0, v1, v2, sxy0, sxy1, sxy2, p, flag, &sz);
+
+	return sz;
+}
+
+long RotTransPers4(SVECTOR* v0, SVECTOR* v1, SVECTOR* v2, SVECTOR* v3, long* sxy0, long* sxy1, long* sxy2, long* sxy3, long* p, long* flag)
+{
+	long _flag;
+	int sz;
+
+	gte_ldv3(v0, v1, v2);
+	gte_rtpt();
+
+	gte_stsxy3(sxy0, sxy1, sxy2);
+
+	gte_stflg(&_flag);
+
+	gte_ldv0(v3);
+	gte_rtps();
+
+	gte_stsxy(sxy3);
+	gte_stflg(flag);
+	gte_stdp(p);
+
+	*flag |= _flag;
+	gte_stszotz(&sz);
+
+	return sz;
+}
+
+void NormalColor(SVECTOR* v0, CVECTOR* v1)
+{
+	gte_NormalColor(v0, v1);
+}
+
+void NormalColor3(SVECTOR* v0, SVECTOR* v1, SVECTOR* v2, CVECTOR* v3, CVECTOR* v4, CVECTOR* v5)
+{
+	gte_NormalColor3(v0, v1, v2, v3, v4, v5);
 }
 
 void NormalColorDpq(struct SVECTOR* v0, struct CVECTOR* v1, long p, struct CVECTOR* v2)
 {
-	gte_ldv0(v0);
-	gte_ldrgb(v1);
-	gte_lddp(p);
-	gte_ncds();
-	gte_strgb(v2);
+	gte_NormalColorDpq(v0, v1, p, v2);
 }
 
 void NormalColorCol(struct SVECTOR* v0, struct CVECTOR* v1, struct CVECTOR* v2)
 {
-	gte_ldv0(v0);
-	gte_ldrgb(v1);
-	gte_nccs();
-	gte_strgb(v2);
+	gte_NormalColorCol(v0, v1, v2);
+}
+
+void NormalColorCol3(SVECTOR* v0, SVECTOR* v1, SVECTOR* v2, CVECTOR* v3, CVECTOR* v4, CVECTOR* v5, CVECTOR* v6)
+{
+	gte_NormalColorCol3(v0,v1,v2,v3,v4,v5,v6);
+}
+
+void DpqColor(CVECTOR* v0, long p, CVECTOR* v1)
+{
+	gte_DpqColor(v0, &p, v1);
+}
+
+void ColorDpq(VECTOR* v0, CVECTOR* v1, long p, CVECTOR* v2) 
+{
+	gte_ColorDpq(v0, v1, p, v2);
+}
+
+void ColorCol(VECTOR* v0, CVECTOR* v1, CVECTOR* v2)
+{
+	gte_ColorCol(v0, v1, v2);
+}
+
+long NormalClip(long sxy0, long sxy1, long sxy2)
+{
+	long opz;
+
+	gte_NormalClip(&sxy0, &sxy1, &sxy2, &opz);
+	
+	return opz;
+}
+
+void LocalLight(SVECTOR* v0, VECTOR* v1)
+{
+	gte_LocalLight(v0, v1);
 }
 
 long RotAverageNclip4(struct SVECTOR* v0, struct SVECTOR* v1, struct SVECTOR* v2, struct SVECTOR* v3, long* sxy0/*arg_10*/, long* sxy1/*arg_14*/, long* sxy2/*arg_18*/, long* sxy3/*arg_1C*/, long* p/*arg_20*/, long* otz/*arg_24*/, long* flag/*arg_28*/)
@@ -394,7 +479,7 @@ VECTOR* ApplyRotMatrixLV(VECTOR* v0, VECTOR* v1)
 	}
 
 	gte_ldlvl(&tmpLO);
-	docop2(0x41E012);	// gte_rtir_sf0 ?
+	gte_rtir_sf0();
 	gte_stlvnl(&tmpLO);
 
 	gte_ldlvl(&tmpHI);
@@ -492,7 +577,7 @@ VECTOR* ApplyMatrixLV(MATRIX* m, VECTOR* v0, VECTOR* v1)
 	}
 
 	gte_ldlvl(&tmpLO);
-	docop2(0x41E012);	// gte_rtir_sf0 ?
+	gte_rtir_sf0();
 	gte_stlvnl(&tmpLO);
 
 	gte_ldlvl(&tmpHI);
@@ -752,7 +837,7 @@ MATRIX* CompMatrixLV(MATRIX* m0, MATRIX* m1, MATRIX* m2)
 	}
 
 	gte_ldlvl(&tmpLO);
-	docop2(0x41E012);	// gte_rtir_sf0 ?
+	gte_rtir_sf0();
 	gte_stlvnl(&tmpLO);
 
 	gte_ldlvl(&tmpHI);

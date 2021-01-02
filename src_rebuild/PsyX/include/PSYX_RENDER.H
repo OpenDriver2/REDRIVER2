@@ -35,20 +35,17 @@
 #define TPAGE_HEIGHT (256)
 
 #pragma pack(push,1)
-struct Vertex
+struct GrVertex
 {
 #if defined(USE_PGXP)
-	float  x, y, page, clut;
+	float		x, y, page, clut;
+	float		z, scr_h, ofsX, ofsY;
 #else
-	short  x, y, page, clut;
+	short		x, y, page, clut;
 #endif
 
-	u_char u, v, bright, dither;
-	u_char r, g, b, a;
-
-#if defined(USE_PGXP)
-	float z, scr_h, ofsX, ofsY;
-#endif
+	u_char		u, v, bright, dither;
+	u_char		r, g, b, a;
 };
 #pragma pack(pop)
 
@@ -113,7 +110,7 @@ extern void GR_SetWireframe(bool enable);
 
 extern void GR_DestroyTexture(TextureID texture);
 extern void GR_Clear(int x, int y, int w, int h, unsigned char r, unsigned char g, unsigned char b);
-extern void GR_UpdateVertexBuffer(const Vertex* vertices, int count);
+extern void GR_UpdateVertexBuffer(const GrVertex* vertices, int count);
 extern void GR_DrawTriangles(int start_vertex, int triangles);
 
 #endif
