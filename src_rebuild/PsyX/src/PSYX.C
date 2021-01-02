@@ -95,9 +95,6 @@ int intrThreadMain(void* data)
 			
 				Util_GetHPCTime(&g_vblTimer, 1);
 				//SDL_Delay(1);
-
-				// also update inputs
-				PsyX_UpdateInput();
 			}
 		}
 

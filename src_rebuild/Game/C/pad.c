@@ -428,6 +428,10 @@ void ReadControllers(void)
 {
 	int pad;
 
+#ifndef PSX
+	PsyX_UpdateInput();
+#endif
+
 	if (DuplicatePadData.buffer)
 		memcpy((u_char*)DuplicatePadData.buffer, (u_char*)&padbuffer, DuplicatePadData.size);
 
