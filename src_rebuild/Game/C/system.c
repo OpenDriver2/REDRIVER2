@@ -716,11 +716,12 @@ void SetupDrawBufferData(int num_players)
 	int j;
 	int x[2];
 	int y[2];
-	int height;
+	int width, height;
 	int toggle;
 
 	if (num_players == 1)
 	{
+		width = 320;
 		height = 256;
 		x[0] = 0;
 		y[0] = 0;
@@ -729,11 +730,12 @@ void SetupDrawBufferData(int num_players)
 	}
 	else if (num_players == 2)
 	{
+		width = 320;
+		height = 127;
 		x[0] = 0;
 		y[0] = 0;
 		x[1] = 0;
 		y[1] = 128;
-		height = 127;
 	}
 	else
 	{
@@ -742,7 +744,7 @@ void SetupDrawBufferData(int num_players)
 		} while (FrameCnt != 0x78654321);
 	}
 
-	SetGeomOffset(160, height / 2);
+	SetGeomOffset(width / 2, height / 2);
 
 	toggle = 0;
 
@@ -766,12 +768,13 @@ void SetupDrawBufferData(int num_players)
 			}
 
 			toggle ^= 1;
-			InitaliseDrawEnv(MPBuff[j], x[j], y[j], 320, height);
+			InitaliseDrawEnv(MPBuff[j], x[j], y[j], width, height);
+	
 			MPBuff[j][i].primtab = (char*)primpt;
 			MPBuff[j][i].primptr = (char*)PRIMpt;
 			MPBuff[j][i].ot = (OTTYPE*)otpt;
 		}
-	};
+	}
 
 	aspect.m[0][0] = 4096;
 	aspect.m[0][1] = 0;
@@ -789,8 +792,6 @@ void SetupDrawBufferData(int num_players)
 // [D] [T]
 void InitaliseDrawEnv(DB* pBuff, int x, int y, int w, int h)
 {
-	RECT16 clipRect;
-
 	SetDefDrawEnv(&pBuff[0].draw, x, y + 256, w, h);
 	SetDefDrawEnv(&pBuff[1].draw, x, y, w, h);
 
@@ -799,6 +800,14 @@ void InitaliseDrawEnv(DB* pBuff, int x, int y, int w, int h)
 
 	pBuff[1].id = 1;
 	pBuff[1].draw.dfe = 1;
+
+#ifdef USE_PGXP
+	pBuff[0].draw.clip.x -= 256;
+	pBuff[0].draw.clip.w += 512;
+
+	pBuff[1].draw.clip.x -= 256;
+	pBuff[1].draw.clip.w += 512;
+#endif
 }
 
 // [D] [T]

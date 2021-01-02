@@ -696,7 +696,7 @@ void GameInit(void)
 
 	InitCamera(&player[0]);
 
-	if (gLoadedOverlay != 0 && NoPlayerControl == 0)
+	if (gLoadedOverlay && NoPlayerControl == 0)
 	{
 		InitOverlays();
 		IconsLoaded = 0;
@@ -849,7 +849,7 @@ void StepSim(void)
 
 	num_active_cars = 0;
 
-	if (NoPlayerControl != 0 && ReplayParameterPtr->RecordingEnd + -2 < CameraCnt)
+	if (NoPlayerControl && ReplayParameterPtr->RecordingEnd - 2 < CameraCnt)
 	{
 		ReleaseInGameCutscene();
 		pauseflag = 1;
@@ -989,12 +989,12 @@ void StepSim(void)
 
 				if (NoPlayerControl == 0)
 				{
-					if (gStopPadReads != 0)
+					if (gStopPadReads)
 					{
-						t0 = 0x80;
+						t0 = CAR_PAD_BRAKE;
 
-						if (cp->hd.wheel_speed < 0x9001)
-							t0 = 0x10;
+						if (cp->hd.wheel_speed <= 0x9000)
+							t0 = CAR_PAD_HANDBRAKE;
 
 						t1 = 0;
 						t2 = 1;
@@ -1046,10 +1046,10 @@ void StepSim(void)
 
 					if (gStopPadReads != 0)
 					{
-						t0 = 0x80;
+						t0 = CAR_PAD_BRAKE;
 
 						if (cp->hd.wheel_speed <= 0x9000)
-							t0 = 0x10;
+							t0 = CAR_PAD_HANDBRAKE;
 
 						t1 = 0;
 						t2 = 1;
@@ -1111,7 +1111,7 @@ void StepSim(void)
 
 			if (NoPlayerControl == 0)
 			{
-				if (gStopPadReads != 0)
+				if (gStopPadReads)
 				{
 					t2 = 0;
 					t1 = 0;
@@ -1501,7 +1501,7 @@ void StepGame(void)
 
 	combointensity = NightAmbient | NightAmbient << 8 | NightAmbient << 0x10;
 
-	if (NoPlayerControl != 0 && AttractMode == 0)
+	if (NoPlayerControl && AttractMode == 0)
 		ShowReplayOptions();
 
 	// process fast forward
@@ -1556,7 +1556,7 @@ void StepGame(void)
 	old_camera_change = camera_change;
 
 	// do camera changes
-	if (pauseflag == 0 && NoPlayerControl != 0)
+	if (pauseflag == 0 && NoPlayerControl)
 	{
 		if (gInGameCutsceneActive != 0)
 			camera_change = CutsceneCameraChange(CameraCnt);
@@ -1598,7 +1598,7 @@ void StepGame(void)
 		paused = 1;
 	}
 
-	if (NoPlayerControl != 0 && AttractMode == 0)
+	if (NoPlayerControl && AttractMode == 0)
 		ControlReplay();
 
 	// player flip cheat
@@ -1634,7 +1634,7 @@ void DrawGame(void)
 
 	static int frame = 0;
 
-	if (NumPlayers == 1 || NoPlayerControl != 0)
+	if (NumPlayers == 1 || NoPlayerControl)
 	{
 		ObjectDrawnValue = FrameCnt;
 		DrawPauseMenus();
@@ -1688,18 +1688,18 @@ void EndGame(GAMEMODE mode)
 // [D]
 void EnablePause(PAUSEMODE mode)
 {
-	if (quick_replay != 0 || NoPlayerControl == 0 || mode != PAUSEMODE_GAMEOVER)
-	{
-		WantPause = 1;
-		PauseMode = mode;
-	}
+	if (quick_replay == 0 && NoPlayerControl && mode == PAUSEMODE_GAMEOVER)
+		return;
+
+	WantPause = 1;
+	PauseMode = mode;
 }
 
 
 // [D] [T]
 void CheckForPause(void)
 {
-	if (gDieWithFade > 15 && (quick_replay != 0 || NoPlayerControl == 0))
+	if (gDieWithFade > 15 && (quick_replay || NoPlayerControl == 0))
 	{
 		PauseMode = PAUSEMODE_GAMEOVER;
 		WantPause = 1;
