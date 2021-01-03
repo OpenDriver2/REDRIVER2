@@ -573,7 +573,7 @@ ShaderID GR_Shader_Compile(const char* source)
 		"out vec4 fragColor;\n";
 #else
 	const char* GLSL_HEADER_VERT =
-		"#version 330\n"
+		"#version 140\n"
 		"precision lowp  int;\n"
 		"precision highp float;\n"
 		"#define VERTEX\n"
@@ -582,7 +582,7 @@ ShaderID GR_Shader_Compile(const char* source)
 		"#define texture2D texture\n";
 
 	const char* GLSL_HEADER_FRAG =
-		"#version 330\n"
+		"#version 140\n"
 		"precision lowp  int;\n"
 		"precision highp float;\n"
 		"#define varying     in\n"
