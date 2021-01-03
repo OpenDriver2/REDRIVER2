@@ -182,7 +182,7 @@ extern	int (*GPU_printf)(const char *fmt, ...);
 
 #if defined(USE_EXTENDED_PRIM_POINTERS)
 
-#define isendprim(p) 		((((P_TAG *)(p))->addr) == 0xffffffff)
+#define isendprim(p) 		((((P_TAG *)(p))->addr) == &prim_terminator)
 #define nextPrim(p)  		(void *)(((P_TAG *)(p))->addr)
 
 #define setaddr(p, _addr)	(((P_TAG *)(p))->addr = (uintptr_t)((u_long*)_addr))
@@ -214,7 +214,7 @@ extern	int (*GPU_printf)(const char *fmt, ...);
 #define addPrims(ot, p0, p1)	setaddr(p1, getaddr(ot)),setaddr(ot, p0)
 
 #define catPrim(p0, p1)		setaddr(p0, p1)
-#define termPrim(p)			setaddr(p, 0xffffffff)
+#define termPrim(p)			setaddr(p, &prim_terminator)
 
 #define setSemiTrans(p, abe) \
 	((abe)?setcode(p, getcode(p)|0x02):setcode(p, getcode(p)&~0x02))
@@ -339,11 +339,12 @@ typedef struct _RECT16 {
 
 #if defined(_M_X64) || defined(__amd64__)
 
-#error Please add 64 bit support!
+#define DECLARE_P_ADDR \
+		uintptr_t addr; \
+		uint len : 16; \
+		uint pgxp_index : 16;
 
-#define DECLARE_P_ADDR
-
-#define P_LEN		4		// 4 longs
+#define P_LEN		3		// 4 longs
 
 #else
 
@@ -369,6 +370,11 @@ typedef struct _RECT16 {
 /*
  * Polygon Primitive Definitions
  */
+
+typedef struct {
+	DECLARE_P_ADDR
+} OT_TAG;
+
 typedef struct {
 	DECLARE_P_ADDR
 	u_char		r0, g0, b0, code;

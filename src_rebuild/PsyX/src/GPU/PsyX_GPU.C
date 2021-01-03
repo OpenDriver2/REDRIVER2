@@ -24,11 +24,7 @@
 #define GET_CLUT_X(clut)        ((clut & 0x3F) << 4)
 #define GET_CLUT_Y(clut)        (clut >> 6)
 
-#if defined(USE_EXTENDED_PRIM_POINTERS)
-u_long prim_terminator[2] = { 0xffffffff, 0 }; // P_TAG with zero length
-#else
-u_long prim_terminator = 0xffffffff;
-#endif
+OT_TAG prim_terminator = { -1, 0 }; // P_TAG with zero length
 
 DISPENV activeDispEnv;
 DRAWENV activeDrawEnv;

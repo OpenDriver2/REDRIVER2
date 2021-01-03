@@ -19,7 +19,13 @@ typedef short VERTTYPE;
 #define RECT16 RECT
 
 #else
+
+#if defined(_M_X64) || defined(__amd64__)
+typedef OT_TAG OTTYPE;
+#else
 typedef unsigned long long OTTYPE;
+#endif
+
 #endif
 
 #endif PSYX_COMPAT_H

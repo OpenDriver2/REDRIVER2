@@ -40,6 +40,22 @@ template<int x> struct compile_time_assert_test {};
 
 #endif
 
+#ifdef _MSC_VER // maybe GCC?
+
+#define forceinline __forceinline
+#define _ALIGNED(x) __declspec(align(x))
+
+#define ALIGNED_TYPE(s, a) typedef s _ALIGNED(a)
+
+#else
+
+#define forceinline inline
+#define _ALIGNED(x) __attribute__ ((aligned(x)))
+
+#define ALIGNED_TYPE(s, a) typedef struct s _ALIGNED(a)
+
+#endif
+
 #ifndef FUNCNAME
 
 #ifdef _MSC_VER

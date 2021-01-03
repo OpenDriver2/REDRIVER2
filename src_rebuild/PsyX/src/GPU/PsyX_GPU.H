@@ -6,11 +6,7 @@
 #include "TYPES.H"
 #include "COMMON/PGXP_DEFS.H"
 
-#if defined(USE_EXTENDED_PRIM_POINTERS)
-extern u_long prim_terminator[2]; // P_TAG with zero length
-#else
-extern u_long prim_terminator;
-#endif
+extern OT_TAG prim_terminator; // P_TAG with zero length
 
 extern int g_splitIndex;
 extern DISPENV activeDispEnv;
