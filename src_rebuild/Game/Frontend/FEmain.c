@@ -1034,19 +1034,10 @@ void SetupExtraPoly(char *fileName, int offset, int offset2)
 void LoadBackgroundFile(char* name)
 {
 	int iTpage;
-	int p;
 	RECT16 rect;
-	int pages[6];
 	int i;
 
 	iTpage = 11;
-
-	pages[0] = 0;
-	pages[1] = 1;
-	pages[2] = 2;
-	pages[3] = 3;
-	pages[4] = 4;
-	pages[5] = 5;
 
 	mainScreenLoaded = (strcmp(name, "DATA\\GFX.RAW") == 0);
 
@@ -1057,11 +1048,11 @@ void LoadBackgroundFile(char* name)
 	{
 		FEDrawCDicon();
 
-		LoadfileSeg(name, _overlay_buffer, pages[i] * 0x8000, 0x8000);
+		LoadfileSeg(name, _overlay_buffer, i * 0x8000, 0x8000);
 		FEDrawCDicon();
 
-		rect.y = (pages[i] / 6);
-		rect.x = (pages[i] - rect.y * 6) * 64 + 640;
+		rect.y = (i / 6);
+		rect.x = (i - rect.y * 6) * 64 + 640;
 		rect.y *= 256;
 
 		LoadImage(&rect, (u_long*)_overlay_buffer);

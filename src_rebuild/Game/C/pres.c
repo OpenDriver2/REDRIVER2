@@ -138,7 +138,7 @@ void LoadFont(char *buffer)
 	nchars = *(int *)file;
 
 	// copy character info
-	memcpy((u_char*)fontinfo,file + 4,nchars * 8);
+	memcpy((u_char*)fontinfo,file + 4,nchars * sizeof(OUT_FONTINFO));
 
 	file += sizeof(int) + nchars * 8;
 	memcpy((u_char*)AsciiTable, file, 256);
