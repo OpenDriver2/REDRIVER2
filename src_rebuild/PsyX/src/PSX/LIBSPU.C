@@ -458,6 +458,9 @@ void UpdateVoiceSample(SPUVoice& voice)
 	ALuint alSource = voice.alSource;
 	ALuint alBuffer = voice.alBuffer;
 
+	if (alSource == AL_NONE)
+		return;
+
 	int loopStart = 0, loopLen = 0;
 	int count = decodeSound(s_SpuMemory.samplemem + voice.attr.addr, SPU_REALMEMSIZE - voice.attr.addr, waveBuffer, &loopStart, &loopLen, true);
 
@@ -495,25 +498,26 @@ void UpdateVoiceSample(SPUVoice& voice)
 #endif
 
 	alSourcei(alSource, AL_BUFFER, 0);
+	alBufferData(alBuffer, AL_FORMAT_MONO16, waveBuffer, count * sizeof(short), 44100);
 
 	if (loopLen > 0)
 	{
 		loopStart += voice.attr.loop_addr - voice.attr.addr;
 
-		int sampleOffs[] = { loopStart, loopStart + loopLen };
-		alBufferiv(alBuffer, AL_LOOP_POINTS_SOFT, sampleOffs);
+		if(loopStart >= 0)
+		{
+			int sampleOffs[] = { loopStart, loopStart + loopLen };
+			alBufferiv(alBuffer, AL_LOOP_POINTS_SOFT, sampleOffs);
+		}
 
 		alSourcei(alSource, AL_LOOPING, AL_TRUE);
 	}
 	else
 	{
-		int sampleOffs[] = { 0, 0 };
-		alBufferiv(alBuffer, AL_LOOP_POINTS_SOFT, sampleOffs);
+		//int sampleOffs[] = { 0, 0 };
+		//alBufferiv(alBuffer, AL_LOOP_POINTS_SOFT, sampleOffs);
 		alSourcei(alSource, AL_LOOPING, AL_FALSE);
 	}
-
-
-	alBufferData(alBuffer, AL_FORMAT_MONO16, waveBuffer, count * sizeof(short), 44100);
 
 	// set the buffer
 	alSourcei(alSource, AL_BUFFER, alBuffer);
@@ -530,6 +534,9 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 
 		ALuint alSource = voice.alSource;
 
+		if (alSource == AL_NONE)
+			continue;
+		
 		// update sample
 		if ((arg->mask & SPU_VOICE_WDSA) || (arg->mask & SPU_VOICE_LSAX))
 		{
@@ -607,6 +614,9 @@ void SpuSetKey(long on_off, unsigned long voice_bit)
 
 			ALuint alSource = voice.alSource;
 
+			if (alSource == AL_NONE)
+				continue;
+
 			if (on_off && !g_SPUMuted)
 			{
 				alSourceStop(alSource);
@@ -635,6 +645,11 @@ long SpuGetKeyStatus(unsigned long voice_bit)
 
 		ALuint alSource = voice.alSource;
 
+		if (alSource == AL_NONE)
+		{
+			return 0; // SpuOff?
+		}
+
 		alGetSourcei(alSource, AL_SOURCE_STATE, &state);
 		break;
 	}
@@ -650,6 +665,12 @@ void SpuGetAllKeysStatus(char* status)
 
 		ALuint alSource = voice.alSource;
 
+		if (alSource == AL_NONE)
+		{
+			status[i] = 0; // SpuOff?
+			continue;
+		}
+		
 		int state;
 		alGetSourcei(alSource, AL_SOURCE_STATE, &state);
 
@@ -751,6 +772,9 @@ unsigned long SpuSetReverbVoice(long on_off, unsigned long voice_bit)
 			SPUVoice& voice = g_SpuVoices[i];
 
 			ALuint alSource = voice.alSource;
+
+			if (alSource == AL_NONE)
+				continue;
 
 			if (on_off)
 			{
