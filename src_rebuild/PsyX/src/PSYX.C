@@ -155,8 +155,25 @@ extern void GR_Shutdown();
 extern void GR_BeginScene();
 extern void GR_EndScene();
 
-void PsyX_Initialise(char* windowName, int width, int height, int fullscreen)
+char* g_appNameStr = NULL;
+
+void PsyX_GetWindowName(char* buffer)
 {
+#ifdef _DEBUG
+	sprintf(buffer, "%s | Debug", g_appNameStr);
+#else
+	sprintf(buffer, "%s", g_appNameStr);
+#endif
+}
+
+void PsyX_Initialise(char* appName, int width, int height, int fullscreen)
+{
+	char windowNameStr[512];
+
+	g_appNameStr = appName;
+
+	PsyX_GetWindowName(windowNameStr);
+
 	eprintf("Initialising Psy-X %d.%d\n", PSYX_MAJOR_VERSION, PSYX_MINOR_VERSION);
 	eprintf("Build date: %s:%s\n", PSYX_COMPILE_DATE, PSYX_COMPILE_TIME);
 
@@ -167,7 +184,7 @@ void PsyX_Initialise(char* windowName, int width, int height, int fullscreen)
 		return;
 	}
 	
-	if (!GR_InitialiseRender(windowName, width, height, fullscreen))
+	if (!GR_InitialiseRender(windowNameStr, width, height, fullscreen))
 	{
 		eprinterr("Failed to Intialise Window\n");
 		PsyX_ShutDown();
@@ -275,6 +292,8 @@ bool PsyX_BeginScene()
 
 	return true;
 }
+
+uint PsyX_CalcFPS();
 
 void PsyX_EndScene()
 {
@@ -410,7 +429,7 @@ void PsyX_UpdateInput()
 	InternalPadUpdates();
 }
 
-unsigned int PsyX_CalcFPS()
+uint PsyX_CalcFPS()
 {
 #define FPS_INTERVAL 1.0
 
@@ -437,7 +456,7 @@ void PsyX_WaitForTimestep(int count)
 #if defined(RENDERER_OGL) || defined(OGLES)
 	glFinish(); // best time to complete GPU drawing
 #endif
-	
+
 	// wait for vblank
 	if (g_swapInterval > 0)
 	{
