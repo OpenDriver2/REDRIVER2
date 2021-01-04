@@ -316,7 +316,7 @@ int decodeSound(unsigned char* iData, int soundSize, short* oData, int* loopStar
 			// flags parsed
 			if (flag & ADPCM_FLAGS::LoopStart)
 			{
-				loopStrt = k + 26;
+				loopStrt = k + 26; // FIXME: is that correct?
 			}
 
 			if (flag & ADPCM_FLAGS::LoopEnd)
@@ -504,7 +504,7 @@ void UpdateVoiceSample(SPUVoice& voice)
 	{
 		loopStart += voice.attr.loop_addr - voice.attr.addr;
 
-		if(loopStart >= 0)
+		if (loopStart-54 > 0 && loopStart + loopLen <= count)
 		{
 			int sampleOffs[] = { loopStart, loopStart + loopLen };
 			alBufferiv(alBuffer, AL_LOOP_POINTS_SOFT, sampleOffs);
