@@ -453,7 +453,7 @@ void PsyX_WaitForTimestep(int count)
 	SDL_LockMutex(g_intrMutex);
 	SDL_UnlockMutex(g_intrMutex);
 	
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if 0 // defined(RENDERER_OGL) || defined(OGLES)
 	glFinish(); // best time to complete GPU drawing
 #endif
 
