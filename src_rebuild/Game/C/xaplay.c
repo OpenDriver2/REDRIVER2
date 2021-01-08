@@ -372,6 +372,7 @@ void UnprepareXA(void)
 
 		gPlaying = 0;
 		xa_prepared = 0;
+		g_XASource = AL_NONE;
 	}
 #endif
 }

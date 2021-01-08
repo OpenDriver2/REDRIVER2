@@ -607,10 +607,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 	model = modelpointers[cop->type];
 	player_id = GetPlayerId(cp);
 
-	if (cp->controlType == CONTROL_TYPE_TANNERCOLLIDER || cp->controlType == CONTROL_TYPE_CAMERACOLLIDER)
-		cd[0].isCameraOrTanner = 1;
-	else
-		cd[1].isCameraOrTanner = (flags & 0x1) == 0;
+	cd[1].isCameraOrTanner = (cp->controlType == CONTROL_TYPE_TANNERCOLLIDER || cp->controlType == CONTROL_TYPE_CAMERACOLLIDER);
 
 	boxDiffY = cp->hd.oBox.location.vy + building->pos.vy;
 	boxDiffY = ABS(boxDiffY);
