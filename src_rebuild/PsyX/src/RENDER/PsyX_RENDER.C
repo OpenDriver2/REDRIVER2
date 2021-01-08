@@ -43,11 +43,161 @@ int g_pgxpZBuffer = 1;
 int g_bilinearFiltering = 0;
 
 #if defined(RENDERER_OGL)
-GLuint g_glVertexArray;
-GLuint g_glVertexBuffer;
+struct GrPBO
+{
+	GLenum fmt;
+	GLuint* pbos;
+	uint64_t num_pbos;
+	uint64_t dx;
+	uint64_t num_downloads;
 
-GLuint g_glBlitFramebuffer;
-GLuint g_glOffscreenFramebuffer;
+	int width;
+	int height;
+	int nbytes; /* number of bytes in the pbo buffer. */
+	unsigned char* pixels; /* the downloaded pixels. */
+};
+
+#define USE_PBO 1
+
+int PBO_Init(GrPBO& pbo, GLenum format, int w, int h, int num)
+{
+#if USE_PBO
+	if (pbo.pbos)
+	{
+		eprinterr("Already initialized. Not necessary to initialize again; or shutdown first.");
+		return -1;
+	}
+
+	if (0 >= num)
+	{
+		eprinterr("Invalid number of PBOs: %d", num);
+		return -2;
+	}
+
+	pbo.fmt = format;
+	pbo.width = w;
+	pbo.height = h;
+	pbo.num_pbos = num;
+
+	if (GL_RED == pbo.fmt || GL_GREEN == pbo.fmt || GL_BLUE == pbo.fmt) {
+		pbo.nbytes = pbo.width * pbo.height;
+	}
+	else if (GL_RGB == pbo.fmt || GL_BGR == pbo.fmt)
+	{
+		pbo.nbytes = pbo.width * pbo.height * 3;
+	}
+	else if (GL_RGBA == pbo.fmt || GL_BGRA == pbo.fmt) {
+		pbo.nbytes = pbo.width * pbo.height * 4;
+	}
+	else
+	{
+		eprinterr("Unhandled pixel format, use GL_R, GL_RG, GL_RGB or GL_RGBA.");
+		return -3;
+	}
+
+	if (pbo.nbytes == 0)
+	{
+		eprinterr("Invalid width or height given: %d x %d", pbo.width, pbo.height);
+		return -4;
+	}
+
+	pbo.pbos = (GLuint*)malloc(sizeof(GLuint) * num);
+	pbo.pixels = (u_char*)malloc(pbo.nbytes);
+
+	glGenBuffers(num, pbo.pbos);
+	for (int i = 0; i < num; ++i)
+	{
+		glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo.pbos[i]);
+		glBufferData(GL_PIXEL_PACK_BUFFER, pbo.nbytes, NULL, GL_STREAM_READ);
+	}
+
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+#endif
+	return 0;
+}
+
+void PBO_Destroy(GrPBO& pbo)
+{
+	if(pbo.pbos)
+	{
+		glDeleteBuffers(pbo.num_pbos, pbo.pbos);
+	
+		free(pbo.pbos);
+		pbo.num_pbos = 0;
+		pbo.pbos = NULL;
+	}
+	
+	if (pbo.pixels)
+	{
+		free(pbo.pixels);
+		pbo.pixels = NULL;
+	}
+
+	pbo.num_downloads = 0;
+	pbo.dx = 0;
+	pbo.fmt = 0;
+	pbo.nbytes = 0;
+}
+
+void PBO_Download(GrPBO& pbo)
+{
+	unsigned char* ptr;
+	
+#if USE_PBO
+	if (pbo.num_downloads < pbo.num_pbos)
+	{
+		/*
+		   First we need to make sure all our pbos are bound, so glMap/Unmap will
+		   read from the oldest bound buffer first.
+		*/
+		glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo.pbos[pbo.dx]);
+		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+		//glReadPixels(0, 0, pbo.width, pbo.height, pbo.fmt, GL_UNSIGNED_BYTE, 0);   /* When a GL_PIXEL_PACK_BUFFER is bound, the last 0 is used as offset into the buffer to read into. */
+}
+	else
+	{
+		/* Read from the oldest bound pbo. */
+		glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo.pbos[pbo.dx]);
+
+		ptr = (unsigned char*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
+		if (NULL != ptr)
+		{
+			memcpy(pbo.pixels, ptr, pbo.nbytes);
+			glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+		}
+		else
+		{
+			eprinterr("Failed to map the buffer");
+		}
+
+		/* Trigger the next read. */
+		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+	}
+
+	++pbo.dx;
+	pbo.dx = pbo.dx % pbo.num_pbos;
+
+	pbo.num_downloads++;
+
+	if (pbo.num_downloads == UINT64_MAX)
+		pbo.num_downloads = pbo.num_pbos;
+
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+#else
+	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0); /* just make sure we're not accidentilly using a PBO. */
+	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pbo.pixels);
+#endif
+}
+
+GLuint		g_glVertexArray;
+GLuint		g_glVertexBuffer;
+
+GLuint		g_glBlitFramebuffer;
+GrPBO		g_glFramebufferPBO;
+
+GLuint		g_glOffscreenFramebuffer;
+GrPBO		g_glOffscreenPBO;
+
 #endif
 
 #if defined(OGLES)
@@ -689,6 +839,9 @@ int GR_InitialisePSX()
 
 	// gen framebuffer
 	{
+		memset(&g_glFramebufferPBO, 0, sizeof(g_glFramebufferPBO));
+		PBO_Init(g_glFramebufferPBO, GL_RGBA, VRAM_WIDTH, VRAM_HEIGHT, 2);
+		
 		// make a special texture
 		// it will be resized later
 		glGenTextures(1, &g_fbTexture);
@@ -718,6 +871,9 @@ int GR_InitialisePSX()
 
 	// gen offscreen RT
 	{
+		memset(&g_glOffscreenPBO, 0, sizeof(g_glOffscreenPBO));
+		PBO_Init(g_glOffscreenPBO, GL_RGBA, VRAM_WIDTH, VRAM_HEIGHT, 2);
+		
 		// offscreen texture render target
 		glGenTextures(1, &g_offscreenRTTexture);
 		{
@@ -1098,18 +1254,13 @@ void GR_ReadFramebufferDataToVRAM()
 
 	// now we can read it back to VRAM texture
 	{
-		uint* data = (uint*)malloc(w * h * sizeof(uint));
-
 #if defined(RENDERER_OGL) || defined(OGLES)
 		// reat the texture
 		glBindTexture(GL_TEXTURE_2D, g_fbTexture);
-		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		PBO_Download(g_glFramebufferPBO);
 		glBindTexture(GL_TEXTURE_2D, 0);
+		GR_CopyRGBAFramebufferToVRAM((u_int*)g_glFramebufferPBO.pixels, x, y, w, h, 0, 0);
 #endif
-
-		GR_CopyRGBAFramebufferToVRAM(data, x, y, w, h, 0, 0);
-
-		free(data);
 	}
 }
 
@@ -1184,18 +1335,19 @@ void GR_SetOffscreenState(const RECT16& offscreenRect, int enable)
 
 		// copy rendering results to VRAM texture
 		{
-			uint* data = (uint*)malloc(g_PreviousOffscreen.w * g_PreviousOffscreen.h * sizeof(uint));
+			//uint* data = (uint*)malloc(g_PreviousOffscreen.w * g_PreviousOffscreen.h * sizeof(uint));
 
 #if defined(RENDERER_OGL) || defined(OGLES)
 			// reat the texture
 			glBindTexture(GL_TEXTURE_2D, g_offscreenRTTexture);
-			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+			//glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+			PBO_Download(g_glOffscreenPBO);
 			glBindTexture(GL_TEXTURE_2D, g_lastBoundTexture);
 
-			GR_CopyRGBAFramebufferToVRAM(data, g_PreviousOffscreen.x, g_PreviousOffscreen.y, g_PreviousOffscreen.w, g_PreviousOffscreen.h, 1, 1);
+			GR_CopyRGBAFramebufferToVRAM((u_int*)g_glOffscreenPBO.pixels, g_PreviousOffscreen.x, g_PreviousOffscreen.y, g_PreviousOffscreen.w, g_PreviousOffscreen.h, 1, 1);
 #endif
 
-			free(data);
+			//free(data);
 		}
 	}
 #endif
@@ -1208,6 +1360,9 @@ void GR_StoreFrameBuffer(int x, int y, int w, int h)
 	if (g_PreviousFramebuffer.w != w &&
 		g_PreviousFramebuffer.h != h)
 	{
+		//PBO_Destroy(g_glFBPBO);
+		//PBO_Init(g_glFBPBO, GL_RGBA, w, h, 1);
+		
 		glBindTexture(GL_TEXTURE_2D, g_fbTexture);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 		glBindTexture(GL_TEXTURE_2D, 0);
