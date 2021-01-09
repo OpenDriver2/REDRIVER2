@@ -8,6 +8,9 @@
 
 #include "PSYX_GLOBALS.H"
 
+#define USE_PBO					1
+#define USE_OFFSCREEN_BLIT		1
+
 extern SDL_Window* g_window;
 extern int g_swapInterval;
 
@@ -56,8 +59,6 @@ struct GrPBO
 	int nbytes; /* number of bytes in the pbo buffer. */
 	unsigned char* pixels; /* the downloaded pixels. */
 };
-
-#define USE_PBO 1
 
 int PBO_Init(GrPBO& pbo, GLenum format, int w, int h, int num)
 {
@@ -194,6 +195,8 @@ GLuint		g_glVertexBuffer;
 
 GLuint		g_glBlitFramebuffer;
 GrPBO		g_glFramebufferPBO;
+
+GLuint		g_glVRAMFramebuffer;
 
 GLuint		g_glOffscreenFramebuffer;
 GrPBO		g_glOffscreenPBO;
@@ -945,6 +948,18 @@ int GR_InitialisePSX()
 		}
 
 		glBindTexture(GL_TEXTURE_2D, 0);
+
+		// VRAM framebuffer for offscreen blitting to VRAM
+		glGenFramebuffers(1, &g_glVRAMFramebuffer);
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, g_glVRAMFramebuffer);
+
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, g_vramTexture, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		}
 	}
 
 	// gen vertex buffer and index buffer
@@ -1359,25 +1374,41 @@ void GR_SetOffscreenState(const RECT16& offscreenRect, int enable)
 	else
 	{
 		GR_SetViewPort(0, 0, g_windowWidth, g_windowHeight);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glFlush();
 
+#if USE_OFFSCREEN_BLIT
+		// before drawing set source and target
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, g_glVRAMFramebuffer);
+			
+			// setup draw and read framebuffers
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, g_glOffscreenFramebuffer);					// source is backbuffer
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_glVRAMFramebuffer);
+
+			glBlitFramebuffer(0, 0, g_PreviousOffscreen.w, g_PreviousOffscreen.h, 
+								g_PreviousOffscreen.x, g_PreviousOffscreen.y + g_PreviousOffscreen.h, g_PreviousOffscreen.x + g_PreviousOffscreen.w, g_PreviousOffscreen.y,
+								GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+			// done, unbind
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		}
+#endif
+		
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		// copy rendering results to VRAM texture
 		{
-			//uint* data = (uint*)malloc(g_PreviousOffscreen.w * g_PreviousOffscreen.h * sizeof(uint));
-
-#if defined(RENDERER_OGL) || defined(OGLES)
 			// reat the texture
 			glBindTexture(GL_TEXTURE_2D, g_offscreenRTTexture);
 			//glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 			PBO_Download(g_glOffscreenPBO);
 			glBindTexture(GL_TEXTURE_2D, g_lastBoundTexture);
 
-			GR_CopyRGBAFramebufferToVRAM((u_int*)g_glOffscreenPBO.pixels, g_PreviousOffscreen.x, g_PreviousOffscreen.y, g_PreviousOffscreen.w, g_PreviousOffscreen.h, 1, 1);
-#endif
-
-			//free(data);
+			// Don't forcely update VRAM
+			GR_CopyRGBAFramebufferToVRAM((u_int*)g_glOffscreenPBO.pixels, 
+				g_PreviousOffscreen.x, g_PreviousOffscreen.y, g_PreviousOffscreen.w, g_PreviousOffscreen.h, 
+				USE_OFFSCREEN_BLIT == 0, 1);
 		}
+
 	}
 #endif
 }
