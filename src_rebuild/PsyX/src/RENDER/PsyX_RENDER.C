@@ -10,6 +10,7 @@
 
 #define USE_PBO					1
 #define USE_OFFSCREEN_BLIT		1
+#define USE_FRAMEBUFFER_BLIT	1
 
 extern SDL_Window* g_window;
 extern int g_swapInterval;
@@ -1301,7 +1302,7 @@ void GR_ReadFramebufferDataToVRAM()
 
 	// now we can read it back to VRAM texture
 	{
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(OGLES)	
 		// reat the texture
 		glBindTexture(GL_TEXTURE_2D, g_fbTexture);
 		PBO_Download(g_glFramebufferPBO);
@@ -1446,6 +1447,20 @@ void GR_StoreFrameBuffer(int x, int y, int w, int h)
 
 		glBlitFramebuffer(0, 0, g_windowWidth, g_windowHeight, x, y + h, x + w, y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
+		// Blit framebuffer to VRAM screen area
+#if USE_FRAMEBUFFER_BLIT
+		// before drawing set source and target
+		glBindFramebuffer(GL_FRAMEBUFFER, g_glVRAMFramebuffer);
+
+		// setup draw and read framebuffers
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, g_glBlitFramebuffer);					// source is backbuffer
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_glVRAMFramebuffer);
+
+		glBlitFramebuffer(0, 0, w, h,
+			x, y + h, x + w, y,
+			GL_COLOR_BUFFER_BIT, GL_NEAREST);
+#endif
+		
 		// done, unbind
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
