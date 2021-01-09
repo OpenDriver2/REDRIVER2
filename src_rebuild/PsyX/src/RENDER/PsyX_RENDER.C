@@ -45,6 +45,9 @@ int g_pgxpTextureCorrection = 1;
 int g_pgxpZBuffer = 1;
 int g_bilinearFiltering = 0;
 
+bool vram_need_update = true;
+bool framebuffer_need_update = false;
+
 #if defined(RENDERER_OGL)
 struct GrPBO
 {
@@ -62,7 +65,7 @@ struct GrPBO
 
 int PBO_Init(GrPBO& pbo, GLenum format, int w, int h, int num)
 {
-#if USE_PBO
+
 	if (pbo.pbos)
 	{
 		eprinterr("Already initialized. Not necessary to initialize again; or shutdown first.");
@@ -105,6 +108,7 @@ int PBO_Init(GrPBO& pbo, GLenum format, int w, int h, int num)
 	pbo.pbos = (GLuint*)malloc(sizeof(GLuint) * num);
 	pbo.pixels = (u_char*)malloc(pbo.nbytes);
 
+#if USE_PBO
 	glGenBuffers(num, pbo.pbos);
 	for (int i = 0; i < num; ++i)
 	{
@@ -461,6 +465,8 @@ void GR_BeginScene()
 
 void GR_EndScene()
 {
+	framebuffer_need_update = true;
+	
 	if (g_wireframeMode)
 		GR_SetWireframe(0);
 
@@ -1238,9 +1244,6 @@ void GR_SaveVRAM(const char* outputFileName, int x, int y, int width, int height
 }
 #endif
 
-bool vram_need_update = true;
-bool framebuffer_need_update = false;
-
 void GR_CopyRGBAFramebufferToVRAM(u_int* src, int x, int y, int w, int h, int update_vram, int flip_y)
 {
 	ushort* fb = (ushort*)malloc(w * h * sizeof(ushort));
@@ -1644,6 +1647,4 @@ void GR_DrawTriangles(int start_vertex, int triangles)
 #else
 #error
 #endif
-
-	//framebuffer_need_update = true;
 }
