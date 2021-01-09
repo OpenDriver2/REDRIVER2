@@ -668,26 +668,44 @@ GTE_VERTEX_SHADER
 GPU_FRAGMENT_SAMPLE_SHADER(16)
 "#endif\n";
 
-void GR_Shader_CheckShaderStatus(GLuint shader)
+int GR_Shader_CheckShaderStatus(GLuint shader)
 {
 	char info[1024];
+	GLint result;
+
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
+
+	if (result)
+		return 1;
+	
 	glGetShaderInfoLog(shader, sizeof(info), NULL, info);
 	if (info[0] && strlen(info) > 8)
 	{
 		eprinterr("%s\n", info);
 		assert(0);
 	}
+
+	return 0;
 }
 
-void GR_Shader_CheckProgramStatus(GLuint program)
+int GR_Shader_CheckProgramStatus(GLuint program)
 {
 	char info[1024];
+	GLint result;
+
+	glGetShaderiv(program, GL_LINK_STATUS, &result);
+
+	if (result)
+		return 1;
+
 	glGetProgramInfoLog(program, sizeof(info), NULL, info);
 	if (info[0] && strlen(info) > 8)
 	{
 		eprinterr("%s\n", info);
 		assert(0);
 	}
+
+	return 0;
 }
 
 ShaderID GR_Shader_Compile(const char* source)
@@ -755,19 +773,29 @@ ShaderID GR_Shader_Compile(const char* source)
 
 	GLuint program = glCreateProgram();
 
-	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 3, vs_list, NULL);
-	glCompileShader(vertexShader);
-	GR_Shader_CheckShaderStatus(vertexShader);
-	glAttachShader(program, vertexShader);
-	glDeleteShader(vertexShader);
+	{
+		GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+		glShaderSource(vertexShader, 3, vs_list, NULL);
+		glCompileShader(vertexShader);
 
-	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 3, fs_list, NULL);
-	glCompileShader(fragmentShader);
-	GR_Shader_CheckShaderStatus(fragmentShader);
-	glAttachShader(program, fragmentShader);
-	glDeleteShader(fragmentShader);
+		if( GR_Shader_CheckShaderStatus(vertexShader) == 0 )
+			eprinterr("Failed to compile Vertex Shader!\n");
+	
+		glAttachShader(program, vertexShader);
+		glDeleteShader(vertexShader);
+	}
+
+	{
+		GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+		glShaderSource(fragmentShader, 3, fs_list, NULL);
+		glCompileShader(fragmentShader);
+
+		if(GR_Shader_CheckShaderStatus(fragmentShader) == 0)
+			eprinterr("Failed to compile Fragment Shader!\n");
+	
+		glAttachShader(program, fragmentShader);
+		glDeleteShader(fragmentShader);
+	}
 
 	glBindAttribLocation(program, a_position, "a_position");
 	glBindAttribLocation(program, a_texcoord, "a_texcoord");
@@ -779,7 +807,8 @@ ShaderID GR_Shader_Compile(const char* source)
 #endif
 
 	glLinkProgram(program);
-	GR_Shader_CheckProgramStatus(program);
+	if(GR_Shader_CheckProgramStatus(program) == 0)
+		eprinterr("Failed to compile link Shader!\n");
 
 	GLint sampler = 0;
 	glUseProgram(program);
