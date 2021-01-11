@@ -17,7 +17,7 @@ Auto direct
 Please wait...
 Are You Sure?
 Paused
-Mission Successful
+Mission Complete
 Mission Failed
 Game Over
 High Scores
@@ -50,8 +50,8 @@ Retry mission
 Play again
 View table
 Enter score
-Please insert controller into Port 1
-Please insert controller into Port 2
+Insert Controller in Port 1
+Insert Controller in Port 2
 Incorrect controller in Port 1
 Incorrect controller in Port 2
 Player 1
@@ -59,8 +59,8 @@ Player 2
 Name
 Time
 Sorry, no secrets
-Mountain track
-Circuit
+Mountain pass
+Race track
 Invincibility
 Immunity
 Bonus Gallery
