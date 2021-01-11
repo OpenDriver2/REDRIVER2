@@ -1458,15 +1458,15 @@ int ShowPauseMenu(PAUSEMODE mode)
 	{
 		gScoreEntered = 0;
 
-		sprintf(EnterScoreText, "Enter Score");
-		sprintf(EnterNameText, "Enter Name:");
+		sprintf(EnterScoreText, G_LTXT(GTXT_EnterScore));
+		sprintf(EnterNameText, G_LTXT(GTXT_EnterName));
 	}
 	else
 	{
 		gScoreEntered = 1;
 
-		sprintf(EnterScoreText, "View Table");
-		sprintf(EnterNameText, "High Scores");
+		sprintf(EnterScoreText, G_LTXT(GTXT_ViewTable));
+		sprintf(EnterNameText, G_LTXT(GTXT_HighScores));
 	}
 
 	passed_mode = mode;
