@@ -8,6 +8,15 @@
 
 #include "PSYX_GLOBALS.H"
 
+#ifdef _WIN32
+#include <windows.h>
+extern "C"
+{
+	__declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+	__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+}
+#endif //def WIN32
+
 #define USE_PBO					1
 #define USE_OFFSCREEN_BLIT		1
 #define USE_FRAMEBUFFER_BLIT	1
