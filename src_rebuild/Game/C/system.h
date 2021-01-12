@@ -86,7 +86,12 @@ extern DB MPBuff[2][2];
 extern DB* last;
 extern DB* current;
 
-#define	OTSIZE	0x1080		/* ordering table size */
+// ordering table size 
+#ifdef PSX
+#define	OTSIZE	0x1080		
+#else
+#define	OTSIZE	0x2000
+#endif
 
 #ifdef USE_EXTENDED_PRIM_POINTERS
 #	define PRIMTAB_SIZE 0x50000
