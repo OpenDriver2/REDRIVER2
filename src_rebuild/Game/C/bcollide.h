@@ -1,6 +1,12 @@
 #ifndef BCOLLIDE_H
 #define BCOLLIDE_H
 
+enum CollisionCheckFlags
+{
+	CollisionCheckFlag_MightBeABarrier			= 0x1,
+	CollisionCheckFlag_IsVegasMovingTrain		= 0x2,
+};
+
 extern int bcollided2d(CDATA2D *body, int* boxOverlap = NULL); // 0x0001C51C
 
 extern void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult); // 0x0001C8C0
