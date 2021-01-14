@@ -367,6 +367,7 @@ u_int LeadPadResponse(CAR_DATA* cp)
 		extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
 		extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
 
+		CVECTOR yycv = { 250, 250, 0 };
 		CVECTOR ggcv = { 0, 250, 0 };
 		CVECTOR bbcv = { 0, 0, 250 };
 		CVECTOR rrcv = { 250, 0, 0 };
@@ -387,18 +388,25 @@ u_int LeadPadResponse(CAR_DATA* cp)
 			"Stupidly go forward",
 			"FakeMotion",
 		};
+
+		SetTextColour(120, 15, 15);
 		
 		char text[256];
-		sprintf(text, "dir: %d, fwd: %d, pos: %d, width: %d", cp->ai.l.d, cp->ai.l.roadForward, cp->ai.l.roadPosition, cp->ai.l.width);
-		PrintString(text, 20, 200);
+		sprintf(text, "%s", LeadDebugStateNames[cp->ai.l.dstate]);
+		PrintString(text, 20, 180);
 
-		sprintf(text, "dstate: %s", LeadDebugStateNames[cp->ai.l.dstate]);
-		PrintString(text, 20, 215);
+		SetTextColour(128, 128, 64);
+		
+		sprintf(text, "dir: %d, fwd: %d, pos: %d, width: %d", cp->ai.l.targetDir, cp->ai.l.roadForward, cp->ai.l.roadPosition, cp->ai.l.width);
+		PrintString(text, 20, 195);
+		
+		sprintf(text, "panic: %d, boring: %d, nextTurn: %d", cp->ai.l.panicCount, cp->ai.l.boringness, cp->ai.l.nextTurn);
+		PrintString(text, 20, 210);
 
 		sprintf(text, "currentRoad: %d", cp->ai.l.currentRoad);
 		PrintString(text, 20, 230);
 		
-		Debug_AddLineOfs(_zero, _up, pos, rrcv);
+		Debug_AddLineOfs(_zero, _up, pos, yycv);
 	}
 #endif
 
@@ -1519,6 +1527,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 							CVECTOR ggcv = { 0, 250, 0 };
 							CVECTOR rrcv = { 250, 0, 0 };
 							CVECTOR yycv = { 250, 250, 0 };
+							CVECTOR bbcv = { 0, 0, 250 };
 
 							// show both box axes
 							{
@@ -1549,10 +1558,10 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 										{-b1ax[0].vx - b1ax[1].vx, h, -b1ax[0].vz - b1ax[1].vz, 0}	// back left
 									};
 
-									Debug_AddLineOfs(box_points[0], box_points[1], b1p, rrcv);
-									Debug_AddLineOfs(box_points[1], box_points[2], b1p, rrcv);
-									Debug_AddLineOfs(box_points[2], box_points[3], b1p, rrcv);
-									Debug_AddLineOfs(box_points[3], box_points[0], b1p, rrcv);
+									Debug_AddLineOfs(box_points[0], box_points[1], b1p, bbcv);
+									Debug_AddLineOfs(box_points[1], box_points[2], b1p, bbcv);
+									Debug_AddLineOfs(box_points[2], box_points[3], b1p, bbcv);
+									Debug_AddLineOfs(box_points[3], box_points[0], b1p, bbcv);
 								}
 							}
 						}
@@ -1621,7 +1630,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 		lcp--;
 	}
 
-	// determine panic
+	// update panic
 	if (cp->ai.l.dstate != 4)
 	{
 		int left, right;
