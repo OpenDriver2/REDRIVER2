@@ -2947,8 +2947,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	CELL_ITERATOR ci;
 
 	int i;
-	
-	int centre;
+	int sindex;
 	int laneAvoid;
 	int initial_cell_x, initial_cell_z;
 	int x1, z1;
@@ -3047,7 +3046,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 
 						offset.vx = FIXEDH(collide->xpos * matrixtable[yang].m[0][0] + collide->zpos * matrixtable[yang].m[2][0]) + cop->pos.vx;
 						offset.vz = FIXEDH(collide->xpos * matrixtable[yang].m[0][2] + collide->zpos * matrixtable[yang].m[2][2]) + cop->pos.vz;
-						offset.vy = -cp->hd.where.t[1];
+						offset.vy = cop->pos.vy + collide->ypos;
 
 #if defined(_DEBUG) || defined(DEBUG_OPTIONS)
 						extern int gShowCollisionDebug;
@@ -3128,7 +3127,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 						data.cp = cp;
 						data.base = basePos;
 						data.intention = intention;
-								
+
 						BlockToMap(&data);
 
 						num_cb = num_cb + -1;
@@ -3297,70 +3296,53 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 		}
 	}
 
+	// update boringness
 	if (intention < 2 && cp->ai.l.nextTurn < 10)
 	{
+		int width = cp->ai.l.width;
+		int bounds = ABS(cp->ai.l.roadPosition - (width - cp->ai.l.d));
+		
 		if (cp->ai.l.boringness < 31)
 		{
-			int width = cp->ai.l.width;
-			
-			if (ABS(cp->ai.l.roadPosition - (width - cp->ai.l.d)) < width / 3 && cp->ai.l.boringness < 31)
-				cp->ai.l.boringness++;
+			if (bounds < width / 3)
+			{
+				if(cp->ai.l.boringness < 31)
+					cp->ai.l.boringness++;
+			}
 		}
 		else
 		{
-			cp_ai_l_width = cp->ai.l.width;
-			cp_ai_l_roadPosition = cp->ai.l.roadPosition;
-			
-			vvvar2 = cp_ai_l_width - cp->ai.l.d;
-			vvvvar3 = cp_ai_l_roadPosition - vvvar2;
-			
-			if (vvvvar3 < 0)
-				vvvvar3 = vvvar2 - cp_ai_l_roadPosition;
-
-			if (vvvvar3 < cp_ai_l_width / 3)
+			int left, right;
+			int centre;
+		
+			if (bounds < width / 3)
 			{
 				cp->ai.l.avoid = cp->ai.l.width - cp->ai.l.d;
-				cp->ai.l.boringness = cp->ai.l.boringness + 1;
+				cp->ai.l.boringness++;
 			}
 			
-			piVar5 = roadAhead;
 			laneAvoid = (cp->ai.l.avoid + cp->ai.l.d - cp->ai.l.width) / 100 + 21;
 			
-			__left = laneAvoid * 100;
-			__right = laneAvoid * -100;
+			left = laneAvoid * 100;
+			right = laneAvoid * -100;
 
 			for (i = 0; i < 41; i++)
 			{
-				_centre = __right;
-
 				if (laneAvoid - i > -1)
-					_centre = __left;
+					centre = left;
+				else
+					centre = right;
 
-				if (_centre < cp->ai.l.width / 3)
-					*piVar5 = *piVar5 - cp->ai.l.boringness * 100;
+				if (centre < cp->ai.l.width / 3)
+					roadAhead[i] -= cp->ai.l.boringness * 100;
 
-				piVar5 = piVar5 + 1;
-				__right = __right + 100;
-				__left = __left - 100;
+				right += 100;
+				left -= 100;
 			}
-			
-			cp_ai_l_width2 = cp->ai.l.width;
-			cp_ai_l_avoid = cp->ai.l.avoid;
-			vvvvar1 = cp_ai_l_width2 - cp->ai.l.d;
-			
-			if (vvvvar1 - cp_ai_l_avoid < 0)
+
+			if (ABS(cp->ai.l.avoid - width - cp->ai.l.d) > width / 3)
 			{
-				if (cp_ai_l_width2 / 3 < cp_ai_l_avoid - vvvvar1)
-				{
-					cp->ai.l.boringness = 0;
-				}
-			}
-			else
-			{
-				if (cp_ai_l_width2 / 3 < vvvvar1 - cp_ai_l_avoid)
-				{
-					cp->ai.l.boringness = 0;
-				}
+				cp->ai.l.boringness = 0;
 			}
 		}
 	}
@@ -3369,254 +3351,221 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 		cp->ai.l.boringness = 0;
 	}
 
+	// turning intention
 	if (intention - 4U > 1)
 	{
+		int penalty;
+		int centre;
 		int left, right;
-	
+
+		int width = cp->ai.l.width;
+		
 		centre = cp->ai.l.d;
-		__right = cp->ai.l.width;
+		
 		i = 0;
-		left = centre - __right;
-		right = __right + centre;
-		PosToIndex(&left, &i, intention, (_CAR_DATA*)cp);
-		PosToIndex(&right, &i, intention, (_CAR_DATA*)cp);
-		PosToIndex(&centre, &i, intention, (_CAR_DATA*)cp);
+		
+		left = centre - width;
+		right = width + centre;
+		
+		PosToIndex(&left, &i, intention, cp);
+		PosToIndex(&right, &i, intention, cp);
+		PosToIndex(&centre, &i, intention, cp);
 	
 		if (left < centre && centre < right)
 		{
-			__right = cp->ai.l.nextTurn;
-			if (((__right == 0xf) || (__right == 0x11)) && (intention - 2 > 1))
+			if ((cp->ai.l.nextTurn == 15 || cp->ai.l.nextTurn == 17) && intention - 2 > 1)
 			{
-				cp->ai.l.nextTurn = __right + -0x10;
-				i = left;
-				while (i <= right)
+				cp->ai.l.nextTurn -= 16;
+
+				for(i = left; i <= right; i++)
 				{
-					__right = 2000;
-					if ((i - centre) * cp->ai.l.nextTurn > 0)
+					if (cp->ai.l.nextTurn * (i - centre) > 0)
+						penalty = -2000;
+					else
+						penalty = 2000;
+
+					if (i < 41)
 					{
-						__right = -2000;
+						if (roadAhead[i] > 0)
+							roadAhead[i] += penalty;
 					}
-					
-					if (i < 0x29)
-					{
-						__left = roadAhead[i];
-						if (__left > 0)
-							roadAhead[i] = __left + __right;
-					}
-					i = i + 1;
 				}
 			}
 			
-			__right = 0;
-			while ((uint)left < 0x29)
+			penalty = 0;
+			while ((uint)left < 41)
 			{
-				roadAhead[left] = roadAhead[left] - __right;
+				roadAhead[left] -= penalty;
 				
 				if (roadAhead[left] < 0)
 					roadAhead[left] = 0;
 
-				left = left - 1;
-				__right = __right + 500;
+				left--;
+				penalty += 500;
 			}
 			
-			__right = 0;
-			while ((uint)right < 0x29)
+			penalty = 0;
+			while ((uint)right < 41)
 			{
-				roadAhead[right] = roadAhead[right] - __right;
+				roadAhead[right] -= penalty;
 				
 				if (roadAhead[right] < 0)
 					roadAhead[right] = 0;
 
-				right = right + 1;
-				__right = __right + 500;
+				right++;
+				penalty += 500;
 			}
 		}
 	}
 
+	int newTarget;
+
 	if (intention - 2 < 3)
 	{
 	LAB_LEAD__000ead84:
-		cell_x = 0x15;
-		uVar6 = 0x15;
-		cell_z = 0;
-		__left = 0x54;
-		__right = roadAhead[21];
+		int biggest;
+		int step;
 
+		newTarget = 21;
+		
+		biggest = roadAhead[21];
+
+		step = 0;
+		
+		i = 21;
 		do
 		{
-			if (__right < *(int*)((int)roadAhead + __left))
+			if (roadAhead[i] > biggest)
 			{
-				__right = *(int*)((int)roadAhead + __left);
-				cell_x = uVar6;
+				biggest = roadAhead[i];
+				newTarget = i;
 			}
 	
-			if (cell_z < 0)
-				cell_z = -cell_z;
+			if (step < 0)
+				step = -step;
 
-			cell_z = cell_z + 1;
+			step++;
 			
-			if ((cell_z & 1) == 0)
-				cell_z = -cell_z;
+			if ((step & 1) == 0)
+				step = -step;
 			
-			uVar6 = uVar6 + cell_z;
-			__left = uVar6 * 4;
-		}while (uVar6 < 0x29);
+			i += step;
+		}while (i < 41);
 
 		if (intention - 2 < 2)
 		{
-			__left = cp->hd.speed;
-			if (__left < 0x65)
-			{
-				__left = LeadValues.tDist + __left * LeadValues.tDistMul;
-			}
+			int dist;
+			
+			if (cp->hd.speed <= 100)
+				dist = LeadValues.tDist + cp->hd.speed * LeadValues.tDistMul;
 			else
+				dist = LeadValues.hDist + (cp->hd.speed - 100) * LeadValues.hDistMul;
+
+			if (dist > biggest)
 			{
-				__left = LeadValues.hDist + (__left + -100) * LeadValues.hDistMul;
-			}
-			if (__right < __left)
-			{
-				__right = cp->ai.l.roadForward;
-				__left = __right + -1;
-				if (-1 < __right)
-				{
-					__left = -1;
-				}
-				cp->ai.l.roadForward = __left;
-				__roadPosition = 20000;
+				if (cp->ai.l.roadForward > -1)
+					cp->ai.l.roadForward = -1;
+				else
+					cp->ai.l.roadForward--;
+
 				if (intention == 3)
-				{
-					__roadPosition = -20000;
-				}
-				cp->ai.l.roadPosition = __roadPosition;
-				if (-0x15 < cp->ai.l.roadForward)
-				{
+					cp->ai.l.roadPosition = -20000;
+				else
+					cp->ai.l.roadPosition = 20000;
+				
+				if (cp->ai.l.roadForward > -21)
 					return;
-				}
-				SelectExit(cp, Driver2JunctionsPtr + cp->ai.l.nextJunction + -0x2000);
+
+				SelectExit(cp, &Driver2JunctionsPtr[cp->ai.l.nextJunction - 8192]);
+		
 				return;
 			}
 		}
 	}
 	else
 	{
-		__right = cp->ai.l.boringness;
-		cell_x = cp->ai.l.lastTarget;
-		if (__right < 0x1f)
-		{
-		LAB_LEAD__000eac54:
+		int biggest;
+		int bound;
 
-			int spdThresh = ((__right + 100) / 0x32) * 0x400;
-			
-			if (roadAhead[MAX(0, MIN(40, cell_x - 1))] <= spdThresh &&
-				roadAhead[MAX(0, MIN(40, cell_x))] <= spdThresh &&
-				roadAhead[MAX(0, MIN(40, cell_x + 1))] <= spdThresh)
+		newTarget = cp->ai.l.lastTarget;
+
+		bound = ABS((newTarget - laneAvoid) * 100);
+
+		int lim = ((bound + 100) / 50) * 1024;
+
+		if (cp->ai.l.boringness < 31 || bound < cp->ai.l.width / 3 ||
+			lim >= roadAhead[MAX(0, MIN(40, newTarget - 1))] &&
+			lim >= roadAhead[MAX(0, MIN(40, newTarget))] &&
+			lim >= roadAhead[MAX(0, MIN(40, newTarget + 1))])
+		{
+			int lim = ((cp->ai.l.boringness + 100) / 50) * 1024;
+
+			if (lim >= roadAhead[MAX(0, MIN(40, newTarget - 1))] &&
+				lim >= roadAhead[MAX(0, MIN(40, newTarget))] &&
+				lim >= roadAhead[MAX(0, MIN(40, newTarget + 1))])
 			{
 				goto LAB_LEAD__000ead84;
 			}
 		}
-		else
-		{			
-			__left = (cell_x - laneAvoid) * 100;
-			if (__left < 0)
-			{
-				__left = (cell_x - laneAvoid) * -100;
-			}
-			
-			if (__left < cp->ai.l.width / 3)
-			{
-				goto LAB_LEAD__000ead84;
-			}
-
-			int spdThresh = ((__left + 100) / 0x32) * 0x400;
-
-			if (roadAhead[MAX(0, MIN(40, cell_x - 1))] <= spdThresh &&
-				roadAhead[MAX(0, MIN(40, cell_x))] <= spdThresh &&
-				roadAhead[MAX(0, MIN(40, cell_x + 1))] <= spdThresh)
-			{
-				goto LAB_LEAD__000ead84;
-			}
-			
-			if (__right < 0x1f)
-			{
-				goto LAB_LEAD__000eac54;
-			}
-		}
-		__right = roadAhead[cell_x];
-		cell_z = cell_x - 2;
-		__left = cell_x + 2;
-		if (cell_z < __left)
+	
+		biggest = roadAhead[newTarget];
+		for (i = newTarget - 2; i < newTarget + 2; i++)
 		{
-			piVar5 = roadAhead + cell_z;
-			do
+			if (i < 41 && roadAhead[i] > biggest)
 			{
-				if ((cell_z < 0x29) && (__right < *piVar5))
-				{
-					__right = *piVar5;
-					cell_x = cell_z;
-				}
-				cell_z = cell_z + 1;
-				piVar5 = piVar5 + 1;
+				biggest = roadAhead[i];
+				newTarget = i;
 			}
-			while (cell_z < __left);
 		}
 	}
-	if ((intention < 2) || (intention == 4))
+
+	cp->ai.l.lastTarget = newTarget;
+
+	if (intention < 2 || intention == 4)
 	{
+		int dir;
 		cp->ai.l.roadForward = 5120;
-		__right = 1;
-		if (0x15 < cell_x)
+		
+		if (newTarget > 21)
+			dir = -1;
+		else
+			dir = 1;
+
+		for (i = newTarget; i != 21; i += dir);
 		{
-			__right = -1;
-		}
-		if (cell_x != 0x15)
-		{
-			piVar5 = roadAhead + cell_x;
-			cell_z = cell_x;
-			do
-			{
-				if (*piVar5 < cp->ai.l.roadForward)
-				{
-					cp->ai.l.roadForward = *piVar5;
-				}
-				
-				cell_z = cell_z + __right;
-				piVar5 = piVar5 + __right;
-			} while (cell_z != 0x15);
-			
-			cp->ai.l.lastTarget = cell_x;
-			goto LAB_LEAD__000eb0c8;
+			if (cp->ai.l.roadForward > roadAhead[i])
+				cp->ai.l.roadForward = roadAhead[i];
+
+			i += dir;
 		}
 	}
 	else
 	{
 		if (intention == 5)
 		{
-			__right = cp->ai.l.recoverTime;
-			if ((__right == 0) || (0x14 < __right))
+			if (cp->ai.l.recoverTime == 0 || cp->ai.l.recoverTime > 20)
 			{
-				piVar5 = roadAhead + 0x14;
-				__left = 3;
+				int small;
+				small = roadAhead[19];
+				
+				for (i = 0; i < 4; i++)
+				{
+					if (roadAhead[20 + i] < small)
+						small = roadAhead[20 + i];
+				}
+
+				if (small < roadAhead[38])
+					cp->ai.l.roadForward = -1;
+				else
+					cp->ai.l.roadForward = 1;
+
 				cp->ai.l.recoverTime = 0;
-				__right = roadAhead[19];
-				do
-				{
-					if (*piVar5 < __right)
-					{
-						__right = *piVar5;
-					}
-					__left = __left + -1;
-					piVar5 = piVar5 + 1;
-				}
-				while (-1 < __left);
-				__left = -1;
-				if (roadAhead[38] <= __right)
-				{
-					__left = 1;
-				}
-				cp->ai.l.roadForward = __left;
 			}
-			if ((((0x5dc < roadAhead[21]) && (0x5dc < roadAhead[22])) && (0x5dc < roadAhead[20])) &&
-				(0x28 < cp->hd.speed))
+			
+			if (roadAhead[21] > 1500 && 
+				roadAhead[22] > 1500 &&
+				roadAhead[20] > 1500 && 
+				cp->hd.speed > 40)
 			{
 				cp->ai.l.roadForward = 0;
 			}
@@ -3626,9 +3575,9 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 			cp->ai.l.roadForward = 0;
 		}
 	}
-	cp->ai.l.lastTarget = cell_x;
-LAB_LEAD__000eb0c8:
-	__right = cell_x - 0x15;
+
+	sindex = newTarget - 21;
+
 	if (intention == 6)
 	{
 		while (FrameCnt != 0x78654321)
@@ -3636,34 +3585,32 @@ LAB_LEAD__000eb0c8:
 			trap(0x400);
 		}
 	}
+
 	if (intention - 4U < 2)
 	{
 		if (intention == 4)
-		{
-			__right = __right * 0x600;
-		}
+			sindex *= 1536;
 		else
-		{
-			__right = __right * 0x800;
-		}
-		__right = ((__right / 0x15 + 0x800U & 0xfff) + cp->hd.direction & 0xfff) - 0x800;
+			sindex *= 2048;
+
+		sindex = ((sindex / 21 + 2048U & 0xfff) + cp->hd.direction & 0xfff) - 2048;
 	}
 	else
 	{
 		if (intention < 2)
 		{
-			__right = (__right * 200 + cp->ai.l.width) - cp->ai.l.d;
+			sindex = (sindex * 200 + cp->ai.l.width) - cp->ai.l.d;
 		}
 		else
 		{
 			if (intention - 2 > 1)
-			{
 				return;
-			}
-			__right = __right * 100 + cp->ai.l.width;
+
+			sindex = sindex * 100 + cp->ai.l.width;
 		}
 	}
-	cp->ai.l.roadPosition = __right;
+
+	cp->ai.l.roadPosition = sindex;
 #endif // 0
 }
 
