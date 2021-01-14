@@ -1379,6 +1379,54 @@ int localMap[42]; // offset 0x000ecd40
 // [D] [A] overlapping stack variables - might be incorrect (i've tried to resolve them so far)
 void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 {
+#define REFACTOR_LEVEL 0
+	
+	int cp_ai_l_targetDir;
+	int _centre;
+	long lVar3;
+	int tmp;
+	int vvvvar3;
+	int vvvar1;
+	int __roadPosition;
+	int posZ;
+	int _spd;
+	int* piVar4;
+	int cp_ai_l_avoid;
+	int cp_ai_l_roadPosition;
+	int* piVar5;
+	int cp_ai_l_width;
+	int vvvar2;
+	int cp_ai_l_width2;
+	int vvvvar1;
+	int cp_ai_l_width3;
+	int var1;
+	int posX;
+	int _posZ;
+	int cb;
+	int __left;
+	int _right;
+	int _posX;
+	int _left;
+	int ____i_plus_1;
+	int i_1;
+	int i_2;
+	int __i;
+	int __i1;
+	int __i2;
+	int ___i;
+	int _____i;
+	int ______i;
+	int uVar6;
+	int __right;
+	int _smallest;
+	int intention_minus_2;
+	int _lbody;
+	int _wbody;
+	int _cell_x;
+	int _intention;
+	int ____i;
+	bool intention_lt_2;
+
 	MAP_DATA data;
 	VECTOR offset;
 	VECTOR pos;
@@ -1387,7 +1435,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	CELL_ITERATOR ci;
 	COLLISION_PACKET* collide;
 	_CAR_DATA* lcp;
-	
+
 	PACKED_CELL_OBJECT* ppco;
 	CELL_OBJECT* cop;
 	CAR_COSMETICS* car_cos;
@@ -1403,13 +1451,13 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	int count;
 	int cell_x, cell_z;
 	int i;
+	int newTarget;
 	int sindex;
 	int laneAvoid;
 	int initial_cell_x, initial_cell_z;
 	int x1, z1;
 	int smallest;
 
-	// reset
 	for(i = 0; i < 41; i++)
 		roadAhead[i] = 20480;
 
@@ -1418,8 +1466,10 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	
 	laneAvoid = -1;
 	
-	road_s = rcossin_tbl[cp->ai.l.targetDir & 0xfff * 2];
-	road_c = rcossin_tbl[cp->ai.l.targetDir & 0xfff * 2 + 1];
+	cp_ai_l_targetDir = cp->ai.l.targetDir & 0xfff;
+
+	road_s = rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2];
+	road_c = rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2 + 1];
 
 	ClearCopUsage();
 	
@@ -1430,36 +1480,36 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	// check all nearby collision cells
 	cell_x = initial_cell_x;
 
-	for(x1 = 0; x1 < 11; x1++, cell_x++)
+	for (x1 = 0; x1 < 11; x1++, cell_x++)
 	{
 		cell_z = initial_cell_z;
-		
+
 		for (z1 = 0; z1 < 11; z1++, cell_z++)
 		{
 			int cbrX, cbrZ;
-			
+
 			if (!IsOnMap(
-				cell_x * MAP_CELL_SIZE - units_across_halved + MAP_REGION_SIZE*MAP_REGION_SIZE,
-				cell_z * MAP_CELL_SIZE - units_down_halved + MAP_REGION_SIZE * MAP_REGION_SIZE, 
+				cell_x * MAP_CELL_SIZE - units_across_halved + MAP_REGION_SIZE * MAP_REGION_SIZE,
+				cell_z * MAP_CELL_SIZE - units_down_halved + MAP_REGION_SIZE * MAP_REGION_SIZE,
 				basePos, intention, cp))
 				continue;
 
 			cbrX = cell_x / MAP_REGION_SIZE;
 			cbrZ = cell_z / MAP_REGION_SIZE;
-			
+
 			cbr = (cbrX & 1) + (cbrZ & 1) * 2;
-			
+
 			if (RoadMapRegions[cbr] != cbrX + cbrZ * (cells_across / MAP_REGION_SIZE))
 				continue;
 
 			ppco = GetFirstPackedCop(cell_x, cell_z, &ci, 1);
-					
+
 			while (cop = UnpackCellObject(ppco, &ci.nearCell), cop != NULL)
 			{
 				model = modelpointers[cop->type];
-						
-				if (model->num_vertices - 3 < 300 && 
-					model->num_point_normals < 300 && 
+
+				if (model->num_vertices - 3 < 300 &&
+					model->num_point_normals < 300 &&
 					model->num_polys < 300 &&
 					model->collision_block != 0 &&
 					(model->flags2 & MODEL_FLAG_SMASHABLE) == 0)
@@ -1470,13 +1520,13 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 					while (num_cb > 0)
 					{
 						yang = -cop->yang & 0x3f;
-								
-						if (collide->type == 0) 
+
+						if (collide->type == 0)
 						{
 							int cs, sn;
-									
+
 							theta = (cop->yang + collide->yang) * 64 & 0xfff;
-									
+
 							xsize = collide->xsize / 2;
 							zsize = collide->zsize / 2;
 
@@ -1514,7 +1564,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 
 							// calc axes of box
 							int dtheta = cd[0].theta & 0xfff;
-									
+
 							cd[0].axis[0].vx = rcossin_tbl[dtheta * 2];
 							cd[0].axis[0].vz = rcossin_tbl[dtheta * 2 + 1];
 
@@ -1566,7 +1616,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 							}
 						}
 #endif
-								
+
 						vel.vx = 0;
 						vel.vz = 0;
 						data.vel = NULL;
@@ -1574,7 +1624,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 						data.size = &size;
 						data.map = roadAhead;
 						data.local = localMap;
-								
+
 						data.cp = cp;
 						data.base = basePos;
 						data.intention = intention;
@@ -1593,28 +1643,28 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	//
 	// check nearby cars
 	//
-	lcp = &car_data[MAX_CARS -1];
+	lcp = &car_data[MAX_CARS - 1];
 
 	while (lcp >= car_data)
 	{
 		if (lcp != cp && lcp->controlType != CONTROL_TYPE_NONE)
 		{
 			car_cos = lcp->ap.carCos;
-			
+
 			wbody = car_cos->colBox.vx / 2;
 			lbody = car_cos->colBox.vz / 2;
 
 			size.vx = FIXEDH(ABS(lcp->hd.where.m[2][0] * lbody) + ABS(lcp->hd.where.m[0][0] * wbody)) + car_cos->colBox.vy;
 			size.vz = FIXEDH(ABS(lcp->hd.where.m[2][2] * lbody) + ABS(lcp->hd.where.m[2][0] * wbody)) + car_cos->colBox.vy;
 			size.vy = car_cos->colBox.vy;
-			
+
 			pos.vx = lcp->hd.where.t[0];
 			pos.vy = lcp->hd.where.t[1];
 			pos.vz = lcp->hd.where.t[2];
 
 			vel.vx = cp->st.n.linearVelocity[0] / 1024;
 			vel.vz = cp->st.n.linearVelocity[2] / 1024;
-			
+
 			data.vel = &vel;
 			data.pos = &pos;
 			data.size = &size;
@@ -1623,13 +1673,14 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 			data.cp = cp;
 			data.base = basePos;
 			data.intention = intention;
-		
+
 			BlockToMap(&data);
 		}
 
 		lcp--;
 	}
 
+#if REFACTOR_LEVEL > 0
 	// update panic
 	if (cp->ai.l.dstate != 4)
 	{
@@ -1637,7 +1688,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 		int spd;
 		spd = (cp->hd.speed + 100) * 8;
 
-		if(	localMap[20] < spd ||
+		if (localMap[20] < spd ||
 			localMap[21] < spd ||
 			localMap[22] < spd)
 		{
@@ -1654,10 +1705,10 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 						cp->ai.l.panicCount = 2;
 					else
 						cp->ai.l.panicCount = 1;
-					
+
 					return;
 				}
-				
+
 				if (left > right && spd < left * 2)
 					break;
 
@@ -1674,17 +1725,69 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 				cp->ai.l.panicCount = -2;
 			else
 				cp->ai.l.panicCount = -1;
-			
+
 			return;
 		}
 	}
+#else
+	if (cp->ai.l.dstate != 4 && ((_spd = (cp->hd.speed + 100) * 8, localMap[20] < _spd || localMap[21] < _spd) || localMap[22] < _spd))
+	{
+		__i = 1;
+
+		piVar5 = localMap + 23;
+		piVar4 = localMap + 19;
+
+		while (true)
+		{
+			_left = *piVar4 + localMap[0x15 - __i] + localMap[0x16 - __i];
+			_right = piVar5[-2] + piVar5[-1] + *piVar5;
+			if ((_left < _right) && ((cp->hd.speed + 100) * 0x18 < _right * 2))
+			{
+				if (0xd < __i)
+				{
+					cp->ai.l.panicCount = 2;
+					return;
+				}
+				cp->ai.l.panicCount = 1;
+				return;
+			}
+			if ((_left > _right) && ((cp->hd.speed + 100) * 0x18 < _left * 2)) break;
+			if (__i == 0x14)
+			{
+				if (_left <= _right)
+				{
+					cp->ai.l.panicCount = 2;
+				}
+				else
+				{
+					cp->ai.l.panicCount = -2;
+				}
+			}
+			piVar5 = piVar5 + 1;
+			__i = __i + 1;
+			piVar4 = piVar4 + -1;
+			if (0x14 < __i)
+			{
+				return;
+			}
+		}
+		if (0xd < __i)
+		{
+			cp->ai.l.panicCount = -2;
+			return;
+		}
+		cp->ai.l.panicCount = -1;
+		return;
+	}
+#endif
 
 	cp->ai.l.panicCount = 0;
-	
+
+#if REFACTOR_LEVEL > 2
 	if (intention < 2)
 	{
 		smallest = roadAhead[24];
-		for(i = 24; i < 41; i++)
+		for (i = 24; i < 41; i++)
 		{
 			if (roadAhead[i] < smallest)
 				smallest = roadAhead[i];
@@ -1694,7 +1797,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 		}
 
 		smallest = roadAhead[18];
-		for(i = 18; i >= 0; i--)
+		for (i = 18; i >= 0; i--)
 		{
 			if (roadAhead[i] < smallest)
 				smallest = roadAhead[i];
@@ -1703,12 +1806,55 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 				roadAhead[i] = 0;
 		}
 	}
+#else
+	intention_lt_2 = (uint)intention < 2;
+	intention_minus_2 = intention - 2;
 
+	if (intention_lt_2)
+	{
+		__i1 = 0x18;
+		piVar5 = roadAhead + 0x18;
+		smallest = roadAhead[24];
+		do
+		{
+			if (*piVar5 < smallest)
+			{
+				smallest = *piVar5;
+			}
+			lVar3 = SquareRoot0(__i1 + -0x15);
+			if (smallest < (cp->hd.speed + 100) * lVar3)
+			{
+				*piVar5 = 0;
+			}
+			__i1 = __i1 + 1;
+			piVar5 = piVar5 + 1;
+		} while (__i1 < 0x29);
+		__i2 = 0x12;
+		piVar5 = roadAhead + 0x12;
+		_smallest = roadAhead[18];
+		do
+		{
+			if (*piVar5 < _smallest)
+			{
+				_smallest = *piVar5;
+			}
+			lVar3 = SquareRoot0(0x15 - __i2);
+			if (_smallest < (cp->hd.speed + 100) * lVar3)
+			{
+				*piVar5 = 0;
+			}
+			__i2 = __i2 + -1;
+			piVar5 = piVar5 + -1;
+		} while (-1 < __i2);
+	}
+#endif
+
+#if REFACTOR_LEVEL > 3
 	if (intention - 2 < 2)
 	{
 		int tmpMap[41];
-	
-		for(i = 0; i < 41; i++)
+
+		for (i = 0; i < 41; i++)
 			tmpMap[i] = roadAhead[i];
 
 		for (i = 0; i < 41; i++)
@@ -1716,18 +1862,65 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 			count = 0;
 			roadAhead[i] = 0;
 
-			for(j = i - 3; j < i + 4; j++)
+			for (j = i - 3; j < i + 4; j++)
 			{
 				if (j < 41)
 					roadAhead[i] += tmpMap[j];
-				
+
 				count++;
 			}
 
 			roadAhead[i] /= count;
 		}
 	}
+#else
+	if (intention_minus_2 < 2)
+	{
+		int tmpMap[41];
 
+		piVar4 = roadAhead;
+		___i = 0x28;
+		piVar5 = tmpMap;
+		do
+		{
+			tmp = *piVar4;
+			piVar4 = piVar4 + 1;
+			___i = ___i + -1;
+			*piVar5 = tmp;
+			piVar5 = piVar5 + 1;
+		} while (-1 < ___i);
+		____i = 0;
+		do
+		{
+			count = 0;
+			roadAhead[____i] = 0;
+			j = ____i - 3;
+			____i_plus_1 = ____i + 1;
+			if ((int)j < ____i + 4)
+			{
+				piVar5 = tmpMap + j;
+				do
+				{
+					if (j < 0x29)
+					{
+						roadAhead[____i] = roadAhead[____i] + *piVar5;
+					}
+					piVar5 = piVar5 + 1;
+					j = j + 1;
+					count = count + 1;
+				} while ((int)j < ____i + 4);
+			}
+			if (count == 0)
+			{
+				trap(7);
+			}
+			roadAhead[____i] = roadAhead[____i] / count;
+			____i = ____i_plus_1;
+		} while (____i_plus_1 < 0x29);
+	}
+#endif
+
+#if REFACTOR_LEVEL > 4
 	if (intention == 4)
 	{
 		int left, right;
@@ -1735,29 +1928,64 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 		left = 42 + 21;
 		right = -21;
 
-		for(i = 0; i < 41; i++)
+		for (i = 0; i < 41; i++)
 		{
 			if (i - 21 < 0)
 				roadAhead[i] = (roadAhead[i] * 21) / left;
 			else
 				roadAhead[i] = (roadAhead[i] * 21) / right;
-			
+
 			left -= 2;
-			right += 2;		
+			right += 2;
 		}
 	}
+#else
+	if (intention == 4)
+	{
+		_____i = 0;
+		__left = 0x3f;
+		__right = -0x15;
+		piVar5 = roadAhead;
+		do
+		{
+			_centre = *piVar5 * 0x15;
+			*piVar5 = _centre;
+			if (_____i + -0x15 < 0)
+			{
+				if (__left == 0)
+				{
+					trap(7);
+				}
+				*piVar5 = _centre / __left;
+			}
+			else
+			{
+				if (__right == 0)
+				{
+					trap(7);
+				}
+				*piVar5 = _centre / __right;
+			}
+			__left = __left + -2;
+			__right = __right + 2;
+			_____i = _____i + 1;
+			piVar5 = piVar5 + 1;
+		} while (_____i < 0x29);
+	}
+#endif
 
+#if REFACTOR_LEVEL > 5
 	// update boringness
 	if (intention < 2 && cp->ai.l.nextTurn < 10)
 	{
 		int width = cp->ai.l.width;
 		int bounds = ABS(cp->ai.l.roadPosition - (width - cp->ai.l.d));
-		
+
 		if (cp->ai.l.boringness < 31)
 		{
 			if (bounds < width / 3)
 			{
-				if(cp->ai.l.boringness < 31)
+				if (cp->ai.l.boringness < 31)
 					cp->ai.l.boringness++;
 			}
 		}
@@ -1765,15 +1993,15 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 		{
 			int left, right;
 			int centre;
-		
+
 			if (bounds < width / 3)
 			{
 				cp->ai.l.avoid = cp->ai.l.width - cp->ai.l.d;
 				cp->ai.l.boringness++;
 			}
-			
+
 			laneAvoid = (cp->ai.l.avoid + cp->ai.l.d - cp->ai.l.width) / 100 + 21;
-			
+
 			left = laneAvoid * 100;
 			right = laneAvoid * -100;
 
@@ -1801,6 +2029,89 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	{
 		cp->ai.l.boringness = 0;
 	}
+#else
+	if (intention_lt_2 && cp->ai.l.nextTurn < 10)
+	{
+		__right = cp->ai.l.boringness;
+		if (__right < 0x1f)
+		{
+			cp_ai_l_width3 = cp->ai.l.width;
+			cp_ai_l_roadPosition = cp->ai.l.roadPosition;
+			var1 = cp_ai_l_width3 - cp->ai.l.d;
+			vvvar1 = cp_ai_l_roadPosition - var1;
+			if (vvvar1 < 0)
+			{
+				vvvar1 = var1 - cp_ai_l_roadPosition;
+			}
+			if ((vvvar1 < cp_ai_l_width3 / 3) && (__right < 0x1f))
+			{
+				cp->ai.l.boringness = __right + 1;
+			}
+		}
+		else
+		{
+			cp_ai_l_width = cp->ai.l.width;
+			cp_ai_l_roadPosition = cp->ai.l.roadPosition;
+			vvvar2 = cp_ai_l_width - cp->ai.l.d;
+			vvvvar3 = cp_ai_l_roadPosition - vvvar2;
+			if (vvvvar3 < 0)
+			{
+				vvvvar3 = vvvar2 - cp_ai_l_roadPosition;
+			}
+			if (vvvvar3 < cp_ai_l_width / 3)
+			{
+				cp->ai.l.avoid = cp->ai.l.width - cp->ai.l.d;
+				cp->ai.l.boringness = cp->ai.l.boringness + 1;
+			}
+			______i = 0;
+			piVar5 = roadAhead;
+			laneAvoid = ((cp->ai.l.avoid + cp->ai.l.d) - cp->ai.l.width) / 100 + 0x15;
+			__left = laneAvoid * 100;
+			__right = laneAvoid * -100;
+			do
+			{
+				_centre = __right;
+				if (-1 < laneAvoid - ______i)
+				{
+					_centre = __left;
+				}
+				if (_centre < cp->ai.l.width / 3)
+				{
+					*piVar5 = *piVar5 + cp->ai.l.boringness * -100;
+				}
+				piVar5 = piVar5 + 1;
+				__right = __right + 100;
+				______i = ______i + 1;
+				__left = __left + -100;
+			} while (______i < 0x29);
+			cp_ai_l_width2 = cp->ai.l.width;
+			cp_ai_l_avoid = cp->ai.l.avoid;
+			vvvvar1 = cp_ai_l_width2 - cp->ai.l.d;
+			if (vvvvar1 - cp_ai_l_avoid < 0)
+			{
+				if (cp_ai_l_width2 / 3 < cp_ai_l_avoid - vvvvar1)
+				{
+					cp->ai.l.boringness = 0;
+				}
+			}
+			else
+			{
+				if (cp_ai_l_width2 / 3 < vvvvar1 - cp_ai_l_avoid)
+				{
+					goto LAB_LEAD__000ea89c;
+				}
+			}
+		}
+	}
+	else
+	{
+	LAB_LEAD__000ea89c:
+		cp->ai.l.boringness = 0;
+	}
+#endif
+
+#if REFACTOR_LEVEL > 6
+	// REFACTORED, MAY BE BUGGED
 
 	// turning intention
 	if (intention - 4U > 1)
@@ -1810,25 +2121,25 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 		int left, right;
 
 		int width = cp->ai.l.width;
-		
+
 		centre = cp->ai.l.d;
-		
+
 		i = 0;
-		
+
 		left = centre - width;
 		right = width + centre;
-		
+
 		PosToIndex(&left, &i, intention, cp);
 		PosToIndex(&right, &i, intention, cp);
 		PosToIndex(&centre, &i, intention, cp);
-	
+
 		if (left < centre && centre < right)
 		{
 			if ((cp->ai.l.nextTurn == 15 || cp->ai.l.nextTurn == 17) && intention - 2 > 1)
 			{
 				cp->ai.l.nextTurn -= 16;
 
-				for(i = left; i <= right; i++)
+				for (i = left; i <= right; i++)
 				{
 					if (cp->ai.l.nextTurn * (i - centre) > 0)
 						penalty = -2000;
@@ -1842,24 +2153,24 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 					}
 				}
 			}
-			
+
 			penalty = 0;
 			while ((uint)left < 41)
 			{
 				roadAhead[left] -= penalty;
-				
+
 				if (roadAhead[left] < 0)
 					roadAhead[left] = 0;
 
 				left--;
 				penalty += 500;
 			}
-			
+
 			penalty = 0;
 			while ((uint)right < 41)
 			{
 				roadAhead[right] -= penalty;
-				
+
 				if (roadAhead[right] < 0)
 					roadAhead[right] = 0;
 
@@ -1868,9 +2179,73 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 			}
 		}
 	}
+#else
+	if (intention - 4U > 1)
+	{
+		int centre, left, right;
+		centre = cp->ai.l.d;
+		__right = cp->ai.l.width;
+		i = 0;
+		left = centre - __right;
+		right = __right + centre;
+		PosToIndex(&left, &i, intention, (_CAR_DATA*)cp);
+		PosToIndex(&right, &i, intention, (_CAR_DATA*)cp);
+		PosToIndex(&centre, &i, intention, (_CAR_DATA*)cp);
 
-	int newTarget;
+		if (left < centre && centre < right)
+		{
+			__right = cp->ai.l.nextTurn;
+			if (((__right == 0xf) || (__right == 0x11)) && (1 < intention_minus_2))
+			{
+				cp->ai.l.nextTurn = __right + -0x10;
+				i = left;
+				while (i <= right)
+				{
+					__right = 2000;
+					if ((i - centre) * cp->ai.l.nextTurn > 0)
+					{
+						__right = -2000;
+					}
 
+					if (i < 0x29)
+					{
+						__left = roadAhead[i];
+						if (__left > 0)
+							roadAhead[i] = __left + __right;
+					}
+					i = i + 1;
+				}
+			}
+
+			__right = 0;
+			while ((uint)left < 0x29)
+			{
+				roadAhead[left] = roadAhead[left] - __right;
+
+				if (roadAhead[left] < 0)
+					roadAhead[left] = 0;
+
+				left = left - 1;
+				__right = __right + 500;
+			}
+
+			__right = 0;
+			while ((uint)right < 0x29)
+			{
+				roadAhead[right] = roadAhead[right] - __right;
+
+				if (roadAhead[right] < 0)
+					roadAhead[right] = 0;
+
+				right = right + 1;
+				__right = __right + 500;
+			}
+		}
+	}
+#endif
+
+#if REFACTOR_LEVEL > 7
+	// REFACTORED: BAD
 	if (intention - 2 < 3)
 	{
 	LAB_LEAD__000ead84:
@@ -1878,11 +2253,11 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 		int step;
 
 		newTarget = 21;
-		
+
 		biggest = roadAhead[21];
 
 		step = 0;
-		
+
 		i = 21;
 		do
 		{
@@ -1891,22 +2266,22 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 				biggest = roadAhead[i];
 				newTarget = i;
 			}
-	
+
 			if (step < 0)
 				step = -step;
 
 			step++;
-			
+
 			if ((step & 1) == 0)
 				step = -step;
-			
+
 			i += step;
-		}while (i < 41);
+		} while (i < 41);
 
 		if (intention - 2 < 2)
 		{
 			int dist;
-			
+
 			if (cp->hd.speed <= 100)
 				dist = LeadValues.tDist + cp->hd.speed * LeadValues.tDistMul;
 			else
@@ -1923,12 +2298,12 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 					cp->ai.l.roadPosition = -20000;
 				else
 					cp->ai.l.roadPosition = 20000;
-				
+
 				if (cp->ai.l.roadForward > -21)
 					return;
 
 				SelectExit(cp, &Driver2JunctionsPtr[cp->ai.l.nextJunction - 8192]);
-		
+
 				return;
 			}
 		}
@@ -1958,7 +2333,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 				goto LAB_LEAD__000ead84;
 			}
 		}
-	
+
 		biggest = roadAhead[newTarget];
 		for (i = newTarget - 2; i < newTarget + 2; i++)
 		{
@@ -1969,6 +2344,135 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 			}
 		}
 	}
+#else
+	if (intention_minus_2 < 3)
+	{
+	LAB_LEAD__000ead84:
+		cell_x = 0x15;
+		uVar6 = 0x15;
+		cell_z = 0;
+		__left = 0x54;
+		__right = roadAhead[21];
+
+		do
+		{
+			if (__right < *(int*)((int)roadAhead + __left))
+			{
+				__right = *(int*)((int)roadAhead + __left);
+				cell_x = uVar6;
+			}
+
+			if (cell_z < 0)
+				cell_z = -cell_z;
+
+			cell_z = cell_z + 1;
+
+			if ((cell_z & 1) == 0)
+				cell_z = -cell_z;
+
+			uVar6 = uVar6 + cell_z;
+			__left = uVar6 * 4;
+		} while (uVar6 < 0x29);
+
+		if (intention_minus_2 < 2)
+		{
+			__left = cp->hd.speed;
+			if (__left < 0x65)
+			{
+				__left = LeadValues.tDist + __left * LeadValues.tDistMul;
+			}
+			else
+			{
+				__left = LeadValues.hDist + (__left + -100) * LeadValues.hDistMul;
+			}
+			if (__right < __left)
+			{
+				__right = cp->ai.l.roadForward;
+				__left = __right + -1;
+				if (-1 < __right)
+				{
+					__left = -1;
+				}
+				cp->ai.l.roadForward = __left;
+				__roadPosition = 20000;
+				if (intention == 3)
+				{
+					__roadPosition = -20000;
+				}
+				cp->ai.l.roadPosition = __roadPosition;
+				if (-0x15 < cp->ai.l.roadForward)
+				{
+					return;
+				}
+				SelectExit(cp, Driver2JunctionsPtr + cp->ai.l.nextJunction + -0x2000);
+				return;
+			}
+		}
+	}
+	else
+	{
+		__right = cp->ai.l.boringness;
+		cell_x = cp->ai.l.lastTarget;
+		if (__right < 0x1f)
+		{
+		LAB_LEAD__000eac54:
+
+			int spdThresh = ((__right + 100) / 0x32) * 0x400;
+
+			if (roadAhead[MAX(0, MIN(40, cell_x - 1))] <= spdThresh &&
+				roadAhead[MAX(0, MIN(40, cell_x))] <= spdThresh &&
+				roadAhead[MAX(0, MIN(40, cell_x + 1))] <= spdThresh)
+			{
+				goto LAB_LEAD__000ead84;
+			}
+		}
+		else
+		{
+			__left = (cell_x - laneAvoid) * 100;
+			if (__left < 0)
+			{
+				__left = (cell_x - laneAvoid) * -100;
+			}
+
+			if (__left < cp->ai.l.width / 3)
+			{
+				goto LAB_LEAD__000ead84;
+			}
+
+			int spdThresh = ((__left + 100) / 0x32) * 0x400;
+
+			if (roadAhead[MAX(0, MIN(40, cell_x - 1))] <= spdThresh &&
+				roadAhead[MAX(0, MIN(40, cell_x))] <= spdThresh &&
+				roadAhead[MAX(0, MIN(40, cell_x + 1))] <= spdThresh)
+			{
+				goto LAB_LEAD__000ead84;
+			}
+
+			if (__right < 0x1f)
+			{
+				goto LAB_LEAD__000eac54;
+			}
+		}
+		__right = roadAhead[cell_x];
+		cell_z = cell_x - 2;
+		__left = cell_x + 2;
+		if (cell_z < __left)
+		{
+			piVar5 = roadAhead + cell_z;
+			do
+			{
+				if ((cell_z < 0x29) && (__right < *piVar5))
+				{
+					__right = *piVar5;
+					cell_x = cell_z;
+				}
+				cell_z = cell_z + 1;
+				piVar5 = piVar5 + 1;
+			} while (cell_z < __left);
+		}
+	}
+	newTarget = cell_x;
+#endif
 
 	cp->ai.l.lastTarget = newTarget;
 
@@ -1976,7 +2480,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	{
 		int dir;
 		cp->ai.l.roadForward = 5120;
-		
+
 		if (newTarget > 21)
 			dir = -1;
 		else
@@ -1998,7 +2502,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 			{
 				int small;
 				small = roadAhead[19];
-				
+
 				for (i = 0; i < 4; i++)
 				{
 					if (roadAhead[20 + i] < small)
@@ -2012,10 +2516,10 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 
 				cp->ai.l.recoverTime = 0;
 			}
-			
-			if (roadAhead[21] > 1500 && 
+
+			if (roadAhead[21] > 1500 &&
 				roadAhead[22] > 1500 &&
-				roadAhead[20] > 1500 && 
+				roadAhead[20] > 1500 &&
 				cp->hd.speed > 40)
 			{
 				cp->ai.l.roadForward = 0;
