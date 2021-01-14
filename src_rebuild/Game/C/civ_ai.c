@@ -1776,7 +1776,7 @@ int CreateCivCarWotDrivesABitThenStops(int direction, LONGVECTOR4* startPos, LON
 
 		carCnt++;
 		slot++;
-	} while (carCnt < &car_data[MAX_TRAFFIC_CARS]);
+	} while (carCnt < &car_data[MAX_CARS]);
 
 	if (pNewCar == NULL)
 		return -1;
@@ -1869,7 +1869,7 @@ int CreateStationaryCivCar(int direction, long orientX, long orientZ, LONGVECTOR
 
 				carCnt++;
 				slot++;
-			} while (carCnt < &car_data[MAX_TRAFFIC_CARS]);
+			} while (carCnt < &car_data[MAX_CARS]);
 		}
 
 		if (newCar)
@@ -2086,7 +2086,7 @@ int PingInCivCar(int minPingInDist)
 
 			carCnt++;
 			slot++;
-		} while (carCnt < &car_data[MAX_TRAFFIC_CARS]);
+		} while (carCnt < &car_data[MAX_CARS]);
 
 		if (newCar == NULL)
 		{
