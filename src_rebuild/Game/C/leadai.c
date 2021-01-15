@@ -3088,42 +3088,49 @@ void SetTarget(CAR_DATA* cp, int curRoad, int heading, int* nextJunction)
 // [D] [T]
 void SelectExit(CAR_DATA* cp, DRIVER2_JUNCTION* junction)
 {
-	int el[4][2];
 	int rnd;
-	int onward; // $s1
-	int numExits; // $s2
-	int tmp; // $a1
-	int i; // $a2
-	int total; // $s0
+	int i;
+	int total;
+	int tmp;
+	int onward;
+	int numExits;
+	int el[4][2];
+	short road;
 
 	numExits = 0;
 	total = 0;
 
 	onward = (cp->ai.l.targetDir + 512U & 0xfff) >> 10;
-
+	
 	// [A] was weird loop
-	for(i = 0; i < 4; i++)
+	for (i = 0; i < 4; i++)
 	{
-		if(junction->ExitIdx[i] == cp->ai.l.lastRoad)
+		if (junction->ExitIdx[i] == cp->ai.l.lastRoad)
 		{
-			onward = i + 2U & 3;
+			onward = i + 2 & 3;
 			break;
 		}
 	}
 
-	// [A] seems was unrolled loopp
-	for(i = -1; i < 2; i++)
+	// [A] was unrolled
+	for(i = 0; i < 3; i++)
 	{
-		int road;
+		int d;
 
-		tmp = (onward + i) & 3;
-		road = junction->ExitIdx[tmp];
+		if (i == 2)
+			d = -1;
+		else if (i == 1)
+			d = 1;
+		else
+			d = 0;
+
+		tmp = onward + d & 3;
 		
-		if(IS_CURVED_SURFACE(road) || IS_STRAIGHT_SURFACE(road))
+		road = junction->ExitIdx[tmp];
+		if (IS_CURVED_SURFACE(road) || IS_STRAIGHT_SURFACE(road))
 		{
-			el[numExits][0] = i;
+			el[numExits][0] = d;
 			el[numExits][1] = junction->flags >> (tmp << 3) & 0xf;
-
 			total += el[numExits][1];
 			numExits++;
 		}
@@ -3131,30 +3138,31 @@ void SelectExit(CAR_DATA* cp, DRIVER2_JUNCTION* junction)
 
 	if (total == 0)
 	{
+		total = 1;
 		el[numExits][0] = 2;
 		el[numExits][1] = 1;
 		numExits++;
-		total = 1;
 	}
-
-	rnd = ABS(leadRand());
+	
+	rnd = leadRand();
+	rnd = ABS(rnd);
 
 	// [A] again, was a strange loop. Hope it works
 	tmp = 0;
 	for(i = 0; i < numExits; i++)
 	{
-		if(tmp + el[i][1] > rnd % total)
-		{
-			cp->ai.l.nextTurn = el[i][0];
-			break;
-		}
-
 		tmp += el[i][1];
+
+		cp->ai.l.nextTurn = el[i][0];
+		
+		if(tmp > rnd % total)
+			break;
 	}
 
 	cp->ai.l.nextExit = onward + cp->ai.l.nextTurn & 3;
 
-	rnd = ABS(leadRand());
+	rnd = leadRand();
+	rnd = ABS(rnd);
 
 	if (rnd == (rnd / 3) * 3)
 		cp->ai.l.nextTurn = -cp->ai.l.nextTurn;
