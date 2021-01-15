@@ -261,13 +261,9 @@ void LeadUpdateState(CAR_DATA* cp)
 						int hDist = LeadValues.hDist + (cp->hd.speed - 100) * LeadValues.hDistMul;
 
 						if (dist < hDist)
-						{
-							cp->ai.l.dstate = 6;
-						}
+							cp->ai.l.dstate = 3;	// [A] was 6
 						else
-						{
 							cp->ai.l.dstate = 0;
-						}
 
 						break;
 					}
@@ -384,7 +380,7 @@ u_int LeadPadResponse(CAR_DATA* cp)
 			"Drive to target",
 			"Unblock",
 			"Panic",
-			"U-turn",
+			"Ovrstr + brk",
 			"Stupidly go forward",
 			"FakeMotion",
 		};
@@ -416,7 +412,7 @@ u_int LeadPadResponse(CAR_DATA* cp)
 			// [A] check angular velocity when making this maneuver with handbrake
 			deltaAVel = ABS(avel);
 		
-			t0 = (deltaAVel < 100 ? CAR_PAD_HANDBRAKE : 0) | ((deltaTh < 0) ? CAR_PAD_RIGHT : CAR_PAD_LEFT);
+			t0 = (deltaAVel < 200 ? CAR_PAD_HANDBRAKE : 0) | ((deltaTh < 0) ? CAR_PAD_RIGHT : CAR_PAD_LEFT);
 			break;
 		case 1:
 			t0 = CAR_PAD_ACCEL;
@@ -448,7 +444,6 @@ u_int LeadPadResponse(CAR_DATA* cp)
 					+ pathParams[1] * avel
 					+ pathParams[2] * deltaPos
 					+ pathParams[3] * deltaTh) - cp->wheel_angle;
-
 
 			t0 = CAR_PAD_ACCEL;
 		
@@ -541,7 +536,8 @@ u_int LeadPadResponse(CAR_DATA* cp)
 			break;
 		case 6:
 			t0 = (avel < 0) ? CAR_PAD_RIGHT : CAR_PAD_LEFT;
-
+			//t0 |= ((deltaTh < 0) ? CAR_PAD_RIGHT : CAR_PAD_LEFT);
+		
 			if (cp->ai.l.roadForward < 0 && cp->hd.speed > 100)
 				t0 |= CAR_PAD_BRAKE;
 			else
@@ -738,39 +734,36 @@ void PosToIndex(int* normal, int* tangent, int intention, CAR_DATA* cp)
 	{ 
 		*normal = (*normal + 2048U & 0xfff) - 2048;
 
-		if (intention == 6)
+		if (intention == 6 && ABS(*normal) < 240)
 		{
-			if (ABS(*normal) < 240)
-			{
-				dist = FIXEDH(*tangent * rcossin_tbl[(*normal & 0xfff) * 2]);
+			dist = FIXEDH(*tangent * rcossin_tbl[(*normal & 0xfff) * 2]);
 				
-				if (dist > 125)
-				{
-					*normal = 23;
-					return;
-				}
-
-				if (dist > 50)
-				{
-					*normal = 22;
-					return;
-				}
-
-				if (dist > -50)
-				{
-					*normal = 21;
-					return;
-				}
-
-				if (dist < -124)
-				{
-					*normal = 19;
-					return;
-				}
-
-				*normal = 20;
+			if (dist > 125)
+			{
+				*normal = 23;
 				return;
 			}
+
+			if (dist > 50)
+			{
+				*normal = 22;
+				return;
+			}
+
+			if (dist > -50)
+			{
+				*normal = 21;
+				return;
+			}
+
+			if (dist < -124)
+			{
+				*normal = 19;
+				return;
+			}
+
+			*normal = 20;
+			return;
 		}
 	
 		*normal *= 21;
@@ -789,6 +782,7 @@ void PosToIndex(int* normal, int* tangent, int intention, CAR_DATA* cp)
 		if (intention > 1)
 		{
 			int myspeed;
+			int temp;
 			
 			myspeed = cp->hd.speed;
 			w = LeadValues.tWidth;
@@ -808,7 +802,7 @@ void PosToIndex(int* normal, int* tangent, int intention, CAR_DATA* cp)
 				w80 = LeadValues.tWidth80 + myspeed / LeadValues.tWidth80Mul;
 			
 			if (myspeed > 100)
-				t = LeadValues.hDist + (myspeed + -100) * LeadValues.hDistMul;
+				t = LeadValues.hDist + (myspeed - 100) * LeadValues.hDistMul;
 			else
 				t = LeadValues.tDist + myspeed * LeadValues.tDistMul;
 
@@ -819,7 +813,6 @@ void PosToIndex(int* normal, int* tangent, int intention, CAR_DATA* cp)
 
 			if (w < *normal)
 			{
-				int temp;
 				temp = *tangent;
 				
 				*tangent = (t + *normal) - w;
@@ -827,7 +820,6 @@ void PosToIndex(int* normal, int* tangent, int intention, CAR_DATA* cp)
 			}
 			else if (w80 < *normal)
 			{
-				int temp;
 				temp = ((*normal - w80) * (t - t80)) / (w - w80) + t80;
 				
 				*normal = temp - *tangent;
@@ -835,7 +827,6 @@ void PosToIndex(int* normal, int* tangent, int intention, CAR_DATA* cp)
 			}
 			else if (*normal > 0)
 			{
-				int temp;
 				temp = (t80 * w80) / *normal;
 
 				*normal = temp - *tangent;
@@ -1379,7 +1370,7 @@ int localMap[42]; // offset 0x000ecd40
 // [D] [A] overlapping stack variables - might be incorrect (i've tried to resolve them so far)
 void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 {
-#define REFACTOR_LEVEL 0
+#define REFACTOR_LEVEL 10
 	
 	int cp_ai_l_targetDir;
 	int _centre;
@@ -1466,8 +1457,6 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	
 	laneAvoid = -1;
 	
-	cp_ai_l_targetDir = cp->ai.l.targetDir & 0xfff;
-
 	road_s = rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2];
 	road_c = rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2 + 1];
 
@@ -1546,7 +1535,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 
 						offset.vx = FIXEDH(collide->xpos * matrixtable[yang].m[0][0] + collide->zpos * matrixtable[yang].m[2][0]) + cop->pos.vx;
 						offset.vz = FIXEDH(collide->xpos * matrixtable[yang].m[0][2] + collide->zpos * matrixtable[yang].m[2][2]) + cop->pos.vz;
-						offset.vy = cop->pos.vy + collide->ypos;
+						offset.vy = -cop->pos.vy + collide->ypos;
 
 #if defined(_DEBUG) || defined(DEBUG_OPTIONS)
 						extern int gShowCollisionDebug;
@@ -2195,7 +2184,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 		if (left < centre && centre < right)
 		{
 			__right = cp->ai.l.nextTurn;
-			if (((__right == 0xf) || (__right == 0x11)) && (1 < intention_minus_2))
+			if (((__right == 0xf) || (__right == 0x11)) && (1 < intention - 2))
 			{
 				cp->ai.l.nextTurn = __right + -0x10;
 				i = left;
@@ -2345,7 +2334,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 		}
 	}
 #else
-	if (intention_minus_2 < 3)
+	if (intention - 2 < 3)
 	{
 	LAB_LEAD__000ead84:
 		cell_x = 0x15;
@@ -2374,7 +2363,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 			__left = uVar6 * 4;
 		} while (uVar6 < 0x29);
 
-		if (intention_minus_2 < 2)
+		if (intention - 2 < 2)
 		{
 			__left = cp->hd.speed;
 			if (__left < 0x65)
