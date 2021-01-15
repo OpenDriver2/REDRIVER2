@@ -1669,7 +1669,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 		lcp--;
 	}
 
-#if REFACTOR_LEVEL > 0
+#if (REFACTOR_LEVEL > 0)
 	// update panic
 	if (cp->ai.l.dstate != 4)
 	{
@@ -1772,7 +1772,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 
 	cp->ai.l.panicCount = 0;
 
-#if REFACTOR_LEVEL > 2
+#if (REFACTOR_LEVEL > 2)
 	if (intention < 2)
 	{
 		smallest = roadAhead[24];
@@ -1838,7 +1838,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	}
 #endif
 
-#if REFACTOR_LEVEL > 3
+#if (REFACTOR_LEVEL > 3)
 	if (intention - 2 < 2)
 	{
 		int tmpMap[41];
@@ -1909,7 +1909,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	}
 #endif
 
-#if REFACTOR_LEVEL > 4
+#if (REFACTOR_LEVEL > 4)
 	if (intention == 4)
 	{
 		int left, right;
@@ -1963,7 +1963,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	}
 #endif
 
-#if REFACTOR_LEVEL > 5
+#if (REFACTOR_LEVEL > 5)
 	// update boringness
 	if (intention < 2 && cp->ai.l.nextTurn < 10)
 	{
@@ -2099,7 +2099,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	}
 #endif
 
-#if REFACTOR_LEVEL > 6
+#if (REFACTOR_LEVEL > 6)
 	// REFACTORED, MAY BE BUGGED
 
 	// turning intention
@@ -2233,7 +2233,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	}
 #endif
 
-#if REFACTOR_LEVEL > 7
+#if (REFACTOR_LEVEL > 7)
 	// REFACTORED: BAD
 	if (intention - 2 < 3)
 	{
