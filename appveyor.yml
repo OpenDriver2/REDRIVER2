@@ -9,7 +9,7 @@ skip_tags: true
 
 image:
 - Visual Studio 2019
-- Ubuntu
+- Ubuntu2004
 
 environment:
   data_folder: '%APPVEYOR_BUILD_FOLDER%\data'
@@ -48,3 +48,6 @@ artifacts:
 
   - path: src_rebuild\bin\*\*.tar.gz
     name: Linux Binaries
+  
+  - path: io.github.opendriver2.Redriver2.flatpak
+    name: Linux Flatpak
