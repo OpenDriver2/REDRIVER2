@@ -705,7 +705,7 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 					{
 						if (count >= mdcount && cop->pad != 0)
 						{
-							if (CarBuildingCollision(cp, &bbox, cop, 0) != 0)
+							if (CarBuildingCollision(cp, &bbox, cop, 0))
 							{
 								if (!bKillTanner)
 									player[0].dying = 1;
@@ -754,7 +754,7 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 						{
 							cp->st.n.linearVelocity[2] = ExBoxDamage + cp->st.n.linearVelocity[2];
 									
-							if (CarBuildingCollision(cp, &bbox, cop, (cop->pad == 1) ? 0x2 : 0) != 0)
+							if (CarBuildingCollision(cp, &bbox, cop, (cop->pad == 1) ? CollisionCheckFlag_IsVegasMovingTrain : 0))
 							{
 								cp->ap.needsDenting = 1;
 							}
@@ -763,7 +763,7 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 						}
 						else
 						{
-							if (CarBuildingCollision(cp, &bbox, cop, (model->flags2 >> 10) & 1) != 0)
+							if (CarBuildingCollision(cp, &bbox, cop, (model->flags2 & MODEL_FLAG_BARRIER) ? CollisionCheckFlag_MightBeABarrier : 0))
 								cp->ap.needsDenting = 1;
 						}
 					}

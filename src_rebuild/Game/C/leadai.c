@@ -15,12 +15,13 @@
 #include "models.h"
 #include "main.h"
 #include "pad.h"
+#include "pres.h"
 
-#define NUM_STATES 17
-#define NUM_ITERATIONS 40
+#define NUM_RAND_STATES		17
+#define NUM_RAND_ITERATIONS	40
 
 static int randIndex;
-static int randState[NUM_STATES];
+static int randState[NUM_RAND_STATES];
 
 LEAD_PARAMETERS LeadValues;
 
@@ -31,62 +32,13 @@ static int pathParams[5] = {
 int road_s = 0;
 int road_c = 0;
 
-// decompiled code
-// original method signature: 
-// int /*$ra*/ leadRand()
- // line 205, offset 0x000e70a0
-	/* begin block 1 */
-		// Start line: 410
-	/* end block 1 */
-	// End Line: 411
-
-	/* begin block 2 */
-		// Start line: 412
-	/* end block 2 */
-	// End Line: 413
-
-/* WARNING: Unknown calling convention yet parameter storage is locked */
-
 // [D] [T]
 int leadRand(void)
 {
-	randIndex = (randIndex + 1) % NUM_STATES;
+	randIndex = (randIndex + 1) % NUM_RAND_STATES;
 
-	return randState[randIndex] += randState[(randIndex + 12) % NUM_STATES];
+	return randState[randIndex] += randState[(randIndex + 12) % NUM_RAND_STATES];
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ InitLead(CAR_DATA *cp /*$s0*/)
- // line 278, offset 0x000e7128
-	/* begin block 1 */
-		// Start line: 279
-		// Start offset: 0x000E7128
-
-		/* begin block 1.1 */
-			// Start line: 319
-			// Start offset: 0x000E71A0
-			// Variables:
-		// 		DRIVER2_STRAIGHT *straight; // $a3
-		// 		DRIVER2_CURVE *curve; // $t0
-		// 		int i; // $a2
-		// 		int dx; // $a0
-		// 		int dz; // $a1
-		// 		int sqrdist; // $v1
-		// 		int min; // $t1
-		/* end block 1.1 */
-		// End offset: 0x000E7310
-		// End Line: 352
-	/* end block 1 */
-	// End offset: 0x000E73E8
-	// End Line: 378
-
-	/* begin block 2 */
-		// Start line: 559
-	/* end block 2 */
-	// End Line: 560
 
 // [D] [T]
 void InitLead(CAR_DATA* cp)
@@ -175,59 +127,6 @@ void InitLead(CAR_DATA* cp)
 	InitLeadHorn();
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ LeadUpdateState(CAR_DATA *cp /*$s0*/)
- // line 382, offset 0x000e73e8
-	/* begin block 1 */
-		// Start line: 383
-		// Start offset: 0x000E73E8
-		// Variables:
-	// 		int dif; // $t0
-	// 		int avel; // $s1
-
-		/* begin block 1.1 */
-			// Start line: 399
-			// Start offset: 0x000E7498
-			// Variables:
-		// 		VECTOR tmpStart; // stack offset -48
-		/* end block 1.1 */
-		// End offset: 0x000E74EC
-		// End Line: 412
-
-		/* begin block 1.2 */
-			// Start line: 506
-			// Start offset: 0x000E7768
-			// Variables:
-		// 		int dist; // $t1
-		/* end block 1.2 */
-		// End offset: 0x000E792C
-		// End Line: 535
-
-		/* begin block 1.3 */
-			// Start line: 542
-			// Start offset: 0x000E7938
-			// Variables:
-		// 		VECTOR pos; // stack offset -32
-		/* end block 1.3 */
-		// End offset: 0x000E7980
-		// End Line: 557
-	/* end block 1 */
-	// End offset: 0x000E7980
-	// End Line: 564
-
-	/* begin block 2 */
-		// Start line: 865
-	/* end block 2 */
-	// End Line: 866
-
-	/* begin block 3 */
-		// Start line: 870
-	/* end block 3 */
-	// End Line: 871
-
 // [D] [T] - needless to say, the AI isn't very smart :D
 void LeadUpdateState(CAR_DATA* cp)
 {
@@ -302,7 +201,7 @@ void LeadUpdateState(CAR_DATA* cp)
 	dif = cp->hd.direction - cp->ai.l.targetDir;
 	avel = FIXEDH(cp->st.n.angularVelocity[1]);
 
-	end = (dif + 2048u & 0xfff) - 2048;
+	end = (dif + 2048U & 0xfff) - 2048;
 
 	switch (cp->ai.l.dstate)
 	{
@@ -362,13 +261,9 @@ void LeadUpdateState(CAR_DATA* cp)
 						int hDist = LeadValues.hDist + (cp->hd.speed - 100) * LeadValues.hDistMul;
 
 						if (dist < hDist)
-						{
-							cp->ai.l.dstate = 6;
-						}
+							cp->ai.l.dstate = 3;	// [A] was 6
 						else
-						{
 							cp->ai.l.dstate = 0;
-						}
 
 						break;
 					}
@@ -394,7 +289,7 @@ void LeadUpdateState(CAR_DATA* cp)
 				else
 					lDist = LeadValues.tDist + cp->hd.speed * LeadValues.tDistMul;
 
-				if (dist < lDist)
+				if (dist < lDist && cp->ai.l.roadForward > 0)
 					cp->ai.l.dstate = 7;
 				else
 					cp->ai.l.dstate = 6;
@@ -437,57 +332,6 @@ void LeadUpdateState(CAR_DATA* cp)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// unsigned long /*$ra*/ LeadPadResponse(CAR_DATA *cp /*$t0*/)
- // line 566, offset 0x000e7994
-	/* begin block 1 */
-		// Start line: 567
-		// Start offset: 0x000E7994
-		// Variables:
-	// 		int dif; // $t2
-	// 		int avel; // $t1
-	// 		unsigned long t0; // $s0
-
-		/* begin block 1.1 */
-			// Start line: 600
-			// Start offset: 0x000E7A4C
-		/* end block 1.1 */
-		// End offset: 0x000E7B18
-		// End Line: 626
-
-		/* begin block 1.2 */
-			// Start line: 661
-			// Start offset: 0x000E7BC8
-			// Variables:
-		// 		int deltaVel; // $a1
-		// 		int deltaAVel; // $a3
-		// 		int deltaPos; // $a0
-		// 		int deltaTh; // $t2
-		// 		int steerDelta; // $a0
-		/* end block 1.2 */
-		// End offset: 0x000E7D50
-		// End Line: 688
-
-		/* begin block 1.3 */
-			// Start line: 694
-			// Start offset: 0x000E7D58
-			// Variables:
-		// 		int diff; // $a0
-		/* end block 1.3 */
-		// End offset: 0x000E7DD4
-		// End Line: 707
-	/* end block 1 */
-	// End offset: 0x000E7DE8
-	// End Line: 715
-
-	/* begin block 2 */
-		// Start line: 1282
-	/* end block 2 */
-	// End Line: 1283
-
 // [D] [T]
 u_int LeadPadResponse(CAR_DATA* cp)
 {
@@ -514,11 +358,12 @@ u_int LeadPadResponse(CAR_DATA* cp)
 
 #ifdef COLLISION_DEBUG
 	extern int gShowCollisionDebug;
-	if (gShowCollisionDebug == 3)
+	if (gShowCollisionDebug == 4)
 	{
 		extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
 		extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
 
+		CVECTOR yycv = { 250, 250, 0 };
 		CVECTOR ggcv = { 0, 250, 0 };
 		CVECTOR bbcv = { 0, 0, 250 };
 		CVECTOR rrcv = { 250, 0, 0 };
@@ -528,7 +373,36 @@ u_int LeadPadResponse(CAR_DATA* cp)
 
 		VECTOR pos = { cp->ai.l.targetX, cp->hd.where.t[1], cp->ai.l.targetZ };
 
-		Debug_AddLineOfs(_zero, _up, pos, rrcv);
+		static char* LeadDebugStateNames[] = {
+			"Handbrake",
+			"Accelerate",
+			"Correct oversteer",
+			"Drive to target",
+			"Unblock",
+			"Panic",
+			"Ovrstr + brk",
+			"Stupidly go forward",
+			"FakeMotion",
+		};
+
+		SetTextColour(120, 15, 15);
+		
+		char text[256];
+		sprintf(text, "%s", LeadDebugStateNames[cp->ai.l.dstate]);
+		PrintString(text, 20, 180);
+
+		SetTextColour(128, 128, 64);
+		
+		sprintf(text, "dir: %d, fwd: %d, pos: %d, width: %d", cp->ai.l.targetDir, cp->ai.l.roadForward, cp->ai.l.roadPosition, cp->ai.l.width);
+		PrintString(text, 20, 195);
+		
+		sprintf(text, "panic: %d, boring: %d, nextTurn: %d", cp->ai.l.panicCount, cp->ai.l.boringness, cp->ai.l.nextTurn);
+		PrintString(text, 20, 210);
+
+		sprintf(text, "currentRoad: %d", cp->ai.l.currentRoad);
+		PrintString(text, 20, 230);
+		
+		Debug_AddLineOfs(_zero, _up, pos, yycv);
 	}
 #endif
 
@@ -538,7 +412,7 @@ u_int LeadPadResponse(CAR_DATA* cp)
 			// [A] check angular velocity when making this maneuver with handbrake
 			deltaAVel = ABS(avel);
 		
-			t0 = (deltaAVel < 100 ? CAR_PAD_HANDBRAKE : 0) | ((deltaTh < 0) ? CAR_PAD_RIGHT : CAR_PAD_LEFT);
+			t0 = (deltaAVel < 200 ? CAR_PAD_HANDBRAKE : 0) | ((deltaTh < 0) ? CAR_PAD_RIGHT : CAR_PAD_LEFT);
 			break;
 		case 1:
 			t0 = CAR_PAD_ACCEL;
@@ -571,7 +445,6 @@ u_int LeadPadResponse(CAR_DATA* cp)
 					+ pathParams[2] * deltaPos
 					+ pathParams[3] * deltaTh) - cp->wheel_angle;
 
-
 			t0 = CAR_PAD_ACCEL;
 		
 			if (steerDelta > 32)
@@ -597,7 +470,7 @@ u_int LeadPadResponse(CAR_DATA* cp)
 
 			diff = cp->ai.l.roadPosition - cp->hd.direction;
 
-			deltaPos = (diff + 2048u & 0xfff) - 2048;
+			deltaPos = (diff + 2048U & 0xfff) - 2048;
 
 			if (cp->ai.l.roadForward < 0)
 				t0 = CAR_PAD_BRAKE;
@@ -663,7 +536,8 @@ u_int LeadPadResponse(CAR_DATA* cp)
 			break;
 		case 6:
 			t0 = (avel < 0) ? CAR_PAD_RIGHT : CAR_PAD_LEFT;
-
+			//t0 |= ((deltaTh < 0) ? CAR_PAD_RIGHT : CAR_PAD_LEFT);
+		
 			if (cp->ai.l.roadForward < 0 && cp->hd.speed > 100)
 				t0 |= CAR_PAD_BRAKE;
 			else
@@ -687,97 +561,6 @@ u_int LeadPadResponse(CAR_DATA* cp)
 
 	return t0;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ FakeMotion(CAR_DATA *cp /*$s1*/)
- // line 718, offset 0x000e7de8
-	/* begin block 1 */
-		// Start line: 719
-		// Start offset: 0x000E7DE8
-
-		/* begin block 1.1 */
-			// Start line: 724
-			// Start offset: 0x000E7E40
-			// Variables:
-		// 		DRIVER2_STRAIGHT *straight; // $t1
-		// 		static int d; // offset 0x0
-		// 		static int toGo; // offset 0x4
-		// 		static int angle; // offset 0x8
-		// 		static int s; // offset 0xc
-		// 		static int c; // offset 0x10
-		// 		int dx; // $a2
-		// 		int dz; // $t3
-		// 		int nextJunction; // $t0
-
-			/* begin block 1.1.1 */
-				// Start line: 757
-				// Start offset: 0x000E7FA4
-				// Variables:
-			// 		DRIVER2_JUNCTION *junction; // $s0
-			/* end block 1.1.1 */
-			// End offset: 0x000E7FA4
-			// End Line: 757
-		/* end block 1.1 */
-		// End offset: 0x000E8010
-		// End Line: 778
-
-		/* begin block 1.2 */
-			// Start line: 781
-			// Start offset: 0x000E8010
-			// Variables:
-		// 		DRIVER2_CURVE *curve; // $s0
-		// 		int angle; // $a3
-		// 		int toGo; // $v0
-		// 		int radius; // $a2
-		// 		int dx; // $a0
-		// 		int dz; // $a1
-		// 		int nextJunction; // $a2
-
-			/* begin block 1.2.1 */
-				// Start line: 813
-				// Start offset: 0x000E8104
-				// Variables:
-			// 		DRIVER2_JUNCTION *junction; // $s0
-			/* end block 1.2.1 */
-			// End offset: 0x000E8104
-			// End Line: 813
-
-			/* begin block 1.2.2 */
-				// Start line: 848
-				// Start offset: 0x000E81F0
-				// Variables:
-			// 		DRIVER2_JUNCTION *junction; // $s0
-			/* end block 1.2.2 */
-			// End offset: 0x000E81F0
-			// End Line: 848
-		/* end block 1.2 */
-		// End offset: 0x000E82E0
-		// End Line: 874
-
-		/* begin block 1.3 */
-			// Start line: 877
-			// Start offset: 0x000E82E0
-			// Variables:
-		// 		DRIVER2_JUNCTION *junction; // $s0
-		/* end block 1.3 */
-		// End offset: 0x000E8338
-		// End Line: 885
-	/* end block 1 */
-	// End offset: 0x000E8338
-	// End Line: 888
-
-	/* begin block 2 */
-		// Start line: 1640
-	/* end block 2 */
-	// End Line: 1641
-
-	/* begin block 3 */
-		// Start line: 1644
-	/* end block 3 */
-	// End Line: 1645
 
 // [D] [T]
 // FakeMotion: when car is too far from the player it just moves, not drives
@@ -938,70 +721,6 @@ void FakeMotion(CAR_DATA* cp)
 	cp->ai.l.direction = 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ PosToIndex(int *normal /*$t1*/, int *tangent /*$t4*/, int intention /*$a2*/, CAR_DATA *cp /*$a3*/)
- // line 932, offset 0x000e834c
-	/* begin block 1 */
-		// Start line: 933
-		// Start offset: 0x000E834C
-
-		/* begin block 1.1 */
-			// Start line: 950
-			// Start offset: 0x000E8398
-			// Variables:
-		// 		int dist; // $a1
-		/* end block 1.1 */
-		// End offset: 0x000E8420
-		// End Line: 958
-
-		/* begin block 1.2 */
-			// Start line: 970
-			// Start offset: 0x000E84B0
-			// Variables:
-		// 		int w; // $t2
-		// 		int w80; // $t0
-		// 		int t; // $a1
-		// 		int t80; // $a3
-
-			/* begin block 1.2.1 */
-				// Start line: 979
-				// Start offset: 0x000E85F0
-				// Variables:
-			// 		int temp; // $v1
-			/* end block 1.2.1 */
-			// End offset: 0x000E85F0
-			// End Line: 979
-
-			/* begin block 1.2.2 */
-				// Start line: 986
-				// Start offset: 0x000E8614
-				// Variables:
-			// 		int temp; // $a0
-			/* end block 1.2.2 */
-			// End offset: 0x000E8614
-			// End Line: 988
-
-			/* begin block 1.2.3 */
-				// Start line: 998
-				// Start offset: 0x000E865C
-			/* end block 1.2.3 */
-			// End offset: 0x000E8690
-			// End Line: 1002
-		/* end block 1.2 */
-		// End offset: 0x000E86B4
-		// End Line: 1045
-	/* end block 1 */
-	// End offset: 0x000E86B4
-	// End Line: 1048
-
-	/* begin block 2 */
-		// Start line: 2158
-	/* end block 2 */
-	// End Line: 2159
-
 // [D] [T]
 void PosToIndex(int* normal, int* tangent, int intention, CAR_DATA* cp)
 {
@@ -1015,39 +734,36 @@ void PosToIndex(int* normal, int* tangent, int intention, CAR_DATA* cp)
 	{ 
 		*normal = (*normal + 2048U & 0xfff) - 2048;
 
-		if (intention == 6)
+		if (intention == 6 && ABS(*normal) < 240)
 		{
-			if (ABS(*normal) < 240)
-			{
-				dist = FIXEDH(*tangent * rcossin_tbl[(*normal & 0xfff) * 2]);
+			dist = FIXEDH(*tangent * rcossin_tbl[(*normal & 0xfff) * 2]);
 				
-				if (dist > 125)
-				{
-					*normal = 23;
-					return;
-				}
-
-				if (dist > 50)
-				{
-					*normal = 22;
-					return;
-				}
-
-				if (dist > -50)
-				{
-					*normal = 21;
-					return;
-				}
-
-				if (dist < -124)
-				{
-					*normal = 19;
-					return;
-				}
-
-				*normal = 20;
+			if (dist > 125)
+			{
+				*normal = 23;
 				return;
 			}
+
+			if (dist > 50)
+			{
+				*normal = 22;
+				return;
+			}
+
+			if (dist > -50)
+			{
+				*normal = 21;
+				return;
+			}
+
+			if (dist < -124)
+			{
+				*normal = 19;
+				return;
+			}
+
+			*normal = 20;
+			return;
 		}
 	
 		*normal *= 21;
@@ -1066,6 +782,7 @@ void PosToIndex(int* normal, int* tangent, int intention, CAR_DATA* cp)
 		if (intention > 1)
 		{
 			int myspeed;
+			int temp;
 			
 			myspeed = cp->hd.speed;
 			w = LeadValues.tWidth;
@@ -1085,7 +802,7 @@ void PosToIndex(int* normal, int* tangent, int intention, CAR_DATA* cp)
 				w80 = LeadValues.tWidth80 + myspeed / LeadValues.tWidth80Mul;
 			
 			if (myspeed > 100)
-				t = LeadValues.hDist + (myspeed + -100) * LeadValues.hDistMul;
+				t = LeadValues.hDist + (myspeed - 100) * LeadValues.hDistMul;
 			else
 				t = LeadValues.tDist + myspeed * LeadValues.tDistMul;
 
@@ -1096,7 +813,6 @@ void PosToIndex(int* normal, int* tangent, int intention, CAR_DATA* cp)
 
 			if (w < *normal)
 			{
-				int temp;
 				temp = *tangent;
 				
 				*tangent = (t + *normal) - w;
@@ -1104,7 +820,6 @@ void PosToIndex(int* normal, int* tangent, int intention, CAR_DATA* cp)
 			}
 			else if (w80 < *normal)
 			{
-				int temp;
 				temp = ((*normal - w80) * (t - t80)) / (w - w80) + t80;
 				
 				*normal = temp - *tangent;
@@ -1112,7 +827,6 @@ void PosToIndex(int* normal, int* tangent, int intention, CAR_DATA* cp)
 			}
 			else if (*normal > 0)
 			{
-				int temp;
 				temp = (t80 * w80) / *normal;
 
 				*normal = temp - *tangent;
@@ -1125,197 +839,6 @@ void PosToIndex(int* normal, int* tangent, int intention, CAR_DATA* cp)
 
 	*normal = t80 + 21;
 }
-
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ BlockToMap(MAP_DATA *data /*$s3*/)
- // line 1053, offset 0x000e86bc
-	/* begin block 1 */
-		// Start line: 1054
-		// Start offset: 0x000E86BC
-		// Variables:
-	// 		static int carLength; // offset 0x14
-	// 		static int carWidth; // offset 0x18
-	// 		static int length; // offset 0x14
-	// 		static int width; // offset 0x18
-	// 		static int left; // offset 0x1c
-	// 		static int right; // offset 0x20
-	// 		static int ldist; // offset 0x24
-	// 		static int rdist; // offset 0x28
-	// 		static MAP_DATA newdata; // offset 0x30
-
-		/* begin block 1.1 */
-			// Start line: 1074
-			// Start offset: 0x000E873C
-			// Variables:
-		// 		int dx; // $t4
-		// 		int dz; // $t3
-		// 		int v; // $v1
-		// 		int tangent; // $s0
-		// 		int normal; // $s1
-		/* end block 1.1 */
-		// End offset: 0x000E8AB0
-		// End Line: 1161
-
-		/* begin block 1.2 */
-			// Start line: 1166
-			// Start offset: 0x000E8AB0
-			// Variables:
-		// 		DRIVER2_CURVE *curve; // $s1
-		// 		int dx; // $s6
-		// 		int dz; // $s5
-		// 		int v; // $a0
-		// 		int angle; // $a2
-		// 		int s; // $s4
-		// 		int c; // $s2
-		// 		int tangent; // $s0
-		// 		int normal; // $s1
-		/* end block 1.2 */
-		// End offset: 0x000E8E48
-		// End Line: 1264
-
-		/* begin block 1.3 */
-			// Start line: 1271
-			// Start offset: 0x000E8E48
-			// Variables:
-		// 		int dx; // $s0
-		// 		int dz; // $s2
-		// 		int angle; // $s5
-		// 		int s; // $t3
-		// 		int c; // $t2
-		// 		int tangent; // $s1
-		// 		int normal; // $s0
-		// 		int i; // $s2
-
-			/* begin block 1.3.1 */
-				// Start line: 1301
-				// Start offset: 0x000E8F7C
-				// Variables:
-			// 		int corners[4][3]; // stack offset -112
-			// 		int diff; // $v0
-			// 		int overlap; // $s1
-			// 		int quad1; // $a1
-			// 		int quad2; // $v1
-
-				/* begin block 1.3.1.1 */
-					// Start line: 1350
-					// Start offset: 0x000E9184
-					// Variables:
-				// 		int temp; // $v1
-				/* end block 1.3.1.1 */
-				// End offset: 0x000E91B0
-				// End Line: 1354
-
-				/* begin block 1.3.1.2 */
-					// Start line: 1363
-					// Start offset: 0x000E921C
-					// Variables:
-				// 		int vx; // $a1
-				// 		int vz; // $t0
-				// 		int theta; // $v0
-				/* end block 1.3.1.2 */
-				// End offset: 0x000E9324
-				// End Line: 1381
-			/* end block 1.3.1 */
-			// End offset: 0x000E9324
-			// End Line: 1382
-
-			/* begin block 1.3.2 */
-				// Start line: 1387
-				// Start offset: 0x000E9350
-				// Variables:
-			// 		int temp; // $a0
-			/* end block 1.3.2 */
-			// End offset: 0x000E93F0
-			// End Line: 1407
-		/* end block 1.3 */
-		// End offset: 0x000E93F0
-		// End Line: 1411
-
-		/* begin block 1.4 */
-			// Start line: 1425
-			// Start offset: 0x000E9424
-			// Variables:
-		// 		int *nearest; // $s2
-		// 		int *furthest; // $s4
-		// 		int *ndist; // $s1
-		// 		int *fdist; // $s0
-
-			/* begin block 1.4.1 */
-				// Start line: 1443
-				// Start offset: 0x000E94A4
-				// Variables:
-			// 		int temp; // stack offset -64
-			// 		int tdist; // stack offset -60
-			/* end block 1.4.1 */
-			// End offset: 0x000E9560
-			// End Line: 1467
-		/* end block 1.4 */
-		// End offset: 0x000E9560
-		// End Line: 1468
-
-		/* begin block 1.5 */
-			// Start line: 1482
-			// Start offset: 0x000E95A0
-			// Variables:
-		// 		int locall; // stack offset -56
-		// 		int localr; // stack offset -48
-		// 		int localld; // stack offset -52
-		// 		int localrd; // stack offset -44
-
-			/* begin block 1.5.1 */
-				// Start line: 1492
-				// Start offset: 0x000E9614
-				// Variables:
-			// 		int i; // $a2
-			/* end block 1.5.1 */
-			// End offset: 0x000E9664
-			// End Line: 1499
-
-			/* begin block 1.5.2 */
-				// Start line: 1499
-				// Start offset: 0x000E9664
-				// Variables:
-			// 		int i; // $a0
-			/* end block 1.5.2 */
-			// End offset: 0x000E96EC
-			// End Line: 1512
-		/* end block 1.5 */
-		// End offset: 0x000E96EC
-		// End Line: 1513
-
-		/* begin block 1.6 */
-			// Start line: 1522
-			// Start offset: 0x000E9734
-			// Variables:
-		// 		int tangent; // $a2
-		// 		int i; // $a1
-		/* end block 1.6 */
-		// End offset: 0x000E97B0
-		// End Line: 1533
-
-		/* begin block 1.7 */
-			// Start line: 1546
-			// Start offset: 0x000E97B0
-			// Variables:
-		// 		int dtan; // $a3
-		// 		int tangent; // $a2
-		// 		int i; // $a1
-		/* end block 1.7 */
-		// End offset: 0x000E9874
-		// End Line: 1558
-	/* end block 1 */
-	// End offset: 0x000E9874
-	// End Line: 1560
-
-	/* begin block 2 */
-		// Start line: 2406
-	/* end block 2 */
-	// End Line: 2407
-
-/* WARNING: Type propagation algorithm not settling */
 
 // [D] [T] - seems to be working as expected
 void BlockToMap(MAP_DATA* data)
@@ -1470,8 +993,8 @@ void BlockToMap(MAP_DATA* data)
 			s = rcossin_tbl[((tangent + 1024u) & 0xfff) * 2];
 			c = rcossin_tbl[((tangent + 1024u) & 0xfff) * 2 + 1];
 
-			tangent = (((tangent - data->cp->ai.l.base_Angle) + 2048u & 0xfff) - 2048) *
-				data->cp->ai.l.base_Dir * ((curve->inside * 0xb000) / 0x7000);
+			tangent = (((tangent - data->cp->ai.l.base_Angle) + 2048U & 0xfff) - 2048) *
+				data->cp->ai.l.base_Dir * ((curve->inside * 45056) / 28672);
 
 			someVar = FIXEDH(ABS(data->size->vx * s) + ABS(data->size->vz * c));
 
@@ -1545,7 +1068,7 @@ void BlockToMap(MAP_DATA* data)
 			if (dy > v)
 				return;
 
-			angle = (ratan2(dx, dz) + 2048u & 0xfff) - 2048;
+			angle = (ratan2(dx, dz) + 2048U & 0xfff) - 2048;
 
 			s = rcossin_tbl[(angle & 0xfff) * 2];
 			c = rcossin_tbl[(angle & 0xfff) * 2 + 1];
@@ -1577,25 +1100,22 @@ void BlockToMap(MAP_DATA* data)
 				right = 0;
 
 				int quad1 = corners[0][2] + 2048 >> 10;
-				//fdist = corners + 5;	// corners[1][2] = 5
 
 				for (int i = 1; i < 4; i++)
 				{
 					y = corners[i][2];
 
-					if (0 < (int)(((corners[left][2] - y) + 2048u & 0xfff) - 2048))
+					if ((int)(((corners[left][2] - y) + 2048U & 0xfff) - 2048) > 0)
 						left = i;
 
-					if (0 < (int)(((y - corners[right][2]) + 2048u & 0xfff) - 2048))
+					if ((int)(((y - corners[right][2]) + 2048U & 0xfff) - 2048) > 0)
 						right = i;
 
 					int quad2 = y + 2048 >> 10;
 
 					if ((quad1 != quad2) && (quad1 + (quad1 - (corners[0][2] + 2048 >> 0x1f) >> 1) * -2 == quad2 + (quad2 - (y + 2048 >> 0x1f) >> 1) * -2))
 						overlap = true;
-
-					//fdist = fdist + 3;
-				};
+				}
 
 				if (overlap)
 				{
@@ -1642,8 +1162,8 @@ void BlockToMap(MAP_DATA* data)
 					rdist = ABS(FIXEDH(vx + vz));
 				}
 
-				left = (left + 2048u & 0xfff) - 2048;
-				right = (right + 2048u & 0xfff) - 2048;
+				left = (left + 2048U & 0xfff) - 2048;
+				right = (right + 2048U & 0xfff) - 2048;
 			}
 			else
 			{
@@ -1780,65 +1300,6 @@ void BlockToMap(MAP_DATA* data)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// int /*$ra*/ IsOnMap(int x /*$t0*/, int z /*$a1*/, VECTOR *basePos /*$a2*/, int intention /*$s4*/, CAR_DATA *cp /*stack 16*/)
- // line 1563, offset 0x000e98a4
-	/* begin block 1 */
-		// Start line: 1564
-		// Start offset: 0x000E98A4
-		// Variables:
-	// 		int dx; // $s1
-	// 		int dz; // $s2
-
-		/* begin block 1.1 */
-			// Start line: 1577
-			// Start offset: 0x000E9938
-			// Variables:
-		// 		int tangent; // stack offset -44
-		// 		int normal; // stack offset -48
-		/* end block 1.1 */
-		// End offset: 0x000E99F4
-		// End Line: 1591
-
-		/* begin block 1.2 */
-			// Start line: 1596
-			// Start offset: 0x000E99F4
-			// Variables:
-		// 		DRIVER2_CURVE *curve; // $s0
-		// 		int tangent; // stack offset -36
-		// 		int normal; // stack offset -40
-		/* end block 1.2 */
-		// End offset: 0x000E9B20
-		// End Line: 1622
-
-		/* begin block 1.3 */
-			// Start line: 1628
-			// Start offset: 0x000E9B20
-			// Variables:
-		// 		int tangent; // stack offset -28
-		// 		int normal; // stack offset -32
-		/* end block 1.3 */
-		// End offset: 0x000E9B94
-		// End Line: 1642
-	/* end block 1 */
-	// End offset: 0x000E9BB8
-	// End Line: 1650
-
-	/* begin block 2 */
-		// Start line: 3728
-	/* end block 2 */
-	// End Line: 3729
-
-	/* begin block 3 */
-		// Start line: 3729
-	/* end block 3 */
-	// End Line: 3730
-
-/* WARNING: Type propagation algorithm not settling */
-
 // [D] [T]
 int IsOnMap(int x, int z, VECTOR* basePos, int intention, CAR_DATA* cp)
 {
@@ -1851,7 +1312,7 @@ int IsOnMap(int x, int z, VECTOR* basePos, int intention, CAR_DATA* cp)
 	dx = ABS(x - basePos->vx);
 	dz = ABS(z - basePos->vz);
 
-	if (dz < 3000)
+	if (dx < 3000 && dz < 3000)
 		return 1;
 
 	switch (intention)
@@ -1870,7 +1331,7 @@ int IsOnMap(int x, int z, VECTOR* basePos, int intention, CAR_DATA* cp)
 			dx = x - curve->Midx;
 			dz = z - curve->Midz;
 
-			tangent = (((ratan2(dx, dz) - cp->ai.l.base_Angle) + 2048u & 0xfff) - 2048) * cp->ai.l.base_Dir * ((curve->inside * 0xb000) / 0x7000);
+			tangent = (((ratan2(dx, dz) - cp->ai.l.base_Angle) + 2048U & 0xfff) - 2048) * cp->ai.l.base_Dir * ((curve->inside * 45056) / 28672);
 			normal = (cp->ai.l.base_Normal - hypot(dx, dz)) * cp->ai.l.base_Dir;
 
 			PosToIndex(&normal, &tangent, intention, cp);
@@ -1878,7 +1339,7 @@ int IsOnMap(int x, int z, VECTOR* basePos, int intention, CAR_DATA* cp)
 		case 4:
 		case 5:
 			tangent = hypot(dx, dz);
-			normal = ((ratan2(dx, dz) - cp->hd.direction) + 2048u & 0xfff) - 2048;
+			normal = ((ratan2(dx, dz) - cp->hd.direction) + 2048U & 0xfff) - 2048;
 
 			PosToIndex(&normal, &tangent, intention, cp);
 
@@ -1891,7 +1352,7 @@ int IsOnMap(int x, int z, VECTOR* basePos, int intention, CAR_DATA* cp)
 			return 0;
 	}
 
-	if ((tangent + 2048) > 0x5800)
+	if ((tangent + 2048) > 22528)
 		return 0;
 
 	if (normal < -4)
@@ -1903,445 +1364,296 @@ int IsOnMap(int x, int z, VECTOR* basePos, int intention, CAR_DATA* cp)
 	return 0;
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ UpdateRoadPosition(CAR_DATA *cp /*$s3*/, VECTOR *basePos /*stack 4*/, int intention /*stack 8*/)
- // line 1657, offset 0x000e9bb8
-	/* begin block 1 */
-		// Start line: 1658
-		// Start offset: 0x000E9BB8
-		// Variables:
-	// 		int sindex; // $t0
-	// 		int i; // $s0
-	// 		int di; // $a2
-	// 		CAR_DATA *lcp; // $s0
-	// 		int laneAvoid; // stack offset -56
-
-		/* begin block 1.1 */
-			// Start line: 1680
-			// Start offset: 0x000E9C4C
-			// Variables:
-		// 		int cell_x; // $s4
-		// 		int x1; // $a0
-
-			/* begin block 1.1.1 */
-				// Start line: 1693
-				// Start offset: 0x000E9CB0
-				// Variables:
-			// 		int cell_z; // $s0
-			// 		int z1; // $s1
-
-				/* begin block 1.1.1.1 */
-					// Start line: 1700
-					// Start offset: 0x000E9CFC
-					// Variables:
-				// 		int cbrx; // $a3
-				// 		int cbrz; // $a2
-				// 		int cbr; // $a0
-
-					/* begin block 1.1.1.1.1 */
-						// Start line: 1714
-						// Start offset: 0x000E9D94
-						// Variables:
-					// 		CELL_OBJECT *cop; // $s1
-					// 		CELL_ITERATOR ci; // stack offset -344
-
-						/* begin block 1.1.1.1.1.1 */
-							// Start line: 1721
-							// Start offset: 0x000E9DB0
-							// Variables:
-						// 		COLLISION_PACKET *collide; // $s0
-						// 		MODEL *model; // $a0
-						// 		int num_cb; // $a0
-						// 		int box_loop; // $s2
-
-							/* begin block 1.1.1.1.1.1.1 */
-								// Start line: 1739
-								// Start offset: 0x000E9E4C
-								// Variables:
-							// 		MATRIX *mat; // $a1
-							// 		VECTOR offset; // stack offset -320
-							// 		VECTOR vel; // stack offset -304
-							// 		VECTOR size; // stack offset -288
-							// 		MAP_DATA data; // stack offset -272
-
-								/* begin block 1.1.1.1.1.1.1.1 */
-									// Start line: 1753
-									// Start offset: 0x000E9EF8
-									// Variables:
-								// 		int sb; // $t0
-								// 		int cb; // $a1
-								// 		int theta; // $v1
-								// 		int xsize; // $a0
-								// 		int zsize; // $a3
-								/* end block 1.1.1.1.1.1.1.1 */
-								// End offset: 0x000E9FD8
-								// End Line: 1767
-							/* end block 1.1.1.1.1.1.1 */
-							// End offset: 0x000E9FD8
-							// End Line: 1775
-						/* end block 1.1.1.1.1.1 */
-						// End offset: 0x000EA068
-						// End Line: 1795
-					/* end block 1.1.1.1.1 */
-					// End offset: 0x000EA088
-					// End Line: 1797
-				/* end block 1.1.1.1 */
-				// End offset: 0x000EA088
-				// End Line: 1798
-			/* end block 1.1.1 */
-			// End offset: 0x000EA098
-			// End Line: 1799
-		/* end block 1.1 */
-		// End offset: 0x000EA0AC
-		// End Line: 1800
-
-		/* begin block 1.2 */
-			// Start line: 1814
-			// Start offset: 0x000EA0CC
-			// Variables:
-		// 		SVECTOR *colBox; // $a3
-		// 		VECTOR pos; // stack offset -344
-		// 		VECTOR vel; // stack offset -328
-		// 		VECTOR size; // stack offset -312
-		// 		MAP_DATA data; // stack offset -296
-		/* end block 1.2 */
-		// End offset: 0x000EA260
-		// End Line: 1845
-
-		/* begin block 1.3 */
-			// Start line: 1860
-			// Start offset: 0x000EA2F4
-			// Variables:
-		// 		int left; // $a3
-		// 		int right; // $a2
-		/* end block 1.3 */
-		// End offset: 0x000EA3D8
-		// End Line: 1889
-
-		/* begin block 1.4 */
-			// Start line: 1904
-			// Start offset: 0x000EA410
-			// Variables:
-		// 		int smallest; // $s1
-		/* end block 1.4 */
-		// End offset: 0x000EA4E0
-		// End Line: 1923
-
-		/* begin block 1.5 */
-			// Start line: 1931
-			// Start offset: 0x000EA4EC
-			// Variables:
-		// 		int tmpMap[41]; // stack offset -240
-
-			/* begin block 1.5.1 */
-				// Start line: 1937
-				// Start offset: 0x000EA528
-				// Variables:
-			// 		int count; // $t0
-			// 		int j; // $a1
-			/* end block 1.5.1 */
-			// End offset: 0x000EA594
-			// End Line: 1944
-		/* end block 1.5 */
-		// End offset: 0x000EA5C4
-		// End Line: 1946
-
-		/* begin block 1.6 */
-			// Start line: 2006
-			// Start offset: 0x000EA8AC
-			// Variables:
-		// 		int i; // stack offset -68
-		// 		int penalty; // $a2
-		// 		int left; // stack offset -72
-		// 		int right; // stack offset -64
-		// 		int centre; // stack offset -60
-		/* end block 1.6 */
-		// End offset: 0x000EAAA0
-		// End Line: 2046
-
-		/* begin block 1.7 */
-			// Start line: 2069
-			// Start offset: 0x000EAD80
-			// Variables:
-		// 		int biggest; // $a3
-
-			/* begin block 1.7.1 */
-				// Start line: 2090
-				// Start offset: 0x000EAEAC
-			/* end block 1.7.1 */
-			// End offset: 0x000EAEAC
-			// End Line: 2090
-		/* end block 1.7 */
-		// End offset: 0x000EAEE0
-		// End Line: 2099
-
-		/* begin block 1.8 */
-			// Start line: 2103
-			// Start offset: 0x000EAEE0
-			// Variables:
-		// 		int biggest; // $a1
-		/* end block 1.8 */
-		// End offset: 0x000EAF4C
-		// End Line: 2113
-
-		/* begin block 1.9 */
-			// Start line: 2134
-			// Start offset: 0x000EAFFC
-			// Variables:
-		// 		int smallForward; // $a1
-		// 		int smallBack; // $v0
-		/* end block 1.9 */
-		// End offset: 0x000EB060
-		// End Line: 2151
-
-		/* begin block 1.10 */
-			// Start line: 2226
-			// Start offset: 0x000EB0C4
-			// Variables:
-		// 		CAR_DATA *cp; // $s3
-		// 		int sindex; // $a0
-		// 		int intention; // stack offset 8
-		/* end block 1.10 */
-		// End offset: 0x000EB1CC
-		// End Line: 2226
-	/* end block 1 */
-	// End offset: 0x000EB1CC
-	// End Line: 2239
-
-	/* begin block 2 */
-		// Start line: 3935
-	/* end block 2 */
-	// End Line: 3936
-
-	/* begin block 3 */
-		// Start line: 3943
-	/* end block 3 */
-	// End Line: 3944
-
-int roadAhead[41]; // offset 0x000ecde8
-int localMap[41]; // offset 0x000ecd40
+int roadAhead[42]; // offset 0x000ecde8
+int localMap[42]; // offset 0x000ecd40
 
 // [D] [A] overlapping stack variables - might be incorrect (i've tried to resolve them so far)
 void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 {
-	short* psVar1;
-	short* psVar2;
-	bool bVar3;
-	int cellx;
-	PACKED_CELL_OBJECT* ppco;
-	CELL_OBJECT* cop;
-	int lVar4;
-	int local_v0_4816;
+#define REFACTOR_LEVEL 10
+	
+	int cp_ai_l_targetDir;
+	int _centre;
+	long lVar3;
+	int tmp;
+	int vvvvar3;
+	int vvvar1;
+	int __roadPosition;
+	int posZ;
+	int _spd;
+	int* piVar4;
+	int cp_ai_l_avoid;
+	int cp_ai_l_roadPosition;
 	int* piVar5;
+	int cp_ai_l_width;
+	int vvvar2;
+	int cp_ai_l_width2;
+	int vvvvar1;
+	int cp_ai_l_width3;
+	int var1;
+	int posX;
+	int _posZ;
+	int cb;
+	int __left;
+	int _right;
+	int _posX;
+	int _left;
+	int ____i_plus_1;
+	int i_1;
+	int i_2;
+	int __i;
+	int __i1;
+	int __i2;
+	int ___i;
+	int _____i;
+	int ______i;
 	int uVar6;
-	int* piVar7;
-	MODEL* model;
-	int iVar8;
-	int iVar9;
-	int iVar10;
-	int iVar11;
-	int iVar12;
-	int cellz;
-	CAR_COSMETICS* car_cos;
-	int iVar13;
-	int iVar14;
-	int iVar15;
-	int iVar16;
-	COLLISION_PACKET* collide;
-	CAR_DATA* lcp;
-	int uVar17;
+	int __right;
+	int _smallest;
+	int intention_minus_2;
+	int _lbody;
+	int _wbody;
+	int _cell_x;
+	int _intention;
+	int ____i;
+	bool intention_lt_2;
+
+	MAP_DATA data;
 	VECTOR offset;
 	VECTOR pos;
 	VECTOR vel;
 	VECTOR size;
-	MAP_DATA data;
-	int tmpMap[41];
-	int left;
-	int i;
-	int right;
-	int centre;
-	int laneAvoid;
 	CELL_ITERATOR ci;
+	COLLISION_PACKET* collide;
+	_CAR_DATA* lcp;
 
-	iVar16 = 40;
+	PACKED_CELL_OBJECT* ppco;
+	CELL_OBJECT* cop;
+	CAR_COSMETICS* car_cos;
+	int lbody;
+	int wbody;
+	int theta;
+	MODEL* model;
+	int num_cb;
+	int xsize, zsize;
+	int cbr;
+	int yang;
+	int j;
+	int count;
+	int cell_x, cell_z;
+	int i;
+	int newTarget;
+	int sindex;
+	int laneAvoid;
+	int initial_cell_x, initial_cell_z;
+	int x1, z1;
+	int smallest;
+
+	for(i = 0; i < 41; i++)
+		roadAhead[i] = 20480;
+
+	for (i = 0; i < 41; i++)
+		localMap[i] = (cp->hd.speed + 100) * 10;
+	
 	laneAvoid = -1;
-	piVar7 = roadAhead + 0x28;
-
-	do {
-		*piVar7 = 0x5000;
-		iVar16 = iVar16 + -1;
-		piVar7 = piVar7 + -1;
-	} while (-1 < iVar16);
-
-	piVar7 = localMap;
-	iVar16 = 0x28;
-
-	do {
-		iVar16 = iVar16 + -1;
-		*piVar7 = ((cp->hd).speed + 100) * 10;
-		piVar7 = piVar7 + 1;
-	} while (-1 < iVar16);
-
-	cellx = (uint)(ushort)cp->ai.l.targetDir & 0xfff;
-	road_s = (int)rcossin_tbl[cellx * 2];
-	iVar16 = basePos->vx + units_across_halved;
-	iVar13 = iVar16 + -0x400;
-	road_c = (int)rcossin_tbl[cellx * 2 + 1];
+	
+	road_s = rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2];
+	road_c = rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2 + 1];
 
 	ClearCopUsage();
-	iVar16 = 0;
-	cellx = (iVar13 >> 0xb) - 5;
+	
+	initial_cell_x = ((basePos->vx + units_across_halved - 1024) / MAP_CELL_SIZE) - 5;
+	initial_cell_z = ((basePos->vz + units_down_halved - 1024) / MAP_CELL_SIZE) - 5;
 
-	do {
-		iVar13 = basePos->vz + units_down_halved;
-		iVar11 = iVar13 + -0x400;
+	//
+	// check all nearby collision cells
+	cell_x = initial_cell_x;
 
-		iVar13 = 0;
-		iVar16 = iVar16 + 1;
-		cellz = (iVar11 >> 0xb) - 5;
+	for (x1 = 0; x1 < 11; x1++, cell_x++)
+	{
+		cell_z = initial_cell_z;
 
-		do {
-			iVar11 = IsOnMap((cellx * 0x800 - units_across_halved) + 0x400, (cellz * 0x800 - units_down_halved) + 0x400, basePos, intention, cp);
-			iVar13 = iVar13 + 1;
+		for (z1 = 0; z1 < 11; z1++, cell_z++)
+		{
+			int cbrX, cbrZ;
 
-			if (iVar11 != 0)
+			if (!IsOnMap(
+				cell_x * MAP_CELL_SIZE - units_across_halved + MAP_REGION_SIZE * MAP_REGION_SIZE,
+				cell_z * MAP_CELL_SIZE - units_down_halved + MAP_REGION_SIZE * MAP_REGION_SIZE,
+				basePos, intention, cp))
+				continue;
+
+			cbrX = cell_x / MAP_REGION_SIZE;
+			cbrZ = cell_z / MAP_REGION_SIZE;
+
+			cbr = (cbrX & 1) + (cbrZ & 1) * 2;
+
+			if (RoadMapRegions[cbr] != cbrX + cbrZ * (cells_across / MAP_REGION_SIZE))
+				continue;
+
+			ppco = GetFirstPackedCop(cell_x, cell_z, &ci, 1);
+
+			while (cop = UnpackCellObject(ppco, &ci.nearCell), cop != NULL)
 			{
-				iVar11 = cells_across;
+				model = modelpointers[cop->type];
 
-				if (RoadMapRegions[(cellx >> 5 & 1) + (cellz >> 5 & 1) * 2] == (cellx >> 5) + (cellz >> 5) * (iVar11 >> 5))
+				if (model->num_vertices - 3 < 300 &&
+					model->num_point_normals < 300 &&
+					model->num_polys < 300 &&
+					model->collision_block != 0 &&
+					(model->flags2 & MODEL_FLAG_SMASHABLE) == 0)
 				{
-					ppco = GetFirstPackedCop(cellx, cellz, &ci, 1);
+					num_cb = *(int*)model->collision_block;
+					collide = (COLLISION_PACKET*)((int*)model->collision_block + 1);
 
-					while (cop = UnpackCellObject(ppco, &ci.nearCell), cop != NULL)
+					while (num_cb > 0)
 					{
-						model = modelpointers[cop->type];
-						if ((((model->num_vertices - 3 < 300) && (model->num_point_normals < 300)) &&
-							(model->num_polys < 300)) &&
-							((piVar7 = (int*)model->collision_block, piVar7 != NULL &&
-								((model->flags2 & MODEL_FLAG_SMASHABLE) == 0))))
+						yang = -cop->yang & 0x3f;
+
+						if (collide->type == 0)
 						{
-							iVar11 = *piVar7;
-							collide = (COLLISION_PACKET*)(piVar7 + 1);
-							if (0 < iVar11) {
-								do {
-									uVar6 = -cop->yang & 0x3f;
+							int cs, sn;
 
-									if (collide->type == 0)
-									{
-										iVar9 = collide->zsize << 0x10;
-										uVar17 = (cop->yang + collide->yang) * 0x100 & 0x3f00;
-										iVar15 = (int)*(short*)((int)rcossin_tbl + uVar17);
-										iVar14 = (iVar9 >> 0x10) - (iVar9 >> 0x1f) >> 1;
-										iVar9 = iVar14 * iVar15;
-										iVar12 = (int)*(short*)((int)rcossin_tbl + uVar17 + 2);
-										iVar10 = collide->xsize << 0x10;
-										iVar8 = (iVar10 >> 0x10) - (iVar10 >> 0x1f) >> 1;
-										iVar10 = iVar8 * iVar12;
-										iVar14 = iVar14 * iVar12;
-										iVar8 = iVar8 * iVar15;
+							theta = (cop->yang + collide->yang) * 64 & 0xfff;
 
-										if (iVar9 < 0)
-											iVar9 = -iVar9;
+							xsize = collide->xsize / 2;
+							zsize = collide->zsize / 2;
 
-										if (iVar10 < 0)
-											iVar10 = -iVar10;
+							cs = rcossin_tbl[theta * 2 + 1];
+							sn = rcossin_tbl[theta * 2];
 
-										size.vx = FIXEDH(iVar9 + iVar10);
-										size.vy = (long)collide->ysize;
-
-										if (iVar14 < 0)
-											iVar14 = -iVar14;
-
-										if (iVar8 < 0)
-											iVar8 = -iVar8;
-
-										size.vz = FIXEDH(iVar14 - iVar8);
-									}
+							size.vx = FIXEDH(ABS(zsize * sn) + ABS(xsize * cs));
+							size.vy = collide->ysize;
+							size.vz = FIXEDH(ABS(zsize * cs) - ABS(xsize * sn));
+						}
+						else
+						{
 #ifdef DEBUG
-									else
-									{
-										printError("\nERROR! unknown collision box type in leadai.c\n");
-									}
+							printError("\nERROR! unknown collision box type in leadai.c\n");
 #endif
-									
-									offset.vx = FIXEDH(collide->xpos * matrixtable[uVar6].m[0][0] + collide->zpos * matrixtable[uVar6].m[2][0]) + (cop->pos).vx;
-									offset.vz = FIXEDH(collide->xpos * matrixtable[uVar6].m[0][2] + collide->zpos * matrixtable[uVar6].m[2][2]) + (cop->pos).vz;
-									offset.vy = -(cop->pos).vy - (cop->pos).vy;
+						}
 
-									vel.vx = 0;
-									vel.vz = 0;
-									data.vel = NULL;
-									data.pos = &offset;
-									data.size = &size;
-									data.map = roadAhead;
-									data.local = localMap;
+						offset.vx = FIXEDH(collide->xpos * matrixtable[yang].m[0][0] + collide->zpos * matrixtable[yang].m[2][0]) + cop->pos.vx;
+						offset.vz = FIXEDH(collide->xpos * matrixtable[yang].m[0][2] + collide->zpos * matrixtable[yang].m[2][2]) + cop->pos.vz;
+						offset.vy = -cop->pos.vy + collide->ypos;
 
-									data.cp = cp;
-									data.base = basePos;
-									data.intention = intention;
+#if defined(_DEBUG) || defined(DEBUG_OPTIONS)
+						extern int gShowCollisionDebug;
+						if (gShowCollisionDebug == 4)
+						{
+							CDATA2D cd[1];
 
-									BlockToMap(&data);
+							cd[0].x.vx = offset.vx;// (cop->pos.vx + xxd);
+							cd[0].x.vz = offset.vz;// (cop->pos.vz + zzd);
+							cd[0].x.vy = cp->hd.where.t[1];
 
-									iVar11--;
-									collide++;
-								} while (iVar11 != 0);
+							cd[0].theta = theta; // (pCellObject->yang + collide->yang) * 64 & 0xfff;
+							cd[0].length[0] = collide->zsize / 2;
+							cd[0].length[1] = collide->xsize / 2;
+
+							// calc axes of box
+							int dtheta = cd[0].theta & 0xfff;
+
+							cd[0].axis[0].vx = rcossin_tbl[dtheta * 2];
+							cd[0].axis[0].vz = rcossin_tbl[dtheta * 2 + 1];
+
+							cd[0].axis[1].vz = -rcossin_tbl[dtheta * 2];
+							cd[0].axis[1].vx = rcossin_tbl[dtheta * 2 + 1];
+
+							extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
+							extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
+
+							CVECTOR ggcv = { 0, 250, 0 };
+							CVECTOR rrcv = { 250, 0, 0 };
+							CVECTOR yycv = { 250, 250, 0 };
+							CVECTOR bbcv = { 0, 0, 250 };
+
+							// show both box axes
+							{
+								VECTOR _zero = { 0 };
+								VECTOR b1p = cd[0].x;
+
+								// show position to position
+								//Debug_AddLine(b1p1, b2p1, yycv);
+
+								VECTOR b1ax[2] = { {0} , {0} };
+								b1ax[0].vx = FIXEDH(cd[0].axis[0].vx * cd[0].length[0]);
+								b1ax[0].vz = FIXEDH(cd[0].axis[0].vz * cd[0].length[0]);
+								b1ax[1].vx = FIXEDH(cd[0].axis[1].vx * cd[0].length[1]);
+								b1ax[1].vz = FIXEDH(cd[0].axis[1].vz * cd[0].length[1]);
+
+								// show axis of body 1
+								Debug_AddLineOfs(_zero, b1ax[0], b1p, rrcv);
+								Debug_AddLineOfs(_zero, b1ax[1], b1p, yycv);
+
+								// display 2D box 1
+								{
+									int h = b1ax[0].vy;
+									VECTOR box_points[4] = {
+										{b1ax[0].vx - b1ax[1].vx, h, b1ax[0].vz - b1ax[1].vz, 0},	// front left
+										{b1ax[0].vx + b1ax[1].vx, h, b1ax[0].vz + b1ax[1].vz, 0},	// front right
+
+										{-b1ax[0].vx + b1ax[1].vx, h, -b1ax[0].vz + b1ax[1].vz, 0},	// back right
+										{-b1ax[0].vx - b1ax[1].vx, h, -b1ax[0].vz - b1ax[1].vz, 0}	// back left
+									};
+
+									Debug_AddLineOfs(box_points[0], box_points[1], b1p, bbcv);
+									Debug_AddLineOfs(box_points[1], box_points[2], b1p, bbcv);
+									Debug_AddLineOfs(box_points[2], box_points[3], b1p, bbcv);
+									Debug_AddLineOfs(box_points[3], box_points[0], b1p, bbcv);
+								}
 							}
 						}
-						ppco = GetNextPackedCop(&ci);
+#endif
+
+						vel.vx = 0;
+						vel.vz = 0;
+						data.vel = NULL;
+						data.pos = &offset;
+						data.size = &size;
+						data.map = roadAhead;
+						data.local = localMap;
+
+						data.cp = cp;
+						data.base = basePos;
+						data.intention = intention;
+
+						BlockToMap(&data);
+
+						num_cb = num_cb + -1;
+						collide = collide + 1;
 					}
 				}
+				ppco = GetNextPackedCop(&ci);
 			}
-			cellz = cellz + 1;
-		} while (iVar13 < 0xb);
+		}
+	}
 
-		cellx = cellx + 1;
-
-	} while (iVar16 < 11);
-
+	//
+	// check nearby cars
+	//
 	lcp = &car_data[MAX_CARS - 1];
 
-	while (car_data < lcp)
+	while (lcp >= car_data)
 	{
-		if ((lcp != cp) && (lcp->controlType != CONTROL_TYPE_NONE))
+		if (lcp != cp && lcp->controlType != CONTROL_TYPE_NONE)
 		{
-			car_cos = (lcp->ap).carCos;
-			iVar16 = (uint)(ushort)(car_cos->colBox).vz << 0x10;
-			iVar16 = (int)(lcp->hd).where.m[2][0] * ((iVar16 >> 0x10) - (iVar16 >> 0x1f) >> 1);
-			iVar13 = (uint)(ushort)(car_cos->colBox).vx << 0x10;
-			iVar13 = (int)(lcp->hd).where.m[0][0] * ((iVar13 >> 0x10) - (iVar13 >> 0x1f) >> 1);
+			car_cos = lcp->ap.carCos;
 
-			if (iVar16 < 0)
-				iVar16 = -iVar16;
+			wbody = car_cos->colBox.vx / 2;
+			lbody = car_cos->colBox.vz / 2;
 
-			if (iVar13 < 0)
-				iVar13 = -iVar13;
+			size.vx = FIXEDH(ABS(lcp->hd.where.m[2][0] * lbody) + ABS(lcp->hd.where.m[0][0] * wbody)) + car_cos->colBox.vy;
+			size.vz = FIXEDH(ABS(lcp->hd.where.m[2][2] * lbody) + ABS(lcp->hd.where.m[2][0] * wbody)) + car_cos->colBox.vy;
+			size.vy = car_cos->colBox.vy;
 
-			size.vx = FIXEDH(iVar16 + iVar13) + (int)(car_cos->colBox).vy;
-			size.vy = (long)(car_cos->colBox).vy;
-			iVar16 = (uint)(ushort)(car_cos->colBox).vz << 0x10;
-			iVar16 = (int)(lcp->hd).where.m[2][2] * ((iVar16 >> 0x10) - (iVar16 >> 0x1f) >> 1);
-			iVar13 = (uint)(ushort)(car_cos->colBox).vx << 0x10;
-			iVar13 = (int)(lcp->hd).where.m[0][2] * ((iVar13 >> 0x10) - (iVar13 >> 0x1f) >> 1);
-			iVar11 = (cp->st).n.linearVelocity[0];
-			pos.vx = (lcp->hd).where.t[0];
-			pos.vy = (lcp->hd).where.t[1];
-			pos.vz = (lcp->hd).where.t[2];
+			pos.vx = lcp->hd.where.t[0];
+			pos.vy = lcp->hd.where.t[1];
+			pos.vz = lcp->hd.where.t[2];
 
-			if (iVar16 < 0)
-				iVar16 = -iVar16;
+			vel.vx = cp->st.n.linearVelocity[0] / 1024;
+			vel.vz = cp->st.n.linearVelocity[2] / 1024;
 
-			if (iVar13 < 0)
-				iVar13 = -iVar13;
-
-			size.vz = FIXEDH(iVar16 + iVar13) + (int)(car_cos->colBox).vy;
-
-			iVar16 = (cp->st).n.linearVelocity[2];
-			vel.vx = iVar11 >> 10;
-
-			vel.vz = iVar16 >> 10;
 			data.vel = &vel;
 			data.pos = &pos;
 			data.size = &size;
@@ -2353,220 +1665,350 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 
 			BlockToMap(&data);
 		}
+
 		lcp--;
 	}
 
-	if (cp->ai.l.dstate != 4 && 
-		(localMap[20] < (cp->hd.speed + 100) * 8 || 
-		 localMap[21] < (cp->hd.speed + 100) * 8 || 
-		 localMap[22] < (cp->hd.speed + 100) * 8))
+#if (REFACTOR_LEVEL > 0)
+	// update panic
+	if (cp->ai.l.dstate != 4)
 	{
-		iVar16 = 1;
-		piVar7 = localMap + 23;
-		piVar5 = localMap + 19;
+		int left, right;
+		int spd;
+		spd = (cp->hd.speed + 100) * 8;
+
+		if (localMap[20] < spd ||
+			localMap[21] < spd ||
+			localMap[22] < spd)
+		{
+			for (i = 1; i < 21; i++)
+			{
+				spd = (cp->hd.speed + 100) * 24;
+
+				left = localMap[20 - i] + localMap[21 - i] + localMap[22 - i];
+				right = localMap[20 + i] + localMap[21 + i] + localMap[22 + i];
+
+				if (left < right && spd < right * 2)
+				{
+					if (i > 13)
+						cp->ai.l.panicCount = 2;
+					else
+						cp->ai.l.panicCount = 1;
+
+					return;
+				}
+
+				if (left > right && spd < left * 2)
+					break;
+
+				if (i == 20)
+				{
+					if (left > right)
+						cp->ai.l.panicCount = -2;
+					else
+						cp->ai.l.panicCount = 2;
+				}
+			}
+
+			if (i > 13)
+				cp->ai.l.panicCount = -2;
+			else
+				cp->ai.l.panicCount = -1;
+
+			return;
+		}
+	}
+#else
+	if (cp->ai.l.dstate != 4 && ((_spd = (cp->hd.speed + 100) * 8, localMap[20] < _spd || localMap[21] < _spd) || localMap[22] < _spd))
+	{
+		__i = 1;
+
+		piVar5 = localMap + 23;
+		piVar4 = localMap + 19;
 
 		while (true)
 		{
-			iVar11 = *piVar5 + localMap[21 - iVar16] + localMap[22 - iVar16];
-			iVar13 = piVar7[-2] + piVar7[-1] + *piVar7;
-
-			if (iVar11 < iVar13 && (cp->hd.speed + 100) * 24 < iVar13 * 2)
+			_left = *piVar4 + localMap[0x15 - __i] + localMap[0x16 - __i];
+			_right = piVar5[-2] + piVar5[-1] + *piVar5;
+			if ((_left < _right) && ((cp->hd.speed + 100) * 0x18 < _right * 2))
 			{
-				if (iVar16 > 13)
+				if (0xd < __i)
 				{
 					cp->ai.l.panicCount = 2;
 					return;
 				}
-
 				cp->ai.l.panicCount = 1;
 				return;
 			}
-
-			if (iVar11 > iVar13 && (cp->hd.speed + 100) * 24 < iVar11 * 2)
-				break;
-
-			if (iVar16 == 20)
+			if ((_left > _right) && ((cp->hd.speed + 100) * 0x18 < _left * 2)) break;
+			if (__i == 0x14)
 			{
-				if (iVar11 > iVar13)
-					cp->ai.l.panicCount = -2;
-				else
+				if (_left <= _right)
+				{
 					cp->ai.l.panicCount = 2;
+				}
+				else
+				{
+					cp->ai.l.panicCount = -2;
+				}
 			}
-
-			piVar7 = piVar7 + 1;
-			iVar16 = iVar16 + 1;
-			piVar5 = piVar5 + -1;
-
-			if (iVar16 > 20)
+			piVar5 = piVar5 + 1;
+			__i = __i + 1;
+			piVar4 = piVar4 + -1;
+			if (0x14 < __i)
+			{
 				return;
+			}
 		}
-
-		if (iVar16 > 13)
+		if (0xd < __i)
+		{
 			cp->ai.l.panicCount = -2;
-		else
-			cp->ai.l.panicCount = -1;
-	
+			return;
+		}
+		cp->ai.l.panicCount = -1;
 		return;
 	}
+#endif
 
 	cp->ai.l.panicCount = 0;
 
+#if (REFACTOR_LEVEL > 2)
 	if (intention < 2)
 	{
-		
-		piVar7 = roadAhead + 24;
-		iVar16 = roadAhead[24];
+		smallest = roadAhead[24];
+		for (i = 24; i < 41; i++)
+		{
+			if (roadAhead[i] < smallest)
+				smallest = roadAhead[i];
 
-		i = 24;
-		do {
-			if (*piVar7 < iVar16)
-				iVar16 = *piVar7;
+			if (smallest < (cp->hd.speed + 100) * SquareRoot0(i - 21))
+				roadAhead[i] = 0;
+		}
 
-			lVar4 = SquareRoot0(i - 21);
+		smallest = roadAhead[18];
+		for (i = 18; i >= 0; i--)
+		{
+			if (roadAhead[i] < smallest)
+				smallest = roadAhead[i];
 
-			if (iVar16 < (cp->hd.speed + 100) * lVar4)
-				*piVar7 = 0;
-
-			i++;
-			piVar7++;
-		} while (i < 41);
-
-		
-		piVar7 = roadAhead + 18;
-		iVar16 = roadAhead[18];
-
-		i = 18;
-		do {
-			if (*piVar7 < iVar16)
-				iVar16 = *piVar7;
-
-			lVar4 = SquareRoot0(21 - i);
-
-			if (iVar16 < (cp->hd.speed + 100) * lVar4)
-				*piVar7 = 0;
-
-			i--;
-			piVar7--;
-		} while (i > -1);
+			if (smallest < (cp->hd.speed + 100) * SquareRoot0(21 - i))
+				roadAhead[i] = 0;
+		}
 	}
+#else
+	intention_lt_2 = (uint)intention < 2;
+	intention_minus_2 = intention - 2;
 
-	if (intention - 2U < 2)
+	if (intention_lt_2)
 	{
-		piVar5 = roadAhead;
-		iVar16 = 40;
-		piVar7 = tmpMap;
-
-		do {
-			iVar13 = *piVar5;
-			piVar5 = piVar5 + 1;
-			iVar16 = iVar16 + -1;
-			*piVar7 = iVar13;
-			piVar7 = piVar7 + 1;
-		} while (-1 < iVar16);
-
-		iVar16 = 0;
-
-		do {
-			iVar13 = 0;
-			roadAhead[iVar16] = 0;
-			cellz = iVar16 - 3;
-			iVar11 = iVar16 + 1;
-
-			if (cellz < iVar16 + 4)
+		__i1 = 0x18;
+		piVar5 = roadAhead + 0x18;
+		smallest = roadAhead[24];
+		do
+		{
+			if (*piVar5 < smallest)
 			{
-				piVar7 = tmpMap + cellz;
-				do {
-					if (cellz < 41)
-					{
-						roadAhead[iVar16] = roadAhead[iVar16] + *piVar7;
-					}
-					piVar7++;
-					cellz++;
-					iVar13++;
-				} while (cellz < iVar16 + 4);
+				smallest = *piVar5;
+			}
+			lVar3 = SquareRoot0(__i1 + -0x15);
+			if (smallest < (cp->hd.speed + 100) * lVar3)
+			{
+				*piVar5 = 0;
+			}
+			__i1 = __i1 + 1;
+			piVar5 = piVar5 + 1;
+		} while (__i1 < 0x29);
+		__i2 = 0x12;
+		piVar5 = roadAhead + 0x12;
+		_smallest = roadAhead[18];
+		do
+		{
+			if (*piVar5 < _smallest)
+			{
+				_smallest = *piVar5;
+			}
+			lVar3 = SquareRoot0(0x15 - __i2);
+			if (_smallest < (cp->hd.speed + 100) * lVar3)
+			{
+				*piVar5 = 0;
+			}
+			__i2 = __i2 + -1;
+			piVar5 = piVar5 + -1;
+		} while (-1 < __i2);
+	}
+#endif
+
+#if (REFACTOR_LEVEL > 3)
+	if (intention - 2 < 2)
+	{
+		int tmpMap[41];
+
+		for (i = 0; i < 41; i++)
+			tmpMap[i] = roadAhead[i];
+
+		for (i = 0; i < 41; i++)
+		{
+			count = 0;
+			roadAhead[i] = 0;
+
+			for (j = i - 3; j < i + 4; j++)
+			{
+				if (j < 41)
+					roadAhead[i] += tmpMap[j];
+
+				count++;
 			}
 
-			roadAhead[iVar16] = roadAhead[iVar16] / iVar13;
-			iVar16 = iVar11;
-		} while (iVar11 < 41);
+			roadAhead[i] /= count;
+		}
 	}
+#else
+	if (intention_minus_2 < 2)
+	{
+		int tmpMap[41];
 
+		piVar4 = roadAhead;
+		___i = 0x28;
+		piVar5 = tmpMap;
+		do
+		{
+			tmp = *piVar4;
+			piVar4 = piVar4 + 1;
+			___i = ___i + -1;
+			*piVar5 = tmp;
+			piVar5 = piVar5 + 1;
+		} while (-1 < ___i);
+		____i = 0;
+		do
+		{
+			count = 0;
+			roadAhead[____i] = 0;
+			j = ____i - 3;
+			____i_plus_1 = ____i + 1;
+			if ((int)j < ____i + 4)
+			{
+				piVar5 = tmpMap + j;
+				do
+				{
+					if (j < 0x29)
+					{
+						roadAhead[____i] = roadAhead[____i] + *piVar5;
+					}
+					piVar5 = piVar5 + 1;
+					j = j + 1;
+					count = count + 1;
+				} while ((int)j < ____i + 4);
+			}
+			if (count == 0)
+			{
+				trap(7);
+			}
+			roadAhead[____i] = roadAhead[____i] / count;
+			____i = ____i_plus_1;
+		} while (____i_plus_1 < 0x29);
+	}
+#endif
+
+#if (REFACTOR_LEVEL > 4)
 	if (intention == 4)
 	{
-		iVar11 = 0;
-		iVar13 = 63;
-		iVar16 = -21;
-		piVar7 = roadAhead;
-		do {
-			iVar9 = *piVar7 * 21;
-			*piVar7 = iVar9;
+		int left, right;
 
-			if (iVar11 - 21 < 0)
-				*piVar7 = iVar9 / iVar13;
+		left = 42 + 21;
+		right = -21;
+
+		for (i = 0; i < 41; i++)
+		{
+			if (i - 21 < 0)
+				roadAhead[i] = (roadAhead[i] * 21) / left;
 			else
-				*piVar7 = iVar9 / iVar16;
+				roadAhead[i] = (roadAhead[i] * 21) / right;
 
-			iVar13 -= 2;
-			iVar16 += 2;
-			iVar11++;
-			piVar7++;
-		} while (iVar11 < 41);
+			left -= 2;
+			right += 2;
+		}
 	}
+#else
+	if (intention == 4)
+	{
+		_____i = 0;
+		__left = 0x3f;
+		__right = -0x15;
+		piVar5 = roadAhead;
+		do
+		{
+			_centre = *piVar5 * 0x15;
+			*piVar5 = _centre;
+			if (_____i + -0x15 < 0)
+			{
+				if (__left == 0)
+				{
+					trap(7);
+				}
+				*piVar5 = _centre / __left;
+			}
+			else
+			{
+				if (__right == 0)
+				{
+					trap(7);
+				}
+				*piVar5 = _centre / __right;
+			}
+			__left = __left + -2;
+			__right = __right + 2;
+			_____i = _____i + 1;
+			piVar5 = piVar5 + 1;
+		} while (_____i < 0x29);
+	}
+#endif
 
+#if (REFACTOR_LEVEL > 5)
+	// update boringness
 	if (intention < 2 && cp->ai.l.nextTurn < 10)
 	{
-		iVar16 = cp->ai.l.boringness;
+		int width = cp->ai.l.width;
+		int bounds = ABS(cp->ai.l.roadPosition - (width - cp->ai.l.d));
 
-		if (iVar16 < 31)
+		if (cp->ai.l.boringness < 31)
 		{
-			iVar9 = cp->ai.l.width;
-			iVar11 = cp->ai.l.roadPosition;
-			iVar10 = iVar9 - cp->ai.l.d;
-
-			if (ABS(iVar11 - iVar10) < iVar9 / 3 && iVar16 < 31)
-				cp->ai.l.boringness = iVar16 + 1;
-
+			if (bounds < width / 3)
+			{
+				if (cp->ai.l.boringness < 31)
+					cp->ai.l.boringness++;
+			}
 		}
 		else
 		{
-			iVar11 = cp->ai.l.width;
-			iVar13 = cp->ai.l.roadPosition;
-			iVar9 = iVar11 - cp->ai.l.d;
+			int left, right;
+			int centre;
 
-			if (ABS(iVar13 - iVar9) < iVar11 / 3)
+			if (bounds < width / 3)
 			{
 				cp->ai.l.avoid = cp->ai.l.width - cp->ai.l.d;
-				cp->ai.l.boringness = cp->ai.l.boringness + 1;
+				cp->ai.l.boringness++;
 			}
 
-			iVar11 = 0;
-			piVar7 = roadAhead;
 			laneAvoid = (cp->ai.l.avoid + cp->ai.l.d - cp->ai.l.width) / 100 + 21;
-			
-			iVar13 = laneAvoid * 100;
-			iVar16 = laneAvoid * -100;
 
-			do {
-				iVar9 = iVar16;
+			left = laneAvoid * 100;
+			right = laneAvoid * -100;
 
-				if (laneAvoid - iVar11 > -1)
-					iVar9 = iVar13;
+			for (i = 0; i < 41; i++)
+			{
+				if (laneAvoid - i > -1)
+					centre = left;
+				else
+					centre = right;
 
-				if (iVar9 < cp->ai.l.width / 3)
-					*piVar7 = *piVar7 + cp->ai.l.boringness * -100;
+				if (centre < cp->ai.l.width / 3)
+					roadAhead[i] -= cp->ai.l.boringness * 100;
 
-				piVar7++;
-				iVar16 += 100;
-				iVar11++;
-				iVar13 -= 100;
-			} while (iVar11 < 41);
+				right += 100;
+				left -= 100;
+			}
 
-			iVar9 = cp->ai.l.width;
-			iVar16 = iVar9 / 3;
-			iVar11 = cp->ai.l.avoid;
-			iVar9 = iVar9 - cp->ai.l.d;
-			
-			if (ABS(iVar9 - iVar11) > iVar16)
+			if (ABS(cp->ai.l.avoid - width - cp->ai.l.d) > width / 3)
 			{
 				cp->ai.l.boringness = 0;
 			}
@@ -2576,263 +2018,514 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	{
 		cp->ai.l.boringness = 0;
 	}
+#else
+	if (intention_lt_2 && cp->ai.l.nextTurn < 10)
+	{
+		__right = cp->ai.l.boringness;
+		if (__right < 0x1f)
+		{
+			cp_ai_l_width3 = cp->ai.l.width;
+			cp_ai_l_roadPosition = cp->ai.l.roadPosition;
+			var1 = cp_ai_l_width3 - cp->ai.l.d;
+			vvvar1 = cp_ai_l_roadPosition - var1;
+			if (vvvar1 < 0)
+			{
+				vvvar1 = var1 - cp_ai_l_roadPosition;
+			}
+			if ((vvvar1 < cp_ai_l_width3 / 3) && (__right < 0x1f))
+			{
+				cp->ai.l.boringness = __right + 1;
+			}
+		}
+		else
+		{
+			cp_ai_l_width = cp->ai.l.width;
+			cp_ai_l_roadPosition = cp->ai.l.roadPosition;
+			vvvar2 = cp_ai_l_width - cp->ai.l.d;
+			vvvvar3 = cp_ai_l_roadPosition - vvvar2;
+			if (vvvvar3 < 0)
+			{
+				vvvvar3 = vvvar2 - cp_ai_l_roadPosition;
+			}
+			if (vvvvar3 < cp_ai_l_width / 3)
+			{
+				cp->ai.l.avoid = cp->ai.l.width - cp->ai.l.d;
+				cp->ai.l.boringness = cp->ai.l.boringness + 1;
+			}
+			______i = 0;
+			piVar5 = roadAhead;
+			laneAvoid = ((cp->ai.l.avoid + cp->ai.l.d) - cp->ai.l.width) / 100 + 0x15;
+			__left = laneAvoid * 100;
+			__right = laneAvoid * -100;
+			do
+			{
+				_centre = __right;
+				if (-1 < laneAvoid - ______i)
+				{
+					_centre = __left;
+				}
+				if (_centre < cp->ai.l.width / 3)
+				{
+					*piVar5 = *piVar5 + cp->ai.l.boringness * -100;
+				}
+				piVar5 = piVar5 + 1;
+				__right = __right + 100;
+				______i = ______i + 1;
+				__left = __left + -100;
+			} while (______i < 0x29);
+			cp_ai_l_width2 = cp->ai.l.width;
+			cp_ai_l_avoid = cp->ai.l.avoid;
+			vvvvar1 = cp_ai_l_width2 - cp->ai.l.d;
+			if (vvvvar1 - cp_ai_l_avoid < 0)
+			{
+				if (cp_ai_l_width2 / 3 < cp_ai_l_avoid - vvvvar1)
+				{
+					cp->ai.l.boringness = 0;
+				}
+			}
+			else
+			{
+				if (cp_ai_l_width2 / 3 < vvvvar1 - cp_ai_l_avoid)
+				{
+					goto LAB_LEAD__000ea89c;
+				}
+			}
+		}
+	}
+	else
+	{
+	LAB_LEAD__000ea89c:
+		cp->ai.l.boringness = 0;
+	}
+#endif
 
+#if (REFACTOR_LEVEL > 6)
+	// REFACTORED, MAY BE BUGGED
+
+	// turning intention
 	if (intention - 4U > 1)
 	{
+		int penalty;
+		int centre;
+		int left, right;
+
+		int width = cp->ai.l.width;
+
 		centre = cp->ai.l.d;
-		right = cp->ai.l.width;
-		
-		left = centre - right;
-		right = right + centre;
 
 		i = 0;
+
+		left = centre - width;
+		right = width + centre;
+
 		PosToIndex(&left, &i, intention, cp);
 		PosToIndex(&right, &i, intention, cp);
 		PosToIndex(&centre, &i, intention, cp);
 
 		if (left < centre && centre < right)
 		{
-			if (intention - 2U > 1 && (cp->ai.l.nextTurn == 15 || cp->ai.l.nextTurn == 17))
+			if ((cp->ai.l.nextTurn == 15 || cp->ai.l.nextTurn == 17) && intention - 2 > 1)
 			{
 				cp->ai.l.nextTurn -= 16;
-				
-				i = left;
-				while (i <= right)
+
+				for (i = left; i <= right; i++)
 				{
-					if ((i - centre) * cp->ai.l.nextTurn > 0)
-						iVar16 = -2000;
+					if (cp->ai.l.nextTurn * (i - centre) > 0)
+						penalty = -2000;
 					else
-						iVar16 = 2000;
+						penalty = 2000;
 
 					if (i < 41)
 					{
-						iVar13 = roadAhead[i];
-
-						if (iVar13 > 0)
-							roadAhead[i] = iVar13 + iVar16;
+						if (roadAhead[i] > 0)
+							roadAhead[i] += penalty;
 					}
-					
-					i++;
 				}
 			}
-			
-			// [A] bug fix
-			if (left < 0)
-				left = 0;
 
-			if (right < 0)
-				right = 0;
-
-			iVar16 = 0;
-			while (left < 41)
+			penalty = 0;
+			while ((uint)left < 41)
 			{
-				roadAhead[left] = roadAhead[left] - iVar16;
+				roadAhead[left] -= penalty;
 
 				if (roadAhead[left] < 0)
 					roadAhead[left] = 0;
 
-				left++;
-				iVar16 += 500;
+				left--;
+				penalty += 500;
 			}
 
-			iVar16 = 0;
-			while (right < 41)
+			penalty = 0;
+			while ((uint)right < 41)
 			{
-				roadAhead[right] = roadAhead[right] - iVar16;
+				roadAhead[right] -= penalty;
 
 				if (roadAhead[right] < 0)
 					roadAhead[right] = 0;
 
 				right++;
-				iVar16 += 500;
+				penalty += 500;
 			}
 		}
 	}
-
-	if (intention - 2U < 3)
+#else
+	if (intention - 4U > 1)
 	{
-	LAB_LEAD__000ead84:
-		cellz = 21;
-		uVar17 = 21;
-		uVar6 = 0;
-		iVar13 = 84;
-		iVar16 = roadAhead[21];
-		
-		do {
-			if (iVar16 < *(int*)((int)roadAhead + iVar13))
+		int centre, left, right;
+		centre = cp->ai.l.d;
+		__right = cp->ai.l.width;
+		i = 0;
+		left = centre - __right;
+		right = __right + centre;
+		PosToIndex(&left, &i, intention, (_CAR_DATA*)cp);
+		PosToIndex(&right, &i, intention, (_CAR_DATA*)cp);
+		PosToIndex(&centre, &i, intention, (_CAR_DATA*)cp);
+
+		if (left < centre && centre < right)
+		{
+			__right = cp->ai.l.nextTurn;
+			if (((__right == 0xf) || (__right == 0x11)) && (1 < intention - 2))
 			{
-				iVar16 = *(int*)((int)roadAhead + iVar13);
-				cellz = uVar17;
+				cp->ai.l.nextTurn = __right + -0x10;
+				i = left;
+				while (i <= right)
+				{
+					__right = 2000;
+					if ((i - centre) * cp->ai.l.nextTurn > 0)
+					{
+						__right = -2000;
+					}
+
+					if (i < 0x29)
+					{
+						__left = roadAhead[i];
+						if (__left > 0)
+							roadAhead[i] = __left + __right;
+					}
+					i = i + 1;
+				}
 			}
 
-			if (uVar6 < 0)
-				uVar6 = -uVar6;
+			__right = 0;
+			while ((uint)left < 0x29)
+			{
+				roadAhead[left] = roadAhead[left] - __right;
 
-			uVar6 = uVar6 + 1;
-			
-			if ((uVar6 & 1) == 0)
-				uVar6 = -uVar6;
+				if (roadAhead[left] < 0)
+					roadAhead[left] = 0;
 
-			uVar17 = uVar17 + uVar6;
-			iVar13 = uVar17 * 4;
-		} while (uVar17 < 41);
+				left = left - 1;
+				__right = __right + 500;
+			}
 
-		if (intention - 2U < 2)
+			__right = 0;
+			while ((uint)right < 0x29)
+			{
+				roadAhead[right] = roadAhead[right] - __right;
+
+				if (roadAhead[right] < 0)
+					roadAhead[right] = 0;
+
+				right = right + 1;
+				__right = __right + 500;
+			}
+		}
+	}
+#endif
+
+#if (REFACTOR_LEVEL > 7)
+	// REFACTORED: BAD
+	if (intention - 2 < 3)
+	{
+	LAB_LEAD__000ead84:
+		int biggest;
+		int step;
+
+		newTarget = 21;
+
+		biggest = roadAhead[21];
+
+		step = 0;
+
+		i = 21;
+		do
 		{
-			if (cp->hd.speed > 100)
-				cp->ai.l.roadForward = LeadValues.hDist + (cp->hd.speed - 100) * LeadValues.hDistMul;
+			if (roadAhead[i] > biggest)
+			{
+				biggest = roadAhead[i];
+				newTarget = i;
+			}
+
+			if (step < 0)
+				step = -step;
+
+			step++;
+
+			if ((step & 1) == 0)
+				step = -step;
+
+			i += step;
+		} while (i < 41);
+
+		if (intention - 2 < 2)
+		{
+			int dist;
+
+			if (cp->hd.speed <= 100)
+				dist = LeadValues.tDist + cp->hd.speed * LeadValues.tDistMul;
 			else
-				cp->ai.l.roadForward = LeadValues.tDist + cp->hd.speed * LeadValues.tDistMul;
-			
-			if (cp->ai.l.roadForward > iVar16)
+				dist = LeadValues.hDist + (cp->hd.speed - 100) * LeadValues.hDistMul;
+
+			if (dist > biggest)
 			{
 				if (cp->ai.l.roadForward > -1)
 					cp->ai.l.roadForward = -1;
 				else
-					cp->ai.l.roadForward -= 1;
-				
+					cp->ai.l.roadForward--;
+
 				if (intention == 3)
 					cp->ai.l.roadPosition = -20000;
 				else
 					cp->ai.l.roadPosition = 20000;
-				
+
 				if (cp->ai.l.roadForward > -21)
 					return;
 
-				SelectExit(cp, GET_JUNCTION(cp->ai.l.nextJunction));
+				SelectExit(cp, &Driver2JunctionsPtr[cp->ai.l.nextJunction - 8192]);
+
 				return;
 			}
 		}
 	}
 	else
 	{
-		iVar16 = cp->ai.l.boringness;
-		cellz = cp->ai.l.lastTarget;
+		int biggest;
+		int bound;
 
-		if (cp->ai.l.boringness < 31)
+		newTarget = cp->ai.l.lastTarget;
+
+		bound = ABS((newTarget - laneAvoid) * 100);
+
+		int lim = ((bound + 100) / 50) * 1024;
+
+		if (cp->ai.l.boringness < 31 || bound < cp->ai.l.width / 3 ||
+			lim >= roadAhead[MAX(0, MIN(40, newTarget - 1))] &&
+			lim >= roadAhead[MAX(0, MIN(40, newTarget))] &&
+			lim >= roadAhead[MAX(0, MIN(40, newTarget + 1))])
 		{
-			int spdThresh;
+			int lim = ((cp->ai.l.boringness + 100) / 50) * 1024;
 
-			spdThresh = ((cp->hd.speed + 100) / 50) * 1024;
-
-			if(	roadAhead[MAX(0, MIN(40, cellz - 1))] <= spdThresh &&
-				roadAhead[MAX(0, MIN(40, cellz))] <= spdThresh &&
-				roadAhead[MAX(0, MIN(40, cellz + 1))] <= spdThresh)
+			if (lim >= roadAhead[MAX(0, MIN(40, newTarget - 1))] &&
+				lim >= roadAhead[MAX(0, MIN(40, newTarget))] &&
+				lim >= roadAhead[MAX(0, MIN(40, newTarget + 1))])
 			{
 				goto LAB_LEAD__000ead84;
 			}
 		}
-		else
+
+		biggest = roadAhead[newTarget];
+		for (i = newTarget - 2; i < newTarget + 2; i++)
 		{
-			if (ABS((cellz - laneAvoid) * 100) < cp->ai.l.width / 3)
+			if (i < 41 && roadAhead[i] > biggest)
 			{
-				goto LAB_LEAD__000ead84;
+				biggest = roadAhead[i];
+				newTarget = i;
 			}
-
-			int spdThresh;
-
-			spdThresh = ((cp->hd.speed + 100) / 50) * 1024;
-
-			if(	roadAhead[MAX(0, MIN(40, cellz - 1))] <= spdThresh &&
-				roadAhead[MAX(0, MIN(40, cellz))] <= spdThresh &&
-				roadAhead[MAX(0, MIN(40, cellz + 1))] <= spdThresh)
-			{
-				goto LAB_LEAD__000ead84;
-			}
-		}
-		
-		iVar16 = roadAhead[cellz];
-		uVar6 = cellz - 2;
-		iVar13 = cellz + 2;
-
-		if (uVar6 < iVar13)
-		{
-			piVar7 = roadAhead + uVar6;
-			do {
-				if ((uVar6 < 41) && (iVar16 < *piVar7))
-				{
-					iVar16 = *piVar7;
-					cellz = uVar6;
-				}
-
-				uVar6 = uVar6 + 1;
-				piVar7 = piVar7 + 1;
-			} while (uVar6 < iVar13);
 		}
 	}
-
-	if (intention < 2 || intention == 4)
+#else
+	if (intention - 2 < 3)
 	{
-		cp->ai.l.roadForward = 5120;
+	LAB_LEAD__000ead84:
+		cell_x = 0x15;
+		uVar6 = 0x15;
+		cell_z = 0;
+		__left = 0x54;
+		__right = roadAhead[21];
 
-		if (cellz > 21)
-			iVar16 = -1;
-		else
-			iVar16 = 1;
-
-		if (cellz == 21)
+		do
 		{
-			cp->ai.l.lastTarget = cellz;
-		}
-		else
+			if (__right < *(int*)((int)roadAhead + __left))
+			{
+				__right = *(int*)((int)roadAhead + __left);
+				cell_x = uVar6;
+			}
+
+			if (cell_z < 0)
+				cell_z = -cell_z;
+
+			cell_z = cell_z + 1;
+
+			if ((cell_z & 1) == 0)
+				cell_z = -cell_z;
+
+			uVar6 = uVar6 + cell_z;
+			__left = uVar6 * 4;
+		} while (uVar6 < 0x29);
+
+		if (intention - 2 < 2)
 		{
-			piVar7 = &roadAhead[cellz];
-			uVar6 = cellz;
-
-			do {
-				if (cp->ai.l.roadForward > *piVar7)
-					cp->ai.l.roadForward = *piVar7;
-
-				uVar6 = uVar6 + iVar16;
-				piVar7 = piVar7 + iVar16;
-			} while (uVar6 != 21);
-
-			cp->ai.l.lastTarget = cellz;
-		}
-	}
-	else if (intention == 5)
-	{
-		if (cp->ai.l.recoverTime == 0 ||
-			cp->ai.l.recoverTime > 20)
-		{
-			cp->ai.l.recoverTime = 0;
-	
-			piVar7 = &roadAhead[20];
-			iVar16 = roadAhead[19];
-
-			i = 0;
-			do {
-				if (*piVar7 < iVar16)
-					iVar16 = *piVar7;
-				
-				piVar7++;
-				i++;
-			} while (i < 4);
-
-			if (roadAhead[38] > iVar16)
-				cp->ai.l.roadForward = -1;
+			__left = cp->hd.speed;
+			if (__left < 0x65)
+			{
+				__left = LeadValues.tDist + __left * LeadValues.tDistMul;
+			}
 			else
-				cp->ai.l.roadForward = 1;
-		}
-
-		if (roadAhead[21] > 1500 && 
-			roadAhead[22] > 1500 && 
-			roadAhead[20] > 1500 && 
-			cp->hd.speed > 40)
-		{
-			cp->ai.l.roadForward = 0;
+			{
+				__left = LeadValues.hDist + (__left + -100) * LeadValues.hDistMul;
+			}
+			if (__right < __left)
+			{
+				__right = cp->ai.l.roadForward;
+				__left = __right + -1;
+				if (-1 < __right)
+				{
+					__left = -1;
+				}
+				cp->ai.l.roadForward = __left;
+				__roadPosition = 20000;
+				if (intention == 3)
+				{
+					__roadPosition = -20000;
+				}
+				cp->ai.l.roadPosition = __roadPosition;
+				if (-0x15 < cp->ai.l.roadForward)
+				{
+					return;
+				}
+				SelectExit(cp, Driver2JunctionsPtr + cp->ai.l.nextJunction + -0x2000);
+				return;
+			}
 		}
 	}
 	else
 	{
-		cp->ai.l.roadForward = 0;
+		__right = cp->ai.l.boringness;
+		cell_x = cp->ai.l.lastTarget;
+		if (__right < 0x1f)
+		{
+		LAB_LEAD__000eac54:
+
+			int spdThresh = ((__right + 100) / 0x32) * 0x400;
+
+			if (roadAhead[MAX(0, MIN(40, cell_x - 1))] <= spdThresh &&
+				roadAhead[MAX(0, MIN(40, cell_x))] <= spdThresh &&
+				roadAhead[MAX(0, MIN(40, cell_x + 1))] <= spdThresh)
+			{
+				goto LAB_LEAD__000ead84;
+			}
+		}
+		else
+		{
+			__left = (cell_x - laneAvoid) * 100;
+			if (__left < 0)
+			{
+				__left = (cell_x - laneAvoid) * -100;
+			}
+
+			if (__left < cp->ai.l.width / 3)
+			{
+				goto LAB_LEAD__000ead84;
+			}
+
+			int spdThresh = ((__left + 100) / 0x32) * 0x400;
+
+			if (roadAhead[MAX(0, MIN(40, cell_x - 1))] <= spdThresh &&
+				roadAhead[MAX(0, MIN(40, cell_x))] <= spdThresh &&
+				roadAhead[MAX(0, MIN(40, cell_x + 1))] <= spdThresh)
+			{
+				goto LAB_LEAD__000ead84;
+			}
+
+			if (__right < 0x1f)
+			{
+				goto LAB_LEAD__000eac54;
+			}
+		}
+		__right = roadAhead[cell_x];
+		cell_z = cell_x - 2;
+		__left = cell_x + 2;
+		if (cell_z < __left)
+		{
+			piVar5 = roadAhead + cell_z;
+			do
+			{
+				if ((cell_z < 0x29) && (__right < *piVar5))
+				{
+					__right = *piVar5;
+					cell_x = cell_z;
+				}
+				cell_z = cell_z + 1;
+				piVar5 = piVar5 + 1;
+			} while (cell_z < __left);
+		}
+	}
+	newTarget = cell_x;
+#endif
+
+	cp->ai.l.lastTarget = newTarget;
+
+	if (intention < 2 || intention == 4)
+	{
+		int dir;
+		cp->ai.l.roadForward = 5120;
+
+		if (newTarget > 21)
+			dir = -1;
+		else
+			dir = 1;
+
+		for (i = newTarget; i != 21; i += dir);
+		{
+			if (cp->ai.l.roadForward > roadAhead[i])
+				cp->ai.l.roadForward = roadAhead[i];
+
+			i += dir;
+		}
+	}
+	else
+	{
+		if (intention == 5)
+		{
+			if (cp->ai.l.recoverTime == 0 || cp->ai.l.recoverTime > 20)
+			{
+				int small;
+				small = roadAhead[19];
+
+				for (i = 0; i < 4; i++)
+				{
+					if (roadAhead[20 + i] < small)
+						small = roadAhead[20 + i];
+				}
+
+				if (small < roadAhead[38])
+					cp->ai.l.roadForward = -1;
+				else
+					cp->ai.l.roadForward = 1;
+
+				cp->ai.l.recoverTime = 0;
+			}
+
+			if (roadAhead[21] > 1500 &&
+				roadAhead[22] > 1500 &&
+				roadAhead[20] > 1500 &&
+				cp->hd.speed > 40)
+			{
+				cp->ai.l.roadForward = 0;
+			}
+		}
+		else
+		{
+			cp->ai.l.roadForward = 0;
+		}
 	}
 
-	iVar16 = cellz - 21;
+	sindex = newTarget - 21;
 
 	if (intention == 6)
 	{
-		while (FrameCnt != 0x78654321) {
+		while (FrameCnt != 0x78654321)
+		{
 			trap(0x400);
 		}
 	}
@@ -2840,155 +2533,29 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	if (intention - 4U < 2)
 	{
 		if (intention == 4)
-			iVar16 *= 1536;
+			sindex *= 1536;
 		else
-			iVar16 *= 2048;
+			sindex *= 2048;
 
-		cp->ai.l.roadPosition = ((iVar16 / 21 + 2048U & 0xfff) + cp->hd.direction & 4095) - 2048;
-	}
-	else if (intention < 2)
-	{
-		cp->ai.l.roadPosition = (iVar16 * 200 + cp->ai.l.width) - cp->ai.l.d;
+		sindex = ((sindex / 21 + 2048U & 0xfff) + cp->hd.direction & 0xfff) - 2048;
 	}
 	else
 	{
-		if (intention - 2U > 1)
-			return;
+		if (intention < 2)
+		{
+			sindex = (sindex * 200 + cp->ai.l.width) - cp->ai.l.d;
+		}
+		else
+		{
+			if (intention - 2 > 1)
+				return;
 
-		cp->ai.l.roadPosition = iVar16 * 100 + cp->ai.l.width;
+			sindex = sindex * 100 + cp->ai.l.width;
+		}
 	}
+
+	cp->ai.l.roadPosition = sindex;
 }
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ CheckCurrentRoad(CAR_DATA *cp /*$s3*/)
- // line 2242, offset 0x000eb1fc
-	/* begin block 1 */
-		// Start line: 2243
-		// Start offset: 0x000EB1FC
-		// Variables:
-	// 		static int heading; // offset 0x1c
-	// 		int cr; // $s5
-	// 		static int jdist; // offset 0x20
-	// 		static int nextJunction; // offset 0x50
-	// 		static VECTOR basePosition; // offset 0x60
-	// 		int checkNext; // $s6
-
-		/* begin block 1.1 */
-			// Start line: 2278
-			// Start offset: 0x000EB300
-			// Variables:
-		// 		DRIVER2_STRAIGHT *straight; // $t3
-		// 		static int d; // offset 0x70
-		// 		static int toGo; // offset 0x74
-		// 		static int angle; // offset 0x78
-		// 		static int s; // offset 0x7c
-		// 		static int c; // offset 0x80
-		// 		int dx; // $t5
-		// 		int dz; // $t6
-		/* end block 1.1 */
-		// End offset: 0x000EB578
-		// End Line: 2319
-
-		/* begin block 1.2 */
-			// Start line: 2328
-			// Start offset: 0x000EB5C4
-			// Variables:
-		// 		DRIVER2_CURVE *curve; // $s2
-		// 		static int angle; // offset 0x84
-		// 		static int radius; // offset 0x88
-		// 		static int dx; // offset 0x8c
-		// 		static int dz; // offset 0x90
-		// 		static int fixedThresh; // offset 0x94
-		/* end block 1.2 */
-		// End offset: 0x000EB8F8
-		// End Line: 2386
-
-		/* begin block 1.3 */
-			// Start line: 2415
-			// Start offset: 0x000EB974
-			// Variables:
-		// 		static int diff; // offset 0x98
-
-			/* begin block 1.3.1 */
-				// Start line: 2420
-				// Start offset: 0x000EB98C
-				// Variables:
-			// 		DRIVER2_JUNCTION *junction; // $s0
-			/* end block 1.3.1 */
-			// End offset: 0x000EB9D4
-			// End Line: 2428
-
-			/* begin block 1.3.2 */
-				// Start line: 2440
-				// Start offset: 0x000EBA14
-				// Variables:
-			// 		DRIVER2_STRAIGHT *straight; // $v1
-			/* end block 1.3.2 */
-			// End offset: 0x000EBA5C
-			// End Line: 2446
-
-			/* begin block 1.3.3 */
-				// Start line: 2449
-				// Start offset: 0x000EBA5C
-				// Variables:
-			// 		DRIVER2_CURVE *curve; // $v1
-			// 		static int dx; // offset 0x9c
-			// 		static int dz; // offset 0xa0
-			/* end block 1.3.3 */
-			// End offset: 0x000EBAE8
-			// End Line: 2460
-
-			/* begin block 1.3.4 */
-				// Start line: 2475
-				// Start offset: 0x000EBB2C
-				// Variables:
-			// 		DRIVER2_STRAIGHT *straight; // $t1
-			// 		static int dx; // offset 0xa4
-			// 		static int dz; // offset 0xa8
-			// 		static int dist; // offset 0xac
-			// 		static int offx; // offset 0xb0
-			// 		static int offz; // offset 0xb4
-			/* end block 1.3.4 */
-			// End offset: 0x000EBB2C
-			// End Line: 2475
-
-			/* begin block 1.3.5 */
-				// Start line: 2504
-				// Start offset: 0x000EBC5C
-				// Variables:
-			// 		DRIVER2_CURVE *curve; // $s4
-			// 		static int angle; // offset 0xb8
-			// 		int radius; // $s2
-			// 		static int dx; // offset 0xbc
-			// 		static int dz; // offset 0xc0
-			// 		static int basex; // offset 0xc4
-			// 		static int basez; // offset 0xc8
-			// 		static int dist; // offset 0xcc
-			// 		static int offx; // offset 0xd0
-			// 		static int offz; // offset 0xd4
-			/* end block 1.3.5 */
-			// End offset: 0x000EBE44
-			// End Line: 2544
-		/* end block 1.3 */
-		// End offset: 0x000EBFD0
-		// End Line: 2594
-
-		/* begin block 1.4 */
-			// Start line: 2629
-			// Start offset: 0x000EC158
-		/* end block 1.4 */
-		// End offset: 0x000EC158
-		// End Line: 2630
-	/* end block 1 */
-	// End offset: 0x000EC194
-	// End Line: 2641
-
-	/* begin block 2 */
-		// Start line: 5778
-	/* end block 2 */
-	// End Line: 5779
 
 // [D] [T]
 void CheckCurrentRoad(CAR_DATA* cp)
@@ -3402,63 +2969,6 @@ void CheckCurrentRoad(CAR_DATA* cp)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SetTarget(CAR_DATA *cp /*$s1*/, int cr /*$a0*/, int heading /*$s4*/, int *nextJunction /*$s3*/)
- // line 2644, offset 0x000ec1c4
-	/* begin block 1 */
-		// Start line: 2645
-		// Start offset: 0x000EC1C4
-
-		/* begin block 1.1 */
-			// Start line: 2657
-			// Start offset: 0x000EC1FC
-			// Variables:
-		// 		static int dx; // offset 0xd8
-		// 		static int dz; // offset 0xdc
-		/* end block 1.1 */
-		// End offset: 0x000EC278
-		// End Line: 2668
-
-		/* begin block 1.2 */
-			// Start line: 2675
-			// Start offset: 0x000EC298
-			// Variables:
-		// 		DRIVER2_STRAIGHT *straight; // $t5
-		// 		int dx; // $a1
-		// 		int dz; // $a0
-		// 		int rx; // $v1
-		// 		int rz; // $a2
-		// 		int ux; // $t0
-		// 		int uz; // $t4
-		// 		int d; // $v1
-		// 		int angle; // $v0
-		// 		int mul; // $v1
-		/* end block 1.2 */
-		// End offset: 0x000EC33C
-		// End Line: 2695
-
-		/* begin block 1.3 */
-			// Start line: 2720
-			// Start offset: 0x000EC444
-			// Variables:
-		// 		DRIVER2_CURVE *curve; // $s0
-		// 		int angle; // $a1
-		// 		int radius; // $a2
-		/* end block 1.3 */
-		// End offset: 0x000EC5C4
-		// End Line: 2754
-	/* end block 1 */
-	// End offset: 0x000EC5C4
-	// End Line: 2760
-
-	/* begin block 2 */
-		// Start line: 6937
-	/* end block 2 */
-	// End Line: 6938
-
 // [D] [T]
 void SetTarget(CAR_DATA* cp, int curRoad, int heading, int* nextJunction)
 {
@@ -3575,96 +3085,52 @@ void SetTarget(CAR_DATA* cp, int curRoad, int heading, int* nextJunction)
 	}
 }
 
-
-
-// decompiled code
-// original method signature: 
-// void /*$ra*/ SelectExit(CAR_DATA *cp /*$s3*/, DRIVER2_JUNCTION *junction /*$a3*/)
- // line 2763, offset 0x000ec5e4
-	/* begin block 1 */
-		// Start line: 2764
-		// Start offset: 0x000EC5E4
-		// Variables:
-	// 		int onward; // $s1
-	// 		int numExits; // $s2
-	// 		int el[4][2]; // stack offset -56
-	// 		int tmp; // $a1
-	// 		int i; // $a2
-	// 		int total; // $s0
-
-		/* begin block 1.1 */
-			// Start line: 2781
-			// Start offset: 0x000EC6F4
-		/* end block 1.1 */
-		// End offset: 0x000EC71C
-		// End Line: 2788
-
-		/* begin block 1.2 */
-			// Start line: 2792
-			// Start offset: 0x000EC79C
-		/* end block 1.2 */
-		// End offset: 0x000EC7C8
-		// End Line: 2799
-
-		/* begin block 1.3 */
-			// Start line: 2803
-			// Start offset: 0x000EC844
-		/* end block 1.3 */
-		// End offset: 0x000EC870
-		// End Line: 2810
-	/* end block 1 */
-	// End offset: 0x000EC99C
-	// End Line: 2843
-
-	/* begin block 2 */
-		// Start line: 7239
-	/* end block 2 */
-	// End Line: 7240
-
-	/* begin block 3 */
-		// Start line: 7241
-	/* end block 3 */
-	// End Line: 7242
-
 // [D] [T]
 void SelectExit(CAR_DATA* cp, DRIVER2_JUNCTION* junction)
 {
-	int el[4][2];
 	int rnd;
-	int onward; // $s1
-	int numExits; // $s2
-	int tmp; // $a1
-	int i; // $a2
-	int total; // $s0
+	int i;
+	int total;
+	int tmp;
+	int onward;
+	int numExits;
+	int el[4][2];
+	short road;
 
 	numExits = 0;
 	total = 0;
 
 	onward = (cp->ai.l.targetDir + 512U & 0xfff) >> 10;
-
+	
 	// [A] was weird loop
-	for(i = 0; i < 4; i++)
+	for (i = 0; i < 4; i++)
 	{
-		if(junction->ExitIdx[i] == cp->ai.l.lastRoad)
+		if (junction->ExitIdx[i] == cp->ai.l.lastRoad)
 		{
-			onward = i + 2U & 3;
+			onward = i + 2 & 3;
 			break;
 		}
 	}
 
-	// [A] seems was unrolled loopp
-	for(i = -1; i < 2; i++)
+	// [A] was unrolled
+	for(i = 0; i < 3; i++)
 	{
-		int road;
+		int d;
 
-		tmp = (onward + i) & 3;
-		road = junction->ExitIdx[tmp];
+		if (i == 2)
+			d = -1;
+		else if (i == 1)
+			d = 1;
+		else
+			d = 0;
+
+		tmp = onward + d & 3;
 		
-		if(IS_CURVED_SURFACE(road) || IS_STRAIGHT_SURFACE(road))
+		road = junction->ExitIdx[tmp];
+		if (IS_CURVED_SURFACE(road) || IS_STRAIGHT_SURFACE(road))
 		{
-			el[numExits][0] = i;
+			el[numExits][0] = d;
 			el[numExits][1] = junction->flags >> (tmp << 3) & 0xf;
-
 			total += el[numExits][1];
 			numExits++;
 		}
@@ -3672,96 +3138,51 @@ void SelectExit(CAR_DATA* cp, DRIVER2_JUNCTION* junction)
 
 	if (total == 0)
 	{
+		total = 1;
 		el[numExits][0] = 2;
 		el[numExits][1] = 1;
 		numExits++;
-		total = 1;
 	}
-
-	rnd = ABS(leadRand());
+	
+	rnd = leadRand();
+	rnd = ABS(rnd);
 
 	// [A] again, was a strange loop. Hope it works
 	tmp = 0;
 	for(i = 0; i < numExits; i++)
 	{
-		if(tmp + el[i][1] > rnd % total)
-		{
-			cp->ai.l.nextTurn = el[i][0];
-			break;
-		}
-
 		tmp += el[i][1];
+
+		cp->ai.l.nextTurn = el[i][0];
+		
+		if(tmp > rnd % total)
+			break;
 	}
 
 	cp->ai.l.nextExit = onward + cp->ai.l.nextTurn & 3;
 
-	rnd = ABS(leadRand());
+	rnd = leadRand();
+	rnd = ABS(rnd);
 
 	if (rnd == (rnd / 3) * 3)
 		cp->ai.l.nextTurn = -cp->ai.l.nextTurn;
-
 }
-
-
-
-// decompiled code
-// original method signature: 
-// unsigned long /*$ra*/ FreeRoamer(CAR_DATA *cp /*$s1*/)
- // line 2848, offset 0x000ec99c
-	/* begin block 1 */
-		// Start line: 2849
-		// Start offset: 0x000EC99C
-
-		/* begin block 1.1 */
-			// Start line: 2965
-			// Start offset: 0x000ECA4C
-			// Variables:
-		// 		CAR_DATA *pCar; // $v0
-
-			/* begin block 1.1.1 */
-				// Start line: 2965
-				// Start offset: 0x000ECA4C
-				// Variables:
-			// 		int seed; // $a0
-
-				/* begin block 1.1.1.1 */
-					// Start line: 2965
-					// Start offset: 0x000ECA4C
-					// Variables:
-				// 		int i; // $s0
-				/* end block 1.1.1.1 */
-				// End offset: 0x000ECB04
-				// End Line: 2966
-			/* end block 1.1.1 */
-			// End offset: 0x000ECB04
-			// End Line: 2966
-		/* end block 1.1 */
-		// End offset: 0x000ECB04
-		// End Line: 2967
-	/* end block 1 */
-	// End offset: 0x000ECB28
-	// End Line: 2971
-
-	/* begin block 2 */
-		// Start line: 7429
-	/* end block 2 */
-	// End Line: 7430
-
-	/* begin block 3 */
-		// Start line: 7435
-	/* end block 3 */
-	// End Line: 7436
 
 // [D] [T]
 u_int FreeRoamer(CAR_DATA* cp)
 {
+	int i;
+	int seed;
+	CAR_DATA* pCar;
+
 	LeadHorn(cp);
+	
 	DamageBar.position = cp->totalDamage;
 
 	if (cp->ai.l.dstate != 8)
 	{
-		// falling out of the world/sinking in water?
-		if (cp->hd.where.m[1][1] < 100 || ((cp->hd.wheel[1].surface & 7) == 1 && ((cp->hd.wheel[3].surface & 7) == 1)))
+		// flipped? Or sinking in water?
+		if (cp->hd.where.m[1][1] < 100 || (cp->hd.wheel[1].surface & 7) == 1 && (cp->hd.wheel[3].surface & 7) == 1)
 			cp->totalDamage += 100;
 	}
 
@@ -3770,23 +3191,23 @@ u_int FreeRoamer(CAR_DATA* cp)
 	if (cp->ai.l.takeDamage != 0)
 		cp->ai.l.takeDamage--;
 
+	// re-randomize
 	if (CameraCnt == 100)
 	{
-		CAR_DATA* pCar = &car_data[player[0].playerCarId];
-
-		if (CAR_INDEX(pCar) >= 0) // [A] bug fix
+		if(player[0].playerCarId >= 0)
 		{
-			int seed = (pCar->hd.where.t[0] + pCar->hd.where.t[2]) / (pCar->hd.speed + 1);
+			pCar = &car_data[player[0].playerCarId];
+			seed = (pCar->hd.where.t[0] + pCar->hd.where.t[2]) / (pCar->hd.speed + 1);
 
 			randIndex = 0;
 
-			for (int i = NUM_STATES - 1; i > -1; i--)
+			for (i = NUM_RAND_STATES - 1; i > -1; i--)
 			{
 				randState[i] = seed;
 				seed = seed * 0x751 + 0x10cc2af;
 			}
 
-			for (int i = NUM_ITERATIONS - 1; i > -1; i--)
+			for (i = NUM_RAND_ITERATIONS - 1; i > -1; i--)
 				leadRand();
 		}
 	}
@@ -3795,45 +3216,6 @@ u_int FreeRoamer(CAR_DATA* cp)
 
 	return LeadPadResponse(cp);
 }
-
-
-
-// decompiled code
-// original method signature: 
-// unsigned long /*$ra*/ hypot(long x /*$s1*/, long y /*$a1*/)
- // line 2993, offset 0x000ecb28
-	/* begin block 1 */
-		// Start line: 2994
-		// Start offset: 0x000ECB28
-
-		/* begin block 1.1 */
-			// Start line: 2997
-			// Start offset: 0x000ECB5C
-			// Variables:
-		// 		long t; // $v0
-		/* end block 1.1 */
-		// End offset: 0x000ECB64
-		// End Line: 2997
-
-		/* begin block 1.2 */
-			// Start line: 3001
-			// Start offset: 0x000ECBB4
-		/* end block 1.2 */
-		// End offset: 0x000ECBE8
-		// End Line: 3006
-	/* end block 1 */
-	// End offset: 0x000ECBE8
-	// End Line: 3007
-
-	/* begin block 2 */
-		// Start line: 3236
-	/* end block 2 */
-	// End Line: 3237
-
-	/* begin block 3 */
-		// Start line: 10452
-	/* end block 3 */
-	// End Line: 10453
 
 // [D] [T]
 u_int hypot(int x, int y)
