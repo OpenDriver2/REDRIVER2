@@ -56,8 +56,11 @@ project "Psy-X"
             "SDL2",
         }
 
-    filter {"configurations:Release", "configurations:Release_dev"}
+    filter "configurations:Release"
         optimize "Speed"
-
+		
+	filter "configurations:Release_dev"
+        optimize "Speed"
+	
     filter { "files:**.c", "files:**.C" }
         compileas "C++"
