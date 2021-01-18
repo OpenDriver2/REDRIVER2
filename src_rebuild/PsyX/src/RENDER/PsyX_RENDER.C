@@ -694,7 +694,7 @@ int GR_Shader_CheckShaderStatus(GLuint shader)
 
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
 
-	if (result)
+	if (result == GL_TRUE)
 		return 1;
 	
 	glGetShaderInfoLog(shader, sizeof(info), NULL, info);
@@ -712,9 +712,9 @@ int GR_Shader_CheckProgramStatus(GLuint program)
 	char info[1024];
 	GLint result;
 
-	glGetShaderiv(program, GL_LINK_STATUS, &result);
+	glGetProgramiv(program, GL_LINK_STATUS, &result);
 
-	if (result)
+	if (result == GL_TRUE)
 		return 1;
 
 	glGetProgramInfoLog(program, sizeof(info), NULL, info);
@@ -827,7 +827,7 @@ ShaderID GR_Shader_Compile(const char* source)
 
 	glLinkProgram(program);
 	if(GR_Shader_CheckProgramStatus(program) == 0)
-		eprinterr("Failed to compile link Shader!\n");
+		eprinterr("Failed to link Shader!\n");
 
 	GLint sampler = 0;
 	glUseProgram(program);
