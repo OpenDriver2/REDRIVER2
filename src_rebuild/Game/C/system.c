@@ -977,10 +977,45 @@ int FileExists(char* filename)
 #endif // PSX
 }
 
+#ifndef PSX
+int gImitateDiscSwap = 0;
+int gImitateDiscSwapFrames = 0;
+#endif
+
 // [D] [T]
 CDTYPE DiscSwapped(char* filename)
 {
 #ifndef PSX
+	// Fancy sequence in homage of PS1 version
+	// any button press will skip it
+	ReadControllers();
+
+	if (Pads[0].mapnew)
+		gImitateDiscSwap = -1;
+
+	if (gImitateDiscSwap > 0)
+	{
+		int numFrames = 80;
+
+		if(gImitateDiscSwap == 4)
+			numFrames = 28;
+
+		if (VSync(-1) - gImitateDiscSwapFrames > numFrames)
+		{
+			gImitateDiscSwap++;
+			gImitateDiscSwapFrames = VSync(-1);
+		}
+
+		if(gImitateDiscSwap == 1)
+			return CDTYPE_WRONGDISC;
+		else if (gImitateDiscSwap == 2 || gImitateDiscSwap == 3)
+			return CDTYPE_SHELLOPEN;
+		else if (gImitateDiscSwap == 4)
+			return CDTYPE_DISCERROR;
+		else
+			gImitateDiscSwap = -1;
+	}
+
 	return CDTYPE_CORRECTDISC;
 #else
 	CDTYPE ret;
