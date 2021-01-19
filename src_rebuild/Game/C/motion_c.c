@@ -122,7 +122,7 @@ PED_DATA MainPed[NUM_BONES] =
 	{ 1, 68u, &chest1_texture, CHEST_PAL },
 	{ 17, 36u, &chest1_texture, CHEST_PAL },
 	{ 6, 68u, &forearm1_texture, ARM_PAL },
-	{ 8, 48u, &head1_texture, NO_PAL },
+	{ 8, 22u, &head1_texture, NO_PAL },
 	{ 6, 68u, &arm1_texture, CHEST_PAL },
 	{ 8, 36u, &arm1_texture, CHEST_PAL },
 	{ 7, 68u, &forearm1_texture, ARM_PAL },
