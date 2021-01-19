@@ -114,10 +114,10 @@ void InitSound(void)
 	SpuInitMalloc(LSB_BANK_COUNT, banks);
 	SpuSetMute(1);
 
-	AllocateReverb(3, 16384);
+	AllocateReverb(SPU_REV_MODE_ROOM | SPU_REV_MODE_STUDIO_A, 16384);
 
-	i = 1;
-	do {
+	for (i = 0; i < 2;  i++)
+	{
 		bankaddr[i] = SpuMalloc(banksize[i]);
 
 		if (bankaddr[i] == -1)
@@ -127,9 +127,7 @@ void InitSound(void)
 			exit(-1);
 #endif
 		}
-
-		i--;
-	} while (i >= 0);
+	}
 
 	ResetSound();
 

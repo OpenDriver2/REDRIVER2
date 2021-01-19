@@ -821,6 +821,9 @@ long SpuMalloc(long size)
 	int addr = s_spuMallocVal;
 	s_spuMallocVal += size;
 
+	if (s_spuMallocVal > SPU_MEMSIZE)
+		return -1;
+
 	return addr;
 }
 
