@@ -100,6 +100,16 @@ enum GameStrId
 	GTXT_LocktoCar,
 	GTXT_Rotate,
 	GTXT_Zoom,
+
+	// RED2
+	GTXT_GetawayIs,
+
+	// E3Stuff
+	GTXT_PleaseinsertDISC1,
+	GTXT_PleaseinsertDISC2,
+	GTXT_NoDISCinserted,
+	GTXT_IncorrectDISCinserted,
+	GTXT_Checking,
 };
 
 enum MissionStrId

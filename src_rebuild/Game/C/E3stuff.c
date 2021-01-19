@@ -554,12 +554,12 @@ void CheckForCorrectDisc(int disc)
 
 	if (disc == 0)
 	{
-		mess = "Please insert DISC 1";
+		mess = G_LTXT(GTXT_PleaseinsertDISC1);
 		exe = ".\\SLES_029.96;1";
 	}
 	else 
 	{
-		mess = "Please insert DISC 2";
+		mess = G_LTXT(GTXT_PleaseinsertDISC2);
 		exe = ".\\SLES_129.96;1";
 	}
 
@@ -598,7 +598,7 @@ void CheckForCorrectDisc(int disc)
 		{
 			case CDTYPE_NODISC:
 				discerror = 0;
-				mess2 = "No DISC inserted";
+				mess2 = G_LTXT(GTXT_NoDISCinserted);
 				break;
 			case CDTYPE_SHELLOPEN:
 			case CDTYPE_CORRECTDISC:
@@ -609,14 +609,14 @@ void CheckForCorrectDisc(int disc)
 				discerror++;
 
 				if (discerror > 29)
-					mess2 = "No DISC inserted";
+					mess2 = G_LTXT(GTXT_NoDISCinserted);
 				else
-					mess2 = "Checking...";
+					mess2 = G_LTXT(GTXT_Checking);
 
 				break;
 			case CDTYPE_WRONGDISC:
 				discerror = 0;
-				mess2 = "Incorrect DISC inserted";
+				mess2 = G_LTXT(GTXT_IncorrectDISCinserted);
 				break;
 		}
 

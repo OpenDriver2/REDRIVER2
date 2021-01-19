@@ -20,6 +20,7 @@
 #include "overmap.h"
 #include "director.h"
 #include "xaplay.h"
+#include "overlay.h"
 
 #include "LIBETC.H"
 #include "STRINGS.H"
@@ -238,10 +239,10 @@ void DrawInGameCutscene(void)
 			// [A] print user chaser name on screen
 			char tempStr[80];
 
-			sprintf(tempStr, "Getaway is %s", gUserReplayFolderList[gUserChaseLoaded]);
+			sprintf(tempStr, "%s %s", G_LTXT(GTXT_GetawayIs), gUserReplayFolderList[gUserChaseLoaded]);
 
 			SetTextColour(128, 128, 64);
-			PrintString(tempStr, 16, 230);
+			PrintString(tempStr, gOverlayXPos, 230);
 		}
 #endif
 		return;
