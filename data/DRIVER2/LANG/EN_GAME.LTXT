@@ -8,6 +8,7 @@ Check
 Cones
 Gates
 Checks
+-1 second
 Flags
 Lap
 Out of tape
@@ -15,6 +16,11 @@ DEMO
 Fast forward
 Auto direct
 Please wait...
+Please insert DISC 1
+Please insert DISC 2
+No DISC inserted
+Incorrect DISC inserted
+Checking...
 Are You Sure?
 Paused
 Mission Complete
@@ -84,8 +90,4 @@ Lock to Car
 Rotate
 Zoom
 Getaway is
-Please insert DISC 1
-Please insert DISC 2
-No DISC inserted
-Incorrect DISC inserted
-Checking...
+

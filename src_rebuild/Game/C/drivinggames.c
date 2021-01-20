@@ -454,7 +454,7 @@ void HandleDrivingGames(void)
 							gTrailblazerConeIndex += i + 1;
 
 							Mission.timer[id].count -= 3000;
-							SetPlayerMessage(id, "-1 second", 2, 1);
+							SetPlayerMessage(id, G_LTXT(GTXT_Minus1second), 2, 1);
 						}
 					}
 				}

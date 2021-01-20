@@ -1239,8 +1239,8 @@ void EnterScoreName(void)
 					strcpy(gPlayerScore.name, username);
 					AddScoreToTable(table, gScorePosition);
 					
-					sprintf(EnterScoreText, "View Table");
-					sprintf(EnterNameText, "High Scores");
+					sprintf(EnterScoreText, G_LTXT(GTXT_ViewTable));
+					sprintf(EnterNameText, G_LTXT(GTXT_HighScores));
 					
 					gEnteringScore = 0;
 					gScoreEntered = 1;
@@ -1349,6 +1349,15 @@ void DrawHighScoreMenu(int selection)
 	current->primptr += sizeof(POLY_FT3);
 }
 
+void strlower(char* str)
+{
+	while (*str != '\0')
+	{
+		*str = tolower(*str);
+		str++;
+	}
+}
+
 // [D] [T]
 void CreateScoreNames(SCORE_ENTRY* table, PLAYER_SCORE* score, int position)
 {
@@ -1365,10 +1374,10 @@ void CreateScoreNames(SCORE_ENTRY* table, PLAYER_SCORE* score, int position)
 			text = NULL;
 			break;
 		case GAME_GATERACE:
-			text = "Gates";
+			text = G_LTXT(GTXT_Gates);
 			break;
 		case GAME_TRAILBLAZER:
-			text = "Cones";
+			text = G_LTXT(GTXT_Cones);
 			break;
 		default:
 			printError("CreateScoreNames: Invalid game type\n");
@@ -1388,7 +1397,10 @@ void CreateScoreNames(SCORE_ENTRY* table, PLAYER_SCORE* score, int position)
 			ScoreItems[i][0] = '\0';
 
 			if (text != NULL && score->items != -1)
+			{
 				sprintf(ScoreItems[i], "%d %s", score->items, text);
+				strlower(ScoreItems[i]);
+			}
 
 			ClearMem(ScoreName[i], 7);
 		}
@@ -1404,10 +1416,13 @@ void CreateScoreNames(SCORE_ENTRY* table, PLAYER_SCORE* score, int position)
 			ScoreItems[i][0] = '\0';
 
 			if (text != NULL && table->items != -1)
+			{
 				sprintf(ScoreItems[i], "%d %s", table->items, text);
+				strlower(ScoreItems[i]);
+			}
 
-			sprintf(ScoreName[i], "%s", table->name);
-			table = table + 1;
+			sprintf(ScoreName[i], "%s", table->name);			
+			table++;
 		}
 
 		i++;

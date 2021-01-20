@@ -553,40 +553,6 @@ void DrawDrivingGameOverlays(void)
 			x = PrintString(G_LTXT(GTXT_Best), gOverlayXPos, 60);
 			PrintScoreTableTime(x + 3, 60, table->time);
 			break;
-		case GAME_GATERACE:
-
-			if (NumPlayers == 1) 
-			{
-				table = &ScoreTables.GateRaceTable[GameLevel][gSubGameNumber][0];
-				x = PrintStringRightAligned(G_LTXT(GTXT_Gate), gOverlayXOppPos + 50, 16);
-
-				sprintf(string, "%d / %d", gPlayerScore.items, 100);
-				PrintString(string, x + 3, 16);
-
-				x = PrintString(G_LTXT(GTXT_Best), gOverlayXPos, 36);
-				PrintScoreTableTime(x + 3, 36, table->time);
-
-				x = PrintString(G_LTXT(GTXT_Gates), gOverlayXPos, 52);
-
-				if (table->items == -1)
-					sprintf(string, "-");
-				else
-					sprintf(string, "%d", table->items);
-
-				PrintString(string, x + 3, 52);
-			}
-			else
-			{
-				x = PrintString(G_LTXT(GTXT_Gate), gOverlayXPos, 36);
-				sprintf(string, "%d / %d", gPlayerScore.items, 100);
-				
-				PrintString(string, x + 3, 36);
-				x = PrintString(G_LTXT(GTXT_Gate), gOverlayXPos, 150);
-				
-				sprintf(string, "%d / %d", gPlayerScore.P2items, 100);
-				PrintString(string, x + 3, 150);
-			}
-			break;
 		case GAME_CHECKPOINT:
 
 			if (NumPlayers > 1) 
@@ -614,6 +580,34 @@ void DrawDrivingGameOverlays(void)
 			}
 		
 			break;
+		case GAME_GATERACE:
+
+			if (NumPlayers == 1)
+			{
+				table = &ScoreTables.GateRaceTable[GameLevel][gSubGameNumber][0];
+				x = PrintStringRightAligned(G_LTXT(GTXT_Gate), gOverlayXOppPos + 50, 16);
+
+				sprintf(string, "%d / %d", gPlayerScore.items, 100);
+				PrintString(string, x + 3, 16);
+
+				x = PrintString(G_LTXT(GTXT_Best), gOverlayXPos, 36);
+				PrintScoreTableTime(x + 3, 36, table->time);
+
+				sprintf(string, table->items != -1 ? "%s: %d" : "%s: -", G_LTXT(GTXT_Gates), table->items);
+				PrintString(string, gOverlayXPos, 52);
+			}
+			else
+			{
+				x = PrintString(G_LTXT(GTXT_Gate), gOverlayXPos, 36);
+				sprintf(string, "%d / %d", gPlayerScore.items, 100);
+
+				PrintString(string, x + 3, 36);
+				x = PrintString(G_LTXT(GTXT_Gate), gOverlayXPos, 150);
+
+				sprintf(string, "%d / %d", gPlayerScore.P2items, 100);
+				PrintString(string, x + 3, 150);
+			}
+			break;
 		case GAME_TRAILBLAZER:
 			
 			table = &ScoreTables.TrailblazerTable[GameLevel][gSubGameNumber][0];
@@ -624,15 +618,10 @@ void DrawDrivingGameOverlays(void)
 		
 			x = PrintString(G_LTXT(GTXT_Best), gOverlayXPos, 36);
 			PrintScoreTableTime(x + 3, 36, table->time);
-			x = PrintString(G_LTXT(GTXT_Cones), gOverlayXPos, 52);
 
-			if (table->items != -1)
-				sprintf(string, "%d", table->items);
-			else
-				sprintf(string, "-");
-			
-			PrintString(string, x + 3, 52);
-		
+			sprintf(string, table->items != -1 ? "%s: %d" : "%s: -", G_LTXT(GTXT_Cones), table->items);
+			PrintString(string, gOverlayXPos, 52);
+
 			break;
 		case GAME_SURVIVAL:
 			table = &ScoreTables.SurvivalTable[GameLevel][gSubGameNumber][0];

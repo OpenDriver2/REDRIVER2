@@ -1,6 +1,6 @@
 Danni
 Crimine
-Prossimit√†
+Prossimit‡
 Il migliore
 Cono
 Barriera
@@ -8,6 +8,7 @@ Tappa
 Coni
 Coni barriera
 Tappe
+-1 secondo
 Bandiere
 Giro
 Nastro esaurito
@@ -15,6 +16,11 @@ DEMO
 Avanti rapido
 Regia automatica
 Attendi per favore...
+Inserisci il DISCO 1
+Inserisci il DISCO 2
+Nessun DISCO inserito
+Hai inserito il DISCO errato
+Verifica...
 Sei sicuro?
 In pausa
 Missione compiuta
@@ -31,7 +37,7 @@ Errore nel salvataggio
 Caricamento progressi...
 Salvataggio progressi...
 OK
-S√å
+SÃ
 NO
 Salva partita
 Salva replay
@@ -61,8 +67,8 @@ Orario
 Non ci sono segreti
 Passo di montagna
 Circuito
-Invincibilit√†
-Immunit√†
+Invincibilit‡
+Immunit‡
 Galleria bonus
 Pausa
 Play
@@ -75,7 +81,7 @@ Cambia telecamera
 In auto
 Inseguire telecamera
 Statica telecamera
-Sposta avv√¨o telecamera
+Sposta avvÏo telecamera
 Cancella la telecamera
 Mostra
 O tu o l'inseguitore
@@ -83,3 +89,4 @@ Sposta telecamera
 Aggancia all'auto
 Ruota
 Zoom
+Il fuggitivo Ë
