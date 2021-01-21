@@ -75,6 +75,7 @@ struct SPUMemory
 };
 
 static SPUMemory s_SpuMemory;
+SDL_mutex* g_SpuMutex = NULL;
 
 struct SPUVoice
 {
@@ -219,6 +220,8 @@ bool Emulator_InitSound()
 	memset(&s_SpuMemory, 0, sizeof(s_SpuMemory));
 
 	InitOpenAlEffects();
+
+	g_SpuMutex = SDL_CreateMutex();
 
 	return true;
 }
@@ -525,6 +528,8 @@ void UpdateVoiceSample(SPUVoice& voice)
 
 void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 {
+	SDL_LockMutex(g_SpuMutex);
+
 	for (int i = 0; i < SPU_VOICES; i++)
 	{
 		if (!(arg->voice & SPU_VOICECH(i)))
@@ -602,10 +607,12 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 		
 		// TODO: ADSR and other stuff
 	}
+	SDL_UnlockMutex(g_SpuMutex);
 }
 
 void SpuSetKey(long on_off, unsigned long voice_bit)
 {
+	SDL_LockMutex(g_SpuMutex);
 	for (int i = 0; i < SPU_VOICES; i++)
 	{
 		if (voice_bit & SPU_VOICECH(i))
@@ -630,11 +637,14 @@ void SpuSetKey(long on_off, unsigned long voice_bit)
 			}
 		}
 	}
+	SDL_UnlockMutex(g_SpuMutex);
 }
 
 long SpuGetKeyStatus(unsigned long voice_bit)
 {
 	int state = AL_STOPPED;
+
+	SDL_LockMutex(g_SpuMutex);
 
 	for (int i = 0; i < SPU_VOICES; i++)
 	{
@@ -646,19 +656,21 @@ long SpuGetKeyStatus(unsigned long voice_bit)
 		ALuint alSource = voice.alSource;
 
 		if (alSource == AL_NONE)
-		{
-			return 0; // SpuOff?
-		}
+			break; // SpuOff?
 
 		alGetSourcei(alSource, AL_SOURCE_STATE, &state);
 		break;
 	}
+
+	SDL_UnlockMutex(g_SpuMutex);
 
 	return (state == AL_PLAYING);	// simple as this?
 }
 
 void SpuGetAllKeysStatus(char* status)
 {
+	SDL_LockMutex(g_SpuMutex);
+
 	for (int i = 0; i < SPU_VOICES; i++)
 	{
 		SPUVoice& voice = g_SpuVoices[i];
@@ -676,6 +688,7 @@ void SpuGetAllKeysStatus(char* status)
 
 		status[i] = (state == AL_PLAYING);
 	}
+	SDL_UnlockMutex(g_SpuMutex);
 }
 
 void SpuSetKeyOnWithAttr(SpuVoiceAttr* attr)
@@ -765,6 +778,8 @@ unsigned long SpuSetReverbVoice(long on_off, unsigned long voice_bit)
 	if(!g_ALEffectsSupported)
 		return 0;
 
+	SDL_LockMutex(g_SpuMutex);
+
 	for (int i = 0; i < SPU_VOICES; i++)
 	{
 		if (voice_bit & SPU_VOICECH(i))
@@ -786,6 +801,8 @@ unsigned long SpuSetReverbVoice(long on_off, unsigned long voice_bit)
 			}
 		}
 	}
+
+	SDL_UnlockMutex(g_SpuMutex);
 
 	return 0;
 }
