@@ -208,7 +208,7 @@ void StoreEndData(void)
 		carpos = &MissionEndData.CarPos[numStored];
 
 		if (target->type == Target_Car && 
-			(target->target_flags & 0x10))
+			(target->target_flags & TARGET_FLAG_CAR_SAVED))
 		{
 			StoreCarPosition(target, carpos);
 			numStored++;
