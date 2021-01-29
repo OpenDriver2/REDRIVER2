@@ -835,6 +835,7 @@ void CheckLoadAreaData(int cellx, int cellz)
 	spoolptr = (Spool *)(RegionSpoolInfo + spoolinfo_offsets[current_region]);
 
 #ifndef PSX
+	// [A] this fixes spooling not activated bug (reversing bug?)
 	if (LoadedArea != spoolptr->super_region && spoolptr->super_region != 0xFF && old_region != -1)
 	{
 		LoadedArea = spoolptr->super_region;
@@ -851,19 +852,13 @@ void CheckLoadAreaData(int cellx, int cellz)
 		nAreas = spoolptr->num_connected_areas;
 
 		if (old_region == -1)
-		{
 			LoadedArea = -1;
-		}
-		else
-		{
-			//if (spoolptr->super_region == 0xFF)		// [A] if this is on, it stops spool. You still may want to load connected areas
-			//	return;
+		else if (spoolptr->super_region == 0xFF || nAreas == 0)
+			return;
 
-			if (nAreas == 0)
-				return;
-		}
-
-		force_load_boundary = (lead_car == 0) ? 15 : 13;
+		// [A] Rev 1.1 patch
+#define BOUNDARY_MIN 15
+#define BOUNDARY_MAX 17
 
 		// check area bounds
 		for (i = 0; i < nAreas; i++)
@@ -875,19 +870,19 @@ void CheckLoadAreaData(int cellx, int cellz)
 				new_area_location = load;
 
 				// [A] bounds?
-				if (load == 0 && (cellz > MAP_REGION_SIZE - force_load_boundary))
+				if (load == 0 && (cellz > BOUNDARY_MAX))
 				{
 					break;
 				}
-				else if (load == 1 && (cellx > MAP_REGION_SIZE - force_load_boundary))
+				else if (load == 1 && (cellx > BOUNDARY_MAX))
 				{
 					break;
 				}
-				else if (load == 2 && (cellz < force_load_boundary))
+				else if (load == 2 && (cellz < BOUNDARY_MIN))
 				{
 					break;
 				}
-				else if (load == 3 && (cellx < force_load_boundary))
+				else if (load == 3 && (cellx < BOUNDARY_MIN))
 				{
 					break;
 				}
@@ -2411,6 +2406,7 @@ void PrepareSecretCar(void)
 // [D] [T]
 void InitSpecSpool(void)
 {
+	// [A] Rev 1.1 removes that, but I wonder if it breaks something...
 	switch (gCurrentMissionNumber)
 	{
 		case 2: 

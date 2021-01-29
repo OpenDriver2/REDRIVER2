@@ -318,8 +318,11 @@ sdPlane* sdGetCell(VECTOR *pos)
 	// retail version of game with exe dated before 20th October 2000 (so called 1.0) is only supported
 	// the later version of the game do have problem with height or BSP, so Havana's secret base ground is not solid
 
-	buffer = RoadMapDataRegions[(cellPos.x >> 16 & 1U) ^ (cells_across / (MAP_REGION_SIZE*2) & 1U) +
-							    (cellPos.y >> 15 & 2U) ^ (cells_down / MAP_REGION_SIZE) & 2U];
+	// Oct 17 2000:			RoadMapDataRegions[(v4 >> 16) & 1 ^ (((cells_across >> 6) & 1) + (((v3 - 512) >> 15) & 2)) ^ (cells_down >> 5) & 2];
+	// Oct 29 2000:			RoadMapDataRegions[(cellPos.x >> 16) & 1 ^ (((cellPos.y >> 15) & 2) + 1) ^ 2];
+
+	buffer = RoadMapDataRegions[(cellPos.x >> 16 & 1U) ^ (cells_across / (MAP_REGION_SIZE*2) & 1U) + (cellPos.y >> 15 & 2U) ^ (cells_down / MAP_REGION_SIZE) & 2U];
+	//buffer = RoadMapDataRegions[(cellPos.x >> 16) & 1 ^ (((cellPos.y >> 15) & 2) + 1) ^ 2];
 
 	plane = NULL;
 	
@@ -537,7 +540,7 @@ int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, sdPlane **plane)
 	}
 	else if ((*plane)->surface == 4)
 	{
-		// [A] was "if(gInGameCutsceneActive == 0 || gCurrentMissionNumber != 23 || gInGameCutsceneID != 0) "
+		// [A] Rev 1.1 doesn't have this cutscene hack
 		if (gInGameCutsceneActive && gCurrentMissionNumber == 23 && gInGameCutsceneID == 0)
 			out->vy += rcossin_tbl[(pos->vx + pos->vz) * 4 & 0x1fff] >> 9;
 		else

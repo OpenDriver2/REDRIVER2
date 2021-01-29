@@ -192,6 +192,7 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 		if (playerID == 0 &&
 			!(newCar->controlFlags & CONTROL_FLAG_PLAYER_START_CAR))	// [A] bug fix: don't give felony if player owns his cop car
 		{
+			// [A] Rev 1.1 removes felony override for "Steal the cop car"
 			if (gCurrentMissionNumber != 32 && MissionHeader->residentModels[newCar->ap.model] == 0)
 			{
 				NoteFelony(&felonyData, 11, 4096);
