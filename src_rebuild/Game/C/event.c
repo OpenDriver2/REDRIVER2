@@ -3762,7 +3762,9 @@ int DetonatorTimer(void)
 					AddExplosion(pos, HEY_MOMMA);
 
 					rememberCameraAngle = camera_angle;
-					Mission.timer[0].flags = Mission.timer[0].flags & 0xef;
+					
+					Mission.timer[0].flags &= TIMER_FLAG_BOMB_COUNTDOWN;
+					
 					SetMissionComplete();
 				}
 				else

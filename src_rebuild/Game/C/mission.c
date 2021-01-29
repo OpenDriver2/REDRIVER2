@@ -546,29 +546,27 @@ void LoadMission(int missionnum)
 		gEffectsTimer = 0;
 	}
 
-	Mission.timer[0].flags = 0;
-	Mission.timer[0].x = 124;
-	Mission.timer[1].x = 124;
-	Mission.timer[0].y = 16;
-	Mission.timer[0].count = 0;
-	Mission.timer[1].y = 136;
-	Mission.timer[1].flags = 0;
-	Mission.timer[1].count = 0;
+	Mission.timer[0].flags = Mission.timer[1].flags = 0;
+	Mission.timer[0].count = Mission.timer[1].count = 0;
 
-	if (MissionHeader->timer != 0 || (MissionHeader->timerFlags & 0x8000U) != 0)
+	Mission.timer[0].x = Mission.timer[1].x = 124;
+	Mission.timer[0].y = 16;
+	Mission.timer[1].y = 136;
+	
+	if (MissionHeader->timer || (MissionHeader->timerFlags & MISSIONTIMER_FLAG_COUNTER))
 	{
 		int flag;
 
-		flag = 0x1;
+		flag = TIMER_FLAG_ACTIVE;
 
-		if (MissionHeader->timerFlags & 0x8000)
-			flag |= 0x2;
+		if (MissionHeader->timerFlags & MISSIONTIMER_FLAG_COUNTER)
+			flag |= TIMER_FLAG_COUNTER;
 	
-		if (MissionHeader->timerFlags & 0x4000)
-			flag |= 0x8;
+		if (MissionHeader->timerFlags & MISSIONTIMER_FLAG_COMPLETE_ON_OUT)
+			flag |= TIMER_FLAG_COMPLETE_ON_OUT;
 
-		if (MissionHeader->timerFlags & 0x2000)
-			flag |= 0x10;
+		if (MissionHeader->timerFlags & MISSIONTIMER_FLAG_BOMB_COUNTDOWN)
+			flag |= TIMER_FLAG_BOMB_COUNTDOWN;
 
 		for (int i = 0; i < NumPlayers; i++)
 		{
@@ -1074,57 +1072,62 @@ void LoadMission(int missionnum)
 // [D] [T]
 void HandleTimer(MR_TIMER *timer)
 {
-	if (timer->flags & 4)
+	if (timer->flags & TIMER_FLAG_PAUSED)
 		return;
 
-	if (!(timer->flags & 1))
+	if (!(timer->flags & TIMER_FLAG_ACTIVE))
 		return;
 
-	if (!(timer->flags & 2))
-	{
-		timer->count -= 100;
-
-		if (timer->count < 1)
-		{
-			if (!(MissionHeader->timerFlags & 0x1000) || !DetonatorTimer())
-			{
-				// do expolosions
-				if ((timer->flags & 8) == 0)
-				{
-					if (Mission.gameover_delay == -1)
-						SetMissionFailed(FAILED_OUTOFTIME);
-
-					if (timer->flags & 0x10) 
-					{
-						events.cameraEvent = (EVENT *)0x1;
-						
-						BombThePlayerToHellAndBack(gCarWithABerm);
-					}
-
-					timer->count = 0;
-				}
-				else if (Mission.gameover_delay == -1)
-				{
-					SetMissionComplete();
-					timer->count = 0;
-				}
-			}
-			else 
-			{
-				MissionHeader->timerFlags &= ~0x1000;
-
-				timer->count = 9000;
-				timer->flags |= 0x28;
-			}
-		}
-	}
-	else 
+	if (timer->flags & TIMER_FLAG_COUNTER)
 	{
 		timer->count += 100;
 
 		if (timer->count > 10799999)
 			timer->count = 10799999;
+	}
+	else 
+	{
+		timer->count -= 100;
 
+		if (timer->count < 1)
+		{
+			if ((MissionHeader->timerFlags & MISSIONTIMER_FLAG_BOMB_TIMER) && DetonatorTimer())
+			{
+				MissionHeader->timerFlags &= ~MISSIONTIMER_FLAG_BOMB_TIMER;
+
+				timer->count = 9000;
+				timer->flags |= 0x28;
+			}
+			else 
+			{
+				// do expolosions
+				if (timer->flags & TIMER_FLAG_COMPLETE_ON_OUT)
+				{
+					if (Mission.gameover_delay == -1)
+					{
+						SetMissionComplete();	
+					}
+
+					timer->count = 0;
+				}
+				else
+				{
+					if (Mission.gameover_delay == -1)
+					{
+						SetMissionFailed(FAILED_OUTOFTIME);
+					}
+
+					if (timer->flags & TIMER_FLAG_BOMB_COUNTDOWN)
+					{
+						events.cameraEvent = (EVENT*)0x1;
+
+						BombThePlayerToHellAndBack(gCarWithABerm);
+					}
+
+					timer->count = 0;
+				}
+			}
+		}
 	}
 
 	timer->min = (timer->count / 180000);
@@ -1169,13 +1172,13 @@ void PauseMissionTimer(int pause)
 {
 	if (pause == 0) 
 	{
-		Mission.timer[0].flags &= ~4;
-		Mission.timer[1].flags &= ~4;
+		Mission.timer[0].flags &= ~TIMER_FLAG_PAUSED;
+		Mission.timer[1].flags &= ~TIMER_FLAG_PAUSED;
 	}
 	else 
 	{
-		Mission.timer[0].flags |= 4;
-		Mission.timer[1].flags |= 4;
+		Mission.timer[0].flags |= TIMER_FLAG_PAUSED;
+		Mission.timer[1].flags |= TIMER_FLAG_PAUSED;
 	}
 }
 
@@ -1403,6 +1406,12 @@ void SetConfusedCar(int slot)
 	car_data[slot].ai.c.ctrlState = 7;
 
 	car_data[slot].ai.c.ctrlNode = NULL;
+
+	if (slot == player[0].worldCentreCarId) // [A] Rev 1.1
+	{
+		if (player[0].playerCarId >= 0)
+			player[0].worldCentreCarId = player[0].playerCarId;
+	}
 }
 
 
@@ -1654,17 +1663,17 @@ int MRCommand(MR_THREAD *thread, u_int cmd)
 	else if (cmd == 0x1000040)
 	{
 		MR_DebugWarn("MR %d command: player timer flag 2 set\n", thread - MissionThreads);
-		Mission.timer[thread->player].flags |= 2;
+		Mission.timer[thread->player].flags |= TIMER_FLAG_COUNTER;
 	}
 	else  if (cmd == 0x1000042)
 	{
 		MR_DebugWarn("MR %d command: timer flag 0x1000 set\n", thread - MissionThreads);
-		MissionHeader->timerFlags |= 0x1000;
+		MissionHeader->timerFlags |= MISSIONTIMER_FLAG_BOMB_TIMER;
 	}
 	else if (cmd == 0x1000041)
 	{
 		MR_DebugWarn("MR %d command: player timer flag 2 removed\n", thread - MissionThreads);
-		Mission.timer[thread->player].flags &= ~2;
+		Mission.timer[thread->player].flags &= ~TIMER_FLAG_COUNTER;
 		return 1;
 	}
 	else if (cmd == 0x1001001)
@@ -1957,58 +1966,57 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						target->point.actionFlag &= ~0xFFF0;
 				}
 
-				// mini game stuff - race tracks
-				switch(target->target_flags & 0x3000000)
+				if (GameType == GAME_SECRET)
 				{
-					case 0x1000000:
+					switch(target->target_flags & (TARGET_FLAG_POINT_SECRET_POINT1 | TARGET_FLAG_POINT_SECRET_POINT2 | TARGET_FLAG_POINT_SECRET_STARTFINISH))
 					{
-						playercollected[thread->player] |= 0x2;
-						return 0;
-					}
-					case 0x2000000:
-					{
-						playercollected[thread->player] |= 0x4;
-						return 0;
-					}
-					case 0x3000000:
-					{
-						if (playercollected[thread->player] != 7)
-							return 0;
-
-						playercollected[thread->player] = 0;
-
-						if (thread->player == 0)
-						{
-							gLapTimes[thread->player][gPlayerScore.items] = CalcLapTime(0, Mission.timer[0].count, gPlayerScore.items);
-							gPlayerScore.items++;
-
-							if (gPlayerScore.items == gNumRaceTrackLaps)
-							{
-								SetMissionComplete();
-							}
-						}
-						else
-						{
-							gLapTimes[thread->player][gPlayerScore.P2items] = CalcLapTime(1, Mission.timer[1].count, gPlayerScore.P2items);
-							gPlayerScore.P2items++;
-
-							if (gPlayerScore.P2items == gNumRaceTrackLaps)
-							{
-								SetMissionComplete();
-							}
-						}
-
-						return 0;
-					}
-					case 0:
-					{
-						if (GameType == GAME_SECRET)
+						case 0: // TARGET_FLAG_POINT_SECRET_POINT0
 						{
 							playercollected[thread->player] |= 0x1;
-							return 0;
+							break;
 						}
-						break;
+						case TARGET_FLAG_POINT_SECRET_POINT1:
+						{
+							playercollected[thread->player] |= 0x2;
+							break;
+						}
+						case TARGET_FLAG_POINT_SECRET_POINT2:
+						{
+							playercollected[thread->player] |= 0x4;
+							break;
+						}
+						case TARGET_FLAG_POINT_SECRET_STARTFINISH:
+						{
+							if (playercollected[thread->player] == 0x7)
+							{
+								playercollected[thread->player] = 0;
+
+								if (thread->player == 0)
+								{
+									gLapTimes[thread->player][gPlayerScore.items] = CalcLapTime(0, Mission.timer[0].count, gPlayerScore.items);
+									gPlayerScore.items++;
+
+									if (gPlayerScore.items == gNumRaceTrackLaps)
+									{
+										SetMissionComplete();
+									}
+								}
+								else
+								{
+									gLapTimes[thread->player][gPlayerScore.P2items] = CalcLapTime(1, Mission.timer[1].count, gPlayerScore.P2items);
+									gPlayerScore.P2items++;
+
+									if (gPlayerScore.P2items == gNumRaceTrackLaps)
+									{
+										SetMissionComplete();
+									}
+								}
+							}
+							break;
+						}
 					}
+					
+					return 0;
 				}
 
 				switch (target->target_flags & (TARGET_FLAG_POINT_CTF_BASE_P1 | TARGET_FLAG_POINT_CTF_BASE_P2 | TARGET_FLAG_POINT_CTF_FLAG))
@@ -2762,14 +2770,14 @@ extern int gStopPadReads;
 // [D] [T]
 int Handle321Go(void)
 {
-	if (MissionHeader->type & 4) 
+	if (MissionHeader->type & 0x4) 
 	{
 		gStopPadReads = 1;
 		
 		if (++g321GoDelay == 96) 
 		{
 			gStopPadReads = 0;
-			MissionHeader->type &= ~4;
+			MissionHeader->type &= ~0x4;
 		}
 
 		return 1;
@@ -2834,7 +2842,7 @@ int HandleGameOver(void)
 
 		if (lp->playerType == 1)
 		{
-			if ((Mission.timer[0].flags & 0x10) || TannerStuckInCar(0, player_id))
+			if ((Mission.timer[0].flags & TIMER_FLAG_BOMB_COUNTDOWN) || TannerStuckInCar(0, player_id))
 			{
 				cp = &car_data[lp->playerCarId];
 				
@@ -2885,7 +2893,7 @@ int HandleGameOver(void)
 		{
 			if (gGotInStolenCar == 0) 
 			{
-				if (Mission.timer[player_id].flags & 0x10)
+				if (Mission.timer[player_id].flags & TIMER_FLAG_BOMB_COUNTDOWN)
 					BombThePlayerToHellAndBack(gCarWithABerm);
 
 				if (lp->playerType == 2) 
@@ -3006,9 +3014,10 @@ void SetMissionComplete(void)
 			}
 			break;
 		case GAME_MISSION:
-			if (Mission.timer[0].flags & 0x10)
+			if (Mission.timer[0].flags & TIMER_FLAG_BOMB_COUNTDOWN)
 			{
-				Mission.timer[0].flags |= 0x20;
+				Mission.timer[0].flags |= TIMER_FLAG_BOMB_TRIGGERED;
+				
 				DetonatorTimer();
 				return;
 			}
@@ -3159,9 +3168,9 @@ void HandleMission(void)
 		switch (MissionHeader->type & 0x30)
 		{
 		case 0x20:
-			FelonyBar.flags |= 2;
+			FelonyBar.flags |= 0x2;
 		case 0:
-			FelonyBar.active = 1;
+			FelonyBar.active = 0x1;
 			break;
 		case 0x10:
 			FelonyBar.active = 0;

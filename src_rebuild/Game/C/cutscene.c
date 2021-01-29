@@ -325,7 +325,7 @@ void TriggerChase(int *car, int cutscene)
 				Mission.timer[0].count = (length / 30) * 3000 - 15000;
 		}
 
-		Mission.timer[0].flags = 1;
+		Mission.timer[0].flags = TIMER_FLAG_ACTIVE;
 
 		*car = CutsceneStreamIndex;
 		player[0].targetCarId = CutsceneStreamIndex;
