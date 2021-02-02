@@ -3763,7 +3763,7 @@ int DetonatorTimer(void)
 
 					rememberCameraAngle = camera_angle;
 					
-					Mission.timer[0].flags &= TIMER_FLAG_BOMB_COUNTDOWN;
+					Mission.timer[0].flags &= ~TIMER_FLAG_BOMB_COUNTDOWN;
 					
 					SetMissionComplete();
 				}
