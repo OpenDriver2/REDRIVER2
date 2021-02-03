@@ -1147,7 +1147,7 @@ void RegisterChaseHit(int car1, int car2)
 		{
 			if (car1 == Mission.ChaseTarget->car.slot || car2 == Mission.ChaseTarget->car.slot)
 			{
-				Mission.ChaseTarget->car.chasing.maxDamage--;
+				Mission.ChaseTarget->car.chasing.maxDamage = 0;// --;
 				Mission.ChaseHitDelay = 20;
 				DamageBar.position++;
 			}
@@ -2456,11 +2456,10 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 					}
 					case 48:
 					{
-						if (gCurrentMissionNumber == 11 ||
+						if ((gCurrentMissionNumber == 11 ||
 							gCurrentMissionNumber == 14 ||
 							gCurrentMissionNumber == 19 ||
-							gCurrentMissionNumber == 28 ||
-							cp->totalDamage < MaxPlayerDamage[0])
+							gCurrentMissionNumber == 28) && cp->totalDamage < MaxPlayerDamage[0])
 						{
 							if (player[0].playerCarId == slot)
 							{
