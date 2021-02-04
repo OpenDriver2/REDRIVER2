@@ -853,7 +853,7 @@ void CheckLoadAreaData(int cellx, int cellz)
 
 		if (old_region == -1)
 			LoadedArea = -1;
-		else if (spoolptr->super_region == 0xFF || nAreas == 0)
+		else if (/*spoolptr->super_region == 0xFF ||*/ nAreas == 0)
 			return;
 
 		// [A] Rev 1.1 patch
