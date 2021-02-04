@@ -2456,32 +2456,34 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 					}
 					case 48:
 					{
-						if (gCurrentMissionNumber == 11 ||
-							gCurrentMissionNumber == 14 ||
-							gCurrentMissionNumber == 19 ||
-							gCurrentMissionNumber == 26 ||
-							gCurrentMissionNumber == 28)
+						// Find the Clue and Steal the keys
+						int failIfDamaged;
+
+						failIfDamaged = (gCurrentMissionNumber != 14 && gCurrentMissionNumber != 28);
+
+						// check if player entered the car
+						if (player[0].playerCarId == slot)
 						{
-							// Find the Clue and Steal the keys
-							int failIfDamaged;
+							cp->inform = NULL;
 
-							failIfDamaged = (gCurrentMissionNumber != 14 && gCurrentMissionNumber != 28);
-
-							// check if player entered the car
-							if (player[0].playerCarId == slot)
+							// signal to mission about stolen car so Find the Clue/Steal the keys can progress
+							if (!failIfDamaged)
 							{
-								cp->inform = NULL;
-
-								// signal to mission about stolen car so Find the Clue/Steal the keys can progress
-								if (!failIfDamaged)
-								{
-									cp->totalDamage = MaxPlayerDamage[0];
-									gGotInStolenCar = 1;
-								}
-								
-								ret = 1;
+								cp->totalDamage = MaxPlayerDamage[0];
+								gGotInStolenCar = 1;
 							}
 
+							ret = 1;
+						}
+
+						// check all chase missions where we able to get into chased cars
+						if (gCurrentMissionNumber == 11 ||	// hijack
+							gCurrentMissionNumber == 13 ||	// stop truck
+							gCurrentMissionNumber == 14 ||	// find the clue
+							gCurrentMissionNumber == 19 ||	// pursue jericho
+							gCurrentMissionNumber == 26 ||	// steal the ambulance
+							gCurrentMissionNumber == 28)	// steal the keys
+						{
 							// check if target car is damaged
 							if(failIfDamaged && cp->totalDamage >= MaxPlayerDamage[0])
 							{
