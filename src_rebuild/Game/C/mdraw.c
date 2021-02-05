@@ -144,7 +144,7 @@ void DrawOverheadTarget(MS_TARGET *target)
 	if (TargetComplete(target, -1))
 		return;
 
-	if ((target->target_flags & 0x600) == 0)  // invisible flag
+	if ((target->target_flags & TARGET_FLAG_VISIBLE_ALLP) == 0)
 		return;
 
 	switch(target->type)
@@ -179,7 +179,7 @@ void DrawFullscreenTarget(MS_TARGET *target)
 	if (TargetComplete(target, -1))
 		return;
 
-	if ((target->target_flags & 0x600) == 0)
+	if ((target->target_flags & TARGET_FLAG_VISIBLE_ALLP) == 0)
 		return;
 
 	switch(target->type)
@@ -220,7 +220,7 @@ void DrawWorldTarget(MS_TARGET *target)
 
 	gDraw3DArrowBlue = 0;
 
-	flags = 2;
+	flags = 0x2;
 	
 	switch(target->type)
 	{
@@ -231,14 +231,27 @@ void DrawWorldTarget(MS_TARGET *target)
 			tv.vy = 10000;
 
 			// Capture the Flag target properties
-			switch(target->target_flags & 0x30000)
+			switch(target->target_flags & (TARGET_FLAG_POINT_CTF_BASE_P1 | TARGET_FLAG_POINT_CTF_BASE_P2 | TARGET_FLAG_POINT_CTF_FLAG))
 			{
-				case 0x20000:
+				case TARGET_FLAG_POINT_CTF_BASE_P1:
 				{
+					// [A]
+					if(CurrentPlayerView != 0)
+						flags = 0x10;
+						
+					gDraw3DArrowBlue = 0;
+					break;
+				}
+				case TARGET_FLAG_POINT_CTF_BASE_P2:
+				{
+					// [A]
+					if (CurrentPlayerView != 1)
+						flags = 0x10;
+						
 					gDraw3DArrowBlue = 1;
 					break;
 				}
-				case 0x30000:
+				case TARGET_FLAG_POINT_CTF_FLAG:
 				{
 					if (gPlayerWithTheFlag == -1) 
 					{
@@ -257,11 +270,6 @@ void DrawWorldTarget(MS_TARGET *target)
 							gDraw3DArrowBlue = 1;
 					}
 
-					break;
-				}
-				case 0x10000:
-				{
-					gDraw3DArrowBlue = CurrentPlayerView;
 					break;
 				}
 			}
@@ -295,13 +303,16 @@ void DrawWorldTarget(MS_TARGET *target)
 			return;
 	}
 
-	if (gMultiplayerLevels != 0 && doSpooling == 0 || Long2DDistance(player[0].spoolXZ, &tv) <= 15900)
+	if (gMultiplayerLevels && doSpooling == 0 || Long2DDistance(player[0].spoolXZ, &tv) <= 15900)
 	{
-		if (target->display_flags & 0x20)
-			flags |= 0x1;
+		if((flags & 0x10) == 0)
+		{
+			if (target->display_flags & 0x20)
+				flags |= 0x1;
 
-		if (target->display_flags & 0x80)
-			flags |= 0x20;
+			if (target->display_flags & 0x80)
+				flags |= 0x20;
+		}
 
 		if (flags) 
 			Draw3DTarget(&tv, flags);
@@ -352,23 +363,23 @@ void DrawMultiplayerTarget(MS_TARGET *target)
 			tv.vy = 10000;
 
 			// Capture the Flag target properties
-			switch(target->target_flags & 0x30000)
+			switch(target->target_flags & (TARGET_FLAG_POINT_CTF_BASE_P1 | TARGET_FLAG_POINT_CTF_BASE_P2 | TARGET_FLAG_POINT_CTF_FLAG))
 			{
-				case 0x10000:
+				case TARGET_FLAG_POINT_CTF_BASE_P1:
 				{
 					r = 128;
 					g = 0;
 					b = 0;
 					break;
 				}
-				case 0x20000:
+				case TARGET_FLAG_POINT_CTF_BASE_P2:
 				{
 					r = 0;
 					g = 128;
 					b = 0;
 					break;
 				}
-				case 0x30000:
+				case TARGET_FLAG_POINT_CTF_FLAG:
 				{
 					if(gPlayerWithTheFlag != -1)
 					{

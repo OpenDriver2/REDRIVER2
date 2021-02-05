@@ -2,6 +2,7 @@
 #define GAMESND_H
 
 // Game loaded sound banks. DO NOT EDIT!
+#define SOUND_BANK_DUMMY		0
 #define SOUND_BANK_SFX			1
 #define SOUND_BANK_VOICES		2
 #define SOUND_BANK_CARS			3

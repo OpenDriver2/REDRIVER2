@@ -454,14 +454,14 @@ void HandleDrivingGames(void)
 							gTrailblazerConeIndex += i + 1;
 
 							Mission.timer[id].count -= 3000;
-							SetPlayerMessage(id, "-1 second", 2, 1);
+							SetPlayerMessage(id, G_LTXT(GTXT_Minus1second), 2, 1);
 						}
 					}
 				}
 			}
 
 			if (gTrailblazerConeIndex == 100)
-				MissionTargets[NumPlayers - 1].target_flags |= 0x102;
+				MissionTargets[NumPlayers - 1].target_flags |= TARGET_FLAG_COMPLETED_ALLP;
 		}
 		else if (GameType == GAME_TRAILBLAZER)
 		{
@@ -502,7 +502,7 @@ void HandleDrivingGames(void)
 			}
 
 			if (gTrailblazerConeIndex == 100)
-				MissionTargets[NumPlayers - 1].target_flags |= 0x102;
+				MissionTargets[NumPlayers - 1].target_flags |= TARGET_FLAG_COMPLETED_ALLP;
 		}
 	}
 

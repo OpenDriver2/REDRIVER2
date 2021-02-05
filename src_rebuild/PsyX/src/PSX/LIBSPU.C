@@ -75,6 +75,7 @@ struct SPUMemory
 };
 
 static SPUMemory s_SpuMemory;
+SDL_mutex* g_SpuMutex = NULL;
 
 struct SPUVoice
 {
@@ -220,6 +221,8 @@ bool Emulator_InitSound()
 
 	InitOpenAlEffects();
 
+	g_SpuMutex = SDL_CreateMutex();
+
 	return true;
 }
 
@@ -316,7 +319,7 @@ int decodeSound(unsigned char* iData, int soundSize, short* oData, int* loopStar
 			// flags parsed
 			if (flag & ADPCM_FLAGS::LoopStart)
 			{
-				loopStrt = k + 26;
+				loopStrt = k + 26; // FIXME: is that correct?
 			}
 
 			if (flag & ADPCM_FLAGS::LoopEnd)
@@ -458,6 +461,9 @@ void UpdateVoiceSample(SPUVoice& voice)
 	ALuint alSource = voice.alSource;
 	ALuint alBuffer = voice.alBuffer;
 
+	if (alSource == AL_NONE)
+		return;
+
 	int loopStart = 0, loopLen = 0;
 	int count = decodeSound(s_SpuMemory.samplemem + voice.attr.addr, SPU_REALMEMSIZE - voice.attr.addr, waveBuffer, &loopStart, &loopLen, true);
 
@@ -495,25 +501,26 @@ void UpdateVoiceSample(SPUVoice& voice)
 #endif
 
 	alSourcei(alSource, AL_BUFFER, 0);
+	alBufferData(alBuffer, AL_FORMAT_MONO16, waveBuffer, count * sizeof(short), 44100);
 
 	if (loopLen > 0)
 	{
 		loopStart += voice.attr.loop_addr - voice.attr.addr;
 
-		int sampleOffs[] = { loopStart, loopStart + loopLen };
-		alBufferiv(alBuffer, AL_LOOP_POINTS_SOFT, sampleOffs);
+		if (loopStart-54 > 0 && loopStart + loopLen <= count)
+		{
+			int sampleOffs[] = { loopStart, loopStart + loopLen };
+			alBufferiv(alBuffer, AL_LOOP_POINTS_SOFT, sampleOffs);
+		}
 
 		alSourcei(alSource, AL_LOOPING, AL_TRUE);
 	}
 	else
 	{
-		int sampleOffs[] = { 0, 0 };
-		alBufferiv(alBuffer, AL_LOOP_POINTS_SOFT, sampleOffs);
+		//int sampleOffs[] = { 0, 0 };
+		//alBufferiv(alBuffer, AL_LOOP_POINTS_SOFT, sampleOffs);
 		alSourcei(alSource, AL_LOOPING, AL_FALSE);
 	}
-
-
-	alBufferData(alBuffer, AL_FORMAT_MONO16, waveBuffer, count * sizeof(short), 44100);
 
 	// set the buffer
 	alSourcei(alSource, AL_BUFFER, alBuffer);
@@ -521,6 +528,8 @@ void UpdateVoiceSample(SPUVoice& voice)
 
 void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 {
+	SDL_LockMutex(g_SpuMutex);
+
 	for (int i = 0; i < SPU_VOICES; i++)
 	{
 		if (!(arg->voice & SPU_VOICECH(i)))
@@ -530,6 +539,9 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 
 		ALuint alSource = voice.alSource;
 
+		if (alSource == AL_NONE)
+			continue;
+		
 		// update sample
 		if ((arg->mask & SPU_VOICE_WDSA) || (arg->mask & SPU_VOICE_LSAX))
 		{
@@ -595,10 +607,12 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 		
 		// TODO: ADSR and other stuff
 	}
+	SDL_UnlockMutex(g_SpuMutex);
 }
 
 void SpuSetKey(long on_off, unsigned long voice_bit)
 {
+	SDL_LockMutex(g_SpuMutex);
 	for (int i = 0; i < SPU_VOICES; i++)
 	{
 		if (voice_bit & SPU_VOICECH(i))
@@ -606,6 +620,9 @@ void SpuSetKey(long on_off, unsigned long voice_bit)
 			SPUVoice& voice = g_SpuVoices[i];
 
 			ALuint alSource = voice.alSource;
+
+			if (alSource == AL_NONE)
+				continue;
 
 			if (on_off && !g_SPUMuted)
 			{
@@ -620,11 +637,14 @@ void SpuSetKey(long on_off, unsigned long voice_bit)
 			}
 		}
 	}
+	SDL_UnlockMutex(g_SpuMutex);
 }
 
 long SpuGetKeyStatus(unsigned long voice_bit)
 {
 	int state = AL_STOPPED;
+
+	SDL_LockMutex(g_SpuMutex);
 
 	for (int i = 0; i < SPU_VOICES; i++)
 	{
@@ -635,26 +655,40 @@ long SpuGetKeyStatus(unsigned long voice_bit)
 
 		ALuint alSource = voice.alSource;
 
+		if (alSource == AL_NONE)
+			break; // SpuOff?
+
 		alGetSourcei(alSource, AL_SOURCE_STATE, &state);
 		break;
 	}
+
+	SDL_UnlockMutex(g_SpuMutex);
 
 	return (state == AL_PLAYING);	// simple as this?
 }
 
 void SpuGetAllKeysStatus(char* status)
 {
+	SDL_LockMutex(g_SpuMutex);
+
 	for (int i = 0; i < SPU_VOICES; i++)
 	{
 		SPUVoice& voice = g_SpuVoices[i];
 
 		ALuint alSource = voice.alSource;
 
+		if (alSource == AL_NONE)
+		{
+			status[i] = 0; // SpuOff?
+			continue;
+		}
+		
 		int state;
 		alGetSourcei(alSource, AL_SOURCE_STATE, &state);
 
 		status[i] = (state == AL_PLAYING);
 	}
+	SDL_UnlockMutex(g_SpuMutex);
 }
 
 void SpuSetKeyOnWithAttr(SpuVoiceAttr* attr)
@@ -744,6 +778,8 @@ unsigned long SpuSetReverbVoice(long on_off, unsigned long voice_bit)
 	if(!g_ALEffectsSupported)
 		return 0;
 
+	SDL_LockMutex(g_SpuMutex);
+
 	for (int i = 0; i < SPU_VOICES; i++)
 	{
 		if (voice_bit & SPU_VOICECH(i))
@@ -751,6 +787,9 @@ unsigned long SpuSetReverbVoice(long on_off, unsigned long voice_bit)
 			SPUVoice& voice = g_SpuVoices[i];
 
 			ALuint alSource = voice.alSource;
+
+			if (alSource == AL_NONE)
+				continue;
 
 			if (on_off)
 			{
@@ -762,6 +801,8 @@ unsigned long SpuSetReverbVoice(long on_off, unsigned long voice_bit)
 			}
 		}
 	}
+
+	SDL_UnlockMutex(g_SpuMutex);
 
 	return 0;
 }
@@ -796,6 +837,9 @@ long SpuMalloc(long size)
 {
 	int addr = s_spuMallocVal;
 	s_spuMallocVal += size;
+
+	if (s_spuMallocVal > SPU_MEMSIZE)
+		return -1;
 
 	return addr;
 }

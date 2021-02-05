@@ -363,6 +363,7 @@ enum ModelFlags2
 	MODEL_FLAG_ALLEY			= 0x80,
 	MODEL_FLAG_HASROOF			= 0x100,
 	MODEL_FLAG_NOCOL_200		= 0x200,
+	MODEL_FLAG_BARRIER			= 0x400,
 	MODEL_FLAG_SMASHABLE		= 0x800,
 	MODEL_FLAG_LAMP				= 0x1000,
 	MODEL_FLAG_TREE				= 0x2000,
@@ -1223,9 +1224,9 @@ typedef struct _ROUTE_INFO
 enum TARGET_TYPE
 {
 	Target_Point = 1,
-	Target_Car = 2,
+	Target_Car = 2,				// any mission target car. Also, a multiplayer player 2 car in Cops'n'Robbers
 	Target_Event = 3,
-	Target_Car2 = 4,
+	Target_Player2Start = 4,		// player 2 start
 	Target_MultiCar = 5
 };
 
@@ -1236,6 +1237,43 @@ struct MULTICAR_DATA
 	u_char palette;
 	u_char model;
 	short rot;
+};
+
+enum TargetFlags
+{
+	// common target properties
+	TARGET_FLAG_ACTIVE_P1					= 0x1,
+	TARGET_FLAG_ACTIVE_P2					= 0x800,
+	TARGET_FLAG_ACTIVE_ALLP					= (TARGET_FLAG_ACTIVE_P1 | TARGET_FLAG_ACTIVE_P2),
+
+	TARGET_FLAG_COMPLETED_P1				= 0x2,
+	TARGET_FLAG_COMPLETED_P2				= 0x100,
+	TARGET_FLAG_COMPLETED_ALLP				= (TARGET_FLAG_COMPLETED_P1 | TARGET_FLAG_COMPLETED_P2),
+
+	TARGET_FLAG_VISIBLE_P1					= 0x200,
+	TARGET_FLAG_VISIBLE_P2					= 0x400,
+	TARGET_FLAG_VISIBLE_ALLP				= (TARGET_FLAG_VISIBLE_P1 | TARGET_FLAG_VISIBLE_P2),
+
+	// point target properties
+	TARGET_FLAG_POINT_CTF_BASE_P1			= 0x10000,
+	TARGET_FLAG_POINT_CTF_BASE_P2			= 0x20000,
+	TARGET_FLAG_POINT_CTF_FLAG				= 0x30000,
+
+	TARGET_FLAG_POINT_SECRET_POINT1			= 0x1000000,
+	TARGET_FLAG_POINT_SECRET_POINT2			= 0x2000000,
+	TARGET_FLAG_POINT_SECRET_STARTFINISH	= 0x3000000,
+
+	TARGET_FLAG_POINT_ON_BOAT				= 0x100000,
+	TARGET_FLAG_POINT_STOP_COPS_TRIGGER		= 0x200000,
+
+	// car target properties
+	TARGET_FLAG_CAR_SAVED					= 0x10,
+	TARGET_FLAG_CAR_PLAYERCONTROLLED		= 0x20,
+	TARGET_FLAG_CAR_SWAPPED					= 0x40,
+	TARGET_FLAG_CAR_PINGED_IN				= 0x40000000,
+
+	// event target properties
+	TARGET_FLAG_EVENT_TRIGGERED = 0x1000,
 };
 
 typedef struct _TARGET
@@ -1262,8 +1300,8 @@ typedef struct _TARGET
 					int height;				// data 7
 					int loseTailMessage;	// data 8
 					int actionFlag;			// data 9
-					int boatX;				// data 10
-					int boatZ;				// data 11
+					int boatOffsetX;		// data 10
+					int boatOffsetZ;		// data 11
 				} point;
 
 				struct
@@ -1329,6 +1367,25 @@ typedef enum PAUSEMODE
 	PAUSEMODE_COMPLETE = 4,
 	PAUSEMODE_PADERROR = 5,
 } PAUSEMODE;
+
+enum TimerFlags
+{
+	TIMER_FLAG_ACTIVE				= 0x1,
+	TIMER_FLAG_COUNTER				= 0x2,
+	TIMER_FLAG_PAUSED				= 0x4,
+	
+	TIMER_FLAG_COMPLETE_ON_OUT		= 0x8,
+	TIMER_FLAG_BOMB_COUNTDOWN		= 0x10,
+	TIMER_FLAG_BOMB_TRIGGERED		= 0x20,
+};
+
+enum MissionTimerFlags
+{
+	MISSIONTIMER_FLAG_BOMB_TIMER		= 0x1000,
+	MISSIONTIMER_FLAG_BOMB_COUNTDOWN	= 0x2000,
+	MISSIONTIMER_FLAG_COMPLETE_ON_OUT	= 0x4000,
+	MISSIONTIMER_FLAG_COUNTER			= 0x8000,
+};
 
 struct MR_TIMER
 {

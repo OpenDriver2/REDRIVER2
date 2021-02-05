@@ -368,9 +368,22 @@ void RunMissionLadder(int newgame)
 
 	do {
 		if (CurrentStep->disc == 0)
+		{
 			CheckForCorrectDisc(0);
+		}
 		else
+		{
+#ifndef PSX
+			extern int gImitateDiscSwap;
+			extern int gImitateDiscSwapFrames;
+			if (gImitateDiscSwap != -1)
+			{
+				gImitateDiscSwapFrames = VSync(-1);
+				gImitateDiscSwap = 1;
+			}
+#endif
 			CheckForCorrectDisc(1);
+		}
 
 		if (RenderArgs.nRenders == 4)
 		{

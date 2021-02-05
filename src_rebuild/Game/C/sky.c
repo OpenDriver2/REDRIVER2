@@ -473,6 +473,12 @@ void DisplayMoon(DVECTOR* pos, CVECTOR* col, int flip)
 }
 
 extern VECTOR dummy;
+RECT16 sun_source = {
+		1008,
+		456,
+		16,
+		10
+};
 
 // [D] [T]
 void DrawLensFlare(void)
@@ -507,12 +513,7 @@ void DrawLensFlare(void)
 	RECT16 source;
 	CVECTOR col;
 
-	source = {
-		1008,
-		456,
-		16,
-		10
-	};
+	source = sun_source;
 
 	if (gWeather - 1U <= 1 || gTimeOfDay == 0 || gTimeOfDay == 2)
 		return;
@@ -675,11 +676,16 @@ void DrawLensFlare(void)
 			source.x = sun_pers_conv_position.vx;
 			source.y = sun_pers_conv_position.vy + last->disp.disp.y;
 
+#if 1//def PSX
 			sample_sun = (DR_MOVE*)current->primptr;
 			SetDrawMove(sample_sun, &source, 1008, 456);
 
 			addPrim(current->ot + 0x20, sample_sun);
 			current->primptr += sizeof(DR_MOVE);
+#else
+			// to avoid delays and uploads to GPU we're simply going to directly request from screen VRAM area
+			sun_source = source;
+#endif
 		}
 		else
 		{

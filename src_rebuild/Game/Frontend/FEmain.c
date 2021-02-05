@@ -1,4 +1,5 @@
 #include "driver2.h"
+
 #include "FEmain.h"
 
 #include "LIBGPU.H"
@@ -24,6 +25,42 @@
 #include "MemCard/main.h"
 
 #include "STRINGS.H"
+
+struct PSXBUTTON
+{
+	short x;
+	short y;
+	short w;
+	short h;
+	unsigned char l;
+	unsigned char r;
+	unsigned char u;
+	unsigned char d;
+	int userDrawFunctionNum;
+	short s_x;
+	short s_y;
+	int action;
+	int var;
+	char Name[32];
+};
+
+struct PSXSCREEN
+{
+	unsigned char index;
+	unsigned char numButtons;
+	unsigned char userFunctionNum;
+	PSXBUTTON buttons[8];
+};
+
+// #define USE_EMBEDDED_FRONTEND_SCREENS
+
+#ifdef USE_EMBEDDED_FRONTEND_SCREENS
+PSXSCREEN PsxScreens[] = {
+	#include "FEscreens.inc"
+};
+#else
+PSXSCREEN PsxScreens[42];
+#endif
 
 #define FE_OTSIZE 16
 
@@ -386,7 +423,6 @@ PSXSCREEN* pNewScreen = NULL;
 PSXBUTTON* pNewButton = NULL;
 PSXBUTTON* pCurrButton = NULL;
 
-PSXSCREEN PsxScreens[42] = { 0 };
 PSXSCREEN* pScreenStack[10] = { 0 };
 PSXBUTTON* pButtonStack[10] = { 0 };
 
@@ -998,19 +1034,10 @@ void SetupExtraPoly(char *fileName, int offset, int offset2)
 void LoadBackgroundFile(char* name)
 {
 	int iTpage;
-	int p;
 	RECT16 rect;
-	int pages[6];
 	int i;
 
 	iTpage = 11;
-
-	pages[0] = 0;
-	pages[1] = 1;
-	pages[2] = 2;
-	pages[3] = 3;
-	pages[4] = 4;
-	pages[5] = 5;
 
 	mainScreenLoaded = (strcmp(name, "DATA\\GFX.RAW") == 0);
 
@@ -1021,11 +1048,11 @@ void LoadBackgroundFile(char* name)
 	{
 		FEDrawCDicon();
 
-		LoadfileSeg(name, _overlay_buffer, pages[i] * 0x8000, 0x8000);
+		LoadfileSeg(name, _overlay_buffer, i * 0x8000, 0x8000);
 		FEDrawCDicon();
 
-		rect.y = (pages[i] / 6);
-		rect.x = (pages[i] - rect.y * 6) * 64 + 640;
+		rect.y = (i / 6);
+		rect.x = (i - rect.y * 6) * 64 + 640;
 		rect.y *= 256;
 
 		LoadImage(&rect, (u_long*)_overlay_buffer);
@@ -1057,6 +1084,7 @@ void LoadFrontendScreens(void)
 	ShowLoadingScreen("GFX\\FELOAD.TIM", 1, 12);
 	ShowLoading();
 
+#ifndef USE_EMBEDDED_FRONTEND_SCREENS
 	Loadfile("DATA\\SCRS.BIN", _frontend_buffer);
 
 	ptr = _frontend_buffer + 20; // skip header and number of screens
@@ -1073,6 +1101,7 @@ void LoadFrontendScreens(void)
 			ptr += sizeof(PSXBUTTON);
 		}
 	}
+#endif
 
 	rect.w = 64;
 	rect.h = 256;

@@ -53,8 +53,6 @@ void StorePlayerPosition(SAVED_PLAYER_POS *data)
 		data->damage[4] = 0;
 		data->damage[5] = 0;
 	}
-
-
 }
 
 
@@ -125,7 +123,7 @@ void StoreCarPosition(MS_TARGET *target, SAVED_CAR_POS *data)
 
 	data->active = 1;
 	
-	if (target->target_flags & 0x40)
+	if (target->target_flags & TARGET_FLAG_CAR_SWAPPED)
 		data->active |= 0x80;
 }
 
@@ -208,7 +206,7 @@ void StoreEndData(void)
 		carpos = &MissionEndData.CarPos[numStored];
 
 		if (target->type == Target_Car && 
-			(target->target_flags & 0x10))
+			(target->target_flags & TARGET_FLAG_CAR_SAVED))
 		{
 			StoreCarPosition(target, carpos);
 			numStored++;

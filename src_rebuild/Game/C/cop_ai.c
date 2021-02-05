@@ -869,7 +869,7 @@ void ControlCopDetection(void)
 	{
 		player[0].dying = 1;
 		
-		SetMissionMessage("You've been caught.",3,2);
+		SetMissionMessage(G_LTXT(GTXT_YouveBeenCaught),3,2);
 		SetMissionFailed(FAILED_MESSAGESET);
 	}
 

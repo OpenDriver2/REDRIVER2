@@ -18,9 +18,13 @@ enum GameStrId
 	GTXT_Cones,
 	GTXT_Gates,
 	GTXT_Checks,
+	GTXT_Minus1second,
 	
 	GTXT_Flags,
 	GTXT_Lap,
+	GTXT_YouGotTheFlag,
+	GTXT_WellDone,
+	GTXT_YouveBeenCaught,
 
 	GTXT_OutOfTape,
 	GTXT_DEMO,
@@ -29,6 +33,12 @@ enum GameStrId
 
 	// pause strings
 	GTXT_PleaseWait,
+	GTXT_PleaseinsertDISC1,
+	GTXT_PleaseinsertDISC2,
+	GTXT_NoDISCinserted,
+	GTXT_IncorrectDISCinserted,
+	GTXT_Checking,
+	
 	GTXT_AreYouSure,
 	GTXT_Paused,
 	GTXT_MissionSuccessful,
@@ -100,6 +110,9 @@ enum GameStrId
 	GTXT_LocktoCar,
 	GTXT_Rotate,
 	GTXT_Zoom,
+
+	// RED2
+	GTXT_GetawayIs,
 };
 
 enum MissionStrId

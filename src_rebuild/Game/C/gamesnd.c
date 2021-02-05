@@ -282,6 +282,7 @@ int MapCarIndexToBank(int index)
 
 	model = RM[index];
 
+	// [A] Rev 1.1 removes this block
 	if (gCurrentMissionNumber - 39U < 2 && RM[index] == 13)
 	{
 		model = 10 - (RM[0] + RM[1] + RM[2]);
@@ -470,22 +471,27 @@ void LoadLevelSFX(int missionNum)
 			index = 0;
 	}
 
+	// mission bank	
 	if (index != 0)
 		LoadBankFromLump(SOUND_BANK_MISSION, index);
 
+	// special siren bank
 	if (GameLevel == 0 || GameLevel == 3)
 		LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_SPECIAL_SIREN1);
 	else if (GameLevel == 2)
 		LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_SPECIAL_SIREN2);
 
-	LoadSoundBankDynamic(NULL, 1, 0);
-	LoadSoundBankDynamic(NULL, 3, 3);
+	// [A] padding?
+	LoadSoundBankDynamic(NULL, 1, SOUND_BANK_DUMMY);
+	LoadSoundBankDynamic(NULL, 3, SOUND_BANK_CARS);
 
+	// special vehicle 1 bank
 	if (missionNum - 39U < 2 || missionNum >= 400 && missionNum <= 404)
 		LoadBankFromLump(SOUND_BANK_CARS, MapCarIndexToBank(4));
 	else
 		LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(0));
 
+	// special vehicle 2 bank
 	if (missionNum != 24 && missionNum != 27 &&
 		missionNum != 29 && missionNum != 30 &&
 		missionNum != 35)
@@ -493,6 +499,7 @@ void LoadLevelSFX(int missionNum)
 		LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(1));
 	}
 
+	// secret car sound bank
 	if (missionNum - 50U < 16 || missionNum >= 400)
 	{
 		LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(2));

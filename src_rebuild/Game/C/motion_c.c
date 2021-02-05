@@ -122,7 +122,7 @@ PED_DATA MainPed[NUM_BONES] =
 	{ 1, 68u, &chest1_texture, CHEST_PAL },
 	{ 17, 36u, &chest1_texture, CHEST_PAL },
 	{ 6, 68u, &forearm1_texture, ARM_PAL },
-	{ 8, 48u, &head1_texture, NO_PAL },
+	{ 8, 22u, &head1_texture, NO_PAL },
 	{ 6, 68u, &arm1_texture, CHEST_PAL },
 	{ 8, 36u, &arm1_texture, CHEST_PAL },
 	{ 7, 68u, &forearm1_texture, ARM_PAL },
@@ -1624,11 +1624,17 @@ void DrawTanner(PEDESTRIAN* pPed)
 	iCurrBone = 0;
 	newShowTanner(pPed);
 
+	v.vx = pPed->position.vx;
+	v.vy = -pPed->position.vy;
+	v.vz = pPed->position.vz;
+	
+	v.vy = -camera_position.vy - MapHeight(&v);// - camera_position.vy;
+
 	v.vx = (pPed->position.vx - camera_position.vx) + Skel[ROOT].pvOrigPos->vx;
 	v.vz = (pPed->position.vz - camera_position.vz) + Skel[ROOT].pvOrigPos->vz;
+	//v.vy = -camera_position.vy - MapHeight((VECTOR*)&pPed->position);
 
 	bDoingShadow = 1;
-	v.vy = -camera_position.vy - MapHeight((VECTOR*)&pPed->position);
 
 	if (pPed->padId == 0)
 	{

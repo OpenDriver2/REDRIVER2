@@ -370,6 +370,11 @@ void SetDrawLoad(DR_LOAD* p, RECT16* RECT16)
 	setDrawLoad(p, RECT16);
 }
 
+void SetDrawTPage(DR_TPAGE* p, int dfe, int dtd, int tpage)
+{
+	setDrawTPage(p, dfe, dtd, tpage);
+}
+
 u_long DrawSyncCallback(void(*func)(void))
 {
 	drawsync_callback = func;

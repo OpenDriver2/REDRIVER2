@@ -325,6 +325,9 @@ void PlayXA(int num, int index)
 int XAPrepared(void)
 {
 #ifndef PSX
+	if (g_XASource == AL_NONE)
+		return xa_prepared;
+
 	ALint sourceState;
 	alGetSourcei(g_XASource, AL_SOURCE_STATE, &sourceState);
 
@@ -369,6 +372,7 @@ void UnprepareXA(void)
 
 		gPlaying = 0;
 		xa_prepared = 0;
+		g_XASource = AL_NONE;
 	}
 #endif
 }

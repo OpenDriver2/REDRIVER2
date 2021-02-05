@@ -407,6 +407,8 @@ void animate_object(CELL_OBJECT* cop, int type)
 
 	yang = cop->yang * 64;
 
+	// [A] Rev 1.1 has less of those types
+
 	if (GameLevel == 0)
 	{
 		switch (type)

@@ -259,8 +259,9 @@ const char* fmv_shader =
 TextureID g_FMVTexture = 0;
 ShaderID g_FMVShader = 0;
 
-extern void GR_Shader_CheckShaderStatus(GLuint shader);
-extern void GR_Shader_CheckProgramStatus(GLuint program);
+extern int GR_Shader_CheckShaderStatus(GLuint shader);
+extern int GR_Shader_CheckProgramStatus(GLuint program);
+
 extern ShaderID GR_Shader_Compile(const char* source);
 extern void GR_SetShader(const ShaderID& shader);
 

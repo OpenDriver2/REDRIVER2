@@ -8,13 +8,25 @@ Contrôle
 Cônes
 Portes
 Contrôles
+-1 seconde
 Drapeaux
 Tour
+-You got the flag!
+-Well done!
+-You've been caught!
+You got the flag!
+Well done!
+You've been caught!
 Fin de bande
 DEMO
 Avance rapide
 Réalisation automatique
 Veuillez attendre...
+Veuillez insérer le DISQUE 1
+Veuillez insérer le DISQUE 2
+Aucun disque inséré
+DISQUE incorrect inséré
+Vérification...
 Etes-vous sûr ?
 Pause
 Mission accomplie
@@ -83,3 +95,4 @@ Déplacer caméra
 Fixer voiture
 Rotation
 Zoom
+Escapade est

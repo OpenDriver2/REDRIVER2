@@ -607,10 +607,12 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 	model = modelpointers[cop->type];
 	player_id = GetPlayerId(cp);
 
-	if (cp->controlType == CONTROL_TYPE_TANNERCOLLIDER || cp->controlType == CONTROL_TYPE_CAMERACOLLIDER)
-		cd[0].isCameraOrTanner = 1;
-	else
-		cd[1].isCameraOrTanner = (flags & 0x1) == 0;
+	cd[0].isCameraOrTanner = (cp->controlType == CONTROL_TYPE_TANNERCOLLIDER || cp->controlType == CONTROL_TYPE_CAMERACOLLIDER);
+
+	if (cp->controlType == CONTROL_TYPE_TANNERCOLLIDER)
+		cd[0].isCameraOrTanner += 2;
+	
+	cd[1].isCameraOrTanner = (flags & CollisionCheckFlag_MightBeABarrier) == 0;
 
 	boxDiffY = cp->hd.oBox.location.vy + building->pos.vy;
 	boxDiffY = ABS(boxDiffY);
@@ -841,7 +843,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 				pointVel[1] = FIXEDH(cp->st.n.angularVelocity[2] * lever[0] - cp->st.n.angularVelocity[0] * lever[2]) + cp->st.n.linearVelocity[1];
 				pointVel[2] = FIXEDH(cp->st.n.angularVelocity[0] * lever[1] - cp->st.n.angularVelocity[1] * lever[0]) + cp->st.n.linearVelocity[2];
 
-				if (flags & 0x2) // [A] Vegas train velocity - added here
+				if (flags & CollisionCheckFlag_IsVegasMovingTrain) // [A] Vegas train velocity - added here
 				{
 					pointVel[2] += 700000;
 				}
