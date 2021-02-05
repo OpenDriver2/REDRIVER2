@@ -1147,7 +1147,7 @@ void RegisterChaseHit(int car1, int car2)
 		{
 			if (car1 == Mission.ChaseTarget->car.slot || car2 == Mission.ChaseTarget->car.slot)
 			{
-				Mission.ChaseTarget->car.chasing.maxDamage = 0;// --;
+				Mission.ChaseTarget->car.chasing.maxDamage--;
 				Mission.ChaseHitDelay = 20;
 				DamageBar.position++;
 			}
@@ -2469,8 +2469,8 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 							// signal to mission about stolen car so Find the Clue/Steal the keys can progress
 							if (!failIfDamaged)
 							{
-								cp->totalDamage = MaxPlayerDamage[0];
 								gGotInStolenCar = 1;
+								cp->totalDamage = MaxPlayerDamage[0];
 							}
 
 							ret = 1;
@@ -2497,7 +2497,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 					}
 					case 64:
 					{
-						if (copsAreInPursuit != 0)
+						if (copsAreInPursuit)
 							ret = 1;
 
 						break;
@@ -2580,7 +2580,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 	if (ret)
 	{
 		// keep only those flags
-		target->target_flags &= TARGET_FLAG_COMPLETED_ALLP;
+		target->target_flags &= ~TARGET_FLAG_COMPLETED_ALLP;
 		
 		if (thread->player == 0)
 			target->target_flags |= TARGET_FLAG_COMPLETED_P1;
