@@ -2456,31 +2456,43 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 					}
 					case 48:
 					{
-						if ((gCurrentMissionNumber == 11 ||
-							gCurrentMissionNumber == 14 ||
-							gCurrentMissionNumber == 19 ||
-							gCurrentMissionNumber == 28) && cp->totalDamage < MaxPlayerDamage[0])
+						// Find the Clue and Steal the keys
+						int failIfDamaged;
+
+						failIfDamaged = (gCurrentMissionNumber != 14 && gCurrentMissionNumber != 28);
+
+						// check if player entered the car
+						if (player[0].playerCarId == slot)
 						{
-							if (player[0].playerCarId == slot)
+							cp->inform = NULL;
+
+							// signal to mission about stolen car so Find the Clue/Steal the keys can progress
+							if (!failIfDamaged)
 							{
-								car_data[player[0].playerCarId].inform = NULL;
-
-								if (gCurrentMissionNumber == 14 || gCurrentMissionNumber == 28)
-									cp->totalDamage = MaxPlayerDamage[0];
-
-								ret = 1;
-
-								if (MaxPlayerDamage[0] <= cp->totalDamage)
-									gGotInStolenCar = 1;
+								cp->totalDamage = MaxPlayerDamage[0];
+								gGotInStolenCar = 1;
 							}
 
-							break;
+							ret = 1;
 						}
 
-						message = MissionStrings + MissionHeader->msgCarWrecked;
+						// check all chase missions where we able to get into chased cars
+						if (gCurrentMissionNumber == 11 ||	// hijack
+							gCurrentMissionNumber == 13 ||	// stop truck
+							gCurrentMissionNumber == 14 ||	// find the clue
+							gCurrentMissionNumber == 19 ||	// pursue jericho
+							gCurrentMissionNumber == 26 ||	// steal the ambulance
+							gCurrentMissionNumber == 28)	// steal the keys
+						{
+							// check if target car is damaged
+							if(failIfDamaged && cp->totalDamage >= MaxPlayerDamage[0])
+							{
+								message = MissionStrings + MissionHeader->msgCarWrecked;
 
-						SetPlayerMessage(thread->player, message, 2, 1);
-						SetMissionFailed(FAILED_MESSAGESET);
+								SetPlayerMessage(thread->player, message, 2, 1);
+								SetMissionFailed(FAILED_MESSAGESET);
+							}
+						}
 						break;
 					}
 					case 64:
@@ -2888,20 +2900,17 @@ int HandleGameOver(void)
 		if (tannerDeathTimer == 64)
 			lp->dying = 1;
 
-		if (lp->dying != 0)
+		if (lp->dying && !gGotInStolenCar)
 		{
-			if (gGotInStolenCar == 0) 
-			{
-				if (Mission.timer[player_id].flags & TIMER_FLAG_BOMB_COUNTDOWN)
-					BombThePlayerToHellAndBack(gCarWithABerm);
+			if (Mission.timer[player_id].flags & TIMER_FLAG_BOMB_COUNTDOWN)
+				BombThePlayerToHellAndBack(gCarWithABerm);
 
-				if (lp->playerType == 2) 
-					SetPlayerMessage(player_id, MissionStrings + MissionHeader->msgDrowned, 2, 2);
-				else 
-					SetPlayerMessage(player_id, MissionStrings + MissionHeader->msgCarWrecked, 2, 2);
+			if (lp->playerType == 2) 
+				SetPlayerMessage(player_id, MissionStrings + MissionHeader->msgDrowned, 2, 2);
+			else 
+				SetPlayerMessage(player_id, MissionStrings + MissionHeader->msgCarWrecked, 2, 2);
 
-				lp->dying++;
-			}
+			lp->dying++;
 		}
 
 		if (lp->dying > 40)
