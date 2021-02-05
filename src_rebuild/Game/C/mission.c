@@ -2459,7 +2459,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						// Find the Clue and Steal the keys
 						int failIfDamaged;
 
-						failIfDamaged = (gCurrentMissionNumber != 14 && gCurrentMissionNumber != 28);
+						failIfDamaged = (gCurrentMissionNumber != 14 && gCurrentMissionNumber != 19 && gCurrentMissionNumber != 28);
 
 						// check if player entered the car
 						if (player[0].playerCarId == slot)
