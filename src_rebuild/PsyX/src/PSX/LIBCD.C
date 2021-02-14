@@ -345,7 +345,7 @@ int ParseCueSheet()
 
 	if (openFile == NULL)
 	{
-		eprinterr("Failed to open disc image file! %s\n", DISC_IMAGE_FILENAME);
+		eprinterr("%s not found.\n", DISC_IMAGE_FILENAME);
 		return 0;
 	}
 
@@ -421,6 +421,14 @@ int ParseCueSheet()
 
 		fclose(openFile);
 		openFile = fopen(binFileName, "rb");
+
+		if (!openFile)
+		{
+			eprinterr("%s not found.\n", binFileName);
+			free(cueSheet);
+			return 0;
+		}
+
 		fseek(openFile, 0, SEEK_END);
 		unsigned int binFileLength = ftell(openFile);
 		numFrames = binFileLength / sectorSize;
@@ -438,10 +446,7 @@ int CdInit(void)
 
 	//Read the cue sheet and obtain properties from it.
 	if (!ParseCueSheet())
-	{
-		eprinterr("Failed to read cue sheet!\n");
 		return 0;
-	}
 
 	memset(&comQueue, 0, sizeof(comQueue));
 	for (int i = 0; i < COMMAND_QUEUE_SIZE; i++)

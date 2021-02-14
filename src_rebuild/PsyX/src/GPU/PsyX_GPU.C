@@ -378,9 +378,8 @@ void MakeTexcoordTriangle(struct GrVertex* vertex, unsigned char* uv0, unsigned 
 void MakeTexcoordRect(struct GrVertex* vertex, unsigned char* uv, short page, short clut, short w, short h)
 {
 	assert(uv);
-	//assert(int(uv[0]) + w <= 255);
-	//assert(int(uv[1]) + h <= 255);
-	// TODO
+
+	// sim overflow
 	if (int(uv[0]) + w > 255) w = 255 - uv[0];
 	if (int(uv[1]) + h > 255) h = 255 - uv[1];
 
@@ -772,26 +771,26 @@ int ParsePrimitive(uintptr_t primPtr)
 	{
 		switch (pTag->code)
 		{
-		case 0x01:
-		{
-			DR_MOVE* drmove = (DR_MOVE*)pTag;
+			case 0x01:
+			{
+				DR_MOVE* drmove = (DR_MOVE*)pTag;
 
-			int x, y;
-			y = drmove->code[3] >> 0x10 & 0xFFFF;
-			x = drmove->code[3] & 0xFFFF;
+				int x, y;
+				y = drmove->code[3] >> 0x10 & 0xFFFF;
+				x = drmove->code[3] & 0xFFFF;
 
-			RECT16 rect;
-			*(ulong*)&rect.x = *(ulong*)&drmove->code[2];
-			*(ulong*)&rect.w = *(ulong*)&drmove->code[4];
+				RECT16 rect;
+				*(ulong*)&rect.x = *(ulong*)&drmove->code[2];
+				*(ulong*)&rect.w = *(ulong*)&drmove->code[4];
 
-			MoveImage(&rect, x, y);
+				MoveImage(&rect, x, y);
 
-			break;
-		}
-		default:
-		{
-			eprinterr("Unknown command %02X!\n", pTag->code);
-		}
+				break;
+			}
+			default:
+			{
+				eprinterr("Unknown command %02X!\n", pTag->code);
+			}
 		}
 
 

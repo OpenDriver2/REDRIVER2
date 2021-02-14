@@ -293,7 +293,7 @@ unsigned short UpdateKeyboardInput()
 
 extern int activeControllers;
 
-void InternalPadUpdates()
+void PsyX_InternalPadUpdates()
 {
 	if (g_padCommStarted == 0)
 		return;

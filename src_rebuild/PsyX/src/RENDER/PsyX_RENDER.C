@@ -182,7 +182,7 @@ void PBO_Download(GrPBO& pbo)
 		}
 		else
 		{
-			eprinterr("Failed to map the buffer");
+			eprintwarn("Failed to map the buffer\n");
 		}
 
 		/* Trigger the next read. */
@@ -440,6 +440,16 @@ int GR_InitialiseRender(char* windowName, int width, int height, int fullscreen)
 void GR_Shutdown()
 {
 #if defined(RENDERER_OGL) || defined(OGLES)
+	glDeleteVertexArrays(1, &g_glVertexArray);
+	glDeleteBuffers(1, &g_glVertexBuffer);
+
+	PBO_Destroy(g_glFramebufferPBO);
+	PBO_Destroy(g_glOffscreenPBO);
+
+	glDeleteFramebuffers(1, &g_glBlitFramebuffer);
+	glDeleteFramebuffers(1, &g_glOffscreenFramebuffer);
+	glDeleteFramebuffers(1, &g_glVRAMFramebuffer);
+
 	GR_DestroyTexture(g_vramTexture);
 	GR_DestroyTexture(g_whiteTexture);
 	GR_DestroyTexture(g_fbTexture);

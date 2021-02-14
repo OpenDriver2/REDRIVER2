@@ -3040,7 +3040,9 @@ void CheckCurrentRoad(CAR_DATA* cp)
 void SetTarget(CAR_DATA* cp, int curRoad, int heading, int* nextJunction)
 {
 	volatile int dx, dz; // offset 0xd8
-	
+
+	sdPlane* pl;
+	VECTOR pos;
 	DRIVER2_STRAIGHT* straight;
 	DRIVER2_CURVE* curve;
 
@@ -3107,6 +3109,12 @@ void SetTarget(CAR_DATA* cp, int curRoad, int heading, int* nextJunction)
 		
 		cp->ai.l.targetX = cp->hd.where.t[0] + rx + ux;
 		cp->ai.l.targetZ = cp->hd.where.t[2] + rz + uz;
+
+		pos.vx = cp->ai.l.targetX;
+		pos.vy = cp->hd.where.t[1];
+		pos.vz = cp->ai.l.targetZ;
+		
+		pl = sdGetCell(&pos);
 	}
 	else if (IS_CURVED_SURFACE(curRoad))
 	{

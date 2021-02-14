@@ -147,7 +147,7 @@ void InitOpenAlEffects()
 	alAuxiliaryEffectSloti(g_ALEffectSlots[g_currEffectSlotIdx], AL_EFFECTSLOT_EFFECT, g_nAlReverbEffect);
 }
 
-bool Emulator_InitSound()
+bool PsyX_InitSound()
 {
 	if (g_ALCdevice)
 		return true;
@@ -159,7 +159,7 @@ bool Emulator_InitSound()
 	// go through device list (each device terminated with a single NULL, list terminated with double NULL)
 	while ((*devices) != '\0')
 	{
-		printf("found sound device: %s\n", devices);
+		eprintinfo("found sound device: %s\n", devices);
 		devices += strlen(devices) + 1;
 	}
 
@@ -170,7 +170,7 @@ bool Emulator_InitSound()
 	if (!g_ALCdevice)
 	{
 		alErr = alcGetError(nullptr);
-		printf("alcOpenDevice: NULL DEVICE error: %s\n", getALCErrorString(alErr));
+		eprinterr("alcOpenDevice: NULL DEVICE error: %s\n", getALCErrorString(alErr));
 		return false;
 	}
 
@@ -187,7 +187,7 @@ bool Emulator_InitSound()
 	alErr = alcGetError(g_ALCdevice);
 	if (alErr != AL_NO_ERROR)
 	{
-		printf("alcCreateContext error: %s\n", getALCErrorString(alErr));
+		eprinterr("alcCreateContext error: %s\n", getALCErrorString(alErr));
 		return false;
 	}
 
@@ -196,7 +196,7 @@ bool Emulator_InitSound()
 	alErr = alcGetError(g_ALCdevice);
 	if (alErr != AL_NO_ERROR)
 	{
-		printf("alcMakeContextCurrent error: %s\n", getALCErrorString(alErr));
+		eprinterr("alcMakeContextCurrent error: %s\n", getALCErrorString(alErr));
 		return false;
 	}
 
@@ -226,10 +226,26 @@ bool Emulator_InitSound()
 	return true;
 }
 
+void PsyX_ShutdownSound()
+{
+	if (!g_ALCcontext)
+		return;
+
+	for (int i = 0; i < SPU_VOICES; i++)
+	{
+		SPUVoice& voice = g_SpuVoices[i];
+		alGenSources(1, &voice.alSource);
+		alGenBuffers(1, &voice.alBuffer);
+	}
+
+	alcDestroyContext(g_ALCcontext);
+	alcCloseDevice(g_ALCdevice);
+
+	g_ALCcontext = NULL;
+	g_ALCdevice = NULL;
+}
+
 //--------------------------------------------------------------------------------
-
-
-
 
 // PSX ADPCM coefficients
 const float K0[5] = { 0, 0.9375, 1.796875, 1.53125, 1.90625 };
@@ -423,7 +439,7 @@ long SpuIsTransferCompleted(long flag)
 
 void SpuStart()
 {
-	Emulator_InitSound();
+	PsyX_InitSound();
 }
 
 void _SpuInit(int a0)
