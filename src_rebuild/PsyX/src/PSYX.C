@@ -190,6 +190,12 @@ void PsyX_Log_Finalise()
 	g_logStream = NULL;
 }
 
+void PsyX_Log_Flush()
+{
+	if (g_logStream)
+		fflush(g_logStream);
+}
+
 // spew types
 typedef enum
 {
@@ -498,6 +504,8 @@ bool PsyX_BeginScene()
 	GR_BeginScene();
 
 	begin_scene_flag = true;
+
+	PsyX_Log_Flush();
 
 	return true;
 }
