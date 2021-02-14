@@ -13,6 +13,7 @@
 #include "replays.h"
 #include "overmap.h"
 #include "handling.h"
+#include "platform.h"
 #include "MemCard/main.h"
 
 #include "STRINGS.H"
@@ -487,9 +488,13 @@ void SaveReplay(int direction)
 		int cnt;
 		cnt = 2;
 
+		// put files to folder
+		sprintf(filename, "CUT%d", gCutsceneAsReplay);
+		_mkdir(filename);
+
 		while(cnt < 14)
 		{
-			sprintf(filename, "CUT%d_%d.D2RP", gCutsceneAsReplay, cnt);
+			sprintf(filename, "CUT%d/CUT%d_%d.D2RP", gCutsceneAsReplay, gCutsceneAsReplay, cnt);
 
 			temp = fopen(filename, "rb");
 			if (temp)
