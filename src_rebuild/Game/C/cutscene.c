@@ -897,6 +897,9 @@ int LoadCutsceneFile(char *filename, int subindex, int userId = -1)
 
 int LoadUserCutscene(int subindex, int userId = -1)
 {
+	if (subindex < 2)
+		return 0;
+
 	char customFilename[64];
 	int userIndex = -1;
 
@@ -923,17 +926,10 @@ int LoadUserCutscene(int subindex, int userId = -1)
 				break;
 			}
 		}
-
-		// if it doesn't exist under someone's name, get an anonymous one
-		if (userIndex == -1)
-		{
-			sprintf(customFilename, "REPLAYS\\User\\CUT%d_%d.D2RP", gCurrentMissionNumber, subindex);
-
-			// and if it still doesn't exist, let the game handle it
-			if (!FileExists(customFilename))
-				return 0;
-		}
 	}
+
+	if (userIndex == -1)
+		return 0;
 
 	return LoadCutsceneFile(customFilename, subindex, userIndex);
 }
@@ -948,10 +944,18 @@ int LoadCutsceneToBuffer(int subindex)
 	CUTSCENE_HEADER header;
 	char filename[64];
 
-	if (gCurrentMissionNumber < 21) 
-		sprintf(filename, "REPLAYS\\CUT%d.R", gCurrentMissionNumber);
-	else 
-		sprintf(filename, "REPLAYS\\A\\CUT%d.R", gCurrentMissionNumber);
+	// try load replacement bundle
+#ifndef PSX
+	sprintf(filename, "REPLAYS\\User\\CUT%d_N.R", gCurrentMissionNumber);
+
+	if (!FileExists(filename) || subindex < 2)
+#endif
+	{
+		if (gCurrentMissionNumber < 21)
+			sprintf(filename, "REPLAYS\\CUT%d.R", gCurrentMissionNumber);
+		else
+			sprintf(filename, "REPLAYS\\A\\CUT%d.R", gCurrentMissionNumber);
+	}
 
 	printInfo("Loading cutscene '%s' (%d)\n", filename, subindex);
 
