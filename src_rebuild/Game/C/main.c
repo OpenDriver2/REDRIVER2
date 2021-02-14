@@ -210,23 +210,23 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 
 		if (lump_type == LUMP_LOWDETAILTABLE)
 		{
-			printf("LUMP_LOWDETAILTABLE: size: %d\n", seg_size);
+			printInfo("LUMP_LOWDETAILTABLE: size: %d\n", seg_size);
 			ProcessLowDetailTable((char*)ptr, seg_size);
 		}
 		else if (lump_type == LUMP_CHAIR)
 		{
-			printf("LUMP_CHAIR: size: %d\n", seg_size);
+			printInfo("LUMP_CHAIR: size: %d\n", seg_size);
 			ProcessChairLump((char*)ptr, seg_size);
 		}
 		else if (lump_type == LUMP_MOTIONCAPTURE)
 		{
-			printf("LUMP_MOTIONCAPTURE: size: %d\n", seg_size);
+			printInfo("LUMP_MOTIONCAPTURE: size: %d\n", seg_size);
 			ProcessMotionLump((char*)ptr, seg_size);
 			gLoadedMotionCapture = 1;
 		}
 		else if (lump_type == LUMP_OVERLAYMAP)
 		{
-			printf("LUMP_OVERLAYMAP: size: %d\n", seg_size);
+			printInfo("LUMP_OVERLAYMAP: size: %d\n", seg_size);
 			ProcessOverlayLump((char*)ptr, seg_size);
 			gLoadedOverlay = 1;
 		}
@@ -236,7 +236,7 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 		}
 		else if (lump_type == LUMP_SPOOLINFO)
 		{
-			printf("LUMP_SPOOLINFO: size: %d\n", seg_size);
+			printInfo("LUMP_SPOOLINFO: size: %d\n", seg_size);
 			ProcessSpoolInfoLump((char*)ptr, lump_size);
 			ProcessMapLump(map_lump, 0);
 
@@ -246,12 +246,12 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 		}
 		else if (lump_type == LUMP_CURVES2)
 		{
-			printf("LUMP_CURVES2: size: %d\n", seg_size);
+			printInfo("LUMP_CURVES2: size: %d\n", seg_size);
 			ProcessCurvesDriver2Lump((char*)ptr, seg_size);
 		}
 		else if (lump_type == LUMP_TEXTURENAMES)
 		{
-			printf("LUMP_TEXTURENAMES: size: %d\n", seg_size);
+			printInfo("LUMP_TEXTURENAMES: size: %d\n", seg_size);
 #ifndef PSX
 			// we need to copy texture names
 			texturename_buffer = D_MALLOC(seg_size);
@@ -262,24 +262,24 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 		}
 		else if (lump_type == LUMP_PALLET)
 		{
-			printf("LUMP_PALLET: size: %d\n", seg_size);
+			printInfo("LUMP_PALLET: size: %d\n", seg_size);
 			palette_lump = (char*)ptr;
 		}
 		else if (lump_type == LUMP_TEXTUREINFO)
 		{
-			printf("LUMP_TEXTUREINFO: size: %d\n", seg_size);
+			printInfo("LUMP_TEXTUREINFO: size: %d\n", seg_size);
 			ProcessTextureInfo((char*)ptr);
 		}
 		else if (lump_type == LUMP_STRAIGHTS2)
 		{
-			printf("LUMP_STRAIGHTS2: size: %d\n", seg_size);
+			printInfo("LUMP_STRAIGHTS2: size: %d\n", seg_size);
 			ProcessStraightsDriver2Lump((char*)ptr, seg_size);
 		}
 		else if (lump_type == LUMP_JUNCTIONS2_NEW)
 		{
 			int cnt;
 
-			printf("LUMP_JUNCTIONS2_NEW: size: %d\n", seg_size);
+			printInfo("LUMP_JUNCTIONS2_NEW: size: %d\n", seg_size);
 			ProcessJunctionsDriver2Lump((char*)ptr, seg_size, 0);
 
 			// put junction flags if any
@@ -297,7 +297,7 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 		{
 			int cnt;
 
-			printf("LUMP_JUNCTIONS2: size: %d\n", seg_size);
+			printInfo("LUMP_JUNCTIONS2: size: %d\n", seg_size);
 			ProcessJunctionsDriver2Lump((char*)ptr, seg_size, 1);
 
 			// put junction flags if any
@@ -313,17 +313,17 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 		}
 		else if (lump_type == LUMP_JUNCTIONS)
 		{
-			printf("LUMP_JUNCTIONS: size: %d\n", seg_size);
+			printInfo("LUMP_JUNCTIONS: size: %d\n", seg_size);
 			ProcessJunctionsLump((char*)ptr, seg_size);
 		}
 		else if (lump_type == LUMP_CAR_MODELS)
 		{
-			printf("LUMP_CAR_MODELS: size: %d\n", seg_size);
+			printInfo("LUMP_CAR_MODELS: size: %d\n", seg_size);
 			car_models_lump = (char*)ptr;
 		}
 		else if (lump_type == LUMP_MODELS)
 		{
-			printf("LUMP_MODELS: size: %d\n", seg_size);
+			printInfo("LUMP_MODELS: size: %d\n", seg_size);
 			ProcessMDSLump((char*)ptr, seg_size);
 			ProcessCarModelLump(car_models_lump, 0);
 			InitModelNames();
@@ -331,36 +331,36 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 		}
 		else if (lump_type == LUMP_ROADMAP)
 		{
-			printf("LUMP_ROADMAP: size: %d\n", seg_size);
+			printInfo("LUMP_ROADMAP: size: %d\n", seg_size);
 			NewProcessRoadMapLump(&roadMapLumpData, (char*)ptr);
 		}
 		else if (lump_type == LUMP_ROADS)
 		{
-			printf("LUMP_ROADS: size: %d\n", seg_size);
+			printInfo("LUMP_ROADS: size: %d\n", seg_size);
 			ProcessRoadsLump((char*)ptr, seg_size);
 		}
 		else if (lump_type == LUMP_ROADBOUNDS)
 		{
-			printf("LUMP_ROADBOUNDS: size: %d\n", seg_size);
+			printInfo("LUMP_ROADBOUNDS: size: %d\n", seg_size);
 			ProcessRoadBoundsLump((char*)ptr, seg_size);
 		}
 		else if (lump_type == LUMP_JUNCBOUNDS)
 		{
-			printf("LUMP_JUNCBOUNDS: size: %d\n", seg_size);
+			printInfo("LUMP_JUNCBOUNDS: size: %d\n", seg_size);
 			ProcessJuncBoundsLump((char*)ptr, seg_size);
 		}
 		else if (lump_type == LUMP_SUBDIVISION)
 		{
-			printf("LUMP_SUBDIVISION: size: %d\n", seg_size);
+			printInfo("LUMP_SUBDIVISION: size: %d\n", seg_size);
 			ProcessSubDivisionLump((char*)ptr, seg_size);
 		}
 		else if (lump_type == LUMP_ROADSURF)
 		{
-			printf("LUMP_ROADSURF: size: %d\n", seg_size);
+			printInfo("LUMP_ROADSURF: size: %d\n", seg_size);
 		}
 		else if (lump_type == LUMP_MODELNAMES)
 		{
-			printf("LUMP_MODELNAMES: size: %d\n", seg_size);
+			printInfo("LUMP_MODELNAMES: size: %d\n", seg_size);
 			modelname_buffer = (char*)ptr;
 		}
 		else if (lump_type == 0xff)
@@ -369,7 +369,7 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 		}
 		else
 		{
-			printf("ERROR - unknown lump type %d... assuming it's Driver 1 level\n", lump_type);
+			printInfo("ERROR - unknown lump type %d... assuming it's Driver 1 level\n", lump_type);
 			gDriver1Level = 1;
 			numLumps = lump_type;
 

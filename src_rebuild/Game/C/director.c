@@ -2175,7 +2175,7 @@ int SelectCameraCar(int current)
 		count++;
 	}
 
-	printf("ERROR:_SelectCameraCar\n");
+	printError("ERROR:_SelectCameraCar\n");
 
 	return player[0].playerCarId;
 }

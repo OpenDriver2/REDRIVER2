@@ -983,8 +983,8 @@ int LoadCutsceneToBuffer(int subindex)
 			
 			if (CutsceneBuffer.bytesFree < size) 
 			{
-				// load into lead/path AI buffer
 				leadAILoaded = 0;
+				// load into lead/path AI buffer
 				pathAILoaded = 0;
 
 				CutsceneBuffer.currentPointer = _other_buffer2;
@@ -1017,7 +1017,7 @@ void ShowCutsceneError(void)
 {
 	RECT16 rect;
 
-	printf("Cutscene initialisation error!\n");
+	printError("Cutscene initialisation error!\n");
 	SetDispMask(0);
 	DrawSync(0);
 

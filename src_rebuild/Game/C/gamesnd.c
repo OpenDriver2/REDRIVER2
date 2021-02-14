@@ -170,7 +170,7 @@ void LoadBankFromLump(int bank, int lump)
 	if (size > 0 && blockLimit[lump] && blockLimit[lump + 1]) // [A]
 		LoadSoundBankDynamic(_sbank_buffer, size, bank);
 	else
-		printf("WARNING: sound bank lump %d is not valid!\n", lump);
+		printWarning("WARNING: sound bank lump %d is not valid!\n", lump);
 }
 
 // [D] [T]

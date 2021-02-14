@@ -934,24 +934,24 @@ int LoadSoundBankDynamic(char *address, int length, int dbank)
 				if (dbank == 0)
 				{
 					lsbTabs.append = 0;
-					puts("*---LSBD(): successful init---*\n");
+					printInfo("*---LSBD(): successful init---*\n");
 				}
 				break;
 			case 1:
 				lsbTabs.memtop = lsbTabs.addr;
-				puts("*---LSBD(): saved memtop---*\n");
+				printInfo("*---LSBD(): saved memtop---*\n");
 				break;
 			case 2:
 				lsbTabs.addr = lsbTabs.memtop;
-				puts("*---LSBD(): goneto memtop---*\n");
+				printInfo("*---LSBD(): goneto memtop---*\n");
 				break;
 			case 3:
 				lsbTabs.bnktop[dbank] = lsbTabs.count[dbank];
-				printf("*---LSBD(): saved banktop %d---*\n", lsbTabs.bnktop[dbank]);
+				printInfo("*---LSBD(): saved banktop %d---*\n", lsbTabs.bnktop[dbank]);
 				break;
 			case 4:
 				lsbTabs.count[dbank] = lsbTabs.bnktop[dbank];
-				printf("*---LSBD(): goneto banktop %d---*\n", lsbTabs.count[dbank]);
+				printInfo("*---LSBD(): goneto banktop %d---*\n", lsbTabs.count[dbank]);
 				break;
 		}
 
