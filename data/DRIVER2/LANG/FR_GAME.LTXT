@@ -11,14 +11,11 @@ Contrôles
 -1 seconde
 Drapeaux
 Tour
--You got the flag!
--Well done!
--You've been caught!
-You got the flag!
-Well done!
-You've been caught!
+Vous avez le drapeau!
+Bien joué!
+Vous avez été attrapé!
 Fin de bande
-DEMO
+DEMO 
 Avance rapide
 Réalisation automatique
 Veuillez attendre...
@@ -33,39 +30,39 @@ Mission accomplie
 Mission échouée
 Fin de la partie
 Meilleurs scores
-Taper nom
-Quitter vers le système?
-Chargement des réglages...
+Entrez un nom
+Retour au système?
+Chargement des paramètres...
 Erreur de chargement
-Pas de donnée sauvegardé
-Sauvegarde des réglages...
+Aucune sauvegarde
+Sauvegarde des paramètres...
 Erreur de sauvegarde
 Chargement...
 Sauvegarde...
 OK
 OUI
 NON
-Sauvegarder partie
-Sauvegarder replay
+Sauvegarder la partie
+Sauvegarder le replay
 Continuer
-Voir carte
+Ouvrir la carte
 Recommencer
-Volume effets sonores
-Volume musique
-Réalisation Film
+Volume des effets sonores
+Volume de la musique
+Réalisateur de film
 Replay rapide
 Sortie
 Rotation
-Déplacer
+Déplacement
 Passer la cinématique
 Réessayer
 Rejouer
-Voir scores
-Entrer score
-Insérez une manette dans le port 1
-Insérez une manette dans le port 2
-Manette non supportee dans port 1
-Manette non supportee dans port 2
+Voir les scores
+Entrez votre score
+Insérez une manette dans le Port 1
+Insérez une manette dans le Port 2
+Manette non supportée dans port 1
+Manette non supportée dans port 2
 Joueur 1
 Joueur 2
 Nom
@@ -78,21 +75,21 @@ Immunité
 Galerie bonus
 Pause
 Lecture
-Réalisation automatique
+Réalisateur automatique
 Avance rapide
-Avance image
-Retour au début
-Ajouter caméra
-Changer caméra
+Avancer d'une trame
+Retourner au début
+Ajouter une caméra
+Modifier la caméra
 Caméra embarquée
-Caméra poursuite
+Caméra de poursuite
 Caméra fixe
-Déplacer départ caméra
-Supprimer caméra
+Déplacer le départ caméra
+Effacer la caméra
 Accepter
 Vous ou le poursuivant
-Déplacer caméra
-Fixer voiture
+Déplacer la caméra
+Fixer le véhicule
 Rotation
-Zoom
-Escapade est
+Zoomer
+L'escapade est
