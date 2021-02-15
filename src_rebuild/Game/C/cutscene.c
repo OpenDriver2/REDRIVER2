@@ -872,7 +872,7 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 }
 
 #ifndef PSX
-int LoadCutsceneFile(char *filename, int subindex, int userId = -1)
+int LoadChaseReplayFromFile(char *filename, int subindex, int userId = -1)
 {
 	gUserChaseLoaded = userId;
 
@@ -894,45 +894,6 @@ int LoadCutsceneFile(char *filename, int subindex, int userId = -1)
 
 	return 0;
 }
-
-int LoadUserCutscene(int subindex, int userId = -1)
-{
-	if (subindex < 2)
-		return 0;
-
-	char customFilename[64];
-	int userIndex = -1;
-
-	if (userId >= 0 && userId < gNumUserChases)
-	{
-		// get user chase instantly
-		sprintf(customFilename, "REPLAYS\\User\\%s\\CUT%d_%d.D2RP", gUserReplayFolderList[userId], gCurrentMissionNumber, subindex);
-
-		if (FileExists(customFilename))
-			userIndex = userId;
-	}
-
-	// if still no valid user replay from input
-	if (userIndex == -1)
-	{
-		// find first valid user replay
-		for (int i = 0; i < gNumUserChases; i++)
-		{
-			sprintf(customFilename, "REPLAYS\\User\\%s\\CUT%d_%d.D2RP", gUserReplayFolderList[i], gCurrentMissionNumber, subindex);
-
-			if (FileExists(customFilename))
-			{
-				userIndex = i;
-				break;
-			}
-		}
-	}
-
-	if (userIndex == -1)
-		return 0;
-
-	return LoadCutsceneFile(customFilename, subindex, userIndex);
-}
 #endif
 
 // [D] [T]
@@ -943,13 +904,35 @@ int LoadCutsceneToBuffer(int subindex)
 
 	CUTSCENE_HEADER header;
 	char filename[64];
+	
+	filename[0] = '\0';
 
 	// try load replacement bundle
+	if(subindex >= 2)
+	{
 #ifndef PSX
-	sprintf(filename, "REPLAYS\\User\\CUT%d_N.R", gCurrentMissionNumber);
+		int userId = -1;
 
-	if (!FileExists(filename) || subindex < 2)
+		// [A] REDRIVER2 PC - custom user chases
+		if (gNumUserChases)
+		{
+			userId = rand() % (gNumUserChases + 1);
+
+			// if random decides to have no user chase - get og or replacement one
+			if (userId == gNumUserChases)
+				userId = -1;
+		}
+
+		// try loading user chase
+		if (userId != -1)
+			sprintf(filename, "REPLAYS\\UserChases\\%s\\CUT%d_N.R", (char*)gUserReplayFolderList[userId], gCurrentMissionNumber);
 #endif
+		
+		if (!FileExists(filename)) // fallback
+			sprintf(filename, "REPLAYS\\ReChases\\CUT%d_N.R", gCurrentMissionNumber);
+	}
+
+	if(!FileExists(filename))
 	{
 		if (gCurrentMissionNumber < 21)
 			sprintf(filename, "REPLAYS\\CUT%d.R", gCurrentMissionNumber);
@@ -958,23 +941,6 @@ int LoadCutsceneToBuffer(int subindex)
 	}
 
 	printInfo("Loading cutscene '%s' (%d)\n", filename, subindex);
-
-#ifndef PSX
-	int userId = -1;
-
-	// [A] REDRIVER2 PC - custom cutcenes or chases for debugging
-	if (gNumUserChases)
-	{
-		userId = rand() % (gNumUserChases + 1);
-
-		// if random decides to have no user chase - get og or replacement one
-		if (userId == gNumUserChases)
-			userId = -1;
-	}
-
-	if (LoadUserCutscene(subindex, userId))
-		return 1;
-#endif
 
 	if (FileExists(filename))
 	{

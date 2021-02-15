@@ -942,6 +942,9 @@ void SetCityType(CITYTYPE type)
 // [D] [T]
 int FileExists(char* filename)
 {
+	if(*filename == '\0')
+		return 0;
+	
 #ifdef PSX
 	int retries;
 	CdlFILE cdfile;
