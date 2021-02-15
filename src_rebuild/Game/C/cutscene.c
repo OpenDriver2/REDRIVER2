@@ -812,7 +812,10 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 
 	rheader = (REPLAY_SAVE_HEADER *)CutsceneBuffer.residentPointers[residentCutscene];
 
-	if (rheader == NULL || rheader && (rheader->magic != 0x14793209 || rheader->NumReplayStreams == 0) )
+	if (rheader == NULL || 
+		rheader && (rheader->magic != DRIVER2_REPLAY_MAGIC && 
+					rheader->magic != REDRIVER2_CHASE_MAGIC ||	// [A]
+					rheader->NumReplayStreams == 0) )
 	{
 		ShowCutsceneError();
 		return 0;
@@ -856,16 +859,22 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 
 	NumReplayStreams += NumCutsceneStreams;
 
-	// copy cutscene cameras and pings
-	CutsceneCamera = (PLAYBACKCAMERA *)replayptr;
+	// [A] REDRIVER2 chase replays skip cameras
+	if (rheader->magic == REDRIVER2_CHASE_MAGIC)
+	{
+		CutsceneCamera = NULL;
+	}
+	else
+	{
+		// copy cutscene cameras and pings
+		CutsceneCamera = (PLAYBACKCAMERA*)replayptr;
 
-	memcpy((u_char*)CutsceneCamera, pt, sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS);
-	replayptr += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
-
-	pt += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
+		memcpy((u_char*)CutsceneCamera, pt, sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS);
+		replayptr += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
+		pt += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
+	}
 
 	memcpy((u_char*)PingBuffer, pt, sizeof(PING_PACKET) * MAX_REPLAY_PINGS);
-
 	PingBufferPos = 0;
 
 	return 1;
@@ -926,6 +935,8 @@ int LoadCutsceneToBuffer(int subindex)
 		// try loading user chase
 		if (userId != -1)
 			sprintf(filename, "REPLAYS\\UserChases\\%s\\CUT%d_N.R", (char*)gUserReplayFolderList[userId], gCurrentMissionNumber);
+
+		//gUserChaseLoaded = userId;
 #endif
 		
 		if (!FileExists(filename)) // fallback
@@ -951,21 +962,19 @@ int LoadCutsceneToBuffer(int subindex)
 			offset = header.data[subindex].offset * 4;
 			size = header.data[subindex].size;
 			
-			if (CutsceneBuffer.bytesFree < size) 
+			if (size > CutsceneBuffer.bytesFree)
 			{
-				leadAILoaded = 0;
+				printWarning("WARNING - Using leadAI/pathAI buffer for cutscene!\n");
+
 				// load into lead/path AI buffer
+				leadAILoaded = 0;
 				pathAILoaded = 0;
 
 				CutsceneBuffer.currentPointer = _other_buffer2;
-				CutsceneBuffer.bytesFree = 0xc000;
+				CutsceneBuffer.bytesFree = 0xC000;	
+			}
 
-				LoadfileSeg(filename, _other_buffer2, offset, size);				
-			}
-			else 
-			{
-				LoadfileSeg(filename, CutsceneBuffer.currentPointer, offset, size);
-			}
+			LoadfileSeg(filename, CutsceneBuffer.currentPointer, offset, size);
 
 			CutsceneBuffer.residentCutscenes[CutsceneBuffer.numResident] = subindex;
 			CutsceneBuffer.residentPointers[CutsceneBuffer.numResident] = CutsceneBuffer.currentPointer;

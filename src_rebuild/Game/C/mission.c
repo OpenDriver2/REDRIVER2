@@ -177,7 +177,7 @@ extern LEAD_PARAMETERS LeadValues;
 
 static char NewLeadDelay = 0;
 
-#define MISSION_IDENT (('D' << 24) | ('2' << 16) | ('M' << 8) | 'S' )
+#define MISSION_IDENT		(('D' << 24) | ('2' << 16) | ('M' << 8) | 'S' )
 
 MR_MISSION Mission;
 u_int MissionStack[16][16];

@@ -435,7 +435,7 @@ char* LoadCarDentingFromFile(char* dest, int modelNumber)
 	sprintf(filename, "LEVELS\\%s\\CARMODEL_%d.DEN", LevelNames[GameLevel], modelNumber);
 	if(FileExists(filename))
 	{
-		mem = dest ? dest : (_other_buffer2 + modelNumber * 0x1000);
+		mem = dest ? dest : (_other_buffer + modelNumber * 0x1000);
 
 		// get model from file
 		Loadfile(filename, mem);
