@@ -1759,16 +1759,16 @@ void InitTannerShadow(void)
 		if(GameLevel == 2) // [A] bug fix for vegas
 			offs = 18;
 		
-		poly->u0 = tannerShadow_texture.coords.u1 / 4;
+		poly->u0 = tannerShadow_texture.coords.u1 / 4 - 1;
 		poly->v0 = tannerShadow_texture.coords.v1 + offs;
 		
-		poly->u1 = tannerShadow_texture.coords.u0 / 4;
+		poly->u1 = tannerShadow_texture.coords.u0 / 4 + 1;
 		poly->v1 = tannerShadow_texture.coords.v0 + offs;
 		
-		poly->u2 = tannerShadow_texture.coords.u3 / 4;
+		poly->u2 = tannerShadow_texture.coords.u3 / 4 - 1;
 		poly->v2 = tannerShadow_texture.coords.v3 + offs - 18;
 
-		poly->u3 = tannerShadow_texture.coords.u2 / 4;
+		poly->u3 = tannerShadow_texture.coords.u2 / 4 + 1;
 		poly->v3 = tannerShadow_texture.coords.v2 + offs - 18;
 
 		poly->tpage = getTPage(2, 0, rectTannerWindow.x, rectTannerWindow.y);
