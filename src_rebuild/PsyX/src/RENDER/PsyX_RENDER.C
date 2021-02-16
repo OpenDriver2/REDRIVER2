@@ -626,12 +626,14 @@ GLint u_Projection3D;
 	"	attribute vec4 a_position;\n"\
 	"	attribute vec4 a_texcoord; // uv, color multiplier, dither\n"\
 	"	attribute vec4 a_color;\n"\
+	"	attribute vec4 a_extra; // texcoord.xy ofs, unused.xy\n"\
 	"	attribute vec4 a_zw;\n"\
 	"	uniform mat4 Projection;\n"\
 	"	uniform mat4 Projection3D;\n"\
 	"	const vec2 c_UVFudge = vec2(0.00025, 0.00025);\n"\
 	"	void main() {\n"\
 	"		v_texcoord = a_texcoord;\n"\
+	"		v_texcoord.xy += a_extra.xy * 0.5;\n"\
 	"		v_color = a_color;\n"\
 	"		v_color.xyz *= a_texcoord.z;\n"\
 	"		v_page_clut.x = fract(a_position.z / 16.0) * 1024.0;\n"\
@@ -665,37 +667,37 @@ GLint u_Projection3D;
 	"	}\n"
 
 const char* gte_shader_4 =
-"varying vec4 v_texcoord;\n"
-"varying vec4 v_color;\n"
-"varying vec4 v_page_clut;\n"
-"varying float v_z;\n"
-"#ifdef VERTEX\n"
-GTE_VERTEX_SHADER
-"#else\n"
-GPU_FRAGMENT_SAMPLE_SHADER(4)
-"#endif\n";
+	"varying vec4 v_texcoord;\n"
+	"varying vec4 v_color;\n"
+	"varying vec4 v_page_clut;\n"
+	"varying float v_z;\n"
+	"#ifdef VERTEX\n"
+	GTE_VERTEX_SHADER
+	"#else\n"
+	GPU_FRAGMENT_SAMPLE_SHADER(4)
+	"#endif\n";
 
 const char* gte_shader_8 =
-"varying vec4 v_texcoord;\n"
-"varying vec4 v_color;\n"
-"varying vec4 v_page_clut;\n"
-"varying float v_z;\n"
-"#ifdef VERTEX\n"
-GTE_VERTEX_SHADER
-"#else\n"
-GPU_FRAGMENT_SAMPLE_SHADER(8)
-"#endif\n";
+	"varying vec4 v_texcoord;\n"
+	"varying vec4 v_color;\n"
+	"varying vec4 v_page_clut;\n"
+	"varying float v_z;\n"
+	"#ifdef VERTEX\n"
+	GTE_VERTEX_SHADER
+	"#else\n"
+	GPU_FRAGMENT_SAMPLE_SHADER(8)
+	"#endif\n";
 
 const char* gte_shader_16 =
-"varying vec4 v_texcoord;\n"
-"varying vec4 v_color;\n"
-"varying vec4 v_page_clut;\n"
-"varying float v_z;\n"
-"#ifdef VERTEX\n"
-GTE_VERTEX_SHADER
-"#else\n"
-GPU_FRAGMENT_SAMPLE_SHADER(16)
-"#endif\n";
+	"varying vec4 v_texcoord;\n"
+	"varying vec4 v_color;\n"
+	"varying vec4 v_page_clut;\n"
+	"varying float v_z;\n"
+	"#ifdef VERTEX\n"
+	GTE_VERTEX_SHADER
+	"#else\n"
+	GPU_FRAGMENT_SAMPLE_SHADER(16)
+	"#endif\n";
 
 int GR_Shader_CheckShaderStatus(GLuint shader)
 {
@@ -1001,6 +1003,7 @@ int GR_InitialisePSX()
 		glEnableVertexAttribArray(a_position);
 		glEnableVertexAttribArray(a_texcoord);
 		glEnableVertexAttribArray(a_color);
+		glEnableVertexAttribArray(a_extra);
 
 #if defined(USE_PGXP)
 		glVertexAttribPointer(a_position, 4, GL_FLOAT, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->x);
@@ -1013,6 +1016,7 @@ int GR_InitialisePSX()
 
 		glVertexAttribPointer(a_texcoord, 4, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->u);
 		glVertexAttribPointer(a_color, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(GrVertex), &((GrVertex*)NULL)->r);
+		glVertexAttribPointer(a_extra, 4, GL_BYTE, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->tcx);
 
 		glBindVertexArray(0);
 	}

@@ -7,6 +7,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <string.h>
 
 // Remap a value in the range [A,B] to [C,D].
 #define RemapVal( val, A, B, C, D) \
@@ -124,6 +125,8 @@ void MakeLineArray(struct GrVertex* vertex, VERTTYPE* p0, VERTTYPE* p1, ushort g
 		ofsY = 0.0f;
 	}
 
+	memset(vertex, 0, sizeof(GrVertex) * 4);
+
 	if (dx > abs((short)dy)) { // horizontal
 		vertex[0].x = p0[0] + ofsX;
 		vertex[0].y = p0[1] + ofsY;
@@ -189,6 +192,7 @@ inline void ApplyVertexPGXP(GrVertex* v, VERTTYPE* p, float ofsX, float ofsY, us
 	else
 	{
 		v->scr_h = 0.0f;
+		v->z = 0.0f;
 	}
 #endif
 }
@@ -212,6 +216,8 @@ void MakeVertexTriangle(struct GrVertex* vertex, VERTTYPE* p0, VERTTYPE* p1, VER
 		ofsX = 0.0f;
 		ofsY = 0.0f;
 	}
+
+	memset(vertex, 0, sizeof(GrVertex) * 3);
 
 	vertex[0].x = p0[0] + ofsX;
 	vertex[0].y = p0[1] + ofsY;
@@ -250,6 +256,8 @@ void MakeVertexQuad(struct GrVertex* vertex, VERTTYPE* p0, VERTTYPE* p1, VERTTYP
 		ofsY = 0.0f;
 	}
 
+	memset(vertex, 0, sizeof(GrVertex) * 4);
+
 	vertex[0].x = p0[0] + ofsX;
 	vertex[0].y = p0[1] + ofsY;
 
@@ -287,6 +295,8 @@ void MakeVertexRect(struct GrVertex* vertex, VERTTYPE* p0, short w, short h, ush
 		ofsX = 0.0f;
 		ofsY = 0.0f;
 	}
+
+	memset(vertex, 0, sizeof(GrVertex) * 4);
 
 	vertex[0].x = p0[0] + ofsX;
 	vertex[0].y = p0[1] + ofsY;
@@ -413,6 +423,21 @@ void MakeTexcoordRect(struct GrVertex* vertex, unsigned char* uv, short page, sh
 	vertex[3].dither = dither;
 	vertex[3].page = page;
 	vertex[3].clut = clut;
+
+	if (g_bilinearFiltering)
+	{
+		vertex[0].tcx = -1;
+		vertex[0].tcy = -1;
+
+		vertex[1].tcx = -1;
+		vertex[1].tcy = -1;
+
+		vertex[2].tcx = -1;
+		vertex[2].tcy = -1;
+
+		vertex[3].tcx = -1;
+		vertex[3].tcy = -1;
+	}
 }
 
 void MakeTexcoordLineZero(struct GrVertex* vertex, unsigned char dither)
