@@ -778,7 +778,7 @@ void ControlCopDetection(void)
 	else
 		player_position_known = 2;
 
-	CopsCanSeePlayer = 0;
+	CopsCanSeePlayer = (GameType == GAME_SURVIVAL);
 
 	minDistanceToPlayer = 0xFFFFFFFF;
 
@@ -980,6 +980,7 @@ void PassiveCopTasks(CAR_DATA *cp)
 	InitCopState(cp, NULL);
 
 	cp->ai.p.justPinged = 0;
+
 	numCivCars--;
 	numActiveCops++;
 }
