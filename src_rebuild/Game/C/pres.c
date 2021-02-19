@@ -47,7 +47,7 @@ char AsciiTable[256] = { 0 };
 OUT_FONTINFO fontinfo[128];
 
 // [D] [T]
-void SetTextColour(unsigned char Red, unsigned char Green, unsigned char Blue)
+void SetTextColour(u_char Red, u_char Green, u_char Blue)
 {
 	gFontColour.r = Red;
 	gFontColour.g = Green;
@@ -72,7 +72,7 @@ int StringWidth(char *pString)
 			w += 4;
 		else if ((let + 128 & 0xff) < 11) 
 			w += 24;
-		else if (AsciiTable[let] != 0xff) 
+		else if (AsciiTable[let] != -1) 
 			w += fontinfo[AsciiTable[let]].width;
 	}
 
@@ -135,18 +135,22 @@ void LoadFont(char *buffer)
 		file = _frontend_buffer;	// 0x11b400;		// [A] FIXME: this font address might be used somewhere else
 
 	Loadfile("GFX\\FONT2.FNT",file);
+
 	nchars = *(int *)file;
+	file += sizeof(int);
 
 	// copy character info
-	memcpy((u_char*)fontinfo,file + 4,nchars * sizeof(OUT_FONTINFO));
+	memcpy((u_char*)fontinfo,file,nchars * sizeof(OUT_FONTINFO));
 
-	file += sizeof(int) + nchars * 8;
+	file += nchars * sizeof(OUT_FONTINFO);
 	memcpy((u_char*)AsciiTable, file, 256);
+
+	file += 256;
 
 	fontclutid = GetClut(fontclutpos.x,fontclutpos.y);
 
 	i = 0;
-	clut = (ushort*)(file + 0x100);
+	clut = (ushort*)file;
 	do {
 		*clut++ &= 0x7fff;
 		i++;
@@ -162,8 +166,8 @@ void LoadFont(char *buffer)
 
 	fonttpage = GetTPage(0,0,960,466);
 
-	LoadImage(&fontclutpos, (u_long *)(file + 0x100));
-	LoadImage(&dest, (u_long *)(file + 0x120));
+	LoadImage(&fontclutpos, (u_long *)file);
+	LoadImage(&dest, (u_long *)(file + 32));
 
 	DrawSync(0);
 }
@@ -237,7 +241,7 @@ int PrintString(char *string, int x, int y)
 	chr = *string++;
 	width = x;
 
-	while (chr != 0) 
+	while (chr) 
 	{
 		if (chr == 32)
 		{
@@ -245,8 +249,8 @@ int PrintString(char *string, int x, int y)
 		}
 		else if (chr < 32 || chr > 138 || chr < 128) 
 		{
-			if (AsciiTable[chr] == 0xff)
-				index = AsciiTable[63];
+			if (AsciiTable[chr] == -1)
+				index = AsciiTable[63];	// place a question mark
 			else
 				index = AsciiTable[chr];
 
@@ -519,7 +523,7 @@ int PrintScaledString(int y, char *string, int scale)
 	char c;
 	POLY_FT4 *font;
 	int height;
-	unsigned char vOff;
+	u_char vOff;
 
 	font = (POLY_FT4 *)current->primptr;
 
@@ -613,7 +617,7 @@ char * GetNextWord(char *string, char *word)
 }
 
 // [D] [T]
-void* DrawButton(unsigned char button, void *prim, int x, int y)
+void* DrawButton(u_char button, void *prim, int x, int y)
 {
 	TEXTURE_DETAILS *btn;
 	SPRT* sprt;
