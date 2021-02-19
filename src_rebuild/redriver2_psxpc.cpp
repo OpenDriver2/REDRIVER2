@@ -22,6 +22,7 @@
 #include "utils/ini.h"
 
 #include <SDL_scancode.h>
+#include <SDL_gamecontroller.h>
 #include <SDL_messagebox.h>
 
 #include "PSYX_GLOBALS.H"
@@ -340,7 +341,7 @@ int ParseKeyMapping(const char* str, int default_value)
 	if(str)
 	{
 		if (!_stricmp("NONE", str))
-			return 0;
+			return SDL_SCANCODE_UNKNOWN;
 		
 		for (i = 0; i < SDL_NUM_SCANCODES; i++)
 		{
@@ -356,70 +357,185 @@ int ParseKeyMapping(const char* str, int default_value)
 	return default_value;
 }
 
-void LoadKeyMappings(ini_t* config, char* section, PsyXKeyboardMapping& outMapping)
+int ParseGameControllerMapping(const char* str, int default_value)
 {
+	const char* buttonOrAxisName;
+	int i;
+
+	if (str)
+	{
+		if (!_stricmp("NONE", str))
+			return SDL_CONTROLLER_BUTTON_INVALID;
+
+		// check buttons
+		for (i = 0; i < SDL_CONTROLLER_BUTTON_MAX; i++)
+		{
+			buttonOrAxisName = SDL_GameControllerGetStringForButton((SDL_GameControllerButton)i);
+
+			if (strlen(buttonOrAxisName) && !_stricmp(buttonOrAxisName, str))
+			{
+				return i;
+			}
+		}
+
+		// Check axes
+		for (i = 0; i < SDL_CONTROLLER_AXIS_MAX; i++)
+		{
+			buttonOrAxisName = SDL_GameControllerGetStringForAxis((SDL_GameControllerAxis)i);
+
+			if (strlen(buttonOrAxisName) && !_stricmp(buttonOrAxisName, str))
+			{
+				return i | CONTROLLER_MAP_AXIS_FLAG;
+			}
+		}
+	}
+
+	return default_value;
+}
+
+void ParseKeyboardMappings(ini_t* config, char* section, PsyXKeyboardMapping& outMapping)
+{
+	extern PsyXKeyboardMapping g_keyboard_mapping;
+
 	const char* str;
 
 	str = ini_get(config, section, "square");
-	outMapping.kc_square = ParseKeyMapping(str, SDL_SCANCODE_X);
+	outMapping.kc_square = ParseKeyMapping(str, g_keyboard_mapping.kc_square);
 
 	str = ini_get(config, section, "circle");
-	outMapping.kc_circle = ParseKeyMapping(str, SDL_SCANCODE_V);
+	outMapping.kc_circle = ParseKeyMapping(str, g_keyboard_mapping.kc_circle);
 
 	str = ini_get(config, section, "triangle");
-	outMapping.kc_triangle = ParseKeyMapping(str, SDL_SCANCODE_Z);
+	outMapping.kc_triangle = ParseKeyMapping(str, g_keyboard_mapping.kc_triangle);
 
 	str = ini_get(config, section, "cross");
-	outMapping.kc_cross = ParseKeyMapping(str, SDL_SCANCODE_C);
+	outMapping.kc_cross = ParseKeyMapping(str, g_keyboard_mapping.kc_cross);
 
 	str = ini_get(config, section, "l1");
-	outMapping.kc_l1 = ParseKeyMapping(str, SDL_SCANCODE_LSHIFT);
+	outMapping.kc_l1 = ParseKeyMapping(str, g_keyboard_mapping.kc_l1);
 
 	str = ini_get(config, section, "l2");
-	outMapping.kc_l2 = ParseKeyMapping(str, SDL_SCANCODE_LCTRL);
+	outMapping.kc_l2 = ParseKeyMapping(str, g_keyboard_mapping.kc_l2);
 
 	str = ini_get(config, section, "l3");
-	outMapping.kc_l3 = ParseKeyMapping(str, SDL_SCANCODE_LEFTBRACKET);
+	outMapping.kc_l3 = ParseKeyMapping(str, g_keyboard_mapping.kc_l3);
 
 	str = ini_get(config, section, "r1");
-	outMapping.kc_r1 = ParseKeyMapping(str, SDL_SCANCODE_RSHIFT);
+	outMapping.kc_r1 = ParseKeyMapping(str, g_keyboard_mapping.kc_r1);
 
 	str = ini_get(config, section, "r2");
-	outMapping.kc_r2 = ParseKeyMapping(str, SDL_SCANCODE_RCTRL);
+	outMapping.kc_r2 = ParseKeyMapping(str, g_keyboard_mapping.kc_r2);
 
 	str = ini_get(config, section, "r3");
-	outMapping.kc_r3 = ParseKeyMapping(str, SDL_SCANCODE_RIGHTBRACKET);
+	outMapping.kc_r3 = ParseKeyMapping(str, g_keyboard_mapping.kc_r3);
 
 	str = ini_get(config, section, "up");
-	outMapping.kc_dpad_up = ParseKeyMapping(str, SDL_SCANCODE_UP);
+	outMapping.kc_dpad_up = ParseKeyMapping(str, g_keyboard_mapping.kc_dpad_up);
 
 	str = ini_get(config, section, "down");
-	outMapping.kc_dpad_down = ParseKeyMapping(str, SDL_SCANCODE_DOWN);
+	outMapping.kc_dpad_down = ParseKeyMapping(str, g_keyboard_mapping.kc_dpad_down);
 
 	str = ini_get(config, section, "left");
-	outMapping.kc_dpad_left = ParseKeyMapping(str, SDL_SCANCODE_LEFT);
+	outMapping.kc_dpad_left = ParseKeyMapping(str, g_keyboard_mapping.kc_dpad_left);
 
 	str = ini_get(config, section, "right");
-	outMapping.kc_dpad_right = ParseKeyMapping(str, SDL_SCANCODE_RIGHT);
+	outMapping.kc_dpad_right = ParseKeyMapping(str, g_keyboard_mapping.kc_dpad_right);
 
 	str = ini_get(config, section, "select");
-	outMapping.kc_select = ParseKeyMapping(str, SDL_SCANCODE_SPACE);
+	outMapping.kc_select = ParseKeyMapping(str, g_keyboard_mapping.kc_select);
 
 	str = ini_get(config, section, "start");
-	outMapping.kc_start = ParseKeyMapping(str, SDL_SCANCODE_RETURN);
+	outMapping.kc_start = ParseKeyMapping(str, g_keyboard_mapping.kc_start);
 }
 
-PsyXKeyboardMapping g_gameMappings = { 0x123 };
-PsyXKeyboardMapping g_menuMappings = { 0x456 };
+void ParseControllerMappings(ini_t* config, char* section, PsyXControllerMapping& outMapping)
+{
+	extern PsyXControllerMapping g_controller_mapping;
+
+	const char* str;
+
+	str = ini_get(config, section, "square");
+	outMapping.gc_square = ParseGameControllerMapping(str, g_controller_mapping.gc_square);
+
+	str = ini_get(config, section, "circle");
+	outMapping.gc_circle = ParseGameControllerMapping(str, g_controller_mapping.gc_circle);
+
+	str = ini_get(config, section, "triangle");
+	outMapping.gc_triangle = ParseGameControllerMapping(str, g_controller_mapping.gc_triangle);
+
+	str = ini_get(config, section, "cross");
+	outMapping.gc_cross = ParseGameControllerMapping(str, g_controller_mapping.gc_cross);
+
+	str = ini_get(config, section, "l1");
+	outMapping.gc_l1 = ParseGameControllerMapping(str, g_controller_mapping.gc_l1);
+
+	str = ini_get(config, section, "l2");
+	outMapping.gc_l2 = ParseGameControllerMapping(str, g_controller_mapping.gc_l2);
+
+	str = ini_get(config, section, "l3");
+	outMapping.gc_l3 = ParseGameControllerMapping(str, g_controller_mapping.gc_l3);
+
+	str = ini_get(config, section, "r1");
+	outMapping.gc_r1 = ParseGameControllerMapping(str, g_controller_mapping.gc_r1);
+
+	str = ini_get(config, section, "r2");
+	outMapping.gc_r2 = ParseGameControllerMapping(str, g_controller_mapping.gc_r2);
+
+	str = ini_get(config, section, "r3");
+	outMapping.gc_r3 = ParseGameControllerMapping(str, g_controller_mapping.gc_r3);
+
+	str = ini_get(config, section, "up");
+	outMapping.gc_dpad_up = ParseGameControllerMapping(str, g_controller_mapping.gc_dpad_up);
+
+	str = ini_get(config, section, "down");
+	outMapping.gc_dpad_down = ParseGameControllerMapping(str, g_controller_mapping.gc_dpad_down);
+
+	str = ini_get(config, section, "left");
+	outMapping.gc_dpad_left = ParseGameControllerMapping(str, g_controller_mapping.gc_dpad_left);
+
+	str = ini_get(config, section, "right");
+	outMapping.gc_dpad_right = ParseGameControllerMapping(str, g_controller_mapping.gc_dpad_right);
+
+	str = ini_get(config, section, "select");
+	outMapping.gc_select = ParseGameControllerMapping(str, g_controller_mapping.gc_select);
+
+	str = ini_get(config, section, "start");
+	outMapping.gc_start = ParseGameControllerMapping(str, g_controller_mapping.gc_start);
+
+	str = ini_get(config, section, "axis_left_x");
+	outMapping.gc_axis_left_x = ParseGameControllerMapping(str, g_controller_mapping.gc_axis_left_x);
+
+	str = ini_get(config, section, "axis_left_y");
+	outMapping.gc_axis_left_y = ParseGameControllerMapping(str, g_controller_mapping.gc_axis_left_y);
+
+	str = ini_get(config, section, "axis_right_x");
+	outMapping.gc_axis_right_x = ParseGameControllerMapping(str, g_controller_mapping.gc_axis_right_x);
+
+	str = ini_get(config, section, "axis_right_y");
+	outMapping.gc_axis_right_y = ParseGameControllerMapping(str, g_controller_mapping.gc_axis_right_y);
+}
+
+PsyXKeyboardMapping g_kbGameMappings = { 0x123 };
+PsyXKeyboardMapping g_kbMenuMappings = { 0x456 };
+
+PsyXControllerMapping g_gcGameMappings = { 0x321 };
+PsyXControllerMapping g_gcMenuMappings = { 0x654 };
 
 void SwitchMappings(int menu)
 {
 	extern PsyXKeyboardMapping g_keyboard_mapping;
+	extern PsyXControllerMapping g_controller_mapping;
 
 	if(menu)
-		g_keyboard_mapping = g_menuMappings;
+	{
+		g_keyboard_mapping = g_kbMenuMappings;
+		g_controller_mapping = g_gcMenuMappings;
+	}
 	else
-		g_keyboard_mapping = g_gameMappings;
+	{
+		g_keyboard_mapping = g_kbGameMappings;
+		g_controller_mapping = g_gcGameMappings;
+	}
 }
 
 int main(int argc, char** argv)
@@ -549,13 +665,17 @@ int main(int argc, char** argv)
 	
 	if (config)
 	{
-		LoadKeyMappings(config, "kbcontrols_game", g_gameMappings);
-		LoadKeyMappings(config, "kbcontrols_menu", g_menuMappings);
+		ParseKeyboardMappings(config, "kbcontrols_game", g_kbGameMappings);
+		ParseKeyboardMappings(config, "kbcontrols_menu", g_kbMenuMappings);
 
-		SwitchMappings(1);
+		ParseControllerMappings(config, "controls_game", g_gcGameMappings);
+		ParseControllerMappings(config, "controls_menu", g_gcMenuMappings);
 		
 		ini_free(config);
 	}
+
+	// start with menu mapping
+	SwitchMappings(1);
 
 	redriver2_main(argc, argv);
 

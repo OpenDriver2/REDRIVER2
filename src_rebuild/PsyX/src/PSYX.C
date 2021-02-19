@@ -38,6 +38,7 @@ extern SDL_GameController* padHandle[];
 extern unsigned char* padData[];
 
 PsyXKeyboardMapping g_keyboard_mapping;
+PsyXControllerMapping g_controller_mapping;
 
 timerCtx_t g_vblTimer;
 
@@ -147,6 +148,34 @@ static void PsyX_Sys_InitialiseInput()
 
 	g_keyboard_mapping.kc_select = SDL_SCANCODE_SPACE;
 	g_keyboard_mapping.kc_start = SDL_SCANCODE_RETURN;
+
+	//----------------
+	g_controller_mapping.gc_square = SDL_CONTROLLER_BUTTON_X;
+	g_controller_mapping.gc_circle = SDL_CONTROLLER_BUTTON_B;
+	g_controller_mapping.gc_triangle = SDL_CONTROLLER_BUTTON_Y;
+	g_controller_mapping.gc_cross = SDL_CONTROLLER_BUTTON_A;
+
+	g_controller_mapping.gc_l1 = SDL_CONTROLLER_BUTTON_LEFTSHOULDER;
+	g_controller_mapping.gc_l2 = SDL_CONTROLLER_AXIS_TRIGGERLEFT | CONTROLLER_MAP_AXIS_FLAG;
+	g_controller_mapping.gc_l3 = SDL_CONTROLLER_BUTTON_LEFTSTICK;
+
+	g_controller_mapping.gc_r1 = SDL_CONTROLLER_BUTTON_RIGHTSHOULDER;
+	g_controller_mapping.gc_r2 = SDL_CONTROLLER_AXIS_TRIGGERRIGHT | CONTROLLER_MAP_AXIS_FLAG;
+	g_controller_mapping.gc_r3 = SDL_CONTROLLER_BUTTON_RIGHTSTICK;
+
+	g_controller_mapping.gc_dpad_up = SDL_CONTROLLER_BUTTON_DPAD_UP;
+	g_controller_mapping.gc_dpad_down = SDL_CONTROLLER_BUTTON_DPAD_DOWN;
+	g_controller_mapping.gc_dpad_left = SDL_CONTROLLER_BUTTON_DPAD_LEFT;
+	g_controller_mapping.gc_dpad_right = SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
+
+	g_controller_mapping.gc_select = SDL_CONTROLLER_BUTTON_BACK;
+	g_controller_mapping.gc_start = SDL_CONTROLLER_BUTTON_START;
+
+	g_controller_mapping.gc_axis_left_x = SDL_CONTROLLER_AXIS_LEFTX | CONTROLLER_MAP_AXIS_FLAG;
+	g_controller_mapping.gc_axis_left_y = SDL_CONTROLLER_AXIS_LEFTY | CONTROLLER_MAP_AXIS_FLAG;
+	g_controller_mapping.gc_axis_right_x = SDL_CONTROLLER_AXIS_RIGHTX | CONTROLLER_MAP_AXIS_FLAG;
+	g_controller_mapping.gc_axis_right_y = SDL_CONTROLLER_AXIS_RIGHTY | CONTROLLER_MAP_AXIS_FLAG;
+	
 }
 
 extern int GR_InitialisePSX();

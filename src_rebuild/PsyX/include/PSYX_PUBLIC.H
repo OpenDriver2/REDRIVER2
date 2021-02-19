@@ -1,6 +1,8 @@
 #ifndef EMULATOR_PUBLIC_H
 #define EMULATOR_PUBLIC_H
 
+#define CONTROLLER_MAP_AXIS_FLAG 0x4000
+
 struct PsyXKeyboardMapping
 {
 	int id;
@@ -25,6 +27,39 @@ struct PsyXKeyboardMapping
 	int kc_dpad_right;
 	int kc_dpad_up;
 	int kc_dpad_down;
+};
+
+struct PsyXControllerMapping
+{
+	int id;
+
+	// you can bind axis by adding CONTROLLER_MAP_AXIS_FLAG
+	int gc_square;
+	int gc_circle;
+	int gc_triangle;
+	int gc_cross;
+
+	int gc_l1;
+	int gc_l2;
+	int gc_l3;
+
+	int gc_r1;
+	int gc_r2;
+	int gc_r3;
+
+	int gc_start;
+	int gc_select;
+
+	int gc_dpad_left;
+	int gc_dpad_right;
+	int gc_dpad_up;
+	int gc_dpad_down;
+
+	int gc_axis_left_x;
+	int gc_axis_left_y;
+
+	int gc_axis_right_x;
+	int gc_axis_right_y;
 };
 
 typedef void(*GameDebugKeysHandlerFunc)(int nKey, bool down);
