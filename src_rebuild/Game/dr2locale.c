@@ -45,6 +45,59 @@ int InitStringMng()
 	if(InitStringLanguage(filename, 1) == -1)
 		return 0;
 
+	{
+		int i;
+		int nchars;
+		char table[256];
+		char* file;
+
+		file = _frontend_buffer;
+		
+		Loadfile("GFX\\FONT2.FNT", file);
+
+		nchars = *(int *)file;
+		file += sizeof(int);
+
+		// skip character info
+		file += nchars * sizeof(OUT_FONTINFO);
+
+		// get ASCII table
+		memcpy((u_char*)table, file, 256);
+
+		printInfo("Performing '%s' LANG to FONT text check...\n", LanguageNames[gUserLanguage]);
+		for (i = 0; i < MAX_LANGUAGE_TEXT; i++)
+		{
+			char* base = gGameLangTable[i];
+			char* testPtr = base;
+			while (*testPtr)
+			{
+				u_char chr = *testPtr;
+
+				if (chr != 32 && (chr < 32 || chr > 138 || chr < 128) && table[chr] == -1)
+				{
+					printWarning("WARN - incorrect GAME text symbol '%c', line %d, col %d\n", chr, i + 1, testPtr - base + 1);
+				}
+				testPtr++;
+			}
+		}
+
+		for (i = 0; i < MAX_LANGUAGE_TEXT; i++)
+		{
+			char* base = gMissionLangTable[i];
+			char* testPtr = base;
+			while (*testPtr)
+			{
+				u_char chr = *testPtr;
+
+				if (chr != 32 && (chr < 32 || chr > 138 || chr < 128) && table[chr] == -1)
+				{
+					printWarning("WARN - incorrect MISSION text symbol '%c', line %d, col %d\n", chr, i + 1, testPtr - base + 1);
+				}
+				testPtr++;
+			}
+		}
+	}
+
 	return 1;
 }
 
