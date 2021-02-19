@@ -1733,6 +1733,7 @@ void DrawFullscreenMap(void)
 			{
 				back->u1 += 1;
 				back->v2 += 1;
+				back->u3 += 1;
 				back->v3 += 1;
 			}
 #endif
