@@ -187,7 +187,7 @@ void MapPad(int pad, PADRAW *pData)
 	Pads[pad].diranalog[2] = pData->analog[2] - 128;
 	Pads[pad].diranalog[3] = pData->analog[3] - 128;
 
-	if (Pads[pad].active != 0) 
+	if (Pads[pad].active) 
 	{
 		mapped = 0;
 		i = 0;

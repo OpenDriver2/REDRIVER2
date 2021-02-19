@@ -336,18 +336,19 @@ int ParseKeyMapping(const char* str, int default_value)
 {
 	const char* scancodeName;
 	int i;
-
+	
 	if(str)
 	{
+		if (!_stricmp("NONE", str))
+			return 0;
+		
 		for (i = 0; i < SDL_NUM_SCANCODES; i++)
 		{
 			scancodeName = SDL_GetScancodeName((SDL_Scancode)i);
-			if (strlen(scancodeName))
+			
+			if (strlen(scancodeName) && !_stricmp(scancodeName, str))
 			{
-				if (!_stricmp(scancodeName, str))
-				{
-					return i;
-				}
+				return i;
 			}
 		}
 	}

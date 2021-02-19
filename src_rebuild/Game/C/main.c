@@ -987,6 +987,13 @@ void StepSim(void)
 				t1 = Pads[*cp->ai.padid].mapanalog[2];
 				t2 = Pads[*cp->ai.padid].type & 4;
 
+				// [A] handle REDRIVER2 dedicated car exit button
+				if(t0 & CAR_PAD_LEAVECAR_DED)
+				{
+					t0 &= ~CAR_PAD_LEAVECAR_DED;
+					t0 |= CAR_PAD_LEAVECAR;
+				}
+
 				if (NoPlayerControl == 0)
 				{
 					if (gStopPadReads)
@@ -1108,6 +1115,13 @@ void StepSim(void)
 			t0 = Pads[stream].mapped;
 			t1 = Pads[stream].mapanalog[2];
 			t2 = Pads[stream].type & 4;
+
+			// [A] handle REDRIVER2 dedicated car entry button
+			if (t0 & TANNER_PAD_ACTION_DED)
+			{
+				t0 &= ~TANNER_PAD_ACTION_DED;
+				t0 |= TANNER_PAD_ACTION;
+			}
 
 			if (NoPlayerControl == 0)
 			{
