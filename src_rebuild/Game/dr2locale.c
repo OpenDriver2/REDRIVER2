@@ -45,6 +45,7 @@ int InitStringMng()
 	if(InitStringLanguage(filename, 1) == -1)
 		return 0;
 
+#ifdef DEBUG_OPTIONS
 	{
 		int i;
 		int nchars;
@@ -97,7 +98,7 @@ int InitStringMng()
 			}
 		}
 	}
-
+#endif
 	return 1;
 }
 
