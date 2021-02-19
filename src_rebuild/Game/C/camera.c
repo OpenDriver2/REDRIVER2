@@ -362,12 +362,13 @@ int CameraCollisionCheck(void)
 // [D] [T]
 void TurnHead(PLAYER *lp)
 {
-	if ((paddCamera & 0x3) == 0x3)
+	// [A] handle REDRIVER2 dedicated look back button
+	if ((paddCamera & CAMERA_PAD_LOOK_BACK) == CAMERA_PAD_LOOK_BACK || (paddCamera & CAMERA_PAD_LOOK_BACK_DED))
 	{
 		if (pPlayerPed != NULL)  // look back
 			pPlayerPed->head_rot = 0;
 	}
-	else if (paddCamera & 0x1)
+	else if (paddCamera & CAMERA_PAD_LOOK_LEFT)
 	{
 		if (pPlayerPed != NULL)
 			pPlayerPed->head_rot = 512;
@@ -377,7 +378,7 @@ void TurnHead(PLAYER *lp)
 		else
 			lp->headTimer++;
 	}
-	else if (paddCamera & 0x2)
+	else if (paddCamera & CAMERA_PAD_LOOK_RIGHT)
 	{
 		if (pPlayerPed != NULL)
 			pPlayerPed->head_rot = -512;
@@ -456,7 +457,8 @@ void PlaceCameraFollowCar(PLAYER *lp)
 
 	if (pauseflag == 0 || EditMode == 2)
 	{
-		if ((paddCamera & 0x3) == 0x3)
+		// [A] handle REDRIVER2 dedicated look back button
+		if ((paddCamera & CAMERA_PAD_LOOK_BACK) == CAMERA_PAD_LOOK_BACK || (paddCamera & CAMERA_PAD_LOOK_BACK_DED))
 		{
 			camAngle = baseDir & 0xfff; // look back
 		}
@@ -579,7 +581,8 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 		viewer_position.vz = cp->ap.carCos->colBox.vz - 80;
 	}
 
-	if ((paddCamera & 0x3) == 0x3)
+	// [A] handle REDRIVER2 dedicated look back button
+	if ((paddCamera & CAMERA_PAD_LOOK_BACK) == CAMERA_PAD_LOOK_BACK || (paddCamera & CAMERA_PAD_LOOK_BACK_DED))
 		viewer_position.vz = 0;
 
 	angle = baseDir & 0xfff;
@@ -590,7 +593,8 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 
 	TurnHead(lp);
 
-	if ((paddCamera & 0x3) == 0x3)
+	// [A] handle REDRIVER2 dedicated look back button
+	if ((paddCamera & CAMERA_PAD_LOOK_BACK) == CAMERA_PAD_LOOK_BACK || (paddCamera & CAMERA_PAD_LOOK_BACK_DED))
 		camera_angle.vy = 2048 - baseDir & 0xfff;
 	else
 		camera_angle.vy = (lp->headPos >> 16) - baseDir & 0xfff;
@@ -615,7 +619,8 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 		InvertMatrix(&cp->hd.drawCarMat, &inv_camera_matrix);
 	}
 
-	if ((paddCamera & 0x3) == 0x3)
+	// [A] handle REDRIVER2 dedicated look back button
+	if ((paddCamera & CAMERA_PAD_LOOK_BACK) == CAMERA_PAD_LOOK_BACK || (paddCamera & CAMERA_PAD_LOOK_BACK_DED))
 	{
 		if (cp != NULL)
 			viewer_position.vz = 170;
