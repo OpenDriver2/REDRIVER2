@@ -665,7 +665,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	}
 
 	alDeleteSources(1, &audioStreamSource);
-	alDeleteBuffers(2, audioStreamBuffers);
+	alDeleteBuffers(4, audioStreamBuffers);
 }
 
 // FMV main function
