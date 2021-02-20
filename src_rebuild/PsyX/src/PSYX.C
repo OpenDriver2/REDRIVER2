@@ -448,6 +448,9 @@ void PsyX_Initialise(char* appName, int width, int height, int fullscreen)
 
 	// set shutdown function (PSX apps usualy don't exit)
 	atexit(PsyX_Shutdown);
+
+	// disable cursor visibility
+	SDL_ShowCursor(0);
 }
 
 void PsyX_GetScreenSize(int& screenWidth, int& screenHeight)
