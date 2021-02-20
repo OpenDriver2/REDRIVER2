@@ -83,7 +83,8 @@ struct SPUVoice
 
 	ALuint alBuffer;
 	ALuint alSource;
-	int sampledirty;
+	ushort sampledirty;
+	ushort reverb;
 };
 
 SPUVoice	g_SpuVoices[SPU_VOICES];
@@ -820,6 +821,8 @@ unsigned long SpuSetReverbVoice(long on_off, unsigned long voice_bit)
 			if (alSource == AL_NONE)
 				continue;
 
+			voice.reverb = on_off > 0;
+
 			if (on_off)
 			{
 				alSource3i(alSource, AL_AUXILIARY_SEND_FILTER, g_ALEffectSlots[g_currEffectSlotIdx], 0, AL_FILTER_NULL);
@@ -838,8 +841,15 @@ unsigned long SpuSetReverbVoice(long on_off, unsigned long voice_bit)
 
 unsigned long SpuGetReverbVoice(void)
 {
-	PSYX_UNIMPLEMENTED();
-	return 0;
+	unsigned long bits = 0;
+	for (int i = 0; i < SPU_VOICES; i++)
+	{
+		SPUVoice& voice = g_SpuVoices[i];
+		if (voice.reverb)
+			bits |= SPU_KEYCH(i);
+	}
+
+	return bits;
 }
 
 long SpuClearReverbWorkArea(long mode)
