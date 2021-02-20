@@ -430,7 +430,7 @@ int GR_InitialiseRender(char* windowName, int width, int height, int fullscreen)
 	if (!GR_InitialiseGLExt())
 	{
 		eprinterr("Failed to Intialise GL extensions\n");
-		PsyX_ShutDown();
+		return 0;
 	}
 #endif
 	

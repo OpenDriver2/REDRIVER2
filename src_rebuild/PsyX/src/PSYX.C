@@ -419,35 +419,35 @@ void PsyX_Initialise(char* appName, int width, int height, int fullscreen)
 	if (SDL_Init(SDL_INIT_VIDEO) != 0)
 	{
 		eprinterr("Failed to initialise SDL\n");
-		PsyX_ShutDown();
+		PsyX_Shutdown();
 		return;
 	}
 	
 	if (!GR_InitialiseRender(windowNameStr, width, height, fullscreen))
 	{
 		eprinterr("Failed to Intialise Window\n");
-		PsyX_ShutDown();
+		PsyX_Shutdown();
 		return;
 	}
 
 	if (!PsyX_Sys_InitialiseCore())
 	{
 		eprinterr("Failed to Intialise Psy-X Core.\n");
-		PsyX_ShutDown();
+		PsyX_Shutdown();
 		return;
 	}
 
 	if (!GR_InitialisePSX())
 	{
 		eprinterr("Failed to Intialise PSX.\n");
-		PsyX_ShutDown();
+		PsyX_Shutdown();
 		return;
 	}
 
 	PsyX_Sys_InitialiseInput();
 
 	// set shutdown function (PSX apps usualy don't exit)
-	atexit(PsyX_ShutDown);
+	atexit(PsyX_Shutdown);
 }
 
 void PsyX_GetScreenSize(int& screenWidth, int& screenHeight)
@@ -722,7 +722,7 @@ void PsyX_Exit()
 	exit(0);
 }
 
-void PsyX_ShutDown()
+void PsyX_Shutdown()
 {
 	if (!g_window)
 		return;

@@ -91,9 +91,6 @@ extern void PsyX_EndScene();
 /* Explicitly updates emulator input loop */
 extern void PsyX_UpdateInput();
 
-/* Usually called at the end if main function */
-extern void PsyX_ShutDown();
-
 /* Screen size of emulated PSX viewport with widescreen offsets */
 extern void PsyX_GetPSXWidescreenMappedViewport(struct _RECT16* rect);
 

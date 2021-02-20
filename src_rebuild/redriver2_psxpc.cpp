@@ -681,5 +681,7 @@ int main(int argc, char** argv)
 
 	DeinitStringMng();
 
+	PsyX_Shutdown();
+
 	return 0;
 }

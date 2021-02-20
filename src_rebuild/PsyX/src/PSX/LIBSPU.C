@@ -97,10 +97,13 @@ int			g_enableSPUReverb = 0;
 int			g_ALEffectsSupported = 0;
 
 LPALGENEFFECTS alGenEffects = NULL;
+LPALDELETEEFFECTS alDeleteEffects = NULL;
 LPALEFFECTI alEffecti = NULL;
 LPALEFFECTF alEffectf = NULL;
 LPALGENAUXILIARYEFFECTSLOTS alGenAuxiliaryEffectSlots = NULL;
+LPALDELETEAUXILIARYEFFECTSLOTS alDeleteAuxiliaryEffectSlots = NULL;
 LPALAUXILIARYEFFECTSLOTI alAuxiliaryEffectSloti = NULL;
+
 
 void InitOpenAlEffects()
 {
@@ -113,9 +116,11 @@ void InitOpenAlEffects()
 	}
 
 	alGenEffects = (LPALGENEFFECTS)alGetProcAddress("alGenEffects");
+	alDeleteEffects = (LPALDELETEEFFECTS)alGetProcAddress("alDeleteEffects");
 	alEffecti = (LPALEFFECTI)alGetProcAddress("alEffecti");
 	alEffectf = (LPALEFFECTF)alGetProcAddress("alEffectf");
 	alGenAuxiliaryEffectSlots = (LPALGENAUXILIARYEFFECTSLOTS)alGetProcAddress("alGenAuxiliaryEffectSlots");
+	alDeleteAuxiliaryEffectSlots = (LPALDELETEAUXILIARYEFFECTSLOTS)alGetProcAddress("alDeleteAuxiliaryEffectSlots");
 	alAuxiliaryEffectSloti = (LPALAUXILIARYEFFECTSLOTI)alGetProcAddress("alAuxiliaryEffectSloti");
 
 	int max_sends = 0;
@@ -234,9 +239,17 @@ void PsyX_ShutdownSound()
 	for (int i = 0; i < SPU_VOICES; i++)
 	{
 		SPUVoice& voice = g_SpuVoices[i];
-		alGenSources(1, &voice.alSource);
-		alGenBuffers(1, &voice.alBuffer);
+		alDeleteSources(1, &voice.alSource);
+		alDeleteBuffers(1, &voice.alBuffer);
 	}
+
+	if (g_ALEffectsSupported)
+	{
+		alDeleteEffects(1, &g_nAlReverbEffect);
+		g_ALEffectsSupported = AL_NONE;
+	}
+
+	alDeleteAuxiliaryEffectSlots(1, g_ALEffectSlots);
 
 	alcDestroyContext(g_ALCcontext);
 	alcCloseDevice(g_ALCdevice);
