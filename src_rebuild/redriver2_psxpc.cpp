@@ -333,66 +333,6 @@ char g_PrimTab2[PRIMTAB_SIZE];			// 0x119400
 char g_Replay_buffer[0x50000];		// 0x1fABBC
 #endif
 
-int ParseKeyMapping(const char* str, int default_value)
-{
-	const char* scancodeName;
-	int i;
-	
-	if(str)
-	{
-		if (!_stricmp("NONE", str))
-			return SDL_SCANCODE_UNKNOWN;
-		
-		for (i = 0; i < SDL_NUM_SCANCODES; i++)
-		{
-			scancodeName = SDL_GetScancodeName((SDL_Scancode)i);
-			
-			if (strlen(scancodeName) && !_stricmp(scancodeName, str))
-			{
-				return i;
-			}
-		}
-	}
-
-	return default_value;
-}
-
-int ParseGameControllerMapping(const char* str, int default_value)
-{
-	const char* buttonOrAxisName;
-	int i;
-
-	if (str)
-	{
-		if (!_stricmp("NONE", str))
-			return SDL_CONTROLLER_BUTTON_INVALID;
-
-		// check buttons
-		for (i = 0; i < SDL_CONTROLLER_BUTTON_MAX; i++)
-		{
-			buttonOrAxisName = SDL_GameControllerGetStringForButton((SDL_GameControllerButton)i);
-
-			if (strlen(buttonOrAxisName) && !_stricmp(buttonOrAxisName, str))
-			{
-				return i;
-			}
-		}
-
-		// Check axes
-		for (i = 0; i < SDL_CONTROLLER_AXIS_MAX; i++)
-		{
-			buttonOrAxisName = SDL_GameControllerGetStringForAxis((SDL_GameControllerAxis)i);
-
-			if (strlen(buttonOrAxisName) && !_stricmp(buttonOrAxisName, str))
-			{
-				return i | CONTROLLER_MAP_AXIS_FLAG;
-			}
-		}
-	}
-
-	return default_value;
-}
-
 void ParseKeyboardMappings(ini_t* config, char* section, PsyXKeyboardMapping& outMapping)
 {
 	extern PsyXKeyboardMapping g_keyboard_mapping;
@@ -400,52 +340,52 @@ void ParseKeyboardMappings(ini_t* config, char* section, PsyXKeyboardMapping& ou
 	const char* str;
 
 	str = ini_get(config, section, "square");
-	outMapping.kc_square = ParseKeyMapping(str, g_keyboard_mapping.kc_square);
+	outMapping.kc_square = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_square);
 
 	str = ini_get(config, section, "circle");
-	outMapping.kc_circle = ParseKeyMapping(str, g_keyboard_mapping.kc_circle);
+	outMapping.kc_circle = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_circle);
 
 	str = ini_get(config, section, "triangle");
-	outMapping.kc_triangle = ParseKeyMapping(str, g_keyboard_mapping.kc_triangle);
+	outMapping.kc_triangle = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_triangle);
 
 	str = ini_get(config, section, "cross");
-	outMapping.kc_cross = ParseKeyMapping(str, g_keyboard_mapping.kc_cross);
+	outMapping.kc_cross = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_cross);
 
 	str = ini_get(config, section, "l1");
-	outMapping.kc_l1 = ParseKeyMapping(str, g_keyboard_mapping.kc_l1);
+	outMapping.kc_l1 = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_l1);
 
 	str = ini_get(config, section, "l2");
-	outMapping.kc_l2 = ParseKeyMapping(str, g_keyboard_mapping.kc_l2);
+	outMapping.kc_l2 = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_l2);
 
 	str = ini_get(config, section, "l3");
-	outMapping.kc_l3 = ParseKeyMapping(str, g_keyboard_mapping.kc_l3);
+	outMapping.kc_l3 = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_l3);
 
 	str = ini_get(config, section, "r1");
-	outMapping.kc_r1 = ParseKeyMapping(str, g_keyboard_mapping.kc_r1);
+	outMapping.kc_r1 = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_r1);
 
 	str = ini_get(config, section, "r2");
-	outMapping.kc_r2 = ParseKeyMapping(str, g_keyboard_mapping.kc_r2);
+	outMapping.kc_r2 = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_r2);
 
 	str = ini_get(config, section, "r3");
-	outMapping.kc_r3 = ParseKeyMapping(str, g_keyboard_mapping.kc_r3);
+	outMapping.kc_r3 = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_r3);
 
 	str = ini_get(config, section, "up");
-	outMapping.kc_dpad_up = ParseKeyMapping(str, g_keyboard_mapping.kc_dpad_up);
+	outMapping.kc_dpad_up = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_dpad_up);
 
 	str = ini_get(config, section, "down");
-	outMapping.kc_dpad_down = ParseKeyMapping(str, g_keyboard_mapping.kc_dpad_down);
+	outMapping.kc_dpad_down = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_dpad_down);
 
 	str = ini_get(config, section, "left");
-	outMapping.kc_dpad_left = ParseKeyMapping(str, g_keyboard_mapping.kc_dpad_left);
+	outMapping.kc_dpad_left = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_dpad_left);
 
 	str = ini_get(config, section, "right");
-	outMapping.kc_dpad_right = ParseKeyMapping(str, g_keyboard_mapping.kc_dpad_right);
+	outMapping.kc_dpad_right = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_dpad_right);
 
 	str = ini_get(config, section, "select");
-	outMapping.kc_select = ParseKeyMapping(str, g_keyboard_mapping.kc_select);
+	outMapping.kc_select = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_select);
 
 	str = ini_get(config, section, "start");
-	outMapping.kc_start = ParseKeyMapping(str, g_keyboard_mapping.kc_start);
+	outMapping.kc_start = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_start);
 }
 
 void ParseControllerMappings(ini_t* config, char* section, PsyXControllerMapping& outMapping)
@@ -455,64 +395,64 @@ void ParseControllerMappings(ini_t* config, char* section, PsyXControllerMapping
 	const char* str;
 
 	str = ini_get(config, section, "square");
-	outMapping.gc_square = ParseGameControllerMapping(str, g_controller_mapping.gc_square);
+	outMapping.gc_square = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_square);
 
 	str = ini_get(config, section, "circle");
-	outMapping.gc_circle = ParseGameControllerMapping(str, g_controller_mapping.gc_circle);
+	outMapping.gc_circle = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_circle);
 
 	str = ini_get(config, section, "triangle");
-	outMapping.gc_triangle = ParseGameControllerMapping(str, g_controller_mapping.gc_triangle);
+	outMapping.gc_triangle = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_triangle);
 
 	str = ini_get(config, section, "cross");
-	outMapping.gc_cross = ParseGameControllerMapping(str, g_controller_mapping.gc_cross);
+	outMapping.gc_cross = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_cross);
 
 	str = ini_get(config, section, "l1");
-	outMapping.gc_l1 = ParseGameControllerMapping(str, g_controller_mapping.gc_l1);
+	outMapping.gc_l1 = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_l1);
 
 	str = ini_get(config, section, "l2");
-	outMapping.gc_l2 = ParseGameControllerMapping(str, g_controller_mapping.gc_l2);
+	outMapping.gc_l2 = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_l2);
 
 	str = ini_get(config, section, "l3");
-	outMapping.gc_l3 = ParseGameControllerMapping(str, g_controller_mapping.gc_l3);
+	outMapping.gc_l3 = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_l3);
 
 	str = ini_get(config, section, "r1");
-	outMapping.gc_r1 = ParseGameControllerMapping(str, g_controller_mapping.gc_r1);
+	outMapping.gc_r1 = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_r1);
 
 	str = ini_get(config, section, "r2");
-	outMapping.gc_r2 = ParseGameControllerMapping(str, g_controller_mapping.gc_r2);
+	outMapping.gc_r2 = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_r2);
 
 	str = ini_get(config, section, "r3");
-	outMapping.gc_r3 = ParseGameControllerMapping(str, g_controller_mapping.gc_r3);
+	outMapping.gc_r3 = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_r3);
 
 	str = ini_get(config, section, "up");
-	outMapping.gc_dpad_up = ParseGameControllerMapping(str, g_controller_mapping.gc_dpad_up);
+	outMapping.gc_dpad_up = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_dpad_up);
 
 	str = ini_get(config, section, "down");
-	outMapping.gc_dpad_down = ParseGameControllerMapping(str, g_controller_mapping.gc_dpad_down);
+	outMapping.gc_dpad_down = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_dpad_down);
 
 	str = ini_get(config, section, "left");
-	outMapping.gc_dpad_left = ParseGameControllerMapping(str, g_controller_mapping.gc_dpad_left);
+	outMapping.gc_dpad_left = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_dpad_left);
 
 	str = ini_get(config, section, "right");
-	outMapping.gc_dpad_right = ParseGameControllerMapping(str, g_controller_mapping.gc_dpad_right);
+	outMapping.gc_dpad_right = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_dpad_right);
 
 	str = ini_get(config, section, "select");
-	outMapping.gc_select = ParseGameControllerMapping(str, g_controller_mapping.gc_select);
+	outMapping.gc_select = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_select);
 
 	str = ini_get(config, section, "start");
-	outMapping.gc_start = ParseGameControllerMapping(str, g_controller_mapping.gc_start);
+	outMapping.gc_start = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_start);
 
 	str = ini_get(config, section, "axis_left_x");
-	outMapping.gc_axis_left_x = ParseGameControllerMapping(str, g_controller_mapping.gc_axis_left_x);
+	outMapping.gc_axis_left_x = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_axis_left_x);
 
 	str = ini_get(config, section, "axis_left_y");
-	outMapping.gc_axis_left_y = ParseGameControllerMapping(str, g_controller_mapping.gc_axis_left_y);
+	outMapping.gc_axis_left_y = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_axis_left_y);
 
 	str = ini_get(config, section, "axis_right_x");
-	outMapping.gc_axis_right_x = ParseGameControllerMapping(str, g_controller_mapping.gc_axis_right_x);
+	outMapping.gc_axis_right_x = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_axis_right_x);
 
 	str = ini_get(config, section, "axis_right_y");
-	outMapping.gc_axis_right_y = ParseGameControllerMapping(str, g_controller_mapping.gc_axis_right_y);
+	outMapping.gc_axis_right_y = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_axis_right_y);
 }
 
 PsyXKeyboardMapping g_kbGameMappings = { 0x123 };

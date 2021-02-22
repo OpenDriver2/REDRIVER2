@@ -1,7 +1,8 @@
 #ifndef EMULATOR_PUBLIC_H
 #define EMULATOR_PUBLIC_H
 
-#define CONTROLLER_MAP_AXIS_FLAG 0x4000
+#define CONTROLLER_MAP_FLAG_AXIS		0x4000
+#define CONTROLLER_MAP_FLAG_INVERSE		0x8000
 
 struct PsyXKeyboardMapping
 {
@@ -90,6 +91,12 @@ extern void PsyX_EndScene();
 
 /* Explicitly updates emulator input loop */
 extern void PsyX_UpdateInput();
+
+/* Returns keyboard mapping index */
+extern int PsyX_LookupKeyboardMapping(const char* str, int default_value);
+
+/* Returns controller mapping index */
+extern int PsyX_LookupGameControllerMapping(const char* str, int default_value);
 
 /* Screen size of emulated PSX viewport with widescreen offsets */
 extern void PsyX_GetPSXWidescreenMappedViewport(struct _RECT16* rect);

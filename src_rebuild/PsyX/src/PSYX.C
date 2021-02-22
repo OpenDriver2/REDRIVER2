@@ -156,11 +156,11 @@ static void PsyX_Sys_InitialiseInput()
 	g_controller_mapping.gc_cross = SDL_CONTROLLER_BUTTON_A;
 
 	g_controller_mapping.gc_l1 = SDL_CONTROLLER_BUTTON_LEFTSHOULDER;
-	g_controller_mapping.gc_l2 = SDL_CONTROLLER_AXIS_TRIGGERLEFT | CONTROLLER_MAP_AXIS_FLAG;
+	g_controller_mapping.gc_l2 = SDL_CONTROLLER_AXIS_TRIGGERLEFT | CONTROLLER_MAP_FLAG_AXIS;
 	g_controller_mapping.gc_l3 = SDL_CONTROLLER_BUTTON_LEFTSTICK;
 
 	g_controller_mapping.gc_r1 = SDL_CONTROLLER_BUTTON_RIGHTSHOULDER;
-	g_controller_mapping.gc_r2 = SDL_CONTROLLER_AXIS_TRIGGERRIGHT | CONTROLLER_MAP_AXIS_FLAG;
+	g_controller_mapping.gc_r2 = SDL_CONTROLLER_AXIS_TRIGGERRIGHT | CONTROLLER_MAP_FLAG_AXIS;
 	g_controller_mapping.gc_r3 = SDL_CONTROLLER_BUTTON_RIGHTSTICK;
 
 	g_controller_mapping.gc_dpad_up = SDL_CONTROLLER_BUTTON_DPAD_UP;
@@ -171,11 +171,98 @@ static void PsyX_Sys_InitialiseInput()
 	g_controller_mapping.gc_select = SDL_CONTROLLER_BUTTON_BACK;
 	g_controller_mapping.gc_start = SDL_CONTROLLER_BUTTON_START;
 
-	g_controller_mapping.gc_axis_left_x = SDL_CONTROLLER_AXIS_LEFTX | CONTROLLER_MAP_AXIS_FLAG;
-	g_controller_mapping.gc_axis_left_y = SDL_CONTROLLER_AXIS_LEFTY | CONTROLLER_MAP_AXIS_FLAG;
-	g_controller_mapping.gc_axis_right_x = SDL_CONTROLLER_AXIS_RIGHTX | CONTROLLER_MAP_AXIS_FLAG;
-	g_controller_mapping.gc_axis_right_y = SDL_CONTROLLER_AXIS_RIGHTY | CONTROLLER_MAP_AXIS_FLAG;
-	
+	g_controller_mapping.gc_axis_left_x = SDL_CONTROLLER_AXIS_LEFTX | CONTROLLER_MAP_FLAG_AXIS;
+	g_controller_mapping.gc_axis_left_y = SDL_CONTROLLER_AXIS_LEFTY | CONTROLLER_MAP_FLAG_AXIS;
+	g_controller_mapping.gc_axis_right_x = SDL_CONTROLLER_AXIS_RIGHTX | CONTROLLER_MAP_FLAG_AXIS;
+	g_controller_mapping.gc_axis_right_y = SDL_CONTROLLER_AXIS_RIGHTY | CONTROLLER_MAP_FLAG_AXIS;
+}
+
+// Keyboard mapping lookup
+int PsyX_LookupKeyboardMapping(const char* str, int default_value)
+{
+	const char* scancodeName;
+	int i;
+
+	if (str)
+	{
+		if (!_stricmp("NONE", str))
+			return SDL_SCANCODE_UNKNOWN;
+
+		for (i = 0; i < SDL_NUM_SCANCODES; i++)
+		{
+			scancodeName = SDL_GetScancodeName((SDL_Scancode)i);
+
+			if (strlen(scancodeName) && !_stricmp(scancodeName, str))
+			{
+				return i;
+			}
+		}
+	}
+
+	return default_value;
+}
+
+// Game controller mapping lookup
+// Available controller binds(refer to SDL2 game controller)
+//
+// Axes:
+//	leftx lefty
+//	rightx righty
+//	lefttrigger righttrigger
+//
+// NOTE: adding `-` before axis names makes it inverse, so `-leftx` inverse left stick X axis
+//
+// Buttons:
+// 	a, b, x, y
+// 	back guide start
+// 	leftstick rightstick
+// 	leftshoulder rightshoulder
+// 	dpup dpdown dpleft dpright
+
+int PsyX_LookupGameControllerMapping(const char* str, int default_value)
+{
+	const char* axisStr;
+	const char* buttonOrAxisName;
+	int i, axisFlags;
+
+	if (str)
+	{
+		axisFlags = CONTROLLER_MAP_FLAG_AXIS;
+		axisStr = str;
+
+		if (*axisStr == '-')
+		{
+			axisFlags |= CONTROLLER_MAP_FLAG_INVERSE;
+			axisStr++;
+		}
+
+		if (!_stricmp("NONE", str))
+			return SDL_CONTROLLER_BUTTON_INVALID;
+
+		// check buttons
+		for (i = 0; i < SDL_CONTROLLER_BUTTON_MAX; i++)
+		{
+			buttonOrAxisName = SDL_GameControllerGetStringForButton((SDL_GameControllerButton)i);
+
+			if (strlen(buttonOrAxisName) && !_stricmp(buttonOrAxisName, str))
+			{
+				return i;
+			}
+		}
+
+		// Check axes
+		for (i = 0; i < SDL_CONTROLLER_AXIS_MAX; i++)
+		{
+			buttonOrAxisName = SDL_GameControllerGetStringForAxis((SDL_GameControllerAxis)i);
+
+			if (strlen(buttonOrAxisName) && !_stricmp(buttonOrAxisName, axisStr))
+			{
+				return i | axisFlags;
+			}
+		}
+	}
+
+	return default_value;
 }
 
 extern int GR_InitialisePSX();
