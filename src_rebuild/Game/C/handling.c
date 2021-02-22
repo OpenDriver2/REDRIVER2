@@ -246,7 +246,7 @@ void FixCarCos(CAR_COSMETICS* carCos, int externalModelNumber)
 			carCos->wheelDisp[i].vy >>= 1;
 			carCos->wheelDisp[i].vz >>= 1;
 
-			carCos->wheelDisp[i].vy -= 10;
+			//carCos->wheelDisp[i].vy -= 10;
 		}
 
 		for (i = 0; i < 12; i++)
