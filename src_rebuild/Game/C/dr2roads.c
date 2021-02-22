@@ -36,7 +36,8 @@ int NumDriver2Curves = 0;
 int NumDriver2Straights = 0;
 DRIVER2_STRAIGHT *Driver2StraightsPtr = NULL;
 
-#if 0
+int gDisableChicagoBridges = 0;
+
 const short ChicagoBridgeRoads1[] = {
 	434,
 	433,
@@ -85,7 +86,6 @@ const short* ChicagoBridgeRoads[] = {
 	// Downtown 2
 	ChicagoBridgeRoads3,
 };
-#endif
 
 // [A] custom function for working with roads in very optimized way
 int GetSurfaceRoadInfo(DRIVER2_ROAD_INFO* outRoadInfo, int surfId)
@@ -164,9 +164,8 @@ void ProcessStraightsDriver2Lump(char *lump_file, int lump_size)
 	Getlong((char *)&NumDriver2Straights, lump_file);
 	Driver2StraightsPtr = (DRIVER2_STRAIGHT *)(lump_file + 4);
 
-#if 0
 	// [A] patch chicago roads
-	if (GameLevel == 0)
+	if (GameLevel == 0 && gDisableChicagoBridges)
 	{
 		DRIVER2_STRAIGHT* str;
 		int grp, i, j;
@@ -195,7 +194,6 @@ void ProcessStraightsDriver2Lump(char *lump_file, int lump_size)
 			}
 		}
 	}
-#endif
 }
 
 // [D] [T]
