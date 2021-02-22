@@ -3,7 +3,11 @@
 PC (Windows and Linux):
 [![Build status](https://ci.appveyor.com/api/projects/status/9abepvls6jexapqy/branch/master?svg=true)](https://ci.appveyor.com/project/SoapyMan/redriver2-10jm8/branch/master)
 
-Start Date: 28 March 2019
+### Timeline: 
+- Feb 19, 2019 - created skeleton, one year long preparations
+- Mar 28, 2020 - started work on reimplementing the game, game intro running
+- Sep 19, 2020 - reimplementing game complete - game is fully playable
+- Jan 15, 2021 - refactoring complete
 
 ### Information
 - Game was completely disassembled and reverse-engineered from MIPS back to C (except Memory Card menu overlay)

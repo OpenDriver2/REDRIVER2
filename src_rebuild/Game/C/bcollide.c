@@ -526,7 +526,7 @@ void DamageCar(CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVel
 	lbody = cp->ap.carCos->colBox.vz / 2;
 	impact = strikeVel / 600;
 
-	if (strikeVel > 0x4fff && cp->hd.speed > 9) 
+	if (strikeVel >= 20480 && cp->hd.speed > 9) 
 	{
 		dx = collisionResult->hit.vx - cd->x.vx;
 		dz = collisionResult->hit.vz - cd->x.vz;

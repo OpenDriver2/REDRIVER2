@@ -1445,7 +1445,7 @@ void CollisionSound(char player_id, CAR_DATA* cp, int impact, int car_car)
 		playerid = p1dst < p0dst;
 	}
 
-	if (player[playerid].crash_timer != 0)
+	if (player[playerid].crash_timer)
 		return;
 
 	sample = 8;
@@ -1485,7 +1485,9 @@ void CollisionSound(char player_id, CAR_DATA* cp, int impact, int car_car)
 
 	player[playerid].crash_timer = 2;
 
-	if (GetPlayerId(cp) == 0 && (gCurrentMissionNumber - 2 <= 2 || gCurrentMissionNumber == 9 || gCurrentMissionNumber == 10 || gCurrentMissionNumber == 27) && (impact & 5) != 0)
+	if ((impact & 5) && 
+		GetPlayerId(cp) == 0 &&
+		(gCurrentMissionNumber - 2 <= 2 || gCurrentMissionNumber == 9 || gCurrentMissionNumber == 10 || gCurrentMissionNumber == 27))
 	{
 		rnd = Random2(1);
 
