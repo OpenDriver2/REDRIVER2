@@ -523,6 +523,7 @@ int main(int argc, char** argv)
 
 	if (config)
 	{
+		int newScrZ = gCameraDefaultScrZ;
 		const char* dataFolderStr = ini_get(config, "fs", "dataFolder");
 		const char* userReplaysStr = ini_get(config, "game", "userChases");
 
@@ -535,12 +536,15 @@ int main(int argc, char** argv)
 		ini_sget(config, "render", "pgxpZbuffer", "%d", &g_pgxpZBuffer);
 		ini_sget(config, "render", "bilinearFiltering", "%d", &g_bilinearFiltering);
 		ini_sget(config, "game", "drawDistance", "%d", &gDrawDistance);
+		ini_sget(config, "game", "fieldOfView", "%d", &newScrZ);
 		ini_sget(config, "game", "freeCamera", "%d", &enableFreecamera);
 		ini_sget(config, "game", "driver1music", "%d", &gDriver1Music);
 		ini_sget(config, "game", "widescreenOverlays", "%d", &gWidescreenOverlayAlign);
 		ini_sget(config, "game", "fastLoadingScreens", "%d", &gFastLoadingScreens);
 		ini_sget(config, "game", "languageId", "%d", &gUserLanguage);
-
+	
+		gCameraDefaultScrZ = MAX(MIN(newScrZ, 384), 128);
+		
 		if (dataFolderStr)
 		{
 			strcpy(gDataFolder, dataFolderStr);

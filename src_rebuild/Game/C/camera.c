@@ -53,7 +53,7 @@ static int baseDir = 0;
 
 char tracking_car = 0;
 
-int gCameraAngle = 0x800; // offset 0xAA104
+int gCameraAngle = 2048; // offset 0xAA104
 
 int TargetCar = 0;
 int CameraCar = 0;
@@ -403,6 +403,13 @@ void TurnHead(PLAYER *lp)
 short gCameraDistance = 1000;
 short gCameraMaxDistance = 0;
 
+#ifdef PSX
+#define gCameraDefaultScrZ 256
+#else
+short gCameraDefaultScrZ = 256;
+#endif
+
+
 CAR_DATA *jcam = NULL;
 int switch_detail_distance = 10000;
 
@@ -528,8 +535,7 @@ void PlaceCameraFollowCar(PLAYER *lp)
 	
 	camera_angle.vz = 0;
 
-	SetGeomScreen(256);
-	scr_z = 256;
+	SetGeomScreen(scr_z = gCameraDefaultScrZ);
 	switch_detail_distance = 10000;
 
 	BuildWorldMatrix();
@@ -599,8 +605,7 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 	else
 		camera_angle.vy = (lp->headPos >> 16) - baseDir & 0xfff;
 
-	SetGeomScreen(256);
-	scr_z = 256;
+	SetGeomScreen(scr_z = gCameraDefaultScrZ);
 
 	if (cp == NULL)
 	{
@@ -673,11 +678,11 @@ int OK_To_Zoom(void)
 
 	scr_z = (dist(&camera_position, &temp) >> 4) + 256;
 
-	if (800 < scr_z)
+	if (scr_z > 800)
 		scr_z = 800;
 
-	if (scr_z < 256)
-		scr_z = 256;
+	if (scr_z < gCameraDefaultScrZ)
+		scr_z = gCameraDefaultScrZ;
 
 	scr_z = old_z;
 	return CameraCollisionCheck() == 0;
@@ -717,19 +722,19 @@ void PlaceCameraAtLocation(PLAYER* lp, int zoom)
 
 		if (zoom == 0)
 		{
-			scr_z = 256;
+			scr_z = gCameraDefaultScrZ;
 		}
 		else
 		{
-			scr_z = (d >> 4) + 256;
+			scr_z = (d >> 4) + gCameraDefaultScrZ;
 
 			if (scr_z > 800)
 				scr_z = 800;
 		}
 	}
 
-	if (scr_z < 256)
-		scr_z = 256;
+	if (scr_z < gCameraDefaultScrZ)
+		scr_z = gCameraDefaultScrZ;
 
 	SetGeomScreen(scr_z);
 	switch_detail_distance = 10000 + (d >> 1);
