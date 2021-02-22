@@ -2172,7 +2172,6 @@ void Tada(void)
 				return;
 
 			SetupSpecCosmetics(specLoadBuffer);
-			FixCarCos(&car_cosmetics[4], MissionHeader->residentModels[4]);
 			SetupSpecDenting(specLoadBuffer + sizeof(CAR_COSMETICS));
 
 			if (quickSpool == 1)
