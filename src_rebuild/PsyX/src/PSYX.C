@@ -11,8 +11,6 @@
 
 #include "UTIL/TIMER.H"
 
-#include <limits.h>
-
 //#include <stdio.h>
 //#include <string.h>
 #if !defined(__ANDROID__)
