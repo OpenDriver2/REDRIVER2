@@ -1721,14 +1721,14 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 
 	FE_CHARDATA *pFontInfo;
 	SPRT *font;
-	unsigned char let;
+	u_char let;
 
 	font = (SPRT *)current->primptr;
 
 	if (justification & 4)
 	{
 		char *pString = string;
-		unsigned char c = 0;
+		u_char c = 0;
 
 		int w = 0;
 
@@ -1804,7 +1804,7 @@ int FEPrintStringSized(char *string, int x, int y, int scale, int transparent, i
 
 	POLY_FT4 *font;
 	FE_CHARDATA *pFontInfo;
-	char let;
+	u_char let;
 	int w;
 	int h;
 
