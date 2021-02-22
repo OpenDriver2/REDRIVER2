@@ -11,6 +11,8 @@
 
 #include "UTIL/TIMER.H"
 
+#include <limits.h>
+
 //#include <stdio.h>
 //#include <string.h>
 #if !defined(__ANDROID__)
@@ -176,6 +178,10 @@ static void PsyX_Sys_InitialiseInput()
 	g_controller_mapping.gc_axis_right_x = SDL_CONTROLLER_AXIS_RIGHTX | CONTROLLER_MAP_FLAG_AXIS;
 	g_controller_mapping.gc_axis_right_y = SDL_CONTROLLER_AXIS_RIGHTY | CONTROLLER_MAP_FLAG_AXIS;
 }
+
+#ifdef __GNUC__
+#define _stricmp(s1, s2) strcasecmp(s1, s2)
+#endif
 
 // Keyboard mapping lookup
 int PsyX_LookupKeyboardMapping(const char* str, int default_value)
