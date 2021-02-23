@@ -25,6 +25,8 @@
 #include "overmap.h"
 #include "denting.h"
 #include "loadsave.h"
+#include "shadow.h"
+#include "handling.h"
 
 #include "STRINGS.H"
 
@@ -1376,6 +1378,8 @@ int Swap2Cars(int curslot, int newslot)
 	CreateDentableCar(cp);
 	DentCar(cp);
 
+	ResetTyreTracks(cp, GetPlayerId(cp));
+
 	// setup new slot nodes and reinit car
 	cp = &car_data[newslot];
 
@@ -1391,6 +1395,8 @@ int Swap2Cars(int curslot, int newslot)
 
 	CreateDentableCar(cp);
 	DentCar(cp);
+
+	ResetTyreTracks(cp, GetPlayerId(cp));
 
 	gDontResetCarDamage = 0;
 

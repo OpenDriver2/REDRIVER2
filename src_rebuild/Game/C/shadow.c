@@ -46,6 +46,16 @@ void InitTyreTracks(void)
 	}
 }
 
+// [A]
+void ResetTyreTracks(CAR_DATA* cp, int player_id)
+{
+	// [A] reset tyre tracks
+	if (player_id >= 0 && player_id < 2 && cp->controlType != CONTROL_TYPE_NONE)
+	{
+		GetTyreTrackPositions(cp, player_id);
+		SetTyreTrackOldPositions(player_id);
+	}
+}
 
 // [D] [T]
 void GetTyreTrackPositions(CAR_DATA *cp, int player_id)
@@ -60,7 +70,7 @@ void GetTyreTrackPositions(CAR_DATA *cp, int player_id)
 	CarPos.vy = cp->hd.where.t[1];
 	CarPos.vz = cp->hd.where.t[2];
 
-	car_cos = (cp->ap).carCos;
+	car_cos = cp->ap.carCos;
 	SetRotMatrix(&cp->hd.drawCarMat);
 
 	loop = 0;
@@ -202,7 +212,7 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int padid)
 	}
 
 	// lay down tracks to buffer
-	if (tracksAndSmoke != 0)
+	if (tracksAndSmoke)
 	{
 		int dir;
 		dir = ratan2(oldtp->vz - newtp->vz, oldtp->vx - newtp->vx);

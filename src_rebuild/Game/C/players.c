@@ -12,6 +12,7 @@
 #include "gamesnd.h"
 #include "sound.h"
 #include "felony.h"
+#include "shadow.h"
 
 PEDESTRIAN *pPlayerPed = NULL;
 PLAYER player[8];
@@ -19,13 +20,16 @@ PLAYER player[8];
 // [D] [T]
 void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction, LONGVECTOR4* startPos, int externModel, int palette, char *padid)
 {
+	int playerId;
 	int model;
 	uint playerType;
 
 	playerType = externModel & 0xFF;
 	ClearMem((char *)locPlayer, sizeof(PLAYER));
 
-	if (gStartOnFoot == 0 || carCtrlType == 4)
+	playerId = locPlayer - player;
+
+	if (gStartOnFoot == 0 || carCtrlType == CONTROL_TYPE_LEAD_AI)
 	{
 		model = 0xFF;
 
@@ -41,6 +45,8 @@ void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction
 			model = 4;
 
 		InitCar(cp, direction, startPos, carCtrlType, model, palette & 0xff, &locPlayer->padid);
+
+		ResetTyreTracks(cp, playerId);
 
 		cp->controlFlags |= CONTROL_FLAG_WAS_PARKED | CONTROL_FLAG_PLAYER_START_CAR; // [A] car is owned by player
 		

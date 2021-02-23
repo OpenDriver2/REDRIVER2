@@ -21,6 +21,7 @@
 #include "director.h"
 #include "xaplay.h"
 #include "overlay.h"
+#include "shadow.h"
 
 #include "LIBETC.H"
 #include "STRINGS.H"
@@ -405,7 +406,7 @@ void ReleaseInGameCutscene(void)
 {
 	int i;
 
-	if (gInGameChaseActive != 0 && Mission.ChaseTarget != NULL) 
+	if (gInGameChaseActive && Mission.ChaseTarget) 
 	{
 		player[1].padid = -128;
 	}
@@ -648,7 +649,7 @@ int TriggerInGameCutsceneSystem(int cutscene)
 							stream->SourceType.palette,
 							&padid[player_id]);
 
-						if (bDamageOverride != 0) 
+						if (bDamageOverride) 
 						{
 							slot = player[0].playerCarId;
 
