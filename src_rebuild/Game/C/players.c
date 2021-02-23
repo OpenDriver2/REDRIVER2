@@ -87,24 +87,28 @@ void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction
 // [D] [T]
 void ChangeCarPlayerToPed(int playerID)
 {
-	CAR_DATA *lcp = &car_data[player[playerID].playerCarId];
+	PLAYER* locPlayer;
+	CAR_DATA* lcp;
+	
+	locPlayer = &player[playerID];
+	lcp = &car_data[locPlayer->playerCarId];
 
 	//my_sly_var = playerID;
-	player[playerID].headTimer = 0;
-	player[playerID].cameraView = 0;
-	player[playerID].cameraAngle = (NoPlayerControl == 0) ? (lcp->hd.direction + 1536) : 4096;
-	player[playerID].headTimer = 0;
-	player[playerID].playerType = 2;
-	player[playerID].headPos = 0;
-	player[playerID].headTarget = 0;
-	player[playerID].playerCarId = -1;
-	player[playerID].cameraCarId = -1;
-	player[playerID].targetCarId = -1;
+	locPlayer->headTimer = 0;
+	locPlayer->cameraView = 0;
+	locPlayer->cameraAngle = (NoPlayerControl == 0) ? (lcp->hd.direction + 1536) : 4096;
+	locPlayer->headTimer = 0;
+	locPlayer->playerType = 2;
+	locPlayer->headPos = 0;
+	locPlayer->headTarget = 0;
+	locPlayer->playerCarId = -1;
+	locPlayer->cameraCarId = -1;
+	locPlayer->targetCarId = -1;
 
 	if (gInGameCutsceneActive == 0 && gInGameChaseActive == 0)
 	{
-		player[playerID].worldCentreCarId = -1;
-		player[playerID].spoolXZ = (VECTOR *)&pPlayerPed->position;
+		locPlayer->worldCentreCarId = -1;
+		locPlayer->spoolXZ = (VECTOR *)&pPlayerPed->position;
 	}
 
 	lcp->controlType = CONTROL_TYPE_CIV_AI;
@@ -114,22 +118,24 @@ void ChangeCarPlayerToPed(int playerID)
 
 	// stop skidding for P1 or P2
 	StopChannel(playerID != 0 ? 4 : 1);
-	player[playerID].skidding.sound = -1;
 
-	StopChannel(player[playerID].skidding.chan);
-	UnlockChannel(player[playerID].skidding.chan);
+	StopChannel(locPlayer->skidding.chan);
+	UnlockChannel(locPlayer->skidding.chan);
 
-	player[playerID].wheelnoise.sound = -1;
+	StopChannel(locPlayer->wheelnoise.chan);
+	UnlockChannel(locPlayer->wheelnoise.chan);
 
-	StopChannel(player[playerID].wheelnoise.chan);
-	UnlockChannel(player[playerID].wheelnoise.chan);
+	locPlayer->wheelnoise.chan = -1;
+	locPlayer->wheelnoise.sound = -1;
+	locPlayer->skidding.chan = -1;
+	locPlayer->skidding.sound = -1;
 
-	Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 3, lcp->hd.where.t[0], lcp->hd.where.t[1], lcp->hd.where.t[2], 0, 0x1000);
+	Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 3, lcp->hd.where.t[0], lcp->hd.where.t[1], lcp->hd.where.t[2], 0, 4096);
 
 	first_offence = 1;
 
 	if (CarHasSiren(lcp->ap.model))
-		player[playerID].horn.on = 0;
+		locPlayer->horn.on = 0;
 
 	// [A] carry over felony from car to Tanner if cops see player
 	if (CopsCanSeePlayer)

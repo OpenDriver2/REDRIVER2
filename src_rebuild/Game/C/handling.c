@@ -1540,7 +1540,9 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 	lay_down_tracks = 0;
 	tracks_and_smoke = 0;
 
-	if (cp->controlType != CONTROL_TYPE_PLAYER && cp->controlType != CONTROL_TYPE_LEAD_AI && cp->controlType != CONTROL_TYPE_CUTSCENE)
+	if (cp->controlType != CONTROL_TYPE_PLAYER && 
+		cp->controlType != CONTROL_TYPE_LEAD_AI && 
+		cp->controlType != CONTROL_TYPE_CUTSCENE)
 	{
 		TerminateSkidding(player_id);
 		return;
@@ -1618,7 +1620,7 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 
 		if (player[player_id].skidding.sound > -1)
 		{
-			channel = StartSound(-1, SOUND_BANK_SFX, player[player_id].skidding.sound, skidsound - 10000, 0x1000);
+			channel = StartSound(-1, SOUND_BANK_SFX, player[player_id].skidding.sound, skidsound - 10000, 4096);
 
 			player[player_id].skidding.chan = channel;
 			LockChannel(channel);
@@ -1629,7 +1631,8 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 	}
 
 	// update skidding sound
-	if (player[player_id].skidding.sound > -1 && player[player_id].skidding.chan > -1)
+	if (player[player_id].skidding.sound > -1 && 
+		player[player_id].skidding.chan > -1)
 	{
 		SetChannelPosition3(player[player_id].skidding.chan,
 			(VECTOR*)cp->hd.where.t,
@@ -1688,7 +1691,8 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 	}
 
 	// update wheel noise
-	if (player[player_id].wheelnoise.sound > -1 && player[player_id].wheelnoise.chan > -1)
+	if (player[player_id].wheelnoise.sound > -1 && 
+		player[player_id].wheelnoise.chan > -1)
 	{
 		int pitch, spd;
 

@@ -360,7 +360,7 @@ void TriggerInGameCutscene(int cutscene)
 
 		gInGameCutsceneActive = TriggerInGameCutsceneSystem(cutscene);
 
-		if (gInGameCutsceneActive != 0) 
+		if (gInGameCutsceneActive) 
 		{
 			TerminateSkidding(0);
 			TerminateSkidding(1);
