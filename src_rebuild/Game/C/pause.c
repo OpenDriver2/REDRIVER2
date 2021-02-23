@@ -552,7 +552,7 @@ int MaxMenuStringLength(MENU_HEADER *pMenu)
 		if (pItems->Type & (PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_MUSICVOLUME)) 
 			temp = temp + StringWidth(" 100");
 
-		if (max < temp)
+		if (temp > max)
 			max = temp;
 
 		pItems++;
@@ -755,6 +755,21 @@ void InitaliseMenu(PAUSEMODE mode)
 	{
 		VisibleMenu = 0;
 		VisibleMenus[VisibleMenu] = pNewMenu;
+
+		if (NoPlayerControl == 0 && OnScoreTable(NULL) != -1 && allownameentry)
+		{
+			gScoreEntered = 0;
+
+			sprintf(EnterScoreText, G_LTXT(GTXT_EnterScore));
+			sprintf(EnterNameText, G_LTXT(GTXT_EnterName));
+		}
+		else
+		{
+			gScoreEntered = 1;
+
+			sprintf(EnterScoreText, G_LTXT(GTXT_ViewTable));
+			sprintf(EnterNameText, G_LTXT(GTXT_HighScores));
+		}
 
 		SetupMenu(pNewMenu, 0);
 	}
@@ -1473,21 +1488,6 @@ int ShowPauseMenu(PAUSEMODE mode)
 
 	InitaliseMenu(mode);
 	gDrawPauseMenus = 1;
-
-	if (NoPlayerControl == 0 && OnScoreTable(NULL) != -1 && allownameentry)
-	{
-		gScoreEntered = 0;
-
-		sprintf(EnterScoreText, G_LTXT(GTXT_EnterScore));
-		sprintf(EnterNameText, G_LTXT(GTXT_EnterName));
-	}
-	else
-	{
-		gScoreEntered = 1;
-
-		sprintf(EnterScoreText, G_LTXT(GTXT_ViewTable));
-		sprintf(EnterNameText, G_LTXT(GTXT_HighScores));
-	}
 
 	passed_mode = mode;
 
