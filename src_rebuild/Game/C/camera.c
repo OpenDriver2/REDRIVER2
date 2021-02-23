@@ -704,7 +704,7 @@ void PlaceCameraAtLocation(PLAYER* lp, int zoom)
 
 	d = 0;
 
-	if (tracking_car != 0)
+	if (tracking_car)
 	{
 		CalcCameraBasePos(lp);
 

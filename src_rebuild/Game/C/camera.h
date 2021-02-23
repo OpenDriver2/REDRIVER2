@@ -37,6 +37,9 @@ extern void PlaceCameraFollowCar(PLAYER *lp); // 0x0002003C
 extern void PlaceCameraAtLocation(PLAYER *lp, int zoom); // 0x00020904
 extern void PlaceCameraInCar(PLAYER *lp, int BumperCam); // 0x0002050C
 
+
+extern int PointAtTarget(VECTOR* pPosition, VECTOR* pTarget, SVECTOR* pAngleVec);
+
 extern int OK_To_Zoom(); // 0x00020BC0
 
 extern void SetBasePos(VECTOR *pVec); // 0x00020C70

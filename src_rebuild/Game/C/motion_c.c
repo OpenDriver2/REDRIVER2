@@ -1054,7 +1054,7 @@ void newShowTanner(PEDESTRIAN* pDrawingPed)
 	VECTOR* vJPos = &scratchpad[2];
 
 	playerPos->vx = pDrawingPed->position.vx;
-	playerPos->vy = pDrawingPed->position.vy - 21;	// [A] elevate Tanner model a little bit so his legs are not in the ground (when Z-buffer enabled)
+	playerPos->vy = pDrawingPed->position.vy - 15;	// [A] elevate Tanner model a little bit so his legs are not in the ground (when Z-buffer enabled)
 	playerPos->vz = pDrawingPed->position.vz;
 
 	cameraPos->vx = camera_position.vx;
@@ -1795,13 +1795,14 @@ void InitTannerShadow(void)
 // [D] [T]
 void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, CVECTOR* col, short angle)
 {
-	char old_tr;
 	DR_ENV* dr_env;
 	SVECTOR vert[4];
 	VECTOR d;
 	DRAWENV drEnv;
+
 	VECTOR cp;
 	SVECTOR ca;
+
 	VECTOR myVector;
 	int z0;
 	int z1;
@@ -1818,7 +1819,6 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 	// proposed change: double buffering of VRAM (one used as render target, second as texture)
 
 	memset((u_char*)&d, 0, sizeof(VECTOR));
-	memset((u_char*)&myVector, 0, sizeof(VECTOR));
 
 	SetDefDrawEnv(&drEnv, 0, current->draw.clip.y, 320, 256);
 
@@ -1840,11 +1840,11 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 
 	vert[2].vx = -128;
 	vert[2].vy = 0;
-	vert[2].vz = 18;
+	vert[2].vz = 40;
 
 	vert[3].vx = 128;
 	vert[3].vy = 0;
-	vert[3].vz = 18;
+	vert[3].vz = 40;
 
 	for (i = 0; i < 4; i++)
 	{
@@ -1866,11 +1866,9 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 	gte_SetTransVector(&d);
 
 	gte_ldv3(&vert[0], &vert[1], &vert[2]);
-
 	gte_rtpt();
 
 	gte_stsxy3(&ft4TannerShadow[current->id].x0, &ft4TannerShadow[current->id].x1, &ft4TannerShadow[current->id].x2);
-
 	gte_stsz3(&z0, &z1, &z2);
 
 	gte_ldv0(&vert[3]);
@@ -1878,7 +1876,6 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 	gte_rtps();
 
 	gte_stsxy(&ft4TannerShadow[current->id].x3);
-
 	gte_stsz(&z3);
 
 	if (z0 < z1)
@@ -1914,43 +1911,38 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 	addPrim(current->ot + (z0 * 2 + z3 * 6 >> 6), &ft4TannerShadow[current->id]);
 	//SubdivShadow(z0, z1, z2, z3, ft4TannerShadow + current->id);
 
-	cp = camera_position;
-	ca = camera_angle;
+	{
+		// store vectors
+		cp = camera_position;
+		ca = camera_angle;
 
-	camera_position.vx = pDrawingPed->position.vx + (pLightPos->vx * 110 >> 0xc);
-	camera_position.vy = pDrawingPed->position.vy + (pLightPos->vy * 110 >> 0xc);
-	camera_position.vz = pDrawingPed->position.vz + (pLightPos->vz * 110 >> 0xc);
+		// setup new camera
+		SetVec(&camera_position,
+			pDrawingPed->position.vx + (pLightPos->vx * 90 >> 0xc),
+			pDrawingPed->position.vy + (pLightPos->vy * 90 >> 0xc),
+			pDrawingPed->position.vz + (pLightPos->vz * 90 >> 0xc));
 
-	myVector.vx = player[0].pos[0];
-	myVector.vy = player[0].pos[1] - 172;
-	myVector.vz = player[0].pos[2];
+		SetVec(&myVector, pDrawingPed->position.vx, pDrawingPed->position.vy, pDrawingPed->position.vz);
+		PointAtTarget(&camera_position, &myVector, &camera_angle);
 
-	player[0].cameraPos.vx = camera_position.vx;
-	player[0].cameraPos.vy = camera_position.vy;
-	player[0].cameraPos.vz = camera_position.vz;
+		// build matrix
+		gte_SetGeomOffset(32, 60);
+		SetGeomScreen(200);
+		BuildWorldMatrix();
 
-	SetBasePos(&myVector);
-	old_tr = tracking_car;
+		// clear to black and draw Tanner sprites
+		newShowTanner(pDrawingPed);
+		addPrim(current->ot + 0x107f, &tileTannerClear[current->id]);
 
-	gte_SetGeomOffset(32, 64);
+		// restore vectors
+		camera_position = cp;
+		camera_angle = ca;
 
-	tracking_car = 1;
-	PlaceCameraAtLocation(&player[0], 0);
-	tracking_car = old_tr;
-
-	newShowTanner(pDrawingPed);
-
-	addPrim(current->ot + 0x107f, &tileTannerClear[current->id]);
-
-	camera_position = cp;
-	camera_angle = ca;
-	player[0].cameraPos = cp;
-
-	// restore camera
-	BuildWorldMatrix();
-	InitCamera(&player[0]);
-
-	gte_SetGeomOffset(160, 128);
+		// build matix
+		gte_SetGeomOffset(160, 128);
+		SetGeomScreen(scr_z);
+		BuildWorldMatrix();
+	}
 
 	SetDefDrawEnv(&drEnv, rectTannerWindow.x, rectTannerWindow.y, rectTannerWindow.w, rectTannerWindow.h);
 	drEnv.dfe = 0; // we're drawing into VRAM - don't draw on screen
