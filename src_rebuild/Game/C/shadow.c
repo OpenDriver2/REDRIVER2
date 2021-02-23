@@ -137,11 +137,13 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int padid)
 
 	newtp = &tyre_new_positions[wheel];
 
-	if (newtp->vx - camera_position.vx + 0x5000 > 0xa000)
+	// [A] disabled due to MP and SP bugs
+	/*
+	if (newtp->vx - camera_position.vx + 20480 > 40960)
 		return;
 
-	if (newtp->vz - camera_position.vz + 0x5000 > 0xa000)
-		return;
+	if (newtp->vz - camera_position.vz + 20480 > 40960)
+		return;*/
 
 	if (tracksAndSmoke == 0) 
 	{
