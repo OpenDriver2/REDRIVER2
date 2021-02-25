@@ -18,9 +18,16 @@
 
 #include "STRINGS.H"
 
+#define REPLAY_NAME_LEN		16
+#define SCORE_NAME_LEN		5
+
+#define PAUSE_MENU_LEVELS 3
+
 static int gScoreEntered = 0;
-static char EnterNameText[32] = { 0 };
+static char EnterNameText[32] = { 0 };		// translated text
+
 static int PauseReturnValue;
+
 int pauseflag = 0;
 int gShowMap = 0;
 int gDrawPauseMenus = 0;
@@ -28,7 +35,15 @@ int gEnteringScore = 0;
 static int gScorePosition = 0;
 static int allownameentry = 0;
 
-#define PAUSE_MENU_LEVELS 3
+int playerwithcontrol[3] = { 0 };
+
+// message box
+struct MENU_MESSAGE
+{
+	char* header;
+	char* text;
+	int show;
+} gDisplayedMessage = { NULL, NULL, 0 };
 
 static MENU_ITEM* ActiveItem[PAUSE_MENU_LEVELS];
 static MENU_HEADER* VisibleMenus[PAUSE_MENU_LEVELS];
@@ -53,9 +68,9 @@ void SaveGame(int direction);
 void SkipCutscene(int direction);
 
 void EnterScoreName();
+
 void CreateScoreNames(SCORE_ENTRY *table, PLAYER_SCORE *score, int position);
 void DrawHighScoreMenu(int selection); 
-void EnterName();
 
 char EnterScoreText[32] = { 0 };
 
@@ -355,7 +370,7 @@ MENU_ITEM TakeARideFinishedItems[] =
 MENU_ITEM DrivingGameFinishedItems[] =
 {
 	{ G_LTXT_ID(GTXT_PlayAgain), PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &YesNoRestartHeader },
-	{ EnterScoreText, 3u, 2u, (pauseFunc)&EnterName, MENU_QUIT_NONE, NULL },
+	{ EnterScoreText, 3u, 2u, (pauseFunc)&EnterScoreName, MENU_QUIT_NONE, NULL },
 	{ G_LTXT_ID(GTXT_FilmDirector),1u,2u,NULL,MENU_QUIT_DIRECTOR,NULL},
 	{ G_LTXT_ID(GTXT_QuickReplay),1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
 	{ G_LTXT_ID(GTXT_SaveReplay), PAUSE_TYPE_FUNC, 2u, (pauseFunc)&SaveReplay, MENU_QUIT_NONE, NULL },
@@ -464,7 +479,204 @@ MENU_HEADER InvalidMultiPadHeader =
 	InvalidMultiPadItems
 };
 
-int playerwithcontrol[3] = { 0 };
+
+u_char gCurrentTextChar = 0;
+typedef void(*OnEntryComplete)(void* data, char* text);
+
+void ScoreNameInputHandler(const char* input)
+{
+	if (!input)
+	{
+		gCurrentTextChar = 255;
+		return;
+	}
+
+	gCurrentTextChar = *input;
+}
+
+// [A] Enter the replay name to save
+char* WaitForTextEntry(char* textBufPtr, int maxLength)
+{
+	u_char chr;
+	int so, co;
+	int delay, toggle;
+	char* username;
+	unsigned short npad, dpad;
+
+	username = textBufPtr ? textBufPtr : _overlay_buffer;
+	delay = 0;
+	toggle = 0;
+	co = 1;
+	so = strlen(username);
+
+#ifndef PSX
+	gameOnTextInput = ScoreNameInputHandler;
+	gCurrentTextChar = 0;
+#endif
+
+	do {
+		ReadControllers();
+
+		npad = Pads[0].dirnew;
+		dpad = Pads[0].direct;
+
+		// cancel
+		if (npad & 0x10)
+			return NULL;
+
+#ifdef PSX
+		if (dpad & 0x20)
+		{
+			// switch to end
+			delay = 1;
+			toggle = 0;
+			co = 67;
+		}
+		else if (dpad & 0x8000)
+		{
+			// move left/right to switch chars
+			if (delay-- == 0)
+			{
+				delay = 20;
+				toggle = 0;
+				co--;
+			}
+			else if (delay < 1)
+			{
+				delay = 2;
+				toggle = 0;
+				co--;
+			}
+
+			if (co < 0)
+				co = 67;
+		}
+		else if (dpad & 0x2000)
+		{
+			if (delay-- == 0)
+			{
+				delay = 20;
+				toggle = 0;
+				co++;
+			}
+			else if (delay < 1)
+			{
+				delay = 2;
+				toggle = 0;
+				co++;
+			}
+
+			if (co > 67)
+				co = 0;
+		}
+		else
+		{
+			delay = 0;
+		}
+
+		if (so == maxLength)
+			chr = 254;
+		else
+			chr = validchars[co];
+#else
+		if (gCurrentTextChar > 0)
+		{
+			if (gCurrentTextChar == 255)
+			{
+				// do backspace
+				chr = 255;
+			}
+			else
+			{
+				// Find a valid character
+				for (co = 0; co < 69; co++)
+				{
+					if (validchars[co] == gCurrentTextChar)
+						break;
+				}
+
+				if (so == maxLength)
+				{
+					chr = 254;
+					gCurrentTextChar = 0;
+				}
+				else
+					chr = validchars[co];
+			}
+		}
+		else
+		{
+			if (so == maxLength)
+				chr = 254;
+			else
+				chr = 'I';
+		}
+
+		if (npad & 0x40)
+		{
+			gCurrentTextChar = 254;
+			chr = 254;
+		}
+#endif
+		toggle++;
+
+		if (toggle & 4)
+			username[so] = ' ';
+		else if (chr == ' ')
+			username[so] = '.';
+		else
+			username[so] = chr;
+
+#ifdef PSX
+		if (npad & 0x80)
+		{
+			if (so > 0)
+				so--;
+
+			username[so] = 0;
+			username[so + 1] = 0;
+		}
+
+		if (npad & 0x40)
+		{
+#else
+		if (gCurrentTextChar > 0)
+		{
+			gCurrentTextChar = 0;
+#endif
+			// complete
+			if (chr == 254)
+			{
+				username[so] = 0;
+				break;
+			}
+
+			// delete chars
+			if (chr == 255)
+			{
+				if (so > 0)
+					so--;
+
+				username[so] = 0;
+				username[so + 1] = 0;
+			}
+			else if (so < maxLength)
+			{
+				username[so] = chr;
+				username[so + 1] = 0;
+				so++;
+			}
+		}
+
+		DrawGame();
+	} while (true);
+
+#ifndef PSX
+	gameOnTextInput = NULL;
+#endif
+
+	return username;
+}
 
 void SkipCutscene(int direction)
 {
@@ -474,7 +686,9 @@ void SkipCutscene(int direction)
 // [D] [T]
 void SaveReplay(int direction)
 {
+	char* result;
 	char filename[64];
+
 #ifdef PSX
 	CallMemoryCard(0x10, 1);
 #else
@@ -505,34 +719,59 @@ void SaveReplay(int direction)
 			else
 				break;
 		}
+
+		FILE* fp = fopen(filename, "wb");
+		if (fp)
+		{
+			printInfo("Saving chase replay '%s'\n", filename);
+			fwrite(_other_buffer, 1, size, fp);
+			fclose(fp);
+		}
 	}
-	else
+#endif // CUTSCENE_RECORDER
+
+	gDisplayedMessage.header = G_LTXT(GTXT_EnterName);
+	gDisplayedMessage.text = EnterNameText;
+	gDisplayedMessage.show = -1;
+
+	ClearMem(EnterNameText, REPLAY_NAME_LEN);
+	strcpy(EnterNameText, "Chase");
+
+	// wait for user input the replay name
+	result = WaitForTextEntry(EnterNameText, REPLAY_NAME_LEN);
+
+	gDisplayedMessage.show = 0;
+
+	if (result)
 	{
-		sprintf(filename, "CHASE.D2RP");// , gCurrentMissionNumber);
+		sprintf(filename, "%s.D2RP", result);
+
+		FILE* fp = fopen(filename, "wb");
+		if (fp)
+		{
+			printInfo("Saving replay '%s'\n", filename);
+
+			fwrite(_other_buffer, 1, size, fp);
+			fclose(fp);
+
+			gDisplayedMessage.header = G_LTXT(GTXT_SaveReplay);
+			gDisplayedMessage.text = G_LTXT(GTXT_OK);
+			gDisplayedMessage.show = 15;
+		}
+		else
+		{
+			gDisplayedMessage.header = G_LTXT(GTXT_SaveReplay);
+			gDisplayedMessage.text = G_LTXT(GTXT_SavingError);
+			gDisplayedMessage.show = 15;
+		}
 	}
-#else
-	sprintf(filename, "CHASE.D2RP", gCurrentMissionNumber);
-#endif
-	FILE* fp = fopen(filename, "wb");
-	if (fp)
-	{
-		printInfo("Saving replay '%s'\n", filename);
-		fwrite(_other_buffer, 1, size, fp);
-		fclose(fp);
-	}
-#endif
+#endif // PSX
 }
 
 // [D] [T]
 void SaveGame(int direction)
 {
 	SaveCurrentGame();
-}
-
-// [D] [T]
-void EnterName(void)
-{
-	EnterScoreName();
 }
 
 // [D] [T]
@@ -1067,7 +1306,6 @@ void ControlMenu(void)
 	}
 }
 
-
 // [D] [T]
 void PauseMap(int direction)
 {
@@ -1120,207 +1358,6 @@ void MusicVolume(int direction)
 	SetXMVolume(gMusicVolume);
 }
 
-u_char gCurrentTextChar = 0;
-void ScoreNameInputHandler(const char* input)
-{
-	if (!input)
-	{
-		gCurrentTextChar = 255;
-		return;
-	}
-
-	gCurrentTextChar = *input;
-}
-
-#define REPLAY_NAME_LEN		32
-#define SCORE_NAME_LEN		5
-
-typedef void(*OnEntryComplete)(void* data, char* text);
-
-// [A] Enter the replay name to save
-char* WaitForTextEntry(char* textBufPtr, int maxLength)
-{
-	u_char chr;
-	int so, co;
-	int delay, toggle;
-	char* username;
-	unsigned short npad, dpad;
-
-	username = textBufPtr ? textBufPtr : _overlay_buffer;
-	delay = 0;
-	toggle = 0;
-	co = 1;
-	so = 0;
-
-#ifndef PSX
-	gameOnTextInput = ScoreNameInputHandler;
-	gCurrentTextChar = 0;
-#endif
-
-	do {
-		ReadControllers();
-
-		npad = Pads[0].dirnew;
-		dpad = Pads[0].direct;
-
-		// cancel
-		if (npad & 0x10)
-			return NULL;
-
-#ifdef PSX
-		if (dpad & 0x20)
-		{
-			// switch to end
-			delay = 1;
-			toggle = 0;
-			co = 67;
-		}
-		else if (dpad & 0x8000)
-		{
-			// move left/right to switch chars
-			if (delay-- == 0)
-			{
-				delay = 20;
-				toggle = 0;
-				co--;
-			}
-			else if (delay < 1)
-			{
-				delay = 2;
-				toggle = 0;
-				co--;
-			}
-
-			if (co < 0)
-				co = 67;
-		}
-		else if (dpad & 0x2000)
-		{
-			if (delay-- == 0)
-			{
-				delay = 20;
-				toggle = 0;
-				co++;
-			}
-			else if (delay < 1)
-			{
-				delay = 2;
-				toggle = 0;
-				co++;
-			}
-
-			if (co > 67)
-				co = 0;
-		}
-		else
-		{
-			delay = 0;
-		}
-
-		if (so == maxLength)
-			chr = 254;
-		else
-			chr = validchars[co];
-#else
-		if (gCurrentTextChar > 0)
-		{
-			if (gCurrentTextChar == 255)
-			{
-				// do backspace
-				chr = 255;
-			}
-			else
-			{
-				// Find a valid character
-				for (co = 0; co < 69; co++)
-				{
-					if (validchars[co] == gCurrentTextChar)
-						break;
-				}
-
-				if (so == maxLength)
-				{
-					chr = 254;
-					gCurrentTextChar = 0;
-				}
-				else
-					chr = validchars[co];
-			}
-		}
-		else
-		{
-			if (so == maxLength)
-				chr = 254;
-			else
-				chr = '.';
-		}
-
-		if (npad & 0x40)
-		{
-			gCurrentTextChar = 254;
-			chr = 254;
-		}
-#endif
-		toggle++;
-
-		if (toggle & 4)
-			username[so] = 0;
-		else if (chr == ' ')
-			username[so] = '.';
-		else
-			username[so] = chr;
-
-		if (npad & 0x80)
-		{
-			if (so > 0)
-				so--;
-
-			username[so] = 0;
-			username[so + 1] = 0;
-		}
-
-#ifdef PSX
-		if (npad & 0x40)
-		{
-#else
-		if (gCurrentTextChar > 0)
-		{
-			gCurrentTextChar = 0;
-#endif
-			// complete
-			if (chr == 254)
-			{
-				username[so] = 0;
-				break;
-			}
-
-			// delete chars
-			if (chr == 255)
-			{
-				if (so > 0)
-					so--;
-
-				username[so] = 0;
-				username[so + 1] = 0;
-			}
-			else if (so < maxLength)
-			{
-				username[so] = chr;
-				username[so + 1] = 0;
-				so++;
-			}
-		}
-
-		DrawGame();
-	} while (true);
-
-#ifndef PSX
-	gameOnTextInput = NULL;
-#endif
-
-	return username;
-}
-
 // [D] [T]
 void EnterScoreName(void)
 {
@@ -1366,14 +1403,71 @@ void EnterScoreName(void)
 	gEnteringScore = 0;
 }
 
+void DisplayMenuMessage(char* header, char* text)
+{
+	POLY_FT3* null;
+	POLY_F4* prim;
+	int i;
+	int ypos;
+
+	OutputString(header, 2, 160, 105, 0, 128, 32, 32);
+	ypos = 125;
+	OutputString(text, 2, 160, ypos, 0, 128, 128, 128);
+
+	// TODO: Multiline support
+	/*
+	i = 0;
+	do {
+		OutputString(text, 2, 160, ypos, 0, 128, 128, 128);
+
+		ypos += 15;
+
+		i++;
+	} while (i < 5);
+	*/
+	prim = (POLY_F4*)current->primptr;
+	setPolyF4(prim);
+	setSemiTrans(prim, 1);
+	setShadeTex(prim, 1);
+
+	prim->y0 = 100;
+	prim->y1 = 100;
+	prim->y2 = 160;
+	prim->y3 = 160;
+	prim->x0 = 80;
+	prim->x1 = 240;
+	prim->x2 = 80;
+	prim->x3 = 240;
+
+	prim->r0 = 16;
+	prim->g0 = 16;
+	prim->b0 = 16;
+
+	addPrim(current->ot, prim);
+	current->primptr += sizeof(POLY_F4);
+
+	null = (POLY_FT3*)current->primptr;
+	setPolyFT3(null);
+
+	null->x0 = -1;
+	null->y0 = -1;
+	null->x1 = -1;
+	null->y1 = -1;
+	null->x2 = -1;
+	null->y2 = -1;
+	null->tpage = 0;
+
+	addPrim(current->ot, null);
+	current->primptr += sizeof(POLY_FT3);
+}
+
 // [D] [T]
 void DrawHighScoreMenu(int selection)
 {
 	POLY_FT3* null;
 	POLY_F4* prim;
 	int i;
-	int b;
-	int r;
+	int r,b;
 	int ypos;
 	char text[8];
 
@@ -1649,6 +1743,8 @@ int ShowPauseMenu(PAUSEMODE mode)
 // [D] [T]
 void DrawPauseMenus(void)
 {
+	int displayMessage;
+
 #if !defined(PSX) && defined(DEBUG_OPTIONS)
 	extern int g_FreeCameraEnabled;
 
@@ -1656,9 +1752,18 @@ void DrawPauseMenus(void)
 		return;
 #endif
 
-	if (gDrawPauseMenus && gShowMap == 0)
+	displayMessage = gDisplayedMessage.show == -1 || gDisplayedMessage.show > 0;
+
+	if ((gDrawPauseMenus || displayMessage) && gShowMap == 0)
 	{
-		if (gEnteringScore)
+		if (displayMessage)
+		{
+			DisplayMenuMessage(gDisplayedMessage.header, gDisplayedMessage.text);
+
+			if(gDisplayedMessage.show > 0)
+				gDisplayedMessage.show--;
+		}
+		else if (gEnteringScore)
 			DrawHighScoreMenu(gScorePosition);
 		else
 			DrawVisibleMenus();
