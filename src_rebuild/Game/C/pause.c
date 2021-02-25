@@ -1120,6 +1120,18 @@ void MusicVolume(int direction)
 	SetXMVolume(gMusicVolume);
 }
 
+u_char gCurrentTextChar = 0;
+void ScoreNameInputHandler(const char* input)
+{
+	if (!input)
+	{
+		gCurrentTextChar = 255;
+		return;
+	}
+
+	gCurrentTextChar = *input;
+}
+
 // [D] [T]
 void EnterScoreName(void)
 {
@@ -1155,6 +1167,11 @@ void EnterScoreName(void)
 
 	CreateScoreNames(table, &gPlayerScore, gScorePosition);
 
+#ifndef PSX
+	gameOnTextInput = ScoreNameInputHandler;
+	gCurrentTextChar = 0;
+#endif
+	
 	do {
 		ReadControllers();
 
@@ -1171,13 +1188,16 @@ void EnterScoreName(void)
 		}
 		else
 		{
+			if (!username)
+				return;
+
 			// cancel
 			if (npad & 0x10)
 			{
 				gEnteringScore = 0;
 				return;
 			}
-
+#ifdef PSX
 			if (dpad & 0x20)
 			{
 				// switch to end
@@ -1231,7 +1251,46 @@ void EnterScoreName(void)
 				chr = 254;
 			else
 				chr = validchars[co];
+#else
+			if (gCurrentTextChar > 0)
+			{
+				if (gCurrentTextChar == 255)
+				{
+					// do backspace
+					chr = 255;
+				}
+				else
+				{
+					// Find a valid character
+					for (co = 0; co < 69; co++)
+					{
+						if (validchars[co] == gCurrentTextChar)
+							break;
+					}
 
+					if (so == 5)
+					{
+						chr = 254;
+						gCurrentTextChar = 0;
+					}
+					else
+						chr = validchars[co];
+				}
+			}
+			else
+			{
+				if (so == 5)
+					chr = 254;
+				else
+					chr = '.';
+			}
+
+			if (npad & 0x40)
+			{
+				gCurrentTextChar = 254;
+				chr = 254;
+			}
+#endif
 			toggle++;
 
 			if (toggle & 4)
@@ -1250,8 +1309,15 @@ void EnterScoreName(void)
 				username[so+1] = 0;
 			}
 
+#ifdef PSX
 			if (npad & 0x40)
 			{
+#else
+			if (gCurrentTextChar > 0)
+			{
+				gCurrentTextChar = 0;
+#endif
+
 				// complete
 				if (chr == 254)
 				{
@@ -1287,6 +1353,10 @@ void EnterScoreName(void)
 
 		DrawGame();
 	} while (true);
+
+#ifndef PSX
+	gameOnTextInput = NULL;
+#endif
 }
 
 // [D] [T]
