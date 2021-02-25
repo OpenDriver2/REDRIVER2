@@ -1132,222 +1132,182 @@ void ScoreNameInputHandler(const char* input)
 	gCurrentTextChar = *input;
 }
 
-// [D] [T]
-void EnterScoreName(void)
+#define REPLAY_NAME_LEN		32
+#define SCORE_NAME_LEN		5
+
+typedef void(*OnEntryComplete)(void* data, char* text);
+
+// [A] Enter the replay name to save
+char* WaitForTextEntry(char* textBufPtr, int maxLength)
 {
 	u_char chr;
-	int so;
-	int co;
-	int delay;
+	int so, co;
+	int delay, toggle;
 	char* username;
-	int toggle;
-	SCORE_ENTRY* table;
 	unsigned short npad, dpad;
 
-	username = NULL;
+	username = textBufPtr ? textBufPtr : _overlay_buffer;
 	delay = 0;
-	gEnteringScore = 1;
 	toggle = 0;
-
-	if (gScoreEntered == 0) 
-	{
-		gScorePosition = OnScoreTable(&table);
-
-		if (gScorePosition != -1) 
-			username = ScoreName[gScorePosition];
-	}
-	else 
-	{
-		OnScoreTable(&table);
-		gScorePosition = -1;
-	}
-
 	co = 1;
 	so = 0;
-
-	CreateScoreNames(table, &gPlayerScore, gScorePosition);
 
 #ifndef PSX
 	gameOnTextInput = ScoreNameInputHandler;
 	gCurrentTextChar = 0;
 #endif
-	
+
 	do {
 		ReadControllers();
 
 		npad = Pads[0].dirnew;
 		dpad = Pads[0].direct;
 
-		if (gScoreEntered)
+		// cancel
+		if (npad & 0x10)
+			return NULL;
+
+#ifdef PSX
+		if (dpad & 0x20)
 		{
-			if (npad & 0x50)
+			// switch to end
+			delay = 1;
+			toggle = 0;
+			co = 67;
+		}
+		else if (dpad & 0x8000)
+		{
+			// move left/right to switch chars
+			if (delay-- == 0)
 			{
-				gEnteringScore = 0;
-				return;
+				delay = 20;
+				toggle = 0;
+				co--;
+			}
+			else if (delay < 1)
+			{
+				delay = 2;
+				toggle = 0;
+				co--;
+			}
+
+			if (co < 0)
+				co = 67;
+		}
+		else if (dpad & 0x2000)
+		{
+			if (delay-- == 0)
+			{
+				delay = 20;
+				toggle = 0;
+				co++;
+			}
+			else if (delay < 1)
+			{
+				delay = 2;
+				toggle = 0;
+				co++;
+			}
+
+			if (co > 67)
+				co = 0;
+		}
+		else
+		{
+			delay = 0;
+		}
+
+		if (so == maxLength)
+			chr = 254;
+		else
+			chr = validchars[co];
+#else
+		if (gCurrentTextChar > 0)
+		{
+			if (gCurrentTextChar == 255)
+			{
+				// do backspace
+				chr = 255;
+			}
+			else
+			{
+				// Find a valid character
+				for (co = 0; co < 69; co++)
+				{
+					if (validchars[co] == gCurrentTextChar)
+						break;
+				}
+
+				if (so == maxLength)
+				{
+					chr = 254;
+					gCurrentTextChar = 0;
+				}
+				else
+					chr = validchars[co];
 			}
 		}
 		else
 		{
-			if (!username)
-				return;
-
-			// cancel
-			if (npad & 0x10)
-			{
-				gEnteringScore = 0;
-				return;
-			}
-#ifdef PSX
-			if (dpad & 0x20)
-			{
-				// switch to end
-				delay = 1;
-				toggle = 0;
-				co = 67;
-			}
-			else if (dpad & 0x8000)
-			{
-				// move left/right to switch chars
-				if (delay-- == 0)
-				{
-					delay = 20;
-					toggle = 0;
-					co--;
-				}
-				else if (delay < 1)
-				{
-					delay = 2;
-					toggle = 0;
-					co--;
-				}
-
-				if (co < 0)
-					co = 67;
-			}
-			else if (dpad & 0x2000)
-			{
-				if (delay-- == 0)
-				{
-					delay = 20;
-					toggle = 0;
-					co++;
-				}
-				else if (delay < 1)
-				{
-					delay = 2;
-					toggle = 0;
-					co++;
-				}
-
-				if (co > 67)
-					co = 0;
-			}
-			else
-			{
-				delay = 0;
-			}
-
-			if (so == 5)
+			if (so == maxLength)
 				chr = 254;
 			else
-				chr = validchars[co];
-#else
-			if (gCurrentTextChar > 0)
-			{
-				if (gCurrentTextChar == 255)
-				{
-					// do backspace
-					chr = 255;
-				}
-				else
-				{
-					// Find a valid character
-					for (co = 0; co < 69; co++)
-					{
-						if (validchars[co] == gCurrentTextChar)
-							break;
-					}
+				chr = '.';
+		}
 
-					if (so == 5)
-					{
-						chr = 254;
-						gCurrentTextChar = 0;
-					}
-					else
-						chr = validchars[co];
-				}
-			}
-			else
-			{
-				if (so == 5)
-					chr = 254;
-				else
-					chr = '.';
-			}
-
-			if (npad & 0x40)
-			{
-				gCurrentTextChar = 254;
-				chr = 254;
-			}
+		if (npad & 0x40)
+		{
+			gCurrentTextChar = 254;
+			chr = 254;
+		}
 #endif
-			toggle++;
+		toggle++;
 
-			if (toggle & 4)
+		if (toggle & 4)
+			username[so] = 0;
+		else if (chr == ' ')
+			username[so] = '.';
+		else
+			username[so] = chr;
+
+		if (npad & 0x80)
+		{
+			if (so > 0)
+				so--;
+
+			username[so] = 0;
+			username[so + 1] = 0;
+		}
+
+#ifdef PSX
+		if (npad & 0x40)
+		{
+#else
+		if (gCurrentTextChar > 0)
+		{
+			gCurrentTextChar = 0;
+#endif
+			// complete
+			if (chr == 254)
+			{
 				username[so] = 0;
-			else if (chr == ' ')
-				username[so] = '.';
-			else
-				username[so] = chr;
+				break;
+			}
 
-			if (npad & 0x80)
+			// delete chars
+			if (chr == 255)
 			{
 				if (so > 0)
 					so--;
 
 				username[so] = 0;
-				username[so+1] = 0;
+				username[so + 1] = 0;
 			}
-
-#ifdef PSX
-			if (npad & 0x40)
+			else if (so < maxLength)
 			{
-#else
-			if (gCurrentTextChar > 0)
-			{
-				gCurrentTextChar = 0;
-#endif
-
-				// complete
-				if (chr == 254)
-				{
-					username[so] = 0;
-					strcpy(gPlayerScore.name, username);
-					AddScoreToTable(table, gScorePosition);
-					
-					sprintf(EnterScoreText, G_LTXT(GTXT_ViewTable));
-					sprintf(EnterNameText, G_LTXT(GTXT_HighScores));
-					
-					gEnteringScore = 0;
-					gScoreEntered = 1;
-					return;
-				}
-
-				// delete chars
-				if(chr == 255)
-				{
-					if (so > 0)
-						so--;
-
-					username[so] = 0;
-					username[so + 1] = 0;
-				}
-				else if (so < 5)
-				{
-					username[so] = chr;
-					username[so+1] = 0;
-					so++;
-				}
+				username[so] = chr;
+				username[so + 1] = 0;
+				so++;
 			}
 		}
 
@@ -1357,6 +1317,53 @@ void EnterScoreName(void)
 #ifndef PSX
 	gameOnTextInput = NULL;
 #endif
+
+	return username;
+}
+
+// [D] [T]
+void EnterScoreName(void)
+{
+	u_char chr;
+	char* username;
+	char* enteredName;
+
+	SCORE_ENTRY* table;
+	unsigned short npad, dpad;
+
+	username = NULL;
+
+	if (!gScoreEntered) 
+	{
+		gScorePosition = OnScoreTable(&table);
+
+		if (gScorePosition != -1) 
+			username = ScoreName[gScorePosition];
+
+		CreateScoreNames(table, &gPlayerScore, gScorePosition);
+	}
+	else
+	{
+		gScorePosition = -1;
+	}
+
+	gEnteringScore = 1;
+
+	enteredName = WaitForTextEntry(username, SCORE_NAME_LEN);
+
+	if (enteredName && username)
+	{
+		strcpy(gPlayerScore.name, enteredName);
+
+		AddScoreToTable(table, gScorePosition);
+
+		sprintf(EnterScoreText, G_LTXT(GTXT_ViewTable));
+		sprintf(EnterNameText, G_LTXT(GTXT_HighScores));
+
+		gScoreEntered = 1;
+	}
+
+	gEnteringScore = 0;
 }
 
 // [D] [T]
@@ -1651,9 +1658,9 @@ void DrawPauseMenus(void)
 
 	if (gDrawPauseMenus && gShowMap == 0)
 	{
-		if (gEnteringScore == 0)
-			DrawVisibleMenus();
-		else
+		if (gEnteringScore)
 			DrawHighScoreMenu(gScorePosition);
+		else
+			DrawVisibleMenus();
 	}
 }
