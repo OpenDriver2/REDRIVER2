@@ -69,6 +69,9 @@ extern GameDebugKeysHandlerFunc gameDebugKeys;
 typedef void(*GameDebugMouseHandlerFunc)(int x, int y);
 extern GameDebugMouseHandlerFunc gameDebugMouse;
 
+typedef void(*GameOnTextInputHandler)(const char* buf);
+extern GameOnTextInputHandler gameOnTextInput;
+
 //------------------------------------------------------------------------
 
 /* Usually called at the beginning of main function */

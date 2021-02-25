@@ -560,6 +560,11 @@ void GR_ResetDevice();
 
 void PsyX_Exit();
 
+GameDebugKeysHandlerFunc gameDebugKeys = NULL;
+GameDebugMouseHandlerFunc gameDebugMouse = NULL;
+GameOnTextInputHandler gameOnTextInput = NULL;
+int activeControllers = 0x1;
+
 void PsyX_Sys_DoPollEvent()
 {
 	SDL_Event event;
@@ -606,7 +611,18 @@ void PsyX_Sys_DoPollEvent()
 				else if (nKey == SDL_SCANCODE_RALT)
 					nKey = SDL_SCANCODE_LALT;
 
+				if (gameOnTextInput && nKey == SDL_SCANCODE_BACKSPACE && event.type == SDL_KEYDOWN)
+				{
+					(gameOnTextInput)(NULL);
+				}
+
 				PsyX_Sys_DoDebugKeys(nKey, (event.type == SDL_KEYUP) ? false : true);
+				break;
+			}
+			case SDL_TEXTINPUT:
+			{
+				if(gameOnTextInput)
+					(gameOnTextInput)(event.text.text);
 				break;
 			}
 		}
@@ -667,10 +683,6 @@ void PsyX_TakeScreenshot()
 	delete[] pixels;
 }
 #endif
-
-GameDebugKeysHandlerFunc gameDebugKeys = NULL;
-GameDebugMouseHandlerFunc gameDebugMouse = NULL;
-int activeControllers = 0x1;
 
 void PsyX_Sys_DoDebugMouseMotion(int x, int y)
 {
