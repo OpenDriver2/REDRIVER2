@@ -22,8 +22,6 @@
 #include "C/scores.h"
 #include "C/loadsave.h"
 
-#include "MemCard/main.h"
-
 #include "STRINGS.H"
 
 struct PSXBUTTON
@@ -478,11 +476,9 @@ void SetVariable(int var)
 
 			if (value == 1) 
 			{
-#ifdef PSX
-				if (CallMemoryCard(0x11, 0) == 0)
-#else
-				if(LoadReplayFromFile("CHASE.D2RP") == 0)		// [A] temporary
-#endif
+				// [A] temporary
+				// TODO: Do menu with the replays
+				if(LoadReplayFromFile("CHASE.D2RP") == 0)
 				{
 					ReInitFrontend();
 				}
@@ -495,7 +491,9 @@ void SetVariable(int var)
 			}
 			else
 			{
-				CallMemoryCard(0x81, 0);
+				// [A] load configuration
+				LoadCurrentProfile();
+
 				ReInitFrontend();
 				SetMasterVolume(gMasterVolume);
 				SetXMVolume(gMusicVolume);
@@ -508,25 +506,13 @@ void SetVariable(int var)
 
 			if (value == 0) 
 			{
-#ifdef PSX
-				CallMemoryCard(0x80, 0);
-				ReInitFrontend();
-#else
 				// [A] save configuration
 				SaveCurrentProfile();
-#endif
 			}
 			else 
 			{
-#ifdef PSX
-				if (CallMemoryCard(0x21, 0) == 0) 
-				{
-					ReInitFrontend();
-				}
-				else
-#else
+				// [A] load progress
 				if(LoadCurrentGame())
-#endif
 				{
 					GameType = GAME_CONTINUEMISSION;
 					GameStart();

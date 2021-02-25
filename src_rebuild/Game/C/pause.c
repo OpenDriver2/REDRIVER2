@@ -14,7 +14,7 @@
 #include "overmap.h"
 #include "handling.h"
 #include "platform.h"
-#include "MemCard/main.h"
+#include "loadsave.h"
 
 #include "STRINGS.H"
 
@@ -526,7 +526,7 @@ void SaveReplay(int direction)
 // [D] [T]
 void SaveGame(int direction)
 {
-	CallMemoryCard(0x20, 1);
+	SaveCurrentGame();
 }
 
 // [D] [T]
