@@ -729,12 +729,6 @@ void PsyX_Sys_DoDebugKeys(int nKey, bool down)
 			g_texturelessMode ^= 1;
 			eprintwarn("textureless mode: %d\n", g_texturelessMode);
 			break;
-
-		case SDL_SCANCODE_F3:
-			g_bilinearFiltering ^= 1;
-			eprintwarn("filtering mode: %d\n", g_bilinearFiltering);
-			break;
-
 		case SDL_SCANCODE_UP:
 		case SDL_SCANCODE_DOWN:
 			if (g_emulatorPaused)
@@ -753,6 +747,10 @@ void PsyX_Sys_DoDebugKeys(int nKey, bool down)
 			PsyX_TakeScreenshot();
 			break;
 #endif
+		case SDL_SCANCODE_F3:
+			g_bilinearFiltering ^= 1;
+			eprintwarn("filtering mode: %d\n", g_bilinearFiltering);
+			break;
 		case SDL_SCANCODE_F4:
 
 			activeControllers++;
