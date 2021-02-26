@@ -1647,9 +1647,7 @@ void ControlReplay(void)
 				case 7:
 					if (move == 5)
 					{
-						//SetDispMask(0); // [A]
 						SpoolSYNC();
-						//CallMemoryCard(0x10, 1);
 						SaveReplay(0);
 						break;
 					}

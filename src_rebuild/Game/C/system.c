@@ -256,7 +256,7 @@ int Loadfile(char* name, char* addr)
 	int fileSize;
 
 	sprintf(namebuffer, "%s%s", gDataFolder, name);
-	FixPathSlashes(namebuffer);
+	FS_FixPathSlashes(namebuffer);
 
 	FILE* fptr = fopen(namebuffer, "rb");
 	if (!fptr)
@@ -311,7 +311,7 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 	int fileSize;
 
 	sprintf(namebuffer, "%s%s", gDataFolder, name);
-	FixPathSlashes(namebuffer);
+	FS_FixPathSlashes(namebuffer);
 
 	FILE* fptr = fopen(namebuffer, "rb");
 	if (!fptr)
@@ -539,7 +539,7 @@ void loadsectorsPC(char* filename, char* addr, int sector, int nsectors)
 {
 	char namebuffer[64];
 	strcpy(namebuffer, filename);
-	FixPathSlashes(namebuffer);
+	FS_FixPathSlashes(namebuffer);
 
 
 	FILE* fp = fopen(namebuffer, "rb");
@@ -859,7 +859,7 @@ void SetCityType(CITYTYPE type)
 	}
 
 	sprintf(filename, format, gDataFolder, LevelFiles[GameLevel]);
-	FixPathSlashes(filename);
+	FS_FixPathSlashes(filename);
 
 	FILE* levFp = fopen(filename, "rb");
 
@@ -967,7 +967,7 @@ int FileExists(char* filename)
 	char namebuffer[128];
 
 	sprintf(namebuffer, "%s%s", gDataFolder, filename);
-	FixPathSlashes(namebuffer);
+	FS_FixPathSlashes(namebuffer);
 
 	FILE* fp = fopen(namebuffer, "rb");
 	if (fp)

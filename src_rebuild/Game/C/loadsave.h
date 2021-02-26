@@ -1,11 +1,18 @@
 #ifndef LOADSAVE_H
 #define LOADSAVE_H
 
+extern char gCurrentReplayFilename[64];
+
 extern void LoadCurrentProfile();
 extern void SaveCurrentProfile();
+
 extern int LoadCurrentGame();
 extern void SaveCurrentGame();
+
 extern int LoadReplayFromFile(char* fileName);
+extern int SaveReplayToFile(char* filename);
+
+//--------
 
 extern int CalcReplayDataSize(); // 0x00057FD4
 extern int SaveReplayData(char *buffer); // 0x00057FF4

@@ -478,7 +478,7 @@ void SetVariable(int var)
 			{
 				// [A] temporary
 				// TODO: Do menu with the replays
-				if(LoadReplayFromFile("CHASE.D2RP") == 0)
+				if(LoadReplayFromFile("Replays/CHASE.D2RP") == 0)
 				{
 					ReInitFrontend();
 				}

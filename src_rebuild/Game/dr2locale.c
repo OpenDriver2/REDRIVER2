@@ -34,13 +34,13 @@ int InitStringMng()
 		gUserLanguage = 0;
 
 	sprintf(filename, "%sLANG\\%s_GAME.LTXT", gDataFolder, LanguageNames[gUserLanguage]);
-	FixPathSlashes(filename);
+	FS_FixPathSlashes(filename);
 
 	if(InitStringLanguage(filename, 0) == -1)
 		return 0;
 	
 	sprintf(filename, "%sLANG\\%s_MISSION.LTXT", gDataFolder, LanguageNames[gUserLanguage]);
-	FixPathSlashes(filename);
+	FS_FixPathSlashes(filename);
 	
 	if(InitStringLanguage(filename, 1) == -1)
 		return 0;

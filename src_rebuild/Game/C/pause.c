@@ -692,7 +692,6 @@ void SaveReplay(int direction)
 #ifdef PSX
 	CallMemoryCard(0x10, 1);
 #else
-	int size = SaveReplayToBuffer(_other_buffer);
 
 #ifdef CUTSCENE_RECORDER
 	extern int gCutsceneAsReplay;
@@ -710,8 +709,7 @@ void SaveReplay(int direction)
 		{
 			sprintf(filename, "CUT%d/CUT%d_%d.D2RP", gCutsceneAsReplay, gCutsceneAsReplay, cnt);
 
-			temp = fopen(filename, "rb");
-			if (temp)
+			if ((temp = fopen(filename, "rb")) != NULL)
 			{
 				fclose(temp);
 				cnt++;
@@ -720,49 +718,78 @@ void SaveReplay(int direction)
 				break;
 		}
 
-		FILE* fp = fopen(filename, "wb");
-		if (fp)
+		if (SaveReplayToFile(filename))
 		{
-			printInfo("Saving chase replay '%s'\n", filename);
-			fwrite(_other_buffer, 1, size, fp);
-			fclose(fp);
-		}
-	}
-#endif // CUTSCENE_RECORDER
-
-	gDisplayedMessage.header = G_LTXT(GTXT_EnterName);
-	gDisplayedMessage.text = EnterNameText;
-	gDisplayedMessage.show = -1;
-
-	ClearMem(EnterNameText, REPLAY_NAME_LEN);
-	strcpy(EnterNameText, "Chase");
-
-	// wait for user input the replay name
-	result = WaitForTextEntry(EnterNameText, REPLAY_NAME_LEN);
-
-	gDisplayedMessage.show = 0;
-
-	if (result)
-	{
-		sprintf(filename, "%s.D2RP", result);
-
-		FILE* fp = fopen(filename, "wb");
-		if (fp)
-		{
-			printInfo("Saving replay '%s'\n", filename);
-
-			fwrite(_other_buffer, 1, size, fp);
-			fclose(fp);
-
+			printInfo("Chase replay '%s' saved\n", filename);
 			gDisplayedMessage.header = G_LTXT(GTXT_SaveReplay);
 			gDisplayedMessage.text = G_LTXT(GTXT_OK);
-			gDisplayedMessage.show = 15;
+			gDisplayedMessage.show = 25;
 		}
 		else
 		{
 			gDisplayedMessage.header = G_LTXT(GTXT_SaveReplay);
 			gDisplayedMessage.text = G_LTXT(GTXT_SavingError);
 			gDisplayedMessage.show = 15;
+		}
+	}
+	else
+#endif // CUTSCENE_RECORDER
+	{
+		int cnt;
+		FILE* temp;
+		_mkdir("Replays");
+
+		ClearMem(EnterNameText, REPLAY_NAME_LEN);
+		
+		// detect the best file name
+		// TODO: if replay is loaded - set the loaded replay filename
+		if (gLoadedReplay)
+		{
+			strcpy(EnterNameText, gCurrentReplayFilename);
+		}
+		else
+		{
+			cnt = 1;
+			while (cnt < 1000)
+			{
+				sprintf(EnterNameText, "Chase%d", cnt);
+				sprintf(filename, "Replays/%s.D2RP", EnterNameText);
+
+				if ((temp = fopen(filename, "r")) != NULL)
+				{
+					fclose(temp);
+					cnt++;
+				}
+				else
+					break;
+			}
+		}
+
+		gDisplayedMessage.header = G_LTXT(GTXT_EnterName);
+		gDisplayedMessage.text = EnterNameText;
+		gDisplayedMessage.show = -1;
+
+		// wait for user input the replay name
+		result = WaitForTextEntry(EnterNameText, REPLAY_NAME_LEN);
+
+		gDisplayedMessage.show = 0;
+
+		if (result)
+		{
+			sprintf(filename, "Replays/%s.D2RP", result);
+
+			if (SaveReplayToFile(filename))
+			{
+				gDisplayedMessage.header = G_LTXT(GTXT_SaveReplay);
+				gDisplayedMessage.text = G_LTXT(GTXT_OK);
+				gDisplayedMessage.show = 15;
+			}
+			else
+			{
+				gDisplayedMessage.header = G_LTXT(GTXT_SaveReplay);
+				gDisplayedMessage.text = G_LTXT(GTXT_SavingError);
+				gDisplayedMessage.show = 15;
+			}
 		}
 	}
 #endif // PSX
