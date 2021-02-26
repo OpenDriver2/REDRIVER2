@@ -1915,6 +1915,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 		// store vectors
 		cp = camera_position;
 		ca = camera_angle;
+		z1 = scr_z;
 
 		// setup new camera
 		SetVec(&camera_position,
@@ -1927,7 +1928,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 
 		// build matrix
 		gte_SetGeomOffset(32, 60);
-		SetGeomScreen(200);
+		SetGeomScreen(scr_z = 200);
 		BuildWorldMatrix();
 
 		// clear to black and draw Tanner sprites
@@ -1937,6 +1938,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 		// restore vectors
 		camera_position = cp;
 		camera_angle = ca;
+		scr_z = z1;
 
 		// build matix
 		gte_SetGeomOffset(160, 128);
