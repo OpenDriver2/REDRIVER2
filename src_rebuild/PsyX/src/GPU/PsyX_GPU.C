@@ -353,6 +353,21 @@ void MakeTexcoordQuad(struct GrVertex* vertex, unsigned char* uv0, unsigned char
 	vertex[3].dither = dither;
 	vertex[3].page = page;
 	vertex[3].clut = clut;
+	/*
+	if (g_bilinearFiltering)
+	{
+		vertex[0].tcx = -1;
+		vertex[0].tcy = -1;
+
+		vertex[1].tcx = -1;
+		vertex[1].tcy = -1;
+
+		vertex[2].tcx = -1;
+		vertex[2].tcy = -1;
+
+		vertex[3].tcx = -1;
+		vertex[3].tcy = -1;
+	}*/
 }
 
 void MakeTexcoordTriangle(struct GrVertex* vertex, unsigned char* uv0, unsigned char* uv1, unsigned char* uv2, short page, short clut, unsigned char dither)
@@ -383,6 +398,21 @@ void MakeTexcoordTriangle(struct GrVertex* vertex, unsigned char* uv0, unsigned 
 	vertex[2].dither = dither;
 	vertex[2].page = page;
 	vertex[2].clut = clut;
+	/*
+	if (g_bilinearFiltering)
+	{
+		vertex[0].tcx = -1;
+		vertex[0].tcy = -1;
+
+		vertex[1].tcx = -1;
+		vertex[1].tcy = -1;
+
+		vertex[2].tcx = -1;
+		vertex[2].tcy = -1;
+
+		vertex[3].tcx = -1;
+		vertex[3].tcy = -1;
+	}*/
 }
 
 void MakeTexcoordRect(struct GrVertex* vertex, unsigned char* uv, short page, short clut, short w, short h)

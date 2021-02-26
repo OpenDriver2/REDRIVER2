@@ -507,10 +507,12 @@ void GR_ResetDevice()
 ShaderID g_gte_shader_4;
 ShaderID g_gte_shader_8;
 ShaderID g_gte_shader_16;
+uint g_bilinearFilterLoc;
 
 #if defined(OGLES) || defined(RENDERER_OGL)
 GLint u_Projection;
 GLint u_Projection3D;
+
 
 #define GPU_PACK_RG\
 	"		float color_16 = (color_rg.y * 256.0 + color_rg.x) * 255.0;\n"
@@ -652,17 +654,15 @@ GLint u_Projection3D;
 	GPU_FETCH_VRAM_FUNC\
 	"	const vec2 c_VRAMTexel = vec2(1.0 / 1024.0, 1.0 / 512.0);\n"\
 	GPU_SAMPLE_TEXTURE_## bit ##BIT_FUNC\
-	"#ifdef BILINEAR_FILTER\n"\
 	GPU_BILINEAR_SAMPLE_FUNC\
-	"#else\n"\
 	GPU_NEAREST_SAMPLE_FUNC\
-	"#endif\n"\
+	"	uniform int bilinearFilter;\n"\
 	"	void main() {\n"\
-	"#ifdef BILINEAR_FILTER\n"\
-	"		fragColor = BilinearTextureSample(v_texcoord.xy);\n"\
-	"#else\n"\
-	"		fragColor = NearestTextureSample(v_texcoord.xy);\n"\
-	"#endif\n"\
+	"		if(bilinearFilter > 0)\n"\
+	"			fragColor = BilinearTextureSample(v_texcoord.xy);\n"\
+	"		else\n"\
+	"			fragColor = NearestTextureSample(v_texcoord.xy);\n"\
+	"		\n"\
 	GPU_DITHERING\
 	"	}\n"
 
@@ -832,7 +832,6 @@ ShaderID GR_Shader_Compile(const char* source)
 	glBindAttribLocation(program, a_texcoord, "a_texcoord");
 	glBindAttribLocation(program, a_color, "a_color");
 
-
 #ifdef USE_PGXP
 	glBindAttribLocation(program, a_zw, "a_zw");
 #endif
@@ -879,6 +878,7 @@ void GR_InitialisePSXShaders()
 	g_gte_shader_16 = GR_Shader_Compile(gte_shader_16);
 
 #if defined(RENDERER_OGL) || defined(OGLES)
+	g_bilinearFilterLoc = glGetUniformLocation(g_gte_shader_4, "bilinearFilter");
 	u_Projection = glGetUniformLocation(g_gte_shader_4, "Projection");
 #ifdef USE_PGXP
 	u_Projection3D = glGetUniformLocation(g_gte_shader_4, "Projection3D");
@@ -1173,6 +1173,7 @@ void GR_SetShader(const ShaderID& shader)
 	}
 }
 
+
 void GR_SetTexture(TextureID texture, TexFormat texFormat)
 {
 	switch (texFormat)
@@ -1198,6 +1199,7 @@ void GR_SetTexture(TextureID texture, TexFormat texFormat)
 
 #if defined(RENDERER_OGL) || defined(OGLES)
 	glBindTexture(GL_TEXTURE_2D, texture);
+	glUniform1i(g_bilinearFilterLoc, g_bilinearFiltering);
 #endif
 
 	g_lastBoundTexture = texture;

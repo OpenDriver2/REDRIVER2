@@ -731,7 +731,8 @@ void PsyX_Sys_DoDebugKeys(int nKey, bool down)
 			break;
 
 		case SDL_SCANCODE_F3:
-			g_emulatorPaused ^= 1;
+			g_bilinearFiltering ^= 1;
+			eprintwarn("filtering mode: %d\n", g_bilinearFiltering);
 			break;
 
 		case SDL_SCANCODE_UP:
