@@ -1,7 +1,7 @@
 #include "fs.h"
 
-#include <string>
-#include <cassert>
+#include <string.h>
+#include <assert.h>
 
 #ifdef _WIN32
 
@@ -24,6 +24,7 @@ void FS_FixPathSlashes(char* pathbuff)
 
 #include <sys/stat.h>
 #include <glob.h>		// glob(), globfree()
+#include <malloc.h>
 
 void FS_FixPathSlashes(char* pathbuff)
 {
