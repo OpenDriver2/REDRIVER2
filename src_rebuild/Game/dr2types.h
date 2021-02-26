@@ -1740,6 +1740,9 @@ struct CHEATS
 //---------------------------------------------------------------------------------------
 // TODO: REPLAYS.H
 
+#define DRIVER2_REPLAY_MAGIC		0x14793209
+#define REDRIVER2_CHASE_MAGIC		(('D' << 24) | ('2' << 16) | ('C' << 8) | 'R' )
+
 struct REPLAY_PARAMETER_BLOCK
 {
 	int RecordingEnd;

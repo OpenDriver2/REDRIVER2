@@ -2898,7 +2898,7 @@ void DisplaySmoke(SMOKE* smoke)
 	v.vy = smoke->position.vy - camera_position.vy;
 	v.vz = smoke->position.vz - camera_position.vz;
 
-	if (v.vx > 20480 || v.vz > 20480)
+	if (ABS(v.vx) > 20480 || ABS(v.vz) > 20480)
 		return;
 
 	Apply_Inv_CameraMatrix(&v);

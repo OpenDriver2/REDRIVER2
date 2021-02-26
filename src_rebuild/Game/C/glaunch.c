@@ -325,7 +325,7 @@ void ReInitFrontend(void)
 	ClearImage(&rect, 0, 0, 0);
 
 	DrawSync(0);
-	LoadFrontendScreens();
+	LoadFrontendScreens(1);
 	ReInitScreens();
 	DrawSync(0);
 	VSync(0);

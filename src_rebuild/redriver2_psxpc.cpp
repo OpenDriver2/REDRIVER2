@@ -22,170 +22,10 @@
 #include "utils/ini.h"
 
 #include <SDL_scancode.h>
+#include <SDL_gamecontroller.h>
 #include <SDL_messagebox.h>
 
 #include "PSYX_GLOBALS.H"
-
-// eq engine console output
-typedef enum
-{
-	SPEW_NORM,
-	SPEW_INFO,
-	SPEW_WARNING,
-	SPEW_ERROR,
-	SPEW_SUCCESS,
-}SpewType_t;
-
-
-#ifdef _WIN32
-#include <Windows.h>
-
-static unsigned short g_InitialColor = 0xFFFF;
-static unsigned short g_LastColor = 0xFFFF;
-static unsigned short g_BadColor = 0xFFFF;
-static WORD g_BackgroundFlags = 0xFFFF;
-
-static void GetInitialColors()
-{
-	// Get the old background attributes.
-	CONSOLE_SCREEN_BUFFER_INFO oldInfo;
-	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &oldInfo);
-	g_InitialColor = g_LastColor = oldInfo.wAttributes & (FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
-	g_BackgroundFlags = oldInfo.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY);
-
-	g_BadColor = 0;
-	if (g_BackgroundFlags & BACKGROUND_RED)
-		g_BadColor |= FOREGROUND_RED;
-	if (g_BackgroundFlags & BACKGROUND_GREEN)
-		g_BadColor |= FOREGROUND_GREEN;
-	if (g_BackgroundFlags & BACKGROUND_BLUE)
-		g_BadColor |= FOREGROUND_BLUE;
-	if (g_BackgroundFlags & BACKGROUND_INTENSITY)
-		g_BadColor |= FOREGROUND_INTENSITY;
-}
-
-static WORD SetConsoleTextColor(int red, int green, int blue, int intensity)
-{
-	WORD ret = g_LastColor;
-
-	g_LastColor = 0;
-	if (red)	g_LastColor |= FOREGROUND_RED;
-	if (green) g_LastColor |= FOREGROUND_GREEN;
-	if (blue)  g_LastColor |= FOREGROUND_BLUE;
-	if (intensity) g_LastColor |= FOREGROUND_INTENSITY;
-
-	// Just use the initial color if there's a match...
-	if (g_LastColor == g_BadColor)
-		g_LastColor = g_InitialColor;
-
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), g_LastColor | g_BackgroundFlags);
-	return ret;
-}
-
-static void RestoreConsoleTextColor(WORD color)
-{
-	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color | g_BackgroundFlags);
-	g_LastColor = color;
-}
-
-CRITICAL_SECTION g_SpewCS;
-bool g_bSpewCSInitted = false;
-
-void fnConDebugSpew(SpewType_t type, char* text)
-{
-	// Hopefully two threads won't call this simultaneously right at the start!
-	if (!g_bSpewCSInitted)
-	{
-		GetInitialColors();
-		InitializeCriticalSection(&g_SpewCS);
-		g_bSpewCSInitted = true;
-	}
-
-	WORD old;
-	EnterCriticalSection(&g_SpewCS);
-	{
-		if (type == SPEW_NORM)
-		{
-			old = SetConsoleTextColor(1, 1, 1, 0);
-		}
-		else if (type == SPEW_WARNING)
-		{
-			old = SetConsoleTextColor(1, 1, 0, 1);
-		}
-		else if (type == SPEW_SUCCESS)
-		{
-			old = SetConsoleTextColor(0, 1, 0, 1);
-		}
-		else if (type == SPEW_ERROR)
-		{
-			old = SetConsoleTextColor(1, 0, 0, 1);
-		}
-		else if (type == SPEW_INFO)
-		{
-			old = SetConsoleTextColor(0, 1, 1, 1);
-		}
-		else
-		{
-			old = SetConsoleTextColor(1, 1, 1, 1);
-		}
-
-		OutputDebugStringA(text);
-		printf("%s", text);
-
-		RestoreConsoleTextColor(old);
-	}
-	LeaveCriticalSection(&g_SpewCS);
-}
-#endif
-
-void SpewMessageToOutput(SpewType_t spewtype, char const* pMsgFormat, va_list args)
-{
-	static char pTempBuffer[4096];
-	int len = 0;
-	vsprintf(&pTempBuffer[len], pMsgFormat, args);
-
-#ifdef WIN32
-	fnConDebugSpew(spewtype, pTempBuffer);
-#else
-	printf(pTempBuffer);
-#endif
-}
-
-void printMsg(char *fmt, ...)
-{
-	va_list		argptr;
-
-	va_start(argptr, fmt);
-	SpewMessageToOutput(SPEW_NORM, fmt, argptr);
-	va_end(argptr);
-}
-
-void printInfo(char *fmt, ...)
-{
-	va_list		argptr;
-
-	va_start(argptr, fmt);
-	SpewMessageToOutput(SPEW_INFO, fmt, argptr);
-	va_end(argptr);
-}
-
-void printWarning(char *fmt, ...)
-{
-	va_list		argptr;
-
-	va_start(argptr, fmt);
-	SpewMessageToOutput(SPEW_WARNING, fmt, argptr);
-	va_end(argptr);
-}
-
-void printError(char *fmt, ...)
-{
-	va_list		argptr;
-
-	va_start(argptr, fmt);
-	SpewMessageToOutput(SPEW_ERROR, fmt, argptr);
-	va_end(argptr);
-}
 
 int(*GPU_printf)(const char *fmt, ...);
 
@@ -493,93 +333,149 @@ char g_PrimTab2[PRIMTAB_SIZE];			// 0x119400
 char g_Replay_buffer[0x50000];		// 0x1fABBC
 #endif
 
-int ParseKeyMapping(const char* str, int default_value)
+void ParseKeyboardMappings(ini_t* config, char* section, PsyXKeyboardMapping& outMapping)
 {
-	const char* scancodeName;
-	int i;
+	extern PsyXKeyboardMapping g_keyboard_mapping;
 
-	if(str)
-	{
-		for (i = 0; i < SDL_NUM_SCANCODES; i++)
-		{
-			scancodeName = SDL_GetScancodeName((SDL_Scancode)i);
-			if (strlen(scancodeName))
-			{
-				if (!_stricmp(scancodeName, str))
-				{
-					return i;
-				}
-			}
-		}
-	}
-
-	return default_value;
-}
-
-void LoadKeyMappings(ini_t* config, char* section, PsyXKeyboardMapping& outMapping)
-{
 	const char* str;
 
 	str = ini_get(config, section, "square");
-	outMapping.kc_square = ParseKeyMapping(str, SDL_SCANCODE_X);
+	outMapping.kc_square = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_square);
 
 	str = ini_get(config, section, "circle");
-	outMapping.kc_circle = ParseKeyMapping(str, SDL_SCANCODE_V);
+	outMapping.kc_circle = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_circle);
 
 	str = ini_get(config, section, "triangle");
-	outMapping.kc_triangle = ParseKeyMapping(str, SDL_SCANCODE_Z);
+	outMapping.kc_triangle = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_triangle);
 
 	str = ini_get(config, section, "cross");
-	outMapping.kc_cross = ParseKeyMapping(str, SDL_SCANCODE_C);
+	outMapping.kc_cross = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_cross);
 
 	str = ini_get(config, section, "l1");
-	outMapping.kc_l1 = ParseKeyMapping(str, SDL_SCANCODE_LSHIFT);
+	outMapping.kc_l1 = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_l1);
 
 	str = ini_get(config, section, "l2");
-	outMapping.kc_l2 = ParseKeyMapping(str, SDL_SCANCODE_LCTRL);
+	outMapping.kc_l2 = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_l2);
 
 	str = ini_get(config, section, "l3");
-	outMapping.kc_l3 = ParseKeyMapping(str, SDL_SCANCODE_LEFTBRACKET);
+	outMapping.kc_l3 = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_l3);
 
 	str = ini_get(config, section, "r1");
-	outMapping.kc_r1 = ParseKeyMapping(str, SDL_SCANCODE_RSHIFT);
+	outMapping.kc_r1 = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_r1);
 
 	str = ini_get(config, section, "r2");
-	outMapping.kc_r2 = ParseKeyMapping(str, SDL_SCANCODE_RCTRL);
+	outMapping.kc_r2 = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_r2);
 
 	str = ini_get(config, section, "r3");
-	outMapping.kc_r3 = ParseKeyMapping(str, SDL_SCANCODE_RIGHTBRACKET);
+	outMapping.kc_r3 = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_r3);
 
 	str = ini_get(config, section, "up");
-	outMapping.kc_dpad_up = ParseKeyMapping(str, SDL_SCANCODE_UP);
+	outMapping.kc_dpad_up = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_dpad_up);
 
 	str = ini_get(config, section, "down");
-	outMapping.kc_dpad_down = ParseKeyMapping(str, SDL_SCANCODE_DOWN);
+	outMapping.kc_dpad_down = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_dpad_down);
 
 	str = ini_get(config, section, "left");
-	outMapping.kc_dpad_left = ParseKeyMapping(str, SDL_SCANCODE_LEFT);
+	outMapping.kc_dpad_left = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_dpad_left);
 
 	str = ini_get(config, section, "right");
-	outMapping.kc_dpad_right = ParseKeyMapping(str, SDL_SCANCODE_RIGHT);
+	outMapping.kc_dpad_right = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_dpad_right);
 
 	str = ini_get(config, section, "select");
-	outMapping.kc_select = ParseKeyMapping(str, SDL_SCANCODE_SPACE);
+	outMapping.kc_select = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_select);
 
 	str = ini_get(config, section, "start");
-	outMapping.kc_start = ParseKeyMapping(str, SDL_SCANCODE_RETURN);
+	outMapping.kc_start = PsyX_LookupKeyboardMapping(str, g_keyboard_mapping.kc_start);
 }
 
-PsyXKeyboardMapping g_gameMappings = { 0x123 };
-PsyXKeyboardMapping g_menuMappings = { 0x456 };
+void ParseControllerMappings(ini_t* config, char* section, PsyXControllerMapping& outMapping)
+{
+	extern PsyXControllerMapping g_controller_mapping;
+
+	const char* str;
+
+	str = ini_get(config, section, "square");
+	outMapping.gc_square = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_square);
+
+	str = ini_get(config, section, "circle");
+	outMapping.gc_circle = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_circle);
+
+	str = ini_get(config, section, "triangle");
+	outMapping.gc_triangle = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_triangle);
+
+	str = ini_get(config, section, "cross");
+	outMapping.gc_cross = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_cross);
+
+	str = ini_get(config, section, "l1");
+	outMapping.gc_l1 = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_l1);
+
+	str = ini_get(config, section, "l2");
+	outMapping.gc_l2 = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_l2);
+
+	str = ini_get(config, section, "l3");
+	outMapping.gc_l3 = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_l3);
+
+	str = ini_get(config, section, "r1");
+	outMapping.gc_r1 = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_r1);
+
+	str = ini_get(config, section, "r2");
+	outMapping.gc_r2 = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_r2);
+
+	str = ini_get(config, section, "r3");
+	outMapping.gc_r3 = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_r3);
+
+	str = ini_get(config, section, "up");
+	outMapping.gc_dpad_up = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_dpad_up);
+
+	str = ini_get(config, section, "down");
+	outMapping.gc_dpad_down = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_dpad_down);
+
+	str = ini_get(config, section, "left");
+	outMapping.gc_dpad_left = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_dpad_left);
+
+	str = ini_get(config, section, "right");
+	outMapping.gc_dpad_right = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_dpad_right);
+
+	str = ini_get(config, section, "select");
+	outMapping.gc_select = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_select);
+
+	str = ini_get(config, section, "start");
+	outMapping.gc_start = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_start);
+
+	str = ini_get(config, section, "axis_left_x");
+	outMapping.gc_axis_left_x = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_axis_left_x);
+
+	str = ini_get(config, section, "axis_left_y");
+	outMapping.gc_axis_left_y = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_axis_left_y);
+
+	str = ini_get(config, section, "axis_right_x");
+	outMapping.gc_axis_right_x = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_axis_right_x);
+
+	str = ini_get(config, section, "axis_right_y");
+	outMapping.gc_axis_right_y = PsyX_LookupGameControllerMapping(str, g_controller_mapping.gc_axis_right_y);
+}
+
+PsyXKeyboardMapping g_kbGameMappings = { 0x123 };
+PsyXKeyboardMapping g_kbMenuMappings = { 0x456 };
+
+PsyXControllerMapping g_gcGameMappings = { 0x321 };
+PsyXControllerMapping g_gcMenuMappings = { 0x654 };
 
 void SwitchMappings(int menu)
 {
 	extern PsyXKeyboardMapping g_keyboard_mapping;
+	extern PsyXControllerMapping g_controller_mapping;
 
 	if(menu)
-		g_keyboard_mapping = g_menuMappings;
+	{
+		g_keyboard_mapping = g_kbMenuMappings;
+		g_controller_mapping = g_gcMenuMappings;
+	}
 	else
-		g_keyboard_mapping = g_gameMappings;
+	{
+		g_keyboard_mapping = g_kbGameMappings;
+		g_controller_mapping = g_gcGameMappings;
+	}
 }
 
 int main(int argc, char** argv)
@@ -627,6 +523,8 @@ int main(int argc, char** argv)
 
 	if (config)
 	{
+		extern int gDisableChicagoBridges;
+		int newScrZ = gCameraDefaultScrZ;
 		const char* dataFolderStr = ini_get(config, "fs", "dataFolder");
 		const char* userReplaysStr = ini_get(config, "game", "userChases");
 
@@ -639,12 +537,16 @@ int main(int argc, char** argv)
 		ini_sget(config, "render", "pgxpZbuffer", "%d", &g_pgxpZBuffer);
 		ini_sget(config, "render", "bilinearFiltering", "%d", &g_bilinearFiltering);
 		ini_sget(config, "game", "drawDistance", "%d", &gDrawDistance);
+		ini_sget(config, "game", "disableChicagoBridges", "%d", &gDisableChicagoBridges);
+		ini_sget(config, "game", "fieldOfView", "%d", &newScrZ);
 		ini_sget(config, "game", "freeCamera", "%d", &enableFreecamera);
 		ini_sget(config, "game", "driver1music", "%d", &gDriver1Music);
 		ini_sget(config, "game", "widescreenOverlays", "%d", &gWidescreenOverlayAlign);
 		ini_sget(config, "game", "fastLoadingScreens", "%d", &gFastLoadingScreens);
 		ini_sget(config, "game", "languageId", "%d", &gUserLanguage);
-
+	
+		gCameraDefaultScrZ = MAX(MIN(newScrZ, 384), 128);
+		
 		if (dataFolderStr)
 		{
 			strcpy(gDataFolder, dataFolderStr);
@@ -709,17 +611,23 @@ int main(int argc, char** argv)
 	
 	if (config)
 	{
-		LoadKeyMappings(config, "kbcontrols_game", g_gameMappings);
-		LoadKeyMappings(config, "kbcontrols_menu", g_menuMappings);
+		ParseKeyboardMappings(config, "kbcontrols_game", g_kbGameMappings);
+		ParseKeyboardMappings(config, "kbcontrols_menu", g_kbMenuMappings);
 
-		SwitchMappings(1);
+		ParseControllerMappings(config, "controls_game", g_gcGameMappings);
+		ParseControllerMappings(config, "controls_menu", g_gcMenuMappings);
 		
 		ini_free(config);
 	}
 
+	// start with menu mapping
+	SwitchMappings(1);
+
 	redriver2_main(argc, argv);
 
 	DeinitStringMng();
+
+	PsyX_Shutdown();
 
 	return 0;
 }

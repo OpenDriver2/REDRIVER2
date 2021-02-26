@@ -331,12 +331,10 @@ void ApplyDamage(CAR_DATA *cp, char region, int value, char fakeDamage)
 {
 	short *pRegion;
 
-	pRegion = (cp->ap.damage + region);
-
 	if (cp->controlType == CONTROL_TYPE_PLAYER || cp->controlType == CONTROL_TYPE_LEAD_AI)
-		value = value * FIXEDH(gPlayerDamageFactor);
+		value *= FIXEDH(gPlayerDamageFactor);
 	else 
-		value = value << 1;
+		value *= 2;
 
 	if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
 	{
@@ -350,14 +348,15 @@ void ApplyDamage(CAR_DATA *cp, char region, int value, char fakeDamage)
 		}
 	}
 
-	if (fakeDamage == 0) 
+	if (!fakeDamage) 
 	{
-		if (cp->totalDamage < 0xffff - value)
+		if (cp->totalDamage < USHRT_MAX - value)
 			cp->totalDamage += value;
 		else
-			cp->totalDamage = 0xffff;
+			cp->totalDamage = USHRT_MAX;
 	}
 
+	pRegion = &cp->ap.damage[region];
 	*pRegion += value;
 
 	if (*pRegion > 4095)
@@ -377,17 +376,17 @@ void ApplyDamage(CAR_DATA *cp, char region, int value, char fakeDamage)
 
 	if (region != -1)
 	{
-		pRegion = cp->ap.damage + region;
+		pRegion = &cp->ap.damage[region];
 		value >>= 1;
 
 		if (*pRegion < value)
 		{
-			if (fakeDamage == 0) 
+			if (!fakeDamage) 
 			{
-				if (cp->totalDamage < 0xffff - (value - *pRegion))
+				if (cp->totalDamage < USHRT_MAX - (value - *pRegion))
 					cp->totalDamage += (value - *pRegion);
 				else 
-					cp->totalDamage = 0xffff;
+					cp->totalDamage = USHRT_MAX;
 			}
 
 			*pRegion = value;
@@ -413,7 +412,7 @@ int DamageCar3D(CAR_DATA *cp, LONGVECTOR4* delta, int strikeVel, CAR_DATA *pOthe
 
 	strikeVel >>= 8;
 
-	if (strikeVel < 0xa000) 
+	if (strikeVel < 40960) 
 	{
 		if (cp->totalDamage == 0)
 			cp->totalDamage = 1;
@@ -445,33 +444,34 @@ int DamageCar3D(CAR_DATA *cp, LONGVECTOR4* delta, int strikeVel, CAR_DATA *pOthe
 
 	if (cp->controlType == CONTROL_TYPE_PLAYER) 
 	{
-		value = (strikeVel / 350 + 0x200) * 3;
+		value = (strikeVel / 350 + 512) * 3;
 
 		value >>= 3;
-		if (value > 0x477)
-			value = 0x477;
 		
+		if (value > 1143)
+			value = 1143;
 	}
 	else if (cp->controlType == CONTROL_TYPE_LEAD_AI)
 	{
 		if (pOtherCar->controlType == CONTROL_TYPE_PLAYER)
 		{
-			value = (strikeVel / 350 + 0x200) * 3;
+			value = (strikeVel / 350 + 512) * 3;
 
 			value >>= 3;
 
-			if (value > 0x477)
-				value = 0x477;
+			if (value > 1143)
+				value = 1143;
 
-			cp->ai.l.takeDamage = 0x32;
+			cp->ai.l.takeDamage = 50;
 		}
 		else
 		{
-			value = strikeVel / 350 + 0x200;
+			value = strikeVel / 350 + 512;
 
 			value >>= 3;
-			if (value > 0x2fa)
-				value = 0x2fa;
+			
+			if (value > 762)
+				value = 762;
 
 			if (cp->ai.l.takeDamage == 0)
 				value = 0;
@@ -479,9 +479,10 @@ int DamageCar3D(CAR_DATA *cp, LONGVECTOR4* delta, int strikeVel, CAR_DATA *pOthe
 	}
 	else 
 	{
-		value = ((strikeVel / 400 + 0x400) * 7) >> 3;
+		value = ((strikeVel / 400 + 1024) * 7) >> 3;
 	}
 
+	// if cop cars colliding with themselves, only apply fake damage
 	fakeDamage = (cp->controlType == CONTROL_TYPE_PURSUER_AI && pOtherCar->controlType == CONTROL_TYPE_PURSUER_AI);
 
 	ApplyDamage(cp, region, value, fakeDamage);
@@ -525,7 +526,7 @@ void DamageCar(CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVel
 	lbody = cp->ap.carCos->colBox.vz / 2;
 	impact = strikeVel / 600;
 
-	if (strikeVel > 0x4fff && cp->hd.speed > 9) 
+	if (strikeVel >= 20480 && cp->hd.speed > 9) 
 	{
 		dx = collisionResult->hit.vx - cd->x.vx;
 		dz = collisionResult->hit.vz - cd->x.vz;
@@ -551,9 +552,9 @@ void DamageCar(CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVel
 			else
 				region = 3;
 		}
-		
-		if (strikeVel > 0x1f4000) 
-			strikeVel = 0x1f4000;
+
+		if (strikeVel > 2048000) 
+			strikeVel = 2048000;
 
 		value = ((strikeVel / 300) * 1024) / 1500;
 		if (value > 2048)

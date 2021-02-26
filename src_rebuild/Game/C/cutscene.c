@@ -21,6 +21,7 @@
 #include "director.h"
 #include "xaplay.h"
 #include "overlay.h"
+#include "shadow.h"
 
 #include "LIBETC.H"
 #include "STRINGS.H"
@@ -360,7 +361,7 @@ void TriggerInGameCutscene(int cutscene)
 
 		gInGameCutsceneActive = TriggerInGameCutsceneSystem(cutscene);
 
-		if (gInGameCutsceneActive != 0) 
+		if (gInGameCutsceneActive) 
 		{
 			TerminateSkidding(0);
 			TerminateSkidding(1);
@@ -405,7 +406,7 @@ void ReleaseInGameCutscene(void)
 {
 	int i;
 
-	if (gInGameChaseActive != 0 && Mission.ChaseTarget != NULL) 
+	if (gInGameChaseActive && Mission.ChaseTarget) 
 	{
 		player[1].padid = -128;
 	}
@@ -648,7 +649,7 @@ int TriggerInGameCutsceneSystem(int cutscene)
 							stream->SourceType.palette,
 							&padid[player_id]);
 
-						if (bDamageOverride != 0) 
+						if (bDamageOverride) 
 						{
 							slot = player[0].playerCarId;
 
@@ -812,7 +813,10 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 
 	rheader = (REPLAY_SAVE_HEADER *)CutsceneBuffer.residentPointers[residentCutscene];
 
-	if (rheader == NULL || rheader && (rheader->magic != 0x14793209 || rheader->NumReplayStreams == 0) )
+	if (rheader == NULL || 
+		rheader && (rheader->magic != DRIVER2_REPLAY_MAGIC && 
+					rheader->magic != REDRIVER2_CHASE_MAGIC ||	// [A]
+					rheader->NumReplayStreams == 0) )
 	{
 		ShowCutsceneError();
 		return 0;
@@ -856,23 +860,29 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 
 	NumReplayStreams += NumCutsceneStreams;
 
-	// copy cutscene cameras and pings
-	CutsceneCamera = (PLAYBACKCAMERA *)replayptr;
+	// [A] REDRIVER2 chase replays skip cameras
+	if (rheader->magic == REDRIVER2_CHASE_MAGIC)
+	{
+		CutsceneCamera = NULL;
+	}
+	else
+	{
+		// copy cutscene cameras and pings
+		CutsceneCamera = (PLAYBACKCAMERA*)replayptr;
 
-	memcpy((u_char*)CutsceneCamera, pt, sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS);
-	replayptr += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
-
-	pt += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
+		memcpy((u_char*)CutsceneCamera, pt, sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS);
+		replayptr += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
+		pt += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
+	}
 
 	memcpy((u_char*)PingBuffer, pt, sizeof(PING_PACKET) * MAX_REPLAY_PINGS);
-
 	PingBufferPos = 0;
 
 	return 1;
 }
 
 #ifndef PSX
-int LoadCutsceneFile(char *filename, int subindex, int userId = -1)
+int LoadChaseReplayFromFile(char *filename, int subindex, int userId = -1)
 {
 	gUserChaseLoaded = userId;
 
@@ -894,49 +904,6 @@ int LoadCutsceneFile(char *filename, int subindex, int userId = -1)
 
 	return 0;
 }
-
-int LoadUserCutscene(int subindex, int userId = -1)
-{
-	char customFilename[64];
-	int userIndex = -1;
-
-	if (userId >= 0 && userId < gNumUserChases)
-	{
-		// get user chase instantly
-		sprintf(customFilename, "REPLAYS\\User\\%s\\CUT%d_%d.D2RP", gUserReplayFolderList[userId], gCurrentMissionNumber, subindex);
-
-		if (FileExists(customFilename))
-			userIndex = userId;
-	}
-
-	// if still no valid user replay from input
-	if (userIndex == -1)
-	{
-		// find first valid user replay
-		for (int i = 0; i < gNumUserChases; i++)
-		{
-			sprintf(customFilename, "REPLAYS\\User\\%s\\CUT%d_%d.D2RP", gUserReplayFolderList[i], gCurrentMissionNumber, subindex);
-
-			if (FileExists(customFilename))
-			{
-				userIndex = i;
-				break;
-			}
-		}
-
-		// if it doesn't exist under someone's name, get an anonymous one
-		if (userIndex == -1)
-		{
-			sprintf(customFilename, "REPLAYS\\User\\CUT%d_%d.D2RP", gCurrentMissionNumber, subindex);
-
-			// and if it still doesn't exist, let the game handle it
-			if (!FileExists(customFilename))
-				return 0;
-		}
-	}
-
-	return LoadCutsceneFile(customFilename, subindex, userIndex);
-}
 #endif
 
 // [D] [T]
@@ -947,30 +914,45 @@ int LoadCutsceneToBuffer(int subindex)
 
 	CUTSCENE_HEADER header;
 	char filename[64];
+	
+	filename[0] = '\0';
 
-	if (gCurrentMissionNumber < 21) 
-		sprintf(filename, "REPLAYS\\CUT%d.R", gCurrentMissionNumber);
-	else 
-		sprintf(filename, "REPLAYS\\A\\CUT%d.R", gCurrentMissionNumber);
-
-	printInfo("Loading cutscene '%s' (%d)\n", filename, subindex);
-
-#ifndef PSX
-	int userId = -1;
-
-	// [A] REDRIVER2 PC - custom cutcenes or chases for debugging
-	if (gNumUserChases)
+	// try load replacement bundle
+	if(subindex >= 2)
 	{
-		userId = rand() % (gNumUserChases + 1);
+#ifndef PSX
+		int userId = -1;
 
-		// if random decides to have no user chase - get og or replacement one
-		if (userId == gNumUserChases)
-			userId = -1;
+		// [A] REDRIVER2 PC - custom user chases
+		if (gNumUserChases)
+		{
+			userId = rand() % (gNumUserChases + 1);
+
+			// if random decides to have no user chase - get og or replacement one
+			if (userId == gNumUserChases)
+				userId = -1;
+		}
+
+		// try loading user chase
+		if (userId != -1)
+			sprintf(filename, "REPLAYS\\UserChases\\%s\\CUT%d_N.R", (char*)gUserReplayFolderList[userId], gCurrentMissionNumber);
+
+		//gUserChaseLoaded = userId;
+#endif
+		
+		if (!FileExists(filename)) // fallback
+			sprintf(filename, "REPLAYS\\ReChases\\CUT%d_N.R", gCurrentMissionNumber);
 	}
 
-	if (LoadUserCutscene(subindex, userId))
-		return 1;
-#endif
+	if(!FileExists(filename))
+	{
+		if (gCurrentMissionNumber < 21)
+			sprintf(filename, "REPLAYS\\CUT%d.R", gCurrentMissionNumber);
+		else
+			sprintf(filename, "REPLAYS\\A\\CUT%d.R", gCurrentMissionNumber);
+	}
+
+	printInfo("Loading cutscene '%s' (%d)\n", filename, subindex);
 
 	if (FileExists(filename))
 	{
@@ -981,21 +963,19 @@ int LoadCutsceneToBuffer(int subindex)
 			offset = header.data[subindex].offset * 4;
 			size = header.data[subindex].size;
 			
-			if (CutsceneBuffer.bytesFree < size) 
+			if (size > CutsceneBuffer.bytesFree)
 			{
+				printWarning("WARNING - Using leadAI/pathAI buffer for cutscene!\n");
+
 				// load into lead/path AI buffer
 				leadAILoaded = 0;
 				pathAILoaded = 0;
 
 				CutsceneBuffer.currentPointer = _other_buffer2;
-				CutsceneBuffer.bytesFree = 0xc000;
+				CutsceneBuffer.bytesFree = 0xC000;	
+			}
 
-				LoadfileSeg(filename, _other_buffer2, offset, size);				
-			}
-			else 
-			{
-				LoadfileSeg(filename, CutsceneBuffer.currentPointer, offset, size);
-			}
+			LoadfileSeg(filename, CutsceneBuffer.currentPointer, offset, size);
 
 			CutsceneBuffer.residentCutscenes[CutsceneBuffer.numResident] = subindex;
 			CutsceneBuffer.residentPointers[CutsceneBuffer.numResident] = CutsceneBuffer.currentPointer;
@@ -1017,7 +997,7 @@ void ShowCutsceneError(void)
 {
 	RECT16 rect;
 
-	printf("Cutscene initialisation error!\n");
+	printError("Cutscene initialisation error!\n");
 	SetDispMask(0);
 	DrawSync(0);
 

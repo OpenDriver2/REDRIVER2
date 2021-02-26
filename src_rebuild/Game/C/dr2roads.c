@@ -36,7 +36,8 @@ int NumDriver2Curves = 0;
 int NumDriver2Straights = 0;
 DRIVER2_STRAIGHT *Driver2StraightsPtr = NULL;
 
-#if 0
+int gDisableChicagoBridges = 0;
+
 const short ChicagoBridgeRoads1[] = {
 	434,
 	433,
@@ -85,7 +86,6 @@ const short* ChicagoBridgeRoads[] = {
 	// Downtown 2
 	ChicagoBridgeRoads3,
 };
-#endif
 
 // [A] custom function for working with roads in very optimized way
 int GetSurfaceRoadInfo(DRIVER2_ROAD_INFO* outRoadInfo, int surfId)
@@ -164,9 +164,8 @@ void ProcessStraightsDriver2Lump(char *lump_file, int lump_size)
 	Getlong((char *)&NumDriver2Straights, lump_file);
 	Driver2StraightsPtr = (DRIVER2_STRAIGHT *)(lump_file + 4);
 
-#if 0
 	// [A] patch chicago roads
-	if (GameLevel == 0)
+	if (GameLevel == 0 && gDisableChicagoBridges)
 	{
 		DRIVER2_STRAIGHT* str;
 		int grp, i, j;
@@ -195,7 +194,6 @@ void ProcessStraightsDriver2Lump(char *lump_file, int lump_size)
 			}
 		}
 	}
-#endif
 }
 
 // [D] [T]
@@ -244,14 +242,14 @@ int sdHeightOnPlane(VECTOR *pos, sdPlane *plane)
 	int lx;
 	int ly;
 
-	if (plane != NULL)
+	if (plane)
 	{
 		d = plane->d;
 
 		if ((d >> 1 ^ d) & 0x40000000) 
 			return d ^ 0x40000000;
 
-		if ((plane->surface & 0xe000U) == 0x4000 && plane->b == 0)
+		if ((plane->surface & 0xE000) == 0x4000 && plane->b == 0)
 		{
 			// calculate curve point
 			curve = Driver2CurvesPtr + ((plane->surface & 0x1fff) - 32);
@@ -328,14 +326,15 @@ sdPlane* sdGetCell(VECTOR *pos)
 	
 	if (*buffer == 2) 
 	{
+		sdPlane* planeData = (sdPlane*)((char*)buffer + buffer[1]);
 		short* bspData = (short*)((char*)buffer + buffer[2]);
 		sdNode* nodeData = (sdNode*)((char*)buffer + buffer[3]);
-		sdPlane* planeData = (sdPlane*)((char*)buffer + buffer[1]);
+		
 		
 		surface = &buffer[(cellPos.x >> 10 & 0x3fU) + 
 						  (cellPos.y >> 10 & 0x3fU) * MAP_REGION_SIZE*2 + 4];
 
-		// no surface poitners
+		// initial surface
 		if (*surface == -1)
 			return GetSeaPlane();
 
@@ -351,7 +350,7 @@ sdPlane* sdGetCell(VECTOR *pos)
 				}
 				else
 					break;
-			} while (*surface != -0x8000);
+			} while (*surface != -0x8000); // end flag
 			
 			surface += 1;
 		}
@@ -361,6 +360,7 @@ sdPlane* sdGetCell(VECTOR *pos)
 			nextLevel = 0;
 
 			// check if it's has BSP properties
+			// basically it determines surface bounds
 			if (*surface & 0x4000)
 			{
 				cell.x = cellPos.x & 0x3ff;

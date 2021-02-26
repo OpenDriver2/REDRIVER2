@@ -258,6 +258,8 @@ void SaveCurrentGame()
 	}
 }
 
+char gCurrentReplayFilename[64] = { 0 };
+
 int LoadReplayFromFile(char* fileName)
 {
 	FILE* fp = fopen(fileName, "rb");
@@ -273,6 +275,23 @@ int LoadReplayFromFile(char* fileName)
 
 		if (LoadReplayFromBuffer(_other_buffer))
 		{
+			char* sub, *tmp;
+
+			// only filename
+			sub = fileName;
+			do
+			{
+				tmp = strchr(sub+1, '/');
+				if (tmp)
+					sub = tmp+1;
+			}while(tmp);
+
+			strcpy(gCurrentReplayFilename, sub);
+
+			sub = strchr(gCurrentReplayFilename, '.');
+			if (sub)
+				*sub = 0;
+
 			return 1;
 		}
 		else
@@ -284,6 +303,21 @@ int LoadReplayFromFile(char* fileName)
 	{
 		printError("Cannot open replay '%s'!\n", fileName);
 		return -1;
+	}
+
+	return 0;
+}
+
+int SaveReplayToFile(char* filename)
+{
+	int size = SaveReplayToBuffer(_other_buffer);
+
+	FILE* fp = fopen(filename, "wb");
+	if (fp)
+	{
+		fwrite(_other_buffer, 1, size, fp);
+		fclose(fp);
+		return 1;
 	}
 
 	return 0;

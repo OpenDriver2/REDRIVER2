@@ -2104,6 +2104,9 @@ int GetBridgeRotation(int timer)
 		return 0;
 #endif
 
+	if (gDisableChicagoBridges)
+		return 0;
+
 	if (timer > 2600)
 		return 0;
 

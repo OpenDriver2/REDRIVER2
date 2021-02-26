@@ -7,6 +7,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <string.h>
 
 // Remap a value in the range [A,B] to [C,D].
 #define RemapVal( val, A, B, C, D) \
@@ -124,6 +125,8 @@ void MakeLineArray(struct GrVertex* vertex, VERTTYPE* p0, VERTTYPE* p1, ushort g
 		ofsY = 0.0f;
 	}
 
+	memset(vertex, 0, sizeof(GrVertex) * 4);
+
 	if (dx > abs((short)dy)) { // horizontal
 		vertex[0].x = p0[0] + ofsX;
 		vertex[0].y = p0[1] + ofsY;
@@ -189,6 +192,7 @@ inline void ApplyVertexPGXP(GrVertex* v, VERTTYPE* p, float ofsX, float ofsY, us
 	else
 	{
 		v->scr_h = 0.0f;
+		v->z = 0.0f;
 	}
 #endif
 }
@@ -212,6 +216,8 @@ void MakeVertexTriangle(struct GrVertex* vertex, VERTTYPE* p0, VERTTYPE* p1, VER
 		ofsX = 0.0f;
 		ofsY = 0.0f;
 	}
+
+	memset(vertex, 0, sizeof(GrVertex) * 3);
 
 	vertex[0].x = p0[0] + ofsX;
 	vertex[0].y = p0[1] + ofsY;
@@ -250,6 +256,8 @@ void MakeVertexQuad(struct GrVertex* vertex, VERTTYPE* p0, VERTTYPE* p1, VERTTYP
 		ofsY = 0.0f;
 	}
 
+	memset(vertex, 0, sizeof(GrVertex) * 4);
+
 	vertex[0].x = p0[0] + ofsX;
 	vertex[0].y = p0[1] + ofsY;
 
@@ -287,6 +295,8 @@ void MakeVertexRect(struct GrVertex* vertex, VERTTYPE* p0, short w, short h, ush
 		ofsX = 0.0f;
 		ofsY = 0.0f;
 	}
+
+	memset(vertex, 0, sizeof(GrVertex) * 4);
 
 	vertex[0].x = p0[0] + ofsX;
 	vertex[0].y = p0[1] + ofsY;
@@ -343,6 +353,21 @@ void MakeTexcoordQuad(struct GrVertex* vertex, unsigned char* uv0, unsigned char
 	vertex[3].dither = dither;
 	vertex[3].page = page;
 	vertex[3].clut = clut;
+	/*
+	if (g_bilinearFiltering)
+	{
+		vertex[0].tcx = -1;
+		vertex[0].tcy = -1;
+
+		vertex[1].tcx = -1;
+		vertex[1].tcy = -1;
+
+		vertex[2].tcx = -1;
+		vertex[2].tcy = -1;
+
+		vertex[3].tcx = -1;
+		vertex[3].tcy = -1;
+	}*/
 }
 
 void MakeTexcoordTriangle(struct GrVertex* vertex, unsigned char* uv0, unsigned char* uv1, unsigned char* uv2, short page, short clut, unsigned char dither)
@@ -373,14 +398,28 @@ void MakeTexcoordTriangle(struct GrVertex* vertex, unsigned char* uv0, unsigned 
 	vertex[2].dither = dither;
 	vertex[2].page = page;
 	vertex[2].clut = clut;
+	/*
+	if (g_bilinearFiltering)
+	{
+		vertex[0].tcx = -1;
+		vertex[0].tcy = -1;
+
+		vertex[1].tcx = -1;
+		vertex[1].tcy = -1;
+
+		vertex[2].tcx = -1;
+		vertex[2].tcy = -1;
+
+		vertex[3].tcx = -1;
+		vertex[3].tcy = -1;
+	}*/
 }
 
 void MakeTexcoordRect(struct GrVertex* vertex, unsigned char* uv, short page, short clut, short w, short h)
 {
 	assert(uv);
-	//assert(int(uv[0]) + w <= 255);
-	//assert(int(uv[1]) + h <= 255);
-	// TODO
+
+	// sim overflow
 	if (int(uv[0]) + w > 255) w = 255 - uv[0];
 	if (int(uv[1]) + h > 255) h = 255 - uv[1];
 
@@ -414,6 +453,21 @@ void MakeTexcoordRect(struct GrVertex* vertex, unsigned char* uv, short page, sh
 	vertex[3].dither = dither;
 	vertex[3].page = page;
 	vertex[3].clut = clut;
+
+	if (g_bilinearFiltering)
+	{
+		vertex[0].tcx = -1;
+		vertex[0].tcy = -1;
+
+		vertex[1].tcx = -1;
+		vertex[1].tcy = -1;
+
+		vertex[2].tcx = -1;
+		vertex[2].tcy = -1;
+
+		vertex[3].tcx = -1;
+		vertex[3].tcy = -1;
+	}
 }
 
 void MakeTexcoordLineZero(struct GrVertex* vertex, unsigned char dither)
@@ -772,26 +826,26 @@ int ParsePrimitive(uintptr_t primPtr)
 	{
 		switch (pTag->code)
 		{
-		case 0x01:
-		{
-			DR_MOVE* drmove = (DR_MOVE*)pTag;
+			case 0x01:
+			{
+				DR_MOVE* drmove = (DR_MOVE*)pTag;
 
-			int x, y;
-			y = drmove->code[3] >> 0x10 & 0xFFFF;
-			x = drmove->code[3] & 0xFFFF;
+				int x, y;
+				y = drmove->code[3] >> 0x10 & 0xFFFF;
+				x = drmove->code[3] & 0xFFFF;
 
-			RECT16 rect;
-			*(ulong*)&rect.x = *(ulong*)&drmove->code[2];
-			*(ulong*)&rect.w = *(ulong*)&drmove->code[4];
+				RECT16 rect;
+				*(ulong*)&rect.x = *(ulong*)&drmove->code[2];
+				*(ulong*)&rect.w = *(ulong*)&drmove->code[4];
 
-			MoveImage(&rect, x, y);
+				MoveImage(&rect, x, y);
 
-			break;
-		}
-		default:
-		{
-			eprinterr("Unknown command %02X!\n", pTag->code);
-		}
+				break;
+			}
+			default:
+			{
+				eprinterr("Unknown command %02X!\n", pTag->code);
+			}
 		}
 
 

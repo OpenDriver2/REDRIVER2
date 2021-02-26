@@ -38,6 +38,7 @@ extern SDL_GameController* padHandle[];
 extern unsigned char* padData[];
 
 PsyXKeyboardMapping g_keyboard_mapping;
+PsyXControllerMapping g_controller_mapping;
 
 timerCtx_t g_vblTimer;
 
@@ -111,14 +112,14 @@ static int PsyX_Sys_InitialiseCore()
 
 	if (NULL == g_intrThread)
 	{
-		eprintf("SDL_CreateThread failed: %s\n", SDL_GetError());
+		eprinterr("SDL_CreateThread failed: %s\n", SDL_GetError());
 		return 0;
 	}
 
 	g_intrMutex = SDL_CreateMutex();
 	if (NULL == g_intrMutex)
 	{
-		eprintf("SDL_CreateMutex failed: %s\n", SDL_GetError());
+		eprinterr("SDL_CreateMutex failed: %s\n", SDL_GetError());
 		return 0;
 	}
 
@@ -147,6 +148,125 @@ static void PsyX_Sys_InitialiseInput()
 
 	g_keyboard_mapping.kc_select = SDL_SCANCODE_SPACE;
 	g_keyboard_mapping.kc_start = SDL_SCANCODE_RETURN;
+
+	//----------------
+	g_controller_mapping.gc_square = SDL_CONTROLLER_BUTTON_X;
+	g_controller_mapping.gc_circle = SDL_CONTROLLER_BUTTON_B;
+	g_controller_mapping.gc_triangle = SDL_CONTROLLER_BUTTON_Y;
+	g_controller_mapping.gc_cross = SDL_CONTROLLER_BUTTON_A;
+
+	g_controller_mapping.gc_l1 = SDL_CONTROLLER_BUTTON_LEFTSHOULDER;
+	g_controller_mapping.gc_l2 = SDL_CONTROLLER_AXIS_TRIGGERLEFT | CONTROLLER_MAP_FLAG_AXIS;
+	g_controller_mapping.gc_l3 = SDL_CONTROLLER_BUTTON_LEFTSTICK;
+
+	g_controller_mapping.gc_r1 = SDL_CONTROLLER_BUTTON_RIGHTSHOULDER;
+	g_controller_mapping.gc_r2 = SDL_CONTROLLER_AXIS_TRIGGERRIGHT | CONTROLLER_MAP_FLAG_AXIS;
+	g_controller_mapping.gc_r3 = SDL_CONTROLLER_BUTTON_RIGHTSTICK;
+
+	g_controller_mapping.gc_dpad_up = SDL_CONTROLLER_BUTTON_DPAD_UP;
+	g_controller_mapping.gc_dpad_down = SDL_CONTROLLER_BUTTON_DPAD_DOWN;
+	g_controller_mapping.gc_dpad_left = SDL_CONTROLLER_BUTTON_DPAD_LEFT;
+	g_controller_mapping.gc_dpad_right = SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
+
+	g_controller_mapping.gc_select = SDL_CONTROLLER_BUTTON_BACK;
+	g_controller_mapping.gc_start = SDL_CONTROLLER_BUTTON_START;
+
+	g_controller_mapping.gc_axis_left_x = SDL_CONTROLLER_AXIS_LEFTX | CONTROLLER_MAP_FLAG_AXIS;
+	g_controller_mapping.gc_axis_left_y = SDL_CONTROLLER_AXIS_LEFTY | CONTROLLER_MAP_FLAG_AXIS;
+	g_controller_mapping.gc_axis_right_x = SDL_CONTROLLER_AXIS_RIGHTX | CONTROLLER_MAP_FLAG_AXIS;
+	g_controller_mapping.gc_axis_right_y = SDL_CONTROLLER_AXIS_RIGHTY | CONTROLLER_MAP_FLAG_AXIS;
+}
+
+#ifdef __GNUC__
+#define _stricmp(s1, s2) strcasecmp(s1, s2)
+#endif
+
+// Keyboard mapping lookup
+int PsyX_LookupKeyboardMapping(const char* str, int default_value)
+{
+	const char* scancodeName;
+	int i;
+
+	if (str)
+	{
+		if (!_stricmp("NONE", str))
+			return SDL_SCANCODE_UNKNOWN;
+
+		for (i = 0; i < SDL_NUM_SCANCODES; i++)
+		{
+			scancodeName = SDL_GetScancodeName((SDL_Scancode)i);
+
+			if (strlen(scancodeName) && !_stricmp(scancodeName, str))
+			{
+				return i;
+			}
+		}
+	}
+
+	return default_value;
+}
+
+// Game controller mapping lookup
+// Available controller binds(refer to SDL2 game controller)
+//
+// Axes:
+//	leftx lefty
+//	rightx righty
+//	lefttrigger righttrigger
+//
+// NOTE: adding `-` before axis names makes it inverse, so `-leftx` inverse left stick X axis
+//
+// Buttons:
+// 	a, b, x, y
+// 	back guide start
+// 	leftstick rightstick
+// 	leftshoulder rightshoulder
+// 	dpup dpdown dpleft dpright
+
+int PsyX_LookupGameControllerMapping(const char* str, int default_value)
+{
+	const char* axisStr;
+	const char* buttonOrAxisName;
+	int i, axisFlags;
+
+	if (str)
+	{
+		axisFlags = CONTROLLER_MAP_FLAG_AXIS;
+		axisStr = str;
+
+		if (*axisStr == '-')
+		{
+			axisFlags |= CONTROLLER_MAP_FLAG_INVERSE;
+			axisStr++;
+		}
+
+		if (!_stricmp("NONE", str))
+			return SDL_CONTROLLER_BUTTON_INVALID;
+
+		// check buttons
+		for (i = 0; i < SDL_CONTROLLER_BUTTON_MAX; i++)
+		{
+			buttonOrAxisName = SDL_GameControllerGetStringForButton((SDL_GameControllerButton)i);
+
+			if (strlen(buttonOrAxisName) && !_stricmp(buttonOrAxisName, str))
+			{
+				return i;
+			}
+		}
+
+		// Check axes
+		for (i = 0; i < SDL_CONTROLLER_AXIS_MAX; i++)
+		{
+			buttonOrAxisName = SDL_GameControllerGetStringForAxis((SDL_GameControllerAxis)i);
+
+			if (strlen(buttonOrAxisName) && !_stricmp(buttonOrAxisName, axisStr))
+			{
+				return i | axisFlags;
+			}
+		}
+	}
+
+	return default_value;
 }
 
 extern int GR_InitialisePSX();
@@ -166,46 +286,262 @@ void PsyX_GetWindowName(char* buffer)
 #endif
 }
 
+FILE* g_logStream = NULL;
+
+// intialise logging
+void PsyX_Log_Initialise()
+{
+	char appLogFilename[128];
+	sprintf(appLogFilename, "%s.log", g_appNameStr);
+
+	g_logStream = fopen(appLogFilename, "wb");
+
+	if (!g_logStream)
+		eprinterr("Error - cannot create log file '%s'\n", appLogFilename);
+}
+
+void PsyX_Log_Finalise()
+{
+	PsyX_Log_Warning("---- LOG CLOSED ----\n");
+
+	if (g_logStream)
+		fclose(g_logStream);
+
+	g_logStream = NULL;
+}
+
+void PsyX_Log_Flush()
+{
+	if (g_logStream)
+		fflush(g_logStream);
+}
+
+// spew types
+typedef enum
+{
+	SPEW_NORM,
+	SPEW_INFO,
+	SPEW_WARNING,
+	SPEW_ERROR,
+	SPEW_SUCCESS,
+}SpewType_t;
+
+#ifdef _WIN32
+static unsigned short g_InitialColor = 0xFFFF;
+static unsigned short g_LastColor = 0xFFFF;
+static unsigned short g_BadColor = 0xFFFF;
+static WORD g_BackgroundFlags = 0xFFFF;
+CRITICAL_SECTION g_SpewCS;
+bool g_bSpewCSInitted = false;
+
+static void Spew_GetInitialColors()
+{
+	// Get the old background attributes.
+	CONSOLE_SCREEN_BUFFER_INFO oldInfo;
+	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &oldInfo);
+	g_InitialColor = g_LastColor = oldInfo.wAttributes & (FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY);
+	g_BackgroundFlags = oldInfo.wAttributes & (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE | BACKGROUND_INTENSITY);
+
+	g_BadColor = 0;
+	if (g_BackgroundFlags & BACKGROUND_RED)
+		g_BadColor |= FOREGROUND_RED;
+	if (g_BackgroundFlags & BACKGROUND_GREEN)
+		g_BadColor |= FOREGROUND_GREEN;
+	if (g_BackgroundFlags & BACKGROUND_BLUE)
+		g_BadColor |= FOREGROUND_BLUE;
+	if (g_BackgroundFlags & BACKGROUND_INTENSITY)
+		g_BadColor |= FOREGROUND_INTENSITY;
+}
+
+static WORD Spew_SetConsoleTextColor(int red, int green, int blue, int intensity)
+{
+	WORD ret = g_LastColor;
+
+	g_LastColor = 0;
+	if (red)	g_LastColor |= FOREGROUND_RED;
+	if (green) g_LastColor |= FOREGROUND_GREEN;
+	if (blue)  g_LastColor |= FOREGROUND_BLUE;
+	if (intensity) g_LastColor |= FOREGROUND_INTENSITY;
+
+	// Just use the initial color if there's a match...
+	if (g_LastColor == g_BadColor)
+		g_LastColor = g_InitialColor;
+
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), g_LastColor | g_BackgroundFlags);
+	return ret;
+}
+
+static void Spew_RestoreConsoleTextColor(WORD color)
+{
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color | g_BackgroundFlags);
+	g_LastColor = color;
+}
+
+void Spew_ConDebugSpew(SpewType_t type, char* text)
+{
+	// Hopefully two threads won't call this simultaneously right at the start!
+	if (!g_bSpewCSInitted)
+	{
+		Spew_GetInitialColors();
+		InitializeCriticalSection(&g_SpewCS);
+		g_bSpewCSInitted = true;
+	}
+
+	WORD old;
+	EnterCriticalSection(&g_SpewCS);
+	{
+		if (type == SPEW_NORM)
+		{
+			old = Spew_SetConsoleTextColor(1, 1, 1, 0);
+		}
+		else if (type == SPEW_WARNING)
+		{
+			old = Spew_SetConsoleTextColor(1, 1, 0, 1);
+		}
+		else if (type == SPEW_SUCCESS)
+		{
+			old = Spew_SetConsoleTextColor(0, 1, 0, 1);
+		}
+		else if (type == SPEW_ERROR)
+		{
+			old = Spew_SetConsoleTextColor(1, 0, 0, 1);
+		}
+		else if (type == SPEW_INFO)
+		{
+			old = Spew_SetConsoleTextColor(0, 1, 1, 1);
+		}
+		else
+		{
+			old = Spew_SetConsoleTextColor(1, 1, 1, 1);
+		}
+
+		OutputDebugStringA(text);
+		printf("%s", text);
+
+		Spew_RestoreConsoleTextColor(old);
+	}
+	LeaveCriticalSection(&g_SpewCS);
+}
+#endif
+
+void PrintMessageToOutput(SpewType_t spewtype, char const* pMsgFormat, va_list args)
+{
+	static char pTempBuffer[4096];
+	int len = 0;
+	vsprintf(&pTempBuffer[len], pMsgFormat, args);
+
+#ifdef WIN32
+	Spew_ConDebugSpew(spewtype, pTempBuffer);
+#else
+	printf(pTempBuffer);
+#endif
+
+	if(g_logStream)
+		fprintf(g_logStream, pTempBuffer);
+}
+
+void PsyX_Log(const char* fmt, ...)
+{
+	va_list		argptr;
+
+	va_start(argptr, fmt);
+	PrintMessageToOutput(SPEW_NORM, fmt, argptr);
+	va_end(argptr);
+}
+
+void PsyX_Log_Info(const char* fmt, ...)
+{
+	va_list		argptr;
+
+	va_start(argptr, fmt);
+	PrintMessageToOutput(SPEW_INFO, fmt, argptr);
+	va_end(argptr);
+}
+
+void PsyX_Log_Warning(const char* fmt, ...)
+{
+	va_list		argptr;
+
+	va_start(argptr, fmt);
+	PrintMessageToOutput(SPEW_WARNING, fmt, argptr);
+	va_end(argptr);
+}
+
+void PsyX_Log_Error(const char* fmt, ...)
+{
+	va_list		argptr;
+
+	va_start(argptr, fmt);
+	PrintMessageToOutput(SPEW_ERROR, fmt, argptr);
+	va_end(argptr);
+}
+
+void PsyX_Log_Success(const char* fmt, ...)
+{
+	va_list		argptr;
+
+	va_start(argptr, fmt);
+	PrintMessageToOutput(SPEW_SUCCESS, fmt, argptr);
+	va_end(argptr);
+}
+
+
 void PsyX_Initialise(char* appName, int width, int height, int fullscreen)
 {
-	char windowNameStr[512];
+	char windowNameStr[128];
 
 	g_appNameStr = appName;
 
+	PsyX_Log_Initialise();
 	PsyX_GetWindowName(windowNameStr);
 
-	eprintf("Initialising Psy-X %d.%d\n", PSYX_MAJOR_VERSION, PSYX_MINOR_VERSION);
-	eprintf("Build date: %s:%s\n", PSYX_COMPILE_DATE, PSYX_COMPILE_TIME);
+#if defined(_WIN32) && defined(_DEBUG)
+	if (AllocConsole())
+	{
+		freopen("CONOUT$", "w", stdout);
+		SetConsoleTitleA(windowNameStr);
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_RED);
+	}
+#endif
+
+	eprintinfo("Initialising Psy-X %d.%d\n", PSYX_MAJOR_VERSION, PSYX_MINOR_VERSION);
+	eprintinfo("Build date: %s:%s\n", PSYX_COMPILE_DATE, PSYX_COMPILE_TIME);
 
 	if (SDL_Init(SDL_INIT_VIDEO) != 0)
 	{
 		eprinterr("Failed to initialise SDL\n");
-		PsyX_ShutDown();
+		PsyX_Shutdown();
 		return;
 	}
 	
 	if (!GR_InitialiseRender(windowNameStr, width, height, fullscreen))
 	{
 		eprinterr("Failed to Intialise Window\n");
-		PsyX_ShutDown();
+		PsyX_Shutdown();
 		return;
 	}
 
 	if (!PsyX_Sys_InitialiseCore())
 	{
 		eprinterr("Failed to Intialise Psy-X Core.\n");
-		PsyX_ShutDown();
+		PsyX_Shutdown();
 		return;
 	}
 
 	if (!GR_InitialisePSX())
 	{
 		eprinterr("Failed to Intialise PSX.\n");
-		PsyX_ShutDown();
+		PsyX_Shutdown();
 		return;
 	}
 
 	PsyX_Sys_InitialiseInput();
+
+	// set shutdown function (PSX apps usualy don't exit)
+	atexit(PsyX_Shutdown);
+
+	// disable cursor visibility
+	SDL_ShowCursor(0);
 }
 
 void PsyX_GetScreenSize(int& screenWidth, int& screenHeight)
@@ -222,6 +558,13 @@ void PsyX_Sys_DoDebugKeys(int nKey, bool down); // forward decl
 void PsyX_Sys_DoDebugMouseMotion(int x, int y);
 void GR_ResetDevice();
 
+void PsyX_Exit();
+
+GameDebugKeysHandlerFunc gameDebugKeys = NULL;
+GameDebugMouseHandlerFunc gameDebugMouse = NULL;
+GameOnTextInputHandler gameOnTextInput = NULL;
+int activeControllers = 0x1;
+
 void PsyX_Sys_DoPollEvent()
 {
 	SDL_Event event;
@@ -229,48 +572,59 @@ void PsyX_Sys_DoPollEvent()
 	{
 		switch (event.type)
 		{
-		case SDL_CONTROLLERDEVICEADDED:
-			padHandle[event.jbutton.which] = SDL_GameControllerOpen(event.cdevice.which);
-			break;
-		case SDL_CONTROLLERDEVICEREMOVED:
-			SDL_GameControllerClose(padHandle[event.cdevice.which]);
-			break;
-		case SDL_QUIT:
-			PsyX_ShutDown();
-			break;
-		case SDL_WINDOWEVENT:
-			switch (event.window.event)
-			{
-			case SDL_WINDOWEVENT_RESIZED:
-				g_windowWidth = event.window.data1;
-				g_windowHeight = event.window.data2;
-				GR_ResetDevice();
+			case SDL_CONTROLLERDEVICEADDED:
+				padHandle[event.jbutton.which] = SDL_GameControllerOpen(event.cdevice.which);
 				break;
-			case SDL_WINDOWEVENT_CLOSE:
-				PsyX_ShutDown();
+			case SDL_CONTROLLERDEVICEREMOVED:
+				SDL_GameControllerClose(padHandle[event.cdevice.which]);
+				break;
+			case SDL_QUIT:
+				PsyX_Exit();
+				break;
+			case SDL_WINDOWEVENT:
+				switch (event.window.event)
+				{
+				case SDL_WINDOWEVENT_RESIZED:
+					g_windowWidth = event.window.data1;
+					g_windowHeight = event.window.data2;
+					GR_ResetDevice();
+					break;
+				case SDL_WINDOWEVENT_CLOSE:
+					PsyX_Exit();
+					break;
+				}
+				break;
+			case SDL_MOUSEMOTION:
+
+				PsyX_Sys_DoDebugMouseMotion(event.motion.x, event.motion.y);
+				break;
+			case SDL_KEYDOWN:
+			case SDL_KEYUP:
+			{
+				int nKey = event.key.keysym.scancode;
+
+				// lshift/right shift
+				if (nKey == SDL_SCANCODE_RSHIFT)
+					nKey = SDL_SCANCODE_LSHIFT;
+				else if (nKey == SDL_SCANCODE_RCTRL)
+					nKey = SDL_SCANCODE_LCTRL;
+				else if (nKey == SDL_SCANCODE_RALT)
+					nKey = SDL_SCANCODE_LALT;
+
+				if (gameOnTextInput && nKey == SDL_SCANCODE_BACKSPACE && event.type == SDL_KEYDOWN)
+				{
+					(gameOnTextInput)(NULL);
+				}
+
+				PsyX_Sys_DoDebugKeys(nKey, (event.type == SDL_KEYUP) ? false : true);
 				break;
 			}
-			break;
-		case SDL_MOUSEMOTION:
-
-			PsyX_Sys_DoDebugMouseMotion(event.motion.x, event.motion.y);
-			break;
-		case SDL_KEYDOWN:
-		case SDL_KEYUP:
-		{
-			int nKey = event.key.keysym.scancode;
-
-			// lshift/right shift
-			if (nKey == SDL_SCANCODE_RSHIFT)
-				nKey = SDL_SCANCODE_LSHIFT;
-			else if (nKey == SDL_SCANCODE_RCTRL)
-				nKey = SDL_SCANCODE_LCTRL;
-			else if (nKey == SDL_SCANCODE_RALT)
-				nKey = SDL_SCANCODE_LALT;
-
-			PsyX_Sys_DoDebugKeys(nKey, (event.type == SDL_KEYUP) ? false : true);
-			break;
-		}
+			case SDL_TEXTINPUT:
+			{
+				if(gameOnTextInput)
+					(gameOnTextInput)(event.text.text);
+				break;
+			}
 		}
 	}
 }
@@ -289,6 +643,8 @@ bool PsyX_BeginScene()
 	GR_BeginScene();
 
 	begin_scene_flag = true;
+
+	PsyX_Log_Flush();
 
 	return true;
 }
@@ -328,10 +684,6 @@ void PsyX_TakeScreenshot()
 }
 #endif
 
-GameDebugKeysHandlerFunc gameDebugKeys = NULL;
-GameDebugMouseHandlerFunc gameDebugMouse = NULL;
-int activeControllers = 0x1;
-
 void PsyX_Sys_DoDebugMouseMotion(int x, int y)
 {
 	if (gameDebugMouse)
@@ -370,18 +722,13 @@ void PsyX_Sys_DoDebugKeys(int nKey, bool down)
 #ifdef _DEBUG
 		case SDL_SCANCODE_F1:
 			g_wireframeMode ^= 1;
-			eprintf("wireframe mode: %d\n", g_wireframeMode);
+			eprintwarn("wireframe mode: %d\n", g_wireframeMode);
 			break;
 
 		case SDL_SCANCODE_F2:
 			g_texturelessMode ^= 1;
-			eprintf("textureless mode: %d\n", g_texturelessMode);
+			eprintwarn("textureless mode: %d\n", g_texturelessMode);
 			break;
-
-		case SDL_SCANCODE_F3:
-			g_emulatorPaused ^= 1;
-			break;
-
 		case SDL_SCANCODE_UP:
 		case SDL_SCANCODE_DOWN:
 			if (g_emulatorPaused)
@@ -390,16 +737,20 @@ void PsyX_Sys_DoDebugKeys(int nKey, bool down)
 			}
 			break;
 		case SDL_SCANCODE_F10:
-			eprintf("saving VRAM.TGA\n");
+			eprintwarn("saving VRAM.TGA\n");
 			GR_SaveVRAM("VRAM.TGA", 0, 0, VRAM_WIDTH, VRAM_HEIGHT, 1);
 			break;
 #endif
 #if !defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
 		case SDL_SCANCODE_F12:
-			eprintf("Saving screenshot\n");
+			eprintwarn("Saving screenshot...\n");
 			PsyX_TakeScreenshot();
 			break;
 #endif
+		case SDL_SCANCODE_F3:
+			g_bilinearFiltering ^= 1;
+			eprintwarn("filtering mode: %d\n", g_bilinearFiltering);
+			break;
 		case SDL_SCANCODE_F4:
 
 			activeControllers++;
@@ -408,7 +759,7 @@ void PsyX_Sys_DoDebugKeys(int nKey, bool down)
 			if (activeControllers == 0)
 				activeControllers++;
 
-			eprintf("Active keyboard controller: %d\n", activeControllers);
+			eprintwarn("Active keyboard controller: %d\n", activeControllers);
 			break;
 		case SDL_SCANCODE_F5:
 			g_pgxpTextureCorrection ^= 1;
@@ -426,7 +777,7 @@ void PsyX_UpdateInput()
 	// also poll events here
 	PsyX_Sys_DoPollEvent();
 
-	InternalPadUpdates();
+	PsyX_InternalPadUpdates();
 }
 
 uint PsyX_CalcFPS()
@@ -450,9 +801,6 @@ uint PsyX_CalcFPS()
 
 void PsyX_WaitForTimestep(int count)
 {
-	SDL_LockMutex(g_intrMutex);
-	SDL_UnlockMutex(g_intrMutex);
-	
 #if 0 // defined(RENDERER_OGL) || defined(OGLES)
 	glFinish(); // best time to complete GPU drawing
 #endif
@@ -472,8 +820,18 @@ void PsyX_WaitForTimestep(int count)
 	}
 }
 
-void PsyX_ShutDown()
+void PsyX_ShutdownSound();
+
+void PsyX_Exit()
 {
+	exit(0);
+}
+
+void PsyX_Shutdown()
+{
+	if (!g_window)
+		return;
+
 	// quit vblank thread
 	if (g_intrThread)
 	{
@@ -487,11 +845,14 @@ void PsyX_ShutDown()
 		SDL_DestroyMutex(g_intrMutex);
 
 	GR_Shutdown();
+	PsyX_ShutdownSound();
 
 	SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER);
 
 	SDL_DestroyWindow(g_window);
+	g_window = NULL;
+
 	SDL_Quit();
 
-	exit(0);
+	PsyX_Log_Finalise();
 }

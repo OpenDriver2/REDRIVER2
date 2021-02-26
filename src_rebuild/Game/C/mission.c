@@ -25,6 +25,8 @@
 #include "overmap.h"
 #include "denting.h"
 #include "loadsave.h"
+#include "shadow.h"
+#include "handling.h"
 
 #include "STRINGS.H"
 
@@ -177,7 +179,7 @@ extern LEAD_PARAMETERS LeadValues;
 
 static char NewLeadDelay = 0;
 
-#define MISSION_IDENT (('D' << 24) | ('2' << 16) | ('M' << 8) | 'S' )
+#define MISSION_IDENT		(('D' << 24) | ('2' << 16) | ('M' << 8) | 'S' )
 
 MR_MISSION Mission;
 u_int MissionStack[16][16];
@@ -1376,6 +1378,8 @@ int Swap2Cars(int curslot, int newslot)
 	CreateDentableCar(cp);
 	DentCar(cp);
 
+	ResetTyreTracks(cp, GetPlayerId(cp));
+
 	// setup new slot nodes and reinit car
 	cp = &car_data[newslot];
 
@@ -1391,6 +1395,8 @@ int Swap2Cars(int curslot, int newslot)
 
 	CreateDentableCar(cp);
 	DentCar(cp);
+
+	ResetTyreTracks(cp, GetPlayerId(cp));
 
 	gDontResetCarDamage = 0;
 
@@ -2459,7 +2465,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						// Find the Clue and Steal the keys
 						int failIfDamaged;
 
-						failIfDamaged = (gCurrentMissionNumber != 14 && gCurrentMissionNumber != 28);
+						failIfDamaged = (gCurrentMissionNumber != 14 && gCurrentMissionNumber != 19 && gCurrentMissionNumber != 28);
 
 						// check if player entered the car
 						if (player[0].playerCarId == slot)
@@ -2469,8 +2475,8 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 							// signal to mission about stolen car so Find the Clue/Steal the keys can progress
 							if (!failIfDamaged)
 							{
-								cp->totalDamage = MaxPlayerDamage[0];
 								gGotInStolenCar = 1;
+								cp->totalDamage = MaxPlayerDamage[0];
 							}
 
 							ret = 1;
@@ -2497,7 +2503,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 					}
 					case 64:
 					{
-						if (copsAreInPursuit != 0)
+						if (copsAreInPursuit)
 							ret = 1;
 
 						break;
@@ -2580,7 +2586,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 	if (ret)
 	{
 		// keep only those flags
-		target->target_flags &= TARGET_FLAG_COMPLETED_ALLP;
+		target->target_flags &= ~TARGET_FLAG_COMPLETED_ALLP;
 		
 		if (thread->player == 0)
 			target->target_flags |= TARGET_FLAG_COMPLETED_P1;

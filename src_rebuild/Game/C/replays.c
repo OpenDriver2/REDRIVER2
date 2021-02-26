@@ -118,7 +118,7 @@ int SaveReplayToBuffer(char *buffer)
 	header = (REPLAY_SAVE_HEADER*)pt;
 	pt += sizeof(REPLAY_SAVE_HEADER);
 
-	header->magic = 0x14793209;			// TODO: custom
+	header->magic = DRIVER2_REPLAY_MAGIC;
 	header->GameLevel = GameLevel;
 	header->GameType = GameType;
 	header->MissionNumber = gCurrentMissionNumber;
@@ -381,7 +381,7 @@ int LoadReplayFromBuffer(char *buffer)
 
 	header = (REPLAY_SAVE_HEADER*)pt;
 
-	if (header->magic != 0x14793209)
+	if (header->magic != DRIVER2_REPLAY_MAGIC)
 		return 0;
 
 	ReplayStart = replayptr = _replay_buffer;

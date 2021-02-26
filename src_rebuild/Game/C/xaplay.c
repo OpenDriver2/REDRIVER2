@@ -79,14 +79,14 @@ void StoreXASubtitles()
 		for (j = 0; j < 8; j++)
 		{
 			sprintf(fileName, XANameFormat, gDataFolder, i+1, j);
-			FixPathSlashes(fileName);
+			FS_FixPathSlashes(fileName);
 
 			CSoundSource_WaveCache tmpWav;
 			if (tmpWav.Load(fileName))
 			{
 				// Save subtitles file
 				sprintf(fileName, "%sXA\\XABNK0%d.XA[%d].SBN", gDataFolder, i+1, j);
-				FixPathSlashes(fileName);
+				FS_FixPathSlashes(fileName);
 
 				FILE* fp = fopen(fileName, "wb");
 
@@ -283,7 +283,7 @@ void PlayXA(int num, int index)
 	{
 		char fileName[250];
 		sprintf(fileName, XANameFormat, gDataFolder, num+1, index);
-		FixPathSlashes(fileName);
+		FS_FixPathSlashes(fileName);
 
 		g_wavData = new CSoundSource_WaveCache();
 
@@ -291,7 +291,7 @@ void PlayXA(int num, int index)
 		{
 			// Load subtitles for XA
 			sprintf(fileName, "%sXA\\XABNK0%d.XA[%d].SBN", gDataFolder, num + 1, index);
-			FixPathSlashes(fileName);
+			FS_FixPathSlashes(fileName);
 
 			FILE* fp = fopen(fileName, "rb");
 

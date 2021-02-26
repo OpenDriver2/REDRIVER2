@@ -24,11 +24,10 @@
 
 #else
 
-// from redriver2_psxpc
-void printMsg(char *fmt, ...);
-void printInfo(char *fmt, ...);
-void printWarning(char *fmt, ...);
-void printError(char *fmt, ...);
+#define printMsg				PsyX_Log
+#define printInfo				PsyX_Log_Info
+#define printWarning			PsyX_Log_Warning
+#define printError				PsyX_Log_Error
 
 #if _MSC_VER >= 1400
 #define trap(ode) {printError("EXCEPTION code: %x\n", ode); __debugbreak();}

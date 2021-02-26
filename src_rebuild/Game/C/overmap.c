@@ -1360,8 +1360,16 @@ void DrawOverheadMap(void)
 		{
 			int tile;
 			tile = maptile[j][i];
-			width = MapTex[j].w;
-			height = MapTex[i].h;
+			width = MapTex[j].w - 1;
+			height = MapTex[i].h - 1;
+#ifndef PSX
+			// make map fully detailed when filtering is not available
+			if (!g_bilinearFiltering)
+			{
+				width += 1;
+				height += 1;
+			}
+#endif
 
 			spt = (POLY_FT4*)current->primptr;
 
@@ -1710,14 +1718,25 @@ void DrawFullscreenMap(void)
 			back->u0 = px;
 			back->v0 = py;
 			
-			back->u1 = px + 32;
+			back->u1 = px + 31;
 			back->v1 = py;
 			
 			back->u2 = px;
-			back->v2 = py + 32;
+			back->v2 = py + 31;
 			
-			back->u3 = px + 32;
-			back->v3 = py + 32;
+			back->u3 = px + 31;
+			back->v3 = py + 31;
+
+#ifndef PSX
+			// make map fully detailed when filtering is not available
+			if (!g_bilinearFiltering)
+			{
+				back->u1 += 1;
+				back->v2 += 1;
+				back->u3 += 1;
+				back->v3 += 1;
+			}
+#endif
 			
 			back->clut = MapClut;
 			back->tpage = MapTPage;

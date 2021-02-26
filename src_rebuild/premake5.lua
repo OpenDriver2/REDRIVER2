@@ -74,7 +74,8 @@ workspace "REDRIVER2"
 
 -- game iteslf
 project "REDRIVER2"
-    kind "ConsoleApp"
+    kind "WindowedApp"
+
     language "c++"
     targetdir "bin/%{cfg.buildcfg}"
 
@@ -119,12 +120,14 @@ project "REDRIVER2"
 		}
 
     filter "system:Windows"
+		entrypoint "mainCRTStartup"
+		
         files { 
             "Windows/resource.h", 
             "Windows/Resource.rc", 
             "Windows/main.ico" 
         }
-    
+
         includedirs { 
             SDL2_DIR.."/include",
             OPENAL_DIR.."/include",

@@ -1223,6 +1223,14 @@ void DrawCarObject(CAR_MODEL* car, MATRIX* matrix, VECTOR* pos, int palette, CAR
 
 	cog = cp->ap.carCos->cog;
 
+	// [A] mini cars correct position
+	if (ActiveCheats.cheat13 != 0)
+	{
+		cog.vx <<= 1;
+		cog.vy <<= 1;
+		cog.vz <<= 1;
+	}
+
 	gte_SetRotMatrix(matrix);
 	gte_SetTransVector(pos);
 

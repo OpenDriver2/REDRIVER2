@@ -46,6 +46,8 @@ struct GrVertex
 
 	u_char		u, v, bright, dither;
 	u_char		r, g, b, a;
+
+	char		tcx, tcy, _p0, _p1;
 };
 #pragma pack(pop)
 
@@ -55,6 +57,7 @@ enum ShaderAttrib
 	a_zw,
 	a_texcoord,
 	a_color,
+	a_extra,
 };
 
 enum BlendMode

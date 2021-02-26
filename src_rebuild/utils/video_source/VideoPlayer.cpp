@@ -494,7 +494,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 
 	char filename[250];
 	sprintf(filename, "%sFMV\\%d\\RENDER%d.STR[0].avi", gDataFolder, fd, arg->render);
-	FixPathSlashes(filename);
+	FS_FixPathSlashes(filename);
 
 	ReadAVI readAVI(filename);
 	
@@ -502,7 +502,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	if (subtitles)
 	{
 		sprintf(filename, "%sFMV\\%d\\RENDER%d.SBN", gDataFolder, fd, arg->render);
-		FixPathSlashes(filename);
+		FS_FixPathSlashes(filename);
 	
 		InitSubtitles(filename);
 	}
@@ -514,7 +514,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	if(arg->credits)
 	{
 		sprintf(filename, "%sDATA\\CREDITS.ENG", gDataFolder);
-		FixPathSlashes(filename);
+		FS_FixPathSlashes(filename);
 	
 		InitCredits(filename);
 	}
@@ -665,7 +665,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	}
 
 	alDeleteSources(1, &audioStreamSource);
-	alDeleteBuffers(2, audioStreamBuffers);
+	alDeleteBuffers(4, audioStreamBuffers);
 }
 
 // FMV main function

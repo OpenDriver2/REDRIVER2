@@ -8,6 +8,8 @@ extern UV shadowuv;
 extern void InitTyreTracks(); // 0x00077524
 extern void InitShadow(); // 0x00075F34
 
+extern void ResetTyreTracks(CAR_DATA* cp, int player_id);
+
 extern void GetTyreTrackPositions(CAR_DATA *cp, int player_id); // 0x00075408
 extern void SetTyreTrackOldPositions(int player_id); // 0x00077558
 extern void AddTyreTrack(int wheel, int tracksAndSmoke, int padid); // 0x00075540

@@ -162,63 +162,80 @@ void PadSetAct(int unk00, unsigned char* unk01, int unk02)
 	PSYX_UNIMPLEMENTED();
 }
 
+int GetControllerButtonState(SDL_GameController* cont, int buttonOrAxis)
+{
+	if(buttonOrAxis & CONTROLLER_MAP_FLAG_AXIS)
+	{
+		int value = SDL_GameControllerGetAxis(cont, (SDL_GameControllerAxis)(buttonOrAxis & ~(CONTROLLER_MAP_FLAG_AXIS | CONTROLLER_MAP_FLAG_INVERSE)));
+		
+		if (abs(value) > 500 && (buttonOrAxis & CONTROLLER_MAP_FLAG_INVERSE))
+			value *= -1;
+
+		return value;
+	}
+
+	return SDL_GameControllerGetButton(cont, (SDL_GameControllerButton)buttonOrAxis) * 32767;
+}
+
 void UpdateGameControllerInput(SDL_GameController* cont, PADRAW* pad)
 {
 	unsigned short ret = 0xFFFF;
 
-	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_X))//Square
+	extern PsyXControllerMapping g_controller_mapping;
+
+	if (GetControllerButtonState(cont, g_controller_mapping.gc_square) > 16384)//Square
 		ret &= ~0x8000;
 
-	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_B))//Circle
+	if (GetControllerButtonState(cont, g_controller_mapping.gc_circle) > 16384)//Circle
 		ret &= ~0x2000;
 
-	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_Y))//Triangle
+	if (GetControllerButtonState(cont, g_controller_mapping.gc_triangle) > 16384)//Triangle
 		ret &= ~0x1000;
 
-	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_A))//Cross
+	if (GetControllerButtonState(cont, g_controller_mapping.gc_cross) > 16384)//Cross
 		ret &= ~0x4000;
 
-	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_LEFTSHOULDER))//L1
+	if (GetControllerButtonState(cont, g_controller_mapping.gc_l1) > 16384)//L1
 		ret &= ~0x400;
 
-	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER))//R1
+	if (GetControllerButtonState(cont, g_controller_mapping.gc_r1) > 16384)//R1
 		ret &= ~0x800;
 
-	if (SDL_GameControllerGetAxis(cont, SDL_CONTROLLER_AXIS_TRIGGERLEFT))//L2
+	if (GetControllerButtonState(cont, g_controller_mapping.gc_l2) > 16384)//L2
 		ret &= ~0x100;
 
-	if (SDL_GameControllerGetAxis(cont, SDL_CONTROLLER_AXIS_TRIGGERRIGHT))//R2
+	if (GetControllerButtonState(cont, g_controller_mapping.gc_r2) > 16384)//R2
 		ret &= ~0x200;
 
-	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_DPAD_UP))//UP
+	if (GetControllerButtonState(cont, g_controller_mapping.gc_dpad_up) > 16384)//UP
 		ret &= ~0x10;
 
-	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_DPAD_DOWN))//DOWN
+	if (GetControllerButtonState(cont, g_controller_mapping.gc_dpad_down) > 16384)//DOWN
 		ret &= ~0x40;
 
-	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_DPAD_LEFT))//LEFT
+	if (GetControllerButtonState(cont, g_controller_mapping.gc_dpad_left) > 16384)//LEFT
 		ret &= ~0x80;
 
-	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_DPAD_RIGHT))//RIGHT
+	if (GetControllerButtonState(cont, g_controller_mapping.gc_dpad_right) > 16384)//RIGHT
 		ret &= ~0x20;
 
-	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_LEFTSTICK))//L3
+	if (GetControllerButtonState(cont, g_controller_mapping.gc_l3) > 16384)//L3
 		ret &= ~0x2;
 
-	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_RIGHTSTICK))//R3
+	if (GetControllerButtonState(cont, g_controller_mapping.gc_r3) > 16384)//R3
 		ret &= ~0x4;
 	
-	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_BACK))//SELECT
+	if (GetControllerButtonState(cont, g_controller_mapping.gc_select) > 16384)//SELECT
 		ret &= ~0x1;
 
-	if (SDL_GameControllerGetButton(cont, SDL_CONTROLLER_BUTTON_START))//START
+	if (GetControllerButtonState(cont, g_controller_mapping.gc_start) > 16384)//START
 		ret &= ~0x8;
 
-	short leftX = SDL_GameControllerGetAxis(cont, SDL_CONTROLLER_AXIS_LEFTX);
-	short leftY = SDL_GameControllerGetAxis(cont, SDL_CONTROLLER_AXIS_LEFTY);
+	short leftX = GetControllerButtonState(cont, g_controller_mapping.gc_axis_left_x);
+	short leftY = GetControllerButtonState(cont, g_controller_mapping.gc_axis_left_y);
 
-	short rightX = SDL_GameControllerGetAxis(cont, SDL_CONTROLLER_AXIS_RIGHTX);
-	short rightY = SDL_GameControllerGetAxis(cont, SDL_CONTROLLER_AXIS_RIGHTY);
+	short rightX = GetControllerButtonState(cont, g_controller_mapping.gc_axis_right_x);
+	short rightY = GetControllerButtonState(cont, g_controller_mapping.gc_axis_right_y);
 	
 	*(unsigned short*)pad->buttons = ret;
 
@@ -293,7 +310,7 @@ unsigned short UpdateKeyboardInput()
 
 extern int activeControllers;
 
-void InternalPadUpdates()
+void PsyX_InternalPadUpdates()
 {
 	if (g_padCommStarted == 0)
 		return;

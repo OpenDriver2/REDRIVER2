@@ -1,6 +1,9 @@
 #ifndef EMULATOR_PUBLIC_H
 #define EMULATOR_PUBLIC_H
 
+#define CONTROLLER_MAP_FLAG_AXIS		0x4000
+#define CONTROLLER_MAP_FLAG_INVERSE		0x8000
+
 struct PsyXKeyboardMapping
 {
 	int id;
@@ -27,11 +30,47 @@ struct PsyXKeyboardMapping
 	int kc_dpad_down;
 };
 
+struct PsyXControllerMapping
+{
+	int id;
+
+	// you can bind axis by adding CONTROLLER_MAP_AXIS_FLAG
+	int gc_square;
+	int gc_circle;
+	int gc_triangle;
+	int gc_cross;
+
+	int gc_l1;
+	int gc_l2;
+	int gc_l3;
+
+	int gc_r1;
+	int gc_r2;
+	int gc_r3;
+
+	int gc_start;
+	int gc_select;
+
+	int gc_dpad_left;
+	int gc_dpad_right;
+	int gc_dpad_up;
+	int gc_dpad_down;
+
+	int gc_axis_left_x;
+	int gc_axis_left_y;
+
+	int gc_axis_right_x;
+	int gc_axis_right_y;
+};
+
 typedef void(*GameDebugKeysHandlerFunc)(int nKey, bool down);
 extern GameDebugKeysHandlerFunc gameDebugKeys;
 
 typedef void(*GameDebugMouseHandlerFunc)(int x, int y);
 extern GameDebugMouseHandlerFunc gameDebugMouse;
+
+typedef void(*GameOnTextInputHandler)(const char* buf);
+extern GameOnTextInputHandler gameOnTextInput;
 
 //------------------------------------------------------------------------
 
@@ -56,8 +95,11 @@ extern void PsyX_EndScene();
 /* Explicitly updates emulator input loop */
 extern void PsyX_UpdateInput();
 
-/* Usually called at the end if main function */
-extern void PsyX_ShutDown();
+/* Returns keyboard mapping index */
+extern int PsyX_LookupKeyboardMapping(const char* str, int default_value);
+
+/* Returns controller mapping index */
+extern int PsyX_LookupGameControllerMapping(const char* str, int default_value);
 
 /* Screen size of emulated PSX viewport with widescreen offsets */
 extern void PsyX_GetPSXWidescreenMappedViewport(struct _RECT16* rect);

@@ -83,7 +83,8 @@ struct SPUVoice
 
 	ALuint alBuffer;
 	ALuint alSource;
-	int sampledirty;
+	ushort sampledirty;
+	ushort reverb;
 };
 
 SPUVoice	g_SpuVoices[SPU_VOICES];
@@ -97,10 +98,13 @@ int			g_enableSPUReverb = 0;
 int			g_ALEffectsSupported = 0;
 
 LPALGENEFFECTS alGenEffects = NULL;
+LPALDELETEEFFECTS alDeleteEffects = NULL;
 LPALEFFECTI alEffecti = NULL;
 LPALEFFECTF alEffectf = NULL;
 LPALGENAUXILIARYEFFECTSLOTS alGenAuxiliaryEffectSlots = NULL;
+LPALDELETEAUXILIARYEFFECTSLOTS alDeleteAuxiliaryEffectSlots = NULL;
 LPALAUXILIARYEFFECTSLOTI alAuxiliaryEffectSloti = NULL;
+
 
 void InitOpenAlEffects()
 {
@@ -113,9 +117,11 @@ void InitOpenAlEffects()
 	}
 
 	alGenEffects = (LPALGENEFFECTS)alGetProcAddress("alGenEffects");
+	alDeleteEffects = (LPALDELETEEFFECTS)alGetProcAddress("alDeleteEffects");
 	alEffecti = (LPALEFFECTI)alGetProcAddress("alEffecti");
 	alEffectf = (LPALEFFECTF)alGetProcAddress("alEffectf");
 	alGenAuxiliaryEffectSlots = (LPALGENAUXILIARYEFFECTSLOTS)alGetProcAddress("alGenAuxiliaryEffectSlots");
+	alDeleteAuxiliaryEffectSlots = (LPALDELETEAUXILIARYEFFECTSLOTS)alGetProcAddress("alDeleteAuxiliaryEffectSlots");
 	alAuxiliaryEffectSloti = (LPALAUXILIARYEFFECTSLOTI)alGetProcAddress("alAuxiliaryEffectSloti");
 
 	int max_sends = 0;
@@ -147,7 +153,7 @@ void InitOpenAlEffects()
 	alAuxiliaryEffectSloti(g_ALEffectSlots[g_currEffectSlotIdx], AL_EFFECTSLOT_EFFECT, g_nAlReverbEffect);
 }
 
-bool Emulator_InitSound()
+bool PsyX_InitSound()
 {
 	if (g_ALCdevice)
 		return true;
@@ -159,7 +165,7 @@ bool Emulator_InitSound()
 	// go through device list (each device terminated with a single NULL, list terminated with double NULL)
 	while ((*devices) != '\0')
 	{
-		printf("found sound device: %s\n", devices);
+		eprintinfo("found sound device: %s\n", devices);
 		devices += strlen(devices) + 1;
 	}
 
@@ -170,7 +176,7 @@ bool Emulator_InitSound()
 	if (!g_ALCdevice)
 	{
 		alErr = alcGetError(nullptr);
-		printf("alcOpenDevice: NULL DEVICE error: %s\n", getALCErrorString(alErr));
+		eprinterr("alcOpenDevice: NULL DEVICE error: %s\n", getALCErrorString(alErr));
 		return false;
 	}
 
@@ -187,7 +193,7 @@ bool Emulator_InitSound()
 	alErr = alcGetError(g_ALCdevice);
 	if (alErr != AL_NO_ERROR)
 	{
-		printf("alcCreateContext error: %s\n", getALCErrorString(alErr));
+		eprinterr("alcCreateContext error: %s\n", getALCErrorString(alErr));
 		return false;
 	}
 
@@ -196,7 +202,7 @@ bool Emulator_InitSound()
 	alErr = alcGetError(g_ALCdevice);
 	if (alErr != AL_NO_ERROR)
 	{
-		printf("alcMakeContextCurrent error: %s\n", getALCErrorString(alErr));
+		eprinterr("alcMakeContextCurrent error: %s\n", getALCErrorString(alErr));
 		return false;
 	}
 
@@ -226,10 +232,34 @@ bool Emulator_InitSound()
 	return true;
 }
 
+void PsyX_ShutdownSound()
+{
+	if (!g_ALCcontext)
+		return;
+
+	for (int i = 0; i < SPU_VOICES; i++)
+	{
+		SPUVoice& voice = g_SpuVoices[i];
+		alDeleteSources(1, &voice.alSource);
+		alDeleteBuffers(1, &voice.alBuffer);
+	}
+
+	if (g_ALEffectsSupported)
+	{
+		alDeleteEffects(1, &g_nAlReverbEffect);
+		g_ALEffectsSupported = AL_NONE;
+	}
+
+	alDeleteAuxiliaryEffectSlots(1, g_ALEffectSlots);
+
+	alcDestroyContext(g_ALCcontext);
+	alcCloseDevice(g_ALCdevice);
+
+	g_ALCcontext = NULL;
+	g_ALCdevice = NULL;
+}
+
 //--------------------------------------------------------------------------------
-
-
-
 
 // PSX ADPCM coefficients
 const float K0[5] = { 0, 0.9375, 1.796875, 1.53125, 1.90625 };
@@ -423,7 +453,7 @@ long SpuIsTransferCompleted(long flag)
 
 void SpuStart()
 {
-	Emulator_InitSound();
+	PsyX_InitSound();
 }
 
 void _SpuInit(int a0)
@@ -791,6 +821,8 @@ unsigned long SpuSetReverbVoice(long on_off, unsigned long voice_bit)
 			if (alSource == AL_NONE)
 				continue;
 
+			voice.reverb = on_off > 0;
+
 			if (on_off)
 			{
 				alSource3i(alSource, AL_AUXILIARY_SEND_FILTER, g_ALEffectSlots[g_currEffectSlotIdx], 0, AL_FILTER_NULL);
@@ -809,8 +841,15 @@ unsigned long SpuSetReverbVoice(long on_off, unsigned long voice_bit)
 
 unsigned long SpuGetReverbVoice(void)
 {
-	PSYX_UNIMPLEMENTED();
-	return 0;
+	unsigned long bits = 0;
+	for (int i = 0; i < SPU_VOICES; i++)
+	{
+		SPUVoice& voice = g_SpuVoices[i];
+		if (voice.reverb)
+			bits |= SPU_KEYCH(i);
+	}
+
+	return bits;
 }
 
 long SpuClearReverbWorkArea(long mode)

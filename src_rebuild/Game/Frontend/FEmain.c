@@ -22,8 +22,6 @@
 #include "C/scores.h"
 #include "C/loadsave.h"
 
-#include "MemCard/main.h"
-
 #include "STRINGS.H"
 
 struct PSXBUTTON
@@ -439,7 +437,7 @@ POLY_FT3 extraDummy;
 int FEPrintStringSized(char* string, int x, int y, int scale, int transparent, int r, int g, int b);
 int FEPrintString(char* string, int x, int y, int justification, int r, int g, int b);
 
-void LoadFrontendScreens(void);
+void LoadFrontendScreens(int full);
 void NewSelection(short dir);
 void EndFrame(void);
 
@@ -478,11 +476,9 @@ void SetVariable(int var)
 
 			if (value == 1) 
 			{
-#ifdef PSX
-				if (CallMemoryCard(0x11, 0) == 0)
-#else
-				if(LoadReplayFromFile("CHASE.D2RP") == 0)		// [A] temporary
-#endif
+				// [A] temporary
+				// TODO: Do menu with the replays
+				if(LoadReplayFromFile("Replays/CHASE.D2RP") == 0)
 				{
 					ReInitFrontend();
 				}
@@ -495,7 +491,9 @@ void SetVariable(int var)
 			}
 			else
 			{
-				CallMemoryCard(0x81, 0);
+				// [A] load configuration
+				LoadCurrentProfile();
+
 				ReInitFrontend();
 				SetMasterVolume(gMasterVolume);
 				SetXMVolume(gMusicVolume);
@@ -508,25 +506,13 @@ void SetVariable(int var)
 
 			if (value == 0) 
 			{
-#ifdef PSX
-				CallMemoryCard(0x80, 0);
-				ReInitFrontend();
-#else
 				// [A] save configuration
 				SaveCurrentProfile();
-#endif
 			}
 			else 
 			{
-#ifdef PSX
-				if (CallMemoryCard(0x21, 0) == 0) 
-				{
-					ReInitFrontend();
-				}
-				else
-#else
+				// [A] load progress
 				if(LoadCurrentGame())
-#endif
 				{
 					GameType = GAME_CONTINUEMISSION;
 					GameStart();
@@ -560,7 +546,7 @@ void SetVariable(int var)
 		{
 			ShowBonusGallery();
 
-			LoadFrontendScreens();
+			LoadFrontendScreens(0);
 		}
 	}
 }
@@ -1074,7 +1060,7 @@ void LoadBackgroundFile(char* name)
 }
 
 // [D] [T]
-void LoadFrontendScreens(void)
+void LoadFrontendScreens(int full)
 {
 	int size;
 	int iNumScreens;
@@ -1085,20 +1071,23 @@ void LoadFrontendScreens(void)
 	ShowLoading();
 
 #ifndef USE_EMBEDDED_FRONTEND_SCREENS
-	Loadfile("DATA\\SCRS.BIN", _frontend_buffer);
-
-	ptr = _frontend_buffer + 20; // skip header and number of screens
-	iNumScreens = (int)_frontend_buffer[16];
-
-	for (int i = 0; i < iNumScreens; i++)
+	if (full)
 	{
-		PsxScreens[i].numButtons = *ptr++;
-		PsxScreens[i].userFunctionNum = *ptr++;
+		Loadfile("DATA\\SCRS.BIN", _frontend_buffer);
 
-		for (int j = 0; j < PsxScreens[i].numButtons; j++)
+		ptr = _frontend_buffer + 20; // skip header and number of screens
+		iNumScreens = (int)_frontend_buffer[16];
+
+		for (int i = 0; i < iNumScreens; i++)
 		{
-			memcpy((u_char*)&PsxScreens[i].buttons[j], (u_char*)ptr, sizeof(PSXBUTTON));
-			ptr += sizeof(PSXBUTTON);
+			PsxScreens[i].numButtons = *ptr++;
+			PsxScreens[i].userFunctionNum = *ptr++;
+
+			for (int j = 0; j < PsxScreens[i].numButtons; j++)
+			{
+				memcpy((u_char*)&PsxScreens[i].buttons[j], (u_char*)ptr, sizeof(PSXBUTTON));
+				ptr += sizeof(PSXBUTTON);
+			}
 		}
 	}
 #endif
@@ -1131,8 +1120,11 @@ void LoadFrontendScreens(void)
 	LoadImage(&rect, (u_long*)_frontend_buffer);
 	DrawSync(0);
 
-	Loadfile("DATA\\FEFONT.BNK", _frontend_buffer);
-	memcpy((u_char*)&feFont, (u_char*)_frontend_buffer, sizeof(feFont));
+	if (full)
+	{
+		Loadfile("DATA\\FEFONT.BNK", _frontend_buffer);
+		memcpy((u_char*)&feFont, (u_char*)_frontend_buffer, sizeof(feFont));
+	}
 }
 
 // [D] [T]
@@ -1576,7 +1568,7 @@ void InitFrontend(void)
 
 	idle_timer = VSync(-1);
 
-	LoadFrontendScreens();
+	LoadFrontendScreens(1);
 
 	SetupBackgroundPolys();
 	SetupScreenSprts(&PsxScreens[0]);
@@ -1715,14 +1707,14 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 
 	FE_CHARDATA *pFontInfo;
 	SPRT *font;
-	unsigned char let;
+	u_char let;
 
 	font = (SPRT *)current->primptr;
 
 	if (justification & 4)
 	{
 		char *pString = string;
-		unsigned char c = 0;
+		u_char c = 0;
 
 		int w = 0;
 
@@ -1798,7 +1790,7 @@ int FEPrintStringSized(char *string, int x, int y, int scale, int transparent, i
 
 	POLY_FT4 *font;
 	FE_CHARDATA *pFontInfo;
-	char let;
+	u_char let;
 	int w;
 	int h;
 

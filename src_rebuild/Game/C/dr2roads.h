@@ -62,6 +62,8 @@ extern int NumDriver2Curves;
 
 extern short* RoadMapDataRegions[4];
 
+extern int gDisableChicagoBridges;
+
 extern sdPlane* GetSeaPlane();
 
 extern int GetSurfaceRoadInfo(DRIVER2_ROAD_INFO* outRoadInfo, int surfId);

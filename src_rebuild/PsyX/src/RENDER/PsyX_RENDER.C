@@ -182,7 +182,7 @@ void PBO_Download(GrPBO& pbo)
 		}
 		else
 		{
-			eprinterr("Failed to map the buffer");
+			eprintwarn("Failed to map the buffer\n");
 		}
 
 		/* Trigger the next read. */
@@ -430,7 +430,7 @@ int GR_InitialiseRender(char* windowName, int width, int height, int fullscreen)
 	if (!GR_InitialiseGLExt())
 	{
 		eprinterr("Failed to Intialise GL extensions\n");
-		PsyX_ShutDown();
+		return 0;
 	}
 #endif
 	
@@ -440,6 +440,16 @@ int GR_InitialiseRender(char* windowName, int width, int height, int fullscreen)
 void GR_Shutdown()
 {
 #if defined(RENDERER_OGL) || defined(OGLES)
+	glDeleteVertexArrays(1, &g_glVertexArray);
+	glDeleteBuffers(1, &g_glVertexBuffer);
+
+	PBO_Destroy(g_glFramebufferPBO);
+	PBO_Destroy(g_glOffscreenPBO);
+
+	glDeleteFramebuffers(1, &g_glBlitFramebuffer);
+	glDeleteFramebuffers(1, &g_glOffscreenFramebuffer);
+	glDeleteFramebuffers(1, &g_glVRAMFramebuffer);
+
 	GR_DestroyTexture(g_vramTexture);
 	GR_DestroyTexture(g_whiteTexture);
 	GR_DestroyTexture(g_fbTexture);
@@ -497,10 +507,12 @@ void GR_ResetDevice()
 ShaderID g_gte_shader_4;
 ShaderID g_gte_shader_8;
 ShaderID g_gte_shader_16;
+uint g_bilinearFilterLoc;
 
 #if defined(OGLES) || defined(RENDERER_OGL)
 GLint u_Projection;
 GLint u_Projection3D;
+
 
 #define GPU_PACK_RG\
 	"		float color_16 = (color_rg.y * 256.0 + color_rg.x) * 255.0;\n"
@@ -616,12 +628,14 @@ GLint u_Projection3D;
 	"	attribute vec4 a_position;\n"\
 	"	attribute vec4 a_texcoord; // uv, color multiplier, dither\n"\
 	"	attribute vec4 a_color;\n"\
+	"	attribute vec4 a_extra; // texcoord.xy ofs, unused.xy\n"\
 	"	attribute vec4 a_zw;\n"\
 	"	uniform mat4 Projection;\n"\
 	"	uniform mat4 Projection3D;\n"\
 	"	const vec2 c_UVFudge = vec2(0.00025, 0.00025);\n"\
 	"	void main() {\n"\
 	"		v_texcoord = a_texcoord;\n"\
+	"		v_texcoord.xy += a_extra.xy * 0.5;\n"\
 	"		v_color = a_color;\n"\
 	"		v_color.xyz *= a_texcoord.z;\n"\
 	"		v_page_clut.x = fract(a_position.z / 16.0) * 1024.0;\n"\
@@ -640,52 +654,50 @@ GLint u_Projection3D;
 	GPU_FETCH_VRAM_FUNC\
 	"	const vec2 c_VRAMTexel = vec2(1.0 / 1024.0, 1.0 / 512.0);\n"\
 	GPU_SAMPLE_TEXTURE_## bit ##BIT_FUNC\
-	"#ifdef BILINEAR_FILTER\n"\
 	GPU_BILINEAR_SAMPLE_FUNC\
-	"#else\n"\
 	GPU_NEAREST_SAMPLE_FUNC\
-	"#endif\n"\
+	"	uniform int bilinearFilter;\n"\
 	"	void main() {\n"\
-	"#ifdef BILINEAR_FILTER\n"\
-	"		fragColor = BilinearTextureSample(v_texcoord.xy);\n"\
-	"#else\n"\
-	"		fragColor = NearestTextureSample(v_texcoord.xy);\n"\
-	"#endif\n"\
+	"		if(bilinearFilter > 0)\n"\
+	"			fragColor = BilinearTextureSample(v_texcoord.xy);\n"\
+	"		else\n"\
+	"			fragColor = NearestTextureSample(v_texcoord.xy);\n"\
+	"		\n"\
 	GPU_DITHERING\
 	"	}\n"
 
 const char* gte_shader_4 =
-"varying vec4 v_texcoord;\n"
-"varying vec4 v_color;\n"
-"varying vec4 v_page_clut;\n"
-"varying float v_z;\n"
-"#ifdef VERTEX\n"
-GTE_VERTEX_SHADER
-"#else\n"
-GPU_FRAGMENT_SAMPLE_SHADER(4)
-"#endif\n";
+	"varying vec4 v_texcoord;\n"
+	"varying vec4 v_color;\n"
+	"varying vec4 v_page_clut;\n"
+	"varying float v_z;\n"
+	"#ifdef VERTEX\n"
+	GTE_VERTEX_SHADER
+	"#else\n"
+	GPU_FRAGMENT_SAMPLE_SHADER(4)
+	"#endif\n";
 
 const char* gte_shader_8 =
-"varying vec4 v_texcoord;\n"
-"varying vec4 v_color;\n"
-"varying vec4 v_page_clut;\n"
-"varying float v_z;\n"
-"#ifdef VERTEX\n"
-GTE_VERTEX_SHADER
-"#else\n"
-GPU_FRAGMENT_SAMPLE_SHADER(8)
-"#endif\n";
+	"varying vec4 v_texcoord;\n"
+	"varying vec4 v_color;\n"
+	"varying vec4 v_page_clut;\n"
+	"varying float v_z;\n"
+	"#ifdef VERTEX\n"
+	GTE_VERTEX_SHADER
+	"#else\n"
+	GPU_FRAGMENT_SAMPLE_SHADER(8)
+	"#endif\n";
 
 const char* gte_shader_16 =
-"varying vec4 v_texcoord;\n"
-"varying vec4 v_color;\n"
-"varying vec4 v_page_clut;\n"
-"varying float v_z;\n"
-"#ifdef VERTEX\n"
-GTE_VERTEX_SHADER
-"#else\n"
-GPU_FRAGMENT_SAMPLE_SHADER(16)
-"#endif\n";
+	"varying vec4 v_texcoord;\n"
+	"varying vec4 v_color;\n"
+	"varying vec4 v_page_clut;\n"
+	"varying float v_z;\n"
+	"#ifdef VERTEX\n"
+	GTE_VERTEX_SHADER
+	"#else\n"
+	GPU_FRAGMENT_SAMPLE_SHADER(16)
+	"#endif\n";
 
 int GR_Shader_CheckShaderStatus(GLuint shader)
 {
@@ -820,7 +832,6 @@ ShaderID GR_Shader_Compile(const char* source)
 	glBindAttribLocation(program, a_texcoord, "a_texcoord");
 	glBindAttribLocation(program, a_color, "a_color");
 
-
 #ifdef USE_PGXP
 	glBindAttribLocation(program, a_zw, "a_zw");
 #endif
@@ -867,6 +878,7 @@ void GR_InitialisePSXShaders()
 	g_gte_shader_16 = GR_Shader_Compile(gte_shader_16);
 
 #if defined(RENDERER_OGL) || defined(OGLES)
+	g_bilinearFilterLoc = glGetUniformLocation(g_gte_shader_4, "bilinearFilter");
 	u_Projection = glGetUniformLocation(g_gte_shader_4, "Projection");
 #ifdef USE_PGXP
 	u_Projection3D = glGetUniformLocation(g_gte_shader_4, "Projection3D");
@@ -991,6 +1003,7 @@ int GR_InitialisePSX()
 		glEnableVertexAttribArray(a_position);
 		glEnableVertexAttribArray(a_texcoord);
 		glEnableVertexAttribArray(a_color);
+		glEnableVertexAttribArray(a_extra);
 
 #if defined(USE_PGXP)
 		glVertexAttribPointer(a_position, 4, GL_FLOAT, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->x);
@@ -1003,6 +1016,7 @@ int GR_InitialisePSX()
 
 		glVertexAttribPointer(a_texcoord, 4, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->u);
 		glVertexAttribPointer(a_color, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(GrVertex), &((GrVertex*)NULL)->r);
+		glVertexAttribPointer(a_extra, 4, GL_BYTE, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->tcx);
 
 		glBindVertexArray(0);
 	}
@@ -1159,6 +1173,7 @@ void GR_SetShader(const ShaderID& shader)
 	}
 }
 
+
 void GR_SetTexture(TextureID texture, TexFormat texFormat)
 {
 	switch (texFormat)
@@ -1184,6 +1199,7 @@ void GR_SetTexture(TextureID texture, TexFormat texFormat)
 
 #if defined(RENDERER_OGL) || defined(OGLES)
 	glBindTexture(GL_TEXTURE_2D, texture);
+	glUniform1i(g_bilinearFilterLoc, g_bilinearFiltering);
 #endif
 
 	g_lastBoundTexture = texture;

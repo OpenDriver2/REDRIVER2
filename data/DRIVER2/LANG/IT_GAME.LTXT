@@ -11,8 +11,8 @@ Tappe
 -1 secondo
 Bandiere
 Giro
-Ce l'hai fatta!
-Ben fatto! 
+Hai preso la bandiera!
+Ben fatto!
 Sei stato preso!
 Nastro esaurito
 DEMO
@@ -29,7 +29,7 @@ In pausa
 Missione compiuta
 Missione fallita
 Fine partita
-Alti punteggi
+Punteggi migliori
 Immetti il nome
 Uscire nel sistema?
 Caricamento configurazioni...
@@ -77,13 +77,13 @@ Pausa
 Play
 Regia automatica
 Avanti rapido
-Avanti fotogramma
+Avanza fotogramma
 Riavvolgi tutto
 Aggiungi telecamera
 Cambia telecamera
 In auto
-Inseguire telecamera
-Statica telecamera
+Telecamera inseguimento
+Telecamera statica
 Sposta avvìo telecamera
 Cancella la telecamera
 Mostra

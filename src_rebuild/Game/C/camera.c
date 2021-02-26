@@ -53,7 +53,7 @@ static int baseDir = 0;
 
 char tracking_car = 0;
 
-int gCameraAngle = 0x800; // offset 0xAA104
+int gCameraAngle = 2048; // offset 0xAA104
 
 int TargetCar = 0;
 int CameraCar = 0;
@@ -362,12 +362,13 @@ int CameraCollisionCheck(void)
 // [D] [T]
 void TurnHead(PLAYER *lp)
 {
-	if ((paddCamera & 0x3) == 0x3)
+	// [A] handle REDRIVER2 dedicated look back button
+	if ((paddCamera & CAMERA_PAD_LOOK_BACK) == CAMERA_PAD_LOOK_BACK || (paddCamera & CAMERA_PAD_LOOK_BACK_DED))
 	{
 		if (pPlayerPed != NULL)  // look back
 			pPlayerPed->head_rot = 0;
 	}
-	else if (paddCamera & 0x1)
+	else if (paddCamera & CAMERA_PAD_LOOK_LEFT)
 	{
 		if (pPlayerPed != NULL)
 			pPlayerPed->head_rot = 512;
@@ -377,7 +378,7 @@ void TurnHead(PLAYER *lp)
 		else
 			lp->headTimer++;
 	}
-	else if (paddCamera & 0x2)
+	else if (paddCamera & CAMERA_PAD_LOOK_RIGHT)
 	{
 		if (pPlayerPed != NULL)
 			pPlayerPed->head_rot = -512;
@@ -401,6 +402,13 @@ void TurnHead(PLAYER *lp)
 
 short gCameraDistance = 1000;
 short gCameraMaxDistance = 0;
+
+#ifdef PSX
+#define gCameraDefaultScrZ 256
+#else
+short gCameraDefaultScrZ = 256;
+#endif
+
 
 CAR_DATA *jcam = NULL;
 int switch_detail_distance = 10000;
@@ -456,7 +464,8 @@ void PlaceCameraFollowCar(PLAYER *lp)
 
 	if (pauseflag == 0 || EditMode == 2)
 	{
-		if ((paddCamera & 0x3) == 0x3)
+		// [A] handle REDRIVER2 dedicated look back button
+		if ((paddCamera & CAMERA_PAD_LOOK_BACK) == CAMERA_PAD_LOOK_BACK || (paddCamera & CAMERA_PAD_LOOK_BACK_DED))
 		{
 			camAngle = baseDir & 0xfff; // look back
 		}
@@ -526,8 +535,7 @@ void PlaceCameraFollowCar(PLAYER *lp)
 	
 	camera_angle.vz = 0;
 
-	SetGeomScreen(256);
-	scr_z = 256;
+	SetGeomScreen(scr_z = gCameraDefaultScrZ);
 	switch_detail_distance = 10000;
 
 	BuildWorldMatrix();
@@ -579,7 +587,8 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 		viewer_position.vz = cp->ap.carCos->colBox.vz - 80;
 	}
 
-	if ((paddCamera & 0x3) == 0x3)
+	// [A] handle REDRIVER2 dedicated look back button
+	if ((paddCamera & CAMERA_PAD_LOOK_BACK) == CAMERA_PAD_LOOK_BACK || (paddCamera & CAMERA_PAD_LOOK_BACK_DED))
 		viewer_position.vz = 0;
 
 	angle = baseDir & 0xfff;
@@ -590,13 +599,13 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 
 	TurnHead(lp);
 
-	if ((paddCamera & 0x3) == 0x3)
+	// [A] handle REDRIVER2 dedicated look back button
+	if ((paddCamera & CAMERA_PAD_LOOK_BACK) == CAMERA_PAD_LOOK_BACK || (paddCamera & CAMERA_PAD_LOOK_BACK_DED))
 		camera_angle.vy = 2048 - baseDir & 0xfff;
 	else
 		camera_angle.vy = (lp->headPos >> 16) - baseDir & 0xfff;
 
-	SetGeomScreen(256);
-	scr_z = 256;
+	SetGeomScreen(scr_z = gCameraDefaultScrZ);
 
 	if (cp == NULL)
 	{
@@ -615,7 +624,8 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 		InvertMatrix(&cp->hd.drawCarMat, &inv_camera_matrix);
 	}
 
-	if ((paddCamera & 0x3) == 0x3)
+	// [A] handle REDRIVER2 dedicated look back button
+	if ((paddCamera & CAMERA_PAD_LOOK_BACK) == CAMERA_PAD_LOOK_BACK || (paddCamera & CAMERA_PAD_LOOK_BACK_DED))
 	{
 		if (cp != NULL)
 			viewer_position.vz = 170;
@@ -668,11 +678,11 @@ int OK_To_Zoom(void)
 
 	scr_z = (dist(&camera_position, &temp) >> 4) + 256;
 
-	if (800 < scr_z)
+	if (scr_z > 800)
 		scr_z = 800;
 
-	if (scr_z < 256)
-		scr_z = 256;
+	if (scr_z < gCameraDefaultScrZ)
+		scr_z = gCameraDefaultScrZ;
 
 	scr_z = old_z;
 	return CameraCollisionCheck() == 0;
@@ -694,7 +704,7 @@ void PlaceCameraAtLocation(PLAYER* lp, int zoom)
 
 	d = 0;
 
-	if (tracking_car != 0)
+	if (tracking_car)
 	{
 		CalcCameraBasePos(lp);
 
@@ -712,19 +722,19 @@ void PlaceCameraAtLocation(PLAYER* lp, int zoom)
 
 		if (zoom == 0)
 		{
-			scr_z = 256;
+			scr_z = gCameraDefaultScrZ;
 		}
 		else
 		{
-			scr_z = (d >> 4) + 256;
+			scr_z = (d >> 4) + gCameraDefaultScrZ;
 
 			if (scr_z > 800)
 				scr_z = 800;
 		}
 	}
 
-	if (scr_z < 256)
-		scr_z = 256;
+	if (scr_z < gCameraDefaultScrZ)
+		scr_z = gCameraDefaultScrZ;
 
 	SetGeomScreen(scr_z);
 	switch_detail_distance = 10000 + (d >> 1);

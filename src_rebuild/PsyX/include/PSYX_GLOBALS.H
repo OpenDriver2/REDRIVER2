@@ -18,6 +18,13 @@ extern int g_emulatorPaused;
 extern int g_polygonSelected;
 extern int g_pgxpTextureCorrection;
 
-extern void InternalPadUpdates();
+extern void PsyX_InternalPadUpdates();
+
+// logging functions
+extern void PsyX_Log(const char* fmt, ...);
+extern void PsyX_Log_Info(const char* fmt, ...);
+extern void PsyX_Log_Warning(const char* fmt, ...);
+extern void PsyX_Log_Error(const char* fmt, ...);
+extern void PsyX_Log_Success(const char* fmt, ...);
 
 #endif
