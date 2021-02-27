@@ -469,9 +469,6 @@ void DrawAllPedestrians(void)
 {
 	PEDESTRIAN* pPed;
 
-	//MATRIX mStore;
-	//gte_ReadRotMatrix(&mStore);
-
 	pPed = pUsedPeds;
 	while (pPed != NULL)
 	{
@@ -502,9 +499,6 @@ void DrawAllPedestrians(void)
 	}
 
 	/*
-	// THIS IS OLD AND PROBABLY NOT NEEDED
-	gte_SetRotMatrix(&mStore);
-
 	pPed = pUsedPeds;
 	while (pPed != NULL)
 	{
