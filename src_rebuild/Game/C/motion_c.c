@@ -1815,9 +1815,6 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 
 	int Tangle;
 
-	// [A] not supported by emulator
-	// proposed change: double buffering of VRAM (one used as render target, second as texture)
-
 	memset((u_char*)&d, 0, sizeof(VECTOR));
 
 	SetDefDrawEnv(&drEnv, 0, current->draw.clip.y, 320, 256);
@@ -1910,7 +1907,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 
 	addPrim(current->ot + (z0 * 2 + z3 * 6 >> 6), &ft4TannerShadow[current->id]);
 	//SubdivShadow(z0, z1, z2, z3, ft4TannerShadow + current->id);
-
+	
 	{
 		// store vectors
 		cp = camera_position;
@@ -1945,7 +1942,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 		SetGeomScreen(scr_z);
 		BuildWorldMatrix();
 	}
-
+	
 	SetDefDrawEnv(&drEnv, rectTannerWindow.x, rectTannerWindow.y, rectTannerWindow.w, rectTannerWindow.h);
 	drEnv.dfe = 0; // we're drawing into VRAM - don't draw on screen
 	drEnv.dtd = 0; // [A] no need in dithering

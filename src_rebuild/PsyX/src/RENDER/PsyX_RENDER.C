@@ -36,7 +36,10 @@ RECT16 g_PreviousOffscreen = { 0,0,0,0 };
 
 ShaderID g_PreviousShader = -1;
 
-TextureID g_vramTexture = -1;
+TextureID g_vramTexturesDouble[2];
+TextureID g_vramTexture;
+int g_vramTextureIdx = 0;
+
 TextureID g_fbTexture = -1;
 TextureID g_offscreenRTTexture = -1;
 
@@ -204,8 +207,9 @@ void PBO_Download(GrPBO& pbo)
 #endif
 }
 
-GLuint		g_glVertexArray;
-GLuint		g_glVertexBuffer;
+GLuint		g_glVertexArray[2];
+GLuint		g_glVertexBuffer[2];
+int			g_curVertexBuffer = 0;
 
 GLuint		g_glBlitFramebuffer;
 GrPBO		g_glFramebufferPBO;
@@ -440,8 +444,8 @@ int GR_InitialiseRender(char* windowName, int width, int height, int fullscreen)
 void GR_Shutdown()
 {
 #if defined(RENDERER_OGL) || defined(OGLES)
-	glDeleteVertexArrays(1, &g_glVertexArray);
-	glDeleteBuffers(1, &g_glVertexBuffer);
+	glDeleteVertexArrays(2, g_glVertexArray);
+	glDeleteBuffers(2, g_glVertexBuffer);
 
 	PBO_Destroy(g_glFramebufferPBO);
 	PBO_Destroy(g_glOffscreenPBO);
@@ -450,7 +454,9 @@ void GR_Shutdown()
 	glDeleteFramebuffers(1, &g_glOffscreenFramebuffer);
 	glDeleteFramebuffers(1, &g_glVRAMFramebuffer);
 
-	GR_DestroyTexture(g_vramTexture);
+	GR_DestroyTexture(g_vramTexturesDouble[0]);
+	GR_DestroyTexture(g_vramTexturesDouble[1]);
+
 	GR_DestroyTexture(g_whiteTexture);
 	GR_DestroyTexture(g_fbTexture);
 	GR_DestroyTexture(g_offscreenRTTexture);
@@ -461,9 +467,7 @@ void GR_BeginScene()
 {
 	g_lastBoundTexture = 0;
 
-#if defined(RENDERER_OGL) || defined(OGLES)
-	glBindVertexArray(g_glVertexArray);
-
+#if defined(RENDERER_OGL) || defined(OGLES)	
 	glClearDepth(1.0f);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glClear(GL_STENCIL_BUFFER_BIT);
@@ -963,10 +967,13 @@ int GR_InitialisePSX()
 	// gen VRAM textures.
 	// double-buffered
 	{
-		glGenTextures(1, &g_vramTexture);
+		int i;
 
+		glGenTextures(2, g_vramTexturesDouble);
+
+		for(i = 0; i < 2; i++)
 		{
-			glBindTexture(GL_TEXTURE_2D, g_vramTexture);
+			glBindTexture(GL_TEXTURE_2D, g_vramTexturesDouble[i]);
 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -992,31 +999,18 @@ int GR_InitialisePSX()
 
 	// gen vertex buffer and index buffer
 	{
-		glGenBuffers(1, &g_glVertexBuffer);
-		glGenVertexArrays(1, &g_glVertexArray);
+		int i;
 
-		glBindVertexArray(g_glVertexArray);
+		glGenBuffers(2, g_glVertexBuffer);
+		glGenVertexArrays(2, g_glVertexArray);
 
-		glBindBuffer(GL_ARRAY_BUFFER, g_glVertexBuffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(GrVertex) * MAX_NUM_POLY_BUFFER_VERTICES, NULL, GL_DYNAMIC_DRAW);
+		for (i = 0; i < 2; i++)
+		{
+			glBindVertexArray(g_glVertexArray[i]);
 
-		glEnableVertexAttribArray(a_position);
-		glEnableVertexAttribArray(a_texcoord);
-		glEnableVertexAttribArray(a_color);
-		glEnableVertexAttribArray(a_extra);
-
-#if defined(USE_PGXP)
-		glVertexAttribPointer(a_position, 4, GL_FLOAT, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->x);
-		glVertexAttribPointer(a_zw, 4, GL_FLOAT, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->z);
-
-		glEnableVertexAttribArray(a_zw);
-#else
-		glVertexAttribPointer(a_position, 4, GL_SHORT, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->x);
-#endif
-
-		glVertexAttribPointer(a_texcoord, 4, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->u);
-		glVertexAttribPointer(a_color, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(GrVertex), &((GrVertex*)NULL)->r);
-		glVertexAttribPointer(a_extra, 4, GL_BYTE, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->tcx);
+			glBindBuffer(GL_ARRAY_BUFFER, g_glVertexBuffer[i]);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(GrVertex) * MAX_NUM_POLY_BUFFER_VERTICES, NULL, GL_DYNAMIC_DRAW);
+		}
 
 		glBindVertexArray(0);
 	}
@@ -1408,6 +1402,9 @@ void GR_SetOffscreenState(const RECT16& offscreenRect, int enable)
 		// before drawing set source and target
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, g_glVRAMFramebuffer);
+
+			// rebind texture
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, g_vramTexture, 0);
 			
 			// setup draw and read framebuffers
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, g_glOffscreenFramebuffer);					// source is backbuffer
@@ -1477,6 +1474,9 @@ void GR_StoreFrameBuffer(int x, int y, int w, int h)
 		// before drawing set source and target
 		glBindFramebuffer(GL_FRAMEBUFFER, g_glVRAMFramebuffer);
 
+		// rebind vram texture
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, g_vramTexture, 0);
+
 		// setup draw and read framebuffers
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, g_glBlitFramebuffer);					// source is backbuffer
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_glVRAMFramebuffer);
@@ -1543,6 +1543,10 @@ void GR_UpdateVRAM()
 	vram_need_update = false;
 
 #if defined(RENDERER_OGL) || defined(OGLES)
+	g_vramTexture = g_vramTexturesDouble[g_vramTextureIdx];
+	g_vramTextureIdx++;
+	g_vramTextureIdx &= 1;
+
 	glBindTexture(GL_TEXTURE_2D, g_vramTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, VRAM_WIDTH, VRAM_HEIGHT, 0, VRAM_FORMAT, GL_UNSIGNED_BYTE, vram);
 	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, VRAM_WIDTH, VRAM_HEIGHT, VRAM_FORMAT, GL_UNSIGNED_BYTE, vram);
@@ -1670,9 +1674,40 @@ void GR_SetWireframe(bool enable)
 #endif
 }
 
+void GR_BindVertexBuffer()
+{
+#if defined(RENDERER_OGL) || defined(OGLES)
+	glBindVertexArray(g_glVertexArray[g_curVertexBuffer]);
+
+	glEnableVertexAttribArray(a_position);
+	glEnableVertexAttribArray(a_texcoord);
+	glEnableVertexAttribArray(a_color);
+	glEnableVertexAttribArray(a_extra);
+
+#if defined(USE_PGXP)
+	glVertexAttribPointer(a_position, 4, GL_FLOAT, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->x);
+	glVertexAttribPointer(a_zw, 4, GL_FLOAT, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->z);
+
+	glEnableVertexAttribArray(a_zw);
+#else
+	glVertexAttribPointer(a_position, 4, GL_SHORT, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->x);
+#endif
+	glVertexAttribPointer(a_texcoord, 4, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->u);
+	glVertexAttribPointer(a_color, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(GrVertex), &((GrVertex*)NULL)->r);
+	glVertexAttribPointer(a_extra, 4, GL_BYTE, GL_FALSE, sizeof(GrVertex), &((GrVertex*)NULL)->tcx);
+
+	g_curVertexBuffer++;
+	g_curVertexBuffer &= 1;
+#else
+#error
+#endif
+}
+
 void GR_UpdateVertexBuffer(const GrVertex* vertices, int num_vertices)
 {
 	assert(num_vertices <= MAX_NUM_POLY_BUFFER_VERTICES);
+	GR_BindVertexBuffer();
+
 #if defined(RENDERER_OGL) || defined(OGLES)
 	glBufferSubData(GL_ARRAY_BUFFER, 0, num_vertices * sizeof(GrVertex), vertices);
 #else

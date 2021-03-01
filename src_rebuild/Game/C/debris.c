@@ -564,8 +564,7 @@ int AllocateLeaf(void)
 // [D] [T]
 void ReleaseLeaf(short num)
 {
-	next_leaf--;
-	leaf_alloc[next_leaf] = num;
+	leaf_alloc[--next_leaf] = num;
 }
 
 // [D] [T]
@@ -580,12 +579,11 @@ void AddLeaf(VECTOR *Position, int num_leaves, int Type)
 
 	Position->vy = -Position->vy;
 	Position->pad = MapHeight(Position);
-
 	for (i = 0; i < num_leaves; i++)
 	{
 		num = AllocateLeaf();
 		
-		if (num < 0)
+		if (num == -1)
 			return;
 	
 		LEAF* myleaf = &leaf[num];
@@ -603,7 +601,7 @@ void AddLeaf(VECTOR *Position, int num_leaves, int Type)
 		myleaf->position.pad = Position->pad;
 
 		myleaf->life = 600;
-		myleaf->flags = 2;
+		myleaf->flags = 0x2;
 	
 		myleaf->direction.vx = 0;
 		myleaf->direction.vy = 0;
@@ -681,7 +679,7 @@ void SwirlLeaves(CAR_DATA *cp)
 		XDiff = plpos.vx - lpLeaf->position.vx;
 		ZDiff = plpos.vz - lpLeaf->position.vz;
 
-		if ((lpLeaf->flags & 2) && 
+		if ((lpLeaf->flags & 0x2) && 
 			lpLeaf->position.vy + plpos.vy > -180 &&
 			XDiff > -360 && XDiff < 360 && ZDiff > -360 && ZDiff < 360)
 		{
@@ -878,8 +876,7 @@ int AllocateDebris(void)
 // [D] [T]
 void ReleaseDebris(short num)
 {
-	next_debris--;
-	debris_alloc[next_debris] = num;
+	debris_alloc[--next_debris] = num;
 }
 
 
@@ -895,8 +892,7 @@ int AllocateSmoke(void)
 // [D] [T]
 void ReleaseSmoke(short num)
 {
-	next_smoke--;
-	smoke_alloc[next_smoke] = num;
+	smoke_alloc[--next_smoke] = num;
 }
 
 // [D] [T]
@@ -2533,7 +2529,7 @@ void Setup_Debris(VECTOR *ipos, VECTOR *ispeed, int num_debris, int type)
 		mydebris->type = type & 7;
 
 		mydebris->life = 128;
-		mydebris->flags = 2;
+		mydebris->flags = 0x2;
 		mydebris->pos = i & 0x1f;
 	}
 }
@@ -2558,7 +2554,7 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 		mysmoke->final_w = end_w;
 		mysmoke->position.vz = ipos->vz;
 		mysmoke->step = end_w - start_w >> 7 << 2;
-		mysmoke->flags = 0x1006;
+		mysmoke->flags = 0x1000 | 0x4 | 0x2;
 		mysmoke->life = 20;
 		mysmoke->halflife = 10;
 
@@ -2577,7 +2573,7 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 			mysmoke->position.vy = ipos->vy;
 			mysmoke->position.vz = ipos->vz + (rand() & 9);
 			
-			mysmoke->flags = 0x2006;
+			mysmoke->flags = 0x2000 | 0x4 | 0x2;
 			mysmoke->transparency = 140;
 			mysmoke->t_step = 5;
 			mysmoke->step = 1;
@@ -2600,7 +2596,7 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 		mysmoke->start_w = start_w;
 		mysmoke->final_w = end_w;
 		
-		mysmoke->flags = 0x2006;
+		mysmoke->flags = 0x2000 | 0x4 | 0x2;
 		mysmoke->life = 40;
 		mysmoke->halflife = 20;
 	}
@@ -2612,7 +2608,7 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 			mysmoke->position.vy = ipos->vy;
 			mysmoke->position.vz = ipos->vz + (rand() & 7);
 
-			mysmoke->flags = 0x4006;
+			mysmoke->flags = 0x4000 | 0x4 | 0x2;
 			mysmoke->transparency = 55;
 			mysmoke->t_step = 2;
 			mysmoke->step = 1;
@@ -2623,7 +2619,7 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 			mysmoke->position.vx = ipos->vx + (rand() & 0x3f);
 			mysmoke->position.vy = ipos->vy;
 			mysmoke->position.vz = ipos->vz + (rand() & 0x3f);
-			mysmoke->flags = 22;
+			mysmoke->flags = 0x10 | 0x4 | 0x2;
 
 			if (SmokeType == 5) // UNUSED
 			{
@@ -2650,7 +2646,7 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 		mysmoke->position.vx = ipos->vx;
 		mysmoke->position.vy = ipos->vy;
 		mysmoke->position.vz = ipos->vz;
-		mysmoke->flags = 0x46;
+		mysmoke->flags = 0x40 | 0x4 | 0x2;
 		mysmoke->transparency = 160;
 		mysmoke->step = 20;
 		mysmoke->t_step = 5;
@@ -2663,7 +2659,7 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 	{
 		mysmoke->position.vx = ipos->vx + (rand() & 0x3f);
 		mysmoke->position.vy = ipos->vy;
-		mysmoke->flags = 0x26;
+		mysmoke->flags = 0x20 | 0x4 | 0x2;
 		mysmoke->transparency = 60;
 		mysmoke->t_step = 5;
 		mysmoke->start_w = start_w;
@@ -2725,7 +2721,7 @@ void Setup_Sparks(VECTOR *ipos, VECTOR *ispeed, int num_sparks, char SparkType)
 	{
 		num = AllocateSmoke();
 	
-		if (num < 0)
+		if (num == -1)
 			return;
 
 		mysmoke = &smoke[num];
@@ -2740,7 +2736,7 @@ void Setup_Sparks(VECTOR *ipos, VECTOR *ispeed, int num_sparks, char SparkType)
 		mysmoke->step = seed & 0x3f;
 		
 		mysmoke->drift.vx = 2;
-		mysmoke->flags = 10;
+		mysmoke->flags = 0x8 | 0x2;
 
 		vx = ispeed->vx;
 		vy = ispeed->vy;
@@ -2790,7 +2786,10 @@ void DisplayDebris(DEBRIS *debris, char type)
 	debrisvec.vy = debris->position.vy - camera_position.vy;
 	debrisvec.vz = debris->position.vz - camera_position.vz;
 
-	if (debrisvec.vx >= -10000 && debrisvec.vz >= -10000 && 10000 >= debrisvec.vx && 10000 >= debrisvec.vz)
+	if (debrisvec.vx >= -10000 && 
+		debrisvec.vz >= -10000 && 
+		debrisvec.vx <= 10000 &&
+		debrisvec.vz <= 10000)
 	{
 		tv = debris_rot_table[debris->type & 7] + (debris->pos >> 3 & 0x1fU);
 
@@ -3087,9 +3086,9 @@ void HandleDebris(void)
 	db = debris;
 	i = next_debris;
 
-	while (i >= 0)
+	while (i > 0)
 	{
-		if (db->flags & 2)
+		if (db->flags & 0x2)
 		{
 			DisplayDebris(db, 0);
 			
@@ -3122,150 +3121,143 @@ void HandleDebris(void)
 	i = next_leaf;
 
 	// Move leaves
-	while (i >= 0)
+	while (i > 0)
 	{
-		if (lf->flags & 2) 
+		if (lf->flags & 0x2) 
 		{
 			DisplayDebris((DEBRIS *)lf, lf->type);
 			
 			if (pauseflag == 0)
 			{
-				if (lf->life != 1) 
-				{
-					if (pauseflag == 0) 
-					{
-						int sn1, sn2, cs1, cs2;
-
-						GetSmokeDrift(&Drift);
-
-						Height = -(lf->position.pad + 20);
-
-						// first we move debris
-						// SwirlLeaves basically changed direction vector
-						// in order to lift leaf from ground fast
-						if (lf->position.vy < Height) 
-						{
-							lf->position.vx += lf->direction.vx + Drift.vx;
-							lf->position.vy += lf->direction.vy + Drift.vy;
-							lf->position.vz += lf->direction.vz + Drift.vz;
-
-							lf->pos += lf->step;
-							lf->pos &= 0xff;
-						}
-						else
-						{
-							lf->position.vy = Height;
-						}
-
-						lf->sin_index1 += lf->sin_addition1;
-						lf->sin_index2 += lf->sin_addition2;
-						lf->sin_index1 &= 0xfff;
-						lf->sin_index2 &= 0xfff;
-						
-						sn1 = rcossin_tbl[lf->sin_index1 * 2];
-						sn2 = rcossin_tbl[lf->sin_index2 * 2];
-						
-						cs1 = rcossin_tbl[lf->sin_index1 * 2 + 1];
-						cs2 = rcossin_tbl[lf->sin_index2 * 2 + 1];
-
-						// then we compute completely new direction
-						lf->direction.vy = ((sn1 + sn2) >> 0xb) + 4;
-						lf->direction.vx = ((sn1 + sn2) * 5 >> 0xb);
-						lf->direction.vz = ((cs1 + cs2) * 5 >> 0xb);
-					}
-				}
-				else
+				if (lf->life == 1) 
 				{
 					lf->flags = 0;
 					ReleaseLeaf(lf->num);
 				}
+				else
+				{
+					int sn1, sn2, cs1, cs2;
+
+					GetSmokeDrift(&Drift);
+
+					Height = -(lf->position.pad + 20);
+
+					// first we move debris
+					// SwirlLeaves basically changed direction vector
+					// in order to lift leaf from ground fast
+					if (lf->position.vy < Height)
+					{
+						lf->position.vx += lf->direction.vx + Drift.vx;
+						lf->position.vy += lf->direction.vy + Drift.vy;
+						lf->position.vz += lf->direction.vz + Drift.vz;
+
+						lf->pos += lf->step;
+						lf->pos &= 0xff;
+					}
+					else
+					{
+						lf->position.vy = Height;
+					}
+
+					lf->sin_index1 += lf->sin_addition1;
+					lf->sin_index2 += lf->sin_addition2;
+					lf->sin_index1 &= 0xfff;
+					lf->sin_index2 &= 0xfff;
+
+					sn1 = rcossin_tbl[lf->sin_index1 * 2];
+					sn2 = rcossin_tbl[lf->sin_index2 * 2];
+
+					cs1 = rcossin_tbl[lf->sin_index1 * 2 + 1];
+					cs2 = rcossin_tbl[lf->sin_index2 * 2 + 1];
+
+					// then we compute completely new direction
+					lf->direction.vy = ((sn1 + sn2) >> 0xb) + 4;
+					lf->direction.vx = ((sn1 + sn2) * 5 >> 0xb);
+					lf->direction.vz = ((cs1 + cs2) * 5 >> 0xb);
+				}
 			}
 		}
-
-		i--;
 		lf++;
+		i--;
 	}
 
 	for (i = 0; i < MAX_SMOKE; i++)
 	{
 		sm = &smoke[i];
 
-		if (sm->flags & 2) 
+		if (sm->flags & 0x2)
 		{
-			if (sm->flags & 4)
+			if (sm->flags & 0x8)
 			{
-				if (sm->flags & 0x8000) 
+				DisplaySpark(sm);	// yup, smoke particles are sparks too
+			}
+			else if (sm->flags & 0x4)
+			{
+				if (sm->flags & 0x8000)
 					DisplayWater(sm);	// Really obsolete, water was only a thing in Driver 1
-				else 
+				else
 					DisplaySmoke(sm);
-
-				if (pauseflag == 0) 
-				{
-					if (sm->flags & 0x8000) 
-					{
-						// OBSOLETE DRIVER 1 CODE
-						/*
-						ROUTE_DATA routeData;
-						ROADS_GetRouteData(sm->position.vx - sm->start_w, sm->position.vz - sm->start_w, &routeData);
-						ROADS_GetRouteData(sm->position.vx + sm->start_w, sm->position.vz + sm->start_w, &routeData);
-
-						if (sm->start_w < 800 && (modelpointers[routeData.type]->shape_flags & MODEL_FLAG_ALLEY)) 
-							sm->start_w += sm->step;
-						else*/
-							sm->start_w -= sm->step;
-					}
-					else 
-					{
-						if (sm->start_w < 800)
-							sm->start_w += sm->step;
-
-						sm->position.vx += sm->drift.vx;
-						sm->position.vy += sm->drift.vy;
-						sm->position.vz += sm->drift.vz;
-						
-						if (sm->halflife < sm->life)
-						{
-							sm->drift.vx -= sm->drift_change.vx;
-							sm->drift.vy -= sm->drift_change.vy;
-							sm->drift.vz -= sm->drift_change.vz;
-						}
-					}
-				}
 			}
+		}
 
-			if (sm->flags & 8)
+		if (sm->flags & 0x2 && pauseflag == 0)
+		{
+			if (sm->flags & 0x8000) 
 			{
-				// yup, smoke particles are sparks too
-				DisplaySpark(sm);
+				// OBSOLETE DRIVER 1 CODE
+				/*
+				ROUTE_DATA routeData;
+				ROADS_GetRouteData(sm->position.vx - sm->start_w, sm->position.vz - sm->start_w, &routeData);
+				ROADS_GetRouteData(sm->position.vx + sm->start_w, sm->position.vz + sm->start_w, &routeData);
 
-				if(pauseflag == 0)
+				if (sm->start_w < 800 && (modelpointers[routeData.type]->shape_flags & MODEL_FLAG_ALLEY)) 
+					sm->start_w += sm->step;
+				else*/
+					sm->start_w -= sm->step;
+			}
+			else if (sm->flags & 0x8)
+			{
+				sm->position.vx += sm->drift_change.vx;
+				sm->position.vy += sm->drift_change.vy;
+				sm->position.vz += sm->drift_change.vz;
+				sm->drift_change.vy += 6;
+
+				if (sm->drift.vx == 0)
 				{
-					sm->position.vx += sm->drift_change.vx;
-					sm->position.vy += sm->drift_change.vy;
-					sm->position.vz += sm->drift_change.vz;
-					sm->drift_change.vy += 6;
+					sm->final_tail_pos.vx += sm->drift_change.vx;
+					sm->final_tail_pos.vy += sm->drift_change.vy - 12;
+					sm->final_tail_pos.vz += sm->drift_change.vz;
+				}
+				else
+				{
+					sm->drift.vx -= 1;
+				}
 
-					if (sm->drift.vx == 0)
-					{
-						sm->final_tail_pos.vx += sm->drift_change.vx;
-						sm->final_tail_pos.vy += sm->drift_change.vy - 12;
-						sm->final_tail_pos.vz += sm->drift_change.vz;
-					}
-					else 
-					{
-						sm->drift.vx -= 1;
-					}
-
-					if (sm->position.vy > 0)
-					{
-						sm->flags = 0;
-						ReleaseSmoke(sm->num);
-						continue;
-					}
+				if (sm->position.vy > 0)
+				{
+					sm->flags = 0;
+					ReleaseSmoke(sm->num);
+					continue;
 				}
 			}
-	
-			if ((sm->flags & 0x900C) && pauseflag == 0) 
+			else 
+			{
+				if (sm->start_w < 800)
+					sm->start_w += sm->step;
+
+				sm->position.vx += sm->drift.vx;
+				sm->position.vy += sm->drift.vy;
+				sm->position.vz += sm->drift.vz;
+						
+				if (sm->halflife < sm->life)
+				{
+					sm->drift.vx -= sm->drift_change.vx;
+					sm->drift.vy -= sm->drift_change.vy;
+					sm->drift.vz -= sm->drift_change.vz;
+				}
+			}
+
+			if (sm->flags & 0x900C)
 			{
 				sm->transparency -= sm->t_step;
 
@@ -3275,7 +3267,7 @@ void HandleDebris(void)
 					sm->life = 1;
 				}
 
-				if (--sm->life == 0) 
+				if (--sm->life == 0)
 				{
 					sm->flags = 0;
 					ReleaseSmoke(sm->num);

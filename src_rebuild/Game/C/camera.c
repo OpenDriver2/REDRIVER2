@@ -574,28 +574,7 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 
 	viewer_position.vx = 0;
 	viewer_position.vy = 0;
-
-	if (cp == NULL) 
-	{
-		viewer_position.vz = 0;
-		if(lp->pPed)
-			viewer_position.vy += lp->pPed->head_pos;
-	}
-	else if (cp->ap.carCos != NULL) // [A] prevent crash from happening
-	{
-		viewer_position.vy = 7;
-		viewer_position.vz = cp->ap.carCos->colBox.vz - 80;
-	}
-
-	// [A] handle REDRIVER2 dedicated look back button
-	if ((paddCamera & CAMERA_PAD_LOOK_BACK) == CAMERA_PAD_LOOK_BACK || (paddCamera & CAMERA_PAD_LOOK_BACK_DED))
-		viewer_position.vz = 0;
-
-	angle = baseDir & 0xfff;
-
-	lp->cameraPos.vx = basePos[0] + FIXEDH(rcossin_tbl[angle * 2] * viewer_position.vz);
-	lp->cameraPos.vy = viewer_position.vy - basePos[1];
-	lp->cameraPos.vz = basePos[2] + FIXEDH(rcossin_tbl[angle * 2 + 1] * viewer_position.vz);
+	viewer_position.vz = 0;
 
 	TurnHead(lp);
 
@@ -605,61 +584,57 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 	else
 		camera_angle.vy = (lp->headPos >> 16) - baseDir & 0xfff;
 
-	SetGeomScreen(scr_z = gCameraDefaultScrZ);
-
-	if (cp == NULL)
+	if (cp)
 	{
-		ClearMem((char *)&inv_camera_matrix, sizeof(MATRIX));
+		// build custom matrix using car draw matrix
+		InvertMatrix(&cp->hd.drawCarMat, &inv_camera_matrix);
 
-		angle = 2048U - baseDir & 0xfff;
+		if (!((paddCamera & CAMERA_PAD_LOOK_BACK) == CAMERA_PAD_LOOK_BACK || (paddCamera & CAMERA_PAD_LOOK_BACK_DED)))
+		{
+			viewer_position.vz += cp->ap.carCos->colBox.vz - 250;
 
-		inv_camera_matrix.m[0][0] = rcossin_tbl[angle * 2 + 1];
-		inv_camera_matrix.m[0][2] = rcossin_tbl[angle * 2];
-		inv_camera_matrix.m[1][1] = 4096;
-		inv_camera_matrix.m[2][0] = -inv_camera_matrix.m[0][2];
-		inv_camera_matrix.m[2][2] = inv_camera_matrix.m[0][0];
+			_RotMatrixY(&inv_camera_matrix, 2048);
+			_RotMatrixY(&inv_camera_matrix, (lp->headPos >> 16));
+		}
+
+		MulMatrix0(&aspect, &inv_camera_matrix, &inv_camera_matrix);
+		InvertMatrix(&inv_camera_matrix, &camera_matrix);
+
+		face_camera_work.m[0][0] = ONE;
+		face_camera_work.m[0][2] = 0;
+		face_camera_work.m[2][0] = 0;
+		face_camera_work.m[2][2] = ONE;
+
+		RotMatrixY(-(camera_angle.vy & 0xfff), &face_camera_work);
+		MulMatrix0(&inv_camera_matrix, &face_camera_work, &face_camera);
+
+		viewer_position.vy = -40;
+
+		SetRotMatrix(&camera_matrix);
+		_MatrixRotate(&viewer_position);
+
+		lp->cameraPos.vx = basePos[0] + viewer_position.vx;
+		lp->cameraPos.vy = viewer_position.vy - basePos[1];
+		lp->cameraPos.vz = basePos[2] + viewer_position.vz;
 	}
 	else
 	{
-		InvertMatrix(&cp->hd.drawCarMat, &inv_camera_matrix);
+		camera_angle.vx = -tannerLookAngle.vx;
+
+		// pedestrian camera is much simpler
+		BuildWorldMatrix();
+
+		viewer_position.vy += lp->pPed->head_pos - 25;
+		//viewer_position.vz += 45;
+
+		angle = -baseDir & 0xfff;
+
+		lp->cameraPos.vx = basePos[0] + FIXEDH(rcossin_tbl[angle * 2] * viewer_position.vz);
+		lp->cameraPos.vy = viewer_position.vy - basePos[1];
+		lp->cameraPos.vz = basePos[2] - FIXEDH(rcossin_tbl[angle * 2 + 1] * viewer_position.vz);
 	}
 
-	// [A] handle REDRIVER2 dedicated look back button
-	if ((paddCamera & CAMERA_PAD_LOOK_BACK) == CAMERA_PAD_LOOK_BACK || (paddCamera & CAMERA_PAD_LOOK_BACK_DED))
-	{
-		if (cp != NULL)
-			viewer_position.vz = 170;
-	}
-	else 
-	{
-		_RotMatrixY(&inv_camera_matrix, 2048);
-		_RotMatrixY(&inv_camera_matrix, (lp->headPos >> 16));
-	
-		if (cp != NULL) 
-			viewer_position.vz = -170;
-		else
-			_RotMatrixX(&inv_camera_matrix, -tannerLookAngle.vx);
-	}
-	
-	MulMatrix0(&aspect, &inv_camera_matrix, &inv_camera_matrix);
-	InvertMatrix(&inv_camera_matrix, &camera_matrix);
-
-	face_camera_work.m[0][0] = 4096;
-	face_camera_work.m[0][2] = 0;
-	face_camera_work.m[2][0] = 0;
-	face_camera_work.m[2][2] = 4096;
-
-	RotMatrixY(-camera_angle.vy & 0xfff, &face_camera_work);
-	MulMatrix0(&inv_camera_matrix, &face_camera_work, &face_camera);
-
-	viewer_position.vy = -40;
-
-	SetRotMatrix(&camera_matrix);
-	_MatrixRotate(&viewer_position);
-
-	lp->cameraPos.vx += viewer_position.vx;
-	lp->cameraPos.vy += viewer_position.vy;
-	lp->cameraPos.vz += viewer_position.vz;
+	SetGeomScreen(scr_z = gCameraDefaultScrZ);
 
 	switch_detail_distance = 10000;
 }
