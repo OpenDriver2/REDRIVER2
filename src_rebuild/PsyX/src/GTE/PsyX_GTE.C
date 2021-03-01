@@ -57,10 +57,11 @@ unsigned int gte_leadingzerocount(unsigned int lzcs)
 	}
 
 	return lzcr;
+#endif
 
 	if (!lzcs)
 		return 32;
-#endif
+
 	// perform fast bit scan
 
 	unsigned int lzcr = lzcs;
