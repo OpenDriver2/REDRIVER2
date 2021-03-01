@@ -43,10 +43,9 @@ static int m_sf;
 static long long m_mac0;
 static long long m_mac3;
 
-#define tgte_mvmva(sf, mx, v, cv, lm) ( 0x0400012 | \
-	((sf)<<19) | ((mx)<<17) | ((v)<<15) | ((cv)<<13) | ((lm)<<10) )
-
-unsigned int gte_leadingzerocount(unsigned int lzcs) {
+unsigned int gte_leadingzerocount(unsigned int lzcs) 
+{
+#if 0 // OLD AND SLOW WAY
 	unsigned int lzcr = 0;
 
 	if ((lzcs & 0x80000000) == 0)
@@ -57,9 +56,27 @@ unsigned int gte_leadingzerocount(unsigned int lzcs) {
 		lzcs <<= 1;
 	}
 
-	const int t = tgte_mvmva(1, 2, 3, 1, 1);
-
 	return lzcr;
+
+	if (!lzcs)
+		return 32;
+#endif
+	// perform fast bit scan
+
+	unsigned int lzcr = lzcs;
+	static char debruijn32[32] = {
+        0, 31, 9, 30, 3, 8, 13, 29, 2, 5, 7, 21, 12, 24, 28, 19,
+        1, 10, 4, 14, 6, 22, 25, 20, 11, 15, 23, 26, 16, 27, 17, 18
+    };
+
+	lzcr |= lzcr >> 1;
+	lzcr |= lzcr >> 2;
+	lzcr |= lzcr >> 4;
+	lzcr |= lzcr >> 8;
+	lzcr |= lzcr >> 16;
+	lzcr++;
+
+    return debruijn32[lzcr * 0x076be629 >> 27];
 }
 
 int LIM(int value, int max, int min, unsigned int flag) {
@@ -302,9 +319,11 @@ bool PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint)
 		return false;
 	}
 
-	int start = indexhint - 8; // index hint allows us to start from specific index
+	// index hint allows us to start from specific index
+	int start = max(0, indexhint - 8);
+	int end = g_pgxpVertexIndex;// min(start + 256, g_pgxpVertexIndex);
 
-	for (int i = max(0, start); i < g_pgxpVertexIndex; i++)
+	for (int i = start; i < end; i++)
 	{
 		if (g_pgxpCache[i].lookup == lookup)
 		{
