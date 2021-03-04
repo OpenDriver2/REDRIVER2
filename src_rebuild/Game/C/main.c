@@ -982,7 +982,7 @@ void StepSim(void)
 	{
 		switch (cp->controlType)
 		{
-			case 1:
+			case CONTROL_TYPE_PLAYER:
 				t0 = Pads[*cp->ai.padid].mapped;	// [A] padid might be wrong
 				t1 = Pads[*cp->ai.padid].mapanalog[2];
 				t2 = Pads[*cp->ai.padid].type & 4;
@@ -1016,13 +1016,13 @@ void StepSim(void)
 
 				ProcessCarPad(cp, t0, t1, t2);
 				break;
-			case 2:
+			case CONTROL_TYPE_CIV_AI:
 				CivControl(cp);
 				break;
-			case 3:
+			case CONTROL_TYPE_PURSUER_AI:
 				CopControl(cp);
 				break;
-			case 4:
+			case CONTROL_TYPE_LEAD_AI:
 				t2 = 0;
 				t1 = 0;
 				t0 = 0;
@@ -1040,7 +1040,7 @@ void StepSim(void)
 				}
 
 				break;
-			case 7:
+			case CONTROL_TYPE_CUTSCENE:
 #ifdef CUTSCENE_RECORDER
 				extern int gCutsceneAsReplay;
 				extern int gCutsceneAsReplay_PlayerId;

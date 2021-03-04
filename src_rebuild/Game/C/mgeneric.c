@@ -10,13 +10,16 @@
 
 #include "STRINGS.H"
 
-// [D] [T]
-void StorePlayerPosition(SAVED_PLAYER_POS *data)
+// [D] [T] [A] returns player car slot
+int StorePlayerPosition(SAVED_PLAYER_POS *data)
 {
 	ushort type;
+	int slot;
+
+	slot = player[0].playerCarId;
 
 	if (player[0].playerType == 1)
-		type = ((MissionHeader->residentModels[car_data[player[0].playerCarId].ap.model] & 0xfff) << 4) | 1 | car_data[player[0].playerCarId].ap.palette << 8;
+		type = ((MissionHeader->residentModels[car_data[slot].ap.model] & 0xfff) << 4) | 1 | car_data[slot].ap.palette << 8;
 	else
 		type = 0;
 
@@ -26,21 +29,21 @@ void StorePlayerPosition(SAVED_PLAYER_POS *data)
 	data->vy = player[0].pos[1];
 	data->vz = player[0].pos[2];
 
-	if (player[0].playerCarId < 0)
+	if (slot < 0)
 		data->felony = pedestrianFelony;
 	else
-		data->felony = car_data[player[0].playerCarId].felonyRating;
+		data->felony = car_data[slot].felonyRating;
 
 	if (player[0].playerType == 1)
 	{
-		data->totaldamage = car_data[player[0].playerCarId].totalDamage;
+		data->totaldamage = car_data[slot].totalDamage;
 	
-		data->damage[0] = car_data[player[0].playerCarId].ap.damage[0];
-		data->damage[1] = car_data[player[0].playerCarId].ap.damage[1];
-		data->damage[2] = car_data[player[0].playerCarId].ap.damage[2];
-		data->damage[3] = car_data[player[0].playerCarId].ap.damage[3];
-		data->damage[4] = car_data[player[0].playerCarId].ap.damage[4];
-		data->damage[5] = car_data[player[0].playerCarId].ap.damage[5];
+		data->damage[0] = car_data[slot].ap.damage[0];
+		data->damage[1] = car_data[slot].ap.damage[1];
+		data->damage[2] = car_data[slot].ap.damage[2];
+		data->damage[3] = car_data[slot].ap.damage[3];
+		data->damage[4] = car_data[slot].ap.damage[4];
+		data->damage[5] = car_data[slot].ap.damage[5];
 	}
 	else
 	{
@@ -53,6 +56,8 @@ void StorePlayerPosition(SAVED_PLAYER_POS *data)
 		data->damage[4] = 0;
 		data->damage[5] = 0;
 	}
+
+	return slot;
 }
 
 
@@ -148,6 +153,7 @@ void RestoreCarPosition(SAVED_CAR_POS *data)
 		memcpy((u_char*)PlayerStartInfo[numPlayersToCreate], (u_char*)PlayerStartInfo[0], sizeof(STREAM_SOURCE));
 
 		PlayerStartInfo[numPlayersToCreate]->type = 3;
+		PlayerStartInfo[numPlayersToCreate]->controlType = CONTROL_TYPE_CIV_AI;
 
 		PlayerStartInfo[0]->type = 1;
 		PlayerStartInfo[0]->model = data->model;
@@ -187,6 +193,7 @@ void RestoreCarPosition(SAVED_CAR_POS *data)
 // [D] [T]
 void StoreEndData(void)
 {
+	int playerCarId;
 	int numStored;
 	MS_TARGET* target;
 	int i;
@@ -198,14 +205,15 @@ void StoreEndData(void)
 		return;
 
 	numStored = 0;
-	StorePlayerPosition(&MissionEndData.PlayerPos);
+	playerCarId = StorePlayerPosition(&MissionEndData.PlayerPos);
 
 	for(i = 0; i < 16 && numStored < 6; i++)
 	{
 		target = &MissionTargets[i];
 		carpos = &MissionEndData.CarPos[numStored];
 
-		if (target->type == Target_Car && 
+		if (target->type == Target_Car &&
+			playerCarId != target->car.slot &&
 			(target->target_flags & TARGET_FLAG_CAR_SAVED))
 		{
 			StoreCarPosition(target, carpos);

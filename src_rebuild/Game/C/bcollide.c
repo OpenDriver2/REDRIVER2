@@ -933,7 +933,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 						}
 						else 
 						{
-							if (gNight && (model->flags2 & 0x1000))
+							if (gNight && (model->flags2 & MODEL_FLAG_LAMP))
 							{
 								if (damage_lamp(cop))
 								{
