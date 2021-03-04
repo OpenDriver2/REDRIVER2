@@ -105,6 +105,11 @@ static int gUseRotatedMap = 0;
 int gMapXOffset = 249;
 int gMapYOffset = 181;
 
+void WorldToOverheadMapPositions(VECTOR * pGlobalPosition, VECTOR * pOverheadMapPosition, int count, char inputRelative, int outputRelative);
+void WorldToMultiplayerMap(VECTOR * in, VECTOR * out);
+void WorldToFullscreenMap(VECTOR * in, VECTOR * out);
+void WorldToFullscreenMap2(VECTOR * in, VECTOR * out);
+
 // [D] [T]
 void DrawTargetBlip(VECTOR *pos, u_char r, u_char g, u_char b, int flags)
 {
@@ -1846,21 +1851,25 @@ void WorldToMultiplayerMap(VECTOR *in, VECTOR *out)
 // [D] [T]
 void WorldToOverheadMapPositions(VECTOR *pGlobalPosition, VECTOR *pOverheadMapPosition, int count, char inputRelative,int outputRelative)
 {
-	int scale;
+	int scale, cs, sn;
 	MATRIX tempMatrix = {0};
 	SVECTOR tempVector;
+	XZPAIR playerPos;
 	long flag;
+
+	cs = RCOS(player[0].dir);
+	sn = RSIN(player[0].dir);
 
 	tempMatrix.m[0][1] = 0;
 	tempMatrix.m[1][0] = 0;
 	tempMatrix.m[1][2] = 0;
 	tempMatrix.m[2][1] = 0;
 	
-	tempMatrix.m[0][0] = rcossin_tbl[(player[0].dir & 0xfffU) * 2 + 1];
-	tempMatrix.m[2][2] = rcossin_tbl[(player[0].dir & 0xfffU) * 2 + 1];
+	tempMatrix.m[0][0] = cs;
+	tempMatrix.m[2][2] = cs;
 
-	tempMatrix.m[2][0] = -rcossin_tbl[(player[0].dir & 0xfffU) * 2];
-	tempMatrix.m[0][2] = rcossin_tbl[(player[0].dir & 0xfffU) * 2];
+	tempMatrix.m[2][0] = -sn;
+	tempMatrix.m[0][2] = sn;
 	
 	tempMatrix.t[1] = 0;
 
@@ -1878,25 +1887,30 @@ void WorldToOverheadMapPositions(VECTOR *pGlobalPosition, VECTOR *pOverheadMapPo
 	gte_SetRotMatrix(&tempMatrix);
 	gte_SetTransMatrix(&tempMatrix);
 
-	count--;
-
 	scale = overlaidmaps[GameLevel].scale;
+	playerPos.x = player[0].pos[0];
+	playerPos.z = player[0].pos[2];
 
-	while (count != -1) 
+	count--;
+	while (count >= 0) 
 	{
 		tempVector.vy = 0;
-		if (inputRelative == 0) 
-		{
-			tempVector.vx = (pGlobalPosition->vx - player[0].pos[0]) / scale;
-			tempVector.vz = (player[0].pos[2] - pGlobalPosition->vz) / scale;
-		}
-		else 
+		if (inputRelative) 
 		{
 			tempVector.vx = pGlobalPosition->vx / scale;
 			tempVector.vz = -pGlobalPosition->vz / scale;
 		}
+		else 
+		{
+			tempVector.vx = (pGlobalPosition->vx - playerPos.x) / scale;
+			tempVector.vz = (playerPos.z - pGlobalPosition->vz) / scale;
+		}
 
 		RotTrans(&tempVector, pOverheadMapPosition, &flag);
+
+		// might be faster on OG hardware... but not sure.
+		// pOverheadMapPosition->vx = tempMatrix.t[0] + (cs * tempVector.vx + sn * tempVector.vz >> 12);
+		// pOverheadMapPosition->vz = tempMatrix.t[2] + (cs * tempVector.vz - sn * tempVector.vx >> 12);
 
 		count--;
 		pGlobalPosition++;
@@ -1907,9 +1921,12 @@ void WorldToOverheadMapPositions(VECTOR *pGlobalPosition, VECTOR *pOverheadMapPo
 // [D] [T]
 void WorldToFullscreenMap(VECTOR *in, VECTOR *out)
 {
+	int scale;
+
+	scale = overlaidmaps[GameLevel].scale;
 	out->vy = 0;
-	out->vx = overlaidmaps[GameLevel].x_offset + in->vx / overlaidmaps[GameLevel].scale + 49;
-	out->vz = overlaidmaps[GameLevel].y_offset - (in->vz / overlaidmaps[GameLevel].scale - 49);
+	out->vx = overlaidmaps[GameLevel].x_offset + in->vx / scale + 49;
+	out->vz = overlaidmaps[GameLevel].y_offset - (in->vz / scale - 49);
 }
 
 // [D] [T]
@@ -1917,10 +1934,13 @@ void WorldToFullscreenMap2(VECTOR *in, VECTOR *out)
 {
 	SVECTOR pos;
 	long flag;
+	int scale;
+
+	scale = overlaidmaps[GameLevel].scale;
 
 	pos.vy = 0;
-	pos.vx = overlaidmaps[GameLevel].x_offset + (in->vx / overlaidmaps[GameLevel].scale + 49) - player_position.vx;
-	pos.vz = overlaidmaps[GameLevel].y_offset - (in->vz / overlaidmaps[GameLevel].scale - 49) - player_position.vz;
+	pos.vx = overlaidmaps[GameLevel].x_offset + (in->vx / scale + 49) - player_position.vx;
+	pos.vz = overlaidmaps[GameLevel].y_offset - (in->vz / scale - 49) - player_position.vz;
 
 	RotTrans(&pos, out, &flag);
 }

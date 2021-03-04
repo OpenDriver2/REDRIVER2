@@ -23,11 +23,4 @@ extern void DrawFullscreenMap();
 
 extern u_int Long2DDistance(VECTOR *pPoint1, VECTOR *pPoint2); // 0x00016C0C
 
-extern void WorldToMultiplayerMap(VECTOR *in, VECTOR *out); // 0x00019994
-extern void WorldToOverheadMapPositions(VECTOR *pGlobalPosition, VECTOR *pOverheadMapPosition, int count, char inputRelative, int outputRelative); // 0x00019AF0
-
-extern void WorldToFullscreenMap(VECTOR *in, VECTOR *out); // 0x00019DE8
-extern void WorldToFullscreenMap2(VECTOR *in, VECTOR *out); // 0x00019E7C
-
-
 #endif
