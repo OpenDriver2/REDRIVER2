@@ -408,6 +408,9 @@ int GR_InitialiseRender(char* windowName, int width, int height, int fullscreen)
 	g_windowWidth = width;
 	g_windowHeight = height;
 
+	// Due to debugging in fullscreen
+	SDL_SetHint(SDL_HINT_ALLOW_TOPMOST, "0");
+
 #if defined(RO_DOUBLE_BUFFERED)
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 #else
