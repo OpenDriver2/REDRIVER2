@@ -128,12 +128,12 @@ int PadGetState(int port)
 	return 0;
 }
 
-int PadInfoMode(int unk00, int unk01, int unk02)
+int PadInfoMode(int port, int term, int offs)
 {
 	return 7;//?
 }
 
-int PadInfoAct(int unk00, int unk01, int unk02)
+int PadInfoAct(int port, int acno, int term)
 {
 	PSYX_UNIMPLEMENTED();
 	return 0;
@@ -145,7 +145,7 @@ int PadInfoComb(int unk00, int unk01, int unk02)
 	return 0;
 }
 
-int PadSetActAlign(int unk00, unsigned char* unk01)
+int PadSetActAlign(int port, unsigned char* table)
 {
 	PSYX_UNIMPLEMENTED();
 	return 0;
@@ -157,7 +157,7 @@ int PadSetMainMode(int socket, int offs, int lock)
 	return 0;
 }
 
-void PadSetAct(int unk00, unsigned char* unk01, int unk02)
+void PadSetAct(int port, unsigned char* table, int len)
 {
 	PSYX_UNIMPLEMENTED();
 }

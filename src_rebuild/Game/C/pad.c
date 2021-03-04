@@ -235,7 +235,6 @@ void ClearPad(int pad)
 // [D]
 void HandleDualShock(void)
 {
-#ifdef PSX
 	PAD* pPad;
 
 	static unsigned char align[6] = {
@@ -271,11 +270,11 @@ void HandleDualShock(void)
 
 		switch (state) 
 		{
-			case 0:
-			case 4:
+			case PadStateDiscon:
+			case PadStateReqInfo:
 				break;
-			case 1:
-				pPad->state = 1;
+			case PadStateFindPad:
+				pPad->state = PadStateFindPad;
 
 				if (pPad->dsactive != 0)
 				{
@@ -288,15 +287,15 @@ void HandleDualShock(void)
 					pPad->vibrate = 0;
 				}
 				break;
-			case 2:
-				if (pPad->state != 6)
-					pPad->state = 6;
+			case PadStateFindCTP1:
+				if (pPad->state != PadStateStable)
+					pPad->state = PadStateStable;
 
 				break;
-			case 6:
-				if (pPad->state != 6)
+			case PadStateStable:
+				if (pPad->state != PadStateStable)
 				{
-					if (PadInfoMode(port, 4, 1) != 7)
+					if (PadInfoMode(port, InfoModeIdTable, 1) != 7)
 					{
 						pPad->dualshock = 0;
 						pPad->state = 6;
@@ -313,7 +312,7 @@ void HandleDualShock(void)
 						if (PadSetActAlign(port, align) != 0)
 						{
 							pPad->dsactive = 1;
-							pPad->state = 6;
+							pPad->state = PadStateStable;
 							pPad->motors[0] = 0;
 							pPad->motors[1] = 0;
 							pPad->vibrate = 0;
@@ -330,7 +329,7 @@ void HandleDualShock(void)
 				break;
 		}
 
-		if (pPad->state == 6)
+		if (pPad->state == PadStateStable)
 		{
 			if (pPad->dsactive == 0 || (pPad->vibrate == 0 && pPad->alarmShakeCounter == 0 || 50 < dsload))
 			{
@@ -361,10 +360,7 @@ void HandleDualShock(void)
 					pPad->vibrate--;
 			}
 		}
-
-
 	}
-#endif
 }
 
 // [D]

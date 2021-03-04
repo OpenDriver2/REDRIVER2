@@ -43,11 +43,11 @@ extern unsigned int PadEnableCom(unsigned int unk00);
 extern void PadEnableGun(unsigned char unk00);
 extern void PadRemoveGun();
 extern int PadGetState(int port);
-extern int PadInfoMode(int unk00, int, int unk01);
-extern int PadInfoAct(int unk00, int, int unk01);
+extern int PadInfoMode(int port, int term, int offs);
+extern int PadInfoAct(int port, int acno, int term);
 extern int PadInfoComb(int unk00, int, int unk01);
-extern int PadSetActAlign(int unk00, unsigned char* unk01);
+extern int PadSetActAlign(int port, unsigned char* table);
 extern int PadSetMainMode(int socket, int offs, int lock);
-extern void PadSetAct(int unk00, unsigned char* unk01, int unk02);
+extern void PadSetAct(int port, unsigned char* table, int len);
 
 #endif
