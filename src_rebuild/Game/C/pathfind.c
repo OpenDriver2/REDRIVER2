@@ -349,7 +349,7 @@ void InvalidateMap(void)
 		if (dir == 0)
 		{
 			p++;
-			bPos.vx += MAP_CELL_SIZE;
+			bPos.vx += MAP_CELL_SIZE / 2;
 
 			if (p + q == 1)
 				dir = 1;
@@ -357,7 +357,7 @@ void InvalidateMap(void)
 		else if (dir == 1)
 		{
 			q++;
-			bPos.vz += MAP_CELL_SIZE;
+			bPos.vz += MAP_CELL_SIZE / 2;
 
 			if (p == q)
 				dir = 2;
@@ -365,7 +365,7 @@ void InvalidateMap(void)
 		else if (dir == 2)
 		{
 			p--;
-			bPos.vx -= MAP_CELL_SIZE;
+			bPos.vx -= MAP_CELL_SIZE / 2;
 
 			if (p + q == 0)
 				dir = 3;
@@ -373,7 +373,7 @@ void InvalidateMap(void)
 		else
 		{
 			q--;
-			bPos.vz -= MAP_CELL_SIZE;
+			bPos.vz -= MAP_CELL_SIZE / 2;
 	
 			if (p == q)
 				dir = 0;
@@ -448,7 +448,7 @@ void BloodyHell(void)
 		if (dir == 0)
 		{
 			p++;
-			bPos.vx += MAP_CELL_SIZE;
+			bPos.vx += MAP_CELL_SIZE / 2;
 
 			if (p + q == 1)
 				dir = 1;
@@ -456,7 +456,7 @@ void BloodyHell(void)
 		else if (dir == 1) 
 		{
 			q++;
-			bPos.vz += MAP_CELL_SIZE;
+			bPos.vz += MAP_CELL_SIZE / 2;
 			
 			if (p == q)
 				dir = 2;
@@ -465,7 +465,7 @@ void BloodyHell(void)
 		{
 			p--;
 
-			bPos.vx -= MAP_CELL_SIZE;
+			bPos.vx -= MAP_CELL_SIZE / 2;
 
 			if (p + q == 0)
 				dir = 3;
@@ -473,7 +473,7 @@ void BloodyHell(void)
 		else 
 		{
 			q--;
-			bPos.vz -= MAP_CELL_SIZE;
+			bPos.vz -= MAP_CELL_SIZE / 2;
 
 			if (p == q)
 				dir = 0;
