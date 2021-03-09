@@ -408,7 +408,7 @@ void ControlMap(void)
 	current_barrel_region_xcell = current_cell_x - region_x * MAP_REGION_SIZE;
 	current_barrel_region_zcell = current_cell_z - region_z * MAP_REGION_SIZE;
 
-	region_to_unpack = region_x + region_z * (cells_across / MAP_REGION_SIZE);
+	region_to_unpack = region_x + region_z * regions_across;
 
 	if (current_region == -1)
 		UnpackRegion(region_to_unpack, region_x & 1U | (region_z & 1U) * 2);		// is that ever valid for 'target_barrel_region'?
@@ -522,7 +522,7 @@ void GetVisSetAtPosition(VECTOR *pos, char *tgt, int *ccx, int *ccz)
 
 	GetPVSRegionCell2(
 		barrel_region_x + barrel_region_z * 2,
-		rx + rz * (cells_across / MAP_REGION_SIZE),
+		rx + rz * regions_across,
 		(cz - rz * MAP_REGION_SIZE) * MAP_REGION_SIZE + cx - rx * MAP_REGION_SIZE,
 		tgt);
 }

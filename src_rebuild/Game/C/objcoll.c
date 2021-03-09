@@ -219,7 +219,7 @@ int GlobalPositionToCellNumber(VECTOR *pPosition)
 
 	cbr = (cbrX & 1) + (cbrZ & 1) * 2;
 
-	if (RoadMapRegions[cbr] != cbrX + cbrZ * (cells_across / MAP_REGION_SIZE))
+	if (RoadMapRegions[cbr] != cbrX + cbrZ * regions_across)
 		return -1;
 
 	return cell_ptrs[(cellZ - cbrZ * MAP_REGION_SIZE) * MAP_REGION_SIZE + cbr * (MAP_REGION_SIZE*MAP_REGION_SIZE) + cellX - cbrX * MAP_REGION_SIZE];
@@ -537,7 +537,7 @@ void CollisionCopList(XZPAIR* pos, int* count)
 				cbr.z = cell.z / MAP_REGION_SIZE;
 
 				// [A] FIXME: replace with 'cell_header.region_size'
-				if (cbr.x + cbr.z * (cells_across / MAP_REGION_SIZE) == RoadMapRegions[(cbr.x & 1) + (cbr.z & 1) * 2])
+				if (cbr.x + cbr.z * regions_across == RoadMapRegions[(cbr.x & 1) + (cbr.z & 1) * 2])
 				{
 					ppco = GetFirstPackedCop(cell.x, cell.z, &ci, 1);
 					cop = UnpackCellObject(ppco, &ci.nearCell);

@@ -1540,7 +1540,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 
 			cbr = (cbrX & 1) + (cbrZ & 1) * 2;
 
-			if (RoadMapRegions[cbr] != cbrX + cbrZ * (cells_across / MAP_REGION_SIZE))
+			if (RoadMapRegions[cbr] != cbrX + cbrZ * regions_across)
 				continue;
 
 			ppco = GetFirstPackedCop(cell_x, cell_z, &ci, 1);

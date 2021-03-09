@@ -80,11 +80,11 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 	
 	ppco = cell_objects + (num & 0x3fff);
 
-	if (ppco->value == 0xffff && (ppco->pos.vy & 1) != 0) 
+	if (ppco->value == 0xffff && (ppco->pos.vy & 1)) 
 	{
 		ppco = GetNextPackedCop(pci);
 	}
-	else if (use_computed != 0)
+	else if (use_computed)
 	{
 		value = 1 << (num & 7) & 0xffff;
 
@@ -125,7 +125,7 @@ PACKED_CELL_OBJECT* GetNextPackedCop(CELL_ITERATOR* pci)
 				return NULL;
 
 			ppco = cell_objects + (num & 0x3fff);
-		} while (ppco->value == 0xffff && (ppco->pos.vy & 1) != 0);
+		} while (ppco->value == 0xffff && (ppco->pos.vy & 1));
 
 
 		if (!pci->use_computed)

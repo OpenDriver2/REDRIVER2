@@ -319,8 +319,8 @@ sdPlane* sdGetCell(VECTOR *pos)
 	// Oct 17 2000:			RoadMapDataRegions[(v4 >> 16) & 1 ^ (((cells_across >> 6) & 1) + (((v3 - 512) >> 15) & 2)) ^ (cells_down >> 5) & 2];
 	// Oct 29 2000:			RoadMapDataRegions[(cellPos.x >> 16) & 1 ^ (((cellPos.y >> 15) & 2) + 1) ^ 2];
 
-	buffer = RoadMapDataRegions[(cellPos.x >> 16 & 1U) ^ (cells_across / (MAP_REGION_SIZE*2) & 1U) + (cellPos.y >> 15 & 2U) ^ (cells_down / MAP_REGION_SIZE) & 2U];
-	//buffer = RoadMapDataRegions[(cellPos.x >> 16) & 1 ^ (((cellPos.y >> 15) & 2) + 1) ^ 2];
+	buffer = RoadMapDataRegions[(cellPos.x >> 16 & 1U) ^ (regions_across / 2 & 1) + 
+								(cellPos.y >> 15 & 2U) ^ (regions_down & 2)];
 
 	plane = NULL;
 	
@@ -441,7 +441,9 @@ int RoadInCell(VECTOR *pos)
 
 	cellPos.x = pos->vx - 512;
 	cellPos.y = pos->vz - 512;
-	buffer = RoadMapDataRegions[cellPos.x >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + (cellPos.y >> 0xf & 2U) ^ cells_down >> 5 & 2U];
+
+	buffer = RoadMapDataRegions[(cellPos.x >> 16 & 1U) ^ (regions_across / 2 & 1) + 
+								(cellPos.y >> 15 & 2U) ^ (regions_down & 2)];
 
 	if (*buffer == 2)
 	{

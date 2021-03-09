@@ -388,7 +388,7 @@ void SetupDrawMapPSX(void)
 
 	GetPVSRegionCell2(
 		current_barrel_region_x1 + current_barrel_region_z1 * 2,
-		region_x1 + region_z1 * cells_across / MAP_REGION_SIZE,
+		region_x1 + region_z1 * regions_across,
 		(current_cell_z % MAP_REGION_SIZE) * MAP_REGION_SIZE + (current_cell_x % MAP_REGION_SIZE),
 		CurrentPVS);
 
