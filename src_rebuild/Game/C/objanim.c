@@ -104,13 +104,11 @@ ANIMATED_OBJECT* Level_AnimatingObjectPtrs[] = {
 };
 
 int Level_NumAnimatedObjects[] = {
-	9,
-	5,
-	5,
-	4
+	numberOf(Lev0AnimObjects),
+	numberOf(Lev1AnimObjects),
+	numberOf(Lev2AnimObjects),
+	numberOf(Lev3AnimObjects)
 };
-
-VECTOR gMissionDoorPosition = { 108000, 0, 4294575046, 0 };
 
 SMASHABLE_OBJECT smashable[] =
 {

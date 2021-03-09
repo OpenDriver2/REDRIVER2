@@ -135,7 +135,6 @@ int PadInfoMode(int port, int term, int offs)
 
 int PadInfoAct(int port, int acno, int term)
 {
-	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
@@ -147,7 +146,6 @@ int PadInfoComb(int unk00, int unk01, int unk02)
 
 int PadSetActAlign(int port, unsigned char* table)
 {
-	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 

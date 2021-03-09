@@ -841,7 +841,7 @@ void StepSim(void)
 
 	SetUpTrafficLightPhase();
 	MoveSmashable_object();
-	animate_garage_door();
+	//animate_garage_door();
 	StepEvents();
 	HandleMission();
 	HandleInGameCutscene();
