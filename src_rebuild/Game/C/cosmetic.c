@@ -477,8 +477,8 @@ void AddNightLights(CAR_DATA *cp)
 		lightFlag = 8 << (loop & 0x1f);
 
 		col.r = 128;
-		col.b = 128;
-		col.g = 128;
+		col.g = 124;
+		col.b = 112;
 		col2 = col;
 
 		if (cp->ap.damage[loop] < 1000)
@@ -512,7 +512,7 @@ void AddNightLights(CAR_DATA *cp)
 
 				if (cp->ap.damage[loop] < 500)
 				{
-					lights = 2;
+					lights++;
 
 					ShowCarlight(&Position2, cp, &col2, HEADLIGHT_SIZE, HEADLIGHT_SIZE * 4, &light_texture, 1);
 					lit++;
@@ -526,10 +526,13 @@ void AddNightLights(CAR_DATA *cp)
 				Position1.vz = vec.vz + (cp->ap.damage[loop] >> 6);
 				Position2.vz = vec.vz + (cp->ap.damage[loop] >> 6);
 
-				lights = 1;
-
 				ShowCarlight(&Position1, cp, &col, HEADLIGHT_SIZE, HEADLIGHT_SIZE * 4, &light_texture, lightFlag & 0xff | 1);
+
+				lights = 1;
 				lit++;
+
+				if (cp->ap.damage[loop] < 500)
+					lights++;
 			}
 		}
 
@@ -564,7 +567,6 @@ void AddNightLights(CAR_DATA *cp)
 			damIndex = (4 - loop);
 
 			col.r = 110;
-
 			col.b = 0;
 			col.g = 0;
 
@@ -616,17 +618,18 @@ void AddNightLights(CAR_DATA *cp)
 	}
 
 	// front lights pool
-	if (lit != 0)
+	if (lit)
 	{
-		col.r = (lit << 4);
-		col.g = col.r;
-		col.b = col.r;
+		col.r = 128;
+		col.g = 120;
+		col.b = 110;
+
 		PlacePoolForCar(cp, &col, 1, 0);
 	}
 
 	// back lights pool
 	col.r = *life2;
-	if (col.r != 0)
+	if (col.r)
 	{
 		col.b = 0;
 		col.g = 0;

@@ -325,6 +325,7 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 	VECTOR toss;
 	VECTOR *pos;
 	CAR_COSMETICS* car_cos;
+	CVECTOR color;
 	int Z;
 	int sub_level;
 	int car_road_height;
@@ -488,8 +489,8 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 				*(ushort*)&poly->u3 = *(ushort*)&light_pool_texture.coords.u3;
 
 				poly->r0 = col->r / 2;
-				poly->g0 = col->b / 2;
-				poly->b0 = col->g / 2;
+				poly->g0 = col->g / 2;
+				poly->b0 = col->b / 2;
 
 				gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
 
@@ -530,19 +531,25 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 
 				if (brightness)
 				{
+					int test = col->r * brightness;
+
+					color.r = MIN(255, col->r * brightness >> 4);
+					color.g = MIN(255, col->g * brightness >> 4);
+					color.b = MIN(255, col->b * brightness >> 4);
+
 					if (i & 1) 
 					{
 						sQuad(sout + VertIdx[0],
 						      sout + VertIdx[2],
 						      sout + VertIdx[3],
-						      sout + VertIdx[1], brightness * 12, LightSortCorrect);
+						      sout + VertIdx[1], &color, LightSortCorrect);
 					}
 					else
 					{
 						sQuad(sout + VertIdx[1],
 						      sout + VertIdx[3],
 						      sout + VertIdx[2],
-						      sout + VertIdx[0], brightness * 12, LightSortCorrect);
+						      sout + VertIdx[0], &color, LightSortCorrect);
 					}
 				}
 			}

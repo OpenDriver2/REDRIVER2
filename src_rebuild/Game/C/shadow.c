@@ -801,7 +801,7 @@ void clippedPoly(void)
 
 
 // [D] [T]
-void sQuad(SVECTOR *v0, SVECTOR *v1, SVECTOR *v2, SVECTOR *v3, int light_col, int LightSortCorrect)
+void sQuad(SVECTOR *v0, SVECTOR *v1, SVECTOR *v2, SVECTOR *v3, CVECTOR* light_col, int LightSortCorrect)
 {
 	int z1;
 	int z[4];
@@ -846,9 +846,9 @@ void sQuad(SVECTOR *v0, SVECTOR *v1, SVECTOR *v2, SVECTOR *v3, int light_col, in
 		setPolyG4(poly);
 		setSemiTrans(poly, 1);
 
-		poly->r1 = light_col;
-		poly->g1 = light_col;
-		poly->b1 = light_col;
+		poly->r1 = light_col->r;
+		poly->g1 = light_col->g;
+		poly->b1 = light_col->b;
 
 		poly->r0 = 0;
 		poly->g0 = 0;

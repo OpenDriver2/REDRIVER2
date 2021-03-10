@@ -1296,6 +1296,10 @@ void DrawCar(CAR_DATA* cp, int view)
 		if (lightsOnDelay[cp->id] != 0)
 			return;
 
+		col.r = 128;
+		col.g = 120;
+		col.b = 110;
+
 		PlacePoolForCar(cp, &col, 1, 1);
 		return;
 	}
