@@ -1422,6 +1422,7 @@ void DrawOverheadMap(void)
 	sptb = (POLY_F4 *)current->primptr;
 
 	setPolyF4(sptb);
+	setSemiTrans(sptb, 1);
 
 	sptb->r0 = 60;
 	sptb->g0 = 60;
