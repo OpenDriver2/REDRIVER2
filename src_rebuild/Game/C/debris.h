@@ -64,7 +64,7 @@ extern void InitFXPos(VECTOR* vec, SVECTOR* svec, CAR_DATA* cp); // 0x00039C90
 extern void SwirlLeaves(CAR_DATA* cp); // 0x00039E54
 extern void AddLeaf(VECTOR* Position, int num_leaves, int Type); // 0x00033574
 
-extern void ShowCarlight(SVECTOR *v1, CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_DETAILS *texture, int flag); // 0x000352CC
+extern void ShowCarlight(SVECTOR *v1, CAR_DATA *cp, CVECTOR *col, short size, short flare_size, TEXTURE_DETAILS *texture, int flag); // 0x000352CC
 extern void ShowLight1(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture); // 0x0003555C
 extern void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture); // 0x00035750
 extern void ShowGroundLight(VECTOR *v1, CVECTOR *col, short size); // 0x0003642C

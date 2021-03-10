@@ -69,6 +69,12 @@ void LoadCosmetics(int level)
 	ProcessCosmeticsLump(_other_buffer, 0);
 }
 
+#define REVERSELIGHT_SIZE		14
+#define INDICATORLIGHT_SIZE		20
+#define BRAKELIGHT_SIZE			17
+#define HEADLIGHT_SIZE			18
+#define BACKLIGHT_SIZE			17
+
 // [D] [T]
 void AddReverseLight(CAR_DATA *cp)
 {
@@ -90,13 +96,13 @@ void AddReverseLight(CAR_DATA *cp)
 
 	if (cp->ap.damage[4] < 500)
 	{
-		ShowCarlight(&v1, cp, &col, 14, &light_texture, 0);
+		ShowCarlight(&v1, cp, &col, REVERSELIGHT_SIZE, REVERSELIGHT_SIZE * 3, &light_texture, 0);
 	}
 
 	if (cp->ap.damage[3] < 500) 
 	{
 		v1.vx = car_cos->cog.vx * 2 - v1.vx;
-		ShowCarlight(&v1, cp, &col, 14, &light_texture, 0);
+		ShowCarlight(&v1, cp, &col, REVERSELIGHT_SIZE, REVERSELIGHT_SIZE * 3, &light_texture, 0);
 	}
 }
 
@@ -122,6 +128,8 @@ void SetupSpecCosmetics(char *loadbuffer)
 	// [A] don't forget
 	FixCarCos(&car_cosmetics[4], model);
 }
+
+
 
 // [D] [T]
 void AddIndicatorLight(CAR_DATA *cp, int Type)
@@ -172,12 +180,12 @@ void AddIndicatorLight(CAR_DATA *cp, int Type)
 		if (cp->ap.damage[4] < 500)
 		{
 			*life2 += brightness >> 3;
-			ShowCarlight(&vback, cp, &col, 20, &light_texture, 0);
+			ShowCarlight(&vback, cp, &col, INDICATORLIGHT_SIZE, INDICATORLIGHT_SIZE * 4, &light_texture, 0);
 		}
 
 		if (cp->ap.damage[0] < 500) 
 		{
-			ShowCarlight(&vfrnt, cp, &col, 20, &light_texture, 1);
+			ShowCarlight(&vfrnt, cp, &col, INDICATORLIGHT_SIZE, INDICATORLIGHT_SIZE * 4, &light_texture, 1);
 		}
 	}
 
@@ -188,13 +196,13 @@ void AddIndicatorLight(CAR_DATA *cp, int Type)
 			vback.vx = car_cos->cog.vx * 2 - vback.vx;
 			*life2 += brightness >> 3;
 
-			ShowCarlight(&vback, cp, &col, 20, &light_texture, 0);
+			ShowCarlight(&vback, cp, &col, INDICATORLIGHT_SIZE, INDICATORLIGHT_SIZE * 4, &light_texture, 0);
 		}
 
 		if (cp->ap.damage[1] < 500) 
 		{
 			vfrnt.vx = car_cos->cog.vx * 2 - vfrnt.vx;
-			ShowCarlight(&vfrnt, cp, &col, 20, &light_texture, 1);
+			ShowCarlight(&vfrnt, cp, &col, INDICATORLIGHT_SIZE, INDICATORLIGHT_SIZE * 4, &light_texture, 1);
 		}
 	}
 }
@@ -261,8 +269,8 @@ void AddBrakeLight(CAR_DATA *cp)
 
 				if (cp->ap.damage[damIndex] < 500)
 				{
-					ShowCarlight(&v1, cp, &col, 17, &light_texture, 0);
-					ShowCarlight(&v2, cp, &col, 17, &light_texture, 0);
+					ShowCarlight(&v1, cp, &col, BRAKELIGHT_SIZE, BRAKELIGHT_SIZE * 4, &light_texture, 0);
+					ShowCarlight(&v2, cp, &col, BRAKELIGHT_SIZE, BRAKELIGHT_SIZE * 4, &light_texture, 0);
 					*life2 += 8;
 				}
 			}
@@ -280,8 +288,8 @@ void AddBrakeLight(CAR_DATA *cp)
 
 				if (cp->ap.damage[damIndex] < 500)
 				{
-					ShowCarlight(&v1, cp, &col, 17, &light_texture, 0);
-					ShowCarlight(&v2, cp, &col, 17, &light_texture, 0);
+					ShowCarlight(&v1, cp, &col, BRAKELIGHT_SIZE, BRAKELIGHT_SIZE * 4, &light_texture, 0);
+					ShowCarlight(&v2, cp, &col, BRAKELIGHT_SIZE, BRAKELIGHT_SIZE * 4, &light_texture, 0);
 					*life2 += 8;
 				}
 			}
@@ -292,7 +300,7 @@ void AddBrakeLight(CAR_DATA *cp)
 
 			if (cp->ap.damage[damIndex] < 500)
 			{
-				ShowCarlight(&v1, cp, &col, 17, &light_texture, 0);
+				ShowCarlight(&v1, cp, &col, BRAKELIGHT_SIZE, BRAKELIGHT_SIZE * 4, &light_texture, 0);
 				*life2 += 8;
 			}
 		}
@@ -407,7 +415,7 @@ void AddCopCarLight(CAR_DATA *cp)
 			if (pauseflag == 0) 
 				cp->ap.coplife += count_speed;
 
-			ShowCarlight(&v1, cp, &col, size, &light_texture, 0xff);
+			ShowCarlight(&v1, cp, &col, size, size*3, &light_texture, 0xff);
 
 			if (pauseflag == 0 && (CameraCnt & 1U) != 0 && GameLevel == 2) 
 				pos++;
@@ -468,9 +476,9 @@ void AddNightLights(CAR_DATA *cp)
 		lights = 0;
 		lightFlag = 8 << (loop & 0x1f);
 
-		col.r = 255;
-		col.b = 255;
-		col.g = 255;
+		col.r = 128;
+		col.b = 128;
+		col.g = 128;
 		col2 = col;
 
 		if (cp->ap.damage[loop] < 1000)
@@ -497,7 +505,7 @@ void AddNightLights(CAR_DATA *cp)
 				Position1.vz = vec.vz + (cp->ap.damage[loop] >> 6);
 				Position2.vz = vec.vz + (cp->ap.damage[loop] >> 6);
 
-				ShowCarlight(&Position1, cp, &col, 20, &light_texture, lightFlag & 0xff | 1);
+				ShowCarlight(&Position1, cp, &col, HEADLIGHT_SIZE, HEADLIGHT_SIZE*4, &light_texture, lightFlag & 0xff | 1);
 
 				lights = 1;
 				lit++;
@@ -506,7 +514,7 @@ void AddNightLights(CAR_DATA *cp)
 				{
 					lights = 2;
 
-					ShowCarlight(&Position2, cp, &col2, 20, &light_texture, 1);
+					ShowCarlight(&Position2, cp, &col2, HEADLIGHT_SIZE, HEADLIGHT_SIZE * 4, &light_texture, 1);
 					lit++;
 				}
 			}
@@ -520,7 +528,7 @@ void AddNightLights(CAR_DATA *cp)
 
 				lights = 1;
 
-				ShowCarlight(&Position1, cp, &col, 20, &light_texture, lightFlag & 0xff | 1);
+				ShowCarlight(&Position1, cp, &col, HEADLIGHT_SIZE, HEADLIGHT_SIZE * 4, &light_texture, lightFlag & 0xff | 1);
 				lit++;
 			}
 		}
@@ -587,14 +595,14 @@ void AddNightLights(CAR_DATA *cp)
 					Position2.vz = vec.vz - (cp->ap.damage[damIndex] >> 6);
 					Position1.vz = vec.vz - (cp->ap.damage[damIndex] >> 6);
 
-					ShowCarlight(&Position1, cp, &col, 17, &light_texture, lightFlag & 0xff);
-					ShowCarlight(&Position2, cp, &col2, 17, &light_texture, 0);
+					ShowCarlight(&Position1, cp, &col, BACKLIGHT_SIZE, BACKLIGHT_SIZE * 3, &light_texture, lightFlag & 0xff);
+					ShowCarlight(&Position2, cp, &col2, BACKLIGHT_SIZE, BACKLIGHT_SIZE * 3, &light_texture, 0);
 				}
 				else
 				{
 					Position1 = vec;
 
-					ShowCarlight(&Position1, cp, &col, 17, &light_texture, lightFlag & 0xff);
+					ShowCarlight(&Position1, cp, &col, BACKLIGHT_SIZE, BACKLIGHT_SIZE * 3, &light_texture, lightFlag & 0xff);
 				}
 
 				*life2 += 16;

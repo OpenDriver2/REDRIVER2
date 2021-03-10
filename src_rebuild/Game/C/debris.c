@@ -1746,7 +1746,7 @@ void FindCarLightFade(MATRIX *carToCamera)
 }
 
 // [D] [T]
-void ShowCarlight(SVECTOR *v1, CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_DETAILS *texture,int flag)
+void ShowCarlight(SVECTOR *v1, CAR_DATA *cp, CVECTOR *col, short size, short flare_size, TEXTURE_DETAILS *texture,int flag)
 {
 	int CarLightFade;
 	VECTOR v1t;
@@ -1757,10 +1757,10 @@ void ShowCarlight(SVECTOR *v1, CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_D
 
 	if (flag != 0xFF)
 	{
-		CarLightFade = CarLightFadeBack;
-
-		if ((flag & 1U) != 0)
+		if (flag & 1)
 			CarLightFade = CarLightFadeFront;
+		else
+			CarLightFade = CarLightFadeBack;
 
 		if (CarLightFade < 0)
 			return;
@@ -1787,7 +1787,7 @@ void ShowCarlight(SVECTOR *v1, CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_D
 		v1t.vz = v1l.vz;
 		v1t.vy = -camera_position.vy - MapHeight((VECTOR *)cp->hd.where.t);
 
-		DisplayLightReflections(&v1t, &flareCol, size, &lightref_texture);
+		DisplayLightReflections(&v1t, &flareCol, flare_size / 2, &lightref_texture);
 	}
 
 	col->cd = flag;
@@ -1798,7 +1798,7 @@ void ShowCarlight(SVECTOR *v1, CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_D
 	flareCol.g /= 2;
 	flareCol.b /= 2;
 
-	ShowFlare(&v1l, &flareCol, size * 3, (v1->vx + v1->vz) / 4 + (cp->hd.direction - camera_angle.vy) * 2);
+	ShowFlare(&v1l, &flareCol, flare_size, (v1->vx + v1->vz) / 4 + (cp->hd.direction - camera_angle.vy) * 2);
 }
 
 // [D] [T]
