@@ -1363,9 +1363,13 @@ void GR_SetOffscreenState(const RECT16& offscreenRect, int enable)
 	{
 		// setup default viewport
 #ifdef USE_PGXP
-		float emuScreenAspect = float(g_windowWidth) / float(g_windowHeight);
+
+#define PGXP_FOV_FACTOR 0.9265f
+
+		const float emuScreenAspect = float(g_windowWidth) / float(g_windowHeight);
+		
 		GR_Ortho2D(-0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f, -0.5f, -1.0f, 1.0f);
-		GR_Perspective3D(0.9265f, 1.0f, 1.0f / (emuScreenAspect * PSX_SCREEN_ASPECT), 1.0f, 1000.0f);
+		GR_Perspective3D(PGXP_FOV_FACTOR, 1.0f, 1.0f / (emuScreenAspect * PSX_SCREEN_ASPECT), 0.25f, 1024.0f);
 #else
 		GR_Ortho2D(0, activeDispEnv.disp.w, activeDispEnv.disp.h, 0, -1.0f, 1.0f);
 #endif
