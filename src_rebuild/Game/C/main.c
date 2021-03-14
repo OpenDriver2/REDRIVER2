@@ -743,7 +743,7 @@ void GameInit(void)
 	{
 		i = 0;
 		do {
-			lightsOnDelay[i] = Random2(0);
+			lightsOnDelay[i] = (i * 11);
 			i++;
 		} while (i < MAX_CARS);
 	}

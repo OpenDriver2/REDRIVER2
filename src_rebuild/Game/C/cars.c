@@ -1293,7 +1293,7 @@ void DrawCar(CAR_DATA* cp, int view)
 		if (gLightsOn == 0)
 			return;
 
-		if (lightsOnDelay[cp->id] != 0)
+		if (lightsOnDelay[cp->id])
 			return;
 
 		col.r = 128;
@@ -1489,7 +1489,7 @@ void DrawCar(CAR_DATA* cp, int view)
 	else if (cp->controlType == CONTROL_TYPE_CIV_AI)
 		CivCarFX(cp);
 
-	if (gLightsOn && lightsOnDelay[cp->id] == 0)
+	if (gLightsOn && !lightsOnDelay[cp->id])
 	{
 		if (cp->controlType == CONTROL_TYPE_CIV_AI)
 		{
