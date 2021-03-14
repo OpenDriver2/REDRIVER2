@@ -121,6 +121,7 @@ void GameStart(void)
 {
 	int oldVibrationMode;
 	int SurvivalCopSettingsBackup;
+	ACTIVE_CHEATS CheatsBackup;
 
 	if (GameType != GAME_CONTINUEMISSION &&
 		GameType != GAME_MISSION &&
@@ -140,6 +141,7 @@ void GameStart(void)
 	SsSetSerialVol(0, 0, 0);
 
 	SurvivalCopSettingsBackup = gCopDifficultyLevel;
+	CheatsBackup = ActiveCheats;
 	NewLevel = 1;
 
 	switch (GameType)
@@ -171,6 +173,9 @@ void GameStart(void)
 
 				gLoadedReplay = 0;
 				gVibration = oldVibrationMode;
+
+				gCopDifficultyLevel = SurvivalCopSettingsBackup;
+				ActiveCheats = CheatsBackup;
 			}
 
 			break;
@@ -265,6 +270,9 @@ void GameStart(void)
 			LaunchGame();
 
 			gLoadedReplay = 0;
+
+			gCopDifficultyLevel = SurvivalCopSettingsBackup;
+			ActiveCheats = CheatsBackup;
 
 			break;
 	}
