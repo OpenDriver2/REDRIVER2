@@ -2692,8 +2692,8 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 
 					if (tangent > 0)
 					{
-						// [A] removed constant 
-						if (ABS(normal) < wbody * sideMul && tangent < distToObstacle)
+						// keep it 6. Does work alright
+						if (ABS(normal) < wbody * sideMul * 6 && tangent < distToObstacle)
 						{
 							distToObstacle = tangent;
 						}
