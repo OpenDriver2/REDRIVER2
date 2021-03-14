@@ -3221,13 +3221,13 @@ void HandleMission(void)
 	HandleThrownBombs();
 	HandleMissionThreads();
 
-	if (gCopCarTheftAttempted != 0)
+	if (gCopCarTheftAttempted)
 	{
 		SetMissionMessage(MissionStrings + MissionHeader->msgPoliceCar, 2, 1);
 		gCopCarTheftAttempted = 0;
 	}
 
-	if (gLockPickingAttempted != 0 && NumPlayers == 1)
+	if (gLockPickingAttempted && NumPlayers == 1)
 	{
 		SetMissionMessage(MissionStrings + MissionHeader->msgDoorsLocked, 2, 1);
 		gLockPickingAttempted = 0;

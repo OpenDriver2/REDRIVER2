@@ -7,13 +7,13 @@
 #include "players.h"
 #include "cars.h"
 #include "camera.h"
-
-#include <stdint.h>
-
 #include "map.h"
 
-#if defined(_DEBUG) && 0
+#define DEBUG_PATHFINDING_VIEW	0
+
+#if DEBUG_PATHFINDING_VIEW
 #include "SDL.h"
+#include <stdint.h>
 #endif
 
 struct tNode
@@ -22,7 +22,7 @@ struct tNode
 	int vy;
 	int vz;
 	u_short dist;
-	u_short ptoey;
+	u_short ptoey;	// just a padding. 
 };
 
 struct XZDIR
@@ -123,7 +123,7 @@ inline void OMapSet(int cellX, int cellZ, int val)
 // [A] debug obstacle map display with new debug window
 void DebugDisplayObstacleMap()
 {
-#if defined(_DEBUG) && 0
+#if DEBUG_PATHFINDING_VIEW
 	static SDL_Window* occlusionWindow;
 	static SDL_Surface* occlSurface;
 	static SDL_Texture* occlTexture;
@@ -1151,18 +1151,15 @@ void UpdateCopMap(void)
 
 	pathFrames++;
 
-	maxret = distanceReturnedLog[7];
-	
-	i = 6;
-	do {
-		
-		if (maxret < distanceReturnedLog[i])
+	maxret = 0;
+	for(i = 0; i < 8; i++)
+	{
+		if (distanceReturnedLog[i] > maxret)
 			maxret = distanceReturnedLog[i];
+	}
 
-		i--;
-	} while (i >= 0);
-
-	if (pathFrames > 250 || heap[1].dist - maxret > 3000)  // [A] was (pathFrames < pathFrames)
+	if (pathFrames > 250 ||		 // [A] was (pathFrames < pathFrames)
+		heap[1].dist - maxret > 3000) 
 	{
 		pathFrames = 0;
 	}
