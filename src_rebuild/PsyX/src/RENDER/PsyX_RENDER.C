@@ -882,6 +882,21 @@ void GR_GenerateCommonTextures()
 #endif
 }
 
+TextureID GR_CreateRGBATexture(int width, int height, u_char* data /*= nullptr*/)
+{
+	TextureID newTexture;
+	glGenTextures(1, &newTexture);
+
+	glBindTexture(GL_TEXTURE_2D, newTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, g_bilinearFiltering ? GL_LINEAR : GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, g_bilinearFiltering ? GL_LINEAR : GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	return newTexture;
+}
+
 void GR_InitialisePSXShaders()
 {
 	g_gte_shader_4 = GR_Shader_Compile(gte_shader_4);

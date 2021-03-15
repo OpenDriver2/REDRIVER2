@@ -89,31 +89,33 @@ typedef uint ShaderID;
 extern void GR_SwapWindow();
 
 // PSX VRAM operations
-extern void GR_SaveVRAM(const char* outputFileName, int x, int y, int width, int height, int bReadFromFrameBuffer);
-extern void GR_CopyVRAM(unsigned short* src, int x, int y, int w, int h, int dst_x, int dst_y);
-extern void GR_ReadVRAM(unsigned short* dst, int x, int y, int dst_w, int dst_h);
+extern void			GR_SaveVRAM(const char* outputFileName, int x, int y, int width, int height, int bReadFromFrameBuffer);
+extern void			GR_CopyVRAM(unsigned short* src, int x, int y, int w, int h, int dst_x, int dst_y);
+extern void			GR_ReadVRAM(unsigned short* dst, int x, int y, int dst_w, int dst_h);
 
-extern void GR_StoreFrameBuffer(int x, int y, int w, int h);
-extern void GR_UpdateVRAM();
+extern void			GR_StoreFrameBuffer(int x, int y, int w, int h);
+extern void			GR_UpdateVRAM();
 
-extern void GR_SetShader(const ShaderID& shader);
-extern void GR_Perspective3D(const float fov, const float width, const float height, const float zNear, const float zFar);
-extern void GR_Ortho2D(float left, float right, float bottom, float top, float znear, float zfar);
+extern TextureID	GR_CreateRGBATexture(int width, int height, u_char* data = nullptr);
 
-extern void GR_SetBlendMode(BlendMode blendMode);
-extern void GR_SetPolygonOffset(float ofs);
-extern void GR_SetStencilMode(int drawPrim);
-extern void GR_EnableDepth(int enable);
-extern void GR_SetScissorState(int enable);
-extern void GR_SetOffscreenState(const RECT16& offscreenRect, int enable);
-extern void GR_SetupClipMode(const RECT16& clipRect, int enable);
-extern void GR_SetViewPort(int x, int y, int width, int height);
-extern void GR_SetTexture(TextureID texture, TexFormat texFormat);
-extern void GR_SetWireframe(bool enable);
+extern void			GR_SetShader(const ShaderID& shader);
+extern void			GR_Perspective3D(const float fov, const float width, const float height, const float zNear, const float zFar);
+extern void			GR_Ortho2D(float left, float right, float bottom, float top, float znear, float zfar);
 
-extern void GR_DestroyTexture(TextureID texture);
-extern void GR_Clear(int x, int y, int w, int h, unsigned char r, unsigned char g, unsigned char b);
-extern void GR_UpdateVertexBuffer(const GrVertex* vertices, int count);
-extern void GR_DrawTriangles(int start_vertex, int triangles);
+extern void			GR_SetBlendMode(BlendMode blendMode);
+extern void			GR_SetPolygonOffset(float ofs);
+extern void			GR_SetStencilMode(int drawPrim);
+extern void			GR_EnableDepth(int enable);
+extern void			GR_SetScissorState(int enable);
+extern void			GR_SetOffscreenState(const RECT16& offscreenRect, int enable);
+extern void			GR_SetupClipMode(const RECT16& clipRect, int enable);
+extern void			GR_SetViewPort(int x, int y, int width, int height);
+extern void			GR_SetTexture(TextureID texture, TexFormat texFormat);
+extern void			GR_SetWireframe(bool enable);
+
+extern void			GR_DestroyTexture(TextureID texture);
+extern void			GR_Clear(int x, int y, int w, int h, unsigned char r, unsigned char g, unsigned char b);
+extern void			GR_UpdateVertexBuffer(const GrVertex* vertices, int count);
+extern void			GR_DrawTriangles(int start_vertex, int triangles);
 
 #endif
