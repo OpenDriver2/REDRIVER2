@@ -214,7 +214,7 @@ void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 	if (n < 2)
 		return;
 
-#ifdef USE_PGXP
+#if 0
 	// no need to subdivide!
 	if (g_pgxpZBuffer)
 		return;
@@ -321,7 +321,7 @@ void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 	if (n < 2)
 		numPolys = 1;
 
-#ifdef USE_PGXP
+#if 0
 	// no need to subdivide!
 	if (g_pgxpZBuffer)
 		numPolys = 1;
