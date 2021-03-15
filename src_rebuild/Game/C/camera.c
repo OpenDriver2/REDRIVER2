@@ -589,12 +589,18 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 		// build custom matrix using car draw matrix
 		InvertMatrix(&cp->hd.drawCarMat, &inv_camera_matrix);
 
+		viewer_position.vy = -40;
+
 		if (!((paddCamera & CAMERA_PAD_LOOK_BACK) == CAMERA_PAD_LOOK_BACK || (paddCamera & CAMERA_PAD_LOOK_BACK_DED)))
 		{
-			viewer_position.vz += cp->ap.carCos->colBox.vz - 250;
+			viewer_position.vz -= cp->ap.carCos->colBox.vz - 250;
 
-			_RotMatrixY(&inv_camera_matrix, 2048);
-			_RotMatrixY(&inv_camera_matrix, (lp->headPos >> 16));
+			// rotate vector on vehicle
+			SetRotMatrix(&cp->hd.drawCarMat);
+			_MatrixRotate(&viewer_position);
+
+			// rotate head
+			_RotMatrixY(&inv_camera_matrix, 2048 + (lp->headPos >> 16));
 		}
 
 		MulMatrix0(&aspect, &inv_camera_matrix, &inv_camera_matrix);
@@ -607,11 +613,6 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 
 		RotMatrixY(-(camera_angle.vy & 0xfff), &face_camera_work);
 		MulMatrix0(&inv_camera_matrix, &face_camera_work, &face_camera);
-
-		viewer_position.vy = -40;
-
-		SetRotMatrix(&camera_matrix);
-		_MatrixRotate(&viewer_position);
 
 		lp->cameraPos.vx = basePos[0] + viewer_position.vx;
 		lp->cameraPos.vy = viewer_position.vy - basePos[1];
