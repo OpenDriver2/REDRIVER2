@@ -282,6 +282,8 @@ PGXPVector3D g_FP_SXYZ2;
 PGXPVData g_pgxpCache[65535];
 int g_pgxpVertexIndex = 0;
 int g_pgxpTransformed = 0;
+float g_pgxpZOffset = 0.0f;
+float g_pgxpZScale = 1.0f;
 
 void PGXP_ClearCache()
 {
@@ -304,6 +306,12 @@ ushort PGXP_EmitCacheData(PGXPVData& newData)
 	g_pgxpCache[g_pgxpVertexIndex++] = newData;
 	g_pgxpTransformed = 1;
 	return g_pgxpVertexIndex;
+}
+
+void PGXP_SetZOffsetScale(float offset, float scale)
+{
+	g_pgxpZOffset = offset;
+	g_pgxpZScale = scale;
 }
 
 // sets copy of cached vertex data to out
@@ -329,7 +337,6 @@ bool PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint)
 		if (g_pgxpCache[i].lookup == lookup)
 		{
 			out = g_pgxpCache[i];
-
 			return true;
 		}
 	}
@@ -390,9 +397,12 @@ int GTE_RotTransPers(int idx, int lm)
 	// perspective is performed exclusively in shader
 	PGXPVData vdata;
 	vdata.lookup = PGXP_LOOKUP_VALUE(g_FP_SXYZ2.x, g_FP_SXYZ2.y);		// hash short values
-	vdata.px = /*double(C2_OFX) / float(1 << 16) + */fMAC1 * one_by_v;
-	vdata.py = /*double(C2_OFY) / float(1 << 16) + */fMAC2 * one_by_v;
-	vdata.pz = fMAC3 * one_by_v;
+
+	// FIXME: actually we scaling here entire geometry, is that correct?
+	vdata.px = fMAC1 * one_by_v * g_pgxpZScale + g_pgxpZOffset;
+	vdata.py = fMAC2 * one_by_v * g_pgxpZScale + g_pgxpZOffset;
+	vdata.pz = fMAC3 * one_by_v * g_pgxpZScale + g_pgxpZOffset;
+
 	vdata.ofx = float(C2_OFX) / float(1 << 16);
 	vdata.ofy = float(C2_OFY) / float(1 << 16);
 	vdata.scr_h = float(C2_H);// / float(1 << 16);

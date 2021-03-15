@@ -31,11 +31,13 @@ struct PGXPVData
 
 extern int g_pgxpVertexIndex;
 
-void PGXP_ClearCache();
+void	PGXP_ClearCache();
 
-ushort PGXP_EmitCacheData(PGXPVData& newData);
-bool PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint);
-ushort PGXP_GetIndex();
+ushort	PGXP_EmitCacheData(PGXPVData& newData);
+void	PGXP_SetZOffsetScale(float offset, float scale);
+
+bool	PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint);
+ushort	PGXP_GetIndex();
 
 // special PGXP type
 typedef struct {		/* 2D short vector */
