@@ -33,6 +33,10 @@ void Tile1x1(MODEL *model)
 	else
 		ofse = 133;
 
+#ifdef USE_PGXP
+	PGXP_SetZOffsetScale(0.0f, ofse > 200 ? 1.01f : 0.99f);
+#endif
+
 	i = model->num_polys;
 	while (i > 0)
 	{
@@ -83,6 +87,10 @@ void Tile1x1(MODEL *model)
 		polys = (PL_POLYFT4*)((char*)polys + plotContext.polySizes[ptype]);
 		i--;
 	}
+
+#ifdef USE_PGXP
+	PGXP_SetZOffsetScale(0.0f, 1.0f);
+#endif
 
 	// done
 	plotContext.current->primptr = plotContext.primptr;
@@ -420,12 +428,21 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 		{
 			case 0:
 			case 1:
+#ifdef USE_PGXP
+				PGXP_SetZOffsetScale(0.0f, ofse > 200 ? 1.01f : 0.99f);
+#endif
 				SubdivNxM((char *)polys, levels, levels, ofse);
 				break;
 			case 3:
+#ifdef USE_PGXP
+				PGXP_SetZOffsetScale(0.0f, 0.9f);
+#endif
 				SubdivNxM((char *)polys, levels, 1, Dofse);
 				break;
 			case 4:
+#ifdef USE_PGXP
+				PGXP_SetZOffsetScale(0.0f, 1.0f);
+#endif
 				SubdivNxM((char *)polys, levels, levels, 133);
 				break;
 		}
@@ -436,6 +453,10 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 		polys += plotContext.polySizes[*polys];
 		i++;
 	}
+
+#ifdef USE_PGXP
+	PGXP_SetZOffsetScale(0.0f, 1.0f);
+#endif
 }
 
 void ProcessSubDivisionLump(char *lump_ptr, int lump_size)
