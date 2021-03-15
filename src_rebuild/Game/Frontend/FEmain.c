@@ -117,7 +117,7 @@ extern int InvincibleOnOffScreen(int bSetup); // 0x001C66A0
 extern int GamePlayScreen(int bSetup); // 0x001C66EC
 extern int GameNameScreen(int bSetup); // 0x001C60A0
 extern int CheatNumlayerSelect(int bSetup); // 0x001C6724
-extern int BonusGalleryScreen(int bSetup);
+extern int UserReplaySelectScreen(int bSetup);
 
 screenFunc fpUserFunctions[] = {
 	CentreScreen,
@@ -140,7 +140,7 @@ screenFunc fpUserFunctions[] = {
 	GamePlayScreen,
 	GameNameScreen,
 	CheatNumlayerSelect,
-
+	UserReplaySelectScreen,
 };
 
 char* gfxNames[4] = {
@@ -478,15 +478,15 @@ void SetVariable(int var)
 			{
 				// [A] temporary
 				// TODO: Do menu with the replays
-				if(LoadReplayFromFile("Replays/CHASE.D2RP") == 0)
-				{
-					ReInitFrontend();
-				}
-				else 
+				if(LoadReplayFromFile("Replays/CHASE.D2RP"))
 				{
 					StoredGameType = GameType;
 					GameType = GAME_LOADEDREPLAY;
 					GameStart();
+				}
+				else 
+				{
+					ReInitFrontend();
 				}
 			}
 			else
@@ -1089,6 +1089,15 @@ void LoadFrontendScreens(int full)
 				ptr += sizeof(PSXBUTTON);
 			}
 		}
+
+#ifndef PSX
+		// [A] replay theater
+		// use screen 39 for it
+		PsxScreens[4].buttons[0].action = (1 << 8) | 39;
+		PsxScreens[4].buttons[0].var = 0;
+
+		PsxScreens[39].userFunctionNum = 21;
+#endif
 	}
 #endif
 
@@ -3554,7 +3563,145 @@ int CheatNumlayerSelect(int bSetup)
 	return 0;
 }
 
+#ifndef PSX
+int BuildButtonsVertical(int count, int xStart, int yStart)
+{
+	int numButtons = count;
+
+	if (numButtons > 8)
+		numButtons = 8;
+
+	for (int i = 0; i < numButtons; i++)
+	{
+		int prevButton = i - 1;
+		int nextButton = i + 1;
+
+		if (prevButton < 0)
+			prevButton += numButtons;
+
+		if (nextButton >= numButtons)
+			nextButton -= numButtons;
+
+		PSXBUTTON& btn = pCurrScreen->buttons[i];
+
+		// copy button 0
+		btn = PsxScreens[4].buttons[0];
+
+		btn.u = prevButton + 1;
+		btn.d = nextButton + 1;
+
+		btn.l = i;
+		btn.r = i;
+
+		btn.s_x = xStart + 200;
+		btn.s_y = yStart + i * 38;
+
+		btn.x = xStart;
+		btn.y = yStart + i * 38;
+
+		btn.action = 0;
+
+		btn.var = i;
+
+		sprintf(btn.Name, "Button %d", i+1);
+	}
+
+	pCurrScreen->numButtons = numButtons;
+
+	return numButtons;
+}
 
 
+#include "../utils/fs.h"
+char gFEReplayList[8][20];
+int gFEReplayCount = 0;
+#endif
 
+int UserReplaySelectScreen(int bSetup)
+{
+#ifndef PSX
+	if (bSetup)
+	{
+		FS_FINDDATA* fd;
+		const char* filename;
+		const char* tmp;
 
+		gFEReplayCount = 0;
+		fd = NULL;
+		filename = FS_FindFirst("Replays/*.D2RP", &fd);
+
+		while (filename)
+		{
+			strncpy(gFEReplayList[gFEReplayCount], filename, 16);
+			tmp = strchr(filename, '.');
+			gFEReplayList[gFEReplayCount][19] = 0;
+
+			gFEReplayCount++;
+			filename = FS_FindNext(fd);
+
+			// [A] don't load more than 8
+			if (gFEReplayCount >= 8)
+				break;
+		}
+
+		FS_FindClose(fd);
+
+		if (gFEReplayCount)
+		{
+			int yOfs = 170;
+
+			if (gFEReplayCount < 6)
+				yOfs = 208;
+
+			int numButtons = BuildButtonsVertical(gFEReplayCount, 160, yOfs);
+
+			for (int i = 0; i < numButtons; i++)
+			{
+				PSXBUTTON& btn = pCurrScreen->buttons[i];
+				strcpy(btn.Name, gFEReplayList[i]);
+
+				tmp = strchr(btn.Name, '.');
+
+				if (tmp)
+					btn.Name[tmp - btn.Name] = 0;
+				else
+					btn.Name[15] = 0;
+			}
+		}
+		else
+		{
+			BuildButtonsVertical(1, 160, 208);
+
+			PSXBUTTON& btn = pCurrScreen->buttons[0];
+			btn.action = 0x400;
+			strcpy(btn.Name, G_LTXT(GTXT_NoSavedData));
+		}
+
+		return 0;
+	}
+
+	if (gFEReplayCount)
+	{
+		if (fePad & 0x40)
+		{
+			char filename[64];
+			int selectedReplay = pCurrButton->var;
+
+			sprintf(filename, "Replays/%s", gFEReplayList[selectedReplay]);
+
+			if (LoadReplayFromFile(filename))
+			{
+				StoredGameType = GameType;
+				GameType = GAME_LOADEDREPLAY;
+				GameStart();
+			}
+			else
+			{
+				ReInitFrontend();
+			}
+		}
+	}
+#endif
+
+	return 0;
+}

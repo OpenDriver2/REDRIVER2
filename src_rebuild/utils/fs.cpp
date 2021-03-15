@@ -116,6 +116,7 @@ const char* FS_FindFirst(const char* wildcard, FS_FINDDATA** findData)
 
 	// delete if no luck
 	FS_FindClose(newFind);
+	*findData = NULL;
 
 	return nullptr;
 }
