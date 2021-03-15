@@ -34,7 +34,7 @@ void Tile1x1(MODEL *model)
 		ofse = 133;
 
 #ifdef USE_PGXP
-	PGXP_SetZOffsetScale(0.0f, ofse > 200 ? 1.01f : 0.99f);
+	PGXP_SetZOffsetScale(0.0f, ofse > 200 ? 1.005f : 0.995f);
 #endif
 
 	i = model->num_polys;
@@ -429,13 +429,13 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 			case 0:
 			case 1:
 #ifdef USE_PGXP
-				PGXP_SetZOffsetScale(0.0f, ofse > 200 ? 1.01f : 0.99f);
+				PGXP_SetZOffsetScale(0.0f, ofse > 200 ? 1.008f : 0.995f);
 #endif
 				SubdivNxM((char *)polys, levels, levels, ofse);
 				break;
 			case 3:
 #ifdef USE_PGXP
-				PGXP_SetZOffsetScale(0.0f, 0.9f);
+				PGXP_SetZOffsetScale(0.0f, ofse < 40 ? 1.0f : 0.991f);
 #endif
 				SubdivNxM((char *)polys, levels, 1, Dofse);
 				break;
