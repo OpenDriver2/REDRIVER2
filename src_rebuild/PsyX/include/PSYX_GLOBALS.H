@@ -14,6 +14,9 @@ extern int g_enableSwapInterval;
 extern int g_pgxpZBuffer;
 extern int g_bilinearFiltering;
 
+extern float g_pgxpZNear;
+extern float g_pgxpZFar;
+
 extern int g_emulatorPaused;
 extern int g_polygonSelected;
 extern int g_pgxpTextureCorrection;
