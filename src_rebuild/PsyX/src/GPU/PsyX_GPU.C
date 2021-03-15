@@ -1314,6 +1314,12 @@ int ParsePrimitive(uintptr_t primPtr)
 
 		break;
 	}
+	case 0xB0:
+	{
+		// [A] Psy-X custom texture packet
+		DR_PSYX_TEX* drtex = (DR_PSYX_TEX*)pTag;
+		break;
+	}
 	case 0xE0:  // DR_ENV commands
 	{
 		uint i;
