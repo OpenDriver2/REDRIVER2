@@ -937,6 +937,10 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 	v1 = verts + 1;
 	v2 = verts + 2;
 
+#ifdef USE_PGXP
+	PGXP_SetZOffsetScale(0.0f, 256.0f);
+#endif
+
 	while (count < model->num_vertices)
 	{
 		SVECTOR sv0 = *v0;
@@ -946,19 +950,6 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 		sv0.vy -= sky_y_offset[GameLevel];
 		sv1.vy -= sky_y_offset[GameLevel];
 		sv2.vy -= sky_y_offset[GameLevel];
-
-#ifndef PSX
-		// scale sky to get rid of vobbling
-		sv0.vx *= 110;
-		sv0.vy *= 110;
-		sv0.vz *= 110;
-		sv1.vx *= 110;
-		sv1.vy *= 110;
-		sv1.vz *= 110;
-		sv2.vx *= 110;
-		sv2.vy *= 110;
-		sv2.vz *= 110;
-#endif
 
 		gte_ldv3(&sv0, &sv1, &sv2);
 		gte_rtpt();
@@ -983,6 +974,10 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 
 		count += 3;
 	}
+
+#ifdef USE_PGXP
+	PGXP_SetZOffsetScale(0.0f, 1.0f);
+#endif
 
 	if (z > 0)
 	{
