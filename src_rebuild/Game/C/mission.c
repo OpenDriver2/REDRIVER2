@@ -1921,7 +1921,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 
 	ret = 0;
 
-	if (TargetComplete(target, thread->player) != 0) 
+	if (TargetComplete(target, thread->player)) 
 		return 1;
 
 	if (thread->player == 0) 
@@ -3132,6 +3132,7 @@ int CalcLapTime(int player, int time, int lap)
 // [D]
 void MakePhantomCarEqualPlayerCar(void)
 {
+	// store player car id
 	if (player[0].playerType == 1)
 		Mission.PhantomCarId = player[0].playerCarId;
 }
