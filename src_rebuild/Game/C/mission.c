@@ -1400,6 +1400,20 @@ int Swap2Cars(int curslot, int newslot)
 
 	gDontResetCarDamage = 0;
 
+	// [A] swap cars in targets and fix "Bank Job" bug
+	for (int i = 0; i < 16; i++)
+	{
+		MS_TARGET* swapTgt = &MissionTargets[i];
+
+		if (swapTgt->type == Target_Car)
+		{
+			if (swapTgt->car.slot == curslot)
+				swapTgt->car.slot = newslot;
+			else if (swapTgt->car.slot == newslot)
+				swapTgt->car.slot = curslot;
+		}		
+	}
+
 	return newslot;
 }
 
@@ -2663,6 +2677,7 @@ int MRCreateCar(MS_TARGET *target)
 	{
 		newslot = NumReplayStreams + cop_adjust;
 		cop_adjust++;
+
 		curslot = Swap2Cars(curslot, newslot);
 	}
 
