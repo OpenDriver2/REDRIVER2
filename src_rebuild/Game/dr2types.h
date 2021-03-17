@@ -1276,6 +1276,28 @@ enum TargetFlags
 	TARGET_FLAG_EVENT_TRIGGERED = 0x1000,
 };
 
+enum CarTargetFlags
+{
+	CARTARGET_FLAG_RANDOMCHASE			= 0x1,
+	CARTARGET_FLAG_THROWS_BOMBS			= 0x4,
+	CARTARGET_FLAG_ISCOP				= 0x8,			// makes CATARGET_FLAG_ISCOP
+
+	// FIXME: those target names can be specified poorly
+	CATTARGET_FLAG_PROXIMITY_TARGET		= 0x10,
+	CARTARGET_FLAG_STEAL_TARGET			= 0x30,
+	CARTARGET_FLAG_ESCAPE_TARGET		= 0x40,
+	CARTARGET_FLAG_CnR_TARGET			= 0x50,
+
+	CARTARGET_FLAG_FLIPPED				= 0x40000,
+	CARTARGET_FLAG_TO_BE_STOLEN			= 0x10000,
+	CARTARGET_FLAG_DAMAGED				= 0x80000,
+	CARTARGET_FLAG_PED_ESCAPES			= 0x100000,
+	CARTARGET_FLAG_DETONATOR			= 0x200000,		// has a detonator timer
+
+	CARTARGET_FLAG_BACK_TO_PLAYERCAR	= 0x400000,		// to retrieve the car to return back to
+	CARTARGET_FLAG_SET_PLAYERCAR		= 0x800000,		// sets the car to return back to
+};
+
 typedef struct _TARGET
 {
 	int type;			// data 0

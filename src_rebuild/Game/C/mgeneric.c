@@ -103,7 +103,7 @@ void StoreCarPosition(MS_TARGET *target, SAVED_CAR_POS *data)
 	CAR_DATA* cp;
 
 	// if target is a swapable, make sure it gonna be previous player car
-	if (target->car.flags & 0x400000)
+	if (target->car.flags & CARTARGET_FLAG_BACK_TO_PLAYERCAR)
 		slot = Mission.PhantomCarId;
 	else
 		slot = target->car.slot;

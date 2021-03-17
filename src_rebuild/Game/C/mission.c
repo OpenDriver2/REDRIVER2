@@ -2164,7 +2164,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 
 			if (slot == -1)
 			{
-				if (dist < 18000 || target->car.type == 3 && (target->car.flags & 0x1) == 0)
+				if (dist < 18000 || target->car.type == 3 && !(target->car.flags & CARTARGET_FLAG_RANDOMCHASE))
 					MRRequestCar(target);
 				else
 					MRCancelCarRequest(target);
@@ -2211,7 +2211,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 				{
 					if((target->target_flags & TARGET_FLAG_CAR_PLAYERCONTROLLED) == 0)
 					{
-						if(target->car.flags & 0x1)
+						if(target->car.flags & CARTARGET_FLAG_RANDOMCHASE)
 						{
 							if (target->car.cutscene == -1)
 							{
@@ -2221,9 +2221,9 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 									player[0].targetCarId = -1;
 									gBombTargetVehicle = NULL;
 
-									if ((target->car.flags & 0xf0U) != 0x20)
+									if ((target->car.flags & 0xf0) != CARTARGET_FLAG_STEAL_TARGET)
 									{
-										if (target->car.flags & 0x10000)
+										if (target->car.flags & CARTARGET_FLAG_TO_BE_STOLEN)
 											SetCarToBeStolen(target, thread->player);
 										else
 											ret = 1;
@@ -2250,7 +2250,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 							{
 								if (NewLeadDelay != 1)
 								{
-									if (target->car.flags & 0x10000)
+									if (target->car.flags & CARTARGET_FLAG_TO_BE_STOLEN)
 									{
 										DamageBar.position = target->car.chasing.maxDamage;
 
@@ -2281,7 +2281,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						}
 					}
 
-					if (target->car.flags & 0x4)
+					if (target->car.flags & CARTARGET_FLAG_THROWS_BOMBS)
 					{
 						gBombTargetVehicle = &car_data[slot];
 					}
@@ -2297,9 +2297,11 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 							// first we init damage bar
 							if (DamageBar.active == 0)
 							{
-								if (gCurrentMissionNumber != 2 && 
+								if (gCurrentMissionNumber != 2 &&
 									gCurrentMissionNumber != 6)
+								{
 									EnablePercentageBar(&DamageBar, target->car.chasing.maxDamage);
+								}
 
 								if (gCurrentMissionNumber == 11 ||
 									gCurrentMissionNumber == 13 ||
@@ -2320,7 +2322,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 
 							SetConfusedCar(slot);
 
-							if (target->car.flags & 0x100000)
+							if (target->car.flags & CARTARGET_FLAG_PED_ESCAPES)
 							{
 								cp->controlFlags &= ~CONTROL_FLAG_WAS_PARKED;
 
@@ -2331,7 +2333,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 								CreatePedAtLocation(&pos, 8);
 							}
 
-							if (target->car.flags & 0x10000)
+							if (target->car.flags & CARTARGET_FLAG_TO_BE_STOLEN)
 							{
 								SetCarToBeStolen(target, thread->player);
 
@@ -2377,7 +2379,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						
 						break;
 					}
-					case 16:	// proximity extended messages
+					case CATTARGET_FLAG_PROXIMITY_TARGET:	// proximity extended messages
 					{
 						ProxyBar.active = 1;
 						ProxyBar.position = dist;
@@ -2470,11 +2472,11 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						
 						break;
 					}
-					case 32:
+					case 0x20:
 					{
 						break;
 					}
-					case 48:
+					case CARTARGET_FLAG_STEAL_TARGET:
 					{
 						// Find the Clue and Steal the keys
 						int failIfDamaged;
@@ -2496,33 +2498,24 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 							ret = 1;
 						}
 
-						// check all chase missions where we able to get into chased cars
-						if (gCurrentMissionNumber == 11 ||	// hijack
-							gCurrentMissionNumber == 13 ||	// stop truck
-							gCurrentMissionNumber == 14 ||	// find the clue
-							gCurrentMissionNumber == 19 ||	// pursue jericho
-							gCurrentMissionNumber == 26 ||	// steal the ambulance
-							gCurrentMissionNumber == 28)	// steal the keys
+						// check if target car is damaged
+						if(failIfDamaged && cp->totalDamage >= MaxPlayerDamage[0])
 						{
-							// check if target car is damaged
-							if(failIfDamaged && cp->totalDamage >= MaxPlayerDamage[0])
-							{
-								message = MissionStrings + MissionHeader->msgCarWrecked;
+							message = MissionStrings + MissionHeader->msgCarWrecked;
 
-								SetPlayerMessage(thread->player, message, 2, 1);
-								SetMissionFailed(FAILED_MESSAGESET);
-							}
+							SetPlayerMessage(thread->player, message, 2, 1);
+							SetMissionFailed(FAILED_MESSAGESET);
 						}
 						break;
 					}
-					case 64:
+					case CARTARGET_FLAG_ESCAPE_TARGET:
 					{
 						if (copsAreInPursuit)
 							ret = 1;
 
 						break;
 					}
-					case 80:
+					case CARTARGET_FLAG_CnR_TARGET:
 					{
 						if(target->target_flags & TARGET_FLAG_CAR_PLAYERCONTROLLED)
 						{
@@ -2544,16 +2537,17 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 							}
 						}
 
-						if (cp->totalDamage < target->car.chasing.maxDamage)
-							break;
-
-						ret = 1;
-
-						// idk what it makes
-						if ((target->target_flags & TARGET_FLAG_CAR_PLAYERCONTROLLED) == 0)
+						if (cp->totalDamage >= target->car.chasing.maxDamage)
 						{
-							SetConfusedCar(slot);
+							ret = 1;
+
+							// idk what it makes
+							if (!(target->target_flags & TARGET_FLAG_CAR_PLAYERCONTROLLED))
+							{
+								SetConfusedCar(slot);
+							}
 						}
+
 						break;
 					}
 				}
@@ -2663,8 +2657,8 @@ int MRCreateCar(MS_TARGET *target)
 	else
 	{
 		curslot = CreateStationaryCivCar(target->car.rotation, 0, 
-			((target->car.flags & 0x40000) != 0) << 10, &pos,
-			target->car.model, target->car.palette, (target->car.flags & 8) != 0);
+			((target->car.flags & CARTARGET_FLAG_FLIPPED) != 0) << 10, &pos,
+			target->car.model, target->car.palette, (target->car.flags & CARTARGET_FLAG_ISCOP) != 0);
 	}
 
 	if (curslot < 0)
@@ -2673,7 +2667,7 @@ int MRCreateCar(MS_TARGET *target)
 		return 0;
 	}
 
-	if (target->car.flags & 0x8)
+	if (target->car.flags & CARTARGET_FLAG_ISCOP)
 	{
 		newslot = NumReplayStreams + cop_adjust;
 		cop_adjust++;
@@ -2684,7 +2678,7 @@ int MRCreateCar(MS_TARGET *target)
 	Mission.CarTarget = NULL;
 	requestStationaryCivCar = 0;
 
-	if (target->car.type == 3 && !(target->car.flags & 0x1))
+	if (target->car.type == 3 && !(target->car.flags & CARTARGET_FLAG_RANDOMCHASE))
 	{
 		playerid = 0xFF;
 
@@ -2705,7 +2699,7 @@ int MRCreateCar(MS_TARGET *target)
 	car_data[curslot].inform = &target->target_flags;
 
 	// make fully damaged (Car bomb escape)
-	if (target->car.flags & 0x80000)
+	if (target->car.flags & CARTARGET_FLAG_DAMAGED)
 	{
 		car_data[curslot].totalDamage = 65535;
 		car_data[curslot].ap.damage[0] = 4095;
@@ -2717,7 +2711,7 @@ int MRCreateCar(MS_TARGET *target)
 		car_data[curslot].ap.needsDenting = 1;
 	}
 
-	if (target->car.flags & 0x200000)
+	if (target->car.flags & CARTARGET_FLAG_DETONATOR)
 		gCarWithABerm = curslot;
 
 	return 1;
@@ -2785,7 +2779,7 @@ void PreProcessTargets(void)
 		{
 			if ((target->target_flags & TARGET_FLAG_CAR_PLAYERCONTROLLED) == 0)
 			{
-				if (target->car.type == 3 && (target->car.flags & 0x1))
+				if (target->car.type == 3 && (target->car.flags & CARTARGET_FLAG_RANDOMCHASE))
 				{
 					PreLoadInGameCutscene(gRandomChase);
 				}
@@ -2906,13 +2900,7 @@ int HandleGameOver(void)
 			int surf = GetSurfaceIndex((VECTOR*)lp->pos);
 
 			if ((surf == -26 || surf == -23) && lp->dying == 0)
-			{
-				// allow to soak Tanner's ass in Rio De Janeiro a little bit
-				if (GameLevel == 3 && gCurrentMissionNumber != 35)
-					tannerDeathTimer++;
-				else
-					tannerDeathTimer = 64;
-			}
+				tannerDeathTimer++;	// allow to soak Tanner's ass in Rio De Janeiro a little bit
 			else
 				tannerDeathTimer = 0;
 		}
@@ -3155,12 +3143,12 @@ void MakePhantomCarEqualPlayerCar(void)
 // [D]
 void SetCarToBeStolen(MS_TARGET *target, int player)
 {
-	if (target->car.flags & 0x800000)
+	if (target->car.flags & CARTARGET_FLAG_SET_PLAYERCAR)
 		MakePhantomCarEqualPlayerCar();
 
 	target->target_flags |= TARGET_FLAG_CAR_SAVED;
 	target->car.type = 1;
-	target->car.flags = 0x30;
+	target->car.flags = CARTARGET_FLAG_STEAL_TARGET;
 	target->car.maxDistance = 0;
 
 	SetPlayerMessage(player, Mission.StealMessage, 2, 2);
