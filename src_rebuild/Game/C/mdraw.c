@@ -432,10 +432,10 @@ void DrawWorldTargets(void)
 {
 	int i;
 
-	if (Mission.active == 0)
+	if (!Mission.active)
 		return;
 
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < MAX_MISSION_TARGETS; i++)
 		DrawWorldTarget(&MissionTargets[i]);
 }
 
@@ -445,16 +445,11 @@ void DrawOverheadTargets(void)
 {
 	int i;
 
-	if (Mission.active == 0)
+	if (!Mission.active)
 		return;
 
-	i = 0;
-
-	do {
-
-		DrawOverheadTarget(MissionTargets + i);
-		i++;
-	} while (i < 16);
+	for (i = 0; i < MAX_MISSION_TARGETS; i++)
+		DrawOverheadTarget(&MissionTargets[i]);
 }
 
 
@@ -463,14 +458,11 @@ void DrawFullscreenTargets(void)
 {
 	int i;
 
-	if (Mission.active == 0)
+	if (!Mission.active)
 		return;
 
-	i = 0;
-
-	do {
-		DrawFullscreenTarget(&MissionTargets[i++]);
-	} while (i < 16);
+	for (i = 0; i < MAX_MISSION_TARGETS; i++)
+		DrawFullscreenTarget(&MissionTargets[i]);
 }
 
 // [D] [T]
@@ -478,11 +470,9 @@ void DrawMultiplayerTargets(void)
 {
 	int i;
 
-	if (Mission.active == 0)
+	if (!Mission.active)
 		return;
 
-	i = 0;
-	do {
-		DrawMultiplayerTarget(&MissionTargets[i++]);
-	} while (i < 16);
+	for (i = 0; i < MAX_MISSION_TARGETS; i++)
+		DrawMultiplayerTarget(&MissionTargets[i]);
 }

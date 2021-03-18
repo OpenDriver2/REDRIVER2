@@ -225,7 +225,7 @@ void StoreEndData(void)
 	numStored = 0;
 	StorePlayerPosition(&MissionEndData.PlayerPos);
 
-	for(i = 0; i < 16 && numStored < 6; i++)
+	for(i = 0; i < MAX_MISSION_TARGETS && numStored < 6; i++)
 	{
 		target = &MissionTargets[i];
 		carpos = &MissionEndData.CarPos[numStored];
