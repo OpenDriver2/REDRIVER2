@@ -182,8 +182,8 @@ static char NewLeadDelay = 0;
 #define MISSION_IDENT		(('D' << 24) | ('2' << 16) | ('M' << 8) | 'S' )
 
 MR_MISSION Mission;
-u_int MissionStack[16][16];
-MR_THREAD MissionThreads[16];
+u_int MissionStack[MAX_MISSION_THREADS][16];
+MR_THREAD MissionThreads[MAX_MISSION_TARGETS];
 
 unsigned char playercollected[2] = { 0, 0 };
 
@@ -435,7 +435,7 @@ void LoadMission(int missionnum)
 
 	MissionHeader = MissionLoadAddress;
 	MissionTargets = (MS_TARGET *)((int)MissionLoadAddress + MissionLoadAddress->size);
-	MissionScript = (u_int *)(MissionTargets + 16);
+	MissionScript = (u_int *)(MissionTargets + MAX_MISSION_TARGETS);
 	MissionStrings = (char*)((int*)MissionScript + MissionLoadAddress->strings);
 	
 	if (MissionLoadAddress->route && !NewLevel)
@@ -1401,7 +1401,7 @@ int Swap2Cars(int curslot, int newslot)
 	gDontResetCarDamage = 0;
 
 	// [A] swap cars in targets and fix "Bank Job" bug
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < MAX_MISSION_TARGETS; i++)
 	{
 		MS_TARGET* swapTgt = &MissionTargets[i];
 
@@ -1443,10 +1443,10 @@ void HandleMissionThreads(void)
 	int running;
 	u_int value;
 
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < MAX_MISSION_TARGETS; i++)
 		MissionTargets[i].target_flags &= ~TARGET_FLAG_VISIBLE_ALLP;
 
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < MAX_MISSION_THREADS; i++)
 	{
 		thread = &MissionThreads[i];
 		running = thread->active;
@@ -1478,6 +1478,9 @@ void HandleMissionThreads(void)
 				break;
 			}
 		}
+
+		// [A] handle car requets after each thread
+		MRHandleCarRequests();
 	}
 }
 
@@ -1787,7 +1790,7 @@ void MRInitialiseThread(MR_THREAD *thread, u_int *pc, u_char player)
 void MRStartThread(MR_THREAD *callingthread, u_int addr, unsigned char player)
 {
 	int i;
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < MAX_MISSION_THREADS; i++)
 	{
 		if (!MissionThreads[i].active)
 		{
@@ -1808,7 +1811,7 @@ int MRStopThread(MR_THREAD *thread)
 void MRCommitThreadGenocide(void)
 {
 	int i;
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < MAX_MISSION_THREADS; i++)
 		MRStopThread(&MissionThreads[i]);
 }
 
@@ -2091,7 +2094,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						if (target->target_flags & 0x400000)
 							return 1;
 
-						if ((target->target_flags & 0x800000) && player[thread->player].playerType != 1)
+						if ((target->target_flags & TARGET_FLAG_POINT_PLAYER_MUSTHAVE_CAR) && player[thread->player].playerType != 1)
 							ret = 0;
 
 						break;
@@ -2620,8 +2623,15 @@ int MRRequestCar(MS_TARGET *target)
 		return 0;
 
 	Mission.CarTarget = target;
-
+	
 	return 1;
+}
+
+// [D] [T]
+void MRCancelCarRequest(MS_TARGET* target)
+{
+	if (Mission.CarTarget == target)
+		Mission.CarTarget = NULL;
 }
 
 // [D] [T]
@@ -2719,13 +2729,6 @@ int MRCreateCar(MS_TARGET *target)
 
 
 // [D] [T]
-void MRCancelCarRequest(MS_TARGET *target)
-{
-	if (Mission.CarTarget == target)
-		Mission.CarTarget = NULL;
-}
-
-// [D] [T]
 void PreProcessTargets(void)
 {
 	MS_TARGET *target;
@@ -2736,10 +2739,10 @@ void PreProcessTargets(void)
 		PreLoadInGameCutscene(i);
 	}
 
-	i = 15;
+	for (i = 0; i < MAX_MISSION_TARGETS; i++)
+	{
+		target = &MissionTargets[i];
 
-	target = MissionTargets;
-	do {
 		if (target->type == Target_Player2Start || 
 			target->type == Target_Car && (target->target_flags & TARGET_FLAG_CAR_PLAYERCONTROLLED))
 		{
@@ -2785,10 +2788,7 @@ void PreProcessTargets(void)
 				}
 			}
 		}
-
-		i--;
-		target++;
-	} while (i >= 0);
+	}
 }
 
 extern int gStopPadReads;
@@ -2974,18 +2974,16 @@ void CompleteAllActiveTargets(int player)
 		flag2 = TARGET_FLAG_COMPLETED_P2;
 	}
 
-	pTarget = MissionTargets;
-	i = 0;
-	do {
+	for (i = 0; i < MAX_MISSION_TARGETS; i++)
+	{
+		pTarget = &MissionTargets[i];
+
 		if (pTarget->type >= Target_Point && 
 			pTarget->type <= Target_Event && (pTarget->target_flags & flag1))
 		{
 			pTarget->target_flags |= flag2;
 		}
-
-		i++;
-		pTarget++;
-	} while (i < 16);
+	}
 }
 
 // [D] [T]
@@ -3093,21 +3091,18 @@ void ActivateNextFlag(void)
 	else
 		MissionTargets[last_flag].target_flags |= TARGET_FLAG_COMPLETED_ALLP;
 
-	i = 0;
 	j = last_flag;
 	
-	while (i < 16) 
+	for (i = 0; i < MAX_MISSION_TARGETS; i++)
 	{
 		j++;
 
-		j = j % 16;
+		j = j % MAX_MISSION_TARGETS;
 
 		target = &MissionTargets[j];
 
 		if (target->type == Target_Point && (target->target_flags & TARGET_FLAG_POINT_CTF_FLAG) == TARGET_FLAG_POINT_CTF_FLAG)
 			break;
-
-		i++;
 	}
 
 	target->target_flags &= ~TARGET_FLAG_COMPLETED_ALLP;
@@ -3196,8 +3191,6 @@ void HandleMission(void)
 			FelonyBar.active = 0;
 		}
 	}
-
-	MRHandleCarRequests();
 
 	if (bMissionTitleFade)
 		return;
