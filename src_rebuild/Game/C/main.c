@@ -2051,6 +2051,10 @@ int redriver2_main(int argc, char** argv)
 	// now run the frontend
 	DoFrontEnd();
 
+#ifndef PSX
+	SaveCurrentProfile();
+#endif
+
 	return 1;
 }
 
