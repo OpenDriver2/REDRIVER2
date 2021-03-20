@@ -800,7 +800,7 @@ void ControlCopDetection(void)
 		}
 	}
 
-	if (CopsCanSeePlayer == 0 && !((gCurrentMissionNumber == 30 || gCurrentMissionNumber == 24) && CameraCnt-frameStart < 100)) 
+	if (!CopsCanSeePlayer && !((gCurrentMissionNumber == 24 || gCurrentMissionNumber == 30) && CameraCnt-frameStart < 100))
 	{
 		cp = &car_data[MAX_CARS-1];
 
@@ -879,7 +879,7 @@ void ControlCopDetection(void)
 	}
 
 	// if cops can't see player - get out of pursued state
-	if (CopsCanSeePlayer == 0)
+	if (!CopsCanSeePlayer)
 	{
 		if (OutOfSightCount <= 255) 
 		{
@@ -941,7 +941,7 @@ void ControlCopDetection(void)
 		LastHeading = heading;
 	}
 
-	if (CopsCanSeePlayer == 0)
+	if (!CopsCanSeePlayer)
 	{
 		said_picked_up = 0;
 	}
@@ -974,7 +974,8 @@ void PassiveCopTasks(CAR_DATA *cp)
 		return;
 
 	// [A] make an ambush on player in Destroy the yard
-	if (player_position_known < 1)
+	// but don't in Car bomb getaway
+	if (player_position_known < 1 || !CopsCanSeePlayer && gCurrentMissionNumber == 24)
 		return;
 
 	InitCopState(cp, NULL);

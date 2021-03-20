@@ -144,7 +144,8 @@ void ChangeCarPlayerToPed(int playerID)
 		locPlayer->horn.on = 0;
 
 	// [A] carry over felony from car to Tanner if cops see player
-	if (CopsCanSeePlayer)
+	// don't clear player felony in Destroy the Yard
+	if (CopsCanSeePlayer || gCurrentMissionNumber == 30)
 		pedestrianFelony = lcp->felonyRating;
 	else
 		pedestrianFelony = 0;
