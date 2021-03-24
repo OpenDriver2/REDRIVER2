@@ -856,7 +856,6 @@ int OnBoat(VECTOR* pos, EVENT* ev, int* dist)
 // [D] [T] [A] long function, please debug more
 void SetUpEvents(int full)
 {
-
 	int direction;
 	int i, n;
 	int* p;
@@ -875,12 +874,21 @@ void SetUpEvents(int full)
 	e = &firstEvent;
 
 	// Multiplayer level loaded?
-	if (doSpooling == 0)
+	if (!doSpooling)
 	{
 		firstEvent = NULL;
 		EventCop = NULL;
 		return;
 	}
+
+#ifndef PSX
+	if (gDemoLevel)
+	{
+		firstEvent = NULL;
+		EventCop = NULL;
+		return;
+	}
+#endif
 
 	MALLOC_BEGIN()
 
