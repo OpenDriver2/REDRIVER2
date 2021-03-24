@@ -104,7 +104,7 @@ void SetPadVibration(int pad, unsigned char type)
 	if (pad < 0)
 		return;
 
-	if(Pads[pad].dualshock != 0 && gInGameCutsceneActive == 0) 
+	if(Pads[pad].dualshock && gInGameCutsceneActive == 0) 
 	{
 		Pads[pad].shake_type = type;
 		Pads[pad].vibrate = 6;
@@ -298,7 +298,7 @@ void HandleDualShock(void)
 					if (PadInfoMode(port, InfoModeIdTable, 1) != 7)
 					{
 						pPad->dualshock = 0;
-						pPad->state = 6;
+						pPad->state = PadStateStable;
 						pPad->motors[0] = 0;
 						pPad->motors[1] = 0;
 						pPad->vibrate = 0;
@@ -331,14 +331,14 @@ void HandleDualShock(void)
 
 		if (pPad->state == PadStateStable)
 		{
-			if (pPad->dsactive == 0 || (pPad->vibrate == 0 && pPad->alarmShakeCounter == 0 || 50 < dsload))
+			if (pPad->dsactive == 0 || (pPad->vibrate == 0 && pPad->alarmShakeCounter == 0 || dsload > 50))
 			{
 				pPad->motors[0] = 0;
 				pPad->motors[1] = 0;
 			}
 			else 
 			{
-				if (pPad->vibrate == 6 || pPad->alarmShakeCounter != 0)
+				if (pPad->vibrate > 0 || pPad->alarmShakeCounter != 0)
 				{
 					if (gVibration == 0) 
 					{
@@ -378,7 +378,7 @@ void HandlePadVibration(int pad)
 		return;
 	}
 
-	if (player[pad].onGrass != 0) 
+	if (player[pad].onGrass) 
 	{
 		speed = ABS(car_data[player[pad].playerCarId].st.n.angularVelocity[1] >> 0xf);
 		speed += car_data[player[pad].playerCarId].hd.speed;
@@ -397,9 +397,9 @@ void HandlePadVibration(int pad)
 
 	if (pPad->shakeptr)
 	{
-		speed += *pPad->shakeptr;
+		speed += *pPad->shakeptr++;
 
-		if (++pPad->shakeptr == 0) 
+		if (*pPad->shakeptr == 0) 
 			pPad->shakeptr = NULL;
 	}
 
