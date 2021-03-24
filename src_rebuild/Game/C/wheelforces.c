@@ -337,9 +337,11 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 				}
 			}
 
-			if (newCompression >= 85)
+			if (newCompression >= 65)
+				SetPadVibration(*cp->ai.padid, 1);
+			else if (newCompression >= 35)
 				SetPadVibration(*cp->ai.padid, 2);
-			else if (newCompression > 48)
+			else if (newCompression > 25)
 				SetPadVibration(*cp->ai.padid, 3);
 		}
 
