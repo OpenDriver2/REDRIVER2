@@ -4,8 +4,10 @@
 #include "../PSYX_SETUP.H"
 #include "PSYX_PUBLIC.H"
 
-SDL_GameController* padHandle[MAX_CONTROLLERS];
-unsigned char* padData[MAX_CONTROLLERS];
+SDL_GameController*		padHandle[MAX_CONTROLLERS];
+SDL_Haptic*				padHaptic[MAX_CONTROLLERS];
+
+unsigned char*			padData[MAX_CONTROLLERS];
 
 const unsigned char* keyboardState = NULL;
 int g_padCommStarted = 0;
@@ -48,7 +50,7 @@ void PadInitDirect(unsigned char* pad1, unsigned char* pad2)
 	else
 		padData[0] = NULL;
 
-	if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) < 0)
+	if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) < 0)
 	{
 		eprinterr("Failed to initialise SDL GameController subsystem!\n");
 		return;
@@ -65,6 +67,12 @@ void PadInitDirect(unsigned char* pad1, unsigned char* pad2)
 		if (SDL_IsGameController(i))
 		{
 			padHandle[i] = SDL_GameControllerOpen(i);	//@TODO close joysticks
+			padHaptic[i] = SDL_HapticOpenFromJoystick(SDL_GameControllerGetJoystick(padHandle[i]));
+
+			if(!padHaptic[i])
+			{
+				eprintwarn("Warning: Controller does not support haptics! SDL Error: %s\n", SDL_GetError());
+			}
 		}
 	}
 }
@@ -146,7 +154,7 @@ int PadInfoComb(int unk00, int unk01, int unk02)
 
 int PadSetActAlign(int port, unsigned char* table)
 {
-	return 0;
+	return 1;
 }
 
 int PadSetMainMode(int socket, int offs, int lock)
@@ -155,9 +163,47 @@ int PadSetMainMode(int socket, int offs, int lock)
 	return 0;
 }
 
+u_short hapticData[MAX_CONTROLLERS][64];
+int hapticEffects[MAX_CONTROLLERS] = { -1, -1 };
+
 void PadSetAct(int port, unsigned char* table, int len)
 {
-	PSYX_UNIMPLEMENTED();
+	if (!padHaptic[port])
+		return;
+
+	if (len == 0)
+		return;
+
+	SDL_HapticEffect eff;
+	eff.type = SDL_HAPTIC_LEFTRIGHT;
+	
+	eff.leftright.small_magnitude = table[0] * 255;
+	
+	if(len > 1)
+		eff.leftright.large_magnitude = table[1] * 255;
+	else
+		eff.leftright.large_magnitude = 0;
+
+	eff.leftright.length = 150;
+	
+	if (SDL_HapticEffectSupported(padHaptic[port], &eff) != SDL_TRUE)
+		return;
+	
+	if(hapticEffects[port] == -1)
+	{
+		hapticEffects[port] = SDL_HapticNewEffect(padHaptic[port], &eff);
+		if(hapticEffects[port] == -1)
+		{
+			eprintwarn("Warning: Unable to create haptic effect! %s\n", SDL_GetError());
+		}
+	}
+	else
+		SDL_HapticUpdateEffect(padHaptic[port], hapticEffects[port], &eff);
+	
+	if (SDL_HapticRunEffect(padHaptic[port], hapticEffects[port], 1) != 0)
+	{
+		eprintwarn("Warning: Unable to run haptic effect! %s\n", SDL_GetError());
+	}
 }
 
 int GetControllerButtonState(SDL_GameController* cont, int buttonOrAxis)
