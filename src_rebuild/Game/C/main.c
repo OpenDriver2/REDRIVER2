@@ -2567,7 +2567,14 @@ int Havana3DOcclusion(occlFunc func, int* param)
 			outside = 1;
 			draw = 10;
 
-			if (camera_position.vy >= 447)
+			if (camera_position.vy < 447)
+			{
+				if (camera_position.vx > -469500)
+					draw = 17;
+				else
+					draw = 16;
+			}
+			else
 			{
 				outside = 0;
 
@@ -2584,36 +2591,27 @@ int Havana3DOcclusion(occlFunc func, int* param)
 				}
 				else
 				{
+					draw = 15;
+					
 					if (camera_position.vy >= 1730)
 					{
 						draw = 14;
 
-						if (camera_position.vy < 2100 && camera_position.vx < -472585)
+						if (camera_position.vy >= 2500)
 						{
 							draw = 13;
-						}
-						else
-						{
-							if ((camera_position.vy > 3071 && camera_position.vx > -457217 ||
-								(draw = 12, camera_position.vz < -129499)) &&
-								(draw = 10, camera_position.vz < -129500))
+
+							if(camera_position.vz < -120000)
 							{
-								draw = 11;
+								draw = 12;
+
+								// check final room
+								if (camera_position.vy >= 3300 && camera_position.vx >= -458108)
+									draw = 10;
 							}
 						}
 					}
-					else
-					{
-						draw = 15;
-					}
 				}
-			}
-			else
-			{
-				if (camera_position.vx > -469500)
-					draw = 17;
-				else
-					draw = 16;
 			}
 
 			events.camera = 1;
@@ -2630,10 +2628,10 @@ int Havana3DOcclusion(occlFunc func, int* param)
 
 			if (camera_position.vy < 447)
 			{
-				draw = 16;
-
 				if (camera_position.vx > -468500)
 					draw = 17;
+				else
+					draw = 16;
 			}
 			else
 			{
