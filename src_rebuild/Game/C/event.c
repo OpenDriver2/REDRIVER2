@@ -881,15 +881,6 @@ void SetUpEvents(int full)
 		return;
 	}
 
-#ifndef PSX
-	if (gDemoLevel)
-	{
-		firstEvent = NULL;
-		EventCop = NULL;
-		return;
-	}
-#endif
-
 	MALLOC_BEGIN()
 
 	if (full)
@@ -2813,6 +2804,15 @@ void DrawEvents(int camera)
 	int thisCamera;
 	int otherCamera;
 	int temp;
+
+#ifndef PSX
+	if (gDemoLevel)
+	{
+		firstEvent = NULL;
+		EventCop = NULL;
+		return;
+	}
+#endif
 
 	if (CurrentPlayerView == 0)
 	{
