@@ -339,7 +339,6 @@ sdPlane* sdGetCell(VECTOR *pos)
 		short* bspData = (short*)((char*)buffer + buffer[2]);
 		sdNode* nodeData = (sdNode*)((char*)buffer + buffer[3]);
 		
-		
 		surface = &buffer[(cellPos.x >> 10 & 0x3fU) + 
 						  (cellPos.y >> 10 & 0x3fU) * MAP_REGION_SIZE*2 + 4];
 
@@ -350,7 +349,7 @@ sdPlane* sdGetCell(VECTOR *pos)
 		// check surface has overlapping planes flag (aka multiple levels)
 		if ((*surface & 0x6000) == 0x2000)
 		{
-			surface = &bspData[(*surface & 0x1fff)];
+			surface = &bspData[*surface & 0x1fff];
 			do {
 				if(-256 - pos->vy > *surface)
 				{
@@ -376,7 +375,7 @@ sdPlane* sdGetCell(VECTOR *pos)
 				cell.y = cellPos.y & 0x3ff;
 				
 				// get closest surface by BSP lookup
-				BSPSurface = sdGetBSP(&nodeData[(*surface & 0x3fff)], &cell);
+				BSPSurface = sdGetBSP(&nodeData[*surface & 0x3fff], &cell);
 
 				if (*BSPSurface == 0x7fff)
 				{
@@ -463,7 +462,12 @@ int RoadInCell(VECTOR *pos)
 
 	if (*buffer == 2)
 	{
-		check = (short *)(buffer + (cellPos.x >> 10 & 0x3fU) + (cellPos.y >> 10 & 0x3fU) * 64 + 4);
+		sdPlane* planeData = (sdPlane*)((char*)buffer + buffer[1]);
+		short* bspData = (short*)((char*)buffer + buffer[2]);
+		sdNode* nodeData = (sdNode*)((char*)buffer + buffer[3]);
+
+		check = &buffer[(cellPos.x >> 10 & 0x3fU) +
+						(cellPos.y >> 10 & 0x3fU) * MAP_REGION_SIZE * 2 + 4];
 
 		if (*check == -1)
 			return -1;
@@ -473,7 +477,7 @@ int RoadInCell(VECTOR *pos)
 			moreLevels = (*check & 0x6000) == 0x2000;
 
 			if (moreLevels)
-				check = (short *)((int)buffer + (*check & 0x1fff) * sizeof(short) + buffer[2] + 2);
+				check = &bspData[(*check & 0x1fff) + 1];
 
 			do
 			{
@@ -482,25 +486,25 @@ int RoadInCell(VECTOR *pos)
 
 				if (*check & 0x4000)
 				{
-					plane = FindRoadInBSP((_sdNode *)((int)buffer + (*check & 0x3fff) * sizeof(_sdNode) + buffer[3]), (sdPlane *)((int)buffer + buffer[1]));
+					plane = FindRoadInBSP(&nodeData[*check & 0x3fff], planeData);
 
 					if (plane != NULL)
 						break;
 				}
 				else
 				{
-					plane = (sdPlane *)((int)buffer + buffer[1]) + *check;
+					plane = &planeData[*check];
 
-					if (plane->surface > 31)
+					if (plane->surface >= 32)
 						break;
 				}
 
 				check += 2;
 			} while (true);
 		}
-		else if ((*check & 0xE000) == 0)
+		else if (!(*check & 0xE000))
 		{
-			plane = (sdPlane *)((int)buffer + *check * sizeof(sdPlane) + buffer[1]);
+			plane = &planeData[*check];
 		}
 		else
 			plane = NULL;
@@ -508,7 +512,7 @@ int RoadInCell(VECTOR *pos)
 		if (plane == NULL)
 			return -1;
 
-		if (plane->surface > 31)
+		if (plane->surface >= 32)
 		{
 			pos->vy = sdHeightOnPlane(pos, plane) + 256;
 			return plane->surface - 32;
