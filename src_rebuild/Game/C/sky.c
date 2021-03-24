@@ -27,7 +27,7 @@ struct FLAREREC
 	short gapmod;
 };
 
-int sky_y_offset[4] = { 14, 14, 14, 14 };
+int sky_y_offset[4] = { 17, 17, 17, 17 };
 
 unsigned char HorizonLookup[4][4] = {
 	{0, 0, 20, 20},
