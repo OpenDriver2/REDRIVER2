@@ -29,7 +29,7 @@ extern int DawnCount;
 extern int ObjectDrawnValue;
 extern int ObjectDrawnCounter;
 
-extern int havana3DOccDrawnSegments;
+extern int Havana3DLevelDraw;
 
 extern void SsSetSerialVol(short s_num, short voll, short volr);		// TEMPORARY
 extern void GameInit(); // 0x00059330

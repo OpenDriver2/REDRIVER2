@@ -3190,7 +3190,8 @@ sdPlane* EventSurface(VECTOR* pos, sdPlane* plane)
 	else if (GameLevel == 1 || GameLevel == 3)
 	{
 		// make secret base solid due to we use surface Ids
-		// Havana 3D occlusion was made simpler in v1.1
+		// Havana 3D occlusion was made simpler in Rev 1.1
+		// this change was very sneaky
 		if (i > 8)
 			return plane;
 		
@@ -3708,9 +3709,9 @@ void SetSpecialCamera(SpecialCamera type, int change)
 		}
 		else
 		{
-			camera_position.vx = (event->position).vx + boat[0];
+			camera_position.vx = event->position.vx + boat[0];
 			camera_angle.vy = boat[1];
-			camera_position.vz = (event->position).vz + boat[2];
+			camera_position.vz = event->position.vz + boat[2];
 		}
 
 		player[0].cameraPos = camera_position;
@@ -3723,7 +3724,7 @@ void SetSpecialCamera(SpecialCamera type, int change)
 
 	if (type != SPECIAL_CAMERA_WAIT)
 	{
-		havana3DOccDrawnSegments = -1;
+		Havana3DLevelDraw = -1;
 		camera_change = 1;
 		
 		VisibilityLists(VIS_SORT, 0);

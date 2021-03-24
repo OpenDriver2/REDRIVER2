@@ -2369,7 +2369,8 @@ void RenderGame(void)
 	FadeGameScreen(0);
 }
 
-int havana3DOccDrawnSegments = -1;
+int Havana3DLevelDraw = -1;
+int Havana3DLevelMode = -1;			// 0 = uses 1.0 LEV file, 1 = uses v1.1 LEV file
 
 // [D] [T]
 void InitGameVariables(void)
@@ -2403,7 +2404,7 @@ void InitGameVariables(void)
 	gDieWithFade = 0;
 	pedestrianFelony = 0;	// [A]
 
-	havana3DOccDrawnSegments = -1;
+	Havana3DLevelDraw = -1;
 
 	srand(0x1234);
 	RandomInit(0xd431, 0x350b1);
@@ -2532,8 +2533,7 @@ int Havana3DOcclusion(occlFunc func, int* param)
 	int draw;
 	int otAltered;
 	int outside;
-
-	outside = 1;
+	VECTOR tempPos;
 
 #ifndef PSX
 	if (gDemoLevel)
@@ -2547,131 +2547,143 @@ int Havana3DOcclusion(occlFunc func, int* param)
 		camera_position.vx <= -430044 && camera_position.vx >= -480278 && 
 		camera_position.vz <= -112814 && camera_position.vz >= -134323)
 	{
-#if 0
-		draw = 10;
-		
-		if (camera_position.vy >= 447)
+		// TODO: Hardcode into different builds for PSX version
+		if(Havana3DLevelMode == -1)
 		{
-			outside = 0;
-			
-			if (camera_position.vx < -453093 && camera_position.vx > -457217 &&
-				camera_position.vz < -123393 && camera_position.vz > -127493 && 
-				camera_position.vy < 3955)
-			{
-				if (camera_position.vy < 1245)
-				{
-					draw = 15;
-				}
-				else if (camera_position.vy < 2001)
-				{
-					draw = 14;
-				}
-				else if (camera_position.vy < 3071)
-				{
-					draw = 13;
-				}
-			}
+			// try autodetecting
+			tempPos.vy = -3823;
+			tempPos.vx = -461964;
+			tempPos.vz = -124831;
+
+			if (GetSurfaceIndex(&tempPos) + 32 == 27)
+				Havana3DLevelMode = 1;
 			else
+				Havana3DLevelMode = 0;
+		}
+
+		if(Havana3DLevelMode == 0)
+		{
+			// v1.0 method
+			outside = 1;
+			draw = 10;
+
+			if (camera_position.vy >= 447)
 			{
-				if (camera_position.vy < 1730)
+				outside = 0;
+
+				if (camera_position.vx < -453093 && camera_position.vx > -457217 &&
+					camera_position.vz < -123393 && camera_position.vz > -127493 &&
+					camera_position.vy < 3955)
 				{
-					draw = 15;
+					if (camera_position.vy < 1245)
+						draw = 15;
+					else if (camera_position.vy < 2001)
+						draw = 14;
+					else if (camera_position.vy < 3071)
+						draw = 13;
 				}
 				else
 				{
-					draw = 14;
-
-					if (camera_position.vy < 2100 && camera_position.vx < -472585)
+					if (camera_position.vy >= 1730)
 					{
-						draw = 13;
+						draw = 14;
+
+						if (camera_position.vy < 2100 && camera_position.vx < -472585)
+						{
+							draw = 13;
+						}
+						else
+						{
+							if ((camera_position.vy > 3071 && camera_position.vx > -457217 ||
+								(draw = 12, camera_position.vz < -129499)) &&
+								(draw = 10, camera_position.vz < -129500))
+							{
+								draw = 11;
+							}
+						}
 					}
 					else
 					{
-						if ((camera_position.vy > 3071 && camera_position.vx > -457217 ||
-							(draw = 12, camera_position.vz < -129499)) &&
-							(draw = 10, camera_position.vz < -129500))
-						{
-							draw = 11;
-						}
+						draw = 15;
 					}
 				}
 			}
-		}
-		else
-		{
-			if (camera_position.vx > -469500)
-				draw = 17;
 			else
+			{
+				if (camera_position.vx > -469500)
+					draw = 17;
+				else
+					draw = 16;
+			}
+
+			events.camera = 1;
+
+			loop = draw - 1;
+
+			if (loop < 10)
+				loop = 10;
+		}
+		else if(Havana3DLevelMode == 1)
+		{
+			// v1.1 method - simpler one
+			outside = 0;
+
+			if (camera_position.vy < 447)
+			{
 				draw = 16;
-		}
 
-		events.camera = 1;
-		
-		loop = draw - 1;
+				if (camera_position.vx > -468500)
+					draw = 17;
+			}
+			else
+			{
+				tempPos.vy = -camera_position.vy;
+				tempPos.vx = camera_position.vx;
+				tempPos.vz = camera_position.vz;
 
-		if (loop < 10)
-			loop = 10;
-#else
-		VECTOR pos;
-		outside = 0;
-		if (camera_position.vy < 447) 
-		{
-			draw = 16;
-			if (-468500 < camera_position.vx)
-			{
-				draw = 17;
-			}
-		}
-		else 
-		{
-			pos.vy = -camera_position.vy;
-			pos.vx = camera_position.vx;
-			pos.vz = camera_position.vz;
-			
-			loop = GetSurfaceIndex(&pos);
-			
-			if (loop + 32 == 17) 
-			{
-				havana3DOccDrawnSegments = -1;
-				draw = 9;
-			}
-			else 
-			{
-				if (loop + 7U < 7)
+				loop = GetSurfaceIndex(&tempPos);
+
+				if (loop + 32 == 17)
 				{
-					draw = loop + 32 & 15;
-					
-					if (havana3DOccDrawnSegments == -1) 
-						goto LAB_0005c350;
-					
-					loop = havana3DOccDrawnSegments - draw;
-					
-					if (loop < 0)
-						loop = draw - havana3DOccDrawnSegments;
-
-					if (loop < 2) 
-						goto LAB_0005c350;
+					Havana3DLevelDraw = -1;
+					draw = 9;
 				}
-				
-				outside = 1;
-				draw = havana3DOccDrawnSegments;
-			}
-		}
-		
-	LAB_0005c350:
-		if (havana3DOccDrawnSegments != draw) 
-		{
-			havana3DOccDrawnSegments = draw;
-		}
-		
-		events.camera = 1;
-		
-		loop = draw - 1;
-		
-		if (loop < 9) 
-			loop = 9;
+				else
+				{
+					if (loop + 7 < 7)
+					{
+						draw = loop + 32 & 15;
 
-#endif
+						if (Havana3DLevelDraw == -1)
+							goto still_inside;
+
+						loop = Havana3DLevelDraw - draw;
+
+						if (loop < 0)
+							loop = draw - Havana3DLevelDraw;
+
+						if (loop < 2)
+							goto still_inside;
+					}
+
+					outside = 1;
+					draw = Havana3DLevelDraw;
+				}
+			}
+
+			// FIXME: please handle this goto for me
+		still_inside:
+			if (Havana3DLevelDraw != draw)
+				Havana3DLevelDraw = draw;
+
+			events.camera = 1;
+
+			loop = draw - 1;
+
+			if (loop < 9)
+				loop = 9;
+		}
+	
 		otAltered = 0;
 
 		while (true)
