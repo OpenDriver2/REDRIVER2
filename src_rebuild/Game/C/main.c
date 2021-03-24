@@ -2369,6 +2369,8 @@ void RenderGame(void)
 	FadeGameScreen(0);
 }
 
+int havana3DOccDrawnSegments = -1;
+
 // [D] [T]
 void InitGameVariables(void)
 {
@@ -2400,6 +2402,8 @@ void InitGameVariables(void)
 	current_camera_angle = 2048;
 	gDieWithFade = 0;
 	pedestrianFelony = 0;	// [A]
+
+	havana3DOccDrawnSegments = -1;
 
 	srand(0x1234);
 	RandomInit(0xd431, 0x350b1);
@@ -2543,6 +2547,7 @@ int Havana3DOcclusion(occlFunc func, int* param)
 		camera_position.vx <= -430044 && camera_position.vx >= -480278 && 
 		camera_position.vz <= -112814 && camera_position.vz >= -134323)
 	{
+#if 0
 		draw = 10;
 		
 		if (camera_position.vy >= 447)
@@ -2606,7 +2611,67 @@ int Havana3DOcclusion(occlFunc func, int* param)
 
 		if (loop < 10)
 			loop = 10;
+#else
+		VECTOR pos;
+		outside = 0;
+		if (camera_position.vy < 447) 
+		{
+			draw = 16;
+			if (-468500 < camera_position.vx)
+			{
+				draw = 17;
+			}
+		}
+		else 
+		{
+			pos.vy = -camera_position.vy;
+			pos.vx = camera_position.vx;
+			pos.vz = camera_position.vz;
+			
+			loop = GetSurfaceIndex(&pos);
+			
+			if (loop + 32 == 17) 
+			{
+				havana3DOccDrawnSegments = -1;
+				draw = 9;
+			}
+			else 
+			{
+				if (loop + 7U < 7)
+				{
+					draw = loop + 32 & 15;
+					
+					if (havana3DOccDrawnSegments == -1) 
+						goto LAB_0005c350;
+					
+					loop = havana3DOccDrawnSegments - draw;
+					
+					if (loop < 0)
+						loop = draw - havana3DOccDrawnSegments;
 
+					if (loop < 2) 
+						goto LAB_0005c350;
+				}
+				
+				outside = 1;
+				draw = havana3DOccDrawnSegments;
+			}
+		}
+		
+	LAB_0005c350:
+		if (havana3DOccDrawnSegments != draw) 
+		{
+			havana3DOccDrawnSegments = draw;
+		}
+		
+		events.camera = 1;
+		
+		loop = draw - 1;
+		
+		if (loop < 9) 
+			loop = 9;
+
+#endif
 		otAltered = 0;
 
 		while (true)

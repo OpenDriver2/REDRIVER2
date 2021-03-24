@@ -106,7 +106,6 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 	int previous_matrix;
 	int Z;
 
-	// [A] Rev 1.1 removes this block
 	if (gTimeOfDay > -1) 
 	{
 		if (gTimeOfDay < 3)
@@ -121,7 +120,6 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 
 	previous_matrix = -1;
 
-	// [A] Rev 1.1 removes this block
 	if (gWeather - 1U < 2)
 	{
 		u_int col;

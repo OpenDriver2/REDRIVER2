@@ -2405,7 +2405,6 @@ void PrepareSecretCar(void)
 // [D] [T]
 void InitSpecSpool(void)
 {
-	// [A] Rev 1.1 removes that, but I wonder if it breaks something...
 	switch (gCurrentMissionNumber)
 	{
 		case 2: 

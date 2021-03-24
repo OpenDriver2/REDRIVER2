@@ -3189,8 +3189,12 @@ sdPlane* EventSurface(VECTOR* pos, sdPlane* plane)
 	}
 	else if (GameLevel == 1 || GameLevel == 3)
 	{
+		// make secret base solid due to we use surface Ids
+		// Havana 3D occlusion was made simpler in v1.1
+		if (i > 8)
+			return plane;
+		
 		// Havana and Rio boats floating
-
 		if (ev->flags & 0x800)
 		{
 			int height;
@@ -3719,7 +3723,9 @@ void SetSpecialCamera(SpecialCamera type, int change)
 
 	if (type != SPECIAL_CAMERA_WAIT)
 	{
+		havana3DOccDrawnSegments = -1;
 		camera_change = 1;
+		
 		VisibilityLists(VIS_SORT, 0);
 	}
 }

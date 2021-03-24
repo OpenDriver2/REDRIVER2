@@ -552,7 +552,7 @@ int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, sdPlane **plane)
 	}
 	else
 	{
-		normal->vx = (int)(*plane)->a >> 2; // [A] was (int)((uint)(ushort)(*plane)->a << 0x10) >> 0x12;
+		normal->vx = (int)(*plane)->a >> 2;
 		normal->vy = (int)(*plane)->b >> 2;
 		normal->vz = (int)(*plane)->c >> 2;
 	}
@@ -563,7 +563,6 @@ int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, sdPlane **plane)
 	}
 	else if ((*plane)->surface == 4)
 	{
-		// [A] Rev 1.1 doesn't have this cutscene hack
 		if (gInGameCutsceneActive && gCurrentMissionNumber == 23 && gInGameCutsceneID == 0)
 			out->vy += rcossin_tbl[(pos->vx + pos->vz) * 4 & 0x1fff] >> 9;
 		else
