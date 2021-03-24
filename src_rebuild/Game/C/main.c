@@ -8,6 +8,7 @@
 #include "LIBMCRD.H"
 
 #include "ASM/rndrasm.h"
+#include "ASM/d2mapasm.h"
 
 #include "system.h"
 #include "pad.h"
@@ -241,8 +242,8 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 			ProcessMapLump(map_lump, 0);
 
 			// [A] only used in alpha 1.6
-			// region_buffer_xor = (cells_down >> 5 & 2U | cells_across >> 6 & 1U) * 4;
-			// sdSelfModifyingCode = sdSelfModifyingCode ^ (sdSelfModifyingCode ^ region_buffer_xor) & 0xC;
+			region_buffer_xor = (cells_down >> 5 & 2U | cells_across >> 6 & 1U) << 2;
+			sdSelfModifyingCode = sdSelfModifyingCode ^ (sdSelfModifyingCode ^ region_buffer_xor) & 12;
 		}
 		else if (lump_type == LUMP_CURVES2)
 		{

@@ -8,6 +8,8 @@
 #include "cutscene.h"
 #include "mission.h"
 #include "handling.h"
+#include "main.h"
+#include "ASM/d2mapasm.h"
 
 sdPlane default_plane = { 0, 0, 0, 0, 2048 };
 
@@ -306,6 +308,13 @@ sdPlane* sdGetCell(VECTOR *pos)
 	short *buffer;
 	XYPAIR cell;
 	XYPAIR cellPos;
+
+#ifndef PSX
+	if (gDemoLevel)
+	{
+		return sdGetCell_alpha16(pos);
+	}
+#endif
 
 	sdLevel = 0;
 

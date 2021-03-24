@@ -486,7 +486,7 @@ void ProcessLowDetailTable(char *lump_ptr, int lump_size)
 	int i;
 
 	Low2HighDetailTable = (ushort *)lump_ptr;
-	Low2LowerDetailTable = (ushort *)(lump_ptr + num_models_in_pack * 2);
+	Low2LowerDetailTable = (ushort *)(lump_ptr + num_models_in_pack * sizeof(ushort));
 
 	for (i = 0; i < num_models_in_pack; i++)
 	{

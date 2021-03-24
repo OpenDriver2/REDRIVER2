@@ -1445,6 +1445,11 @@ void DrawCiv(PEDESTRIAN* pPed)
 	frame = pPed->frame1 / 2;
 
 	vert1 = (SVECTOR*)pPed->motion;
+
+	// [A] alpha 1.6 bug fix
+	if (!vert1)
+		return;
+
 	vert2 = vert1 + frame * 30;
 
 	shift = (pPed->flags >> 15) & 0xFF; // HMMM?
@@ -1814,6 +1819,11 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 	int vx, vz;
 
 	int Tangle;
+
+#ifndef PSX
+	if (gDriver1Level || gDemoLevel)
+		return;
+#endif
 
 	memset((u_char*)&d, 0, sizeof(VECTOR));
 

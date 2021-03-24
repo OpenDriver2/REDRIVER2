@@ -671,7 +671,8 @@ void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 	char *bp;
 	ushort length;
 
-	if (gDriver1Level)
+#ifndef PSX
+	if (gDriver1Level || gDemoLevel)
 	{
 		// don't draw non-loaded regions
 		for (k = 0; k < pvs_square_sq; k++)
@@ -679,6 +680,7 @@ void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 
 		return;
 	}
+#endif
 
 	if (regions_unpacked[source_region] == region && loading_region[source_region] == -1) 
 	{
