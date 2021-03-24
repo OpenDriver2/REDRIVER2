@@ -2531,6 +2531,14 @@ int Havana3DOcclusion(occlFunc func, int* param)
 
 	outside = 1;
 
+#ifndef PSX
+	if (gDemoLevel)
+	{
+		(*func)(param);
+		return 1;
+	}
+#endif
+
 	if (GameLevel == 1 && 
 		camera_position.vx <= -430044 && camera_position.vx >= -480278 && 
 		camera_position.vz <= -112814 && camera_position.vz >= -134323)
