@@ -254,7 +254,7 @@ int sdHeightOnPlane(VECTOR *pos, sdPlane *plane)
 		if ((plane->surface & 0xE000) == 0x4000 && plane->b == 0)
 		{
 			// calculate curve point
-			curve = Driver2CurvesPtr + ((plane->surface & 0x1fff) - 32);
+			curve = &Driver2CurvesPtr[(plane->surface & 0x1fff) - 32];
 			angle = ratan2(curve->Midz - pos->vz, curve->Midx - pos->vx);
 
 			return ((curve->gradient * (angle + 2048 & 0xfff)) / ONE) - curve->height;
@@ -324,12 +324,13 @@ sdPlane* sdGetCell(VECTOR *pos)
 	// [A] WARNING!
 	// retail version of game with exe dated before 20th October 2000 (so called 1.0) is only supported
 	// the later version of the game do have problem with height or BSP, so Havana's secret base ground is not solid
-
-	// Oct 17 2000:			RoadMapDataRegions[(v4 >> 16) & 1 ^ (((cells_across >> 6) & 1) + (((v3 - 512) >> 15) & 2)) ^ (cells_down >> 5) & 2];
-	// Oct 29 2000:			RoadMapDataRegions[(cellPos.x >> 16) & 1 ^ (((cellPos.y >> 15) & 2) + 1) ^ 2];
+	// reason is unknown
 
 	buffer = RoadMapDataRegions[(cellPos.x >> 16 & 1U) ^ (regions_across / 2 & 1) + 
 								(cellPos.y >> 15 & 2U) ^ (regions_down & 2)];
+
+	// Alpha 1.6 code, works too; not widely tested yet
+	//buffer = *(short**)((int)RoadMapDataRegions + (cellPos.x >> 14 & 4U ^ cellPos.y >> 13 & 8U ^ sdSelfModifyingCode));
 
 	plane = NULL;
 	

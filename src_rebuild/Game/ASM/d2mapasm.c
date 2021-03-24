@@ -98,7 +98,7 @@ sdPlane* sdGetCell_alpha16(VECTOR* pos)
 	cellPos_z = pos->vz - 512;
 
 	buffer = *(short**)((int)RoadMapDataRegions + (cellPos_x >> 14 & 4U ^ cellPos_z >> 13 & 8U ^ sdSelfModifyingCode));	// pointless, but i'll keep it there
-
+	
 	cell.x = cellPos_x & 1023;
 	cell.y = cellPos_z & 1023;
 
@@ -170,7 +170,8 @@ int RoadInCell_alpha16(VECTOR *pos)
 	cellPos_x = pos->vx - 512;
 	cellPos_z = pos->vz - 512;
 	
-	buffer = RoadMapDataRegions[cellPos_x >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + (cellPos_z >> 0xf & 2U) ^ cells_down >> 5 & 2U];
+	buffer = RoadMapDataRegions[(cellPos_x >> 16 & 1U) ^ (regions_across / 2 & 1) +
+								(cellPos_z >> 15 & 2U) ^ (regions_down & 2)];
 	
 	if (*buffer == 2) 
 	{
