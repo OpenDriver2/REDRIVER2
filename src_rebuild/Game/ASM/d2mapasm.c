@@ -1,6 +1,7 @@
 #include "driver2.h"
 #include "d2mapasm.h"
-
+#include "C/map.h"
+#include "C/dr2roads.h"
 
 uint region_buffer_xor = 0;
 uint sdSelfModifyingCode = 8;
@@ -9,6 +10,8 @@ extern int sdLevel;
 extern short* RoadMapDataRegions[4];
 
 extern short* sdGetBSP(sdNode* node, XYPAIR* pos);
+extern sdPlane* FindRoadInBSP(sdNode* node, sdPlane* base);
+extern int sdHeightOnPlane(VECTOR* pos, sdPlane* plane);
 
 // [D]
 // DO NOT USE IT!
@@ -138,4 +141,87 @@ sdPlane* sdGetCell_alpha16(VECTOR* pos)
 		plane = (sdPlane*)((int)buffer + *BSPSurface * 0xc + (int)buffer[1]);
 	}
 	return plane;
+}
+
+// [D] [T]
+int RoadInCell_alpha16(VECTOR *pos)
+{
+	ushort uVar1;
+	sdPlane* psVar2;
+	int cellPos_x;
+	ushort* check;
+	int cellPos_z;
+	uint uVar3;
+	int* piVar4;
+	sdPlane* plane;
+	short* buffer;
+	sdPlane* base;
+	bool moreLevels;
+
+	cellPos_x = pos->vx + -0x200;
+	cellPos_z = pos->vz + -0x200;
+	buffer = RoadMapDataRegions
+		[cellPos_x >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + (cellPos_z >> 0xf & 2U) ^
+		cells_down >> 5 & 2U];
+	if (*buffer == 2) {
+		check = (ushort*)
+			(buffer + (cellPos_x >> 10 & 0x3fU) + (cellPos_z >> 10 & 0x3fU) * 0x40 + 4);
+		uVar3 = (short)*check;
+		uVar1 = *check;
+		if (uVar3 == 0xffffffff) {
+			return -1;
+		}
+		if ((uVar1 & 0xe000) == 0) {
+			plane = (sdPlane*)((int)buffer + uVar3 * 0xc + (int)buffer[1]);
+		}
+		else {
+			if ((uVar1 & 0x2000) == 0) {
+				plane = NULL;
+			}
+			else {
+				moreLevels = (uVar3 & 0x8000) != 0;
+				base = (sdPlane*)((int)buffer + (int)buffer[1]);
+				if (moreLevels) {
+					check = (ushort*)((int)buffer + (uVar1 & 0x1fff) * 2 + (int)buffer[2] + 2);
+					goto LAB_000621a4;
+				}
+			LAB_000621b8:
+				uVar1 = *check;
+				check = check + 2;
+				if ((uVar1 & 0x4000) == 0) {
+					plane = base + (short)uVar1;
+				}
+				else {
+					piVar4 = (int*)((int)buffer + (uVar1 & 0x1fff) * 4 + (int)buffer[3]);
+					while (*piVar4 < 0) {
+						psVar2 = FindRoadInBSP((sdNode*)(piVar4 + 1), base);
+						if (psVar2 != NULL) goto LAB_00062240;
+						piVar4 = piVar4 + ((*piVar4 << 1) >> 0x18);
+					}
+					psVar2 = base + *piVar4;
+					plane = NULL;
+					if (0x1f < psVar2->surface) {
+					LAB_00062240:
+						plane = psVar2;
+					}
+				}
+				if (moreLevels) {
+				LAB_000621a4:
+					if (check[-1] == 0x8000) {
+						moreLevels = false;
+					}
+					goto LAB_000621b8;
+				}
+			}
+		}
+		if (plane == NULL) {
+			return -1;
+		}
+		if (0x1f < plane->surface) {
+			cellPos_x = sdHeightOnPlane((VECTOR*)pos, plane);
+			pos->vy = cellPos_x + 0x100;
+			return plane->surface + -0x20;
+		}
+	}
+	return -1;
 }

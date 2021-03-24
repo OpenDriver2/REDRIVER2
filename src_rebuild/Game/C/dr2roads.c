@@ -448,6 +448,13 @@ int RoadInCell(VECTOR *pos)
 	short *buffer;
 	XYPAIR cellPos;
 
+#ifndef PSX
+	if (gDemoLevel)
+	{
+		return RoadInCell_alpha16(pos);
+	}
+#endif
+
 	cellPos.x = pos->vx - 512;
 	cellPos.y = pos->vz - 512;
 
