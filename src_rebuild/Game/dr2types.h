@@ -749,8 +749,6 @@ struct DENTUVS
 
 struct HUBCAP
 {
-	int Present[4];
-	VECTOR Offset[4];
 	MATRIX Orientation;
 	MATRIX LocalOrientation;
 	VECTOR Position;
@@ -813,18 +811,18 @@ typedef struct _HANDLING_DATA
 	MATRIX drawCarMat;
 	LONGVECTOR4 acc;
 	LONGVECTOR4 aacc;
+	WHEEL wheel[4];
 	int wheel_speed;
 	int speed;
 	int direction;
-	char gear;
-	char changingGear;
-	char mayBeColliding;
-	char autoBrake;
-	WHEEL wheel[4];
-	short revs;
-	VECTOR shadowPoints[4];
 	int front_vel;
 	int rear_vel;
+	int mayBeColliding;		// [A] now used as a bitfield to create collision pairs
+	short revs;
+	char gear;
+	char changingGear;
+	char autoBrake;
+
 	OrientedBox oBox;
 } HANDLING_DATA;
 
@@ -991,7 +989,6 @@ typedef struct _CAR_DATA
 	int lastPad;
 } CAR_DATA;
 
-// UNUSED
 typedef struct _COP_DATA
 {
 	int speed;

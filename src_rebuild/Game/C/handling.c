@@ -275,13 +275,12 @@ void GlobalTimeStep(void)
 	static RigidBodyState _d0[MAX_CARS]; // offset 0x410
 	static RigidBodyState _d1[MAX_CARS]; // offset 0x820
 
+	int mayBeCollidingBits;
 	int howHard;
 	int tmp;
 	RigidBodyState* thisState_i;
 	RigidBodyState* thisState_j;
 	RigidBodyState* thisDelta;
-	BOUND_BOX* bb1;
-	BOUND_BOX* bb2;
 	CAR_DATA* cp;
 	CAR_DATA* c1;
 	RigidBodyState* st;
@@ -328,7 +327,7 @@ void GlobalTimeStep(void)
 
 		st = &cp->st;
 
-		if (cp->controlType == CONTROL_TYPE_PLAYER && playerghost != 0 && playerhitcopsanyway == 0) // [A]
+		if (cp->controlType == CONTROL_TYPE_PLAYER && playerghost && !playerhitcopsanyway) // [A]
 			cp->hd.mayBeColliding = 0;
 
 		// too many reads and writes, you know how to optimize it
@@ -378,7 +377,8 @@ void GlobalTimeStep(void)
 		if ((tmp < st->n.angularVelocity[2]) || (tmp = -tmp, st->n.angularVelocity[2] < tmp))
 			st->n.angularVelocity[2] = tmp;
 
-		if (cp->hd.mayBeColliding == 0)
+		// without precision
+		if (!cp->hd.mayBeColliding)
 		{
 			long* orient = st->n.orientation;	// LONGQUATERNION
 
@@ -420,14 +420,15 @@ void GlobalTimeStep(void)
 				cp = active_car_list[i];
 
 				// check collisions with buildings
-				if (RKstep != 0 && (subframe & 1U) != 0 && cp->controlType == CONTROL_TYPE_PLAYER)
+				if (RKstep != 0 && (subframe & 1) != 0 && cp->controlType == CONTROL_TYPE_PLAYER)
 				{
 					CheckScenaryCollisions(cp);
 				}
 
+				mayBeCollidingBits = cp->hd.mayBeColliding;
 
-				// check collisions with vehicles
-				if (cp->hd.mayBeColliding != 0)
+				// if has any collision, process with double precision
+				if (mayBeCollidingBits)
 				{
 					if (RKstep == 0)
 					{
@@ -462,11 +463,7 @@ void GlobalTimeStep(void)
 					thisDelta[i].n.angularVelocity[1] = 0;
 					thisDelta[i].n.angularVelocity[2] = 0;
 
-					if (cp->hd.mayBeColliding & 0x2) // [A] a litle skip for bbox checking
-						j = 0;
-					else
-						j = 512;
-
+					j = 0;
 					while (j < i)
 					{
 						c1 = active_car_list[j];
@@ -476,14 +473,11 @@ void GlobalTimeStep(void)
 						else
 							thisState_j = &c1->st;
 
-						if ((c1->hd.mayBeColliding & 0x2) && (c1->hd.speed != 0 || cp->hd.speed != 0))
+						// [A] optimized run to not use the box checking
+						// as it has already composed bitfield / pairs
+						if((mayBeCollidingBits & (1 << j)) != 0 && (c1->hd.speed != 0 || cp->hd.speed != 0))
 						{
-							bb1 = &bbox[cp->id];
-							bb2 = &bbox[c1->id];
-
-							if (bb2->x0 < bb1->x1 && bb2->z0 < bb1->z1 && bb1->x0 < bb2->x1 &&
-								bb1->z0 < bb2->z1 && bb2->y0 < bb1->y1 && bb1->y0 < bb2->y1 &&
-								CarCarCollision3(cp, c1, &depth, (VECTOR*)collisionpoint, (VECTOR*)normal))
+							if(CarCarCollision3(cp, c1, &depth, (VECTOR*)collisionpoint, (VECTOR*)normal))
 							{
 								int c1InfiniteMass;
 								int c2InfiniteMass;
@@ -717,7 +711,8 @@ void GlobalTimeStep(void)
 			{
 				cp = active_car_list[i];
 
-				if (cp->hd.mayBeColliding != 0)
+				// if has any collision, process with double precision
+				if (cp->hd.mayBeColliding)
 				{
 					st = &cp->st;
 					tp = &_tp[i];
@@ -1077,8 +1072,11 @@ void CheckCarToCarCollisions(void)
 		bb->y0 = (cp->hd.where.t[1] - colBox->vy * 2) / 16;
 		bb->y1 = (cp->hd.where.t[1] + colBox->vy * 4) / 16;
 
+		// make player handled cars always processed with precision
 		if (cp->hndType == 0)
-			cp->hd.mayBeColliding = 0x1;
+		{
+			cp->hd.mayBeColliding = (1 << 31);
+		}
 
 		loop1++;
 		bb++;
@@ -1100,12 +1098,13 @@ void CheckCarToCarCollisions(void)
 				bb1->z0 < bb2->z1 && bb2->y0 < bb1->y1 && bb1->y0 < bb2->y1 &&
 				(loop1 == 0 || car_data[loop1].controlType != CONTROL_TYPE_NONE) && car_data[loop2].controlType != CONTROL_TYPE_NONE)
 			{
-				car_data[loop1].hd.mayBeColliding = car_data[loop2].hd.mayBeColliding = 0x2;
+				car_data[loop1].hd.mayBeColliding |= (1 << loop2);
+				car_data[loop2].hd.mayBeColliding |= (1 << loop1);
 			}
 
 			loop2++;
 			bb2++;
-		};
+		}
 
 #if defined(COLLISION_DEBUG) && !defined(PSX)
 		extern int gShowCollisionDebug;
