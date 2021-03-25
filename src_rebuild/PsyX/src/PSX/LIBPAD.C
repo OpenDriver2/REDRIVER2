@@ -121,6 +121,8 @@ void PadRemoveGun()
 
 int PadGetState(int port)
 {
+	port >>= 4;
+	
 #if _DEBUG || 1
 	return PadStateStable;//FIXME should check if keyboard is connected
 #endif
@@ -168,6 +170,8 @@ int hapticEffects[MAX_CONTROLLERS] = { -1, -1 };
 
 void PadSetAct(int port, unsigned char* table, int len)
 {
+	port >>= 4;
+	
 	if (!padHaptic[port])
 		return;
 
@@ -184,7 +188,7 @@ void PadSetAct(int port, unsigned char* table, int len)
 	else
 		eff.leftright.large_magnitude = 0;
 
-	eff.leftright.length = 150;
+	eff.leftright.length = 400;
 	
 	if (SDL_HapticEffectSupported(padHaptic[port], &eff) != SDL_TRUE)
 		return;
