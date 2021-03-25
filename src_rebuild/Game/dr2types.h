@@ -750,10 +750,9 @@ struct DENTUVS
 struct HUBCAP
 {
 	MATRIX Orientation;
-	MATRIX LocalOrientation;
 	VECTOR Position;
-	VECTOR Direction;
-	float Height;
+	SVECTOR Direction;
+	int Rotation;
 	int Duration;
 };
 

@@ -272,14 +272,13 @@ void LoseHubcap(int car, int Hubcap, int Velocity)
 	SetRotMatrix(&cp->hd.where);
 	_MatrixRotate(&gHubcap.Position);
 
-	gHubcap.Position.vx = gHubcap.Position.vx + cp->hd.where.t[0];
-	gHubcap.Position.vy = gHubcap.Position.vy - cp->hd.where.t[1];
-	gHubcap.Position.vz = gHubcap.Position.vz + cp->hd.where.t[2];
+	gHubcap.Position.vx += cp->hd.where.t[0];
+	gHubcap.Position.vy -= cp->hd.where.t[1];
+	gHubcap.Position.vz += cp->hd.where.t[2];
 
 	gHubcap.Orientation = cp->hd.where;
-
-	Calc_Object_MatrixYZX(&gHubcap.LocalOrientation, &InitialLocalAngle);
-
+	gHubcap.Rotation = 0;
+	
 	if (Hubcap > 1)
 	{
 		gHubcap.Orientation.m[0][0] = -gHubcap.Orientation.m[0][0];
@@ -346,6 +345,18 @@ void MoveHubcap()
 	MATRIX Orientation;
 	CVECTOR col = {72,72,72};
 
+	Orientation.m[0][0] = ONE;
+	Orientation.m[0][1] = 0;
+	Orientation.m[0][2] = 0;
+
+	Orientation.m[1][0] = 0;
+	Orientation.m[1][1] = ONE;
+	Orientation.m[1][2] = 0;
+
+	Orientation.m[2][0] = 0;
+	Orientation.m[2][1] = 0;
+	Orientation.m[2][2] = ONE;
+
 	if (pauseflag == 0)
 	{
 		if(gHubcapTime > 0)
@@ -364,7 +375,9 @@ void MoveHubcap()
 			gHubcap.Position.vy += gHubcap.Direction.vy;
 			gHubcap.Position.vz += gHubcap.Direction.vz;
 
-			_RotMatrixX(&gHubcap.LocalOrientation, -220);
+			gHubcap.Rotation -= 220;
+
+			_RotMatrixX(&Orientation, gHubcap.Rotation);
 
 			gHubcap.Direction.vy += 5;
 
@@ -377,7 +390,7 @@ void MoveHubcap()
 			}
 		}
 
-		MulMatrix0(&gHubcap.Orientation, &gHubcap.LocalOrientation, &Orientation);
+		MulMatrix0(&gHubcap.Orientation, &Orientation, &Orientation);
 
 		ShadowPos.vx = gHubcap.Position.vx - camera_position.vx;
 		ShadowPos.vy = -MapHeight(&gHubcap.Position);
