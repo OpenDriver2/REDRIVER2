@@ -244,29 +244,6 @@ int gHubcapTime = 0;
 void InitHubcap(void)
 {
 	gHubcapTime = Random2(1) & 0x7ff;
-
-	gHubcap.Present[0] = 1;
-	gHubcap.Present[1] = 1;
-	gHubcap.Present[2] = 1;
-	gHubcap.Present[3] = 1;
-
-	// right
-	gHubcap.Offset[0].vx = 205;
-	gHubcap.Offset[0].vy = -7;
-	gHubcap.Offset[0].vz = 290;
-
-	gHubcap.Offset[1].vx = 205;
-	gHubcap.Offset[1].vy = -7;
-	gHubcap.Offset[1].vz = -275;
-
-	// left
-	gHubcap.Offset[2].vx = -205;
-	gHubcap.Offset[2].vy = -7;
-	gHubcap.Offset[2].vz = 290;
-
-	gHubcap.Offset[3].vx = -205;
-	gHubcap.Offset[3].vy = -7;
-	gHubcap.Offset[3].vz = -275;
 }
 
 
@@ -276,17 +253,21 @@ void LoseHubcap(int car, int Hubcap, int Velocity)
 	SVECTOR InitialLocalAngle = { 0, 0, 10 };
 	CAR_DATA* cp;
 
+	SVECTOR* wheelDisp;
+	
 	cp = &car_data[car];
 
 	// check speed and if hubcap lost
 	if (cp->hd.wheel_speed < 0 || (cp->ap.flags & 1 << Hubcap))
 		return;
 
+	wheelDisp = &cp->ap.carCos->wheelDisp[Hubcap];
+
 	cp->ap.flags |= (1 << Hubcap);		// [A] cars now hold hubcaps
 
-	gHubcap.Position.vx = gHubcap.Offset[Hubcap].vx;
-	gHubcap.Position.vy = gHubcap.Offset[Hubcap].vy;
-	gHubcap.Position.vz = gHubcap.Offset[Hubcap].vz;
+	gHubcap.Position.vx = wheelDisp->vx;
+	gHubcap.Position.vy = wheelDisp->vy;
+	gHubcap.Position.vz = wheelDisp->vz;
 
 	SetRotMatrix(&cp->hd.where);
 	_MatrixRotate(&gHubcap.Position);
@@ -312,9 +293,10 @@ void LoseHubcap(int car, int Hubcap, int Velocity)
 	}
 
 	gHubcap.Duration = 100;
-	gHubcap.Direction.vx = FIXEDH(FIXEDH(cp->st.n.angularVelocity[1]) * gHubcap.Offset[Hubcap].vz) + FIXEDH(cp->st.n.linearVelocity[0]);
+	
+	gHubcap.Direction.vx = FIXEDH(FIXEDH(cp->st.n.angularVelocity[1]) * wheelDisp->vz) + FIXEDH(cp->st.n.linearVelocity[0]);
 	gHubcap.Direction.vy = FIXEDH(cp->st.n.linearVelocity[1]);
-	gHubcap.Direction.vz = FIXEDH(-FIXEDH(cp->st.n.angularVelocity[1]) * gHubcap.Offset[Hubcap].vx) + FIXEDH(cp->st.n.linearVelocity[2]);
+	gHubcap.Direction.vz = FIXEDH(-FIXEDH(cp->st.n.angularVelocity[1]) * wheelDisp->vx) + FIXEDH(cp->st.n.linearVelocity[2]);
 }
 
 
