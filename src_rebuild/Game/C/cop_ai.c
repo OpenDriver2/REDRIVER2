@@ -325,7 +325,7 @@ void InitCops(void)
 
 VECTOR targetPoint = { 0,0,0 };
 
-// [D]
+// [D] [T]
 void CopControl1(CAR_DATA *cp)
 {
 	int targetFound;

@@ -488,7 +488,7 @@ int slowWallTests = 0;
 // [D] [T]
 int blocked(tNode* v1, tNode* v2)
 {
-	int x, z, dmtile;
+	int x, z;
 
 	if (slowWallTests != 0)
 		return lineClear((VECTOR*)v1, (VECTOR*)v2) == 0;

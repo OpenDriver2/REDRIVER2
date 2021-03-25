@@ -1567,7 +1567,7 @@ int InitCivState(CAR_DATA * cp, EXTRA_CIV_DATA * extraData)
 	}
 
 	if (extraData == NULL)
-		cs->currentRoad = GetSurfaceIndex((VECTOR*)(cp->hd).where.t);
+		cs->currentRoad = GetSurfaceIndex((VECTOR*)cp->hd.where.t);
 	else
 		cs->currentRoad = extraData->surfInd;
 

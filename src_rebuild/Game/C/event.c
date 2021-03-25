@@ -2246,7 +2246,7 @@ void StepHelicopter(EVENT* ev)
 		ev->rotation += FIXEDH(FIXEDH(direction * direction) * direction);
 		ev->rotation &= 0xfff;
 
-		if (GetSurfaceIndex((VECTOR*)&ev->position) == -23)
+		if (GetSurfaceIndex(&ev->position) == -23)
 		{
 			if (ev->position.vy < -50)
 			{
@@ -2274,7 +2274,7 @@ void StepHelicopter(EVENT* ev)
 
 		if ((ev->flags & 0x100) && (Random2(0) & 3) == (CameraCnt & 3U))
 		{
-			Setup_Smoke((VECTOR*)&ev->position, 100, 500, SMOKE_BLACK, 0, &dummy, 0);
+			Setup_Smoke(&ev->position, 100, 500, SMOKE_BLACK, 0, &dummy, 0);
 		}
 	}
 
@@ -2346,7 +2346,7 @@ void StepEvents(void)
 				} while (i < MAX_CARS && i < 32);
 
 				// make Tanner on boat also
-				if (player[0].playerType == 2 && OnBoat((VECTOR*)player, ev, &dist))
+				if (player[0].playerType == 2 && OnBoat((VECTOR*)player[0].pos, ev, &dist))
 					carsOnBoat |= 0x300000;
 
 				BoatOffset(&boatOffset, ev);
@@ -2413,7 +2413,7 @@ void StepEvents(void)
 
 						if (i == TANNER_COLLIDER_CARID)
 						{
-							SetTannerPosition((VECTOR*)pos);
+							SetTannerPosition(pos);
 							carsOnBoat &= ~0x100000;
 						}
 						else if ((onBoatLastFrame & bit) == 0)
@@ -2876,7 +2876,7 @@ void DrawEvents(int camera)
 								}
 							}
 
-							if (FrustrumCheck((VECTOR*)&ev->position, modelpointers[ev->model]->bounding_sphere) != -1)
+							if (FrustrumCheck(&ev->position, modelpointers[ev->model]->bounding_sphere) != -1)
 							{
 								pos.vx = ev->position.vx - camera_position.vx;
 								pos.vy = ev->position.vy - camera_position.vy;

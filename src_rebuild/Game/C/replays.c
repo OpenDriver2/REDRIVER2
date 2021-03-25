@@ -712,7 +712,7 @@ int Put(int stream, u_int*pt0)
 	{
 		if (padbuf->pad == ((t0 >> 8) & 0xff) &&
 			padbuf->analogue == (t0 & 0xff) &&
-			padbuf->run != 0x8F)
+			padbuf->run != 143)
 		{
 			padbuf->run++;
 			return 1;
@@ -853,7 +853,7 @@ void AllocateReplayStream(REPLAY_STREAM *stream, int maxpad)
 		*replayptr = 0;
 
 		stream->InitialPadRecordBuffer->analogue = 0;
-		stream->InitialPadRecordBuffer->run = 0xEE;
+		stream->InitialPadRecordBuffer->run = 238;
 	}
 
 	replayptr = (char *)(((uint)replayptr + (maxpad+1) * sizeof(PADRECORD)) & -4);

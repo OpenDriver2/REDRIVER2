@@ -2577,7 +2577,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 			if (target->target_flags & TARGET_FLAG_EVENT_TRIGGERED)
 			{
 				// [A] Ahhhh, 32 bit pointers... for future full-scale refactoring
-				if (target->event.loseMessage != -1 && Long2DDistance((VECTOR*)target->event.eventPos, &pv) > 30000)
+				if (target->event.loseMessage != -1 && Long2DDistance(target->event.eventPos, &pv) > 30000)
 				{
 					message = MissionStrings + target->event.loseMessage;
 					SetPlayerMessage(thread->player, message, 2, 2);
