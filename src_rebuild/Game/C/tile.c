@@ -99,8 +99,9 @@ void Tile1x1(MODEL *model)
 // [D] [T]
 void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 {
+	MODEL* pModel;
 	PACKED_CELL_OBJECT *ppco;
-	int yang;
+	int yang, dofse;
 	int model_number;
 	PACKED_CELL_OBJECT **tilePointers;
 	int previous_matrix;
@@ -175,13 +176,9 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 		}
 		else
 		{
-			if (Z > 9000) 
-			{
-				if (Low2LowerDetailTable[model_number] != 0xffff)
-					model_number = Low2LowerDetailTable[model_number];
-			}
+			pModel = Z > 9000 ? pLodModels[model_number] : modelpointers[model_number];
 			
-			Tile1x1(modelpointers[model_number]);
+			Tile1x1(pModel);
 		}
 
 		tile_amount--;

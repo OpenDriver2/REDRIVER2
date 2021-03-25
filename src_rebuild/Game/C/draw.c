@@ -469,7 +469,7 @@ void CalcObjectRotationMatrices(void)
 // [D] [T]
 void PlotMDL_less_than_128(MODEL* model)
 {
-	RenderModel(model, (MATRIX*)0x0, (VECTOR*)0x0, 0, 0, 0, 0);
+	RenderModel(model, NULL, NULL, 0, 0, 0, 0);
 }
 
 int gForceLowDetailCars = 0;
@@ -846,6 +846,7 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 	OTTYPE* ot;
 	CELL_OBJECT* cop;
 	int i;
+	int Z;
 	int prev_mat;
 
 	prev_mat = -1;
@@ -876,15 +877,15 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 
 		if (prev_mat == mat)
 		{
-			Apply_InvCameraMatrixSetTrans(&cop->pos);
+			Z = Apply_InvCameraMatrixSetTrans(&cop->pos);
 		}
 		else
 		{
-			Apply_InvCameraMatrixAndSetMatrix(&cop->pos, &CompoundMatrix[mat]);
+			Z = Apply_InvCameraMatrixAndSetMatrix(&cop->pos, &CompoundMatrix[mat]);
 			prev_mat = mat;
 		}
 
-		model = modelpointers[cop->type];
+		model = Z > 9000 ? pLodModels[cop->type] : modelpointers[cop->type];
 
 		zbias = model->zBias - 64;
 
