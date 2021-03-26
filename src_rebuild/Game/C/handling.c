@@ -327,11 +327,6 @@ void GlobalTimeStep(void)
 
 		st = &cp->st;
 
-		if (cp->controlType == CONTROL_TYPE_PLAYER && playerghost && !playerhitcopsanyway) // [A]
-			cp->hd.mayBeColliding = 0;
-
-		// too many reads and writes, you know how to optimize it
-
 		st->n.linearVelocity[0] += cp->hd.acc[0];
 		st->n.linearVelocity[1] += cp->hd.acc[1];
 		st->n.linearVelocity[2] += cp->hd.acc[2];
@@ -413,9 +408,7 @@ void GlobalTimeStep(void)
 		RKstep = 0;
 
 		do {
-			i = 0;
-
-			while (i < num_active_cars)
+			for (i = 0; i < num_active_cars; i++)
 			{
 				cp = active_car_list[i];
 
@@ -463,22 +456,21 @@ void GlobalTimeStep(void)
 					thisDelta[i].n.angularVelocity[1] = 0;
 					thisDelta[i].n.angularVelocity[2] = 0;
 
-					j = 0;
-					while (j < i)
+					for (j = 0; j < i; j++)
 					{
 						c1 = active_car_list[j];
 
-						if (RKstep > 0)
-							thisState_j = &_tp[j];
-						else
-							thisState_j = &c1->st;
-
 						// [A] optimized run to not use the box checking
 						// as it has already composed bitfield / pairs
-						if((mayBeCollidingBits & (1 << j)) != 0 && (c1->hd.speed != 0 || cp->hd.speed != 0))
+						if((mayBeCollidingBits & (1 << CAR_INDEX(c1))) != 0 && (c1->hd.speed != 0 || cp->hd.speed != 0))
 						{
 							if(CarCarCollision3(cp, c1, &depth, (VECTOR*)collisionpoint, (VECTOR*)normal))
 							{
+								if (RKstep > 0)
+									thisState_j = &_tp[j];
+								else
+									thisState_j = &c1->st;
+								
 								int c1InfiniteMass;
 								int c2InfiniteMass;
 
@@ -695,13 +687,9 @@ void GlobalTimeStep(void)
 								if (c1->id == player[0].playerCarId)
 									CarHitByPlayer(cp, howHard);
 							}
-						}
-
-						j++;
-					}
+						} // maybe colliding
+					} // j loop
 				}
-
-				i++;
 			}
 
 			// update forces and rebuild matrix of the cars
@@ -1030,8 +1018,11 @@ void CheckCarToCarCollisions(void)
 
 	// build boxes
 	do {
-		if (cp->controlType == CONTROL_TYPE_NONE) // [A] required as game crashing
+		if (cp->controlType == CONTROL_TYPE_NONE ||
+			cp->controlType == CONTROL_TYPE_PLAYER && playerghost && !playerhitcopsanyway) // [A] required as game crashing
 		{
+			bb->y1 = INT_MAX;
+			
 			cp++;
 			bb++;
 			loop1++;
@@ -1094,9 +1085,9 @@ void CheckCarToCarCollisions(void)
 
 		while (loop2 < MAX_CARS)
 		{
-			if (bb2->x0 < bb1->x1 && bb2->z0 < bb1->z1 && bb1->x0 < bb2->x1 &&
-				bb1->z0 < bb2->z1 && bb2->y0 < bb1->y1 && bb1->y0 < bb2->y1 &&
-				(loop1 == 0 || car_data[loop1].controlType != CONTROL_TYPE_NONE) && car_data[loop2].controlType != CONTROL_TYPE_NONE)
+			if (bb1->y1 != INT_MAX && bb2->y1 != INT_MAX &&
+				bb2->x0 < bb1->x1 && bb2->z0 < bb1->z1 && bb1->x0 < bb2->x1 &&
+				bb1->z0 < bb2->z1 && bb2->y0 < bb1->y1 && bb1->y0 < bb2->y1)
 			{
 				car_data[loop1].hd.mayBeColliding |= (1 << loop2);
 				car_data[loop2].hd.mayBeColliding |= (1 << loop1);
