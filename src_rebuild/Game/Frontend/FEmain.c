@@ -2015,12 +2015,15 @@ int CarSelectScreen(int bSetup)
 			}
 		}
 
-		if (currPlayer != 1) {
+#ifdef PSX
+		if (currPlayer != 1) 
+		{
 			if (NumPlayers == 2)
 				FEPrintStringSized(G_LTXT(GTXT_Player2), 400, 260, 0xc00, 0, 128, 128, 128);
 
 			return 0;
 		}
+#endif
 
 		LoadBackgroundFile("DATA\\CARS\\CARBACK.RAW");
 
@@ -2059,6 +2062,14 @@ int CarSelectScreen(int bSetup)
 
 		return 1;
 	}
+
+#ifndef PSX
+	if (currPlayer != 1)
+	{
+		if (NumPlayers == 2)
+			FEPrintStringSized(G_LTXT(GTXT_Player2), 400, 260, 0xc00, 0, 128, 128, 128);
+	}
+#endif
 
 	if (feNewPad & 0x10)
 	{
@@ -3762,7 +3773,7 @@ int TimeOfDaySelectScreen(int bSetup)
 		for (i = 0; i < numButtons; i++)
 		{
 			PSXBUTTON& btn = pCurrScreen->buttons[i];
-			strcpy(btn.Name, GET_GAME_TXT(TimeOfDayItems[i]));
+			sprintf(btn.Name, "%s%c", GET_GAME_TXT(TimeOfDayItems[i]), i == 2 ? 0 : ':');
 
 			if (i == 2)
 			{
