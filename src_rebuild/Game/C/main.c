@@ -437,9 +437,9 @@ void LoadGameLevel(void)
 	sector = citylumps[GameLevel][CITYLUMP_DATA2].x / CDSECTOR_SIZE;
 	nsectors = citylumps[GameLevel][CITYLUMP_DATA2].y / CDSECTOR_SIZE;
 
-	MALLOC_BEGIN();
+	D_MALLOC_BEGIN();
 	malloc_lump = D_MALLOC(nsectors * CDSECTOR_SIZE);
-	MALLOC_END();
+	D_MALLOC_END();
 
 #ifdef PSX
 	loadsectors(malloc_lump, sector, nsectors);
@@ -491,9 +491,9 @@ void GameInit(void)
 		mallocptr = (char*)malloctab;
 #endif // PSX
 
-		MALLOC_BEGIN();
+		D_MALLOC_BEGIN();
 		packed_cell_pointers = D_MALLOC(1024 * sizeof(void*));
-		MALLOC_END();
+		D_MALLOC_END();
 	}
 
 	gameinit = 1;

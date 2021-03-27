@@ -424,7 +424,7 @@ void LoadMission(int missionnum)
 	}
 
 	// begin memory allocation
-	MALLOC_BEGIN();
+	D_MALLOC_BEGIN();
 
 	if (NewLevel != 0)
 	{
@@ -525,9 +525,11 @@ void LoadMission(int missionnum)
 	gTimeOfDay = MissionHeader->time;
 	gWeather = MissionHeader->weather;
 
-	if(wantedTimeOfDay > -1 && !gWantNight)
+	// [A] custom time of day
+	if(wantedTimeOfDay > -1)
 		gTimeOfDay = wantedTimeOfDay;
 
+	// [A] custom weather
 	if (wantedWeather > -1)
 		gWeather = wantedWeather;
 
@@ -695,7 +697,7 @@ void LoadMission(int missionnum)
 		}
 	}
 
-	MALLOC_END();
+	D_MALLOC_END();
 
 	// load helicopter path if exists
 	sprintf(filename, "MISSIONS\\PATH%d.%d", gCurrentMissionNumber, 0);
@@ -710,18 +712,18 @@ void LoadMission(int missionnum)
 	// assign story mission title
 	if (gCurrentMissionNumber - 1U < 40)
 	{
-		loadsize = gCurrentMissionNumber;
+		int titleId = gCurrentMissionNumber;
 
-		if (gCurrentMissionNumber > 36) 
-			loadsize = gCurrentMissionNumber - 1U;
+		if (titleId > 36)
+			titleId--;
 
-		if (loadsize > 11) 
-			loadsize--;
+		if (titleId > 11)
+			titleId--;
 		
-		if (loadsize > 7) 
-			loadsize--;
+		if (titleId > 7)
+			titleId--;
 
-		gMissionTitle = GET_MISSION_TXT(MissionName[loadsize - 1]);
+		gMissionTitle = GET_MISSION_TXT(MissionName[titleId - 1]);
 	}
 	else
 	{

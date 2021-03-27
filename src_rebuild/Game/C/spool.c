@@ -960,9 +960,9 @@ void ProcessSpoolInfoLump(char *lump_ptr, int lump_size)
 	if (size < 0x10000)
 		size = 0x10000;	// smaller still should be fixed to 64k
 
-	MALLOC_BEGIN();
+	D_MALLOC_BEGIN();
 	model_spool_buffer = D_MALLOC(size);
-	MALLOC_END();
+	D_MALLOC_END();
 
 	cell_slots_add[4] = 0;
 	cell_objects_add[4] = 0;
@@ -1004,9 +1004,9 @@ void ProcessSpoolInfoLump(char *lump_ptr, int lump_size)
 		// by the fact it's a roadmap size + pvs size
 		pvsSize[i] = pvsSizes[i] + 0x7ffU & 0xfffff800;
 
-		MALLOC_BEGIN();
+		D_MALLOC_BEGIN();
 		alloclist = D_MALLOC(pvsSize[i]);
-		MALLOC_END();
+		D_MALLOC_END();
 
 		PVS_Buffers[i] = alloclist + 4;		// +4 for -1 cases
 	}

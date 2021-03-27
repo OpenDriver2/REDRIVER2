@@ -44,22 +44,22 @@ extern void sys_freeall();
 #define D_TEMPFREE()
 #endif
 
-#define MALLOC_BEGIN() \
+#define D_MALLOC_BEGIN() \
 	{ \
 		const char* _oldmalloc = mallocptr;
 
 #ifdef __GNUC__
-#define MALLOC_END() \
+#define D_MALLOC_END() \
 		D_TEMPFREE();\
 		if(mallocptr > _oldmalloc)\
 			printWarning("malloc(%d) in %s, line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __FUNCTION__, __LINE__, (mallocptr-malloctab));\
-	} // MALLOC_BEGIN block
+	} // D_MALLOC_BEGIN block
 #else
-#define MALLOC_END() \
+#define D_MALLOC_END() \
 		D_TEMPFREE();\
 		if(mallocptr > _oldmalloc)\
 			printWarning("malloc(%d) in " __FUNCTION__ ", line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __LINE__, (mallocptr-malloctab));\
-	} // MALLOC_BEGIN block
+	} // D_MALLOC_BEGIN block
 #endif
 
 extern int leadAIRequired;

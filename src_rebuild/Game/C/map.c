@@ -56,7 +56,7 @@ void InitCellData(void)
 {
 	int loop;
 
-	MALLOC_BEGIN();
+	D_MALLOC_BEGIN();
 
 	cell_ptrs = (ushort*)D_MALLOC(4096 * sizeof(short));
 
@@ -68,7 +68,7 @@ void InitCellData(void)
 	cell_objects = (PACKED_CELL_OBJECT*)D_MALLOC((num_straddlers + cell_objects_add[4]) * sizeof(PACKED_CELL_OBJECT));
 	cells = (CELL_DATA*)D_MALLOC(cell_slots_add[4] * sizeof(CELL_DATA));
 
-	MALLOC_END();
+	D_MALLOC_END();
 
 	sizeof_cell_object_computed_values = (num_straddlers + cell_objects_add[4] + 7) / sizeof(PACKED_CELL_OBJECT);
 }

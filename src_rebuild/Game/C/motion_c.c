@@ -458,9 +458,9 @@ void ProcessMotionLump(char* lump_ptr, int lump_size)
 	{
 		int size = (lump_size + 3) & ~3;
 
-		MALLOC_BEGIN();
+		D_MALLOC_BEGIN();
 		MotionCaptureData[ThisMotion] = D_MALLOC(size);
-		MALLOC_END();
+		D_MALLOC_END();
 
 		memcpy((u_char*)MotionCaptureData[ThisMotion], (u_char*)lump_ptr, size);
 

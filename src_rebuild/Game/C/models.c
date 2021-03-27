@@ -220,34 +220,34 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 
 			if (cleanOfs != -1)
 			{
-				MALLOC_BEGIN();
+				D_MALLOC_BEGIN();
 				model = GetCarModel(models_offset + cleanOfs, &mallocptr, 1, model_number, CAR_MODEL_CLEAN);
 				gCarCleanModelPtr[i] = model;
-				MALLOC_END();
+				D_MALLOC_END();
 			}
 
 			if (damOfs != -1)
 			{
-				MALLOC_BEGIN();
+				D_MALLOC_BEGIN();
 				model = GetCarModel(models_offset + damOfs, &mallocptr, 0, model_number, CAR_MODEL_DAMAGED);
 				gCarDamModelPtr[i] = model;
-				MALLOC_END();
+				D_MALLOC_END();
 			}
 
 			if (lowOfs != -1)
 			{
-				MALLOC_BEGIN();
+				D_MALLOC_BEGIN();
 				model = GetCarModel(models_offset + lowOfs, &mallocptr, 1, model_number, CAR_MODEL_LOWDETAIL);
 				gCarLowModelPtr[i] = model;
-				MALLOC_END();
+				D_MALLOC_END();
 			}
 		}
 	}
 
-	MALLOC_BEGIN();
+	D_MALLOC_BEGIN();
 	mallocptr = specmallocptr + specMemReq;
 	specLoadBuffer = specmallocptr + specMemReq - 2048;
-	MALLOC_END();
+	D_MALLOC_END();
 
 	buildNewCars();
 

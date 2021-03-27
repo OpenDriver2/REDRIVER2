@@ -2527,7 +2527,9 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 	lbody = car_cos->colBox.vz;
 	wbody = car_cos->colBox.vx;
 
-	if (cp->id == 1 && (cp->ai.c.carMustDie == 1))
+	// why only first car must die?
+	// P.S. it's the only one with the music
+	if (cp->id == 1 && cp->ai.c.carMustDie == 1)
 	{
 		cp->ai.c.thrustState = 3;
 		cp->ai.c.ctrlState = 9;

@@ -881,7 +881,7 @@ void SetUpEvents(int full)
 		return;
 	}
 
-	MALLOC_BEGIN()
+	D_MALLOC_BEGIN()
 
 	if (full)
 	{
@@ -1405,7 +1405,7 @@ void SetUpEvents(int full)
 	if (full)
 		mallocptr += cEvents * sizeof(EVENT);
 
-	MALLOC_END();
+	D_MALLOC_END();
 }
 
 // [D] [T]

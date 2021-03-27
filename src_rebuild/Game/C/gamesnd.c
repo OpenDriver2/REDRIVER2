@@ -1797,7 +1797,7 @@ void InitMusic(int musicnum)
 	current_music_id = musicnum;
 	LoadfileSeg(name, (char*)musicpos, musicnum * 8, sizeof(musicpos));
 
-	MALLOC_BEGIN()
+	D_MALLOC_BEGIN()
 
 		sample_len = musicpos[2] - musicpos[1];
 	music_len = musicpos[1] - musicpos[0];
@@ -1833,7 +1833,7 @@ void InitMusic(int musicnum)
 		XM_SetSongAddress((unsigned char*)song_pt);
 	}
 
-	MALLOC_END();
+	D_MALLOC_END();
 
 	InitXMData((unsigned char*)music_pt, 0, 0);
 
