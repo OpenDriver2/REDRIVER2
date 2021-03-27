@@ -732,6 +732,8 @@ void GameInit(void)
 
 	if (gWeather == 1)
 		wetness = 7000;
+	else if (gWeather == 2)
+		wetness = 3000;
 	else
 		wetness = 0;
 

@@ -1090,6 +1090,10 @@ void DisplayLightReflections(VECTOR* v1, CVECTOR* col, short size, TEXTURE_DETAI
 
 	if (wetness > 9 && v1->vy > camera_position.vy)
 	{
+		thiscol.r = col->r * wetness >> 16;
+		thiscol.g = col->g * wetness >> 16;
+		thiscol.b = col->b * wetness >> 16;
+		
 		gte_SetTransVector(v1);
 
 		Apply_Inv_CameraMatrix(v1);
@@ -1145,10 +1149,6 @@ void DisplayLightReflections(VECTOR* v1, CVECTOR* col, short size, TEXTURE_DETAI
 
 			poly->tpage = texture->tpageid | 0x20;
 			poly->clut = texture->clutid;
-
-			thiscol.r = col->r >> 3;
-			thiscol.g = col->g >> 3;
-			thiscol.b = col->b >> 3;
 
 			poly->r0 = thiscol.r;
 			poly->g0 = thiscol.g;
