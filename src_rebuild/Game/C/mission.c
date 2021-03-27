@@ -499,8 +499,8 @@ void LoadMission(int missionnum)
 	{
 		PlayerStartInfo[0]->rotation = MissionHeader->playerStartRotation;
 
-		PlayerStartInfo[0]->position.vx = MissionHeader->playerStartPosition.x;
-		PlayerStartInfo[0]->position.vz = MissionHeader->playerStartPosition.y;
+		//PlayerStartInfo[0]->position.vx = MissionHeader->playerStartPosition.x;
+		//PlayerStartInfo[0]->position.vz = MissionHeader->playerStartPosition.y;
 	
 #ifdef DEBUG_OPTIONS
 		if(gStartPos.x != 0 && gStartPos.z != 0)

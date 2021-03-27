@@ -1821,7 +1821,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 	int Tangle;
 
 #ifndef PSX
-	if (gDriver1Level || gDemoLevel)
+	if (gDemoLevel)
 		return;
 #endif
 

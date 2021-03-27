@@ -1800,22 +1800,6 @@ int LoadRegionData(int region, int target_region)
 
 		RequestSpool(0, 0, offset, spoolptr->cell_data_size[2], (char *)(cell_objects + num_straddlers + cell_objects_add[target_region]), GotRegion);
 		offset += spoolptr->cell_data_size[2];
-
-		//offset -= spoolptr->roadm_size; // [A] if PVS_Buffers loading temporarily disabled this should be uncommented
-	}
-	else if (gDriver1Level)
-	{
-		// TODO: ....
-
-		RequestSpool(0, 0, offset, spoolptr->cell_data_size[0], (char *)(cell_objects + num_straddlers + cell_objects_add[target_region]), NULL);
-		offset += spoolptr->cell_data_size[0];
-
-		RequestSpool(0, 0, offset, spoolptr->cell_data_size[1], (char *)(cells + cell_slots_add[target_region]), NULL);
-		offset += spoolptr->cell_data_size[1];
-
-		RequestSpool(0, 0, offset, spoolptr->cell_data_size[2], packed_cell_pointers, GotRegion);
-		offset += spoolptr->cell_data_size[2];
-
 	}
 	else
 #endif
@@ -2489,7 +2473,7 @@ void InitSpecSpool(void)
 	}
 
 #ifndef PSX
-	if(gDemoLevel || gDriver1Level)
+	if(gDemoLevel)
 		allowSpecSpooling = 0;
 #endif
 

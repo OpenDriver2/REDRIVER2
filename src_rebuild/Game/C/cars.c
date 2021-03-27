@@ -1162,9 +1162,6 @@ void MangleWheelModels(void)
 // [D]
 void ProcessPalletLump(char *lump_ptr, int lump_size)
 {
-	if (gDriver1Level)	// [A]
-		return;	// TODO: load Driver 1 civ palettes
-
 	ushort clutValue;
 	int *buffPtr;
 	int texnum;

@@ -2,8 +2,6 @@
 #define MAIN_H
 
 extern int game_over;
-
-extern int gDriver1Level;
 extern int gDemoLevel;
 
 extern XZPAIR gStartPos;

@@ -70,19 +70,17 @@
 
 #include "INLINE_C.H"
 
-
-
-int scr_z = 0;
-
 int levelstartpos[8][4] = {
-	{ 0x12B1, 0xFFFFFC00, 0xFFFC9794, 0},
-	{ 0xFFFC74AC, 0x800, 0xFFFC6961, 0},
-	{ 0x383CB, 0xFFFFFC00, 0xABE1E, 0},
-	{ 0x165EF, 0xFFFFFC00, 0xFFFAB3D9, 0},
-	{ 0x24548, 0x1813, 0xFFFE4A80, 0},
-	{ 0xFFFD67F0, 0x1813, 0x58228, 0},
-	{ 0xFFFFD6FC, 0xFFFFE7ED, 0xFFFFA980, 0},
-	{ 0xFFFFDCDD, 0xFFFFE7ED, 0xF8A7, 0},
+	{ 4785, -1024, -223340, 0},
+	{ -223276, 2048, -235167, 0},
+	{ 230347, -1024, 704030, 0},
+	{ 91631, -1024, -347175, 0},
+
+	// what?
+	{ 148808, 6163, -112000, 0},
+	{ -170000, 6163, 361000, 0},
+	{ -10500, -6163, -22144, 0},
+	{ -8995, -6163, 63655, 0},
 };
 
 XZPAIR gStartPos = { 0 };
@@ -127,15 +125,17 @@ enum LevLumpType
 	LUMP_JUNCTIONS2_NEW = 43,	// Only appear in release Driver2
 };
 
-int HitLeadCar = 0;
+int gStopPadReads = 0;
+int gDieWithFade = 0;
+
 int game_over = 0;
 int saved_counter = 0;
 int saved_leadcar_pos = 0;
-int gStopPadReads = 0;
-int DawnCount = 0;
-int current_camera_angle = 0x800;
-int gDieWithFade = 0;
 
+int DawnCount = 0;
+int current_camera_angle = 2048;
+
+int scr_z = 0;
 int FrameCnt = 0;
 
 static int WantPause = 0;
@@ -148,7 +148,6 @@ uint* transparent_buffer;
 
 // system?
 int gameinit = 0;
-int gMusicType = 0;
 int xa_timeout = 0;
 
 int IconsLoaded = 0;
@@ -187,8 +186,6 @@ void InitModelNames(void)
 	InitAnimatingObjects();
 }
 
-
-int gDriver1Level = 0;
 int gDemoLevel = 0;
 
 // [D] [T]
@@ -201,7 +198,6 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 	int* ptr;
 
 	int numLumps = -1;
-	gDriver1Level = 0;
 
 	quit = 0;
 	do {
@@ -370,8 +366,7 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 		}
 		else
 		{
-			printInfo("ERROR - unknown lump type %d... assuming it's Driver 1 level\n", lump_type);
-			gDriver1Level = 1;
+			printInfo("ERROR - unknown lump type %d\n", lump_type);
 			numLumps = lump_type;
 
 			lump_ptr += 4;
@@ -471,7 +466,7 @@ void LoadGameLevel(void)
 void GameInit(void)
 {
 	STREAM_SOURCE* plStart;
-	int i;
+	int i, musicType;
 	char padid;
 
 	if (NewLevel == 0)
@@ -559,51 +554,51 @@ void GameInit(void)
 		if (GameType == GAME_TAKEADRIVE)
 		{
 			if(GameLevel == 0)
-				gMusicType = 0 + (gCurrentMissionNumber & 1);
+				musicType = 0 + (gCurrentMissionNumber & 1);
 			else if (GameLevel == 1)
-				gMusicType = 5 + (gCurrentMissionNumber & 1);
+				musicType = 5 + (gCurrentMissionNumber & 1);
 			else if (GameLevel == 2)
-				gMusicType = 2 + (gCurrentMissionNumber & 1) * 5;
+				musicType = 2 + (gCurrentMissionNumber & 1) * 5;
 			else if (GameLevel == 3)
-				gMusicType = 3 + (gCurrentMissionNumber & 1);
+				musicType = 3 + (gCurrentMissionNumber & 1);
 		}
 		else
 		{
-			gMusicType = gCurrentMissionNumber % 8;
+			musicType = gCurrentMissionNumber % 8;
 		}
 	}
 	else 
 #endif
 	if (GameLevel == 1)
 	{
-		gMusicType = 1;
+		musicType = 1;
 
 		if ((gCurrentMissionNumber & 1U) != 0)
-			gMusicType = 5;
+			musicType = 5;
 	}
 	else if (GameLevel == 0)
 	{
-		gMusicType = 2;
+		musicType = 2;
 
 		if ((gCurrentMissionNumber & 1U) != 0)
-			gMusicType = 6;
+			musicType = 6;
 	}
 	else if (GameLevel == 2)
 	{
-		gMusicType = 0;
+		musicType = 0;
 
 		if ((gCurrentMissionNumber & 1U) == 0)
-			gMusicType = 3;
+			musicType = 3;
 	}
 	else if (GameLevel == 3)
 	{
-		gMusicType = 4;
+		musicType = 4;
 
 		if ((gCurrentMissionNumber & 1U) != 0)
-			gMusicType = 7;
+			musicType = 7;
 	}
 
-	InitMusic(gMusicType);
+	InitMusic(musicType);
 
 	if (NewLevel == 0)
 	{
@@ -733,7 +728,7 @@ void GameInit(void)
 		FindNextChange(CameraCnt);
 	}
 
-	FrAng = 0x200;
+	FrAng = 512;
 
 	if (gWeather == 1)
 		wetness = 7000;
@@ -2281,7 +2276,7 @@ void RenderGame2(int view)
 		i++;
 	} while (i < 2);
 
-	if (gLoadedOverlay != 0)
+	if (gLoadedOverlay)
 		DisplayOverlays();
 
 	DrawMission();
@@ -2379,7 +2374,7 @@ void InitGameVariables(void)
 	InitTyreTracks();
 	TargetCar = 0;
 
-	if (NewLevel != 0)
+	if (NewLevel)
 	{
 		gLoadedOverlay = 0;
 		gLoadedMotionCapture = 0;
@@ -2392,7 +2387,6 @@ void InitGameVariables(void)
 	else
 		pauseflag = 1;
 
-	HitLeadCar = 0;
 	FastForward = 0;
 	game_over = 0;
 	saved_counter = 0;
@@ -2428,11 +2422,11 @@ void InitGameVariables(void)
 		PlayerStartInfo[0]->controlType = CONTROL_TYPE_PLAYER;
 		PlayerStartInfo[0]->flags = 0;
 
-		PlayerStartInfo[0]->rotation = levelstartpos[GameLevel][1];
+		PlayerStartInfo[0]->rotation = levelstartpos[GameLevel + (gWantNight * 4)][1];
 
 		PlayerStartInfo[0]->position.vy = 0;
-		PlayerStartInfo[0]->position.vx = levelstartpos[GameLevel][0];
-		PlayerStartInfo[0]->position.vz = levelstartpos[GameLevel][2];
+		PlayerStartInfo[0]->position.vx = levelstartpos[GameLevel + (gWantNight * 4)][0];
+		PlayerStartInfo[0]->position.vz = levelstartpos[GameLevel + (gWantNight * 4)][2];
 
 		numPlayersToCreate = 1;
 
