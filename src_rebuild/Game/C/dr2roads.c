@@ -311,9 +311,7 @@ sdPlane* sdGetCell(VECTOR *pos)
 
 #ifndef PSX
 	if (gDemoLevel)
-	{
 		return sdGetCell_alpha16(pos);
-	}
 #endif
 
 	sdLevel = 0;
@@ -321,27 +319,25 @@ sdPlane* sdGetCell(VECTOR *pos)
 	cellPos.x = pos->vx - 512;
 	cellPos.y = pos->vz - 512;
 
-	// [A] WARNING!
-	// retail version of game with exe dated before 20th October 2000 (so called 1.0) is only supported
-	// the later version of the game do have problem with height or BSP, so Havana's secret base ground is not solid
-	// reason is unknown
+	cell.x = cellPos.x & 1023;
+	cell.y = cellPos.y & 1023;
 
-	buffer = RoadMapDataRegions[(cellPos.x >> 16 & 1U) ^ (regions_across / 2 & 1) + 
-								(cellPos.y >> 15 & 2U) ^ (regions_down & 2)];
+	buffer = RoadMapDataRegions[(cellPos.x >> 16 & 1) ^ (regions_across / 2 & 1) + 
+								(cellPos.y >> 15 & 2) ^ (regions_down & 2)];
 
 	// Alpha 1.6 code, works too; not widely tested yet
-	//buffer = *(short**)((int)RoadMapDataRegions + (cellPos.x >> 14 & 4U ^ cellPos.y >> 13 & 8U ^ sdSelfModifyingCode));
+	//buffer = *(short**)((int)RoadMapDataRegions + (cellPos.x >> 14 & 4 ^ cellPos.y >> 13 & 8 ^ sdSelfModifyingCode));
 
 	plane = NULL;
 	
-	if (*buffer == 2) 
+	if (*buffer == 2)
 	{
 		sdPlane* planeData = (sdPlane*)((char*)buffer + buffer[1]);
 		short* bspData = (short*)((char*)buffer + buffer[2]);
 		sdNode* nodeData = (sdNode*)((char*)buffer + buffer[3]);
 		
-		surface = &buffer[(cellPos.x >> 10 & 0x3fU) + 
-						  (cellPos.y >> 10 & 0x3fU) * MAP_REGION_SIZE*2 + 4];
+		surface = &buffer[(cellPos.x >> 10 & 63) + 
+						  (cellPos.y >> 10 & 63) * 64 + 4];
 
 		// initial surface
 		if (*surface == -1)
@@ -371,10 +367,7 @@ sdPlane* sdGetCell(VECTOR *pos)
 			// check if it's has BSP properties
 			// basically it determines surface bounds
 			if (*surface & 0x4000)
-			{
-				cell.x = cellPos.x & 0x3ff;
-				cell.y = cellPos.y & 0x3ff;
-				
+			{				
 				// get closest surface by BSP lookup
 				BSPSurface = sdGetBSP(&nodeData[*surface & 0x3fff], &cell);
 
@@ -458,8 +451,8 @@ int RoadInCell(VECTOR *pos)
 	cellPos.x = pos->vx - 512;
 	cellPos.y = pos->vz - 512;
 
-	buffer = RoadMapDataRegions[(cellPos.x >> 16 & 1U) ^ (regions_across / 2 & 1) + 
-								(cellPos.y >> 15 & 2U) ^ (regions_down & 2)];
+	buffer = RoadMapDataRegions[(cellPos.x >> 16 & 1) ^ (regions_across / 2 & 1) + 
+								(cellPos.y >> 15 & 2) ^ (regions_down & 2)];
 
 	if (*buffer == 2)
 	{
@@ -467,8 +460,8 @@ int RoadInCell(VECTOR *pos)
 		short* bspData = (short*)((char*)buffer + buffer[2]);
 		sdNode* nodeData = (sdNode*)((char*)buffer + buffer[3]);
 
-		check = &buffer[(cellPos.x >> 10 & 0x3fU) +
-						(cellPos.y >> 10 & 0x3fU) * MAP_REGION_SIZE * 2 + 4];
+		check = &buffer[(cellPos.x >> 10 & 63) +
+						(cellPos.y >> 10 & 63) * 64 + 4];
 
 		if (*check == -1)
 			return -1;

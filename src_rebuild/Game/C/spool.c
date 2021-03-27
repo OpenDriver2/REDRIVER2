@@ -1002,6 +1002,7 @@ void ProcessSpoolInfoLump(char *lump_ptr, int lump_size)
 		cell_objects_add[4] += objects_count;
 
 		// by the fact it's a roadmap size + pvs size
+		// FIXME: is that even correct? maybe use MAX instead?
 		pvsSize[i] = pvsSizes[i] + 0x7ffU & 0xfffff800;
 
 		D_MALLOC_BEGIN();

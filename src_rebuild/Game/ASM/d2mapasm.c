@@ -86,33 +86,38 @@ sdPlane* sdGetCell_alpha16(VECTOR* pos)
 	sdPlane* plane;
 	int iVar1;
 	short* BSPSurface;
-	int cellPos_x;
-	int cellPos_z;
+	XYPAIR cellPos;
 	XYPAIR cell;
 	short* surface;
-	short* HSurface;
 	short* buffer;
-	bool nextLevel;
+	int nextLevel;
 
-	cellPos_x = pos->vx - 512;
-	cellPos_z = pos->vz - 512;
+	cellPos.x = pos->vx - 512;
+	cellPos.y = pos->vz - 512;
 
-	buffer = *(short**)((int)RoadMapDataRegions + (cellPos_x >> 14 & 4U ^ cellPos_z >> 13 & 8U ^ sdSelfModifyingCode));	// pointless, but i'll keep it there
+	cell.x = cellPos.x & 1023;
+	cell.y = cellPos.y & 1023;
+
+	buffer = RoadMapDataRegions[(cellPos.x >> 16 & 1) ^ (regions_across / 2 & 1) +
+								(cellPos.y >> 15 & 2) ^ (regions_down & 2)];
+
+	// Alpha 1.6 code, works too; not widely tested yet
+	//buffer = *(short**)((int)RoadMapDataRegions + (cellPos.x >> 14 & 4 ^ cellPos.y >> 13 & 8 ^ sdSelfModifyingCode));
 	
-	cell.x = cellPos_x & 1023;
-	cell.y = cellPos_z & 1023;
+	plane = NULL;
 
-	surface = &buffer[(cellPos_x >> 10 & 0x3fU) + (cellPos_z >> 10 & 0x3fU) * MAP_REGION_SIZE * 2 + 4];
-
-	if (*surface == -1) 
-	{
-		plane = NULL;
-	}
-	else 
+	if (*buffer == 2)
 	{
 		sdPlane* planeData = (sdPlane*)((char*)buffer + buffer[1]);
 		short* bspData = (short*)((char*)buffer + buffer[2]);
 		sdNode* nodeData = (sdNode*)((char*)buffer + buffer[3]);
+
+		surface = &buffer[(cellPos.x >> 10 & 63) +
+						  (cellPos.y >> 10 & 63) * 64 + 4];
+
+		// initial surface
+		if (*surface == -1)
+			return GetSeaPlane();
 
 		// check surface has overlapping planes flag (aka multiple levels)
 		if (*surface & 0x8000)
@@ -133,25 +138,29 @@ sdPlane* sdGetCell_alpha16(VECTOR* pos)
 
 		// iterate surfaces if BSP
 		do {
-			nextLevel = false;
-			BSPSurface = surface;
+			nextLevel = 0;
 
 			// check if it's has BSP properties
 			// basically it determines surface bounds
-			if (*surface & 0x4000) 
+			if (*surface & 0x4000)
 			{
-				BSPSurface = sdGetBSP(&nodeData[*surface & 0x1fff], &cell);
-				if (*BSPSurface == 0x7fff) 
+				// get closest surface by BSP lookup
+				BSPSurface = sdGetBSP(&nodeData[*surface & 0x1fff], &cell);		// 0x3fff in final
+
+				if (*BSPSurface == 0x7fff)
 				{
-					nextLevel = true;
-					BSPSurface = surface + 2;
+					sdLevel++;
+					nextLevel = 1;
+					BSPSurface = surface + 2; // get to the next node
 				}
+
+				surface = BSPSurface;
 			}
-			surface = BSPSurface;
 		} while (nextLevel);
 
-		plane = &planeData[*BSPSurface];
+		plane = &planeData[*surface];
 	}
+
 	return plane;
 }
 
@@ -204,7 +213,7 @@ int RoadInCell_alpha16(VECTOR *pos)
 					// basically it determines surface bounds
 					if (*check & 0x4000)
 					{
-						sdNode* search = &nodeData[*check & 0x1fff];
+						sdNode* search = &nodeData[*check & 0x1fff];		// 0x3fff in final
 
 						while (search->value < 0)
 						{
