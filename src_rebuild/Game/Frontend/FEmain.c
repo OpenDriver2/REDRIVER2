@@ -3737,9 +3737,9 @@ int UserReplaySelectScreen(int bSetup)
 }
 
 char* TimeOfDayNames[] = {
-	G_LTXT_ID(GTXT_Dusk),
-	G_LTXT_ID(GTXT_Day),
 	G_LTXT_ID(GTXT_Dawn),
+	G_LTXT_ID(GTXT_Day),
+	G_LTXT_ID(GTXT_Dusk),
 	G_LTXT_ID(GTXT_Night)
 };
 
