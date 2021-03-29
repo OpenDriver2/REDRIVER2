@@ -18,7 +18,7 @@ void ClearCopUsage(void)
 }
 
 // [D] [T]
-PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci, int use_computed)
+PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci, int use_computed, int level)
 {
 	PACKED_CELL_OBJECT *ppco;
 
@@ -26,6 +26,8 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 	unsigned short index;
 	unsigned short num;
 	int cbr;
+	CELL_DATA* cell;
+	ushort ptr;
 
 	index = (cellx / MAP_REGION_SIZE & 1) + (cellz / MAP_REGION_SIZE & 1) * 2;
 
@@ -42,33 +44,31 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 	}
 
 	cbr = (cellz % MAP_REGION_SIZE) * MAP_REGION_SIZE + index * (MAP_REGION_SIZE*MAP_REGION_SIZE) + (cellx % MAP_REGION_SIZE);
-
-	if (cell_ptrs[cbr] == 0xffff)
-	{
+	
+	ptr = cell_ptrs[cbr];
+	
+	if (ptr == 0xffff)
 		return NULL;
-	}
 
-	pci->pcd = cells + cell_ptrs[cbr];
+	cell = &cells[ptr];
 
-	num = pci->pcd->num;
+	num = cell->num;
 
-	if (events.camera == 0) 
+	if (level == -1) 
 	{
-		if (pci->pcd->num & 0x4000)
-		{
+		if (cell->num & 0x4000)
 			return NULL;
-		}
 	}
 	else 
 	{
-		pci->pcd++;
-		while (num != (events.draw | 0x4000))
+		cell++;
+		while (num != (level | 0x4000))
 		{
-			if (pci->pcd->num & 0x8000)
+			if (cell->num & 0x8000)
 				return NULL;
 
-			num = pci->pcd->num;
-			pci->pcd++;
+			num = cell->num;
+			cell++;
 		}
 	}
 
@@ -76,9 +76,10 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 	pci->nearCell.z = (cellz - (cells_down / 2)) * MAP_CELL_SIZE;
 	pci->use_computed = use_computed;
 
-	num = pci->pcd->num;
-	
-	ppco = cell_objects + (num & 0x3fff);
+	pci->pcd = cell;
+
+	num = cell->num;
+	ppco = &cell_objects[num & 0x3fff];
 
 	if (ppco->value == 0xffff && (ppco->pos.vy & 1)) 
 	{

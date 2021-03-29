@@ -19,6 +19,8 @@
 
 #include <string.h>
 
+#include "event.h"
+
 
 MATRIX aspect =
 {
@@ -996,6 +998,9 @@ void DrawMapPSX(int* comp_val)
 	int rightAng;
 	int i;
 	int current_object_computed_value;
+	int cellLevel;
+
+	cellLevel = events.camera ? events.draw : -1;
 
 	backPlane = 6144;
 	rightPlane = -6144;
@@ -1073,7 +1078,7 @@ void DrawMapPSX(int* comp_val)
 				cellz > -1 && cellz < cells_down &&
 				PVS_ptr[vis_v * pvs_square + vis_h]) // check PVS table
 			{
-				ppco = GetFirstPackedCop(cellx, cellz, &ci, 1);
+				ppco = GetFirstPackedCop(cellx, cellz, &ci, 1, cellLevel);
 
 				// walk each cell object in cell
 				while (ppco != NULL)

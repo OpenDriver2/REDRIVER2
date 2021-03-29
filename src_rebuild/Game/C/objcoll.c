@@ -521,6 +521,9 @@ void CollisionCopList(XZPAIR* pos, int* count)
 	CELL_ITERATOR ci;
 	XZPAIR cbr;
 	MODEL* model;
+	int cellLevel;
+	
+	cellLevel = events.camera ? events.draw : -1;
 
 	if (pos == NULL)
 	{
@@ -539,7 +542,7 @@ void CollisionCopList(XZPAIR* pos, int* count)
 				// [A] FIXME: replace with 'cell_header.region_size'
 				if (cbr.x + cbr.z * regions_across == RoadMapRegions[(cbr.x & 1) + (cbr.z & 1) * 2])
 				{
-					ppco = GetFirstPackedCop(cell.x, cell.z, &ci, 1);
+					ppco = GetFirstPackedCop(cell.x, cell.z, &ci, 1, cellLevel);
 					cop = UnpackCellObject(ppco, &ci.nearCell);
 
 					while (cop != NULL)

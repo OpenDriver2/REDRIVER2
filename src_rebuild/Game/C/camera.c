@@ -275,9 +275,12 @@ int CameraCollisionCheck(void)
 	int num_cb;
 	int cellx;
 	int cellz;
+	int cellLevel;
 
 	count = 0;
 	sphere = scr_z * 3 - 382;
+
+	cellLevel = events.camera ? events.draw : -1;
 
 	do {
 		cellx = (camera_position.vx + (count % 3) * MAP_REGION_SIZE*MAP_REGION_SIZE - MAP_REGION_SIZE*MAP_REGION_SIZE + units_across_halved) / MAP_CELL_SIZE;
@@ -285,7 +288,7 @@ int CameraCollisionCheck(void)
 
 		if (gCameraDistance > 0)
 		{
-			ppco = GetFirstPackedCop(cellx, cellz, &ci, 0);
+			ppco = GetFirstPackedCop(cellx, cellz, &ci, 0, cellLevel);
 			cop = UnpackCellObject(ppco, &ci.nearCell);
 
 			while (cop != NULL) 
