@@ -360,7 +360,7 @@ void SetupResidentModels()
 			singlePal = (wantedCar[i] == 0 || wantedCar[i] > 4);
 			
 			// check if chosen cop car or special car
-			if (wantedCar[i] > 4 && NumPlayers == 1)
+			if (wantedCar[i] > 4)// && NumPlayers == 1)
 			{		
 				MissionHeader->residentModels[4] = wantedCar[i];
 			}
