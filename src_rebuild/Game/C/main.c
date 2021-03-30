@@ -2327,12 +2327,11 @@ void RenderGame2(int view)
 		current->primptr += sizeof(POLY_FT3);
 	}
 
+	// Steven Adams and Andreas Tawn of Havana team
 	notInDreaAndStevesEvilLair = Havana3DOcclusion(DrawMapPSX, (int*)&ObjectDrawnValue);
 
-	ScaleCamera();
-
 	if (notInDreaAndStevesEvilLair)
-	{
+	{		
 		DrawSkyDome();
 
 		if (current->primtab - (current->primptr - PRIMTAB_SIZE) > 40000)
@@ -2688,7 +2687,7 @@ int Havana3DOcclusion(occlFunc func, int* param)
 				return outside;
 			}
 			
-			if (loop == 0x10) 
+			if (loop == 16) 
 				break;
 			
 			if (draw != loop)

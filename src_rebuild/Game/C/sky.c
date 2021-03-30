@@ -1009,6 +1009,9 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 // [D] [T]
 void DrawSkyDome(void)
 {
+	gte_SetRotMatrix(&inv_camera_matrix);
+	gte_SetTransVector(&dummy);
+	
 	calc_sky_brightness();
 
 #ifdef PSX
