@@ -2721,20 +2721,6 @@ int Havana3DOcclusion(occlFunc func, int* param)
 		(*func)(param);
 		return 1;
 	}
-#ifndef PSX
-	else if(GameLevel == 0)
-	{
-		// [A] dirty hack to display gates in Chicago
-		if(camera_position.vx < 160000 && camera_position.vz < 400000)
-		{
-			events.camera = 1;
-			events.draw = 100;
-			(*func)(param);
-
-			events.camera = 0;
-		}
-	}
-#endif
 
 	(*func)(param);
 
