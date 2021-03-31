@@ -447,6 +447,7 @@ POLY_FT3 extraDummy;
 
 int BuildButtonsVertical(int count, int xStart, int yStart);
 
+int FEStringWidth(char* string);
 int FEPrintStringSized(char* string, int x, int y, int scale, int transparent, int r, int g, int b);
 int FEPrintString(char* string, int x, int y, int justification, int r, int g, int b);
 
@@ -731,7 +732,7 @@ void DrawScreen(PSXSCREEN *pScr)
 	for (i = 0; i < 6; i++)
 		addPrim(current->ot + 11, &BackgroundPolys[i]);
 
-	if (pScr != NULL)
+	if (pScr)
 	{
 		GetTimeStamp(version_info);
 
@@ -747,36 +748,87 @@ void DrawScreen(PSXSCREEN *pScr)
 
 #ifndef PSX
 		NewSelection(0);
+		if (!bQuitToSystem)
 #endif
-		for (i = 0; i < numBtnsToDraw; i++)
 		{
-			PSXBUTTON *button = &pScr->buttons[i];
-			int status = button->action >> 8;
+			for (i = 0; i < numBtnsToDraw; i++)
+			{
+				PSXBUTTON* button = &pScr->buttons[i];
+				int status = button->action >> 8;
 
 #ifdef PSX
-			if (status != 5)
-			{
+				if (status != 5)
+				{
+					if (button == pCurrButton)
+					{
+						if (status == 3)
+						{
+							FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 32, 32, 32);
+						}
+						else
+						{
+							if (iScreenSelect == SCREEN_MISSION && (i == 0 || i == 5) ||
+								iScreenSelect == SCREEN_CAR && (i == 0 || i == 2) ||
+								iScreenSelect == SCREEN_CUTSCENE && (i == 0 || i == 2))
+							{
+								FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 124, 108, 40);
+							}
+							else
+							{
+								FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 128, 128, 128);
+							}
+						}
+					}
+					else
+					{
+						if (status == 3)
+						{
+							FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 32, 32, 32);
+						}
+						else
+						{
+							if (iScreenSelect == SCREEN_MISSION && (i == 0 || i == 5) ||
+								iScreenSelect == SCREEN_CAR && (i == 0 || i == 2) ||
+								iScreenSelect == SCREEN_CUTSCENE && (i == 0 || i == 2))
+							{
+								FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 124, 108, 40);
+							}
+							else
+							{
+								FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 128, 128, 128);
+							}
+						}
+					}
+				}
+#else
+				int draw = (status != 5);
+
 				if (button == pCurrButton)
 				{
-					if (status == 3)
-					{
-						FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 32, 32, 32);
-					}
-					else
-					{
-						if (iScreenSelect == SCREEN_MISSION && (i == 0 || i == 5) ||
-							iScreenSelect == SCREEN_CAR && (i == 0 || i == 2) ||
-							iScreenSelect == SCREEN_CUTSCENE && (i == 0 || i == 2))
-						{
-							FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 124, 108, 40);
-						}
-						else
-						{
-							FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 128, 128, 128);
-						}
-					}
+					SPRT* hghltSprt;
+					POLY_FT4* hghltDummy;
+					RECT16 rect;
+
+					rect.x = pCurrButton->s_x;
+					rect.y = pCurrButton->s_y;
+
+					hghltSprt = (SPRT*)current->primptr;
+					current->primptr += sizeof(SPRT);
+					*hghltSprt = HighlightSprt;
+
+					hghltDummy = (POLY_FT4*)current->primptr;
+					current->primptr += sizeof(POLY_FT4);
+					*hghltDummy = HighlightDummy;
+
+					setXY0(hghltSprt, rect.x, rect.y);
+
+					addPrim(current->ot + 6, hghltSprt);
+					addPrim(current->ot + 6, hghltDummy);
+
+					draw = 1;
 				}
-				else
+
+				if (draw)
 				{
 					if (status == 3)
 					{
@@ -786,7 +838,8 @@ void DrawScreen(PSXSCREEN *pScr)
 					{
 						if (iScreenSelect == SCREEN_MISSION && (i == 0 || i == 5) ||
 							iScreenSelect == SCREEN_CAR && (i == 0 || i == 2) ||
-							iScreenSelect == SCREEN_CUTSCENE && (i == 0 || i == 2))
+							iScreenSelect == SCREEN_CUTSCENE && (i == 0 || i == 2) ||
+							iScreenSelect == SCREEN_TIMEOFDAY && i == 2)				// [A]
 						{
 							FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 124, 108, 40);
 						}
@@ -796,66 +849,27 @@ void DrawScreen(PSXSCREEN *pScr)
 						}
 					}
 				}
-			}
-#else
-			int draw = (status != 5);
-
-			if (button == pCurrButton)
-			{
-				SPRT* hghltSprt;
-				POLY_FT4* hghltDummy;
-				RECT16 rect;
-
-				rect.x = pCurrButton->s_x;
-				rect.y = pCurrButton->s_y;
-
-				hghltSprt = (SPRT*)current->primptr;
-				current->primptr += sizeof(SPRT);
-				*hghltSprt = HighlightSprt;
-
-				hghltDummy = (POLY_FT4*)current->primptr;
-				current->primptr += sizeof(POLY_FT4);
-				*hghltDummy = HighlightDummy;
-				
-				setXY0(hghltSprt, rect.x, rect.y);
-
-				addPrim(current->ot + 6, hghltSprt);
-				addPrim(current->ot + 6, hghltDummy);
-
-				draw = 1;
-			}
-
-			if (draw)
-			{
-				if (status == 3)
-				{
-					FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 32, 32, 32);
-				}
-				else
-				{
-					if (iScreenSelect == SCREEN_MISSION && (i == 0 || i == 5) ||
-						iScreenSelect == SCREEN_CAR && (i == 0 || i == 2) ||
-						iScreenSelect == SCREEN_CUTSCENE && (i == 0 || i == 2) ||
-						iScreenSelect == SCREEN_TIMEOFDAY && i == 2)				// [A]
-					{
-						FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 124, 108, 40);
-					}
-					else
-					{
-						FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 128, 128, 128);
-					}
-				}
-			}
 #endif
+			}
 		}
 
 #ifndef PSX
 		if(bQuitToSystem)
 		{
-			FEPrintString(G_LTXT(GTXT_QuitToSystem), 220, 256, 0, 128, 128, 128);
+			int len;
+			int quitLen;
 
-			FEPrintString(G_LTXT(GTXT_YES), 240, 288, 0, 128, 128, bQuitToSystemSel ? 0 : 128);
-			FEPrintString(G_LTXT(GTXT_NO), 340, 288, 0, 128, 128, bQuitToSystemSel ? 128 : 0);
+			quitLen = FEStringWidth(G_LTXT(GTXT_QuitToSystem));
+			FEPrintString(G_LTXT(GTXT_QuitToSystem), 320 - quitLen / 2, 256, 0, 128, 128, 128);
+
+			if (quitLen < 100)
+				quitLen = 100;
+			
+			len = FEStringWidth(G_LTXT(GTXT_YES));
+			FEPrintString(G_LTXT(GTXT_YES), 320 - quitLen / 4 - len / 2, 288, 0, 128, 128, bQuitToSystemSel ? 0 : 128);
+
+			len = FEStringWidth(G_LTXT(GTXT_NO));
+			FEPrintString(G_LTXT(GTXT_NO), 320 + quitLen / 4 - len/2, 288, 0, 128, 128, bQuitToSystemSel ? 128 : 0);
 		}
 #endif
 
@@ -1725,6 +1739,25 @@ void EndFrame(void)
 #ifndef PSX
 	PsyX_EndScene();
 #endif
+}
+
+// [A]
+int FEStringWidth(char* string)
+{
+	char* pString = string;
+	u_char c = 0;
+
+	int w = 0;
+
+	while ((c = *pString++) != 0)
+	{
+		if (c == ' ')
+			w += 4;
+		else
+			w += feFont.CharInfo[c].w;
+	}
+
+	return w;
 }
 
 // [D] [T]
