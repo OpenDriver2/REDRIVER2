@@ -120,6 +120,7 @@ SMASHABLE_OBJECT smashable[] =
 	{ 0, "CONE2_TASTIC", 5, 0, 800 },
 	{ 0, "BIN_TASTIC", 7, -6500, 3200 },
 	{ 0, "BARRIER_TASTIC", 7, -6500, 3200 },
+	{ 0, "BARRIER1_TASTIC", 7, -6500, 3200 },
 	{ 0, "BARREL_TASTIC", 6, -3300, 2400 },
 	{ 0, "BARREL1_TASTIC", 6, -3300, 2400 },
 	{ 0, "BARREL2_TASTIC", 6, -3300, 2400 },
@@ -146,9 +147,6 @@ SMASHABLE_OBJECT smashable[] =
 	{ 0, "CONE_TASTIC2", 5, 0, 800 },
 	{ 0, "CONE_TASTIC3", 5, 0, 800 },
 	{ 0, "CONE_TASTIC4", 5, 0, 800 },
-	{ 0, "TRAININGCONES1", 5, 0, 800 },
-	{ 0, "TRAININGCONES2", 5, 0, 800 },
-	{ 0, "TRAININGCONES3", 5, 0, 800 },
 	{ 0, 0, 0, 0, 0 }
 };
 
