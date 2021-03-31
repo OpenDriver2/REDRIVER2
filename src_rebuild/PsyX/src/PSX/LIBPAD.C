@@ -61,13 +61,23 @@ void PadInitDirect(unsigned char* pad1, unsigned char* pad2)
 
 	// immediately open controllers
 	int numJoysticks = SDL_NumJoysticks();
+
+	for(int i = 0; i < SDL_NumHaptics(); i++)
+	{
+		const char* hapticName = SDL_HapticName(0);
+		eprintwarn("Haptic: '%s'!\n", hapticName);
+	}
 	
 	for (int i = 0; i < numJoysticks && i < MAX_CONTROLLERS; i++)
 	{
 		if (SDL_IsGameController(i))
 		{
 			padHandle[i] = SDL_GameControllerOpen(i);	//@TODO close joysticks
-			padHaptic[i] = SDL_HapticOpenFromJoystick(SDL_GameControllerGetJoystick(padHandle[i]));
+			SDL_Joystick* joy = SDL_GameControllerGetJoystick(padHandle[i]);
+
+			SDL_JoystickID id = SDL_JoystickGetDeviceInstanceID(i);
+	
+			padHaptic[i] = SDL_HapticOpen(id);
 
 			if(!padHaptic[i])
 			{
