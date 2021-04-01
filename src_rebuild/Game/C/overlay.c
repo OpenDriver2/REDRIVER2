@@ -720,13 +720,13 @@ void DisplayOverlays(void)
 		}
 #endif
 
-		if(!gInvincibleCar)
+		if(!gInvincibleCar || ActiveCheats.cheat3)
 		{
 			DrawPercentageBar(&PlayerDamageBar);
 			DrawPercentageBar(&Player2DamageBar);
 		}
 
-		if(!gPlayerImmune)
+		if (!gPlayerImmune || ActiveCheats.cheat4)
 		{
 			DrawPercentageBar(&FelonyBar);
 		}
