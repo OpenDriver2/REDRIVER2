@@ -60,7 +60,7 @@ void InitPadRecording(void)
 	{
 		NumReplayStreams = 0;
 
-		ReplayStart = _replay_buffer;
+		ReplayStart = (char*)_replay_buffer;
 		ReplayParameterPtr = (REPLAY_PARAMETER_BLOCK *)ReplayStart;
 
 		PlayerWayRecordPtr = (SXYPAIR *)(ReplayParameterPtr + 1);
@@ -275,9 +275,9 @@ int LoadCutsceneAsReplay(int subindex)
 
 			printWarning("cutscene size: %d\n", size);
 			
-			LoadfileSeg(filename, _other_buffer, offset, size);
+			LoadfileSeg(filename, (char*)_other_buffer, offset, size);
 
-			int result = LoadReplayFromBuffer(_other_buffer);
+			int result = LoadReplayFromBuffer((char*)_other_buffer);
 
 			return result;
 		}
@@ -384,7 +384,7 @@ int LoadReplayFromBuffer(char *buffer)
 	if (header->magic != DRIVER2_REPLAY_MAGIC)
 		return 0;
 
-	ReplayStart = replayptr = _replay_buffer;
+	ReplayStart = replayptr = (char*)_replay_buffer;
 
 	GameLevel = header->GameLevel;
 	GameType = (GAMETYPE)header->GameType;
@@ -512,8 +512,8 @@ int LoadUserAttractReplay(int mission, int userId)
 
 		if (FileExists(customFilename))
 		{
-			if (Loadfile(customFilename, _other_buffer))
-				return LoadReplayFromBuffer(_other_buffer);
+			if (Loadfile(customFilename, (char*)_other_buffer))
+				return LoadReplayFromBuffer((char*)_other_buffer);
 		}
 	}
 
@@ -550,10 +550,10 @@ int LoadAttractReplay(int mission)
 	if (!FileExists(filename))
 		return 0;
 
-	if (!Loadfile(filename, _other_buffer))
+	if (!Loadfile(filename, (char*)_other_buffer))
 		return 0;
 
-	return LoadReplayFromBuffer(_other_buffer);
+	return LoadReplayFromBuffer((char*)_other_buffer);
 }
 
 // [D] [T]

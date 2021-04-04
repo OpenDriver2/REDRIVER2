@@ -172,7 +172,7 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 	PutDispEnv(&load_disp);
 	PutDrawEnv(&load_draw);
 
-	Loadfile(screen_name, _frontend_buffer);
+	Loadfile(screen_name, (char*)_frontend_buffer);
 	LoadClut((u_long*)&_frontend_buffer[20], 320, 511);
 
 	DrawSync(0);

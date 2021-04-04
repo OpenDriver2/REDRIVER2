@@ -971,7 +971,7 @@ int LoadCutsceneToBuffer(int subindex)
 				leadAILoaded = 0;
 				pathAILoaded = 0;
 
-				CutsceneBuffer.currentPointer = _other_buffer2;
+				CutsceneBuffer.currentPointer = (char*)_other_buffer2;
 				CutsceneBuffer.bytesFree = 0xC000;	
 			}
 
@@ -1065,7 +1065,7 @@ void FreeCutsceneBuffer(void)
 	ClearMem(CutsceneBuffer.buffer, sizeof(CutsceneBuffer.buffer));
 
 #ifndef PSX
-	gCustomCutsceneBuffer = _other_buffer2;
+	gCustomCutsceneBuffer = (char*)_other_buffer2;
 #endif
 }
 

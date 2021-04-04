@@ -3080,7 +3080,7 @@ void SetMissionOver(PAUSEMODE mode)
 	Mission.ChaseTarget = NULL;
 }
 
-// [D]
+// [D] [T]
 void ActivateNextFlag(void)
 {
 	int j;
@@ -3128,7 +3128,7 @@ int CalcLapTime(int player, int time, int lap)
 	return time - ptime;
 }
 
-// [D]
+// [D] [T]
 void MakePhantomCarEqualPlayerCar(void)
 {
 	// store player car id
@@ -3136,7 +3136,7 @@ void MakePhantomCarEqualPlayerCar(void)
 		Mission.PhantomCarId = player[0].playerCarId;
 }
 
-// [D]
+// [D] [T]
 void SetCarToBeStolen(MS_TARGET *target, int player)
 {
 	if (target->car.flags & CARTARGET_FLAG_SET_PLAYERCAR)

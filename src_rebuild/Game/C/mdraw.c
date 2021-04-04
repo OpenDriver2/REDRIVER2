@@ -206,7 +206,7 @@ void DrawFullscreenTarget(MS_TARGET *target)
 		DrawTargetArrow(&tv, 4);
 }
 
-// [D]
+// [D] [T]
 void DrawWorldTarget(MS_TARGET *target)
 {
 	uint flags;

@@ -182,7 +182,7 @@ void LoadTPageFromTIMs(int tpage2send)
 		if(!FileExists(filename))
 			continue;
 		
-		Loadfile(filename, _other_buffer);
+		Loadfile(filename, (char*)_other_buffer);
 
 		// get TIM data
 		timClut = (TIMIMAGEHDR*)(_other_buffer + sizeof(TIMHDR));
@@ -258,7 +258,7 @@ int LoadTPageAndCluts(RECT16 *tpage, RECT16 *cluts, int tpage2send, char *tpagea
 	temptpage.w = tpage->w;
 	temptpage.h = 256;
 
-	decomp_asm(_other_buffer, tpageaddress);
+	decomp_asm((char*)_other_buffer, tpageaddress);
 	LoadImage(&temptpage, (u_long *)_other_buffer);
 
 	texture_pages[tpage2send] = GetTPage(0, 0, tpage->x, tpage->y);
@@ -428,7 +428,7 @@ void load_civ_palettes(RECT16 *cluts)
 	return;
 }
 
-// [D]
+// [D] [T]
 void LoadPermanentTPages(int *sector)
 {
 	int nsectors;
@@ -475,7 +475,7 @@ void LoadPermanentTPages(int *sector)
 
 	load_civ_palettes(&clutpos);
 
-	tpagebuffer = mallocptr;
+	tpagebuffer = (char*)mallocptr;
 	nsectors = 0;
 
 	for (i = 0; i < nperms; i++)
@@ -501,7 +501,7 @@ void LoadPermanentTPages(int *sector)
 		tpagebuffer += (permlist[i].y + 2047) & -CDSECTOR_SIZE;
 	}
 	
-	tpagebuffer = mallocptr;
+	tpagebuffer = (char*)mallocptr;
 
 	slot_clutpos[slotsused].vx = clutpos.x;
 	slot_clutpos[slotsused].vy = clutpos.y;

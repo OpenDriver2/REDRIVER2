@@ -991,7 +991,7 @@ void SetupExtraPoly(char *fileName, int offset, int offset2)
 	RECT16 rect = extraRect;
 
 	FEDrawCDicon();
-	Loadfile(fileName, _frontend_buffer + offset2);
+	Loadfile(fileName, (char*)_frontend_buffer + offset2);
 
 	rect.x = 896;
 	rect.y = 256;
@@ -1064,7 +1064,7 @@ void LoadBackgroundFile(char* name)
 	{
 		FEDrawCDicon();
 
-		LoadfileSeg(name, _overlay_buffer, i * 0x8000, 0x8000);
+		LoadfileSeg(name, (char*)_overlay_buffer, i * 0x8000, 0x8000);
 		FEDrawCDicon();
 
 		rect.y = (i / 6);
@@ -1075,7 +1075,7 @@ void LoadBackgroundFile(char* name)
 		FEDrawCDicon();
 	}
 
-	LoadfileSeg(name, _overlay_buffer, iTpage * 0x8000, 0x800);
+	LoadfileSeg(name, (char*)_overlay_buffer, iTpage * 0x8000, 0x800);
 	FEDrawCDicon();
 
 	rect.h = 1;
@@ -1103,9 +1103,9 @@ void LoadFrontendScreens(int full)
 #ifndef USE_EMBEDDED_FRONTEND_SCREENS
 	if (full)
 	{
-		Loadfile("DATA\\SCRS.BIN", _frontend_buffer);
+		Loadfile("DATA\\SCRS.BIN", (char*)_frontend_buffer);
 
-		ptr = _frontend_buffer + 20; // skip header and number of screens
+		ptr = (char*)_frontend_buffer + 20; // skip header and number of screens
 		iNumScreens = (int)_frontend_buffer[16];
 
 		for (int i = 0; i < iNumScreens; i++)
@@ -1143,7 +1143,7 @@ void LoadFrontendScreens(int full)
 	for (int i = 0; i < 2; i++)
 	{
 		ShowLoading();
-		LoadfileSeg("DATA\\GFX.RAW", _frontend_buffer, 0x30000 + (i * 0x8000), 0x8000);
+		LoadfileSeg("DATA\\GFX.RAW", (char*)_frontend_buffer, 0x30000 + (i * 0x8000), 0x8000);
 
 		rect.x = 640 + (i * 64);
 		rect.y = 256;
@@ -1153,7 +1153,7 @@ void LoadFrontendScreens(int full)
 	}
 
 	ShowLoading();
-	LoadfileSeg("DATA\\GFX.RAW", _frontend_buffer, 0x58000, 0x8000);
+	LoadfileSeg("DATA\\GFX.RAW", (char*)_frontend_buffer, 0x58000, 0x8000);
 
 	rect.x = 960;
 	rect.y = 256;
@@ -1164,7 +1164,7 @@ void LoadFrontendScreens(int full)
 
 	if (full)
 	{
-		Loadfile("DATA\\FEFONT.BNK", _frontend_buffer);
+		Loadfile("DATA\\FEFONT.BNK", (char*)_frontend_buffer);
 		memcpy((u_char*)&feFont, (u_char*)_frontend_buffer, sizeof(feFont));
 	}
 }
@@ -1573,17 +1573,17 @@ void SetFEDrawMode(void)
 	MPBuff[0][0].disp.isinter = 1;
 	MPBuff[0][0].draw.dfe = 1;
 	MPBuff[0][0].disp.screen.h = 256;
-	MPBuff[0][0].primtab = _primTab1;
-	MPBuff[0][0].primptr = _primTab1;
-	MPBuff[0][0].ot = _OT1;
+	MPBuff[0][0].primtab = (char*)_primTab1;
+	MPBuff[0][0].primptr = (char*)_primTab1;
+	MPBuff[0][0].ot = (OTTYPE*)_OT1;
 
 	MPBuff[0][1].draw.isbg = 0;
 	MPBuff[0][1].disp.isinter = 1;
 	MPBuff[0][1].draw.dfe = 1;
 	MPBuff[0][1].disp.screen.h = 256;
-	MPBuff[0][1].primtab = _primTab2;
-	MPBuff[0][1].primptr = _primTab2;
-	MPBuff[0][1].ot = _OT2;
+	MPBuff[0][1].primtab = (char*)_primTab2;
+	MPBuff[0][1].primptr = (char*)_primTab2;
+	MPBuff[0][1].ot = (OTTYPE*)_OT2;
 
 	last = &MPBuff[0][1];
 	current = &MPBuff[0][0];

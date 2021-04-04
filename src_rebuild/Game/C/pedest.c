@@ -2287,7 +2287,7 @@ void add_seated(SEATED_PEDESTRIANS* seatedptr, int seat_index)
 CAR_COLLISION_BOX collision_box[8];
 CAR_DATA* collision_car_ptr[8];
 
-// [D]
+// [D] [T]
 void set_coll_box(int index, CAR_DATA* cp, int offset)
 {
 	int isPlayerCar;

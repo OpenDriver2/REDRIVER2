@@ -323,7 +323,7 @@ int CalculateVolume(int channel)
 
 int gSurround = 0;
 
-// [D]
+// [D] [T]
 void UpdateVolumeAttributesS(int channel, int proximity)
 {
 	int volume;
@@ -575,7 +575,7 @@ int Start3DTrackingSound(int channel, int bank, int sample, VECTOR *position, LO
 	return channel;
 }
 
-// [D]
+// [D] [T]
 int Start3DSoundVolPitch(int channel, int bank, int sample, int x, int y, int z, int volume, int pitch)
 {
 	if (channel < 0)

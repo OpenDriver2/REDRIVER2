@@ -42,7 +42,7 @@ int TannerCanEnterCar(CAR_DATA *cp, int distToCarSq)
 	return 0;
 }
 
-// [D]
+// [D] [T]
 int TannerStuckInCar(int doSpeedCheck, int player_id)
 {
 	short *playerFelony;

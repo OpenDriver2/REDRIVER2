@@ -761,7 +761,7 @@ void SetMSoundVar(intptr_t var, VECTOR* V)
 	bodgevar = var;
 }
 
-// [D]
+// [D] [T]
 char SilenceThisCar(int car)
 {
 	if (gInGameCutsceneActive == 0)
@@ -926,7 +926,7 @@ char SilenceThisCar(int car)
 }
 
 
-// [D]
+// [D] [T]
 void AdjustPlayerCarVolume(void)
 {
 	if (gInGameCutsceneID != 0)

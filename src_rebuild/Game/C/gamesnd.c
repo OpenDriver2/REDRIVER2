@@ -890,7 +890,7 @@ void ControlSpeech(SPEECH_QUEUE* pSpeechQueue)
 	}
 }
 
-// [D]
+// [D] [T]
 void CopSay(int phrase, int direction)
 {
 	if (!gDoCopSpeech)
@@ -2243,7 +2243,7 @@ void IdentifyZone(envsound* ep, envsoundinfo* E, int pl)
 }
 
 
-// [D] [A] unprocessed arrays
+// [D] [T]
 void CalcEffPos(envsound* ep, envsoundinfo* E, int pl)
 {
 	int minX, maxX;
@@ -2331,7 +2331,7 @@ void CalcEffPos(envsound* ep, envsoundinfo* E, int pl)
 	}
 }
 
-// [D] [A] unprocessed arrays
+// [D] [T]
 void CalcEffPos2(envsound* ep, envsoundinfo* E, int pl)
 {
 	int snd;

@@ -87,7 +87,7 @@ char GetCarDirectionOfTravel(CAR_DATA *cp)
 	return direction;
 }
 
-// [D]
+// [D] [T]
 void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale)
 {
 	int felonyTooLowForRoadblocks;

@@ -418,13 +418,13 @@ void LoadGameLevel(void)
 	loadsectors(_frontend_buffer, sector, nsectors);
 #else
 	extern char g_CurrentLevelFileName[64];
-	loadsectorsPC(g_CurrentLevelFileName, _frontend_buffer, sector, nsectors);
+	loadsectorsPC(g_CurrentLevelFileName, (char*)_frontend_buffer, sector, nsectors);
 #endif // PSX
 
 	sector += nsectors;
 
 	// CITYLUMP_DATA1 - load-time lump
-	ProcessLumps(_frontend_buffer + 8, nsectors * CDSECTOR_SIZE);
+	ProcessLumps((char*)_frontend_buffer + 8, nsectors * CDSECTOR_SIZE);
 
 	// CITYLUMP_TPAGE is right next after DATA1
 	LoadPermanentTPages(&sector);
@@ -816,7 +816,7 @@ int leadCarId = 0;
 
 VECTOR leadcar_pos;
 
-// [D]
+// [D] [T]
 void StepSim(void)
 {
 	static u_int t0; // offset 0x0
@@ -1697,7 +1697,7 @@ void EndGame(GAMEMODE mode)
 }
 
 
-// [D]
+// [D] [T]
 void EnablePause(PAUSEMODE mode)
 {
 	if (quick_replay == 0 && NoPlayerControl && mode == PAUSEMODE_GAMEOVER)
@@ -1999,10 +1999,10 @@ int redriver2_main(int argc, char** argv)
 				replay_size = ftell(fp);
 				fseek(fp, 0, SEEK_SET);
 
-				fread(_other_buffer, replay_size, 1, fp);
+				fread((char*)_other_buffer, replay_size, 1, fp);
 				fclose(fp);
 
-				if (LoadReplayFromBuffer(_other_buffer))
+				if (LoadReplayFromBuffer((char*)_other_buffer))
 				{
 					CurrentGameMode = GAMEMODE_REPLAY;
 					gLoadedReplay = 1;

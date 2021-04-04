@@ -232,7 +232,7 @@ void ClearPad(int pad)
 	Pads[pad].mapnew = 0;
 }
 
-// [D]
+// [D] [T]
 void HandleDualShock(void)
 {
 	PAD* pPad;
@@ -363,7 +363,7 @@ void HandleDualShock(void)
 	}
 }
 
-// [D]
+// [D] [T]
 void HandlePadVibration(int pad)
 {
 	int speed;
@@ -372,7 +372,7 @@ void HandlePadVibration(int pad)
 	pPad = &Pads[pad];
 	speed = 0;
 
-	if (NoPlayerControl != 0 || gDualShockMax == 0 || gDrawPauseMenus != 0 || (game_over != 0 || gInGameCutsceneActive != 0))
+	if (NoPlayerControl || gDualShockMax == 0 || gDrawPauseMenus || (game_over || gInGameCutsceneActive))
 	{
 		StopPadVibration(pad);
 		return;

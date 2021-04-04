@@ -130,7 +130,7 @@ void FadeInHiresScreen(char *filename)
 	PutDispEnv(&disp);
 	PutDrawEnv(&draw);
 
-	LoadfileSeg(filename, _overlay_buffer, 20, 0x4ff80);
+	LoadfileSeg(filename, (char*)_overlay_buffer, 20, 0x4ff80);
 	LoadClut((u_long*)_overlay_buffer, 640, 511);
 
 	DrawSync(0);
@@ -259,7 +259,7 @@ void ShowBonusGallery()
 		else
 			sprintf(filename, "GFX\\GAL\\IMG%d.TIM", currentImage-1);
 		
-		LoadfileSeg(filename, _other_buffer, 20, 0x4ff80);
+		LoadfileSeg(filename, (char*)_other_buffer, 20, 0x4ff80);
 		LoadClut((u_long*)_other_buffer, 640, 511);
 
 		DrawSync(0);

@@ -171,7 +171,7 @@ void SetSmashedCone(int cone, VECTOR *velocity, int player, int side)
 }
 
 
-// [D]
+// [D] [T]
 void MoveSmashedCones(void)
 {
 	TRAILBLAZER_DATA *tbd;

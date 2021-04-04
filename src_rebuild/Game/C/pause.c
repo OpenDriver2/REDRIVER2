@@ -503,7 +503,7 @@ char* WaitForTextEntry(char* textBufPtr, int maxLength)
 	char* username;
 	unsigned short npad, dpad;
 
-	username = textBufPtr ? textBufPtr : _overlay_buffer;
+	username = textBufPtr ? textBufPtr : (char*)_overlay_buffer;
 	delay = 0;
 	toggle = 0;
 	co = 1;

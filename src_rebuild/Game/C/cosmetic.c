@@ -65,8 +65,8 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 // [D] [T]
 void LoadCosmetics(int level)
 {
-	LoadfileSeg(CosmeticFiles[level], _other_buffer, 0, 3120);
-	ProcessCosmeticsLump(_other_buffer, 0);
+	LoadfileSeg(CosmeticFiles[level], (char*)_other_buffer, 0, 3120);
+	ProcessCosmeticsLump((char*)_other_buffer, 0);
 }
 
 #define REVERSELIGHT_SIZE		14
@@ -117,10 +117,10 @@ void SetupSpecCosmetics(char *loadbuffer)
 
 	// [A] always load cosmetics from file
 	// fixes limo cosmetics as well
-	LoadfileSeg(CosmeticFiles[GameLevel], _other_buffer, 0, 3120);
+	LoadfileSeg(CosmeticFiles[GameLevel], (char*)_other_buffer, 0, 3120);
 	offset = *(int*)(_other_buffer + model * sizeof(int));
 
-	memcpy((char*)&car_cosmetics[4], _other_buffer + offset, sizeof(CAR_COSMETICS));
+	memcpy((char*)&car_cosmetics[4], (char*)_other_buffer + offset, sizeof(CAR_COSMETICS));
 #else
 	memcpy((char*)&car_cosmetics[4], loadbuffer, sizeof(CAR_COSMETICS));
 #endif

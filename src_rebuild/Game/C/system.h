@@ -1,24 +1,24 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
-extern char* _overlay_buffer;		// 0x1C0000
-extern char* _frontend_buffer;		// 0xFB400
-extern char* _other_buffer;			// 0xF3000
-extern char* _other_buffer2;		// 0xE7000
+extern volatile char* _overlay_buffer;		// 0x1C0000
+extern volatile char* _frontend_buffer;		// 0xFB400
+extern volatile char* _other_buffer;			// 0xF3000
+extern volatile char* _other_buffer2;		// 0xE7000
 
-extern OTTYPE* _OT1;				// 0xF3000
-extern OTTYPE* _OT2;				// 0xF7200
+extern volatile OTTYPE* _OT1;				// 0xF3000
+extern volatile OTTYPE* _OT2;				// 0xF7200
 
-extern char* _primTab1;				// 0xFB400
-extern char* _primTab2;				// 0x119400
-extern char* _replay_buffer;		// 0x1FABBC
+extern volatile char* _primTab1;				// 0xFB400
+extern volatile char* _primTab2;				// 0x119400
+extern volatile char* _replay_buffer;		// 0x1FABBC
 
 extern char gDataFolder[32];
 
 #define PSX_MALLOC_SIZE 870332
 
-extern const char* malloctab;
-extern char* mallocptr;
+extern volatile const char* malloctab;
+extern volatile char* mallocptr;
 
 #ifdef USE_CRT_MALLOC
 
@@ -39,14 +39,14 @@ extern void sys_freeall();
 #endif
 
 #else
-#define D_MALLOC(size)		mallocptr; mallocptr += (size)
-#define D_TEMPALLOC(size)	mallocptr
+#define D_MALLOC(size)		(char*)mallocptr; mallocptr += (size)
+#define D_TEMPALLOC(size)	(char*)mallocptr
 #define D_TEMPFREE()
 #endif
 
 #define D_MALLOC_BEGIN() \
 	{ \
-		const char* _oldmalloc = mallocptr;
+		volatile const char* _oldmalloc = mallocptr;
 
 #ifdef __GNUC__
 #define D_MALLOC_END() \

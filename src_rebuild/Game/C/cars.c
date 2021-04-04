@@ -1159,7 +1159,7 @@ void MangleWheelModels(void)
 	}
 }
 
-// [D]
+// [D] [T]
 void ProcessPalletLump(char *lump_ptr, int lump_size)
 {
 	ushort clutValue;
