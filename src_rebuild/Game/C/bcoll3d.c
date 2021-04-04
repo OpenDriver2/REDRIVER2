@@ -2,11 +2,10 @@
 #include "bcoll3d.h"
 
 // [D] [T]
-void PointFaceCheck(CAR_DATA *cp0, CAR_DATA *cp1, int i, TestResult *least, int nSign)
+int PointFaceCheck(CAR_DATA *cp0, CAR_DATA *cp1, int i, TestResult *least, int nSign)
 {
-	int partialDepth;
-	int depth;
-	SVECTOR_NOPAD *radii;
+	int partialDepth, depth;
+	SVECTOR_NOPAD* radii;
 	int k;
 
 	VECTOR normal;
@@ -27,13 +26,13 @@ void PointFaceCheck(CAR_DATA *cp0, CAR_DATA *cp1, int i, TestResult *least, int 
 
 	depth = FIXEDH(diff.vx * normal.vx + diff.vy * normal.vy + diff.vz * normal.vz);
 
-	if (depth < 0) 
+	if (depth < 0)
 	{
 		normal.vx = -normal.vx;
 		normal.vy = -normal.vy;
 		normal.vz = -normal.vz;
 	}
-	else 
+	else
 	{
 		depth = -depth;
 	}
@@ -41,20 +40,19 @@ void PointFaceCheck(CAR_DATA *cp0, CAR_DATA *cp1, int i, TestResult *least, int 
 	radii = cp1->hd.oBox.radii;
 	depth += cp0->hd.oBox.length[i];
 
-	k = 2;
-
-	do {
-		diff.vx = radii->vx;
-		diff.vy = radii->vy;
-		diff.vz = radii->vz;
+	for (k = 0; k < 3; k++)
+	{
+		diff.vx = radii[k].vx;
+		diff.vy = radii[k].vy;
+		diff.vz = radii[k].vz;
 
 		partialDepth = FIXEDH(diff.vx * normal.vx + diff.vy * normal.vy + diff.vz * normal.vz);
 
-		if (partialDepth < 0) 
+		if (partialDepth < 0)
 		{
 			partialDepth = -partialDepth;
 		}
-		else 
+		else
 		{
 			diff.vx = -diff.vx;
 			diff.vy = -diff.vy;
@@ -66,55 +64,63 @@ void PointFaceCheck(CAR_DATA *cp0, CAR_DATA *cp1, int i, TestResult *least, int 
 		point.vz += diff.vz;
 
 		depth += partialDepth;
+	}
 
-		radii++;
-		k--;
-	} while (k >= 0);
-
-	if (depth < least->depth && (least->depth = depth, -1 < depth))
+	if (depth < least->depth)
 	{
-		least->location.vx = point.vx;
-		least->location.vy = point.vy;
-		least->location.vz = point.vz;
+		least->depth = depth;
 
-		if (nSign < 0) 
+		if (depth >= 0)
 		{
-			normal.vx = -normal.vx;
-			normal.vy = -normal.vy;
-			normal.vz = -normal.vz;
+			least->location.vx = point.vx;
+			least->location.vy = point.vy;
+			least->location.vz = point.vz;
+
+			if (nSign < 0)
+			{
+				normal.vx = -normal.vx;
+				normal.vy = -normal.vy;
+				normal.vz = -normal.vz;
+			}
+
+			least->normal.vx = normal.vx;
+			least->normal.vy = normal.vy;
+			least->normal.vz = normal.vz;
 		}
 
-		least->normal.vx = normal.vx;
-		least->normal.vy = normal.vy;
-		least->normal.vz = normal.vz;
+		return depth;
 	}
+
+	return least->depth;
 }
 
 // [D] [T]
 int collided3d(CAR_DATA *cp0, CAR_DATA *cp1, TestResult *least)
 {
 	int i;
-
+	
 	least->depth = 0x40000000;
-	PointFaceCheck(cp0, cp1, 1, least, 1);
 
-	if (least->depth > -1 && (PointFaceCheck(cp1, cp0, 1, least, -1), least->depth > -1))
+	// check up-down first
+	if (PointFaceCheck(cp0, cp1, 1, least, 1) >= 0 && 
+		PointFaceCheck(cp1, cp0, 1, least, -1) >= 0)
 	{
 		least->depth = 0x40000000;
+		
 		i = 0;
 
-		while (PointFaceCheck(cp0, cp1, i, least, 1), least->depth > -1) 
+		// check sides
+		while (PointFaceCheck(cp0, cp1, i, least, 1) >= 0) 
 		{
-			PointFaceCheck(cp1, cp0, i, least, -1);
+			if (PointFaceCheck(cp1, cp0, i, least, -1) >= 0)
+			{
+				i += 2;
 
-			i += 2;
-
-			if (least->depth < 0)
-				return 0;
-			
-			if (i > 2)
+				if (i <= 2)
+					continue;
+				
 				return 1;
-		
+			}
 		}
 	}
 
@@ -129,12 +135,14 @@ int CarCarCollision3(CAR_DATA *c0, CAR_DATA *c1, int *depth, VECTOR *where, VECT
 
 	res = collided3d(c0, c1, &tr);
 
-	if (res != 0)
+	if (res)
 	{
 		*depth = tr.depth;
+		
 		where->vx = tr.location.vx;
 		where->vy = tr.location.vy;
 		where->vz = tr.location.vz;
+		
 		normal->vx = tr.normal.vx;
 		normal->vy = tr.normal.vy;
 		normal->vz = tr.normal.vz;

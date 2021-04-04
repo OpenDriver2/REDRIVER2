@@ -318,10 +318,8 @@ void GlobalTimeStep(void)
 	StepCars();
 	CheckCarToCarCollisions();
 
-	i = 0;
-
 	// step car forces (when no collisions with them)
-	while (i < num_active_cars)
+	for (i = 0; i < num_active_cars; i++)
 	{
 		cp = active_car_list[i];
 
@@ -397,17 +395,14 @@ void GlobalTimeStep(void)
 
 			RebuildCarMatrix(st, cp);
 		}
-
-		i++;
 	}
 
-	subframe = 0;
-
 	// do collision interactions
-	do {
+	for(subframe = 0; subframe < 4; subframe++) 
+	{
 		RKstep = 0;
 
-		do {
+		for (RKstep = 0; RKstep < 2; RKstep++) {
 			for (i = 0; i < num_active_cars; i++)
 			{
 				cp = active_car_list[i];
@@ -500,9 +495,9 @@ void GlobalTimeStep(void)
 								pointVel0[2] = (FIXEDH(thisState_i->n.angularVelocity[0] * lever0[1] - thisState_i->n.angularVelocity[1] * lever0[0]) + thisState_i->n.linearVelocity[2]) -
 									(FIXEDH(thisState_j->n.angularVelocity[0] * lever1[1] - thisState_j->n.angularVelocity[1] * lever1[0]) + thisState_j->n.linearVelocity[2]);
 
-								howHard = (pointVel0[0] / 256) * (normal[0] / 32) +
-									(pointVel0[1] / 256) * (normal[1] / 32) +
-									(pointVel0[2] / 256) * (normal[2] / 32);
+								howHard =	(pointVel0[0] / 256) * (normal[0] / 32) +
+											(pointVel0[1] / 256) * (normal[1] / 32) +
+											(pointVel0[2] / 256) * (normal[2] / 32);
 
 								if (howHard > 0 && RKstep > -1)
 								{
@@ -693,9 +688,7 @@ void GlobalTimeStep(void)
 			}
 
 			// update forces and rebuild matrix of the cars
-			i = 0;
-
-			while (i < num_active_cars)
+			for (i = 0; i < num_active_cars; i++)
 			{
 				cp = active_car_list[i];
 
@@ -709,44 +702,34 @@ void GlobalTimeStep(void)
 
 					if (RKstep == 0)
 					{
-						j = 0;
-						do {
+						for (j = 0; j < 13; j++)
+						{
 							tp->v[j] = st->v[j] + (d0->v[j] >> 2);
-							j++;
-						} while (j < 13);
+						}
 
 						RebuildCarMatrix(tp, cp);
 					}
 					else if (RKstep == 1)
 					{
-						j = 0;
-						do {
+						for (j = 0; j < 13; j++)
+						{
 							st->v[j] += d0->v[j] + d1->v[j] >> 3;
-							j++;
-						} while (j < 13);
+						}
 
 						RebuildCarMatrix(st, cp);
 					}
 				}
-
-				i++;
 			}
-
-			RKstep++;
-
-		} while (RKstep < 2);
-
-		subframe++;
-	} while (subframe < 4);
+		}
+	}
 
 
 
 	// second sub frame passed, update matrices and physics direction
 	// dent cars - no more than 5 cars in per frame
-	i = 0;
 	carsDentedThisFrame = 0;
 
-	while (i < num_active_cars)
+	for (i = 0; i < num_active_cars; i++)
 	{
 		cp = active_car_list[i];
 
@@ -760,7 +743,6 @@ void GlobalTimeStep(void)
 			carsDentedThisFrame++;
 		}
 
-		i++;
 		cp->hd.direction = ratan2(cp->hd.where.m[0][2], cp->hd.where.m[2][2]);
 	}
 }
