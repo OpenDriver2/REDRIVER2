@@ -645,7 +645,7 @@ void DrawCompass(void)
 void DrawBigCompass(VECTOR *root, int angle)
 {
 	int i;
-	uint ang2;
+	u_int ang2;
 	LINE_G2 *lineg2;
 	int ang;
 	int ang3;

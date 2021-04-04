@@ -484,7 +484,7 @@ void DoMissionSound(void)
 				{
 					if (MissionTargets[i].type == Target_Car)
 					{
-						holdall = MissionTargets[i].car.slot;
+						holdall = MissionTargets[i].s.car.slot;
 						break;
 					}
 				}
@@ -642,7 +642,7 @@ void DoMissionSound(void)
 						}
 						else if (holdall == 20)
 						{
-							holdall = MissionTargets[i].car.slot;
+							holdall = MissionTargets[i].s.car.slot;
 						}
 					}
 				}

@@ -1896,7 +1896,7 @@ void StepPathEvent(EVENT* ev)
 	// move train
 	if ((flags & 0x7000) == 0x1000)
 	{
-		uint loop; // unsigned on purspose
+		u_int loop; // unsigned on purspose
 
 		if (flags & 0x8000)
 		{

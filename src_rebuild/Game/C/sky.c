@@ -576,7 +576,7 @@ void DrawLensFlare(void)
 	xgap = sun_pers_conv_position.vx - 160;
 	ygap = sun_pers_conv_position.vy - 128;
 
-	//sun_pers_conv_position.vy = (short)((uint)sun_pers_conv_position >> 0x10);
+	//sun_pers_conv_position.vy = (short)((u_int)sun_pers_conv_position >> 0x10);
 	
 	distance_to_sun = SquareRoot0(xgap * xgap + ygap * ygap);
 
@@ -874,10 +874,10 @@ void PlotSkyPoly(POLYFT4* polys, int skytexnum, unsigned char r, unsigned char g
 		poly->g0 = g;
 		poly->b0 = b;
 
-		*(uint*)&poly->x0 = *(uint*)&outpoints[src->v0].vx;
-		*(uint*)&poly->x1 = *(uint*)&outpoints[src->v1].vx;
-		*(uint*)&poly->x2 = *(uint*)&outpoints[src->v3].vx;
-		*(uint*)&poly->x3 = *(uint*)&outpoints[src->v2].vx;
+		*(u_int*)&poly->x0 = *(u_int*)&outpoints[src->v0].vx;
+		*(u_int*)&poly->x1 = *(u_int*)&outpoints[src->v1].vx;
+		*(u_int*)&poly->x2 = *(u_int*)&outpoints[src->v3].vx;
+		*(u_int*)&poly->x3 = *(u_int*)&outpoints[src->v2].vx;
 	
 		*(ushort*)&poly->u0 = *(ushort*)&skytexuv[skytexnum].u2;
 		*(ushort*)&poly->u1 = *(ushort*)&skytexuv[skytexnum].u3;

@@ -102,7 +102,7 @@ MATRIX inv_camera_matrix;
 MATRIX face_camera;
 MATRIX2 CompoundMatrix[64];
 
-uint farClip2Player = 36000;
+u_int farClip2Player = 36000;
 
 int goFaster = 0;	// [A] was 1
 int fasterToggle = 0;
@@ -165,8 +165,8 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 {
 	int i;
 	int z;
-	uint spriteColour;
-	uint lightdd;
+	u_int spriteColour;
+	u_int lightdd;
 	unsigned char lightLevel;
 	MODEL* model;
 	PACKED_CELL_OBJECT* pco;
@@ -253,7 +253,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 			SVECTOR* verts;
 			int numPolys;
 
-			numPolys = (uint)model->num_polys;
+			numPolys = (u_int)model->num_polys;
 			src = (POLYFT4*)model->poly_block;
 			verts = (SVECTOR*)model->vertices;
 
@@ -322,11 +322,11 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 }
 
 // [D] [T]
-void SetupPlaneColours(uint ambient)
+void SetupPlaneColours(u_int ambient)
 {
-	uint r;
-	uint g;
-	uint b;
+	u_int r;
+	u_int g;
+	u_int b;
 
 	if ((gWeather - 1U > 1) && gTimeOfDay != 0 && gTimeOfDay != 2)
 	{
@@ -575,7 +575,7 @@ void DrawAllTheCars(int view)
 
 
 // [D] [T]
-u_int normalIndex(SVECTOR* verts, uint vidx)
+u_int normalIndex(SVECTOR* verts, u_int vidx)
 {
 	SVECTOR* v0;
 	SVECTOR* v1;
@@ -725,7 +725,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 			temp = polys->th;
 
 			if ((polys->th & 0x80) == 0) // cache normal index if it were not
-				temp = polys->th = normalIndex(srcVerts, *(uint*)&polys->v0);
+				temp = polys->th = normalIndex(srcVerts, *(u_int*)&polys->v0);
 
 			pc->colour = pc->f4colourTable[(r >> 3) * 4 - temp & 31];
 		}
@@ -778,7 +778,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 				prims = (POLY_FT4*)pc->primptr;
 
 				setPolyFT4(prims);
-				*(uint*)&prims->r0 = pc->colour;
+				*(u_int*)&prims->r0 = pc->colour;
 
 				// retrieve first three verts
 				gte_stsxy3(&prims->x0, &prims->x1, &prims->x2);

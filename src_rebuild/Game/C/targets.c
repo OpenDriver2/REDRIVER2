@@ -113,7 +113,7 @@ void WorldToCameraPositions(VECTOR* pGlobalPositionIn, VECTOR* pCameraPositionOu
 // [D] [T]
 void DrawTargetArrowModel(TARGET_ARROW_MODEL *pTargetArrowModel, VECTOR *pPosition, int shadow, int invert)
 {
-	uint numTris;
+	u_int numTris;
 	VECTOR *cameraPos;
 
 	char *tri_indices;

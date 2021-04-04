@@ -181,22 +181,22 @@ void ClearMem(char* mem, int size)
 	char* end;
 	end = mem + size;
 
-	while ((((uint)mem & 3) != 0 && (mem < end))) {
+	while ((((u_int)mem & 3) != 0 && (mem < end))) {
 		*mem = 0;
 		mem = (char*)((int)mem + 1);
 	}
 
 	while (mem <= end + -0x10) {
-		*(uint*)mem = 0;
-		((uint*)mem)[1] = 0;
-		((uint*)mem)[2] = 0;
-		((uint*)mem)[3] = 0;
-		mem = (char*)((uint*)mem + 4);
+		*(u_int*)mem = 0;
+		((u_int*)mem)[1] = 0;
+		((u_int*)mem)[2] = 0;
+		((u_int*)mem)[3] = 0;
+		mem = (char*)((u_int*)mem + 4);
 	}
 
 	while (mem <= end + -4) {
-		*(uint*)mem = 0;
-		mem = (char*)((uint*)mem + 1);
+		*(u_int*)mem = 0;
+		mem = (char*)((u_int*)mem + 1);
 	}
 
 	while (mem < end) {

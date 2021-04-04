@@ -666,7 +666,7 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 {
 	int k;
-	uint havanaCorruptCellBodge;
+	u_int havanaCorruptCellBodge;
 	char *tbp;
 	char *bp;
 	ushort length;

@@ -1363,7 +1363,7 @@ typedef struct _TARGET
 					int loseMessage;		// data 14
 				} event;
 			};
-		};
+		} s;
 	};
 } MS_TARGET;
 
@@ -1497,7 +1497,7 @@ struct FELONY_DATA
 //---------------------------------------------------------------------------------------
 // TODO: PEDEST.H
 
-enum PED_ACTION_TYPE : char
+enum PED_ACTION_TYPE //: char
 {
 	PED_ACTION_WALK = 0,
 	PED_ACTION_RUN = 1,
@@ -1517,7 +1517,7 @@ enum PED_ACTION_TYPE : char
 	PED_ACTION_STOPPING = 15,
 };
 
-enum PED_MODEL_TYPES : char
+enum PED_MODEL_TYPES //: char
 {
 	TANNER_MODEL = 0,
 	OTHER_MODEL = 1,
@@ -1534,7 +1534,7 @@ typedef struct PEDESTRIAN
 	pedFunc fpRestState;
 	pedFunc fpAgitatedState;
 	char padId;
-	PED_MODEL_TYPES pedType;
+	char pedType;
 	VECTOR_NOPAD position;
 	SVECTOR dir;
 	SVECTOR velocity;
@@ -1552,7 +1552,7 @@ typedef struct PEDESTRIAN
 	char finished_turn;
 	char seat_index;
 	u_char pallet;
-	PED_ACTION_TYPE type;
+	char type;
 } *LPPEDESTRIAN;
 
 struct CAR_COLLISION_BOX
@@ -2126,7 +2126,7 @@ struct MVERTEX
 		struct {
 			u_char u0;
 			u_char v0;
-		};
+		}s;
 	}uv;
 };
 

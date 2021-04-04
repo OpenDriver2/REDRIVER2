@@ -22,7 +22,7 @@ void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction
 {
 	int playerId;
 	int model;
-	uint playerType;
+	u_int playerType;
 
 	playerType = externModel & 0xFF;
 	ClearMem((char *)locPlayer, sizeof(PLAYER));

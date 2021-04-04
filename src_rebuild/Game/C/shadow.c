@@ -61,7 +61,7 @@ void ResetTyreTracks(CAR_DATA* cp, int player_id)
 void GetTyreTrackPositions(CAR_DATA *cp, int player_id)
 {
 	int track;
-	uint loop;
+	u_int loop;
 	CAR_COSMETICS *car_cos;
 	VECTOR WheelPos;
 	VECTOR CarPos;
@@ -343,8 +343,8 @@ void DrawTyreTracks(void)
 					gte_ldv0(&ps[3]);
 					gte_rtps();
 
-					*(uint *)&poly->x0 = *(uint *)&lasttyre->x2;
-					*(uint *)&poly->x1 = *(uint *)&lasttyre->x3;
+					*(u_int *)&poly->x0 = *(u_int *)&lasttyre->x2;
+					*(u_int *)&poly->x1 = *(u_int *)&lasttyre->x3;
 
 					gte_stsxy(&poly->x3);
 				}
@@ -502,8 +502,8 @@ void PlaceShadowForCar(VECTOR *shadowPoints, int subdiv, int zOfs, int flag)
 
 	POLYFT4* pft4 = &shadowpoly;
 
-	plotContext.clut = (uint)(*plotContext.ptexture_cluts)[pft4->texture_set][pft4->texture_id] << 0x10;
-	plotContext.tpage = ((uint)(*plotContext.ptexture_pages)[pft4->texture_set] | 0x40) << 0x10;
+	plotContext.clut = (u_int)(*plotContext.ptexture_cluts)[pft4->texture_set][pft4->texture_id] << 0x10;
+	plotContext.tpage = ((u_int)(*plotContext.ptexture_pages)[pft4->texture_set] | 0x40) << 0x10;
 
 	copyVector(&subdivVerts[0][0], &points[pft4->v0]);
 	subdivVerts[0][0].uv.val = *(ushort*)&pft4->uv0;
@@ -669,7 +669,7 @@ void clippedPoly(void)
 	short *psVar9;
 	int iVar10;
 	int iVar11;
-	uint *puVar12;
+	u_int *puVar12;
 
 	pPVar4 = spolys;
 	iVar11 = numcv + -1;
@@ -726,7 +726,7 @@ void clippedPoly(void)
 						psVar8 = &(&cv)[lastcv].vy;
 						do {
 							iVar11 = iVar11 + -1;
-							psVar8[1] = (short)((int)(((uint)(ushort)psVar8[1] + (int)*psVar8 * -2) * 0x10000) >>
+							psVar8[1] = (short)((int)(((u_int)(ushort)psVar8[1] + (int)*psVar8 * -2) * 0x10000) >>
 								0x11);
 							psVar8 = psVar8 + -4;
 						} while (iVar11 != -1);
@@ -772,8 +772,8 @@ void clippedPoly(void)
 							iVar10 = 8;
 						}
 						spolys->tag = spolys->tag & 0xff000000 | current->ot[iVar10] & 0xffffff;
-						puVar12 = (uint *)&spolys[1].x0;
-						pDVar5->ot[iVar10] = pDVar5->ot[iVar10] & 0xff000000 | (uint)spolys & 0xffffff;
+						puVar12 = (u_int *)&spolys[1].x0;
+						pDVar5->ot[iVar10] = pDVar5->ot[iVar10] & 0xff000000 | (u_int)spolys & 0xffffff;
 						*(undefined *)((int)&spolys[1].y0 + 1) = 7;
 						*(undefined *)((int)&spolys[1].y1 + 1) = 0x24;
 						pDVar5 = current;
@@ -787,7 +787,7 @@ void clippedPoly(void)
 						*puVar12 = *puVar12 & 0xff000000 | pDVar5->ot[iVar10] & 0xffffff;
 						iVar11 = iVar11 + -1;
 						in_a1 = pDVar5->ot + iVar10;
-						*in_a1 = *in_a1 & 0xff000000 | (uint)puVar12 & 0xffffff;
+						*in_a1 = *in_a1 & 0xff000000 | (u_int)puVar12 & 0xffffff;
 						spolys = (POLY_F3 *)&spolys[2].x2;
 						pDVar5->primptr = pDVar5->primptr + 0x20;
 						iVar3 = iVar3 + -1;

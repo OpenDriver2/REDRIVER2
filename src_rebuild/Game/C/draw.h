@@ -56,7 +56,7 @@ extern char CurrentPVS[444];
 
 extern void DrawMapPSX(int *comp_val); // 0x0003F6B0
 
-extern void SetupPlaneColours(uint ambient); // 0x00040218
+extern void SetupPlaneColours(u_int ambient); // 0x00040218
 extern void SetupDrawMapPSX(); // 0x00040408
 
 extern void InitFrustrumMatrix(); // 0x00040534

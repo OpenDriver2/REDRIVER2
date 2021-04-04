@@ -786,7 +786,7 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 	int count;
 	int num_cb;
 	MODEL *model;
-	uint yang;
+	u_int yang;
 	int sphereSq;
 	COLLISION_PACKET *collide;
 	CELL_OBJECT *cop;

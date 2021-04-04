@@ -142,7 +142,7 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 	SPRT *sprt;
 	POLY_FT3 *null;
 
-	uint tp;
+	u_int tp;
 	int i;
 	int j;
 	int fade;

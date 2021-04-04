@@ -17,7 +17,7 @@
 	((*(ushort*)&(rd)->NumLanes & 0xFFFF) == 0xFF01)
 
 // those macros can be applied to straights and junctions
-#define ROAD_LANES_COUNT(rd)							((uint)(rd)->NumLanes & 0xF)					// lane count
+#define ROAD_LANES_COUNT(rd)							((u_int)(rd)->NumLanes & 0xF)					// lane count
 #define ROAD_WIDTH_IN_LANES(rd)							(ROAD_LANES_COUNT(rd) * 2)					// width in lanes
 #define ROAD_IS_AI_LANE(rd, lane)						((u_char)(rd)->AILanes >> ((lane) / 2) & 1U)	// lane AI driveable flag
 #define ROAD_IS_LEFTMOST_LANE_PARKING(rd)				(((u_char)(rd)->NumLanes & 0x40) != 0)				// allows parking on leftmost lane

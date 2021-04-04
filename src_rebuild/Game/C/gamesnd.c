@@ -313,7 +313,7 @@ void LoadLevelSFX(int missionNum)
 {
 	int index;
 	int i;
-	uint city_night_fx;
+	u_int city_night_fx;
 
 	city_night_fx = (gTimeOfDay == 3);
 
@@ -983,16 +983,16 @@ void DoDopplerSFX(void)
 	short* playerFelony;
 	int i, j;
 	int car;
-	uint car_flags;
+	u_int car_flags;
 	int num_noisy_cars;
 	int sirens;
 
-	uint car_dist[MAX_CARS];
+	u_int car_dist[MAX_CARS];
 	ushort indexlist[MAX_CARS];
 
 	CAR_DATA* car_ptr;
 	int dx, dz;
-	uint dist;
+	u_int dist;
 
 	num_noisy_cars = 0;
 
@@ -1362,7 +1362,7 @@ void DoDopplerSFX(void)
 }
 
 // [D] [T]
-void DoPoliceLoudhailer(int cars, ushort* indexlist, uint* dist)
+void DoPoliceLoudhailer(int cars, ushort* indexlist, u_int* dist)
 {
 	int rnd;
 	int carId;

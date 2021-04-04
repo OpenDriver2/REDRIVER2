@@ -648,11 +648,11 @@ void AddLeaf(VECTOR *Position, int num_leaves, int Type)
 		// apply colors
 		if (gTimeOfDay == 3)
 		{
-			*(uint*)&myleaf->rgb = *(uint*)&myleaf->rgb >> 2 & 0x3f3f3f3f;
+			*(u_int*)&myleaf->rgb = *(u_int*)&myleaf->rgb >> 2 & 0x3f3f3f3f;
 		}
 		else if (gWeather == 1 || gWeather == 2)
 		{
-			*(uint*)&myleaf->rgb = *(uint*)&myleaf->rgb >> 1 & 0x7f7f7f7f;
+			*(u_int*)&myleaf->rgb = *(u_int*)&myleaf->rgb >> 1 & 0x7f7f7f7f;
 		}
 
 		myleaf->sin_index1 = temprand & 0xfff;
@@ -2846,10 +2846,10 @@ void DisplayDebris(DEBRIS *debris, char type)
 				else
 					uVar3 = debris->rgb.b << 0x10 | debris->rgb.g << 8 | 0x3c000000 | debris->rgb.r;
 
-				*(uint *)&poly1->r0 = uVar3;
-				*(uint *)&poly1->r2 = uVar3;
-				*(uint *)&poly1->r1 = uVar3 + 0x202020;
-				*(uint *)&poly1->r3 = uVar3 + 0x303030;
+				*(u_int *)&poly1->r0 = uVar3;
+				*(u_int *)&poly1->r2 = uVar3;
+				*(u_int *)&poly1->r1 = uVar3 + 0x202020;
+				*(u_int *)&poly1->r3 = uVar3 + 0x303030;
 
 				setPolyGT4(poly1);
 				addPrim(current->ot + (z >> 3), poly1);
@@ -3511,15 +3511,15 @@ void DrawRainDrops(void)
 			RainPtr->position.vx -= drift.vx * 2;
 			RainPtr->position.vz -= drift.vz * 2;
 
-			*(uint *)&poly->x0 = *(uint *)&RainPtr->oldposition;
+			*(u_int *)&poly->x0 = *(u_int *)&RainPtr->oldposition;
 		}
 
 		gte_ldv0(&v);
 		gte_rtps();
 
-		*(uint *)&poly->r2 = col;
-		*(uint *)&poly->r1 = col;
-		*(uint *)&poly->r0 = 0;
+		*(u_int *)&poly->r2 = col;
+		*(u_int *)&poly->r1 = col;
+		*(u_int *)&poly->r0 = 0;
 
 		setPolyGT3(poly);
 		setSemiTrans(poly, 1);
@@ -3532,13 +3532,13 @@ void DrawRainDrops(void)
 			poly->x2 > -101 && poly->x2 < 421 && 
 			poly->y2 > -51 && poly->y2 < 257) 
 		{
-			if (*(uint *)&RainPtr->oldposition != 0) 
+			if (*(u_int *)&RainPtr->oldposition != 0) 
 			{				
 				poly->x1 = poly->x2 - ((z >> 10) - 1);
 				poly->x2 = poly->x2 + ((z >> 10) - 1);
 				poly->y1 = poly->y2;
 
-				*(uint *)&RainPtr->oldposition = *(uint *)&poly->x2;
+				*(u_int *)&RainPtr->oldposition = *(u_int *)&poly->x2;
 
 				poly->clut = light_texture.clutid;
 				poly->tpage = light_texture.tpageid | 0x20;
@@ -3551,7 +3551,7 @@ void DrawRainDrops(void)
 				poly++;
 			}
 			else
-				*(uint *)&RainPtr->oldposition = *(uint *)&poly->x2;
+				*(u_int *)&RainPtr->oldposition = *(u_int *)&poly->x2;
 		}
 		else 
 		{

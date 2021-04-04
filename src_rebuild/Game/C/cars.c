@@ -107,7 +107,7 @@ void plotCarPolyB3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *p
 
 		if (Z > -1) 
 		{
-			*(uint*)&prim->r0 = FT3rgb | 0x20000000;
+			*(u_int*)&prim->r0 = FT3rgb | 0x20000000;
 
 			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
 
@@ -164,10 +164,10 @@ void plotCarPolyFT3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *
 		if (Z > -1) 
 		{
 			ofse = pg->damageLevel[src->originalindex];
-			*(uint*)&prim->r0 = FT3rgb;
-			*(uint*)&prim->u0 = src->clut_uv0 + ofse;
-			*(uint*)&prim->u1 = src->tpage_uv1 + ofse;
-			*(uint*)&prim->u2 = src->uv3_uv2 + ofse;
+			*(u_int*)&prim->r0 = FT3rgb;
+			*(u_int*)&prim->u0 = src->clut_uv0 + ofse;
+			*(u_int*)&prim->u1 = src->tpage_uv1 + ofse;
+			*(u_int*)&prim->u2 = src->uv3_uv2 + ofse;
 
 			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
 
@@ -193,9 +193,9 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 	SVECTOR* v2;
 	SVECTOR *v1;
 	SVECTOR *v0;
-	uint indices;
+	u_int indices;
 	POLY_GT3 *prim;
-	uint r0,r1,r2;
+	u_int r0,r1,r2;
 	int ofse;
 
 	prim = (POLY_GT3 *)pg->primptr;
@@ -226,19 +226,19 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 		{
 			indices = src->nindices;
 
-			r0 = (uint)(ushort)nlist[indices & 0xff].pad;
-			r1 = (uint)(ushort)nlist[indices >> 8 & 0xff].pad;
-			r2 = (uint)(ushort)nlist[indices >> 16 & 0xff].pad;
+			r0 = (u_int)(ushort)nlist[indices & 0xff].pad;
+			r1 = (u_int)(ushort)nlist[indices >> 8 & 0xff].pad;
+			r2 = (u_int)(ushort)nlist[indices >> 16 & 0xff].pad;
 
-			*(uint*)&prim->r0 = (r0 & 0xff) << 0x10 | r0;
-			*(uint*)&prim->r1 = (r1 & 0xff) << 0x10 | r1;
-			*(uint*)&prim->r2 = (r2 & 0xff) << 0x10 | r2;
+			*(u_int*)&prim->r0 = (r0 & 0xff) << 0x10 | r0;
+			*(u_int*)&prim->r1 = (r1 & 0xff) << 0x10 | r1;
+			*(u_int*)&prim->r2 = (r2 & 0xff) << 0x10 | r2;
 
 			ofse = pg->damageLevel[src->originalindex];
 
-			*(uint*)&prim->u0 = (src->clut_uv0 & 0xffffU | pg->pciv_clut[palette + (src->clut_uv0 >> 0x10)] << 0x10) + ofse;
-			*(uint*)&prim->u1 = src->tpage_uv1 + ofse;
-			*(uint*)&prim->u2 = src->uv3_uv2 + ofse;
+			*(u_int*)&prim->u0 = (src->clut_uv0 & 0xffffU | pg->pciv_clut[palette + (src->clut_uv0 >> 0x10)] << 0x10) + ofse;
+			*(u_int*)&prim->u1 = src->tpage_uv1 + ofse;
+			*(u_int*)&prim->u2 = src->uv3_uv2 + ofse;
 
 			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
 
@@ -263,7 +263,7 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 	SVECTOR* v2;
 	SVECTOR* v1;
 	SVECTOR* v0;
-	uint indices;
+	u_int indices;
 	POLY_FT3* prim;
 	int ofse;
 
@@ -293,13 +293,13 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 
 		if (Z > -1 && otz > 0)
 		{
-			*(uint*)&prim->r0 = GT3rgb;
+			*(u_int*)&prim->r0 = GT3rgb;
 
 			ofse = pg->damageLevel[src->originalindex];
 
-			*(uint*)&prim->u0 = (src->clut_uv0 & 0xffffU | pg->pciv_clut[palette + (src->clut_uv0 >> 0x10)] << 0x10) + ofse;
-			*(uint*)&prim->u1 = src->tpage_uv1 + ofse;
-			*(uint*)&prim->u2 = src->uv3_uv2 + ofse;
+			*(u_int*)&prim->u0 = (src->clut_uv0 & 0xffffU | pg->pciv_clut[palette + (src->clut_uv0 >> 0x10)] << 0x10) + ofse;
+			*(u_int*)&prim->u1 = src->tpage_uv1 + ofse;
+			*(u_int*)&prim->u2 = src->uv3_uv2 + ofse;
 
 			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
 
@@ -415,7 +415,7 @@ void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 
 		if (doLight)
 		{
-			uint rgbval = combointensity & 0xffffffU | 0x34000000;
+			u_int rgbval = combointensity & 0xffffffU | 0x34000000;
 			gte_ldrgb(&rgbval);
 
 			cp->ap.qy = cp->st.n.orientation[1];
@@ -518,11 +518,11 @@ void DrawWheelObject(MODEL* model, SVECTOR* verts, int transparent, int wheelnum
 			addPrim(current->ot + (otZ >> 1) + 5, poly);
 
 			if (i < 2 || Z < 0)
-				*(uint*)&poly->r0 = 0x2c000000;
+				*(u_int*)&poly->r0 = 0x2c000000;
 			else if (((i ^ wheelnum >> 1) & 1) == 0)
-				*(uint*)&poly->r0 = dim;
+				*(u_int*)&poly->r0 = dim;
 			else
-				*(uint*)&poly->r0 = bright;
+				*(u_int*)&poly->r0 = bright;
 
 			setSemiTrans(poly, transparent);
 
@@ -924,7 +924,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 					case 18:
 						if (pass == 2)	// F3
 						{
-							cp->vindices = (uint)polyList[1] | ((uint)polyList[2] | (uint)polyList[3] << 8) << 8;
+							cp->vindices = (u_int)polyList[1] | ((u_int)polyList[2] | (u_int)polyList[3] << 8) << 8;
 							cp->originalindex = i;
 
 							newNumPolys++;
@@ -934,12 +934,12 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 					case 19:
 						if (pass == 2)	// F4
 						{
-							cp->vindices = (uint)polyList[4] | ((uint)polyList[5] | (uint)polyList[6] << 8) << 8;
+							cp->vindices = (u_int)polyList[4] | ((u_int)polyList[5] | (u_int)polyList[6] << 8) << 8;
 							cp->originalindex = i;
 
 							cp = carPolyBuffer + newNumPolys + 1;
 
-							cp->vindices = (uint)polyList[4] | ((uint)polyList[6] | (uint)polyList[7] << 8) << 8;
+							cp->vindices = (u_int)polyList[4] | ((u_int)polyList[6] | (u_int)polyList[7] << 8) << 8;
 							cp->originalindex = i;
 
 							newNumPolys += 2;
@@ -1051,9 +1051,9 @@ void MangleWheelModels(void)
 	UV_INFO tmpUV2;
 	unsigned char tmpUV;
 	int i;
-	uint v0;
-	uint v1;
-	uint v2;
+	u_int v0;
+	u_int v1;
+	u_int v2;
 	POLYFT4*src;
 	MODEL *m;
 	int j;
@@ -1071,40 +1071,40 @@ void MangleWheelModels(void)
 		// do some fuckery swaps
 		src = (POLYFT4*)m->poly_block;
 		
-		v0 = *(uint *)&src[2].v0;
-		v1 = *(uint *)&src[2].uv0;
-		v2 = *(uint *)&src[2].uv2;
-		*(uint *)src = *(uint *)(src + 2);
-		*(uint *)&src->v0 = v0;
-		*(uint *)&src->uv0 = v1;
-		*(uint *)&src->uv2 = v2;
+		v0 = *(u_int *)&src[2].v0;
+		v1 = *(u_int *)&src[2].uv0;
+		v2 = *(u_int *)&src[2].uv2;
+		*(u_int *)src = *(u_int *)(src + 2);
+		*(u_int *)&src->v0 = v0;
+		*(u_int *)&src->uv0 = v1;
+		*(u_int *)&src->uv2 = v2;
 		src->color = src[2].color;
 
-		v0 = *(uint *)&src[3].v0;
-		v1 = *(uint *)&src[3].uv0;
-		v2 = *(uint *)&src[3].uv2;
-		*(uint *)(src + 1) = *(uint *)(src + 3);
-		*(uint *)&src[1].v0 = v0;
-		*(uint *)&src[1].uv0 = v1;
-		*(uint *)&src[1].uv2 = v2;
+		v0 = *(u_int *)&src[3].v0;
+		v1 = *(u_int *)&src[3].uv0;
+		v2 = *(u_int *)&src[3].uv2;
+		*(u_int *)(src + 1) = *(u_int *)(src + 3);
+		*(u_int *)&src[1].v0 = v0;
+		*(u_int *)&src[1].uv0 = v1;
+		*(u_int *)&src[1].uv2 = v2;
 		src[1].color = src[3].color;
 
-		v0 = *(uint *)&src[4].v0;
-		v1 = *(uint *)&src[4].uv0;
-		v2 = *(uint *)&src[4].uv2;
-		*(uint *)(src + 2) = *(uint *)(src + 4);
-		*(uint *)&src[2].v0 = v0;
-		*(uint *)&src[2].uv0 = v1;
-		*(uint *)&src[2].uv2 = v2;
+		v0 = *(u_int *)&src[4].v0;
+		v1 = *(u_int *)&src[4].uv0;
+		v2 = *(u_int *)&src[4].uv2;
+		*(u_int *)(src + 2) = *(u_int *)(src + 4);
+		*(u_int *)&src[2].v0 = v0;
+		*(u_int *)&src[2].uv0 = v1;
+		*(u_int *)&src[2].uv2 = v2;
 		src[2].color = src[4].color;
 
-		v0 = *(uint *)&src[6].v0;
-		v1 = *(uint *)&src[6].uv0;
-		v2 = *(uint *)&src[6].uv2;
-		*(uint *)(src + 3) = *(uint *)(src + 6);
-		*(uint *)&src[3].v0 = v0;
-		*(uint *)&src[3].uv0 = v1;
-		*(uint *)&src[3].uv2 = v2;
+		v0 = *(u_int *)&src[6].v0;
+		v1 = *(u_int *)&src[6].uv0;
+		v2 = *(u_int *)&src[6].uv2;
+		*(u_int *)(src + 3) = *(u_int *)(src + 6);
+		*(u_int *)&src[3].v0 = v0;
+		*(u_int *)&src[3].uv0 = v1;
+		*(u_int *)&src[3].uv2 = v2;
 		src[3].color = src[6].color;
 
 		src[2].v0 = 16;

@@ -221,20 +221,20 @@ void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 	v4 = (*VSP)[0][2];
 
 	VecSubtract(&e1, &v2, &v1); // plane[1] - plane[0];
-	e1.uv.u0 = (v2.uv.u0 - v1.uv.u0) / 2;
-	e1.uv.v0 = (v2.uv.v0 - v1.uv.v0) / 2;
+	e1.uv.s.u0 = (v2.uv.s.u0 - v1.uv.s.u0) / 2;
+	e1.uv.s.v0 = (v2.uv.s.v0 - v1.uv.s.v0) / 2;
 
 	VecSubtract(&e2, &v3, &v4); // plane[2] - plane[3];
-	e2.uv.u0 = (v3.uv.u0 - v4.uv.u0) / 2;
-	e2.uv.v0 = (v3.uv.v0 - v4.uv.v0) / 2;
+	e2.uv.s.u0 = (v3.uv.s.u0 - v4.uv.s.u0) / 2;
+	e2.uv.s.v0 = (v3.uv.s.v0 - v4.uv.s.v0) / 2;
 
 	VecSubtract(&e3, &v4, &v1); // plane[3] - plane[0];
-	e3.uv.u0 = (v4.uv.u0 - v1.uv.u0) / 2;
-	e3.uv.v0 = (v4.uv.v0 - v1.uv.v0) / 2;
+	e3.uv.s.u0 = (v4.uv.s.u0 - v1.uv.s.u0) / 2;
+	e3.uv.s.v0 = (v4.uv.s.v0 - v1.uv.s.v0) / 2;
 
 	VecSubtract(&e4, &v3, &v2); // plane[2] - plane[1];
-	e4.uv.u0 = (v3.uv.u0 - v2.uv.u0) / 2;
-	e4.uv.v0 = (v3.uv.v0 - v2.uv.v0) / 2;
+	e4.uv.s.u0 = (v3.uv.s.u0 - v2.uv.s.u0) / 2;
+	e4.uv.s.v0 = (v3.uv.s.v0 - v2.uv.s.v0) / 2;
 
 	//-----------
 
@@ -250,33 +250,33 @@ void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 	//-----------
 
 	VecAdd(&p1, &e1, &v1); // e1 * 0.5f + plane[0];
-	p1.uv.u0 = e1.uv.u0 + v1.uv.u0;
-	p1.uv.v0 = e1.uv.v0 + v1.uv.v0;
+	p1.uv.s.u0 = e1.uv.s.u0 + v1.uv.s.u0;
+	p1.uv.s.v0 = e1.uv.s.v0 + v1.uv.s.v0;
 
 	VecAdd(&p2, &e2, &v4); // e2 * 0.5f + plane[3];
-	p2.uv.u0 = e2.uv.u0 + v4.uv.u0;
-	p2.uv.v0 = e2.uv.v0 + v4.uv.v0;
+	p2.uv.s.u0 = e2.uv.s.u0 + v4.uv.s.u0;
+	p2.uv.s.v0 = e2.uv.s.v0 + v4.uv.s.v0;
 
 	VecAdd(&p3, &e3, &v1); // e3 * 0.5f + plane[0];
-	p3.uv.u0 = e3.uv.u0 + v1.uv.u0;
-	p3.uv.v0 = e3.uv.v0 + v1.uv.v0;
+	p3.uv.s.u0 = e3.uv.s.u0 + v1.uv.s.u0;
+	p3.uv.s.v0 = e3.uv.s.v0 + v1.uv.s.v0;
 
 	VecAdd(&p4, &e4, &v2); // e4 * 0.5f + plane[1];
-	p4.uv.u0 = e4.uv.u0 + v2.uv.u0;
-	p4.uv.v0 = e4.uv.v0 + v2.uv.v0;
+	p4.uv.s.u0 = e4.uv.s.u0 + v2.uv.s.u0;
+	p4.uv.s.v0 = e4.uv.s.v0 + v2.uv.s.v0;
 
 	//-----------
 
 	VecSubtract(&e5, &p2, &p1); // p2 - p1;
-	e5.uv.u0 = (p2.uv.u0 - p1.uv.u0) / 2;
-	e5.uv.v0 = (p2.uv.v0 - p1.uv.v0) / 2;
+	e5.uv.s.u0 = (p2.uv.s.u0 - p1.uv.s.u0) / 2;
+	e5.uv.s.v0 = (p2.uv.s.v0 - p1.uv.s.v0) / 2;
 
 	SetVec(&e5, e5.vx / 2, e5.vy / 2, e5.vz / 2);
 
 
 	VecAdd(&p5, &e5, &p1); // e5 * 0.5f + p1;
-	p5.uv.u0 = e5.uv.u0 + p1.uv.u0;
-	p5.uv.v0 = e5.uv.v0 + p1.uv.v0;
+	p5.uv.s.u0 = e5.uv.s.u0 + p1.uv.s.u0;
+	p5.uv.s.v0 = e5.uv.s.v0 + p1.uv.s.v0;
 
 	//-----------
 
@@ -381,8 +381,8 @@ void SubdivNxM(char *polys, int n, int m, int ofse)
 
 	POLYFT4* pft4 = (POLYFT4*)polys;
 	
-	plotContext.clut = (uint)(*plotContext.ptexture_cluts)[pft4->texture_set][pft4->texture_id] << 0x10;
-	plotContext.tpage = (uint)(*plotContext.ptexture_pages)[pft4->texture_set] << 0x10;
+	plotContext.clut = (u_int)(*plotContext.ptexture_cluts)[pft4->texture_set][pft4->texture_id] << 0x10;
+	plotContext.tpage = (u_int)(*plotContext.ptexture_pages)[pft4->texture_set] << 0x10;
 
 	copyVector(&subdivVerts[0][0], &verts[pft4->v0]);
 	subdivVerts[0][0].uv.val = *(ushort*)&pft4->uv0;
@@ -407,9 +407,9 @@ void SubdivNxM(char *polys, int n, int m, int ofse)
 // [D] [T]
 void TileNxN(MODEL *model, int levels, int Dofse)
 {
-	uint ttype;
+	u_int ttype;
 	unsigned char *polys;
-	uint tileTypes;
+	u_int tileTypes;
 	int i;
 	int ofse;
 
@@ -419,7 +419,7 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 	plotContext.verts = (SVECTOR *)model->vertices;
 
 	// tile types comes right after model header it seems
-	tileTypes = *(uint *)(model + 1) >> 2;
+	tileTypes = *(u_int *)(model + 1) >> 2;
 
 	// grass should be under pavements and other things
 	if((model->shape_flags & SHAPE_FLAG_SUBSURFACE) || (model->flags2 & 0x4000))

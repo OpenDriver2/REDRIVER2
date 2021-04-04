@@ -144,7 +144,7 @@ static PAUSEMODE PauseMode = PAUSEMODE_PAUSE;
 unsigned char defaultPlayerModel[2] = { 0 }; // offset 0xAA604
 unsigned char defaultPlayerPalette = 0; // offset 0xAA606
 
-uint* transparent_buffer;
+u_int* transparent_buffer;
 
 // system?
 int gameinit = 0;
@@ -855,7 +855,7 @@ void StepSim(void)
 
 	oldsp = SetSp(0x1f8003e8); // i don't know what this does
 
-	lead_pad = (uint)controller_bits;
+	lead_pad = (u_int)controller_bits;
 
 	if (player[0].playerCarId < 0)
 		playerFelony = &pedestrianFelony;

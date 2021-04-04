@@ -540,7 +540,7 @@ int tsetinfo[32];
 void SendTPage(void)
 {
 	unsigned char old;
-	uint*clutptr;
+	u_int*clutptr;
 	int slot;
 	int npalettes;
 	int tpage2send;
@@ -573,7 +573,7 @@ void SendTPage(void)
 
 			LoadImage(&cluts, (u_long *)(model_spool_buffer + 0xE000 + 4));
 
-			clutptr = (uint*)(texture_cluts[tpage2send]);
+			clutptr = (u_int*)(texture_cluts[tpage2send]);
 			i = 0;
 
 			while (i < npalettes)
@@ -1498,8 +1498,8 @@ void unpack_cellpointers(int region_to_unpack, int target_barrel_region, char* c
 	ushort* short_ptr;
 	ushort* source_packed_data;
 	int loop;
-	uint bitpos;
-	uint pcode;
+	u_int bitpos;
+	u_int pcode;
 
 	int packtype;
 	
@@ -1531,7 +1531,7 @@ void unpack_cellpointers(int region_to_unpack, int target_barrel_region, char* c
 	else if (packtype == 2)
 	{
 		bitpos = 0x8000;
-		pcode = (uint)*source_packed_data;
+		pcode = (u_int)*source_packed_data;
 		source_packed_data++;
 		short_ptr = cell_ptrs + target_barrel_region * 1024;
 
@@ -1579,7 +1579,7 @@ void Unpack_CellPtrs(void)
 // [D] [T]
 void GotRegion(void)
 {
-	uint target_barrel_reg;
+	u_int target_barrel_reg;
 
 	Unpack_CellPtrs();
 

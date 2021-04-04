@@ -58,7 +58,7 @@ static unsigned short CurrentChannel;
 static unsigned short ID;
 static int StartPos;
 static CdlLOC pause_loc;
-static uint buffer[8];
+static u_int buffer[8];
 
 
 #ifndef PSX
@@ -402,7 +402,7 @@ void cbready(int intr, unsigned char *result)
 		CdGetSector(buffer, 8);
 		ID = buffer[3];
 
-		CurrentChannel = ((uint)buffer[3] & 0x7c00) >> 10; // there is buffer[3]+2 bytes
+		CurrentChannel = ((u_int)buffer[3] & 0x7c00) >> 10; // there is buffer[3]+2 bytes
 
 		if (buffer[3] == 0x160) 
 		{

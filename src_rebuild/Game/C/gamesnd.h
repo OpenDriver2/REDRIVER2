@@ -46,7 +46,7 @@ extern void MissionSay(int phrase); // 0x000526D0
 
 extern void InitDopplerSFX(); // 0x0004E710
 extern void DoDopplerSFX(); // 0x0004E790
-extern void DoPoliceLoudhailer(int cars, unsigned short *indexlist, uint* dist); // 0x0004F4A0
+extern void DoPoliceLoudhailer(int cars, unsigned short *indexlist, u_int* dist); // 0x0004F4A0
 
 extern void CollisionSound(char player_id, CAR_DATA *cp, int impact, int car_car); // 0x0004F668
 extern void ExplosionSound(VECTOR *pos, int type); // 0x0004F984

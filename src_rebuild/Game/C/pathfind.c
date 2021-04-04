@@ -212,9 +212,9 @@ void DebugDisplayObstacleMap()
 // [D] [T]
 tNode* popNode(tNode* __return_storage_ptr__)
 {
-	uint child;
+	u_int child;
 	ushort d;
-	uint here;
+	u_int here;
 	tNode res;
 
 	res = heap[1];
@@ -394,7 +394,7 @@ void BloodyHell(void)
 	int p;
 	int q;
 	int px, pz;
-	uint howMany;
+	u_int howMany;
 	int count;
 	VECTOR bPos;
 	int tile, i;
@@ -520,9 +520,9 @@ void iterate(void)
 	ushort nr;
 	ushort nl;
 	int a;
-	uint pnode;
-	uint parent;
-	uint i;
+	u_int pnode;
+	u_int parent;
+	u_int i;
 	int r;
 
 	if (numHeapEntries == 0)
@@ -878,8 +878,8 @@ void UpdateCopMap(void)
 	int i, maxret;
 	int res;
 	tNode startNode;
-	uint pnode;
-	uint parent;
+	u_int pnode;
+	u_int parent;
 
 	BloodyHell();
 

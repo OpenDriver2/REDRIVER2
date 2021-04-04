@@ -1,9 +1,6 @@
 #ifndef DRIVER2_H
 #define DRIVER2_H
 
-#include <stdbool.h>
-#include <stdio.h>
-
 #include "KERNEL.H"
 #include "TYPES.H"
 #include "LIBCD.H"
@@ -23,6 +20,9 @@
 #define printError					(void)
 
 #else
+
+#include <stdbool.h>
+#include <stdio.h>
 
 #define printMsg				PsyX_Log
 #define printInfo				PsyX_Log_Info

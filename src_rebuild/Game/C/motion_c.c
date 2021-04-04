@@ -542,7 +542,7 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	if (bone == JOINT_1)
 	{
 		// make ped thinner from side view
-		uint ang;
+		u_int ang;
 		ang = rcossin_tbl[((pDrawingPed->dir.vy + camera_angle.vy) * 4 & 0xfffU) + 1] >> 6;
 
 		z2 += ang;
@@ -1427,7 +1427,7 @@ void DrawCiv(PEDESTRIAN* pPed)
 	int boneId;
 	int frame;
 	int i, j;
-	uint phase;
+	u_int phase;
 	SVECTOR pos;
 	VECTOR pos1;
 	SVECTOR rot;

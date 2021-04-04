@@ -756,8 +756,8 @@ void CopControl1(CAR_DATA *cp)
 void ControlCopDetection(void)
 {
 	bool spotted;
-	uint distanceToPlayer;
-	uint minDistanceToPlayer;
+	u_int distanceToPlayer;
+	u_int minDistanceToPlayer;
 	int heading;
 	int dx, dz;
 	CAR_DATA *cp;

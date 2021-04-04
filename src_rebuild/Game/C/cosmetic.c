@@ -134,7 +134,7 @@ void SetupSpecCosmetics(char *loadbuffer)
 // [D] [T]
 void AddIndicatorLight(CAR_DATA *cp, int Type)
 {
-	uint brightness;
+	u_int brightness;
 	char *life;
 	CAR_COSMETICS *car_cos;
 	char *life2;
@@ -149,7 +149,7 @@ void AddIndicatorLight(CAR_DATA *cp, int Type)
 	life2 = &cp->ap.life2;
 
 	if (cp->ap.life < 0)
-		brightness = (0xff - (uint)cp->ap.life) * 2;
+		brightness = (0xff - (u_int)cp->ap.life) * 2;
 	else
 		brightness = cp->ap.life << 1;
 
@@ -328,7 +328,7 @@ void AddCopCarLight(CAR_DATA *cp)
 	int num_lights;
 	CAR_COSMETICS *car_cos;
 	char *coplife;
-	uint pos;
+	u_int pos;
 	int side;
 	SVECTOR v1;
 	CVECTOR col;

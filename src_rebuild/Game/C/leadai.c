@@ -1861,7 +1861,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 		}
 	}
 #else
-	intention_lt_2 = (uint)intention < 2;
+	intention_lt_2 = (u_int)intention < 2;
 	intention_minus_2 = intention - 2;
 
 	if (intention_lt_2)
@@ -2210,7 +2210,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 			}
 
 			penalty = 0;
-			while ((uint)left < 41)
+			while ((u_int)left < 41)
 			{
 				roadAhead[left] -= penalty;
 
@@ -2222,7 +2222,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 			}
 
 			penalty = 0;
-			while ((uint)right < 41)
+			while ((u_int)right < 41)
 			{
 				roadAhead[right] -= penalty;
 
@@ -2273,7 +2273,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 			}
 
 			__right = 0;
-			while ((uint)left < 0x29)
+			while ((u_int)left < 0x29)
 			{
 				roadAhead[left] = roadAhead[left] - __right;
 
@@ -2285,7 +2285,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 			}
 
 			__right = 0;
-			while ((uint)right < 0x29)
+			while ((u_int)right < 0x29)
 			{
 				roadAhead[right] = roadAhead[right] - __right;
 

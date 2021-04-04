@@ -3,8 +3,8 @@
 #include "C/map.h"
 #include "C/dr2roads.h"
 
-uint region_buffer_xor = 0;
-uint sdSelfModifyingCode = 8;
+u_int region_buffer_xor = 0;
+u_int sdSelfModifyingCode = 8;
 
 extern int sdLevel;
 extern short* RoadMapDataRegions[4];

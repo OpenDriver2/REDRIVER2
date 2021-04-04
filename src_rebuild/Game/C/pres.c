@@ -225,7 +225,7 @@ int PrintString(char *string, int x, int y)
 {
 	u_char chr;
 	int width;
-	uint index;
+	u_int index;
 	SPRT *font;
 
 	int showMap = gShowMap;

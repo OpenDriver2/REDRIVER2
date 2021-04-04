@@ -22,7 +22,7 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 {
 	PACKED_CELL_OBJECT *ppco;
 
-	uint value;
+	u_int value;
 	unsigned short index;
 	unsigned short num;
 	int cbr;
@@ -118,7 +118,7 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 PACKED_CELL_OBJECT* GetNextPackedCop(CELL_ITERATOR* pci)
 {
 	ushort num;
-	uint value;
+	u_int value;
 	PACKED_CELL_OBJECT* ppco;
 	CELL_DATA* celld;
 
