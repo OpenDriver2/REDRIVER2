@@ -1549,10 +1549,10 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 			{
 				model = modelpointers[cop->type];
 
-				if (model->num_vertices - 3 < 300 &&
+				if (/*model->num_vertices - 3 < 300 &&
 					model->num_point_normals < 300 &&
-					model->num_polys < 300 &&
-					model->collision_block != 0 &&
+					model->num_polys < 300 &&*/
+					model->collision_block > 0 &&
 					(model->flags2 & MODEL_FLAG_SMASHABLE) == 0)
 				{
 					int num_cb;

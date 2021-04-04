@@ -26,22 +26,18 @@ extern int gCameraBoxOverlap;
 int bcollided2d(CDATA2D *body, int* boxOverlap)
 {
 	int dtheta;
-	short ac;
-	short as;
-	int i; // $t7
-	int j; // $a2
-	int k; // $t5
+	int ac,as;
+	int i, j, k;
+ 	int xover, zover;
+ 	int tmp;
+ 	int FE;
 	VECTOR delta;
- 	int xover; // $t0
- 	int zover; // $a0
- 	int tmp2; // $a2
- 	int FE; // $a3
 
 	dtheta = body[1].theta - body[0].theta;
 
 	// calc axes of each box
-	i = 1;
-	do {
+	for (i = 0; i < 2; i++)
+	{
 		as = rcossin_tbl[(body[i].theta & 0xfff) * 2];
 		ac = rcossin_tbl[(body[i].theta & 0xfff) * 2 + 1];
 
@@ -50,9 +46,7 @@ int bcollided2d(CDATA2D *body, int* boxOverlap)
 
 		body[i].axis[1].vz = -as;
 		body[i].axis[1].vx = ac;
-
-		i--;
-	} while (i != -1);
+	}
 
 	as = rcossin_tbl[(dtheta & 0x7ff) * 2];
 	ac = rcossin_tbl[(dtheta + 1024 & 0x7ff) * 2];
@@ -87,22 +81,22 @@ int bcollided2d(CDATA2D *body, int* boxOverlap)
 		FE = ABS(body[1].dist[0]) - ABS(body[1].limit[0]);
 		FE = ABS(FE);
 
-		tmp2 = FIXEDH(body->axis[0].vx * body[1].axis[0].vx + body->axis[0].vz * body[1].axis[0].vz);
-		tmp2 = ABS(tmp2);
+		tmp = FIXEDH(body->axis[0].vx * body[1].axis[0].vx + body->axis[0].vz * body[1].axis[0].vz);
+		tmp = ABS(tmp);
 
-		if (tmp2 > 10)
-			xover = (FE * ONE) / tmp2;
+		if (tmp > 10)
+			xover = (FE * ONE) / tmp;
 		else
 			xover = -1;
 
 		FE = ABS(body[1].dist[1]) - ABS(body[1].limit[1]);
 		FE = ABS(FE);
 
-		tmp2 = FIXEDH(body->axis[0].vx * body[1].axis[1].vx + body->axis[0].vz * body[1].axis[1].vz);
-		tmp2 = ABS(tmp2);
+		tmp = FIXEDH(body->axis[0].vx * body[1].axis[1].vx + body->axis[0].vz * body[1].axis[1].vz);
+		tmp = ABS(tmp);
 
-		if (tmp2 > 10)
-			zover = (FE * ONE) / tmp2;
+		if (tmp > 10)
+			zover = (FE * ONE) / tmp;
 		else
 			zover = xover;
 
@@ -244,81 +238,71 @@ int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 	time = 4096;
 	step = 2048;
 	
-	i = 1;
-	do {
+	for (i = 0; i < 2; i++)
 		original[i] = cd[i];
-		i--;
-	} while (i >= 0);
 
 	i = 7;
 	do {
-		
-		q = 1;
-		do {
-			cd[q].vel.vx >>= 1;
-			cd[q].vel.vz >>= 1;
-			cd[q].avel >>= 1;
+		for (q = 0; q < 2; q++)
+		{
+			cd[q].vel.vx /= 2;
+			cd[q].vel.vz /= 2;
+			cd[q].avel /= 2;
 
-			if (hit == 0)
-			{
-				cd[q].x.vx += cd[q].vel.vx;
-				cd[q].x.vz += cd[q].vel.vz;
-				cd[q].theta += cd[q].avel;
-			}
-			else
+			if (hit)
 			{
 				cd[q].x.vx -= cd[q].vel.vx;
 				cd[q].x.vz -= cd[q].vel.vz;
 				cd[q].theta -= cd[q].avel;
 			}
+			else
+			{
+				cd[q].x.vx += cd[q].vel.vx;
+				cd[q].x.vz += cd[q].vel.vz;
+				cd[q].theta += cd[q].avel;
+			}
+		}
 
-			q--;
-		} while (q >= 0);
-
-		if (hit == 0) 
+		if (hit) 
 		{
-			neverfree = 0;
-			time += step;
+			time -= step;
 		}
 		else
 		{
-			time -= step;
+			neverfree = 0;
+			time += step;
 		}
 
 		hit = bcollided2d(cd);
 
 		if (i != 0)
-			step >>= 1;
+			step /= 2;
 
 		i--;
 	} while (i >= 0);
 
 	if (hit == 0) 
 	{
-		i = 1;
-		do {
+		for (i = 0; i < 2; i++)
+		{
 			cd[i].x.vx += cd[i].vel.vx;
 			cd[i].x.vz += cd[i].vel.vz;
 			cd[i].theta += cd[i].avel;
-
-			i--;
-		} while (i >= 0);
+		}
 
 		bcollided2d(cd);
 
 		time += step;
 	}
-	else if (neverfree != 0)
+	else if (neverfree)
 	{
-		i = 1;
-		do {
+		for (i = 0; i < 2; i++)
+		{
 			cd[i] = original[i];
-
 			bcollided2d(cd);
-			i--;
-		} while (i >= 0);
+		}
 
-		time = 0x1000;
+		time = ONE;
 	}
 
 	collisionResult->neverfree = neverfree;

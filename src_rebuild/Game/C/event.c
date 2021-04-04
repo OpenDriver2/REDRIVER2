@@ -2584,7 +2584,7 @@ void StepEvents(void)
 								else
 									cop->pad = 0;
 
-								evt->flags |= 4;
+								evt->flags |= 0x4;
 							}
 							z++;
 						}
