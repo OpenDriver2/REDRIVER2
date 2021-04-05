@@ -304,6 +304,10 @@ void InitAnimatingObjects(void)
 			
 			aop->model_num = model_idx;
 
+			// [A] store animated object number in normals pointer
+			// after all it was always unused
+			modelPtr->normals = loop;
+
 			if (modelPtr->instance_number != -1 &&
 				modelpointers[modelPtr->instance_number] != &dummyModel)
 			{
@@ -312,6 +316,10 @@ void InitAnimatingObjects(void)
 
 				if (aop->LitPoly)
 					modelPtr->flags2 |= MODEL_FLAG_LAMP;
+
+				// [A] store animated object number in normals pointer
+				// after all it was always unused
+				modelPtr->normals = loop;
 			}
 		}
 		else
@@ -346,14 +354,16 @@ void InitSpooledAnimObj(int model_number)
 
 			if (aop->LitPoly)
 				modelPtr->flags2 |= MODEL_FLAG_LAMP;
+
+			// [A] store animated object number in normals pointer
+			// after all it was always unused
+			modelPtr->normals = i;
 			
 			break;
 		}
 		aop++;
 	}
 }
-
-
 
 GARAGE_DOOR CurrentGarage;
 
@@ -379,8 +389,12 @@ void DrawAllAnimatingObjects(CELL_OBJECT** objects, int num_animated)
 		cop = objects[i];
 		type = cop->type;
 		model = modelpointers[type];
-		type = model->instance_number == -1 ? type : model->instance_number;
 
+		// [A] optimized
+		animate_object(cop, aop[model->normals].internal_id);
+		
+#if 0
+		type = model->instance_number == -1 ? type : model->instance_number;
 		for (j = 0; j < num_anim_objects; j++)
 		{
 			if (type == aop->model_num)
@@ -392,6 +406,7 @@ void DrawAllAnimatingObjects(CELL_OBJECT** objects, int num_animated)
 
 			aop++;
 		}
+#endif
 	}
 }
 
