@@ -1153,10 +1153,8 @@ void MangleWheelModels(void)
 	} while (++i < 3);
 
 	// HACK: Show clean model only in Rio.
-	if (GameLevel == 3) 
-	{
-		gFastWheelModelPtr = gCleanWheelModelPtr;
-	}
+	//if (GameLevel == 3) 
+	//	gFastWheelModelPtr = gCleanWheelModelPtr;
 }
 
 // [D] [T]
