@@ -957,7 +957,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 					else
 						denom = (strikeVel / displacement) * 4096;
 
-					denom = denom / 64;
+					denom /= 64;
 
 					reaction[0] = denom * (collisionResult.surfNormal.vx / 64);
 					reaction[1] = denom * (collisionResult.surfNormal.vy / 64);

@@ -4,6 +4,7 @@
 
 #include "LIBGPU.H"
 #include "LIBETC.H"
+#include "STRINGS.H"
 
 #include "C/cd_icon.h"
 
@@ -22,7 +23,7 @@
 #include "C/scores.h"
 #include "C/loadsave.h"
 
-#include "STRINGS.H"
+
 
 struct PSXBUTTON
 {

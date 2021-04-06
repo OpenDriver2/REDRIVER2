@@ -7,6 +7,7 @@
 #include "LIBGTE.H"
 #include "LIBGPU.H"
 #include "LIBSPU.H"
+#include "STDIO.H"
 
 #include "psyx_compat.h"
 

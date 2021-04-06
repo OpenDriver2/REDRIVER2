@@ -175,41 +175,34 @@ void GetFrictionScalesDriver1(CAR_DATA* cp, CAR_LOCALS* cl, int* frontFS, int* r
 // [D] [T]
 void ConvertTorqueToAngularAcceleration(CAR_DATA* cp, CAR_LOCALS* cl)
 {
-	int twistY;
-	int twistZ;
+	int twistY, twistZ;
 	int zd;
 	int i;
 
 	twistY = car_cosmetics[cp->ap.model].twistRateY;
 	twistZ = car_cosmetics[cp->ap.model].twistRateZ;
 
-	i = 0;
-
 	zd = FIXEDH(cp->hd.where.m[0][2] * cp->hd.aacc[0] + cp->hd.where.m[1][2] * cp->hd.aacc[1] + cp->hd.where.m[2][2] * cp->hd.aacc[2]);
 
-	do {
-
+	for (i = 0; i < 3; i++)
+	{
 		cp->hd.aacc[i] = cp->hd.aacc[i] * twistY + FIXEDH(cp->hd.where.m[i][2] * (twistZ - twistY) * zd - cl->avel[i] * 128);
 
 		if (cl->extraangulardamping == 1)
 			cp->hd.aacc[i] -= cl->avel[i] / 8;
-
-		i++;
-	} while (i < 3);
+	}
 }
 
 
 // [D] [T]
 void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 {
-	int oldCompression;
+	int oldCompression, newCompression;
 	int dir;
-	int newCompression;
 	int forcefac;
 	int angle;
 	int lfx, lfz;
-	int sidevel;
-	int slidevel;
+	int sidevel, slidevel;
 	int susForce;
 	int chan;
 	WHEEL* wheel;
@@ -225,10 +218,8 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 	int rearFS;
 	sdPlane* SurfacePtr;
 	int i;
-	int cdx;
-	int cdz;
-	int sdx;
-	int sdz;
+	int cdx, cdz;
+	int sdx, sdz;
 	CAR_COSMETICS* car_cos;
 	int player_id;
 
@@ -383,7 +374,7 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 			}
 			else
 			{
-				if ((i & 1U) != 0)
+				if (i & 1)
 				{
 					lfz = -cdx;
 					lfx = cdz;
@@ -569,14 +560,13 @@ void StepOneCar(CAR_DATA* cp)
 	_cl.aggressive = handlingType[cp->hndType].aggressiveBraking;
 	_cl.extraangulardamping = 0;
 
-	i = 0;
-	do {
+	for (i = 0; i < 3; i++)
+	{
 		_cl.vel[i] = cp->st.n.linearVelocity[i];
 		_cl.avel[i] = cp->st.n.angularVelocity[i];
+		
 		cp->st.n.fposition[i] = (cp->st.n.fposition[i] & 0xF) + cp->hd.where.t[i] * 16;
-
-		i++;
-	} while (i < 3);
+	}
 
 	cp->hd.acc[0] = 0;
 	cp->hd.acc[1] = -7456; // apply gravity
@@ -591,19 +581,22 @@ void StepOneCar(CAR_DATA* cp)
 	else
 		speed = a + b / 2;
 
+	cp->hd.speed = speed;
+
 	car_cos = cp->ap.carCos;
 	lift = 0;
-
-	cp->hd.speed = speed;
 
 	gte_SetRotMatrix(&cp->hd.where);
 	gte_SetTransMatrix(&cp->hd.where);
 
 	count = 12;
 
-	if (cp->hd.where.m[1][1] > 0x800 && (count = 4, cp->controlType == CONTROL_TYPE_CIV_AI))
+	if (cp->hd.where.m[1][1] > 2048)
 	{
-		count = (cp->totalDamage != 0) << 2;
+		if(cp->controlType == CONTROL_TYPE_CIV_AI)
+			count = (cp->totalDamage != 0) * 4;
+		else
+			count = 4;
 	}
 
 	count--;
@@ -658,13 +651,12 @@ void StepOneCar(CAR_DATA* cp)
 	// do lifting
 	if (lift != 0)
 	{
-		int strikeVel; // $a2
-		int componant; // $t3
+		int strikeVel;
+		int componant;
 
-		int lever_dot_n; // $v1
-		int twistY; // $v0
-		int displacementsquared; // $a0
-		int denom; // $a0
+		int lever_dot_n;
+		int twistY;
+		int displacementsquared;
 
 		lever[0] = FIXEDH(_cl.avel[1] * deepestLever[2] - _cl.avel[2] * deepestLever[1]) + _cl.vel[0];
 		lever[1] = FIXEDH(_cl.avel[2] * deepestLever[0] - _cl.avel[0] * deepestLever[2]) + _cl.vel[1];
@@ -732,7 +724,7 @@ void StepOneCar(CAR_DATA* cp)
 		cp->hd.aacc[1] += FIXEDH(deepestLever[2] * reaction[0] - deepestLever[0] * reaction[2]);
 		cp->hd.aacc[2] += FIXEDH(deepestLever[0] * reaction[1] - deepestLever[1] * reaction[0]);
 
-		if (lift != 0)
+		//if (lift != 0)
 		{
 			lever[0] = FIXEDH(lift * deepestNormal[0]);
 			lever[1] = FIXEDH(lift * deepestNormal[1]);
