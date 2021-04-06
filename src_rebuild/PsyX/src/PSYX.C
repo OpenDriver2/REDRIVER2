@@ -605,7 +605,7 @@ void PsyX_Sys_DoPollEvent()
 			{
 				int nKey = event.key.keysym.scancode;
 
-				if (nKey == SDL_SCANCODE_LALT || nKey == SDL_SCANCODE_RALT)
+				if (nKey == SDL_SCANCODE_RALT)
 				{
 					g_altKeyState = (event.type == SDL_KEYDOWN);
 				}
