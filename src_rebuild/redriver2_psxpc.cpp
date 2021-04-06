@@ -530,12 +530,19 @@ int main(int argc, char** argv)
 
 		InitUserReplays(userReplaysStr);
 
+		// configure Psy-X pads
+		ini_sget(config, "pad", "pad1device", "%d", &g_controllerToSlotMapping[0]);
+		ini_sget(config, "pad", "pad2device", "%d", &g_controllerToSlotMapping[1]);
+
+		// configure Psy-X renderer
 		ini_sget(config, "render", "windowWidth", "%d", &windowWidth);
 		ini_sget(config, "render", "windowHeight", "%d", &windowHeight);
 		ini_sget(config, "render", "fullscreen", "%d", &fullScreen);
 		ini_sget(config, "render", "pgxpTextureMapping", "%d", &g_pgxpTextureCorrection);
 		ini_sget(config, "render", "pgxpZbuffer", "%d", &g_pgxpZBuffer);
 		ini_sget(config, "render", "bilinearFiltering", "%d", &g_bilinearFiltering);
+
+		// configure host game
 		ini_sget(config, "game", "drawDistance", "%d", &gDrawDistance);
 		ini_sget(config, "game", "disableChicagoBridges", "%d", &gDisableChicagoBridges);
 		ini_sget(config, "game", "fieldOfView", "%d", &newScrZ);

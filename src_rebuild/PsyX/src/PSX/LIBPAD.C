@@ -4,87 +4,183 @@
 #include "../PSYX_SETUP.H"
 #include "PSYX_PUBLIC.H"
 
-SDL_GameController*		padHandle[MAX_CONTROLLERS];
-SDL_Haptic*				padHaptic[MAX_CONTROLLERS];
+#include <string.h>
 
-unsigned char*			padData[MAX_CONTROLLERS];
 
-const unsigned char* keyboardState = NULL;
-int g_padCommStarted = 0;
+struct PsyXController
+{
+	Sint32				deviceId;	// linked device Id
+	SDL_GameController* gc;
+	SDL_Haptic*			haptic;
+
+	u_char*				padData;
+};
+
+PsyXController			g_controllers[MAX_CONTROLLERS];
+int						g_controllerToSlotMapping[MAX_CONTROLLERS] = { -1, -1 };
+
+const u_char*			g_sdlKeyboardState = NULL;
+
+int g_padCommEnable = 0;
+
+void PsyX_Pad_Debug_ListControllers()
+{
+	int numJoysticks = SDL_NumJoysticks();
+	int numHaptics = SDL_NumHaptics();
+
+	if(numJoysticks)
+	{
+		eprintf("SDL GameController list:\n");
+
+		for (int i = 0; i < numJoysticks; i++)
+		{
+			if (SDL_IsGameController(i))
+			{
+				eprintinfo("  %d '%s'\n", i, SDL_GameControllerNameForIndex(i));
+			}
+		}
+	}
+	else
+		eprintwarn("No SDL GameControllers found!\n");
+
+	if(numHaptics)
+	{
+		eprintf("SDL haptic list:\n");
+
+		for (int i = 0; i < numHaptics; i++)
+		{
+			eprintinfo("  %d '%s'\n", i, SDL_HapticName(i));
+		}
+	}
+	else
+		eprintwarn("No SDL haptics found!\n");
+}
+
+void PsyX_Pad_OpenController(Sint32 deviceId, int port)
+{
+	PsyXController& controller = g_controllers[port];
+
+	if(controller.gc)
+	{
+		return;
+	}
+	
+	controller.gc = SDL_GameControllerOpen(deviceId);
+
+	if(controller.gc)
+	{
+		// assign device id automatically
+		if (controller.deviceId == -1)
+			controller.deviceId = deviceId;
+		
+		SDL_Joystick* joy = SDL_GameControllerGetJoystick(controller.gc);
+
+		// try open haptics
+		if(SDL_JoystickIsHaptic(joy))
+			controller.haptic = SDL_HapticOpenFromJoystick(joy);
+		else // try open using device ID
+			controller.haptic = SDL_HapticOpen(controller.deviceId);
+
+		if(!controller.haptic)
+		{
+			eprintwarn("No haptic for '%s'\n", SDL_GameControllerNameForIndex(deviceId));
+		}
+	}
+}
+
+void PsyX_Pad_CloseController(int port)
+{
+	PsyXController& controller = g_controllers[port];
+
+	SDL_HapticClose(controller.haptic);
+	SDL_GameControllerClose(controller.gc);
+	
+	//controller.deviceId = -1;
+	controller.gc = NULL;
+	controller.haptic = NULL;
+}
+
+void PsyX_Pad_InitPad(int port, u_char* padData)
+{
+	PsyXController& controller = g_controllers[port];
+
+	controller.padData = padData;
+	controller.deviceId = g_controllerToSlotMapping[port];
+
+	if(padData)
+	{
+		PADRAW* pad = (PADRAW*)padData;
+		pad->id = port == 0 ? 0x41 : 0xFF;	// since keyboard is a main controller - it's always on
+		pad->buttons[0] = 0xFF;
+		pad->buttons[1] = 0xFF;
+		pad->analog[0] = 128;
+		pad->analog[1] = 128;
+		pad->analog[2] = 128;
+		pad->analog[3] = 128;
+	}
+}
+
+// called from Psy-X SDL events
+void PsyX_Pad_Event_ControllerAdded(Sint32 deviceId)
+{
+	// reinitialize haptics (why we still here?)
+	SDL_QuitSubSystem(SDL_INIT_HAPTIC);			// FIXME: this will crash if you already have haptics
+	SDL_InitSubSystem(SDL_INIT_HAPTIC);
+	
+	PsyX_Pad_Debug_ListControllers();
+
+	// find mapping and open
+	for(int i = 0; i < MAX_CONTROLLERS; i++)
+	{
+		PsyXController& controller = g_controllers[i];
+
+		if(controller.deviceId == -1 || controller.deviceId == deviceId)
+		{
+			PsyX_Pad_OpenController(deviceId, i);
+			break;
+		}
+	}
+}
+
+// called from Psy-X SDL events
+void PsyX_Pad_Event_ControllerRemoved(Sint32 deviceId)
+{
+	PsyX_Pad_Debug_ListControllers();
+
+	// find mapping and close
+	for (int i = 0; i < MAX_CONTROLLERS; i++)
+	{
+		PsyXController& controller = g_controllers[i];
+
+		if (controller.deviceId == deviceId)
+		{
+			PsyX_Pad_CloseController(i);
+		}
+	}
+}
 
 void PadInitDirect(unsigned char* pad1, unsigned char* pad2)
 {
 	// do not init second time!
-	if (keyboardState != NULL)
+	if (g_sdlKeyboardState != NULL)
 		return;
 
+	memset(g_controllers, 0, sizeof(g_controllers));
+
 	// init keyboard state
-	keyboardState = SDL_GetKeyboardState(NULL);
+	g_sdlKeyboardState = SDL_GetKeyboardState(NULL);
+
+	PsyX_Pad_InitPad(0, pad1);
+	PsyX_Pad_InitPad(1, pad2);
 	
-	if (pad1 != NULL)
-	{
-		padData[0] = pad1;
-
-		PADRAW* pad = (PADRAW*)pad1;
-		pad->id = 0x41;	// always init first controller
-		pad->analog[0] = 128;
-		pad->analog[1] = 128;
-		pad->analog[2] = 128;
-		pad->analog[3] = 128;
-	}
-	else
-		padData[0] = NULL;
-
-	if (pad2 != NULL)
-	{
-		padData[1] = pad2;
-
-		PADRAW* pad = (PADRAW*)pad2;
-		pad->status = 0xFF;
-		pad->id = 0;
-		pad->analog[0] = 128;
-		pad->analog[1] = 128;
-		pad->analog[2] = 128;
-		pad->analog[3] = 128;
-	}
-	else
-		padData[0] = NULL;
-
 	if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC) < 0)
 	{
 		eprinterr("Failed to initialise SDL GameController subsystem!\n");
 		return;
 	}
-
+	
 	// Add more controllers from custom file
 	SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
-
-	// immediately open controllers
-	int numJoysticks = SDL_NumJoysticks();
-
-	for(int i = 0; i < SDL_NumHaptics(); i++)
-	{
-		const char* hapticName = SDL_HapticName(0);
-		eprintwarn("Haptic: '%s'!\n", hapticName);
-	}
-	
-	for (int i = 0; i < numJoysticks && i < MAX_CONTROLLERS; i++)
-	{
-		if (SDL_IsGameController(i))
-		{
-			padHandle[i] = SDL_GameControllerOpen(i);	//@TODO close joysticks
-			SDL_Joystick* joy = SDL_GameControllerGetJoystick(padHandle[i]);
-
-			SDL_JoystickID id = SDL_JoystickGetDeviceInstanceID(i);
-	
-			padHaptic[i] = SDL_HapticOpen(id);
-
-			if(!padHaptic[i])
-			{
-				eprintwarn("Warning: Controller does not support haptics! SDL Error: %s\n", SDL_GetError());
-			}
-		}
-	}
 }
 
 void PadInitMtap(unsigned char* unk00, unsigned char* unk01)
@@ -105,12 +201,12 @@ int PadChkVsync()
 
 void PadStartCom()
 {
-	g_padCommStarted = 1;
+	g_padCommEnable = 1;
 }
 
 void PadStopCom()
 {
-	g_padCommStarted = 0;
+	g_padCommEnable = 0;
 }
 
 unsigned int PadEnableCom(unsigned int unk00)
@@ -132,20 +228,16 @@ void PadRemoveGun()
 int PadGetState(int port)
 {
 	port >>= 4;
-	
-#if _DEBUG || 1
-	return PadStateStable;//FIXME should check if keyboard is connected
-#endif
-	if (!(SDL_GameControllerGetAttached(padHandle[port])))
-	{
-		return PadStateDiscon;
-	}
-	else
-	{
-		return PadStateStable;
-	}
 
-	return 0;
+	if(port == 0)
+		return PadStateStable;	// keyboard always here
+
+	PsyXController& controller = g_controllers[port];
+	
+	if(controller.gc && SDL_GameControllerGetAttached(controller.gc))
+		return PadStateStable;
+
+	return PadStateDiscon;
 }
 
 int PadInfoMode(int port, int term, int offs)
@@ -181,8 +273,10 @@ int hapticEffects[MAX_CONTROLLERS] = { -1, -1 };
 void PadSetAct(int port, unsigned char* table, int len)
 {
 	port >>= 4;
+
+	PsyXController& controller = g_controllers[port];
 	
-	if (!padHaptic[port])
+	if (!controller.haptic)
 		return;
 
 	if (len == 0)
@@ -200,21 +294,21 @@ void PadSetAct(int port, unsigned char* table, int len)
 
 	eff.leftright.length = 400;
 	
-	if (SDL_HapticEffectSupported(padHaptic[port], &eff) != SDL_TRUE)
+	if (SDL_HapticEffectSupported(controller.haptic, &eff) != SDL_TRUE)
 		return;
 	
 	if(hapticEffects[port] == -1)
 	{
-		hapticEffects[port] = SDL_HapticNewEffect(padHaptic[port], &eff);
+		hapticEffects[port] = SDL_HapticNewEffect(controller.haptic, &eff);
 		if(hapticEffects[port] == -1)
 		{
 			eprintwarn("Warning: Unable to create haptic effect! %s\n", SDL_GetError());
 		}
 	}
 	else
-		SDL_HapticUpdateEffect(padHaptic[port], hapticEffects[port], &eff);
+		SDL_HapticUpdateEffect(controller.haptic, hapticEffects[port], &eff);
 	
-	if (SDL_HapticRunEffect(padHaptic[port], hapticEffects[port], 1) != 0)
+	if (SDL_HapticRunEffect(controller.haptic, hapticEffects[port], 1) != 0)
 	{
 		eprintwarn("Warning: Unable to run haptic effect! %s\n", SDL_GetError());
 	}
@@ -235,10 +329,21 @@ int GetControllerButtonState(SDL_GameController* cont, int buttonOrAxis)
 	return SDL_GameControllerGetButton(cont, (SDL_GameControllerButton)buttonOrAxis) * 32767;
 }
 
-void UpdateGameControllerInput(SDL_GameController* cont, PADRAW* pad)
+void PsyX_Pad_UpdateGameControllerInput(SDL_GameController* cont, PADRAW* pad)
 {
 	unsigned short ret = 0xFFFF;
 
+	if (!cont)
+	{
+		pad->analog[0] = 127;
+		pad->analog[1] = 127;
+		pad->analog[2] = 127;
+		pad->analog[3] = 127;
+
+		*(u_short*)pad->buttons = ret;
+		return;
+	}
+	
 	extern PsyXControllerMapping g_controller_mapping;
 
 	if (GetControllerButtonState(cont, g_controller_mapping.gc_square) > 16384)//Square
@@ -295,7 +400,7 @@ void UpdateGameControllerInput(SDL_GameController* cont, PADRAW* pad)
 	short rightX = GetControllerButtonState(cont, g_controller_mapping.gc_axis_right_x);
 	short rightY = GetControllerButtonState(cont, g_controller_mapping.gc_axis_right_y);
 	
-	*(unsigned short*)pad->buttons = ret;
+	*(u_short*)pad->buttons = ret;
 
 	// map to range
 	pad->analog[0] = (rightX / 256) + 128;
@@ -310,142 +415,131 @@ unsigned short UpdateKeyboardInput()
 	unsigned short ret = 0xFFFF;
 
 	//Not initialised yet
-	if (keyboardState == NULL)
+	if (g_sdlKeyboardState == NULL)
 		return ret;
 
 	SDL_PumpEvents();
 
-	if (keyboardState[g_keyboard_mapping.kc_square])//Square
+	if (g_sdlKeyboardState[g_keyboard_mapping.kc_square])//Square
 		ret &= ~0x8000;
 
-	if (keyboardState[g_keyboard_mapping.kc_circle])//Circle
+	if (g_sdlKeyboardState[g_keyboard_mapping.kc_circle])//Circle
 		ret &= ~0x2000;
 
-	if (keyboardState[g_keyboard_mapping.kc_triangle])//Triangle
+	if (g_sdlKeyboardState[g_keyboard_mapping.kc_triangle])//Triangle
 		ret &= ~0x1000;
 
-	if (keyboardState[g_keyboard_mapping.kc_cross])//Cross
+	if (g_sdlKeyboardState[g_keyboard_mapping.kc_cross])//Cross
 		ret &= ~0x4000;
 
-	if (keyboardState[g_keyboard_mapping.kc_l1])//L1
+	if (g_sdlKeyboardState[g_keyboard_mapping.kc_l1])//L1
 		ret &= ~0x400;
 
-	if (keyboardState[g_keyboard_mapping.kc_l2])//L2
+	if (g_sdlKeyboardState[g_keyboard_mapping.kc_l2])//L2
 		ret &= ~0x100;
 
-	if (keyboardState[g_keyboard_mapping.kc_l3])//L3
+	if (g_sdlKeyboardState[g_keyboard_mapping.kc_l3])//L3
 		ret &= ~0x2;
 
-	if (keyboardState[g_keyboard_mapping.kc_r1])//R1
+	if (g_sdlKeyboardState[g_keyboard_mapping.kc_r1])//R1
 		ret &= ~0x800;
 
-	if (keyboardState[g_keyboard_mapping.kc_r2])//R2
+	if (g_sdlKeyboardState[g_keyboard_mapping.kc_r2])//R2
 		ret &= ~0x200;
 
-	if (keyboardState[g_keyboard_mapping.kc_r3])//R3
+	if (g_sdlKeyboardState[g_keyboard_mapping.kc_r3])//R3
 		ret &= ~0x4;
 	
-	if (keyboardState[g_keyboard_mapping.kc_dpad_up])//UP
+	if (g_sdlKeyboardState[g_keyboard_mapping.kc_dpad_up])//UP
 		ret &= ~0x10;
 
-	if (keyboardState[g_keyboard_mapping.kc_dpad_down])//DOWN
+	if (g_sdlKeyboardState[g_keyboard_mapping.kc_dpad_down])//DOWN
 		ret &= ~0x40;
 
-	if (keyboardState[g_keyboard_mapping.kc_dpad_left])//LEFT
+	if (g_sdlKeyboardState[g_keyboard_mapping.kc_dpad_left])//LEFT
 		ret &= ~0x80;
 
-	if (keyboardState[g_keyboard_mapping.kc_dpad_right])//RIGHT
+	if (g_sdlKeyboardState[g_keyboard_mapping.kc_dpad_right])//RIGHT
 		ret &= ~0x20;
 
-	if (keyboardState[g_keyboard_mapping.kc_select])//SELECT
+	if (g_sdlKeyboardState[g_keyboard_mapping.kc_select])//SELECT
 		ret &= ~0x1;
 
-	if (keyboardState[g_keyboard_mapping.kc_start])//START
+	if (g_sdlKeyboardState[g_keyboard_mapping.kc_start])//START
 		ret &= ~0x8;
 
 	return ret;
 }
 
-extern int activeControllers;
+extern int g_activeKeyboardControllers;
 
-void PsyX_InternalPadUpdates()
+void PsyX_Pad_InternalPadUpdates()
 {
-	if (g_padCommStarted == 0)
+	if (g_padCommEnable == 0)
 		return;
 	
 	unsigned short kbInputs = UpdateKeyboardInput();
 
-	//Update pad
-	if (SDL_NumJoysticks() > 0)
+	for (int i = 0; i < MAX_CONTROLLERS; i++)
 	{
-		for (int i = 0; i < MAX_CONTROLLERS; i++)
-		{
-			if (padHandle[i] != NULL)
-			{
-				PADRAW* pad = (PADRAW*)padData[i];
-				
-				UpdateGameControllerInput(padHandle[i], pad);
+		PsyXController& controller = g_controllers[i];
 
+		if (controller.padData)
+		{
+			PADRAW* pad = (PADRAW*)controller.padData;
+
+			PsyX_Pad_UpdateGameControllerInput(controller.gc, pad);
+
+			if (i == 0)	// Update keyboard for PAD 1
+			{
 				pad->status = 0;	// PadStateStable?
 
 				// switch to analog state
-				if((pad->analog[0] == 255 || 
-					pad->analog[1] == 255 || 
-					pad->analog[2] == 255 || 
-					pad->analog[3] == 255) && 
+				if ((pad->analog[0] == 255 ||
+					pad->analog[1] == 255 ||
+					pad->analog[2] == 255 ||
+					pad->analog[3] == 255) &&
 					pad->id == 0x41)
 				{
 					eprintf("Switched controller type to ANALOG\n");
 					pad->id = 0x73;
 				}
-
-				if (activeControllers & 0x1)
+				
+				if(g_activeKeyboardControllers & 0x1)
 				{
 					// switch state
-					if(kbInputs != 0xFFFF && pad->id == 0x73)
+					if (kbInputs != 0xFFFF && pad->id == 0x73)
 					{
 						eprintf("Switched controller type to SIMPLE\n");
 						pad->id = 0x41;
+						pad->analog[0] = 127;	// TODO: mouse?
+						pad->analog[1] = 127;
+						pad->analog[2] = 127;
+						pad->analog[3] = 127;
 					}
-					
-					*(unsigned short*)pad->buttons &= kbInputs;
+
+					*(u_short*)pad->buttons &= kbInputs;
+				}
+			}
+			else if (i == 1)	// Update keyboard for PAD 2
+			{
+				if (g_activeKeyboardControllers & 0x2)
+				{
+					pad->status = 0;	// PadStateStable?
+					pad->id = 0x41;
+					pad->analog[0] = 127;
+					pad->analog[1] = 127;
+					pad->analog[2] = 127;
+					pad->analog[3] = 127;
+
+					*(u_short*)pad->buttons &= kbInputs;
 				}
 			}
 		}
 	}
-	else
-	{
-		//Update keyboard
-		if (padData[0] != NULL && activeControllers & 0x1)
-		{
-			PADRAW* pad = (PADRAW*)padData[0];
-
-			pad->status = 0;	// PadStateStable?
-			pad->id = 0x41;
-			*(unsigned short*)pad->buttons = kbInputs;
-			pad->analog[0] = 127;	// TODO: mouse?
-			pad->analog[1] = 127;
-			pad->analog[2] = 127;
-			pad->analog[3] = 127;
-		}
-	}
-
-	//Update keyboard
-	if (padData[1] != NULL && activeControllers & 0x2)
-	{
-		PADRAW* pad = (PADRAW*)padData[1];
-
-		pad->status = 0;	// PadStateStable?
-		pad->id = 0x41;
-		*(unsigned short*)pad->buttons = kbInputs;
-		pad->analog[0] = 128;
-		pad->analog[1] = 128;
-		pad->analog[2] = 128;
-		pad->analog[3] = 128;
-	}
 
 #if defined(__ANDROID__)
 	///@TODO SDL_NumJoysticks always reports > 0 for some reason on Android.
-	((unsigned short*)padData[0])[1] = UpdateKeyboardInput();
+	((unsigned short*)g_padData[0])[1] = UpdateKeyboardInput();
 #endif
 }

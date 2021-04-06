@@ -34,9 +34,6 @@ SDL_Window* g_window = NULL;
 int g_swapInterval = SWAP_INTERVAL;
 int g_enableSwapInterval = 1;
 
-extern SDL_GameController* padHandle[];
-extern unsigned char* padData[];
-
 PsyXKeyboardMapping g_keyboard_mapping;
 PsyXControllerMapping g_controller_mapping;
 
@@ -558,12 +555,15 @@ void PsyX_Sys_DoDebugKeys(int nKey, bool down); // forward decl
 void PsyX_Sys_DoDebugMouseMotion(int x, int y);
 void GR_ResetDevice();
 
+extern void PsyX_Pad_Event_ControllerRemoved(Sint32 deviceId);
+extern void PsyX_Pad_Event_ControllerAdded(Sint32 deviceId);
+
 void PsyX_Exit();
 
 GameDebugKeysHandlerFunc gameDebugKeys = NULL;
 GameDebugMouseHandlerFunc gameDebugMouse = NULL;
 GameOnTextInputHandler gameOnTextInput = NULL;
-int activeControllers = 0x1;
+int g_activeKeyboardControllers = 0x1;
 
 void PsyX_Sys_DoPollEvent()
 {
@@ -573,10 +573,10 @@ void PsyX_Sys_DoPollEvent()
 		switch (event.type)
 		{
 			case SDL_CONTROLLERDEVICEADDED:
-				padHandle[event.jbutton.which] = SDL_GameControllerOpen(event.cdevice.which);
+				PsyX_Pad_Event_ControllerAdded(event.cdevice.which);
 				break;
 			case SDL_CONTROLLERDEVICEREMOVED:
-				SDL_GameControllerClose(padHandle[event.cdevice.which]);
+				PsyX_Pad_Event_ControllerRemoved(event.cdevice.which);
 				break;
 			case SDL_QUIT:
 				PsyX_Exit();
@@ -624,7 +624,7 @@ void PsyX_Sys_DoPollEvent()
 				if(gameOnTextInput)
 					(gameOnTextInput)(event.text.text);
 				break;
-			}
+			}			
 		}
 	}
 }
@@ -753,13 +753,13 @@ void PsyX_Sys_DoDebugKeys(int nKey, bool down)
 			break;
 		case SDL_SCANCODE_F4:
 
-			activeControllers++;
-			activeControllers = activeControllers % 4;
+			g_activeKeyboardControllers++;
+			g_activeKeyboardControllers = g_activeKeyboardControllers % 4;
 
-			if (activeControllers == 0)
-				activeControllers++;
+			if (g_activeKeyboardControllers == 0)
+				g_activeKeyboardControllers++;
 
-			eprintwarn("Active keyboard controller: %d\n", activeControllers);
+			eprintwarn("Active keyboard controller: %d\n", g_activeKeyboardControllers);
 			break;
 		case SDL_SCANCODE_F5:
 			g_pgxpTextureCorrection ^= 1;
@@ -777,7 +777,7 @@ void PsyX_UpdateInput()
 	// also poll events here
 	PsyX_Sys_DoPollEvent();
 
-	PsyX_InternalPadUpdates();
+	PsyX_Pad_InternalPadUpdates();
 }
 
 uint PsyX_CalcFPS()
