@@ -563,7 +563,9 @@ void PsyX_Exit();
 GameDebugKeysHandlerFunc gameDebugKeys = NULL;
 GameDebugMouseHandlerFunc gameDebugMouse = NULL;
 GameOnTextInputHandler gameOnTextInput = NULL;
+
 int g_activeKeyboardControllers = 0x1;
+int g_altKeyState = 0;
 
 void PsyX_Sys_DoPollEvent()
 {
@@ -602,6 +604,24 @@ void PsyX_Sys_DoPollEvent()
 			case SDL_KEYUP:
 			{
 				int nKey = event.key.keysym.scancode;
+
+				if (nKey == SDL_SCANCODE_LALT || nKey == SDL_SCANCODE_RALT)
+				{
+					g_altKeyState = (event.type == SDL_KEYDOWN);
+				}
+				else if (nKey == SDL_SCANCODE_RETURN)
+				{
+					if (g_altKeyState && event.type == SDL_KEYDOWN)
+					{
+						bool IsFullscreen = SDL_GetWindowFlags(g_window) & SDL_WINDOW_FULLSCREEN;
+
+						SDL_SetWindowFullscreen(g_window, IsFullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
+
+						SDL_GetWindowSize(g_window, &g_windowWidth, &g_windowHeight);
+						GR_ResetDevice();
+					}
+					break;
+				}
 
 				// lshift/right shift
 				if (nKey == SDL_SCANCODE_RSHIFT)
@@ -767,7 +787,6 @@ void PsyX_Sys_DoDebugKeys(int nKey, bool down)
 		case SDL_SCANCODE_F6:
 			g_pgxpZBuffer ^= 1;
 			break;
-
 		}
 	}
 }
@@ -777,7 +796,8 @@ void PsyX_UpdateInput()
 	// also poll events here
 	PsyX_Sys_DoPollEvent();
 
-	PsyX_Pad_InternalPadUpdates();
+	if(!g_altKeyState)
+		PsyX_Pad_InternalPadUpdates();
 }
 
 uint PsyX_CalcFPS()
