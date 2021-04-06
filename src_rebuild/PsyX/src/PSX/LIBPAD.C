@@ -56,9 +56,9 @@ void PsyX_Pad_Debug_ListControllers()
 		eprintwarn("No SDL haptics found!\n");
 }
 
-void PsyX_Pad_OpenController(Sint32 deviceId, int port)
+void PsyX_Pad_OpenController(Sint32 deviceId, int slot)
 {
-	PsyXController& controller = g_controllers[port];
+	PsyXController& controller = g_controllers[slot];
 
 	if(controller.gc)
 	{
@@ -88,9 +88,9 @@ void PsyX_Pad_OpenController(Sint32 deviceId, int port)
 	}
 }
 
-void PsyX_Pad_CloseController(int port)
+void PsyX_Pad_CloseController(int slot)
 {
-	PsyXController& controller = g_controllers[port];
+	PsyXController& controller = g_controllers[slot];
 
 	SDL_HapticClose(controller.haptic);
 	SDL_GameControllerClose(controller.gc);
@@ -100,17 +100,17 @@ void PsyX_Pad_CloseController(int port)
 	controller.haptic = NULL;
 }
 
-void PsyX_Pad_InitPad(int port, u_char* padData)
+void PsyX_Pad_InitPad(int slot, u_char* padData)
 {
-	PsyXController& controller = g_controllers[port];
+	PsyXController& controller = g_controllers[slot];
 
 	controller.padData = padData;
-	controller.deviceId = g_controllerToSlotMapping[port];
+	controller.deviceId = g_controllerToSlotMapping[slot];
 
 	if(padData)
 	{
 		PADRAW* pad = (PADRAW*)padData;
-		pad->id = port == 0 ? 0x41 : 0xFF;	// since keyboard is a main controller - it's always on
+		pad->id = slot == 0 ? 0x41 : 0xFF;	// since keyboard is a main controller - it's always on
 		pad->buttons[0] = 0xFF;
 		pad->buttons[1] = 0xFF;
 		pad->analog[0] = 128;
@@ -227,12 +227,13 @@ void PadRemoveGun()
 
 int PadGetState(int port)
 {
-	port >>= 4;
+	int mtap = port & 3;
+	int slot = (mtap * 2) + (port >> 4) & 1;
 
-	if(port == 0)
+	if(slot == 0)
 		return PadStateStable;	// keyboard always here
 
-	PsyXController& controller = g_controllers[port];
+	PsyXController& controller = g_controllers[slot];
 	
 	if(controller.gc && SDL_GameControllerGetAttached(controller.gc))
 		return PadStateStable;
@@ -272,9 +273,10 @@ int hapticEffects[MAX_CONTROLLERS] = { -1, -1 };
 
 void PadSetAct(int port, unsigned char* table, int len)
 {
-	port >>= 4;
+	int mtap = port & 3;
+	int slot = (mtap * 2) + (port >> 4) & 1;
 
-	PsyXController& controller = g_controllers[port];
+	PsyXController& controller = g_controllers[slot];
 	
 	if (!controller.haptic)
 		return;
@@ -297,18 +299,18 @@ void PadSetAct(int port, unsigned char* table, int len)
 	if (SDL_HapticEffectSupported(controller.haptic, &eff) != SDL_TRUE)
 		return;
 	
-	if(hapticEffects[port] == -1)
+	if(hapticEffects[slot] == -1)
 	{
-		hapticEffects[port] = SDL_HapticNewEffect(controller.haptic, &eff);
-		if(hapticEffects[port] == -1)
+		hapticEffects[slot] = SDL_HapticNewEffect(controller.haptic, &eff);
+		if(hapticEffects[slot] == -1)
 		{
 			eprintwarn("Warning: Unable to create haptic effect! %s\n", SDL_GetError());
 		}
 	}
 	else
-		SDL_HapticUpdateEffect(controller.haptic, hapticEffects[port], &eff);
+		SDL_HapticUpdateEffect(controller.haptic, hapticEffects[slot], &eff);
 	
-	if (SDL_HapticRunEffect(controller.haptic, hapticEffects[port], 1) != 0)
+	if (SDL_HapticRunEffect(controller.haptic, hapticEffects[slot], 1) != 0)
 	{
 		eprintwarn("Warning: Unable to run haptic effect! %s\n", SDL_GetError());
 	}
@@ -540,6 +542,5 @@ void PsyX_Pad_InternalPadUpdates()
 
 #if defined(__ANDROID__)
 	///@TODO SDL_NumJoysticks always reports > 0 for some reason on Android.
-	((unsigned short*)g_padData[0])[1] = UpdateKeyboardInput();
 #endif
 }
