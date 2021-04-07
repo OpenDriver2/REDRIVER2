@@ -552,7 +552,7 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 	i = 0;
 	while (i < sz)
 	{
-		((ushort*)nybblearray)[i] = SW_SHORT((unsigned char)celldata[i], (unsigned char)celldata[i] >> 4) & 0xf0f;
+		((ushort*)nybblearray)[i] = M_SHRT_2((unsigned char)celldata[i], (unsigned char)celldata[i] >> 4) & 0xf0f;
 		i++;
 	}
 
@@ -573,7 +573,7 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 		{
 			symIndex = ni * 2;
 		spod:
-			sym = SW_SHORT(PVSEncodeTable[symIndex], PVSEncodeTable[symIndex + 1]);
+			sym = M_SHRT_2(PVSEncodeTable[symIndex], PVSEncodeTable[symIndex + 1]);
 		}
 		else
 		{
@@ -688,7 +688,7 @@ void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 		PVSEncodeTable = (unsigned char *)(bp + 0x802);
 		tbp = bp + cell * 2;
 
-		length = SW_SHORT((unsigned char)tbp[2], (unsigned char)tbp[3]) - SW_SHORT((unsigned char)tbp[0], (unsigned char)tbp[1]) & 0xffff;
+		length = M_SHRT_2((unsigned char)tbp[2], (unsigned char)tbp[3]) - M_SHRT_2((unsigned char)tbp[0], (unsigned char)tbp[1]) & 0xffff;
 
 		if (length == 0) 
 		{
@@ -701,7 +701,7 @@ void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 			if (regions_unpacked[source_region] == 158 && cell == 168) 
 				havanaCorruptCellBodge = (GameLevel == 1);
 
-			PVSDecode(output, bp + SW_SHORT((unsigned char)tbp[0], (unsigned char)tbp[1]), length, havanaCorruptCellBodge);
+			PVSDecode(output, bp + M_SHRT_2((unsigned char)tbp[0], (unsigned char)tbp[1]), length, havanaCorruptCellBodge);
 		}
 	}
 	else 

@@ -359,11 +359,10 @@ void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 	SVECTOR* norms;
 	SVECTOR lightsourcevector;
 	SVECTOR colour;
-	VECTOR lightValues;
 	CVECTOR c0;
 	CVECTOR c1;
 	CVECTOR c2;
-	int GT3rgb;
+	u_int GT3rgb;
 
 	if (gTimeOfDay > -1)
 	{
@@ -405,7 +404,7 @@ void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 		if (orW < 1)
 			orW = cp->ap.qw - cp->st.n.orientation[3];
 
-		if ((200 < orY + orW) || (cp->lowDetail != (detail | lightning)))
+		if ((orY + orW > 200) || (cp->lowDetail != (detail | lightning)))
 			doLight = 1;
 
 		if ((gTimeOfDay == 0 || gTimeOfDay == 2) && (cp->id & 0xf) == (CameraCnt & 0xfU))
@@ -415,8 +414,8 @@ void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 
 		if (doLight)
 		{
-			u_int rgbval = combointensity & 0xffffffU | 0x34000000;
-			gte_ldrgb(&rgbval);
+			GT3rgb = combointensity & 0xffffffU | 0x34000000;
+			gte_ldrgb(&GT3rgb);
 
 			cp->ap.qy = cp->st.n.orientation[1];
 			cp->ap.qw = cp->st.n.orientation[3];
@@ -448,7 +447,6 @@ void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 				count--;
 				norms += 3;
 				ppads += 3;
-
 			}
 		}
 
@@ -813,12 +811,12 @@ void plotNewCarModel(CAR_MODEL* car, int palette)
 
 	gte_nccs();
 
-	_pg.primptr = (unsigned char*)current->primptr;
+	_pg.primptr = (u_char*)current->primptr;
 	_pg.intensity = 0;
-	_pg.pciv_clut = (unsigned short*)&civ_clut[1];
-	_pg.damageLevel = (unsigned char*)gTempCarUVPtr;
+	_pg.pciv_clut = (u_short*)&civ_clut[1];
+	_pg.damageLevel = (u_char*)gTempCarUVPtr;
 
-	_pg.ot = (OTTYPE*)(current->ot + 0x1c);
+	_pg.ot = (OTTYPE*)(current->ot + 28);
 
 	gte_strgb(&underIntensity);
 
@@ -872,17 +870,16 @@ void buildNewCars(void)
 // [D] [T]
 void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 {
-	unsigned char ptype;
-	unsigned char clut;
-	unsigned char *polyList;
+	u_char ptype;
+	u_char clut;
+	u_char *polyList;
 	CAR_POLY *cp;
 
 	int newNumPolys;
 
-	int i;
-	int pass;
+	int i, pass;
 
-	if (first != 0) 
+	if (first) 
 		whichCP = 0;
 
 	if (model == NULL || (model->shape_flags & 0xfffffff) > 0x800000)
@@ -896,11 +893,9 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 		car->vlist = (SVECTOR *)model->vertices;
 		car->nlist = (SVECTOR *)model->point_normals;
 
-		pass = 0;
-
-		do {
-			
-			polyList = (unsigned char *)model->poly_block;
+		for (pass = 0; pass < 3; pass++)
+		{
+			polyList = (u_char *)model->poly_block;
 
 			if (pass == 1)
 				car->pFT3 = carPolyBuffer + whichCP;
@@ -924,7 +919,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 					case 18:
 						if (pass == 2)	// F3
 						{
-							cp->vindices = (u_int)polyList[1] | ((u_int)polyList[2] | (u_int)polyList[3] << 8) << 8;
+							cp->vindices = M_INT_4R(polyList[1], polyList[2], polyList[3], 0);
 							cp->originalindex = i;
 
 							newNumPolys++;
@@ -934,12 +929,12 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 					case 19:
 						if (pass == 2)	// F4
 						{
-							cp->vindices = (u_int)polyList[4] | ((u_int)polyList[5] | (u_int)polyList[6] << 8) << 8;
+							cp->vindices = M_INT_4R(polyList[4], polyList[5], polyList[6], 0); 
 							cp->originalindex = i;
 
 							cp = carPolyBuffer + newNumPolys + 1;
 
-							cp->vindices = (u_int)polyList[4] | ((u_int)polyList[6] | (u_int)polyList[7] << 8) << 8;
+							cp->vindices = M_INT_4R(polyList[4], polyList[6], polyList[7], 0);
 							cp->originalindex = i;
 
 							newNumPolys += 2;
@@ -950,9 +945,9 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 						{
 							POLYFT3* pft3 = (POLYFT3*)polyList;
 									
-							cp->vindices = pft3->v0 | (pft3->v1 | pft3->v2 << 8) << 8;
-							cp->clut_uv0 = SW_INT(texture_cluts[pft3->texture_set][pft3->texture_id], *(ushort*)&pft3->uv0);
-							cp->tpage_uv1 = SW_INT(texture_pages[pft3->texture_set], *(ushort*)&pft3->uv1);
+							cp->vindices = M_INT_4R(pft3->v0, pft3->v1, pft3->v2, 0);
+							cp->clut_uv0 = M_INT_2(texture_cluts[pft3->texture_set][pft3->texture_id], *(ushort*)&pft3->uv0);
+							cp->tpage_uv1 = M_INT_2(texture_pages[pft3->texture_set], *(ushort*)&pft3->uv1);
 							cp->uv3_uv2 = *(ushort*)&pft3->uv2;
 							cp->originalindex = i;
 
@@ -964,17 +959,17 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 						{
 							POLYFT4* pft4 = (POLYFT4*)polyList;
 
-							cp->vindices = pft4->v0 | (pft4->v1 | pft4->v2 << 8) << 8;
-							cp->clut_uv0 = SW_INT(texture_cluts[pft4->texture_set][pft4->texture_id], *(ushort *)&pft4->uv0);
-							cp->tpage_uv1 = SW_INT(texture_pages[pft4->texture_set], *(ushort*)&pft4->uv1);
+							cp->vindices = M_INT_4R(pft4->v0, pft4->v1, pft4->v2, 0);
+							cp->clut_uv0 = M_INT_2(texture_cluts[pft4->texture_set][pft4->texture_id], *(ushort *)&pft4->uv0);
+							cp->tpage_uv1 = M_INT_2(texture_pages[pft4->texture_set], *(ushort*)&pft4->uv1);
 							cp->uv3_uv2 = *(ushort*)&pft4->uv2;
 							cp->originalindex = i;
 
 							cp = carPolyBuffer + newNumPolys + 1;
-
-							cp->vindices = pft4->v0 | (pft4->v2 | pft4->v3 << 8) << 8;
-							cp->clut_uv0 = SW_INT(texture_cluts[polyList[1]][polyList[2]], *(ushort*)&pft4->uv0);
-							cp->tpage_uv1 = SW_INT(texture_pages[polyList[1]], *(ushort*)&pft4->uv2);
+						
+							cp->vindices = M_INT_4R(pft4->v0, pft4->v2, pft4->v3, 0);
+							cp->clut_uv0 = M_INT_2(texture_cluts[polyList[1]][polyList[2]], *(ushort*)&pft4->uv0);
+							cp->tpage_uv1 = M_INT_2(texture_pages[polyList[1]], *(ushort*)&pft4->uv2);
 							cp->uv3_uv2 = *(ushort*)&pft4->uv3;
 							cp->originalindex = i;
 
@@ -989,10 +984,10 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 							clut = GetCarPalIndex(pgt3->texture_set);
 							civ_clut[clut][pgt3->texture_id][0] = texture_cluts[pgt3->texture_set][pgt3->texture_id];
 						
-							cp->vindices = pgt3->v0 | (pgt3->v1 | pgt3->v2 << 8) << 8;
-							cp->nindices = pgt3->n0 | (pgt3->n1 | pgt3->n2 << 8) << 8;
-							cp->clut_uv0 = ((int)(clut * 384 + pgt3->texture_id * 12 - 384) >> 1) << 0x10 | *(ushort *)&pgt3->uv0;
-							cp->tpage_uv1 = SW_INT(texture_pages[pgt3->texture_set], *(ushort *)&pgt3->uv1);
+							cp->vindices = M_INT_4R(pgt3->v0, pgt3->v1, pgt3->v2, 0);
+							cp->nindices = M_INT_4R(pgt3->n0, pgt3->n1, pgt3->n2, 0);
+							cp->clut_uv0 = M_INT_2((clut * 384 + pgt3->texture_id * 12 - 384) >> 1, * (ushort*)&pgt3->uv0);
+							cp->tpage_uv1 = M_INT_2(texture_pages[pgt3->texture_set], *(ushort *)&pgt3->uv1);
 							cp->uv3_uv2 = *(ushort *)&pgt3->uv2;
 							cp->originalindex = i;
 
@@ -1007,19 +1002,19 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 							clut = GetCarPalIndex(pgt4->texture_set);
 							civ_clut[clut][pgt4->texture_id][0] = texture_cluts[pgt4->texture_set][pgt4->texture_id];
 
-							cp->vindices = pgt4->v0 | (pgt4->v1 | pgt4->v2 << 8) << 8;
-							cp->nindices = pgt4->n0 | (pgt4->n1 | pgt4->n2 << 8) << 8;
-							cp->clut_uv0 = ((int)(clut * 384 + pgt4->texture_id * 12 - 384) >> 1) << 0x10 | *(ushort*)&pgt4->uv0;
-							cp->tpage_uv1 = SW_INT(texture_pages[pgt4->texture_set], *(ushort*)&pgt4->uv1);
+							cp->vindices = M_INT_4R(pgt4->v0, pgt4->v1, pgt4->v2, 0);
+							cp->nindices = M_INT_4R(pgt4->n0, pgt4->n1, pgt4->n2, 0);
+							cp->clut_uv0 = M_INT_2((clut * 384 + pgt4->texture_id * 12 - 384) >> 1, *(ushort*)&pgt4->uv0);
+							cp->tpage_uv1 = M_INT_2(texture_pages[pgt4->texture_set], *(ushort*)&pgt4->uv1);
 							cp->uv3_uv2 = *(ushort*)&pgt4->uv2;
 							cp->originalindex = i;
 
 							cp = carPolyBuffer + newNumPolys + 1;
 
-							cp->vindices = pgt4->v0 | (pgt4->v2 | pgt4->v3 << 8) << 8;
-							cp->nindices = pgt4->n0 | (pgt4->n2 | pgt4->n3 << 8) << 8;
-							cp->clut_uv0 = ((int)(clut * 384 + pgt4->texture_id * 12 - 384) >> 1) << 0x10 | *(ushort*)&pgt4->uv0;
-							cp->tpage_uv1 = SW_INT(texture_pages[pgt4->texture_set], *(ushort *)&pgt4->uv2);
+							cp->vindices = M_INT_4R(pgt4->v0, pgt4->v2, pgt4->v3, 0);
+							cp->nindices = M_INT_4R(pgt4->n0, pgt4->n2, pgt4->n3, 0);
+							cp->clut_uv0 = M_INT_2((clut * 384 + pgt4->texture_id * 12 - 384) >> 1, *(ushort*)&pgt4->uv0);
+							cp->tpage_uv1 = M_INT_2(texture_pages[pgt4->texture_set], *(ushort *)&pgt4->uv2);
 							cp->uv3_uv2 = *(ushort *)&pgt4->uv3;
 							cp->originalindex = i;
 
@@ -1039,9 +1034,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 				car->numB3 = newNumPolys - whichCP;
 
 			whichCP = newNumPolys;
-
-			pass++;
-		} while (pass < 3);
+		}
 	}
 }
 
@@ -1049,7 +1042,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 void MangleWheelModels(void)
 {
 	UV_INFO tmpUV2;
-	unsigned char tmpUV;
+	u_char tmpUV;
 	int i;
 	u_int v0;
 	u_int v1;
@@ -1058,9 +1051,8 @@ void MangleWheelModels(void)
 	MODEL *m;
 	int j;
 
-	i = 0;
-	do {
-
+	for (i = 0; i < 3; i++)
+	{
 		if (i == 1)
 			m = gFastWheelModelPtr;
 		else if (i == 2)
@@ -1107,16 +1099,16 @@ void MangleWheelModels(void)
 		*(u_int *)&src[3].uv2 = v2;
 		src[3].color = src[6].color;
 
-		src[2].v0 = 16;
-		src[2].v1 = 17;
 		src[2].v2 = 23;
 		src[2].v3 = 22;
 		src[3].v0 = 21;
 		src[3].v1 = 20;
 		src[3].v2 = 19;
 		src[3].v3 = 18;
+		src[2].v1 = 17;
+		src[2].v0 = 16;
 
-		tmpUV = (src->uv0.u >> 1) + (src->uv2.u >> 1);
+		tmpUV = (src->uv0.u + src->uv2.u) / 2;
 		src[3].uv3.u = tmpUV;
 		src[3].uv2.u = tmpUV;
 		src[3].uv1.u = tmpUV;
@@ -1126,7 +1118,7 @@ void MangleWheelModels(void)
 		src[2].uv1.u = tmpUV;
 		src[2].uv0.u = tmpUV;
 
-		tmpUV = (src->uv0.v >> 1) + (src->uv2.v >> 1);
+		tmpUV = (src->uv0.v + src->uv2.v) / 2;
 		src[3].uv3.v = tmpUV;
 		src[3].uv2.v = tmpUV;
 		src[3].uv1.v = tmpUV;
@@ -1138,8 +1130,8 @@ void MangleWheelModels(void)
 
 		m->num_polys = 4;
 
-		j = 0;
-		do {
+		for (j = 0; j < 2; j++)
+		{
 			tmpUV2 = src->uv0;
 			
 			src->uv0 = src->uv1;
@@ -1148,7 +1140,7 @@ void MangleWheelModels(void)
 			src->uv3 = tmpUV2;
 
 			src++;
-		} while (++j < 2);
+		}
 
 	} while (++i < 3);
 

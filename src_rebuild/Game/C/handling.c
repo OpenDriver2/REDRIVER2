@@ -1574,7 +1574,7 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 		if (gWeather - 1U < 2)
 			desired_skid = -1;
 		else
-			desired_skid = 11;
+			desired_skid = 7;
 	}
 
 	// play skid sound
@@ -1629,12 +1629,12 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 		if (gWeather - 1U > 1)
 		{
 			if (wnse != 0)
-				desired_wheel = wnse + 12;
+				desired_wheel = wnse + 8;
 			else
 				desired_wheel = -1;
 		}
 		else
-			desired_wheel = 13;
+			desired_wheel = 13 - 4;
 	}
 
 	// play noise sound

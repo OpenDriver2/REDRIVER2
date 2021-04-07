@@ -181,21 +181,21 @@ int CarHasSiren(int index)
 		if (GameLevel == 0)
 		{
 			if (MissionHeader->residentModels[4] == 8)
-				return 0x110;
+				return M_SHRT_2(SOUND_BANK_SFX, 12);
 		}
 		else if (GameLevel == 2)
 		{
 			if (MissionHeader->residentModels[4] == 9)
-				return 0x110;
+				return M_SHRT_2(SOUND_BANK_SFX, 12);
 		}
 		else if (GameLevel == 3)
 		{
 			if (MissionHeader->residentModels[4] == 10)
-				return 0x110;
+				return M_SHRT_2(SOUND_BANK_SFX, 12);
 		}
 	}
 
-	return (MissionHeader->residentModels[index] == 0) << 9;
+	return M_SHRT_2((MissionHeader->residentModels[index] == 0) ? SOUND_BANK_VOICES : 0, 0);
 }
 
 // [D] [T]
@@ -322,18 +322,15 @@ void LoadLevelSFX(int missionNum)
 
 	// init sound bank memory
 	LoadSoundBankDynamic(NULL, 0, 0);
-	i = 0;
 
 	// load car banks
-	do {
+	for (i = 0; i < 3; i++)
 		LoadBankFromLump(SOUND_BANK_CARS, MapCarIndexToBank(i));
-		i++;
-	} while (i < 3);
 
 	ShowLoading();
 
 	// load footsteps, car effects etc
-	LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_MENU);
+	//LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_MENU);
 	LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_SFX);
 	LoadBankFromLump(SOUND_BANK_TANNER, SBK_ID_TANNER );
 
@@ -558,6 +555,7 @@ void StartPlayerCarSounds(int playerId, int model, VECTOR* pos)
 	if (siren)
 	{
 		channel = playerId * 3 + 2;
+		// SOUND_BANK_SFX or SOUND_BANK_VOICES
 		Start3DSoundVolPitch(channel, (siren & 0xff00) >> 8, siren & 0xff, pos->vx, pos->vy, pos->vz, -10000, 129);
 	}
 
@@ -1448,19 +1446,19 @@ void CollisionSound(char player_id, CAR_DATA* cp, int impact, int car_car)
 	if (player[playerid].crash_timer)
 		return;
 
-	sample = 8;
+	sample = 4;
 	phrase = 0;
 
 	if (car_car == 0)
 	{
 		if (impact > 780)
 		{
-			sample = 10;
+			sample = 6;
 			phrase = 1;
 		}
 		else if (impact > 350)
 		{
-			sample = 9;
+			sample = 5;
 			phrase = 2;
 		}
 	}
@@ -1468,12 +1466,12 @@ void CollisionSound(char player_id, CAR_DATA* cp, int impact, int car_car)
 	{
 		if (impact > 900)
 		{
-			sample = 10;
+			sample = 6;
 			phrase = 1;
 		}
 		else if (impact > 380)
 		{
-			sample = 9;
+			sample = 5;
 			phrase = 2;
 		}
 	}

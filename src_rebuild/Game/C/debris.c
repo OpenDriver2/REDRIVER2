@@ -3725,7 +3725,7 @@ void DoThunder(void)
 		ThunderTimer--;
 		
 		if(ThunderTimer == 0) 
-			StartSound(-1, SOUND_BANK_SFX, 12, -ThunderDistance, (rand() % 2048) + 3072);
+			StartSound(-1, SOUND_BANK_SFX, 8, -ThunderDistance, (rand() % 2048) + 3072);
 	}
 }
 
