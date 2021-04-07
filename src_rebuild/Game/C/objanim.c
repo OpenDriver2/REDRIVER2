@@ -113,12 +113,13 @@ int Level_NumAnimatedObjects[] = {
 // sound ids for SOUND_BANK_SFX
 SMASHABLE_OBJECT smashable[] =
 {
-	{ 0, "CONE_TASTIC", 1, 0, 800 },
+	{ 0, "", 1, 0, 800 },		// default
+	{ 0, "CONE_TASTIC", 1, 0, 1400 },
+	{ 0, "CONE1_TASTIC", 1, 0, 1400 },
+	{ 0, "CONE2_TASTIC", 1, 0, 1400 },
 	{ 0, "BOX_TASTIC", 0, -6000, 4096 },
 	{ 0, "BOX2_TASTIC", 0, -6000, 4096 },
 	{ 0, "BOX3_TASTIC", 0, -6000, 4096 },
-	{ 0, "CONE1_TASTIC", 1, 0, 800 },
-	{ 0, "CONE2_TASTIC", 1, 0, 800 },
 	{ 0, "BIN_TASTIC", 3, -6500, 3200 },
 	{ 0, "BARRIER_TASTIC", 3, -6500, 3200 },
 	{ 0, "BARRIER1_TASTIC", 3, -6500, 3200 },
