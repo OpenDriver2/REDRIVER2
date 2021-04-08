@@ -1807,7 +1807,7 @@ int redriver2_main(int argc, char** argv)
 
 	char* NTSCScreenNames[4] = {		// [A] don't show publisher logo
 	//	"GFX\\SPLASH2.TIM",
-	//	"GFX\\SPLASH3.TIM",
+		//"GFX\\SPLASH3.TIM",
 		"GFX\\SPLASH1N.TIM",
 		NULL
 	};
@@ -1846,6 +1846,22 @@ int redriver2_main(int argc, char** argv)
 	InitSound();
 	
 #ifndef PSX
+	// verify installation
+	if (!FileExists("DATA\\FEFONT.BNK") || !FileExists("GFX\\FONT2.FNT"))
+	{
+		char str[320];
+		sprintf(str, "Cannot initialize REDRIVER2\n\nGame files not found by folder '%s'\n", gDataFolder);
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR!", str, NULL);
+		return -1;
+	}
+
+	// init language
+	if (!InitStringMng())
+	{
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR!", "Unable to load language files!\n\nSee console for details", NULL);
+		return -1;
+	}
+	
 	if (argc <= 1)
 #endif
 	{

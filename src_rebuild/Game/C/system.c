@@ -247,44 +247,45 @@ void DoCDRetry(void)
 	}
 }
 
+#define USE_PC_FILESYSTEM 1		// PC filesystem is prioritized over CD
+#define USE_CD_FILESYSTEM 0
+
 // loads whole file into buffer
 // [D] [T]
 int Loadfile(char* name, char* addr)
 {
+	int nread;
+	unsigned char res[8];
 	char namebuffer[64];
-#ifndef PSX
+
+#if USE_PC_FILESYSTEM
 	int fileSize;
 
 	sprintf(namebuffer, "%s%s", gDataFolder, name);
 	FS_FixPathSlashes(namebuffer);
 
 	FILE* fptr = fopen(namebuffer, "rb");
-	if (!fptr)
+	if (fptr)
 	{
-		char errPrint[1024];
-		sprintf(errPrint, "Cannot open '%s'\n", namebuffer);
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
-		return 0;
+		fseek(fptr, 0, SEEK_END);
+		fileSize = ftell(fptr);
+
+		fseek(fptr, 0, SEEK_SET);
+		int numRead = fread(addr, 1, fileSize, fptr);
+
+		fclose(fptr);
+
+		//SDL_Delay(200); // [A] PSX-like CD delay
+
+		return numRead;
 	}
+#endif
 
-	fseek(fptr, 0, SEEK_END);
-	fileSize = ftell(fptr);
-
-	fseek(fptr, 0, SEEK_SET);
-	int numRead = fread(addr, 1, fileSize, fptr);
-
-	fclose(fptr);
-
-	//SDL_Delay(200); // [A] PSX-like CD delay
-
-	return numRead;
-#else // PSX
-	int nread;
-	unsigned char res[8];
-
+#if USE_CD_FILESYSTEM
 	sprintf(namebuffer, "\\%s%s;1", gDataFolder, name);
 
 	do {
+		// FIXME: this is very slow
 		nread = CdReadFile(namebuffer, (u_long*)addr, 0);
 
 		if (nread != 0)
@@ -293,13 +294,62 @@ int Loadfile(char* name, char* addr)
 				return nread;
 		}
 
-		if (CdDiskReady(0) != 2)
+		if (CdDiskReady(0) != CdlComplete)
 			DoCDRetry();
 
 	} while (true);
 
 	return 0;
-#endif // PSX
+#elif USE_PC_FILESYSTEM
+
+	// if PC filesystem exclusively is used - throw the message
+	
+	char errPrint[1024];
+	sprintf(errPrint, "Cannot open '%s'\n", namebuffer);
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
+	
+	return 0;
+#endif
+}
+
+// [D] [T]
+int FileExists(char* filename)
+{
+	char namebuffer[128];
+	
+	if (*filename == '\0')
+		return 0;
+
+#if USE_PC_FILESYSTEM
+	sprintf(namebuffer, "%s%s", gDataFolder, filename);
+	FS_FixPathSlashes(namebuffer);
+
+	FILE* fp = fopen(namebuffer, "rb");
+	if (fp)
+	{
+		fclose(fp);
+		return 1;
+	}
+#endif // USE_PC_FILESYSTEM
+
+#if USE_CD_FILESYSTEM
+	int retries;
+	CdlFILE cdfile;
+
+	sprintf(namebuffer, "\\%s%s;1", gDataFolder, filename);
+
+	retries = 9;
+	do {
+
+		if (CdSearchFile(&cdfile, namebuffer) != NULL)
+			return 1;
+
+		retries--;
+		DoCDRetry();
+	} while (retries >= 0);
+#endif // USE_CD_FILESYSTEM
+
+	return 0;
 }
 
 // loads file partially into buffer
@@ -307,38 +357,34 @@ int Loadfile(char* name, char* addr)
 int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 {
 	char namebuffer[64];
-#ifndef PSX
+	
+#if USE_PC_FILESYSTEM
 	int fileSize;
 
 	sprintf(namebuffer, "%s%s", gDataFolder, name);
 	FS_FixPathSlashes(namebuffer);
 
 	FILE* fptr = fopen(namebuffer, "rb");
-	if (!fptr)
+	if (fptr)
 	{
-		char errPrint[1024];
-		sprintf(errPrint, "Cannot open '%s'\n", namebuffer);
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
-		return 0;
+		fseek(fptr, 0, SEEK_END);
+		fileSize = ftell(fptr);
+
+		if (loadsize > fileSize)
+			loadsize = fileSize;
+
+		fseek(fptr, offset, SEEK_SET);
+		int numRead = fread(addr, 1, loadsize, fptr);
+
+		fclose(fptr);
+
+		//SDL_Delay(200); // [A] PSX-like CD delay
+
+		return numRead;
 	}
+#endif // USE_PC_FILESYSTEM
 
-	fseek(fptr, 0, SEEK_END);
-	fileSize = ftell(fptr);
-
-	if (loadsize > fileSize)
-		loadsize = fileSize;
-
-	fseek(fptr, offset, SEEK_SET);
-	int numRead = fread(addr, 1, loadsize, fptr);
-
-	fclose(fptr);
-
-	//SDL_Delay(200); // [A] PSX-like CD delay
-
-	return numRead;
-#else // PSX
-
-	char* pcVar2;
+#if USE_CD_FILESYSTEM
 	int first;
 	int i;
 	int sector;
@@ -360,24 +406,26 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 		}
 	}
 
-	sector = offset / 2048 + CdPosToInt((CdlLOC*)&currentfileinfo);
+	// skip sectors
+	sector = offset / 2048 + CdPosToInt(&currentfileinfo.pos);
 	nsectors = offset & 0x7ff;
 	toload = loadsize;
 
-	if (nsectors != 0)
+	if (nsectors)
 	{
 		CdIntToPos(sector, &pos);
 		do
 		{
-			if (CdDiskReady(0) != 2)
+			if (CdDiskReady(0) != CdlComplete)
 				DoCDRetry();
-		} while (CdControlB(CdlSetloc, (u_char*)&pos, 0) == 0 ||
-			CdRead(1, (u_long*)sectorbuffer, CdlModeSpeed) == 0 ||
-			CdReadSync(0, result) != 0);
+		} while (CdControlB(CdlSetloc, (u_char*)&pos, NULL) == 0 ||
+				CdRead(1, (u_long*)sectorbuffer, CdlModeSpeed) == 0 ||
+				CdReadSync(0, result) != 0);
 
 		if (loadsize <= 2048 - nsectors)
 		{
-			while (nsectors < nsectors + loadsize)
+			int cnt = nsectors + loadsize;
+			while (nsectors < cnt)
 			{
 				*addr++ = sectorbuffer[nsectors++];
 			}
@@ -389,51 +437,53 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 		sector++;
 
 		while (nsectors < 2048)
-		{
 			*addr++ = sectorbuffer[nsectors++];
-		}
 	}
 
 	first = toload / 2048;
 
-	if (first != 0)
+	// load sectors
+	if (first)
 	{
 		CdIntToPos(sector, &pos);
 		sector = sector + first;
 
 		do
 		{
-			if (CdDiskReady(0) != 2)
+			if (CdDiskReady(0) != CdlComplete)
 				DoCDRetry();
-		} while (CdControlB(CdlSetloc, (u_char*)&pos, 0) == 0 ||
-			CdRead(first, (u_long*)addr, CdlModeSpeed) == 0 ||
-			CdReadSync(0, result) != 0);
+		} while (CdControlB(CdlSetloc, (u_char*)&pos, NULL) == 0 ||
+				CdRead(first, (u_long*)addr, CdlModeSpeed) == 0 ||
+				CdReadSync(0, result) != 0);
 
 		addr += first * 2048;
 		toload -= first * 2048;
 	}
 
+	// cap
 	if (toload > 0)
 	{
 		CdIntToPos(sector, &pos);
 
 		do
 		{
-			if (CdDiskReady(0) != 2)
+			if (CdDiskReady(0) != CdlComplete)
 				DoCDRetry();
-		} while (CdControlB(2, (u_char*)&pos, 0) == 0 ||
-			CdRead(1, (u_long*)sectorbuffer, 0x80) == 0 ||
-			CdReadSync(0, result) != 0);
+		} while (CdControlB(CdlSetloc, (u_char*)&pos, NULL) == 0 ||
+				CdRead(1, (u_long*)sectorbuffer, CdlModeSpeed) == 0 ||
+				CdReadSync(0, result) != 0);
 		i = 0;
-
 		while (i < toload)
-		{
 			*addr++ = sectorbuffer[i++];
-
-		}
 	}
+
 	return loadsize;
-#endif // PSX
+#elif USE_PC_FILESYSTEM
+	char errPrint[1024];
+	sprintf(errPrint, "Cannot open '%s'\n", namebuffer);
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
+	return 0;
+#endif
 }
 
 
@@ -510,7 +560,6 @@ void sector_ready(unsigned char intr, unsigned char* result)
 	}
 }
 
-#ifdef PSX
 // [D] [T]
 void loadsectors(char* addr, int sector, int nsectors)
 {
@@ -524,7 +573,7 @@ void loadsectors(char* addr, int sector, int nsectors)
 	current_address = addr;
 
 	CdIntToPos(sector, &pos);
-	CdControlF(CdlReadS, (unsigned char*)&pos);
+	CdControlF(CdlReadS, (u_char*)&pos);
 	CdDataCallback(data_ready);
 	CdReadyCallback(sector_ready);
 
@@ -533,7 +582,9 @@ void loadsectors(char* addr, int sector, int nsectors)
 
 	ShowLoading();
 }
-#else
+
+#if USE_PC_FILESYSTEM
+
 // It has to be this way
 void loadsectorsPC(char* filename, char* addr, int sector, int nsectors)
 {
@@ -541,25 +592,30 @@ void loadsectorsPC(char* filename, char* addr, int sector, int nsectors)
 	strcpy(namebuffer, filename);
 	FS_FixPathSlashes(namebuffer);
 
-
 	FILE* fp = fopen(namebuffer, "rb");
 
-	if (!fp)
+	if (fp)
 	{
-		char errPrint[512];
-		sprintf(errPrint, "loadsectorsPC: failed to open '%s'\n", namebuffer);
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
+		fseek(fp, sector * CDSECTOR_SIZE, SEEK_SET);
+		fread(addr, CDSECTOR_SIZE, nsectors, fp);
+
+		fclose(fp);
+
+		ShowLoading();
 		return;
 	}
 
-	fseek(fp, sector * CDSECTOR_SIZE, SEEK_SET);
-	fread(addr, CDSECTOR_SIZE, nsectors, fp);
-
-	fclose(fp);
-
-	ShowLoading();
+#if USE_CD_FILESYSTEM
+	// try using CD
+	loadsectors(addr, sector, nsectors);
+#else
+	char errPrint[512];
+	sprintf(errPrint, "loadsectorsPC: failed to open '%s'\n", namebuffer);
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
+#endif // USE_CD_FILESYSTEM
 }
-#endif // PSX
+
+#endif // USE_PC_FILESYSTEM
 
 // [D] [T]
 void EnableDisplay(void)
@@ -839,9 +895,9 @@ void SetCityType(CITYTYPE type)
 	lastcity = GameLevel;
 	lasttype = type;
 
-#ifndef PSX
-	// PC code
+#if USE_PC_FILESYSTEM
 
+	// PC code
 	switch (type)
 	{
 		case CITYTYPE_NIGHT:
@@ -863,29 +919,26 @@ void SetCityType(CITYTYPE type)
 
 	FILE* levFp = fopen(filename, "rb");
 
-	if (!levFp)
+	if (levFp)
 	{
-		char errPrint[1024];
-		sprintf(errPrint, "SetCityType: cannot open level '%s'\n", filename);
+		// store level name as it's required by loadsectorsPC
+		strcpy(g_CurrentLevelFileName, filename);
+
+		citystart[GameLevel] = 0;
+
+		// skip LUMP type (37) and size, it's already hardcoded
+		fseek(levFp, 8, SEEK_CUR);
+
+		fread(citylumps[GameLevel], 1, sizeof(citylumps[GameLevel]), levFp);
+
+		fclose(levFp);
 	
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
 		return;
 	}
+#endif // USE_PC_FILESYSTEM
 
-	// store level name as it's required by loadsectorsPC
-	strcpy(g_CurrentLevelFileName, filename);
-
-	citystart[GameLevel] = 0;
-
-	// skip LUMP type (37) and size, it's already hardcoded
-	fseek(levFp, 8, SEEK_CUR);
-
-	fread(citylumps[GameLevel], 1, sizeof(citylumps[GameLevel]), levFp);
-
-	fclose(levFp);
-#else
+#if USE_CD_FILESYSTEM
 	CdlFILE cdfile;
-	XYPAIR* info;
 	int i;
 	int sector;
 	int* data;
@@ -919,11 +972,11 @@ void SetCityType(CITYTYPE type)
 	do {
 		do {
 
-			if (CdDiskReady(0) != 2)
+			if (CdDiskReady(0) != CdlComplete)
 				DoCDRetry();
 
-		} while (CdControlB(2, (u_char*)&cdfile, 0) == 0 ||
-				 CdRead(1, (u_long*)_OT1, 0x80) == 0);
+		} while (CdControlB(CdlSetloc, (u_char*)&cdfile, 0) == 0 ||
+				 CdRead(1, (u_long*)_OT1, CdlModeSpeed) == 0);
 
 	} while (CdReadSync(0, result) != 0);
 
@@ -936,47 +989,13 @@ void SetCityType(CITYTYPE type)
 
 		data += 2;
 	}
-#endif // PSX
-}
-
-// [D] [T]
-int FileExists(char* filename)
-{
-	if(*filename == '\0')
-		return 0;
+#elif USE_PC_FILESYSTEM
 	
-#ifdef PSX
-	int retries;
-	CdlFILE cdfile;
-	char namebuffer[128];
+	char errPrint[1024];
+	sprintf(errPrint, "SetCityType: cannot open level '%s'\n", filename);
 
-	sprintf(namebuffer, "\\%s%s;1", gDataFolder, filename);
-
-	retries = 9;
-	do {
-
-		if (CdSearchFile(&cdfile, namebuffer) != NULL)
-			return 1;
-
-		retries--;
-		DoCDRetry();
-	} while (retries >= 0);
-
-	return 0;
-#else
-	char namebuffer[128];
-
-	sprintf(namebuffer, "%s%s", gDataFolder, filename);
-	FS_FixPathSlashes(namebuffer);
-
-	FILE* fp = fopen(namebuffer, "rb");
-	if (fp)
-	{
-		fclose(fp);
-		return 1;
-	}
-
-	return 0;
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
+	
 #endif // PSX
 }
 
