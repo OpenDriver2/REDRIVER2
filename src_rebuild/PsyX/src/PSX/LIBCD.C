@@ -125,6 +125,10 @@ CdlFILE* CdSearchFile(CdlFILE* fp, char* name)
 		return NULL;
 	}
 
+#ifdef _DEBUG
+	eprintf("CdSearchFile: %s\n", name);
+#endif
+	
 	dirLevel = 0;
 	
 	// go to sector 22
@@ -167,7 +171,7 @@ CdlFILE* CdSearchFile(CdlFILE* fp, char* name)
 			fp->pos.sector = sector.addr[2];
 
 #if _DEBUG
-			eprintf("Found %s\n", name);
+			eprintf("Found\n");
 #endif
 			return fp;
 		}
@@ -268,6 +272,12 @@ int CdControlB(u_char com, u_char* param, u_char* result)
 		//TODO Set channel
 		break;
 	}
+	case CdlSetmode:
+	{
+		PSYX_UNIMPLEMENTED();
+		ret = 1;
+		break;
+	}
 	default:
 		eprinterr("Unhandled command 0x%02X!\n", com);
 		break;
@@ -281,6 +291,8 @@ int CdControlB(u_char com, u_char* param, u_char* result)
 
 int CdControlF(u_char com, u_char * param)
 {
+	// TODO: CdControlF() waits for the previous command to complete execution before issuing the new command
+	
 	CD_com = com;
 
 	switch (com)
@@ -300,6 +312,11 @@ int CdControlF(u_char com, u_char * param)
 	case CdlGetlocP:
 		readMode = RM_XA_AUDIO;
 		break;
+	case CdlReadS:
+	{
+		PSYX_UNIMPLEMENTED();
+		break;
+	}
 	default:
 		eprinterr("Unhandled command 0x%02X!\n", com);
 		break;
@@ -341,41 +358,52 @@ int CdRead(int sectors, u_long* buf, int mode)
 
 int CdReadSync(int mode, u_char* result)
 {
-	for (int i = 0; i < COMMAND_QUEUE_SIZE; i++)
+	int i;
+
+	for (i = 0; i < COMMAND_QUEUE_SIZE; i++)
 	{
 		if (comQueue[i].processed == 0)
 		{
-			if (readMode == RM_DATA)
+			do
 			{
-				struct Sector sector;
-				fread(&sector, sizeof(struct Sector), 1, g_imageFp);
+				if (readMode == RM_DATA)
+				{
+					Sector sector;
 
-				memcpy(comQueue[i].p, &sector.data[0], sizeof(sector.data));
-				comQueue[i].p += sizeof(sector.data);
-			}
-			else if (readMode == RM_XA_AUDIO)
-			{
-				struct AudioSector sector;
-				fread(&sector, sizeof(struct AudioSector), 1, g_imageFp);
+					fread(&sector, sizeof(struct Sector), 1, g_imageFp);
 
-				memcpy(comQueue[i].p, &sector.data[0], sizeof(sector.data));
-				comQueue[i].p += sizeof(sector.data);
-			}
-			else
-			{
-				assert(0);
-			}
+					memcpy(comQueue[i].p, &sector.data[0], sizeof(sector.data));
+					comQueue[i].p += sizeof(sector.data);
+				}
+				else if (readMode == RM_XA_AUDIO)
+				{
+					AudioSector sector;
 
-			if (--comQueue[i].count == 0)
-			{
-				comQueue[i].processed = 1;
-				break;
-			}
+					fread(&sector, sizeof(struct AudioSector), 1, g_imageFp);
 
-			return 1;
+					memcpy(comQueue[i].p, &sector.data[0], sizeof(sector.data));
+					comQueue[i].p += sizeof(sector.data);
+				}
+				else
+				{
+					assert(0);
+				}
+				
+				if (mode == 1)
+					break;
+
+				if (--comQueue[i].count == 0)
+					comQueue[i].processed = 1;
+				
+			} while (comQueue[i].count > 0);
+			
+			// returns number of sectors remaining
+			// on mode == 0 it's always greater than 0
+			return comQueue[i].count;
 		}
 	}
-	return 0;
+
+	return -1;
 }
 
 int CdSetDebug(int level)
