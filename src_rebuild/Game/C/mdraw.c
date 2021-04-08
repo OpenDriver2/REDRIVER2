@@ -14,7 +14,6 @@
 #include "dr2roads.h"
 #include "cars.h"
 #include "targets.h"
-#include "overlay.h"
 
 int gDisplayPosition = 0;
 
@@ -24,7 +23,7 @@ void DrawTimer(MR_TIMER* timer)
 	short digit_pos;
 	char string[16];
 
-	if ((timer->flags & 1) && (timer->flags & 0x20) == 0)
+	if ((timer->flags & TIMER_FLAG_ACTIVE) && !(timer->flags & TIMER_FLAG_BOMB_TRIGGERED))
 	{
 		if (NumPlayers == 1)
 		{
@@ -81,24 +80,8 @@ void DrawMission(void)
 
 	if (gDisplayPosition)
 		DisplayPlayerPosition();
-
-	if ((MissionHeader->type & 4) == 0)
-	{
-		if (!pauseflag)
-		{
-			if (Mission.message_timer[0] != 0) 
-			{
-				if (NumPlayers == 1) 
-					DrawMessage(96, Mission.message_string[0]);
-				else 
-					DrawMessage(64, Mission.message_string[0]);
-			}
-
-			if (Mission.message_timer[1] != 0)
-				DrawMessage(192, Mission.message_string[1]);
-		}
-	}
-	else 
+	
+	if (MissionHeader->type & 4)
 	{
 		SetTextColour(128, 128, 64);
 
@@ -119,19 +102,39 @@ void DrawMission(void)
 			PrintScaledString(192, string, 32 - (g321GoDelay & 0x1f));
 		}
 	}
+	else 
+	{
+		if (!pauseflag)
+		{
+			if (Mission.message_timer[0] != 0) 
+			{
+				if (NumPlayers == 1) 
+					DrawMessage(96, Mission.message_string[0]);
+				else 
+					DrawMessage(64, Mission.message_string[0]);
+			}
 
-	if (Mission.active && NoPlayerControl == 0)
+			if (Mission.message_timer[1] != 0)
+				DrawMessage(192, Mission.message_string[1]);
+		}
+	}
+
+	if (Mission.active && !NoPlayerControl)
 	{
 		DrawWorldTargets();
-		DrawTimer(Mission.timer);
-		DrawTimer(Mission.timer + 1);
 
-		DrawProximityBar(&ProxyBar);
-
-		if (gOutOfTape)
+		if (gDoOverlays)
 		{
-			SetTextColour(128, 128, 64);
-			PrintString(G_LTXT(GTXT_OutOfTape), gOverlayXPos, 236);
+			DrawTimer(&Mission.timer[0]);
+			DrawTimer(&Mission.timer[1]);
+
+			DrawProximityBar(&ProxyBar);
+
+			if (gOutOfTape)
+			{
+				SetTextColour(128, 128, 64);
+				PrintString(G_LTXT(GTXT_OutOfTape), gOverlayXPos, 236);
+			}
 		}
 	}
 }
@@ -144,7 +147,7 @@ void DrawOverheadTarget(MS_TARGET *target)
 	if (TargetComplete(target, -1))
 		return;
 
-	if ((target->s.target_flags & TARGET_FLAG_VISIBLE_ALLP) == 0)
+	if (!(target->s.target_flags & TARGET_FLAG_VISIBLE_ALLP))
 		return;
 
 	switch(target->type)
@@ -179,7 +182,7 @@ void DrawFullscreenTarget(MS_TARGET *target)
 	if (TargetComplete(target, -1))
 		return;
 
-	if ((target->s.target_flags & TARGET_FLAG_VISIBLE_ALLP) == 0)
+	if (!(target->s.target_flags & TARGET_FLAG_VISIBLE_ALLP))
 		return;
 
 	switch(target->type)

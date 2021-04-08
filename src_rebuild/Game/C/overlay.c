@@ -679,7 +679,7 @@ void DisplayOverlays(void)
 {
 	short* felony;
 
-	if (NoPlayerControl != 0 || gInGameCutsceneActive != 0 || gInGameCutsceneDelay != 0)
+	if (NoPlayerControl || gInGameCutsceneActive || gInGameCutsceneDelay)
 		return;
 
 	if (NumPlayers > 1)
