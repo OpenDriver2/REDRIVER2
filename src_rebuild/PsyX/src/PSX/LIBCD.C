@@ -14,6 +14,8 @@
 #define free SDL_free
 #endif
 
+#define CD_ROOT_DIRECTORY_SECTOR 22
+
 enum ReadMode
 {
 	RM_DATA,
@@ -24,14 +26,14 @@ enum ReadMode readMode = RM_DATA;
 
 int CD_Debug = 0;
 
-FILE* openFile = NULL;
+FILE* g_imageFp = NULL;
 
 typedef struct commandQueue
 {
-	unsigned int mode;
-	unsigned char* p;
-	unsigned int processed;
-	unsigned int count;
+	u_int mode;
+	u_char* p;
+	u_int processed;
+	u_int count;
 }commandQueue_s, *commandQueue_p;
 
 #define COMMAND_QUEUE_SIZE 128
@@ -40,7 +42,7 @@ struct commandQueue comQueue[COMMAND_QUEUE_SIZE];
 int comQueueIndex = 0;
 int comQueueCount = 0;
 int currentSector = 0;
-int sectorSize = 0;
+int g_sectorSize = 0;
 int currentTrack = 0;
 int numFrames = 0;
 int CD_com = 0;
@@ -48,79 +50,154 @@ int CD_com = 0;
 #pragma pack(push, 1)
 struct TOC
 {
-	unsigned char tocEntryLength;
-	unsigned char extEntryLength;
-	unsigned int sectorPosition[2];
-	unsigned int fileSize[2];
-	unsigned char date[7];
-	unsigned char flags;
-	unsigned char fileUnitSize;
-	unsigned char interleaveGapSize;
-	unsigned short volSeqNum[2];
-	unsigned char nameLength;
+	u_char tocEntryLength;
+	u_char extEntryLength;
+	u_int sectorPosition[2];
+	u_int fileSize[2];
+	u_char date[7];
+	u_char flags;
+	u_char fileUnitSize;
+	u_char interleaveGapSize;
+	u_short volSeqNum[2];
+	u_char nameLength;
 };
 
 struct Sector
 {
-	unsigned char	sync[12];	/// Sync pattern (usually 00 FF FF FF FF FF FF FF FF FF FF 00)
-	unsigned char	addr[3];	/// Sector address (see below for encoding details)
-	unsigned char	mode;		/// Mode (usually 2 for Mode 2 Form 1/2 sectors)
-	unsigned char	subHead[8];	/// Sub-header (00 00 08 00 00 00 08 00 for Form 1 data sectors)
-	unsigned char	data[2048];	/// Data (form 1)
-	unsigned char	edc[4];		/// Error-detection code (CRC32 of data area)
-	unsigned char	ecc[276];	/// Error-correction code (uses Reed-Solomon ECC algorithm)
+	u_char	sync[12];	/// Sync pattern (usually 00 FF FF FF FF FF FF FF FF FF FF 00)
+	u_char	addr[3];	/// Sector address (see below for encoding details)
+	u_char	mode;		/// Mode (usually 2 for Mode 2 Form 1/2 sectors)
+	u_char	subHead[8];	/// Sub-header (00 00 08 00 00 00 08 00 for Form 1 data sectors)
+	u_char	data[2048];	/// Data (form 1)
+	u_char	edc[4];		/// Error-detection code (CRC32 of data area)
+	u_char	ecc[276];	/// Error-correction code (uses Reed-Solomon ECC algorithm)
 };
 
 struct AudioSector
 {
-	unsigned char	sync[12];	/// Sync pattern (usually 00 FF FF FF FF FF FF FF FF FF FF 00)
-	unsigned char	addr[3];	/// Sector address (a 24-bit big-endian integer. starts at 200, 201 an onwards)
-	unsigned char	mode;		/// Mode (usually 2 for Mode 2 Form 1/2 sectors)
-	unsigned char	data[2336];	/// 8 bytes Subheader, 2324 bytes Data (form 2), and 4 bytes ECC
+	u_char	sync[12];	/// Sync pattern (usually 00 FF FF FF FF FF FF FF FF FF FF 00)
+	u_char	addr[3];	/// Sector address (a 24-bit big-endian integer. starts at 200, 201 an onwards)
+	u_char	mode;		/// Mode (usually 2 for Mode 2 Form 1/2 sectors)
+	u_char	data[2336];	/// 8 bytes Subheader, 2324 bytes Data (form 2), and 4 bytes ECC
 };
 #pragma pack(pop)
 
+int GetCurrentDirName(char* dest, char* src)
+{
+	char* str;
+
+	str = dest;
+	
+	// start with folders
+	strncpy(str, src, 16);
+	
+	while (*str)
+	{
+		if (*str == '\\')
+		{
+			*str = 0;
+			break;
+		}
+		str++;
+	}
+
+	return str - dest;
+}
+
 CdlFILE* CdSearchFile(CdlFILE* fp, char* name)
 {
+	char pathPart[16];
+	int tocLocalOffset;
+	TOC* toc;
+	int pathOfs;
+	int dirLevel;
+
+	Sector sector;
+
 	memset(fp, 0, sizeof(CdlFILE));
 
 	if (name[0] == '\\')
-	{
 		name++;
+
+	if (g_imageFp == NULL)
+	{
+		eprintwarn("WARNING - CD subsystem is not initialized yet!\n");
+		return NULL;
 	}
 
-	if (openFile != NULL)
+	dirLevel = 0;
+	
+	// go to sector 22
+	fseek(g_imageFp, CD_ROOT_DIRECTORY_SECTOR * g_sectorSize, SEEK_SET);
+	fread(&sector, sizeof(Sector), 1, g_imageFp);
+	
+	toc = (TOC*)&sector.data[0];
+	tocLocalOffset = 0;
+
+	pathOfs = GetCurrentDirName(pathPart, name);
+
+	while (toc->tocEntryLength != 0)
 	{
-		fseek(openFile, 22 * sectorSize, SEEK_SET);
-
-		int tocLocalOffset = 0;
-        struct Sector sector;
-		fread(&sector, sizeof(struct Sector), 1, openFile);
-        struct TOC* toc = (struct TOC*)&sector.data[0];
-		while (toc->tocEntryLength != 0)
+		if (strcmp((char*)&sector.data[tocLocalOffset + sizeof(TOC)], pathPart) == 0)
 		{
-			if (strcmp((char*)&sector.data[tocLocalOffset + sizeof(struct TOC)], name) == 0)
+			if(toc->flags & 2) // is directory
 			{
-				memcpy(&fp->name[0], (char*)&sector.data[tocLocalOffset + sizeof(struct TOC)], strlen(name));
-				fp->size = toc->fileSize[0];
-				fseek(openFile, toc->sectorPosition[0] * sectorSize, SEEK_SET);
-				fread(&sector, sizeof(struct Sector), 1, openFile);
-				fp->pos.minute = sector.addr[0];
-				fp->pos.second = sector.addr[1];
-				fp->pos.sector = sector.addr[2];
+				// get next directory name
+				pathOfs += GetCurrentDirName(pathPart, name + pathOfs + 1) + 1;
 
+				// read the needed sector with directory contents
+				dirLevel++;
+				fseek(g_imageFp, toc->sectorPosition[0] * g_sectorSize, SEEK_SET);
+				fread(&sector, sizeof(Sector), 1, g_imageFp);
+
+				tocLocalOffset = 0;;
+				toc = (TOC*)&sector.data[tocLocalOffset];
+				continue;
+			}
+			
+			memcpy(fp->name, (char*)&sector.data[tocLocalOffset + sizeof(TOC)], toc->nameLength);
+			
+			fp->size = toc->fileSize[0];
+			
+			fseek(g_imageFp, toc->sectorPosition[0] * g_sectorSize, SEEK_SET);
+			fread(&sector, sizeof(struct Sector), 1, g_imageFp);
+			
+			fp->pos.minute = sector.addr[0];
+			fp->pos.second = sector.addr[1];
+			fp->pos.sector = sector.addr[2];
 
 #if _DEBUG
-				eprintf("Found %s\n", name);
+			eprintf("Found %s\n", name);
 #endif
-				return fp;
-			}
-			tocLocalOffset += toc->tocEntryLength;
-			toc = (struct TOC*)&sector.data[tocLocalOffset];
+			return fp;
 		}
+
+		tocLocalOffset += toc->tocEntryLength;
+		toc = (TOC*)&sector.data[tocLocalOffset];
 	}
 
 	return NULL;
+}
+
+int CdReadFile(char* file, u_long* addr, int nbyte)
+{
+	CdlFILE fp;
+
+	if (CdSearchFile(&fp, file) != NULL)
+	{
+		int nSectors;
+		nSectors = (fp.size / (SECTOR_SIZE * 4)) + 1;
+		
+		CdControlB(CdlSetloc, (u_char*)&fp.pos, NULL);
+		CdRead(nSectors, (u_long*)addr, 0);
+
+		if (nbyte == 0)
+			nbyte = fp.size;
+
+		return nbyte;
+	}
+
+	return -1;
 }
 
 CdlLOC* CdIntToPos(int i, CdlLOC* p)
@@ -139,27 +216,25 @@ int CdControl(u_char com, u_char * param, u_char * result)
 
 	CD_com = com;
 
-	if (openFile == NULL)
-	{
+	if (g_imageFp == NULL)
 		return 0;
-	}
 
 	switch (com)
 	{
 	case CdlSetloc:
-		fseek(openFile, CdPosToInt(cd)*sectorSize, SEEK_SET);
+		fseek(g_imageFp, CdPosToInt(cd)*g_sectorSize, SEEK_SET);
 		break;
 	case CdlReadS:
 	{
-		unsigned int filePos = ftell(openFile);
+		unsigned int filePos = ftell(g_imageFp);
 		CdlLOC currentLoc;
 		CdIntToPos(filePos, &currentLoc);
-		fseek(openFile, CdPosToInt(cd) * sectorSize, SEEK_SET);
+		fseek(g_imageFp, CdPosToInt(cd) * g_sectorSize, SEEK_SET);
 		currentSector = CdPosToInt(cd);
+		
 		if (cd->sector != currentLoc.sector)
-		{
 			return 1;
-		}
+
 		break;
 	}
 	default:
@@ -170,17 +245,21 @@ int CdControl(u_char com, u_char * param, u_char * result)
 	return 0;
 }
 
+
 int CdControlB(u_char com, u_char* param, u_char* result)
 {
-	CD_com = com;
+	int ret;
+
+	ret = 0;
 
 	switch (com)
 	{
 	case CdlSetloc:
 	{
 		CdlLOC* cd = (CdlLOC*)param;
-		fseek(openFile, CdPosToInt(cd) * sectorSize, SEEK_SET);
+		fseek(g_imageFp, CdPosToInt(cd) * g_sectorSize, SEEK_SET);
 		readMode = RM_DATA;
+		ret = 1;
 		break;
 	}
 	case CdlSetfilter:
@@ -194,7 +273,10 @@ int CdControlB(u_char com, u_char* param, u_char* result)
 		break;
 	}
 
-	return 0;
+	if(ret)
+		CD_com = com;
+
+	return ret;
 }
 
 int CdControlF(u_char com, u_char * param)
@@ -206,7 +288,7 @@ int CdControlF(u_char com, u_char * param)
 	case CdlSetloc:
 	{
 		CdlLOC* cd = (CdlLOC*)param;
-		fseek(openFile, CdPosToInt(cd) * sectorSize, SEEK_SET);
+		fseek(g_imageFp, CdPosToInt(cd) * g_sectorSize, SEEK_SET);
 		break;
 	}
 	case CdlSetfilter:
@@ -233,18 +315,28 @@ int CdPosToInt(CdlLOC* p)
 
 int CdRead(int sectors, u_long* buf, int mode)
 {
+	int ret;
+
+	ret = 0;
+
 	for (int i = 0; i < COMMAND_QUEUE_SIZE; i++)
 	{
 		if (comQueue[i].processed == 1)
 		{
-			comQueue[i].mode = CdlReadS;///@TODO really mode
+			comQueue[i].mode = mode;	//  CdlMode*
 			comQueue[i].p = (unsigned char*)buf;
 			comQueue[i].processed = 0;
 			comQueue[i].count = sectors;
+
+			ret = 1;
 			break;
 		}
 	}
-	return 0;
+
+	if(ret == 0)
+		eprinterr("out of command queue\n");
+
+	return ret;
 }
 
 int CdReadSync(int mode, u_char* result)
@@ -256,7 +348,7 @@ int CdReadSync(int mode, u_char* result)
 			if (readMode == RM_DATA)
 			{
 				struct Sector sector;
-				fread(&sector, sizeof(struct Sector), 1, openFile);
+				fread(&sector, sizeof(struct Sector), 1, g_imageFp);
 
 				memcpy(comQueue[i].p, &sector.data[0], sizeof(sector.data));
 				comQueue[i].p += sizeof(sector.data);
@@ -264,7 +356,7 @@ int CdReadSync(int mode, u_char* result)
 			else if (readMode == RM_XA_AUDIO)
 			{
 				struct AudioSector sector;
-				fread(&sector, sizeof(struct AudioSector), 1, openFile);
+				fread(&sector, sizeof(struct AudioSector), 1, g_imageFp);
 
 				memcpy(comQueue[i].p, &sector.data[0], sizeof(sector.data));
 				comQueue[i].p += sizeof(sector.data);
@@ -340,20 +432,21 @@ int CdSync(int mode, u_char * result)
 
 int ParseCueSheet()
 {
+	int cdMode;
 	char* binFileName = NULL;
-	openFile = fopen(DISC_IMAGE_FILENAME, "rb");
+	g_imageFp = fopen(DISC_IMAGE_FILENAME, "rb");
 
-	if (openFile == NULL)
+	if (g_imageFp == NULL)
 	{
 		eprinterr("%s not found.\n", DISC_IMAGE_FILENAME);
 		return 0;
 	}
 
-	fseek(openFile, 0, SEEK_END);
-	unsigned int cueSheetFileLength = ftell(openFile);
+	fseek(g_imageFp, 0, SEEK_END);
+	unsigned int cueSheetFileLength = ftell(g_imageFp);
 	char* cueSheet = (char*)malloc(cueSheetFileLength);
-	fseek(openFile, 0, SEEK_SET);
-	fread(cueSheet, cueSheetFileLength, 1, openFile);
+	fseek(g_imageFp, 0, SEEK_SET);
+	fread(cueSheet, cueSheetFileLength, 1, g_imageFp);
 
 	//Null terminated
 	char* string = &cueSheet[0];
@@ -409,31 +502,36 @@ int ParseCueSheet()
 		while (isspace(string[0]))
 			string++;
 
-		assert(!strncmp(string, "MODE1", 5));
-		string += 5;
+		assert(!strncmp(string, "MODE", 4));
+		string += 4;
+
+		cdMode = atoi(string);
+		string++;
 
 		assert(string[0] == '/');
 		string++;
 
-		sectorSize = atoi(string);
+		g_sectorSize = atoi(string);
 
-		assert(sectorSize == 2352);
+		assert(g_sectorSize == 2352);
 
-		fclose(openFile);
-		openFile = fopen(binFileName, "rb");
+		fclose(g_imageFp);
+		g_imageFp = fopen(binFileName, "rb");
 
-		if (!openFile)
+		eprintinfo("CUE: '%s' is Mode %d image\n", binFileName, cdMode);
+
+		if (!g_imageFp)
 		{
 			eprinterr("%s not found.\n", binFileName);
 			free(cueSheet);
 			return 0;
 		}
 
-		fseek(openFile, 0, SEEK_END);
-		unsigned int binFileLength = ftell(openFile);
-		numFrames = binFileLength / sectorSize;
+		fseek(g_imageFp, 0, SEEK_END);
+		unsigned int binFileLength = ftell(g_imageFp);
+		numFrames = binFileLength / g_sectorSize;
 		assert(numFrames != 0);
-		fseek(openFile, 0, SEEK_SET);
+		fseek(g_imageFp, 0, SEEK_SET);
 		free(cueSheet);
 	}
 
@@ -482,6 +580,6 @@ void* CdDataCallback(void(*func)())
 
 int CdDiskReady(int mode)
 {
-	PSYX_UNIMPLEMENTED();
-	return NULL;
+	//PSYX_UNIMPLEMENTED();
+	return CdlComplete;
 }
