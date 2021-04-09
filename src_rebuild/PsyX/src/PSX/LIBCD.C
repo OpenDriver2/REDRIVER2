@@ -51,6 +51,8 @@ int g_cdCurrentTrack = 1;					// default
 int g_cdNumFrames = 0;
 int g_CD_com = 0;
 
+bool g_cdReadDoneFlag = true;
+
 char g_cdImageBinaryFileName[2048] = { 0 };
 int g_UseCDImage = 0;
 
@@ -153,6 +155,15 @@ CdlFILE* CdSearchFile(CdlFILE* fp, char* name)
 	if (g_imageFp == NULL)
 	{
 		eprintwarn("WARNING - CD subsystem is not initialized yet!\n");
+		return NULL;
+	}
+
+	assert(g_cdReadDoneFlag == true);
+	
+	if (!g_cdReadDoneFlag)
+	{
+		// deny request
+		eprintwarn("CdSearchFile called while in 'CdlReadS'\n");
 		return NULL;
 	}
 
@@ -725,7 +736,6 @@ CdlCB g_readyCallback = NULL;
 Sector g_cdSectorData;
 
 bool g_isCdSectorDataRead = false;
-bool g_cdReadDoneFlag = false;
 
 SDL_Thread* g_cdSpoolerPCThread = NULL;
 SDL_mutex* g_cdSpoolerMutex = NULL;
