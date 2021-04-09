@@ -268,10 +268,10 @@ void PlayXA(int num, int index)
 		vol = (10000 + gMasterVolume) / 79;
 		SsSetSerialVol(0, vol, vol);
 
-		CdControlB(0xd, (u_char*)&filt, res);
+		CdControlB(CdlSetfilter, (u_char*)&filt, res);
 
 		CdIntToPos(StartPos, &loc);
-		CdControlB(0x1b, (u_char*)&loc, res);
+		CdControlB(CdlReadS, (u_char*)&loc, res);
 
 		AllocateReverb(3, 0x4000);
 
@@ -384,7 +384,7 @@ void StopXA(void)
 	{
 #ifdef PSX
 		SsSetSerialVol(0, 0, 0);
-		CdControlF(9, 0);
+		CdControlF(CdlPause, 0);
 #else
 		alSourcePause(g_XASource);
 #endif
@@ -411,7 +411,7 @@ void cbready(int intr, unsigned char *result)
 			if (CurrentChannel == gChannel || finished_count == 0xff)
 			{
 				SsSetSerialVol(0, 0, 0);
-				CdControlF(9, 0);
+				CdControlF(CdlPause, 0);
 				gPlaying = 0;
 				finished_count = 0;
 			}
@@ -437,8 +437,8 @@ void ResumeXA(void)
 		vol = (10000 + gMasterVolume) / 79;
 		SsSetSerialVol(0, vol, vol);
 
-		CdControlB(0xd, (u_char*)&filt, res);
-		CdControlB(0x1b, (u_char*)&pause_loc, res);
+		CdControlB(CdlSetfilter, (u_char*)&filt, res);
+		CdControlB(CdlReadS, (u_char*)&pause_loc, res);
 		AllocateReverb(3, 0x4000);
 
 		gPlaying = 1;
@@ -465,13 +465,13 @@ void PauseXA(void)
 	if (xa_prepared && gPlaying)
 	{
 		SsSetSerialVol(0, 0, 0);
-		CdControlB(0x10, 0, res);
+		CdControlB(CdlGetlocL, 0, res);
 
 		pause_loc.minute = res[0];
 		pause_loc.second = res[1];
 		pause_loc.sector = res[2];
 
-		CdControlB(9, 0, 0);
+		CdControlB(CdlPause, 0, 0);
 		gPlaying = 0;
 	}
 #else
