@@ -4,6 +4,6 @@
 #include "PLATFORM_SETUP.H"
 
 //Disc image filename to load for disc image builds
-#define DISC_IMAGE_FILENAME "IMAGE.CUE"
+#define DISC_CUE_FILENAME "IMAGE.CUE"
 
 #endif
