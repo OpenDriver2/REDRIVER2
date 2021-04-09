@@ -32,7 +32,9 @@
 #define printWarning			PsyX_Log_Warning
 #define printError				PsyX_Log_Error
 
-#if _MSC_VER >= 1400
+#ifdef __EMSCRIPTEN__
+#define trap(ode) {printError("EXCEPTION code: %x\n", ode);}
+#elif _MSC_VER >= 1400
 #define trap(ode) {printError("EXCEPTION code: %x\n", ode); __debugbreak();}
 #elif defined(__GNUC__)
 #define trap(ode) {__asm__("int3");}

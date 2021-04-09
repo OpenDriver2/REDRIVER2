@@ -230,7 +230,7 @@ TRI_POINT_LONG* debris_data[5] = {
 VECTOR dummy = { 0 };
 
 int gNight = 0;
-char gRainCount = 30;
+u_char gRainCount = 30;
 int gEffectsTimer = 41;
 
 int NextDamagedPmeter = 0;

@@ -397,7 +397,7 @@ int CheckCameraChange(int CameraCnt)
 			return 0;
 		}
 
-		if (NextChange->next == -2)
+		if (NextChange->next == 254)
 		{
 			return 0;
 		}
@@ -1758,7 +1758,7 @@ void ControlReplay(void)
 				{
 					if (MenuOffset != 0)
 					{
-						if (LastChange->prev != -1 && move == 5)
+						if (LastChange->prev != 0xFF && move == 5)
 						{
 							if (EditMode == 0)
 							{

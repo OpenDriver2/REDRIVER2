@@ -30,7 +30,7 @@ extern TEXTURE_DETAILS lightref_texture;
 extern VECTOR dummy;
 
 extern int gNight;
-extern char gRainCount;
+extern u_char gRainCount;
 extern int gEffectsTimer;
 extern int lightning;
 extern int variable_weather;

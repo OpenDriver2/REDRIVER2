@@ -526,7 +526,7 @@ int CutsceneCameraChange(int cameracnt)
 			return 0;
 		}
 
-		if (CutNextChange->next == -2) 
+		if (CutNextChange->next == 254) 
 			return 0;
 	}
 

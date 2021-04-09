@@ -1919,21 +1919,21 @@ int redriver2_main(int argc, char** argv)
 
 	for (int i = 1; i < argc; i++)
 	{
-		if (!_stricmp(argv[i], "-nofmv"))
+		if (!strcmp(argv[i], "-nofmv"))
 		{
 			gNoFMV = 1;
 		}
-		else if (!_stricmp(argv[i], "-nointro"))
+		else if (!strcmp(argv[i], "-nointro"))
 		{
 			// do nothing. All command line features use it
 		}
 #ifdef DEBUG_OPTIONS
-		else if (!_stricmp(argv[i], "-exportxasubtitles"))
+		else if (!strcmp(argv[i], "-exportxasubtitles"))
 		{
 			extern void StoreXASubtitles();
 			StoreXASubtitles();
 		}
-		else if (!_stricmp(argv[i], "-startpos"))
+		else if (!strcmp(argv[i], "-startpos"))
 		{
 			if (argc - i < 3)
 			{
@@ -1946,7 +1946,7 @@ int redriver2_main(int argc, char** argv)
 
 			i += 2;
 		}
-		else if (!_stricmp(argv[i], "-playercar"))
+		else if (!strcmp(argv[i], "-playercar"))
 		{
 			if (argc - i < 2)
 			{
@@ -1956,7 +1956,7 @@ int redriver2_main(int argc, char** argv)
 			wantedCar[0] = atoi(argv[i + 1]);
 			i++;
 		}
-		else if (!_stricmp(argv[i], "-player2car"))
+		else if (!strcmp(argv[i], "-player2car"))
 		{
 			if (argc - i < 2)
 			{
@@ -1966,7 +1966,7 @@ int redriver2_main(int argc, char** argv)
 			wantedCar[1] = atoi(argv[i + 1]);
 			i++;
 		}
-		else if (!_stricmp(argv[i], "-players"))
+		else if (!strcmp(argv[i], "-players"))
 		{
 			if (argc - i < 2)
 			{
@@ -1976,7 +1976,7 @@ int redriver2_main(int argc, char** argv)
 			NumPlayers = atoi(argv[i + 1]);
 			i++;
 		}
-		else if (!_stricmp(argv[i], "-chase"))
+		else if (!strcmp(argv[i], "-chase"))
 		{
 			if (argc - i < 2)
 			{
@@ -1987,7 +1987,7 @@ int redriver2_main(int argc, char** argv)
 			gChaseNumber = atoi(argv[i + 1]);
 			i++;
 		}
-		else if (!_stricmp(argv[i], "-mission"))
+		else if (!strcmp(argv[i], "-mission"))
 		{
 			if (argc - i < 2)
 			{
@@ -2007,7 +2007,7 @@ int redriver2_main(int argc, char** argv)
 			LaunchGame();
 		}
 #endif // _DEBUG_OPTIONS
-		else if (!_stricmp(argv[i], "-replay"))
+		else if (!strcmp(argv[i], "-replay"))
 		{
 			if (argc - i < 2)
 			{
@@ -2056,7 +2056,7 @@ int redriver2_main(int argc, char** argv)
 			i++;
 		}
 #ifdef CUTSCENE_RECORDER
-		else if (!_stricmp(argv[i], "-recordcutscene"))
+		else if (!strcmp(argv[i], "-recordcutscene"))
 		{
 			SetFEDrawMode();
 
