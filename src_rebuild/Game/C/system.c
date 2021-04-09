@@ -247,9 +247,6 @@ void DoCDRetry(void)
 	}
 }
 
-#define USE_PC_FILESYSTEM 1		// PC filesystem is prioritized over CD
-#define USE_CD_FILESYSTEM 0
-
 // loads whole file into buffer
 // [D] [T]
 int Loadfile(char* name, char* addr)
@@ -338,6 +335,7 @@ int FileExists(char* filename)
 
 	sprintf(namebuffer, "\\%s%s;1", gDataFolder, filename);
 
+#ifdef PSX
 	retries = 9;
 	do {
 
@@ -347,6 +345,11 @@ int FileExists(char* filename)
 		retries--;
 		DoCDRetry();
 	} while (retries >= 0);
+#else
+	// don't retry or we'll have problems
+	return CdSearchFile(&cdfile, namebuffer) != NULL;
+#endif
+	
 #endif // USE_CD_FILESYSTEM
 
 	return 0;
@@ -503,15 +506,15 @@ void ReportMode(int on)
 	}
 }
 
-static unsigned char endread = 0;
-static unsigned char load_complete = 0;
+static u_char endread = 0;
+static u_char load_complete = 0;
 
 // [D] [T]
 void data_ready(void)
 {
 	if (endread != 0)
 	{
-		CdDataCallback(0);
+		CdDataCallback(NULL);
 		load_complete = 1;
 	}
 }
@@ -524,39 +527,40 @@ static int sectors_this_chunk = 0; // offset 0xAB174
 static int sectors_to_read = 0; // offset 0xAB170
 
 // [D] [T]
-void sector_ready(unsigned char intr, unsigned char* result)
+void sector_ready(u_char intr, u_char* result)
 {
 	CdlLOC p;
 
 	if (intr == 1)
 	{
-		CdGetSector(current_address, 512); // and then it's multiplied by 4
+		// read sector data
+		CdGetSector(current_address, 512);
 
-		current_address = current_address + 2048;
-		current_sector = current_sector + 1;
-		sectors_left = sectors_left + -1;
+		current_address += 2048;
+		current_sector++;
+		sectors_left--;
 
 		if (sectors_left == 0)
 		{
 			endread = 1;
-			CdReadyCallback(0);
+			CdReadyCallback(NULL);
 			CdControlF(CdlPause, 0);
 		}
 	}
 	else
 	{
-		if ((*result & CdlStatShellOpen) != 0)
+		if (*result & CdlStatShellOpen)
 		{
-			CdReadyCallback(0);
-
+			CdReadyCallback(NULL);
+			
 			do {
-			} while (CdDiskReady(1) != 2);
+			} while (CdDiskReady(1) != CdlComplete);
 
 			CdReadyCallback(sector_ready);
 		}
 
 		CdIntToPos(current_sector, &p);
-		CdControlF(CdlReadS, (unsigned char*)&p);
+		CdControlF(CdlReadS, (u_char*)&p);
 	}
 }
 
@@ -572,10 +576,12 @@ void loadsectors(char* addr, int sector, int nsectors)
 	sectors_left = nsectors;
 	current_address = addr;
 
-	CdIntToPos(sector, &pos);
-	CdControlF(CdlReadS, (u_char*)&pos);
 	CdDataCallback(data_ready);
 	CdReadyCallback(sector_ready);
+
+	// start asynchronous reading
+	CdIntToPos(sector, &pos);
+	CdControlF(CdlReadS, (u_char*)&pos);
 
 	do {
 	} while (load_complete == 0);

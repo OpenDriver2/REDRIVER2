@@ -454,7 +454,7 @@ void LoadGameLevel(void)
 	InitShadow();
 	//InitTextureNames();			// [A] I know that this is obsolete and used NOWHERE
 
-#ifndef PSX
+#if !USE_CD_FILESYSTEM
 	// [A] override textures
 	LoadPermanentTPagesFromTIM();
 #endif

@@ -10,6 +10,9 @@
 
 #include "psyx_compat.h"
 
+#define USE_PC_FILESYSTEM !defined(PSX)		// PC filesystem is prioritized over CD
+#define USE_CD_FILESYSTEM defined(PSX)
+
 #ifdef PSX
 // TODO: Include PSX STUFF
 #define trap(code) printf("ERROR OCCURED %d!\n", code)

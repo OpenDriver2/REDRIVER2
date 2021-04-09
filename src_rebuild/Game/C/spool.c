@@ -117,6 +117,11 @@ unsigned short *newmodels = NULL;
 
 SPOOLQ spooldata[48];
 
+// configure spooler
+#if USE_PC_FILESYSTEM && !USE_CD_FILESYSTEM
+#define SIMPLE_SPOOL
+#endif
+
 #ifdef _DEBUG
 #define SPOOL_INFO printInfo
 #define SPOOL_WARNING printWarning
@@ -126,177 +131,6 @@ SPOOLQ spooldata[48];
 #define SPOOL_WARNING
 #define SPOOL_ERROR
 #endif
-
-#if !defined(PSX) && !defined(SIMPLE_SPOOL)
-#include <assert.h>
-
-typedef void(*data_callbackFn)(void);
-typedef void(*ready_callbackFn)(unsigned char intr, unsigned char *result);
-
-data_callbackFn g_dataCallbackPC = NULL;
-ready_callbackFn g_readyCallbackPC = NULL;
-char g_sectorData[2048] = { 0 };
-bool g_isSectorDataRead = false;
-bool g_spoolDoneFlag = false;
-
-extern char g_CurrentLevelFileName[64];
-
-SDL_Thread* levelSpoolerPCThread = NULL;
-SDL_mutex* levelSpoolerPCMutex = NULL;
-volatile int levelSpoolerSeekCmd = 0;
-
-//-----------------------------------------------------
-// copies read sector data to addr
-//-----------------------------------------------------
-void getLevSectorPC(char* dest, int count)
-{
-	count *= 4;
-
-#ifdef _DEBUG
-	SPOOLQ* which = &spooldata[spoolpos_reading];
-	sectors_this_chunk;
-	current_sector;
-	sectors_to_read;
-#endif // _DEBUG
-
-	assert(count <= 2048);
-	assert(dest);
-	assert(sectors_to_read > 0);
-
-	//SDL_LockMutex(levelSpoolerPCMutex);
-
-	memcpy(dest, g_sectorData, count);
-	g_isSectorDataRead = true;
-
-	//SDL_UnlockMutex(levelSpoolerPCMutex);
-}
-
-void levelSpoolerPCDataCallback(data_callbackFn cb)
-{
-	SDL_LockMutex(levelSpoolerPCMutex);
-	g_dataCallbackPC = cb;
-	SDL_UnlockMutex(levelSpoolerPCMutex);
-}
-
-void levelSpoolerPCReadyCallback(ready_callbackFn cb)
-{
-	SDL_LockMutex(levelSpoolerPCMutex);
-	g_readyCallbackPC = cb;
-	SDL_UnlockMutex(levelSpoolerPCMutex);
-}
-
-// Main spooler thread function
-int levelSpoolerPCFunc(void* data)
-{
-	//Print incoming data
-	SPOOL_WARNING("Running SPOOL thread...\n");
-
-	g_spoolDoneFlag = false;
-	g_isSectorDataRead = false;
-
-	ready_callbackFn readyCb = g_readyCallbackPC;
-	data_callbackFn dataCb = g_dataCallbackPC;
-
-	FILE* fp = fopen(g_CurrentLevelFileName, "rb");
-	if (!fp)
-	{
-		char errPrint[1024];
-		sprintf(errPrint, "Cannot open '%s'\n", g_CurrentLevelFileName);
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
-
-		if (readyCb)
-			readyCb(0, { 0x0 });
-
-		return -1;
-	}
-
-	do
-	{
-		SDL_LockMutex(levelSpoolerPCMutex);
-
-		if (levelSpoolerSeekCmd != 0)
-		{
-			int sector = levelSpoolerSeekCmd;
-
-			if (sector == -1)
-			{
-				SPOOL_INFO("SPOOL thread recieved 'CdlPause'\n", sector);
-
-				levelSpoolerSeekCmd = 0;
-				g_spoolDoneFlag = true;
-			}
-			else
-			{
-				SPOOL_INFO("SPOOL thread recieved 'CdlReadS' at %d\n", sector);
-
-				// seek
-				fseek(fp, sector * 2048, SEEK_SET);
-				levelSpoolerSeekCmd = 0;
-			}
-		}
-
-		dataCb = g_dataCallbackPC;
-		readyCb = g_readyCallbackPC;
-
-		SDL_UnlockMutex(levelSpoolerPCMutex);
-
-		// clear sector before proceed
-		ClearMem(g_sectorData, sizeof(g_sectorData));
-		fread(g_sectorData, 1, 2048, fp);
-
-		g_isSectorDataRead = false;
-
-		if (readyCb)
-		{
-			readyCb(1, { 0x0 });
-			
-			if (g_isSectorDataRead && dataCb)
-				dataCb();
-		}
-		else
-			break;
-
-	} while (!g_spoolDoneFlag);
-
-	SPOOL_INFO("SPOOLER thread work done.\n");
-
-	fclose(fp);
-
-	return 0;
-}
-
-//-----------------------------------------------------
-// reads sector from LEV file
-//-----------------------------------------------------
-void startReadLevSectorsPC(int sector)
-{
-	if (!levelSpoolerPCMutex)
-		levelSpoolerPCMutex = SDL_CreateMutex();
-
-	SDL_LockMutex(levelSpoolerPCMutex);
-	levelSpoolerSeekCmd = sector;
-	SDL_UnlockMutex(levelSpoolerPCMutex);
-
-	if (levelSpoolerPCThread && g_spoolDoneFlag)
-	{
-		int returnValue;
-		SDL_WaitThread(levelSpoolerPCThread, &returnValue);
-
-		levelSpoolerPCThread = NULL;
-	}
-
-	if (!levelSpoolerPCThread)
-	{
-		levelSpoolerPCThread = SDL_CreateThread(levelSpoolerPCFunc, "Spooler", NULL);
-
-		if (NULL == levelSpoolerPCThread)
-		{
-			SPOOL_ERROR("SDL_CreateThread failed: %s\n", SDL_GetError());
-		}
-	}
-}
-#endif // !PSX
-
 
 // [D] [T]
 int check_regions_present(void)
@@ -617,7 +451,7 @@ void SendTPage(void)
 				tsetpos = 0;
 			}
 
-#ifndef PSX
+#if !USE_CD_FILESYSTEM
 			// [A] try override
 			LoadTPageFromTIMs(tpage2send);
 #endif
@@ -1027,7 +861,7 @@ void WaitCloseLid(void)
 	void (*old)();
 	int loop;
 
-	old = (void(*)())CdReadyCallback(0);
+	old = (void(*)())CdReadyCallback(NULL);
 	stopgame();
 
 	while (loop = CdDiskReady(1), loop != 2) 
@@ -1048,25 +882,18 @@ void FoundError(char *name, unsigned char intr, unsigned char *result)
 #ifndef SIMPLE_SPOOL
 	CdlLOC p;
 
-#ifdef PSX
-	if ((*result & 0x10) != 0)
-	{
+	if (*result & CdlStatShellOpen)
 		WaitCloseLid();
-	}
-#endif // PSX
-
 
 #ifdef _DEBUG
 	SPOOL_ERROR("FoundError: %s, intr: %d\n", name, intr);
 #endif // _DEBUG
 
-	spoolerror = 0x3c;
-#ifdef PSX
+	spoolerror = 60;
+
 	CdIntToPos(current_sector, &p);
 	CdControlF(CdlReadS, (u_char*)&p);
-#else
-	UNIMPLEMENTED();
-#endif
+
 #endif // SIMPLE_SPOOL
 }
 
@@ -1100,11 +927,7 @@ void data_cb_textures(void)
 			{
 				if (switch_spooltype == 0)
 				{
-#ifdef PSX
-					CdDataCallback(0);
-#else
-					levelSpoolerPCDataCallback(NULL);
-#endif // PSX
+					CdDataCallback(NULL);
 
 					if (spoolpos_writing == spoolcounter)
 					{
@@ -1136,13 +959,9 @@ void ready_cb_textures(unsigned char intr, unsigned char *result)
 #ifndef SIMPLE_SPOOL
 	if (intr == 1)
 	{
-#ifdef PSX
-		CdGetSector(target_address, 0x200);
-#else
-		getLevSectorPC(target_address, 0x200);
-#endif // PSX
+		CdGetSector(target_address, 512);
 
-		target_address = target_address + 0x800;
+		target_address = target_address + 2048;
 		sectors_this_chunk--;
 		current_sector++;
 		sectors_to_read--;
@@ -1193,11 +1012,7 @@ void ready_cb_regions(unsigned char intr, unsigned char *result)
 #ifndef SIMPLE_SPOOL
 	if (intr == 1) 
 	{
-#ifdef PSX
-		CdGetSector(target_address, 0x200);
-#else
-		getLevSectorPC(target_address, 0x200);
-#endif // PSX
+		CdGetSector(target_address, 512);
 
 		target_address = target_address + 0x800;
 		sectors_this_chunk--;
@@ -1247,11 +1062,7 @@ void data_cb_regions(void)
 		{
 			if (switch_spooltype == 0) 
 			{
-#ifdef PSX
-				CdDataCallback(0);
-#else
-				levelSpoolerPCDataCallback(NULL);
-#endif // PSX
+				CdDataCallback(NULL);
 
 				if (spoolpos_writing == spoolcounter) 
 				{
@@ -1296,11 +1107,8 @@ void data_cb_misc(void)
 
 		if (switch_spooltype == 0)
 		{
-#ifdef PSX
-			CdDataCallback(0);
-#else
-			levelSpoolerPCDataCallback(NULL);
-#endif // PSX
+			CdDataCallback(NULL);
+			
 			if (spoolpos_writing == spoolcounter)
 			{
 				SPOOL_WARNING("All SPOOL requests (%d) completed successfully on MISC\n", spoolcounter);	// [A]
@@ -1329,11 +1137,7 @@ void ready_cb_misc(unsigned char intr, unsigned char *result)
 #ifndef SIMPLE_SPOOL
 	if (intr == 1) 
 	{
-#ifdef PSX
-		CdGetSector(target_address, 0x200);
-#else
-		getLevSectorPC(target_address, 0x200);
-#endif // PSX
+		CdGetSector(target_address, 512);
 
 		target_address += 0x800;
 		sectors_to_read--;
@@ -1363,13 +1167,8 @@ void test_changemode(void)
 	{
 		switch_spooltype = 0;
 
-#ifdef PSX
-		CdReadyCallback(0);
+		CdReadyCallback(NULL);
 		CdControlF(CdlPause, 0);
-#else
-		levelSpoolerPCReadyCallback(NULL);
-		levelSpoolerSeekCmd = -1;
-#endif // PSX
 	}
 	else if (current_sector == current->sector)
 	{
@@ -1380,11 +1179,8 @@ void test_changemode(void)
 		{
 			sectors_to_read = spool_regioninfo[spool_regionpos + 1].nsectors;
 			sectors_this_chunk = (current->nsectors);
-#ifdef PSX
+
 			CdReadyCallback(ready_cb_regions);
-#else
-			levelSpoolerPCReadyCallback(ready_cb_regions);
-#endif // PSX
 		}
 		else if (current->type == 1)
 		{
@@ -1394,31 +1190,21 @@ void test_changemode(void)
 			nTPchunks_writing = 0;
 			ntpages = tsetcounter;
 			sectors_this_chunk = 1;
-#ifdef PSX
+
 			CdReadyCallback(ready_cb_textures);
-#else
-			levelSpoolerPCReadyCallback(ready_cb_textures);
-#endif // PSX
 		}
 		else if (current->type == 3)
 		{
 			sectors_to_read = (current->nsectors);
-#ifdef PSX
+
 			CdReadyCallback(ready_cb_misc);
-#else
-			levelSpoolerPCReadyCallback(ready_cb_misc);
-#endif // PSX
 		}
 	}
 	else
 	{
 		switch_spooltype = 0;
 
-#ifdef PSX
-		CdReadyCallback(0);
-#else
-		levelSpoolerPCReadyCallback(NULL);
-#endif // PSX
+		CdReadyCallback(NULL);
 	}
 #endif // SIMPLE_SPOOL
 }
@@ -1434,29 +1220,17 @@ void changemode(SPOOLQ *current)
 	{
 	case 0:
 	{
-#ifdef PSX
 		CdDataCallback(data_cb_regions);
-#else
-		levelSpoolerPCDataCallback(data_cb_regions);
-#endif // PSX
 		break;
 	}
 	case 1:
 	{
-#ifdef PSX
 		CdDataCallback(data_cb_textures);
-#else
-		levelSpoolerPCDataCallback(data_cb_textures);
-#endif // PSX
 		break;
 	}
 	case 3:
 	{
-#ifdef PSX
 		CdDataCallback(data_cb_misc);
-#else
-		levelSpoolerPCDataCallback(data_cb_misc);
-#endif // PSX
 		break;
 	}
 	}
@@ -1466,29 +1240,29 @@ void changemode(SPOOLQ *current)
 // [D] [T]
 void StartSpooling(void)
 {
+	static u_char param[8];
+	static u_char result[8];
+	
 	if (spoolcounter == 0 || spoolactive)
 		return;
 
 	if (XAPrepared())
 		return;
 
-#ifdef PSX
-			static unsigned char param[8];
-			static unsigned char result[8];
+#ifndef SIMPLE_SPOOL
+	param[0] = CdlModeSize0 | CdlModeSize1 | CdlModeSpeed;
+	CdControlB(CdlSetmode, param, result);
 
-			param[0] = CdlModeSize0 | CdlModeSize1 | CdlModeSpeed;
-			CdControlB(CdlSetmode, param, result);
-
-			if ((result[0] & (CdlStatError | CdlStatShellOpen)) != 0)
-			{
-				WaitCloseLid();
-			}
-#endif // PSX
+	if (*result & (CdlStatError | CdlStatShellOpen))
+		WaitCloseLid();
+#endif // SIMPLE_SPOOL
+	
 	spoolactive = 1;
 	UpdateSpool();
 
 	if (FastForward)
 		SpoolSYNC();
+
 }
 
 // [D] [T] [A] - altered declaration
@@ -1708,13 +1482,9 @@ void UpdateSpool(void)
 			sectors_to_read = spool_regioninfo[spool_regionpos].nsectors;
 
 			spoolseek = 5;
-#ifdef PSX
+
 			CdDataCallback(data_cb_regions);
 			CdReadyCallback(ready_cb_regions);
-#else
-			levelSpoolerPCDataCallback(data_cb_regions);
-			levelSpoolerPCReadyCallback(ready_cb_regions);
-#endif // PSX
 		}
 		else if (bVar1 == 1) // SPOOLTYPE_TEXTURES
 		{
@@ -1726,13 +1496,8 @@ void UpdateSpool(void)
 			ntpages = tsetcounter;
 			sectors_this_chunk = 1;
 
-#ifdef PSX
 			CdDataCallback(data_cb_textures);
 			CdReadyCallback(ready_cb_textures);
-#else
-			levelSpoolerPCDataCallback(data_cb_textures);
-			levelSpoolerPCReadyCallback(ready_cb_textures);
-#endif // PSX
 
 			target_address = target_address + 0x4000;
 		}
@@ -1741,13 +1506,9 @@ void UpdateSpool(void)
 			sectors_to_read = (current->nsectors);
 
 			spoolseek = 5;
-#ifdef PSX
+			
 			CdDataCallback(data_cb_misc);
 			CdReadyCallback(ready_cb_misc);
-#else
-			levelSpoolerPCDataCallback(data_cb_misc);
-			levelSpoolerPCReadyCallback(ready_cb_misc);
-#endif // PSX
 		}
 
 		current_sector = current->sector;
@@ -1755,12 +1516,8 @@ void UpdateSpool(void)
 		switch_spooltype = 0;
 
 		// run sector reading
-#ifdef PSX
 		CdIntToPos(current_sector, &pos);
 		CdControlF(CdlReadS, (u_char*)&pos);
-#else
-		startReadLevSectorsPC(current_sector);
-#endif // PSX
 	}
 #endif
 }
@@ -1883,7 +1640,7 @@ void SpecClutsSpooled(void)
 			IncrementClutNum(&specCluts);
 		}
 
-#ifndef PSX
+#if !USE_CD_FILESYSTEM
 		// [A] try override
 		LoadTPageFromTIMs(tpage);
 #endif
@@ -1931,7 +1688,7 @@ void CleanModelSpooled(void)
 
 	if (specBlocksToLoad == 0 || mem < modelMemory)
 	{
-#ifndef PSX
+#if !USE_CD_FILESYSTEM
 		// [A] vertices
 		LoadCarModelFromFile((char*)gCarCleanModelPtr[4], MissionHeader->residentModels[4], CAR_MODEL_CLEAN);
 #endif
@@ -1977,7 +1734,7 @@ void DamagedModelSpooled(void)
 
 	if (specBlocksToLoad == 0 || mem < modelMemory)
 	{
-#ifndef PSX
+#if !USE_CD_FILESYSTEM
 		// [A] vertices
 		LoadCarModelFromFile((char*)gCarDamModelPtr[4], MissionHeader->residentModels[4], CAR_MODEL_DAMAGED);
 #endif
@@ -2021,7 +1778,7 @@ void LowModelSpooled(void)
 
 	if (specBlocksToLoad == 0 || mem < modelMemory)
 	{
-#ifndef PSX
+#if !USE_CD_FILESYSTEM
 		// [A] vertices
 		LoadCarModelFromFile((char*)gCarLowModelPtr[4], MissionHeader->residentModels[4], CAR_MODEL_LOWDETAIL);
 #endif
@@ -2081,7 +1838,7 @@ void CleanSpooled(void)
 
 	if (specBlocksToLoad == 7-lastCleanBlock) 
 	{
-#ifndef PSX
+#if !USE_CD_FILESYSTEM
 		// [A] polygons
 		LoadCarModelFromFile((char*)model, MissionHeader->residentModels[4], CAR_MODEL_CLEAN);
 #endif
@@ -2111,7 +1868,7 @@ void LowSpooled(void)
 	{
 		model = (MODEL *)(specmallocptr + lowOffset);
 
-#ifndef PSX
+#if !USE_CD_FILESYSTEM
 		// [A] loads car model from file
 		LoadCarModelFromFile((char*)model, MissionHeader->residentModels[4], CAR_MODEL_LOWDETAIL);
 #endif
