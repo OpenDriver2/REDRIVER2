@@ -1798,6 +1798,8 @@ int main(void)
 int redriver2_main(int argc, char** argv)
 #endif // PSX
 {
+	char** ScreenNames;
+	
 	char* PALScreenNames[4] = {		// [A] don't show publisher logo
 	//	"GFX\\SPLASH2.TIM",
 	//	"GFX\\SPLASH3.TIM",
@@ -1844,7 +1846,23 @@ int redriver2_main(int argc, char** argv)
 	InitControllers();
 	Init_FileSystem();
 	InitSound();
-	
+
+	// [A] REDRIVER 2 version auto-detection
+	// this is the only difference between the files on CD
+#ifdef DEMO_VERSION
+	ScreenNames = OPMScreenNames;
+#elif NTSC_VERSION
+	ScreenNames = NTSCScreenNames;
+
+	if (!FileExists(ScreenNames[0]))
+		ScreenNames[0] = PALScreenNames[0];
+#elif PAL_VERSION
+	ScreenNames = PALScreenNames;
+
+	if (!FileExists(ScreenNames[0]))
+		ScreenNames[0] = NTSCScreenNames[0];
+#endif
+
 #ifndef PSX
 	// verify installation
 	if (!FileExists("DATA\\FEFONT.BNK") || !FileExists("GFX\\FONT2.FNT"))
@@ -1867,14 +1885,7 @@ int redriver2_main(int argc, char** argv)
 	{
 		//PlayFMV(99);	// [A] don't show publisher logo
 
-#ifdef DEMO_VERSION
-		ShowHiresScreens(OPMScreenNames, 300, 0); // [A]
-#elif NTSC_VERSION
-		ShowHiresScreens(NTSCScreenNames, 300, 0); // [A]
-#elif PAL_VERSION
-		ShowHiresScreens(PALScreenNames, 300, 0); // [A]
-#endif
-
+		ShowHiresScreens(ScreenNames, 300, 0); // [A]
 		PlayFMV(0);		// play intro movie
 	}
 
