@@ -14,7 +14,9 @@
 #define free SDL_free
 #endif
 
-#define CD_ROOT_DIRECTORY_SECTOR 22
+#define CD_ROOT_DIRECTORY_SECTOR	22
+#define CD_SECTOR_SIZE				2048
+#define CD_SECTOR_SIZE_MODE2		2352		// MODE2/2352
 
 enum ReadMode
 {
@@ -82,6 +84,8 @@ struct AudioSector
 };
 #pragma pack(pop)
 
+
+// utility function
 int GetCurrentDirName(char* dest, char* src)
 {
 	char* str;
@@ -104,6 +108,19 @@ int GetCurrentDirName(char* dest, char* src)
 	return str - dest;
 }
 
+//----------------------------------------------------------
+
+typedef void(*CdlDataCB)(void);
+
+void _eCdGetSector(char* dest, int count);
+CdlDataCB _eCdDataCallback(CdlDataCB cb);
+CdlCB _eCdReadyCallback(CdlCB cb);
+
+void _eCdControlF_ReadS(int sector);
+void _eCdControlF_Pause();
+
+//----------------------------------------------------------
+
 CdlFILE* CdSearchFile(CdlFILE* fp, char* name)
 {
 	char pathPart[16];
@@ -115,9 +132,6 @@ CdlFILE* CdSearchFile(CdlFILE* fp, char* name)
 	Sector sector;
 
 	memset(fp, 0, sizeof(CdlFILE));
-
-	if (name[0] == '\\')
-		name++;
 
 	if (g_imageFp == NULL)
 	{
@@ -138,11 +152,25 @@ CdlFILE* CdSearchFile(CdlFILE* fp, char* name)
 	toc = (TOC*)&sector.data[0];
 	tocLocalOffset = 0;
 
+	if (name[0] == '\\')
+		name++;
+
 	pathOfs = GetCurrentDirName(pathPart, name);
 
 	while (toc->tocEntryLength != 0)
 	{
-		if (strcmp((char*)&sector.data[tocLocalOffset + sizeof(TOC)], pathPart) == 0)
+		char* itemNameStr = (char*)&sector.data[tocLocalOffset + sizeof(TOC)];
+
+		// skip . and .. for now
+		if (*itemNameStr == 0 || *itemNameStr == 1)
+		{
+			tocLocalOffset += toc->tocEntryLength;
+			toc = (TOC*)&sector.data[tocLocalOffset];
+			
+			continue;
+		}
+		
+		if (!strcmp(itemNameStr, pathPart))
 		{
 			if(toc->flags & 2) // is directory
 			{
@@ -159,7 +187,7 @@ CdlFILE* CdSearchFile(CdlFILE* fp, char* name)
 				continue;
 			}
 			
-			memcpy(fp->name, (char*)&sector.data[tocLocalOffset + sizeof(TOC)], toc->nameLength);
+			memcpy(fp->name, itemNameStr, toc->nameLength);
 			
 			fp->size = toc->fileSize[0];
 			
@@ -231,9 +259,12 @@ int CdControl(u_char com, u_char * param, u_char * result)
 	case CdlReadS:
 	{
 		unsigned int filePos = ftell(g_imageFp);
+		
 		CdlLOC currentLoc;
 		CdIntToPos(filePos, &currentLoc);
+		
 		fseek(g_imageFp, CdPosToInt(cd) * g_sectorSize, SEEK_SET);
+		
 		currentSector = CdPosToInt(cd);
 		
 		if (cd->sector != currentLoc.sector)
@@ -248,7 +279,6 @@ int CdControl(u_char com, u_char * param, u_char * result)
 
 	return 0;
 }
-
 
 int CdControlB(u_char com, u_char* param, u_char* result)
 {
@@ -269,12 +299,15 @@ int CdControlB(u_char com, u_char* param, u_char* result)
 	case CdlSetfilter:
 	{
 		CdlFILTER* cdf = (CdlFILTER*)param;
-		//TODO Set channel
+		// TODO: set channel. Primarily used for CDDA/XA
 		break;
 	}
 	case CdlSetmode:
 	{
-		PSYX_UNIMPLEMENTED();
+		// TODO: CdlModeSize0 and CdlModeSize1 can change things
+
+		eprinterr("Unimplemented 'CdlSetmode'!\n");
+
 		ret = 1;
 		break;
 	}
@@ -297,29 +330,44 @@ int CdControlF(u_char com, u_char * param)
 
 	switch (com)
 	{
-	case CdlSetloc:
-	{
-		CdlLOC* cd = (CdlLOC*)param;
-		fseek(g_imageFp, CdPosToInt(cd) * g_sectorSize, SEEK_SET);
-		break;
-	}
-	case CdlSetfilter:
-	{
-		CdlFILTER* cdf = (CdlFILTER*)param;
-		//TODO Set channel
-		break;
-	}
-	case CdlGetlocP:
-		readMode = RM_XA_AUDIO;
-		break;
-	case CdlReadS:
-	{
-		PSYX_UNIMPLEMENTED();
-		break;
-	}
-	default:
-		eprinterr("Unhandled command 0x%02X!\n", com);
-		break;
+		case CdlSetloc:
+		{
+			CdlLOC* cd = (CdlLOC*)param;
+			fseek(g_imageFp, CdPosToInt(cd) * g_sectorSize, SEEK_SET);
+			break;
+		}
+		case CdlSetfilter:
+		{
+			CdlFILTER* cdf = (CdlFILTER*)param;
+			
+			// TODO: set channel. Primarily used for CDDA/XA
+			
+			break;
+		}
+		case CdlGetlocP:
+		{
+			readMode = RM_XA_AUDIO;
+			break;
+		}
+		case CdlReadS:
+		{
+			// start reading sectors
+			CdlLOC* cd = (CdlLOC*)param;
+			_eCdControlF_ReadS(CdPosToInt(cd));
+			
+			break;
+		}
+		case CdlPause:
+		{
+			// pause thread
+			_eCdControlF_Pause();
+			break;
+		}
+		default:
+		{
+			eprinterr("Unhandled command 0x%02X!\n", com);
+			break;
+		}
 	}
 
 	return 0;
@@ -370,7 +418,7 @@ int CdReadSync(int mode, u_char* result)
 				{
 					Sector sector;
 
-					fread(&sector, sizeof(struct Sector), 1, g_imageFp);
+					fread(&sector, sizeof(Sector), 1, g_imageFp);
 
 					memcpy(comQueue[i].p, &sector.data[0], sizeof(sector.data));
 					comQueue[i].p += sizeof(sector.data);
@@ -379,7 +427,7 @@ int CdReadSync(int mode, u_char* result)
 				{
 					AudioSector sector;
 
-					fread(&sector, sizeof(struct AudioSector), 1, g_imageFp);
+					fread(&sector, sizeof(AudioSector), 1, g_imageFp);
 
 					memcpy(comQueue[i].p, &sector.data[0], sizeof(sector.data));
 					comQueue[i].p += sizeof(sector.data);
@@ -389,11 +437,12 @@ int CdReadSync(int mode, u_char* result)
 					assert(0);
 				}
 				
-				if (mode == 1)
-					break;
-
 				if (--comQueue[i].count == 0)
 					comQueue[i].processed = 1;
+
+				// in mode 1 it doesn't wait until read is completed
+				if (mode == 1)
+					break;
 				
 			} while (comQueue[i].count > 0);
 			
@@ -458,6 +507,9 @@ int CdSync(int mode, u_char * result)
 	return 0;
 }
 
+// TODO: don't rely on cue sheet
+// use this https://gist.github.com/ceritium/139577 to detect Mode 1 or Mode 2
+
 int ParseCueSheet()
 {
 	int cdMode;
@@ -471,8 +523,10 @@ int ParseCueSheet()
 	}
 
 	fseek(g_imageFp, 0, SEEK_END);
+
 	unsigned int cueSheetFileLength = ftell(g_imageFp);
 	char* cueSheet = (char*)malloc(cueSheetFileLength);
+	
 	fseek(g_imageFp, 0, SEEK_SET);
 	fread(cueSheet, cueSheetFileLength, 1, g_imageFp);
 
@@ -541,7 +595,7 @@ int ParseCueSheet()
 
 		g_sectorSize = atoi(string);
 
-		assert(g_sectorSize == 2352);
+		assert(g_sectorSize == CD_SECTOR_SIZE_MODE2);
 
 		fclose(g_imageFp);
 		g_imageFp = fopen(binFileName, "rb");
@@ -558,7 +612,9 @@ int ParseCueSheet()
 		fseek(g_imageFp, 0, SEEK_END);
 		unsigned int binFileLength = ftell(g_imageFp);
 		numFrames = binFileLength / g_sectorSize;
+		
 		assert(numFrames != 0);
+
 		fseek(g_imageFp, 0, SEEK_SET);
 		free(cueSheet);
 	}
@@ -590,24 +646,175 @@ int CdLastCom(void)
 
 int CdGetSector(void *madr, int size)
 {
-	PSYX_UNIMPLEMENTED();
-	return 0;
+	_eCdGetSector((char*)madr, size);
+	return 1;
 }
 
 CdlCB CdReadyCallback(CdlCB func)
 {
-	PSYX_UNIMPLEMENTED();
-	return func;
+	return _eCdReadyCallback(func);
 }
 
 void* CdDataCallback(void(*func)())
 {
-	PSYX_UNIMPLEMENTED();
-	return NULL;
+	return _eCdDataCallback(func);
 }
 
 int CdDiskReady(int mode)
 {
 	//PSYX_UNIMPLEMENTED();
 	return CdlComplete;
+}
+
+//--------------------------------------------------------------------------------
+
+#include <assert.h>
+
+CdlDataCB g_dataCallback = NULL;
+CdlCB g_readyCallback = NULL;
+
+//char g_cdSectorData[SECTOR_SIZE * 4] = { 0 };
+
+Sector g_cdSectorData;
+
+bool g_isCdSectorDataRead = false;
+bool g_cdReadDoneFlag = false;
+
+SDL_Thread* g_cdSpoolerPCThread = NULL;
+SDL_mutex* g_cdSpoolerMutex = NULL;
+volatile int g_cdSpoolerSeekCmd = 0;
+
+//-----------------------------------------------------
+// copies read sector data to addr
+//-----------------------------------------------------
+void _eCdGetSector(char* dest, int count)
+{
+	count *= 4;
+
+	assert(count <= SECTOR_SIZE * 4);
+	assert(dest);
+
+	memcpy(dest, g_cdSectorData.data, count);
+	g_isCdSectorDataRead = true;
+}
+
+CdlDataCB _eCdDataCallback(CdlDataCB cb)
+{
+	CdlDataCB old = g_dataCallback;
+	SDL_LockMutex(g_cdSpoolerMutex);
+	g_dataCallback = cb;
+	SDL_UnlockMutex(g_cdSpoolerMutex);
+	return old;
+}
+
+CdlCB _eCdReadyCallback(CdlCB cb)
+{
+	CdlCB old = g_readyCallback;
+	
+	SDL_LockMutex(g_cdSpoolerMutex);
+	g_readyCallback = cb;
+	SDL_UnlockMutex(g_cdSpoolerMutex);
+
+	return old;
+}
+
+// Main spooler thread function
+int _eCdSpoolerThreadFunc(void* data)
+{
+	//Print incoming data
+	eprintwarn("Running CD thread...\n");
+
+	g_cdReadDoneFlag = false;
+	g_isCdSectorDataRead = false;
+
+	CdlCB readyCb = g_readyCallback;
+	CdlDataCB dataCb = g_dataCallback;
+
+	do
+	{
+		SDL_LockMutex(g_cdSpoolerMutex);
+
+		if (g_cdSpoolerSeekCmd != 0)
+		{
+			int sector = g_cdSpoolerSeekCmd;
+
+			if (sector == -1)
+			{
+				eprintinfo("CD: 'CdlPause'\n", sector);
+
+				g_cdSpoolerSeekCmd = 0;
+				g_cdReadDoneFlag = true;
+			}
+			else
+			{
+				eprintinfo("CD: 'CdlReadS' at %d\n", sector);
+
+				// seek
+				fseek(g_imageFp, sector * g_sectorSize, SEEK_SET);
+				g_cdSpoolerSeekCmd = 0;
+			}
+		}
+
+		dataCb = g_dataCallback;
+		readyCb = g_readyCallback;
+
+		SDL_UnlockMutex(g_cdSpoolerMutex);
+
+		// clear sector before proceed
+		memset(&g_cdSectorData, 0, sizeof(g_cdSectorData));
+		fread(&g_cdSectorData, sizeof(Sector), 1, g_imageFp);
+
+		g_isCdSectorDataRead = false;
+
+		if (readyCb)
+		{
+			readyCb(1, { 0x0 });
+
+			if (g_isCdSectorDataRead && dataCb)
+				dataCb();
+		}
+		else
+			break;
+
+	} while (!g_cdReadDoneFlag);
+
+	eprintinfo("CD thread work done.\n");
+
+	return 0;
+}
+
+//-----------------------------------------------------
+// reads sector from LEV file
+//-----------------------------------------------------
+void _eCdControlF_ReadS(int sector)
+{
+	if (!g_cdSpoolerMutex)
+		g_cdSpoolerMutex = SDL_CreateMutex();
+
+	SDL_LockMutex(g_cdSpoolerMutex);
+	g_cdSpoolerSeekCmd = sector;
+	SDL_UnlockMutex(g_cdSpoolerMutex);
+
+	if (g_cdSpoolerPCThread && g_cdReadDoneFlag)
+	{
+		int returnValue;
+		SDL_WaitThread(g_cdSpoolerPCThread, &returnValue);
+
+		g_cdSpoolerPCThread = NULL;
+	}
+
+	if (!g_cdSpoolerPCThread)
+	{
+		g_cdSpoolerPCThread = SDL_CreateThread(_eCdSpoolerThreadFunc, "CDSpooler", NULL);
+
+		if (NULL == g_cdSpoolerPCThread)
+		{
+			eprinterr("SDL_CreateThread failed: %s\n", SDL_GetError());
+		}
+	}
+}
+
+void _eCdControlF_Pause()
+{
+	g_cdSpoolerSeekCmd = -1;
 }
