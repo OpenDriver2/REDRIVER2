@@ -118,8 +118,13 @@ unsigned short *newmodels = NULL;
 SPOOLQ spooldata[48];
 
 // configure spooler
-#if USE_PC_FILESYSTEM && !USE_CD_FILESYSTEM
+#if USE_PC_FILESYSTEM
+
 #define SIMPLE_SPOOL
+
+extern int gContentOverride;
+extern char g_CurrentLevelFileName[64];
+
 #endif
 
 #ifdef _DEBUG
@@ -451,9 +456,12 @@ void SendTPage(void)
 				tsetpos = 0;
 			}
 
-#if !USE_CD_FILESYSTEM
-			// [A] try override
-			LoadTPageFromTIMs(tpage2send);
+#if USE_PC_FILESYSTEM
+			if(gContentOverride)
+			{
+				// [A] try override
+				LoadTPageFromTIMs(tpage2send);
+			}
 #endif
 		}
 	}
@@ -879,7 +887,6 @@ void WaitCloseLid(void)
 // [D] [T]
 void FoundError(char *name, unsigned char intr, unsigned char *result)
 {
-#ifndef SIMPLE_SPOOL
 	CdlLOC p;
 
 	if (*result & CdlStatShellOpen)
@@ -893,8 +900,6 @@ void FoundError(char *name, unsigned char intr, unsigned char *result)
 
 	CdIntToPos(current_sector, &p);
 	CdControlF(CdlReadS, (u_char*)&p);
-
-#endif // SIMPLE_SPOOL
 }
 
 void test_changemode(void);
@@ -903,7 +908,6 @@ void changemode(SPOOLQ *current);
 // [D] [T]
 void data_cb_textures(void)
 {
-#ifndef SIMPLE_SPOOL
 	//printf("data_cb_textures remaining: %d\n", sectors_to_read);
 
 	if (chunk_complete != 0) 
@@ -950,13 +954,11 @@ void data_cb_textures(void)
 			}
 		}
 	}
-#endif // SIMPLE_SPOOL
 }
 
 // [D] [T]
 void ready_cb_textures(unsigned char intr, unsigned char *result)
 {
-#ifndef SIMPLE_SPOOL
 	if (intr == 1)
 	{
 		CdGetSector(target_address, 512);
@@ -1003,13 +1005,11 @@ void ready_cb_textures(unsigned char intr, unsigned char *result)
 	}
 	else 
 		FoundError("ready_cb_textures", intr, result);
-#endif // SIMPLE_SPOOL
 }
 
 // [D] [T]
 void ready_cb_regions(unsigned char intr, unsigned char *result)
 {
-#ifndef SIMPLE_SPOOL
 	if (intr == 1) 
 	{
 		CdGetSector(target_address, 512);
@@ -1038,13 +1038,11 @@ void ready_cb_regions(unsigned char intr, unsigned char *result)
 	}
 	else 
 		FoundError("ready_cb_regions", intr, result);
-#endif // SIMPLE_SPOOL
 }
 
 // [D] [T]
 void data_cb_regions(void)
 {
-#ifndef SIMPLE_SPOOL
 	//printf("data_cb_regions remaining: %d\n", sectors_to_read);
 
 	SPOOLQ* current = &spooldata[spoolpos_writing];
@@ -1084,14 +1082,12 @@ void data_cb_regions(void)
 			}
 		}
 	}
-#endif // SIMPLE_SPOOL
 }
 
 
 // [D] [T]
 void data_cb_misc(void)
 {
-#ifndef SIMPLE_SPOOL
 	//printf("data_cb_misc remaining: %d\n", sectors_to_read);
 
 	SPOOLQ *current = &spooldata[spoolpos_writing];
@@ -1128,13 +1124,11 @@ void data_cb_misc(void)
 			changemode(spooldata + spoolpos_writing);
 		}
 	}
-#endif // SIMPLE_SPOOL
 }
 
 // [D] [T]
 void ready_cb_misc(unsigned char intr, unsigned char *result)
 {
-#ifndef SIMPLE_SPOOL
 	if (intr == 1) 
 	{
 		CdGetSector(target_address, 512);
@@ -1154,13 +1148,11 @@ void ready_cb_misc(unsigned char intr, unsigned char *result)
 	{
 		FoundError("ready_cb_misc", intr, result);
 	}
-#endif // SIMPLE_SPOOL
 }
 
 // [D] [T]
 void test_changemode(void)
 {
-#ifndef SIMPLE_SPOOL
 	SPOOLQ *current = &spooldata[spoolpos_reading];
 
 	if (spoolpos_reading == spoolcounter)
@@ -1206,35 +1198,32 @@ void test_changemode(void)
 
 		CdReadyCallback(NULL);
 	}
-#endif // SIMPLE_SPOOL
 }
 
 // [D] [T]
 void changemode(SPOOLQ *current)
 {
-#ifndef SIMPLE_SPOOL
 	switch_spooltype = 0;
 	endchunk = 0;
 
 	switch (current->type)
 	{
-	case 0:
-	{
-		CdDataCallback(data_cb_regions);
-		break;
+		case 0:
+		{
+			CdDataCallback(data_cb_regions);
+			break;
+		}
+		case 1:
+		{
+			CdDataCallback(data_cb_textures);
+			break;
+		}
+		case 3:
+		{
+			CdDataCallback(data_cb_misc);
+			break;
+		}
 	}
-	case 1:
-	{
-		CdDataCallback(data_cb_textures);
-		break;
-	}
-	case 3:
-	{
-		CdDataCallback(data_cb_misc);
-		break;
-	}
-	}
-#endif // SIMPLE_SPOOL
 }
 
 // [D] [T]
@@ -1249,13 +1238,11 @@ void StartSpooling(void)
 	if (XAPrepared())
 		return;
 
-#ifndef SIMPLE_SPOOL
 	param[0] = CdlModeSize0 | CdlModeSize1 | CdlModeSpeed;
 	CdControlB(CdlSetmode, param, result);
 
 	if (*result & (CdlStatError | CdlStatShellOpen))
 		WaitCloseLid();
-#endif // SIMPLE_SPOOL
 	
 	spoolactive = 1;
 	UpdateSpool();
@@ -1377,96 +1364,97 @@ void GotRegion(void)
 // [D] [T]
 void UpdateSpool(void)
 {
-#ifdef SIMPLE_SPOOL
-	extern char g_CurrentLevelFileName[64];
-
-	FILE* fp = fopen(g_CurrentLevelFileName, "rb");
-
-	if (!fp)
+#if USE_PC_FILESYSTEM && defined(SIMPLE_SPOOL)	
+	if(strlen(g_CurrentLevelFileName) > 0)
 	{
-		char errPrint[1024];
-		sprintf(errPrint, "Cannot open '%s'\n", g_CurrentLevelFileName);
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
-		return;
-	}
+		FILE* fp = fopen(g_CurrentLevelFileName, "rb");
 
-	for (; spoolpos_reading < spoolcounter; spoolpos_reading++)
-	{
-		SPOOLQ *current = &spooldata[spoolpos_reading];
-
-#ifdef _DEBUG
-		char* nameType;
-		switch (current->type)
+		if (!fp)
 		{
-		case 0:	// regions
-			nameType = "REGION";
-			break;
-		case 1:	// textures
-			nameType = "TPAGE";
-			break;
-		case 2:	// sbk
-			nameType = "SBK";
-			break;
-		case 3:	// misc
-			nameType = "MISC";
-			break;
+			char errPrint[1024];
+			sprintf(errPrint, "Cannot open '%s'\n", g_CurrentLevelFileName);
+			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
+			return;
 		}
 
-		SPOOL_WARNING("spool type=%s cb=%d sec=%d cnt=%d id=%d\n", nameType, current->func ? 1 : 0, current->sector, current->nsectors, spoolpos_reading);
+		for (; spoolpos_reading < spoolcounter; spoolpos_reading++)
+		{
+			SPOOLQ* current = &spooldata[spoolpos_reading];
+
+#ifdef _DEBUG
+			char* nameType;
+			switch (current->type)
+			{
+			case 0:	// regions
+				nameType = "REGION";
+				break;
+			case 1:	// textures
+				nameType = "TPAGE";
+				break;
+			case 2:	// sbk
+				nameType = "SBK";
+				break;
+			case 3:	// misc
+				nameType = "MISC";
+				break;
+			}
+
+			SPOOL_WARNING("spool type=%s cb=%d sec=%d cnt=%d id=%d\n", nameType, current->func ? 1 : 0, current->sector, current->nsectors, spoolpos_reading);
 #endif // _DEBUG
 
-		// seek to required sector
-		fseek(fp, current->sector * 2048, SEEK_SET);
+			// seek to required sector
+			fseek(fp, current->sector * 2048, SEEK_SET);
 
-		switch (current->type)
-		{
-		case 0:	// regions
-			fread(current->addr, 2048, current->nsectors, fp);
-
-			if (current->func)
-				current->func();
-
-			break;
-		case 1:	// textures
-
-			// read cluts
-			nTPchunks = 0;
-			fread(current->addr + 0x4000, 2048, 1, fp);
-			SendTPage();
-
-			nTPchunks++;
-
-			// read tpage (4 sectors 4 times = 16)
-			for (int i = 0; i < 4; i++)
+			switch (current->type)
 			{
-				fread(current->addr + (loadbank_write & 1U) * 256 * 32, 2048, 4, fp);
+			case 0:	// regions
+				fread(current->addr, 2048, current->nsectors, fp);
+
+				if (current->func)
+					current->func();
+
+				break;
+			case 1:	// textures
+
+				// read cluts
+				nTPchunks = 0;
+				fread(current->addr + 0x4000, 2048, 1, fp);
 				SendTPage();
 
 				nTPchunks++;
+
+				// read tpage (4 sectors 4 times = 16)
+				for (int i = 0; i < 4; i++)
+				{
+					fread(current->addr + (loadbank_write & 1U) * 256 * 32, 2048, 4, fp);
+					SendTPage();
+
+					nTPchunks++;
+				}
+
+				break;
+			case 2:	// sbk
+				// nothing to do with this
+				break;
+			case 3:	// misc
+				fread(current->addr, 2048, current->nsectors, fp);
+
+				if (current->func)
+					current->func();
+
+				break;
 			}
-
-			break;
-		case 2:	// sbk
-			// nothing to do with this
-			break;
-		case 3:	// misc
-			fread(current->addr, 2048, current->nsectors, fp);
-
-			if (current->func)
-				current->func();
-
-			break;
 		}
+
+		spoolcounter = 0;
+		spoolpos_reading = 0;
+		spoolactive = 0;
+
+		fclose(fp);
+		return;
 	}
+#endif
 
-	spoolcounter = 0;
-	spoolpos_reading = 0;
-	spoolactive = 0;
-
-	fclose(fp);
-
-#else
-	char bVar1;
 	CdlLOC pos;
 
 	SPOOLQ *current = &spooldata[spoolpos_reading];
@@ -1474,9 +1462,8 @@ void UpdateSpool(void)
 	if (!XAPrepared())
 	{
 		target_address = current->addr;
-		bVar1 = current->type;
 
-		if (bVar1 == 0) // SPOOLTYPE_REGIONS
+		if (current->type == 0) // SPOOLTYPE_REGIONS
 		{
 			sectors_this_chunk = (current->nsectors);
 			sectors_to_read = spool_regioninfo[spool_regionpos].nsectors;
@@ -1486,7 +1473,7 @@ void UpdateSpool(void)
 			CdDataCallback(data_cb_regions);
 			CdReadyCallback(ready_cb_regions);
 		}
-		else if (bVar1 == 1) // SPOOLTYPE_TEXTURES
+		else if (current->type == 1) // SPOOLTYPE_TEXTURES
 		{
 			spoolseek = 5;
 
@@ -1501,7 +1488,7 @@ void UpdateSpool(void)
 
 			target_address = target_address + 0x4000;
 		}
-		else if (bVar1 == 3)  // SPOOLTYPE_MISC
+		else if (current->type == 3)  // SPOOLTYPE_MISC
 		{
 			sectors_to_read = (current->nsectors);
 
@@ -1519,7 +1506,6 @@ void UpdateSpool(void)
 		CdIntToPos(current_sector, &pos);
 		CdControlF(CdlReadS, (u_char*)&pos);
 	}
-#endif
 }
 
 // [D] [T]
@@ -1640,9 +1626,12 @@ void SpecClutsSpooled(void)
 			IncrementClutNum(&specCluts);
 		}
 
-#if !USE_CD_FILESYSTEM
-		// [A] try override
-		LoadTPageFromTIMs(tpage);
+#if USE_PC_FILESYSTEM
+		if (gContentOverride)
+		{
+			// [A] try override
+			LoadTPageFromTIMs(tpage);
+		}
 #endif
 	}
 
@@ -1688,9 +1677,12 @@ void CleanModelSpooled(void)
 
 	if (specBlocksToLoad == 0 || mem < modelMemory)
 	{
-#if !USE_CD_FILESYSTEM
-		// [A] vertices
-		LoadCarModelFromFile((char*)gCarCleanModelPtr[4], MissionHeader->residentModels[4], CAR_MODEL_CLEAN);
+#if USE_PC_FILESYSTEM
+		if (gContentOverride)
+		{
+			// [A] vertices
+			LoadCarModelFromFile((char*)gCarCleanModelPtr[4], MissionHeader->residentModels[4], CAR_MODEL_CLEAN);
+		}
 #endif
 		
 		specBlocksToLoad = 0;
@@ -1734,9 +1726,12 @@ void DamagedModelSpooled(void)
 
 	if (specBlocksToLoad == 0 || mem < modelMemory)
 	{
-#if !USE_CD_FILESYSTEM
-		// [A] vertices
-		LoadCarModelFromFile((char*)gCarDamModelPtr[4], MissionHeader->residentModels[4], CAR_MODEL_DAMAGED);
+#if USE_PC_FILESYSTEM
+		if (gContentOverride)
+		{
+			// [A] vertices
+			LoadCarModelFromFile((char*)gCarDamModelPtr[4], MissionHeader->residentModels[4], CAR_MODEL_DAMAGED);
+	}
 #endif
 		
 		specBlocksToLoad = 0;
@@ -1778,9 +1773,12 @@ void LowModelSpooled(void)
 
 	if (specBlocksToLoad == 0 || mem < modelMemory)
 	{
-#if !USE_CD_FILESYSTEM
-		// [A] vertices
-		LoadCarModelFromFile((char*)gCarLowModelPtr[4], MissionHeader->residentModels[4], CAR_MODEL_LOWDETAIL);
+#if USE_PC_FILESYSTEM
+		if (gContentOverride)
+		{
+			// [A] vertices
+			LoadCarModelFromFile((char*)gCarLowModelPtr[4], MissionHeader->residentModels[4], CAR_MODEL_LOWDETAIL);
+		}
 #endif
 		
 		specBlocksToLoad = 0;
@@ -1838,9 +1836,12 @@ void CleanSpooled(void)
 
 	if (specBlocksToLoad == 7-lastCleanBlock) 
 	{
-#if !USE_CD_FILESYSTEM
-		// [A] polygons
-		LoadCarModelFromFile((char*)model, MissionHeader->residentModels[4], CAR_MODEL_CLEAN);
+#if USE_PC_FILESYSTEM
+		if (gContentOverride)
+		{
+			// [A] vertices
+			LoadCarModelFromFile((char*)model, MissionHeader->residentModels[4], CAR_MODEL_CLEAN);
+		}
 #endif
 		
 		model->vertices += (int)model;
@@ -1868,9 +1869,12 @@ void LowSpooled(void)
 	{
 		model = (MODEL *)(specmallocptr + lowOffset);
 
-#if !USE_CD_FILESYSTEM
-		// [A] loads car model from file
-		LoadCarModelFromFile((char*)model, MissionHeader->residentModels[4], CAR_MODEL_LOWDETAIL);
+#if USE_PC_FILESYSTEM
+		if (gContentOverride)
+		{
+			// [A] vertices
+			LoadCarModelFromFile((char*)model, MissionHeader->residentModels[4], CAR_MODEL_LOWDETAIL);
+		}
 #endif
 		
 		model->vertices += (int)model;

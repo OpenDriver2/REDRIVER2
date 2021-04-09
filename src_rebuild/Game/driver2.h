@@ -11,7 +11,7 @@
 #include "psyx_compat.h"
 
 #define USE_PC_FILESYSTEM !defined(PSX)		// PC filesystem is prioritized over CD
-#define USE_CD_FILESYSTEM defined(PSX)
+#define USE_CD_FILESYSTEM 1					// use always
 
 #ifdef PSX
 // TODO: Include PSX STUFF

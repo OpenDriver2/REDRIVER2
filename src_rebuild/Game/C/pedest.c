@@ -643,15 +643,15 @@ void AnimatePed(PEDESTRIAN* pPed)
 	}
 	else
 	{
-		int numFrames;
+		int g_cdNumFrames;
 		pPed->frame1++;
 
 		if (pPed->type - 8U < 3)	// [A] TODO: figure out what type it is to have extended frames
-			numFrames = 31;
+			g_cdNumFrames = 31;
 		else
-			numFrames = 16;
+			g_cdNumFrames = 16;
 
-		if (pPed->frame1 >= numFrames)
+		if (pPed->frame1 >= g_cdNumFrames)
 			pPed->frame1 = 0;
 	}
 

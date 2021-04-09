@@ -454,9 +454,14 @@ void LoadGameLevel(void)
 	InitShadow();
 	//InitTextureNames();			// [A] I know that this is obsolete and used NOWHERE
 
-#if !USE_CD_FILESYSTEM
-	// [A] override textures
-	LoadPermanentTPagesFromTIM();
+#if USE_PC_FILESYSTEM
+	extern int gContentOverride;
+
+	if (gContentOverride)
+	{
+		// [A] override textures
+		LoadPermanentTPagesFromTIM();
+	}
 #endif
 	
 	ReportMode(1);

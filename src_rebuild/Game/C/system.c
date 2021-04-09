@@ -166,6 +166,7 @@ int citystart[8];
 XYPAIR citylumps[8][4];
 
 #ifndef PSX
+int gContentOverride = 1;		// use unpacked filesystem?
 char g_CurrentLevelFileName[64];
 #endif // !PSX
 
@@ -610,7 +611,6 @@ void loadsectorsPC(char* filename, char* addr, int sector, int nsectors)
 		ShowLoading();
 		return;
 	}
-
 #if USE_CD_FILESYSTEM
 	// try using CD
 	loadsectors(addr, sector, nsectors);
@@ -902,22 +902,21 @@ void SetCityType(CITYTYPE type)
 	lasttype = type;
 
 #if USE_PC_FILESYSTEM
-
 	// PC code
 	switch (type)
 	{
-		case CITYTYPE_NIGHT:
-			format = "%sN%s";
-			break;
-		case CITYTYPE_MULTI_DAY:
-			format = "%sM%s";
-			break;
-		case CITYTYPE_MULTI_NIGHT:
-			format = "%sMN%s";
-			break;
-		default:
-			format = "%s%s";
-			break;
+	case CITYTYPE_NIGHT:
+		format = "%sN%s";
+		break;
+	case CITYTYPE_MULTI_DAY:
+		format = "%sM%s";
+		break;
+	case CITYTYPE_MULTI_NIGHT:
+		format = "%sMN%s";
+		break;
+	default:
+		format = "%s%s";
+		break;
 	}
 
 	sprintf(filename, format, gDataFolder, LevelFiles[GameLevel]);
@@ -938,7 +937,7 @@ void SetCityType(CITYTYPE type)
 		fread(citylumps[GameLevel], 1, sizeof(citylumps[GameLevel]), levFp);
 
 		fclose(levFp);
-	
+
 		return;
 	}
 #endif // USE_PC_FILESYSTEM
@@ -1023,12 +1022,12 @@ CDTYPE DiscSwapped(char* filename)
 
 	if (gImitateDiscSwap > 0)
 	{
-		int numFrames = 80;
+		int g_cdNumFrames = 80;
 
 		if(gImitateDiscSwap == 4)
-			numFrames = 28;
+			g_cdNumFrames = 28;
 
-		if (VSync(-1) - gImitateDiscSwapFrames > numFrames)
+		if (VSync(-1) - gImitateDiscSwapFrames > g_cdNumFrames)
 		{
 			gImitateDiscSwap++;
 			gImitateDiscSwapFrames = VSync(-1);
