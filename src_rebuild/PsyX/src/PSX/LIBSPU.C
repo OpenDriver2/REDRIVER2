@@ -442,13 +442,19 @@ long SpuSetTransferMode(long mode)
 unsigned long SpuSetTransferStartAddr(unsigned long addr)
 {
 	s_SpuMemory.writeptr = s_SpuMemory.samplemem + addr;
-	return 0;
+
+	if(addr > SPU_MEMSIZE)
+		return 0;
+
+	if (addr < 0x1010)
+		return 0;
+
+	return 1;
 }
 
 long SpuIsTransferCompleted(long flag)
 {
-	PSYX_UNIMPLEMENTED();
-	return 0;
+	return 1;
 }
 
 void SpuStart()
