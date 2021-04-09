@@ -11,13 +11,8 @@
 
 #include "UTIL/TIMER.H"
 
-//#include <stdio.h>
-//#include <string.h>
-#if !defined(__ANDROID__)
-//#include <thread>
-#endif
-
 #include <assert.h>
+#include <ctype.h>
 
 #define FIXED_TIME_STEP_NTSC		(1.0/60.0)		// 60 FPS clock
 #define FIXED_TIME_STEP_PAL			(1.0/50.0)		// 50 FPS clock
@@ -26,6 +21,15 @@
 #include <SDL.h>
 
 #include "PSYX_RENDER.H"
+
+#ifdef __EMSCRIPTEN__
+int strcasecmp(const char* _l, const char* _r)
+{
+	const u_char* l = (u_char*)_l, * r = (u_char*)_r;
+	for (; *l && *r && (*l == *r || tolower(*l) == tolower(*r)); l++, r++);
+	return tolower(*l) - tolower(*r);
+}
+#endif
 
 SDL_Window* g_window = NULL;
 

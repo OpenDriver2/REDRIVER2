@@ -26,6 +26,9 @@
 #elif defined(__EMSCRIPTEN__)
 #define OGLES
 #define OGLES_VERSION (2)
+#define GL_GLEXT_PROTOTYPES
+#include <EGL/egl.h>
+#include <GL/gl.h>
 #elif defined(__ANDROID__)
 #define OGLES
 #define OGLES_VERSION (3)
@@ -71,7 +74,6 @@
 #elif defined (OGLES)
 #include <SDL_syswm.h>
 #if OGLES_VERSION == 2
-#define GL_GLEXT_PROTOTYPES
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #elif OGLES_VERSION == 3

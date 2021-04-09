@@ -17,6 +17,7 @@ extern "C"
 }
 #endif //def WIN32
 
+
 #define USE_PBO					1
 #define USE_OFFSCREEN_BLIT		1
 #define USE_FRAMEBUFFER_BLIT	1
@@ -261,7 +262,7 @@ int GR_InitialiseGLESContext(char* windowName, int fullscreen)
 #endif
 
 	eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-	g_window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, windowFlags);
+	g_window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, g_windowWidth, g_windowHeight, windowFlags);
 
 	if (g_window == NULL)
 	{
@@ -271,7 +272,7 @@ int GR_InitialiseGLESContext(char* windowName, int fullscreen)
 	if (!eglInitialize(eglDisplay, &majorVersion, &minorVersion))
 	{
 		eprinterr("eglInitialize failure! Error: %x\n", eglGetError());
-		return FALSE;
+		return 0;
 	}
 
 	eglBindAPI(EGL_OPENGL_ES_API);
@@ -285,9 +286,12 @@ int GR_InitialiseGLESContext(char* windowName, int fullscreen)
 		}
 	}
 
+#if !defined(__EMSCRIPTEN__)
 	SDL_SysWMinfo systemInfo;
 	SDL_VERSION(&systemInfo.version);
 	SDL_GetWindowWMInfo(g_window, &systemInfo);
+#endif
+
 #if defined(__EMSCRIPTEN__)
 	EGLNativeWindowType dummyWindow;
 	eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, (EGLNativeWindowType)dummyWindow, NULL);
@@ -299,7 +303,7 @@ int GR_InitialiseGLESContext(char* windowName, int fullscreen)
 	if (eglSurface == EGL_NO_SURFACE)
 	{
 		eprinterr("eglSurface failure! Error: %x\n", eglGetError());
-		return FALSE;
+		return 0;
 	}
 
 	EGLint contextAttribs[] = { EGL_CONTEXT_CLIENT_VERSION, OGLES_VERSION, EGL_NONE };
@@ -307,12 +311,12 @@ int GR_InitialiseGLESContext(char* windowName, int fullscreen)
 
 	if (eglContext == EGL_NO_CONTEXT) {
 		eprinterr("eglContext failure! Error: %x\n", eglGetError());
-		return FALSE;
+		return 0;
 	}
 
 	eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext);
 
-	return TRUE;
+	return 1;
 }
 
 #elif defined(RENDERER_OGL)
@@ -389,11 +393,13 @@ int GR_InitialiseGLContext(char* windowName, int fullscreen)
 
 int GR_InitialiseGLExt()
 {
+#ifndef __EMSCRIPTEN__
 	GLenum err = gladLoadGL();
 
 	if (err == 0)
 		return 0;
-
+#endif
+	
 	const char* rend = (const char*)glGetString(GL_RENDERER);
 	const char* vendor = (const char*)glGetString(GL_VENDOR);
 	eprintf("*Video adapter: %s by %s\n", rend, vendor);
@@ -424,16 +430,16 @@ int GR_InitialiseRender(char* windowName, int width, int height, int fullscreen)
 #if defined(RENDERER_OGL) || defined(OGLES)
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
 
-#if defined(RENDERER_OGL)
-	if (!GR_InitialiseGLContext(windowName, fullscreen))
-	{
-		eprinterr("Failed to Initialise GL Context!\n");
-		return 0;
-	}
-#elif defined(OGLES)
+#if defined(OGLES)
 	if (!GR_InitialiseGLESContext(windowName, fullscreen))
 	{
 		eprinterr("Failed to Initialise GLES Context!\n");
+		return 0;
+	}
+#elif defined(RENDERER_OGL)
+	if (!GR_InitialiseGLContext(windowName, fullscreen))
+	{
+		eprinterr("Failed to Initialise GL Context!\n");
 		return 0;
 	}
 #endif

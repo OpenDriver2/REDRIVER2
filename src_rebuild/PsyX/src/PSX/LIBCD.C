@@ -715,7 +715,7 @@ CdlCB CdReadyCallback(CdlCB func)
 
 void* CdDataCallback(void(*func)())
 {
-	return _eCdDataCallback(func);
+	return (void*)_eCdDataCallback(func);
 }
 
 int CdDiskReady(int mode)
@@ -725,8 +725,6 @@ int CdDiskReady(int mode)
 }
 
 //--------------------------------------------------------------------------------
-
-#include <assert.h>
 
 CdlDataCB g_dataCallback = NULL;
 CdlCB g_readyCallback = NULL;
