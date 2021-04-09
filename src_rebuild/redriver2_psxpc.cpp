@@ -524,12 +524,20 @@ int main(int argc, char** argv)
 	if (config)
 	{
 		extern int gDisableChicagoBridges;
+		extern int gContentOverride;
 		int newScrZ = gCameraDefaultScrZ;
 		const char* dataFolderStr = ini_get(config, "fs", "dataFolder");
 		const char* userReplaysStr = ini_get(config, "game", "userChases");
+		const char* cdImageFileName = ini_get(config, "cdfs", "image");
 
 		InitUserReplays(userReplaysStr);
 
+		// configure Psy-X CD image reader
+		if(cdImageFileName)
+		{
+			PsyX_CDFS_Init(cdImageFileName);
+		}
+		
 		// configure Psy-X pads
 		ini_sget(config, "pad", "pad1device", "%d", &g_controllerToSlotMapping[0]);
 		ini_sget(config, "pad", "pad2device", "%d", &g_controllerToSlotMapping[1]);
@@ -551,6 +559,8 @@ int main(int argc, char** argv)
 		ini_sget(config, "game", "widescreenOverlays", "%d", &gWidescreenOverlayAlign);
 		ini_sget(config, "game", "fastLoadingScreens", "%d", &gFastLoadingScreens);
 		ini_sget(config, "game", "languageId", "%d", &gUserLanguage);
+		ini_sget(config, "game", "overrideContent", "%d", &gContentOverride);
+		
 	
 		gCameraDefaultScrZ = MAX(MIN(newScrZ, 384), 128);
 		
