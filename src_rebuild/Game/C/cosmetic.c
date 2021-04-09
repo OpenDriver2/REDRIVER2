@@ -24,17 +24,19 @@ char* CosmeticFiles[] = {
 
 CAR_COSMETICS car_cosmetics[MAX_CAR_MODELS];
 
+// [A] storage for spooled models
+// remember: we already have more than 1k of free memory with optimizations
+CAR_COSMETICS levelSpecCosmetics[5];
+
 // [D] [T]
 void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 {
 	int model;
-	char* ptr;
 	int i;
 	int offset;
 
-	i = 0;
-
-	do {
+	for (i = 0; i < MAX_CAR_MODELS; i++)
+	{
 		model = MissionHeader->residentModels[i];
 
 		if (model == 13)
@@ -50,16 +52,20 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 		if (model != -1) 
 		{
 			offset = *(int*)(lump_ptr + model * sizeof(int));
-
-			ptr = (lump_ptr + offset);
-
-			memcpy((char*)&car_cosmetics[i], ptr, sizeof(CAR_COSMETICS));
+			memcpy((char*)&car_cosmetics[i], lump_ptr + offset, sizeof(CAR_COSMETICS));
 
 			FixCarCos(&car_cosmetics[i], model);
 		}
+	}
 
-		i++;
-	} while (i < MAX_CAR_MODELS);
+	// [A] cache all special vehicle cosmetics
+	for (i = 0; i < 5; i++)
+	{
+		model = 8 + i;
+
+		offset = *(int*)(lump_ptr + model * sizeof(int));
+		memcpy((char*)&levelSpecCosmetics[i], lump_ptr + offset, sizeof(CAR_COSMETICS));
+	}
 }
 
 // [D] [T]
@@ -112,15 +118,9 @@ void SetupSpecCosmetics(char *loadbuffer)
 	int model;
 	model = MissionHeader->residentModels[4];
 
-#ifndef PSX
-	int offset;
-
-	// [A] always load cosmetics from file
-	// fixes limo cosmetics as well
-	LoadfileSeg(CosmeticFiles[GameLevel], (char*)_other_buffer, 0, 3120);
-	offset = *(int*)(_other_buffer + model * sizeof(int));
-
-	memcpy((char*)&car_cosmetics[4], (char*)_other_buffer + offset, sizeof(CAR_COSMETICS));
+#if 1
+	// [A] always use cached cosmetics
+	memcpy((char*)&car_cosmetics[4], (char*)&levelSpecCosmetics[model - 8], sizeof(CAR_COSMETICS));
 #else
 	memcpy((char*)&car_cosmetics[4], loadbuffer, sizeof(CAR_COSMETICS));
 #endif
@@ -128,8 +128,6 @@ void SetupSpecCosmetics(char *loadbuffer)
 	// [A] don't forget
 	FixCarCos(&car_cosmetics[4], model);
 }
-
-
 
 // [D] [T]
 void AddIndicatorLight(CAR_DATA *cp, int Type)
