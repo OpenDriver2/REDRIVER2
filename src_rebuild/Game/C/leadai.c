@@ -2545,8 +2545,6 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 		{
 			if (cp->ai.l.roadForward > roadAhead[i])
 				cp->ai.l.roadForward = roadAhead[i];
-
-			i += dir;
 		}
 	}
 	else
