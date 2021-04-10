@@ -107,8 +107,30 @@ int intrThreadMain(void* data)
 	return 0;
 }
 
+#ifdef __EMSCRIPTEN__
+EM_BOOL emIntrCallback(double vblDelta, void* userData)
+{
+	const long vmode = GetVideoMode();
+	const double timestep = vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;
+
+	if (vblDelta > timestep)
+	{
+		if (vsync_callback)
+			vsync_callback();
+
+		// do vblank events
+		g_psxSysCounters[PsxCounter_VBLANK]++;
+	}
+
+	return g_stopIntrThread ? EM_FALSE : EM_TRUE;
+}
+#endif
+
 static int PsyX_Sys_InitialiseCore()
 {
+#ifdef __EMSCRIPTEN__
+	emscripten_request_animation_frame_loop(emIntrCallback, NULL);
+#else
 	g_intrThread = SDL_CreateThread(intrThreadMain, "psyX_intr", NULL);
 
 	if (NULL == g_intrThread)
@@ -116,14 +138,14 @@ static int PsyX_Sys_InitialiseCore()
 		eprinterr("SDL_CreateThread failed: %s\n", SDL_GetError());
 		return 0;
 	}
-
+	
 	g_intrMutex = SDL_CreateMutex();
 	if (NULL == g_intrMutex)
 	{
 		eprinterr("SDL_CreateMutex failed: %s\n", SDL_GetError());
 		return 0;
 	}
-
+#endif
 	return 1;
 }
 
@@ -508,7 +530,13 @@ void PsyX_Initialise(char* appName, int width, int height, int fullscreen)
 	eprintinfo("Initialising Psy-X %d.%d\n", PSYX_MAJOR_VERSION, PSYX_MINOR_VERSION);
 	eprintinfo("Build date: %s:%s\n", PSYX_COMPILE_DATE, PSYX_COMPILE_TIME);
 
-	if (SDL_Init(SDL_INIT_VIDEO) != 0)
+	int initFlags = SDL_INIT_VIDEO;
+
+#if defined(__EMSCRIPTEN__)
+	initFlags |= SDL_INIT_AUDIO;
+#endif
+	
+	if (SDL_Init(initFlags) != 0)
 	{
 		eprinterr("Failed to initialise SDL\n");
 		PsyX_Shutdown();

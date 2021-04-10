@@ -1,5 +1,5 @@
-#ifndef EMULATOR_PLATFORM_SETUP_H
-#define EMULATOR_PLATFORM_SETUP_H
+#ifndef PLATFORM_SETUP_H
+#define PLATFORM_SETUP_H
 
 #ifndef _CRT_SECURE_NO_WARNINGS
     #define _CRT_SECURE_NO_WARNINGS
@@ -7,20 +7,19 @@
 
 #include <stdio.h>
 
-/*
- * SDL.H inclusion.
- */
+//-----------------------------------------------------------------------
 
 #if defined(__APPLE__)
 #   include <SDL2/SDL.h>
-#   include <SDL2/SDL_opengl.h>
 #elif defined(__EMSCRIPTEN__)
+#   include <emscripten/emscripten.h>
+#   include <emscripten/html5.h>
 #   include <SDL2/SDL.h>
-#elif (defined(_WINDOWS) || defined(__MINGW32__) || defined(__linux__)) && !defined(__ANDROID__)
-#   include <SDL.h>
-#elif defined (__ANDROID__)
+#elif defined(_WINDOWS) || defined(__MINGW32__) || defined(__linux__) || defined(__ANDROID__)
 #   include <SDL.h>
 #endif
+
+//-----------------------------------------------------------------------
 
 #ifdef _MSC_VER
 #define FUNCNAME __FUNCTION__
@@ -42,6 +41,8 @@
 #   define eprintwarn(fmt, ...)    PsyX_Log_Warning("[Psy-X] " fmt, ##__VA_ARGS__)
 #   define eprinterr(fmt, ...)     PsyX_Log_Error("[Psy-X] [%s] - " fmt, FUNCNAME, ##__VA_ARGS__);
 #endif
+
+//-----------------------------------------------------------------------
 
 #if defined(__EMSCRIPTEN__) || !defined(_DEBUG)
 #   define PSYX_UNIMPLEMENTED()
