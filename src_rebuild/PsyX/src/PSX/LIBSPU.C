@@ -158,17 +158,26 @@ bool PsyX_InitSound()
 	if (g_ALCdevice)
 		return true;
 
+	int numDevices = 0;
+
 	// Init openAL
 	// check devices list
-	char* devices = (char*)alcGetString(nullptr, ALC_DEVICE_SPECIFIER);
+	const char* devices;
+
+	const char* devStrptr = alcGetString(nullptr, ALC_DEVICE_SPECIFIER);
+	devices = devStrptr;
 
 	// go through device list (each device terminated with a single NULL, list terminated with double NULL)
-	while ((*devices) != '\0')
+	while ((*devStrptr) != '\0')
 	{
-		eprintinfo("found sound device: %s\n", devices);
-		devices += strlen(devices) + 1;
+		eprintinfo("found sound device: %s\n", devStrptr);
+		devStrptr += strlen(devStrptr) + 1;
+		numDevices++;
 	}
 
+	if(numDevices == 0)
+		return false;
+	
 	g_ALCdevice = alcOpenDevice(NULL);
 
 	int alErr = AL_NO_ERROR;
@@ -180,6 +189,7 @@ bool PsyX_InitSound()
 		return false;
 	}
 
+#ifndef __EMSCRIPTEN__
 	// out_channel_formats snd_outputchannels
 	int al_context_params[] =
 	{
@@ -187,8 +197,10 @@ bool PsyX_InitSound()
 		ALC_MAX_AUXILIARY_SENDS, 2,
 		0
 	};
-
 	g_ALCcontext = alcCreateContext(g_ALCdevice, al_context_params);
+#else
+	g_ALCcontext = alcCreateContext(g_ALCdevice, NULL);
+#endif
 
 	alErr = alcGetError(g_ALCdevice);
 	if (alErr != AL_NO_ERROR)
