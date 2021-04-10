@@ -219,12 +219,11 @@ void PBO_Download(GrPBO& pbo)
 
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 #else
-	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0); /* just make sure we're not accidentilly using a PBO. */
+	// FIXME: THIS is very slow
+	// Do not use
 
-#if defined(RENDERER_OGL)
-	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pbo.pixels);
-#endif
-
+	// glBindBuffer(GL_PIXEL_PACK_BUFFER, 0); /* just make sure we're not accidentilly using a PBO. */
+	// glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pbo.pixels);
 #endif
 }
 
@@ -1589,8 +1588,13 @@ void GR_UpdateVRAM()
 	g_vramTextureIdx &= 1;
 
 	glBindTexture(GL_TEXTURE_2D, g_vramTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, VRAM_WIDTH, VRAM_HEIGHT, 0, VRAM_FORMAT, GL_UNSIGNED_BYTE, vram);
-	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, VRAM_WIDTH, VRAM_HEIGHT, VRAM_FORMAT, GL_UNSIGNED_BYTE, vram);
+
+#if defined(RENDERER_OGL)
+	glTexImage2D(GL_TEXTURE_2D, 0, VRAM_INTERNAL_FORMAT, VRAM_WIDTH, VRAM_HEIGHT, 0, VRAM_FORMAT, GL_UNSIGNED_BYTE, vram);
+#else
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, VRAM_WIDTH, VRAM_HEIGHT, VRAM_FORMAT, GL_UNSIGNED_BYTE, vram);
+#endif
+
 #endif
 }
 
