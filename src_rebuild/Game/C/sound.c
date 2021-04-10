@@ -1,6 +1,5 @@
 #include "driver2.h"
 #include "sound.h"
-
 #include "camera.h"
 #include "xmplay.h"
 #include "mission.h"
@@ -841,6 +840,9 @@ void StopChannel(int channel)
 	do {
 		if (SpuGetKeyStatus(channels[channel].attr.voice) == 0)
 			break;
+#ifdef __EMSCRIPTEN__
+		emscripten_sleep(1);
+#endif
 	} while (VSync(-1) - vsync < 8);
 
 	ClearChannelFields(channel);
@@ -853,14 +855,13 @@ void StopAllChannels(void)
 {
 	int ct;
 
-	ct = 0;
-	do {
+	for (ct = 0; ct < MAX_SFX_CHANNELS; ct++)
+	{
 		StopChannel(ct);
 		VSync(0);
-		ct++;
-	} while (ct < MAX_SFX_CHANNELS);
+	}
 }
-
+	
 // [D] [T]
 void LockChannel(int channel)
 {

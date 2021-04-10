@@ -8,7 +8,7 @@
 #include "LIBGPU.H"
 #include "LIBSPU.H"
 
-#include "psyx_compat.h"
+#include "platform.h"
 
 #define USE_PC_FILESYSTEM !defined(PSX)		// PC filesystem is prioritized over CD
 #define USE_CD_FILESYSTEM 1					// use always

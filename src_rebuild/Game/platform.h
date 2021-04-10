@@ -7,6 +7,7 @@
 #endif
 
 #include "STRINGS.H"
+#include "psyx_compat.h"
 
 #ifndef PSX
 #include "../utils/fs.h"

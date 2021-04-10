@@ -4,9 +4,8 @@
 #include <stdint.h>
 #include <SDL.h>
 #endif // !PSX
-
-
 #include "system.h"
+
 #include "platform.h"
 #include "xaplay.h"
 #include "loadview.h"

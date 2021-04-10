@@ -67,7 +67,6 @@
 #include "RAND.H"
 #include "STRINGS.H"
 
-
 #include "INLINE_C.H"
 
 int levelstartpos[8][4] = {
@@ -1330,13 +1329,11 @@ void GameLoop(void)
 	InitControllers();
 	VSync(0);
 
-	i = 4;
-	do {
-
+	for (i = 0; i < 5; i++)
+	{
 		ReadControllers();
 		VSync(0);
-		i--;
-	} while (i >= 0);
+	}
 
 	while (game_over == 0)
 	{
@@ -1659,10 +1656,7 @@ void DrawGame(void)
 		RenderGame2(0);
 
 		ObjectDrawnCounter++;
-
-		while ((VSync(-1) - frame) < 2);
-		frame = VSync(-1);
-
+		
 		SwapDrawBuffers();
 	}
 	else
@@ -1678,11 +1672,16 @@ void DrawGame(void)
 		RenderGame2(1);
 		ObjectDrawnCounter++;
 
-		while ((VSync(-1) - frame) < 2);
-		frame = VSync(-1);
-
 		SwapDrawBuffers2(1);
 	}
+
+#ifdef __EMSCRIPTEN__
+	while ((VSync(-1) - frame) < 2)
+		emscripten_sleep(1);
+#else
+	while ((VSync(-1) - frame) < 2);
+#endif
+	frame = VSync(-1);
 
 #ifndef PSX
 	if (!FadingScreen)
@@ -1884,6 +1883,8 @@ int redriver2_main(int argc, char** argv)
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR!", "Unable to load language files!\n\nSee console for details", NULL);
 		return -1;
 	}
+
+	// TODO: divide game by the states, place main loop here.
 	
 	if (argc <= 1)
 #endif
