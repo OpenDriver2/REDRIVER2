@@ -579,7 +579,7 @@ GLint u_Projection3D;
     "       float f = floor(v);\n"\
     "       vec2 c = vec2( (v - f) * 16.0, f );\n"\
     "       vec2 clut_pos = v_page_clut.zw;\n"\
-    "       clut_pos.x += mix(c[0], c[1], mod(index, 2)) * c_VRAMTexel.x;\n"\
+    "       clut_pos.x += mix(c[0], c[1], mod(float(index), 2.0)) * c_VRAMTexel.x;\n"\
     "       return packRG(VRAM(clut_pos));\n"\
     "   }\n"
 
@@ -604,8 +604,8 @@ GLint u_Projection3D;
 
 
 #define GPU_BILINEAR_SAMPLE_FUNC \
-	"	float c_textureSize = 1;\n"\
-	"	float c_onePixel = 1;\n"\
+	"	float c_textureSize = 1.0;\n"\
+	"	float c_onePixel = 1.0;\n"\
 	"	vec4 BilinearTextureSample(vec2 P) {\n"\
 	"		vec2 frac = fract(P);\n"\
 	"		vec2 pixel = floor(P);\n"\
@@ -613,8 +613,8 @@ GLint u_Projection3D;
 	"		float C21 = samplePSX(pixel + vec2(c_onePixel, 0.0));\n"\
 	"		float C12 = samplePSX(pixel + vec2(0.0, c_onePixel));\n"\
 	"		float C22 = samplePSX(pixel + vec2(c_onePixel, c_onePixel));\n"\
-	"		float ax1 = mix(float(C11 > 0), float(C21 > 0), frac.x);\n"\
-	"		float ax2 = mix(float(C12 > 0), float(C22 > 0), frac.x);\n"\
+	"		float ax1 = mix(float(C11 > 0.0), float(C21 > 0.0), frac.x);\n"\
+	"		float ax2 = mix(float(C12 > 0.0), float(C22 > 0.0), frac.x);\n"\
 	"		if(mix(ax1, ax2, frac.y) < 0.5) { discard; }\n"\
 	"		vec4 x1 = mix(decodeRG(C11), decodeRG(C21), frac.x);\n"\
 	"		vec4 x2 = mix(decodeRG(C12), decodeRG(C22), frac.x);\n"\
@@ -646,7 +646,7 @@ GLint u_Projection3D;
 		"		vec4(0.0,  0.0,  1.0,  0.0),\n"\
 		"		vec4(a_zw.z, -a_zw.w,  0.0,  1.0));\n"\
 		"	vec2 geom_ofs = vec2(0.5, 0.5);\n"\
-		"	vec4 fragPosition = (a_zw.y > 100 ? ofsMat * (Projection3D * vec4((a_position.xy + geom_ofs) * vec2(1,-1) * a_zw.y, a_zw.x, 1.0)) : (Projection * vec4(a_position.xy, 0.5, 1.0)));\n" \
+		"	vec4 fragPosition = (a_zw.y > 100.0 ? ofsMat * (Projection3D * vec4((a_position.xy + geom_ofs) * vec2(1.0,-1.0) * a_zw.y, a_zw.x, 1.0)) : (Projection * vec4(a_position.xy, 0.5, 1.0)));\n" \
 		"	gl_Position = fragPosition;\n"
 #else
 #define GTE_PERSPECTIVE_CORRECTION \
@@ -674,7 +674,7 @@ GLint u_Projection3D;
 	"		v_page_clut.xy += c_UVFudge;\n"\
 	"		v_page_clut.zw += c_UVFudge;\n"\
 	GTE_PERSPECTIVE_CORRECTION\
-	"		v_z = (gl_Position.z - 40) * 0.005;\n"\
+	"		v_z = (gl_Position.z - 40.0) * 0.005;\n"\
 	"	}\n"
 
 #define GPU_FRAGMENT_SAMPLE_SHADER(bit) \
