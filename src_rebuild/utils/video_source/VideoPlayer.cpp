@@ -1,7 +1,6 @@
 #include "ReadAVI.h"	// WTF, ostream/fstream
 
 #include <PSYX_RENDER.H>
-#include "COMMON/glad.h"
 
 #include "driver2.h"
 
@@ -275,7 +274,7 @@ void FMVPlayerInitGL()
 	memset(g_FMVDecodedImageBuffer, 0, DECODE_BUFFER_ALLOC);
 	// FIXME: double buffering?
 	
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(RENDERER_OGLES)
 	glGenTextures(1, &g_FMVTexture);
 
 	glBindTexture(GL_TEXTURE_2D, g_FMVTexture);

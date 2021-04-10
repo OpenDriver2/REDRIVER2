@@ -1,6 +1,8 @@
 #include "PSYX_PUBLIC.H"
-#include "PSYX_RENDER.H"
+
 #include "../PLATFORM_SETUP.H"
+#include "PSYX_RENDER.H"
+
 #include "UTIL/TIMER.H"
 
 #include <assert.h>
@@ -66,7 +68,15 @@ float g_pgxpZFar = 1000.0f;
 bool vram_need_update = true;
 bool framebuffer_need_update = false;
 
+#if defined(__EMSCRIPTEN__)
 #if defined(RENDERER_OGL)
+#error It should not be enabled
+#endif
+#endif
+
+
+
+#if defined(USE_OPENGL)
 struct GrPBO
 {
 	GLenum fmt;
@@ -101,6 +111,7 @@ int PBO_Init(GrPBO& pbo, GLenum format, int w, int h, int num)
 	pbo.height = h;
 	pbo.num_pbos = num;
 
+#if defined(RENDERER_OGL) && USE_PBO
 	if (GL_RED == pbo.fmt || GL_GREEN == pbo.fmt || GL_BLUE == pbo.fmt) {
 		pbo.nbytes = pbo.width * pbo.height;
 	}
@@ -126,7 +137,6 @@ int PBO_Init(GrPBO& pbo, GLenum format, int w, int h, int num)
 	pbo.pbos = (GLuint*)malloc(sizeof(GLuint) * num);
 	pbo.pixels = (u_char*)malloc(pbo.nbytes);
 
-#if USE_PBO
 	glGenBuffers(num, pbo.pbos);
 	for (int i = 0; i < num; ++i)
 	{
@@ -141,6 +151,7 @@ int PBO_Init(GrPBO& pbo, GLenum format, int w, int h, int num)
 
 void PBO_Destroy(GrPBO& pbo)
 {
+#if defined(RENDERER_OGL) && USE_PBO
 	if(pbo.pbos)
 	{
 		glDeleteBuffers(pbo.num_pbos, pbo.pbos);
@@ -149,7 +160,8 @@ void PBO_Destroy(GrPBO& pbo)
 		pbo.num_pbos = 0;
 		pbo.pbos = NULL;
 	}
-	
+
+#endif
 	if (pbo.pixels)
 	{
 		free(pbo.pixels);
@@ -166,7 +178,7 @@ void PBO_Download(GrPBO& pbo)
 {
 	unsigned char* ptr;
 	
-#if USE_PBO
+#if defined(RENDERER_OGL) && USE_PBO
 	if (pbo.num_downloads < pbo.num_pbos)
 	{
 		/*
@@ -208,7 +220,11 @@ void PBO_Download(GrPBO& pbo)
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 #else
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0); /* just make sure we're not accidentilly using a PBO. */
+
+#if defined(RENDERER_OGL)
 	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pbo.pixels);
+#endif
+
 #endif
 }
 
@@ -226,7 +242,7 @@ GrPBO		g_glOffscreenPBO;
 
 #endif
 
-#if defined(OGLES)
+#if defined(RENDERER_OGLES)
 EGLint majorVersion = 0, minorVersion = 0;
 EGLContext eglContext = NULL;
 EGLSurface eglSurface = NULL;
@@ -337,7 +353,7 @@ int GR_InitialiseGLContext(char* windowName, int fullscreen)
 		return 0;
 	}
 	
-#if defined(OGLES)
+#if defined(RENDERER_OGLES)
 
 #if defined(__ANDROID__)
 	//Override to full screen.
@@ -350,6 +366,7 @@ int GR_InitialiseGLContext(char* windowName, int fullscreen)
 		windowHeight = displayMode.h;
 	}
 #endif
+
 	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, OGLES_VERSION);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
@@ -360,6 +377,7 @@ int GR_InitialiseGLContext(char* windowName, int fullscreen)
 		eprinterr("Failed to initialise - OpenGL ES %d.x is not supported.\n", OGLES_VERSION);
 		return 0;
 	}
+
 #elif defined(RENDERER_OGL)
 
 	int major_version = 3;
@@ -420,17 +438,12 @@ int GR_InitialiseRender(char* windowName, int width, int height, int fullscreen)
 
 	// Due to debugging in fullscreen
 	SDL_SetHint(SDL_HINT_ALLOW_TOPMOST, "0");
-
-#if defined(RO_DOUBLE_BUFFERED)
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-#else
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
-#endif
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
 
-#if defined(OGLES)
+#if defined(RENDERER_OGLES)
 	if (!GR_InitialiseGLESContext(windowName, fullscreen))
 	{
 		eprinterr("Failed to Initialise GLES Context!\n");
@@ -456,7 +469,7 @@ int GR_InitialiseRender(char* windowName, int width, int height, int fullscreen)
 
 void GR_Shutdown()
 {
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	glDeleteVertexArrays(2, g_glVertexArray);
 	glDeleteBuffers(2, g_glVertexBuffer);
 
@@ -480,7 +493,7 @@ void GR_BeginScene()
 {
 	g_lastBoundTexture = 0;
 
-#if defined(RENDERER_OGL) || defined(OGLES)	
+#if defined(USE_OPENGL)	
 	glClearDepth(1.0f);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glClear(GL_STENCIL_BUFFER_BIT);
@@ -493,7 +506,7 @@ void GR_BeginScene()
 	{
 		GR_SetWireframe(true);
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 #endif
@@ -507,7 +520,7 @@ void GR_EndScene()
 	if (g_wireframeMode)
 		GR_SetWireframe(0);
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	glBindVertexArray(0);
 #endif
 }
@@ -526,10 +539,9 @@ ShaderID g_gte_shader_8;
 ShaderID g_gte_shader_16;
 uint g_bilinearFilterLoc;
 
-#if defined(OGLES) || defined(RENDERER_OGL)
+#if defined(USE_OPENGL)
 GLint u_Projection;
 GLint u_Projection3D;
-
 
 #define GPU_PACK_RG\
 	"		float color_16 = (color_rg.y * 256.0 + color_rg.x) * 255.0;\n"
@@ -617,7 +629,7 @@ GLint u_Projection3D;
 	"}\n"
 
 #if (VRAM_FORMAT == GL_LUMINANCE_ALPHA)
-#define GTE_FETCH_VRAM_FUNC\
+#define GPU_FETCH_VRAM_FUNC\
 		"	uniform sampler2D s_texture;\n"\
 		"	vec2 VRAM(vec2 uv) { return texture2D(s_texture, uv).ra; }\n"
 #else
@@ -874,7 +886,7 @@ void GR_GenerateCommonTextures()
 {
 	unsigned int pixelData = 0xFFFFFFFF;
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	glGenTextures(1, &g_whiteTexture);
 	{
 		glBindTexture(GL_TEXTURE_2D, g_whiteTexture);
@@ -909,7 +921,7 @@ void GR_InitialisePSXShaders()
 	g_gte_shader_8 = GR_Shader_Compile(gte_shader_8);
 	g_gte_shader_16 = GR_Shader_Compile(gte_shader_16);
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	g_bilinearFilterLoc = glGetUniformLocation(g_gte_shader_4, "bilinearFilter");
 	u_Projection = glGetUniformLocation(g_gte_shader_4, "Projection");
 #ifdef USE_PGXP
@@ -924,7 +936,7 @@ int GR_InitialisePSX()
 	GR_GenerateCommonTextures();
 	GR_InitialisePSXShaders();
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_STENCIL_TEST);
 	glBlendColor(0.5f, 0.5f, 0.5f, 0.25f);
@@ -1069,7 +1081,7 @@ void GR_Ortho2D(float left, float right, float bottom, float top, float znear, f
 	float x = (left + right) / (left - right);
 	float y = (bottom + top) / (bottom - top);
 
-#if defined(RENDERER_OGL) || defined(OGLES) // -1..1
+#if defined(USE_OPENGL) // -1..1
 	float z = (znear + zfar) / (znear - zfar);
 #endif
 
@@ -1080,7 +1092,7 @@ void GR_Ortho2D(float left, float right, float bottom, float top, float znear, f
 		x, y, z, 1
 	};
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	glUniformMatrix4fv(u_Projection, 1, GL_FALSE, ortho);
 #endif
 }
@@ -1101,10 +1113,8 @@ void GR_Perspective3D(const float fov, const float width, const float height, co
 		0, 0, 1, 0
 	};
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	glUniformMatrix4fv(u_Projection3D, 1, GL_TRUE, persp);
-#elif defined(D3D9)
-	d3ddev->SetVertexShaderConstantF(u_Projection3D, persp, 4);
 #endif
 }
 
@@ -1146,7 +1156,7 @@ void GR_SetupClipMode(const RECT16& rect, int enable)
 		clipRectX += 0.5f;
 	}
 
-#if defined(RENDERER_OGL) || defined(OGLES)	
+#if defined(USE_OPENGL)
 	float flipOffset = g_windowHeight - clipRectH * (float)g_windowHeight;
 
 	glScissor(clipRectX * (float)g_windowWidth,
@@ -1185,7 +1195,7 @@ void GR_SetShader(const ShaderID& shader)
 {
 	if (g_PreviousShader != shader)
 	{
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 		glUseProgram(shader);
 #else
 #error
@@ -1219,7 +1229,7 @@ void GR_SetTexture(TextureID texture, TexFormat texFormat)
 		return;
 	}
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glUniform1i(g_bilinearFilterLoc, g_bilinearFiltering);
 #endif
@@ -1232,7 +1242,7 @@ void GR_DestroyTexture(TextureID texture)
 	if (texture == -1)
 		return;
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	glDeleteTextures(1, &texture);
 #else
 #error
@@ -1242,8 +1252,7 @@ void GR_DestroyTexture(TextureID texture)
 void GR_Clear(int x, int y, int w, int h, unsigned char r, unsigned char g, unsigned char b)
 {
 	// TODO clear rect if it's necessary
-#if defined(RENDERER_OGL) || defined(OGLES)
-
+#if defined(USE_OPENGL)
 	glClearColor(r / 255.0f, g / 255.0f, b / 255.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
@@ -1259,7 +1268,7 @@ void GR_SaveVRAM(const char* outputFileName, int x, int y, int width, int height
 	return;
 #endif
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 
 #define FLIP_Y (VRAM_HEIGHT - i - 1)
 
@@ -1349,7 +1358,7 @@ void GR_ReadFramebufferDataToVRAM()
 
 	// now we can read it back to VRAM texture
 	{
-#if defined(RENDERER_OGL) || defined(OGLES)	
+#if defined(USE_OPENGL)
 		// reat the texture
 		glBindTexture(GL_TEXTURE_2D, g_fbTexture);
 		PBO_Download(g_glFramebufferPBO);
@@ -1364,7 +1373,7 @@ void GR_SetScissorState(int enable)
 	if (g_PreviousScissorState == enable)
 		return;
 
-#if defined(RENDERER_OGL) || defined(OGLES)	
+#if defined(USE_OPENGL)
 	if (g_PreviousScissorState)
 		glDisable(GL_SCISSOR_TEST);
 	else
@@ -1405,7 +1414,7 @@ void GR_SetOffscreenState(const RECT16& offscreenRect, int enable)
 
 	g_PreviousOffscreenState = enable;
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	if (enable)
 	{
 		// set storage size first
@@ -1473,7 +1482,7 @@ void GR_SetOffscreenState(const RECT16& offscreenRect, int enable)
 
 void GR_StoreFrameBuffer(int x, int y, int w, int h)
 {
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	// set storage size first
 	if (g_PreviousFramebuffer.w != w &&
 		g_PreviousFramebuffer.h != h)
@@ -1574,7 +1583,7 @@ void GR_UpdateVRAM()
 
 	vram_need_update = false;
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	g_vramTexture = g_vramTexturesDouble[g_vramTextureIdx];
 	g_vramTextureIdx++;
 	g_vramTextureIdx &= 1;
@@ -1589,7 +1598,7 @@ void GR_SwapWindow()
 {
 #if defined(RENDERER_OGL)
 	SDL_GL_SwapWindow(g_window);
-#elif defined(OGLES)
+#elif defined(RENDERER_OGLES)
 	eglSwapBuffers(eglDisplay, eglSurface);
 #endif
 
@@ -1603,15 +1612,11 @@ void GR_EnableDepth(int enable)
 
 	g_PreviousDepthMode = enable;
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	if (enable && g_pgxpZBuffer)
-	{
 		glEnable(GL_DEPTH_TEST);
-	}
 	else
-	{
 		glDisable(GL_DEPTH_TEST);
-	}
 #endif
 }
 
@@ -1622,7 +1627,7 @@ void GR_SetStencilMode(int drawPrim)
 
 	g_PreviousStencilMode = drawPrim;
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	if (drawPrim)
 	{
 		glStencilFunc(GL_ALWAYS, 1, 0x10);
@@ -1641,7 +1646,7 @@ void GR_SetBlendMode(BlendMode blendMode)
 	if (g_PreviousBlendMode == blendMode)
 		return;
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	if (g_PreviousBlendMode == BM_NONE)
 		glEnable(GL_BLEND);
 
@@ -1679,7 +1684,7 @@ void GR_SetBlendMode(BlendMode blendMode)
 
 void GR_SetPolygonOffset(float ofs)
 {
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	if (ofs == 0.0f)
 	{
 		glDisable(GL_POLYGON_OFFSET_FILL);
@@ -1694,7 +1699,7 @@ void GR_SetPolygonOffset(float ofs)
 
 void GR_SetViewPort(int x, int y, int width, int height)
 {
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	glViewport(x, y, width, height);
 #endif
 }
@@ -1708,7 +1713,7 @@ void GR_SetWireframe(bool enable)
 
 void GR_BindVertexBuffer()
 {
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	glBindVertexArray(g_glVertexArray[g_curVertexBuffer]);
 
 	glEnableVertexAttribArray(a_position);
@@ -1740,7 +1745,7 @@ void GR_UpdateVertexBuffer(const GrVertex* vertices, int num_vertices)
 	assert(num_vertices <= MAX_NUM_POLY_BUFFER_VERTICES);
 	GR_BindVertexBuffer();
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	glBufferSubData(GL_ARRAY_BUFFER, 0, num_vertices * sizeof(GrVertex), vertices);
 #else
 #error
@@ -1749,7 +1754,7 @@ void GR_UpdateVertexBuffer(const GrVertex* vertices, int num_vertices)
 
 void GR_DrawTriangles(int start_vertex, int triangles)
 {
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	glDrawArrays(GL_TRIANGLES, start_vertex, triangles * 3);
 #else
 #error

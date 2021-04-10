@@ -695,7 +695,7 @@ void PsyX_TakeScreenshot()
 {
 	unsigned char* pixels = new unsigned char[g_windowWidth * g_windowHeight * 4];
 	
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(RENDERER_OGLES)
 	glReadPixels(0, 0, g_windowWidth, g_windowHeight, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
 #endif
 
@@ -825,7 +825,7 @@ uint PsyX_CalcFPS()
 
 void PsyX_WaitForTimestep(int count)
 {
-#if 0 // defined(RENDERER_OGL) || defined(OGLES)
+#if 0 // defined(RENDERER_OGL) || defined(RENDERER_OGLES)
 	glFinish(); // best time to complete GPU drawing
 #endif
 

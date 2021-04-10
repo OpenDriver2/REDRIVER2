@@ -1,6 +1,64 @@
 #ifndef EMULATOR_H
 #define EMULATOR_H
 
+/*
+ * Platform specific emulator setup
+ */
+#if (defined(_WIN32) || defined(__APPLE__) || defined(__linux__)) && !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+#   define RENDERER_OGL
+#   define USE_GLAD
+#elif defined(__EMSCRIPTEN__)
+#   define RENDERER_OGLES
+#   define OGLES_VERSION (3)
+#elif defined(__ANDROID__)
+#   define RENDERER_OGLES
+#   define OGLES_VERSION (3)
+#endif
+
+#if defined(RENDERER_OGL) || defined(RENDERER_OGLES)
+#   define USE_OPENGL 1
+#endif
+
+#if OGLES_VERSION == 2
+#   define ES2_SHADERS
+#elif OGLES_VERSION == 3
+#   define ES3_SHADERS
+#endif
+
+ /*
+  * OpenGL
+  */
+#if defined (RENDERER_OGL)
+
+#   define GL_GLEXT_PROTOTYPES
+#   include "COMMON/glad.h"
+
+#elif defined (RENDERER_OGLES)
+
+#   define GL_GLEXT_PROTOTYPES
+
+#   ifdef __EMSCRIPTEN__
+#      include <GL/gl.h>
+#   else
+#      if OGLES_VERSION == 2
+#          include <GLES2/gl2.h>
+#          include <GLES2/gl2ext.h>
+#      elif OGLES_VERSION == 3
+#          include <GLES3/gl3.h>
+#      endif
+#   endif
+
+#   include <EGL/egl.h>
+
+#endif
+
+  // setup renderer texture formats
+#if defined(RENDERER_OGL)
+#   define TEXTURE_FORMAT GL_UNSIGNED_SHORT_1_5_5_5_REV
+#elif defined(RENDERER_OGLES)
+#   define TEXTURE_FORMAT GL_UNSIGNED_SHORT_5_5_5_1
+#endif
+
 #include "TYPES.H"
 
 #include "COMMON/PGXP_DEFS.H"
@@ -14,7 +72,7 @@
 #define NULL		0
 #endif
 
-#if !((defined RENDERER_OGL) || (defined(OGLES) && OGLES_VERSION == 3))
+#if !((defined RENDERER_OGL) || (defined(RENDERER_OGLES) && OGLES_VERSION == 3))
 #define glGenVertexArrays       glGenVertexArraysOES
 #define glBindVertexArray       glBindVertexArrayOES
 #define glDeleteVertexArrays    glDeleteVertexArraysOES
@@ -23,7 +81,7 @@
 #if defined(RENDERER_OGL)
 #define VRAM_FORMAT            GL_RG
 #define VRAM_INTERNAL_FORMAT   GL_RG32F
-#elif defined(OGLES)
+#elif defined(RENDERER_OGLES)
 #define VRAM_FORMAT            GL_LUMINANCE_ALPHA
 #define VRAM_INTERNAL_FORMAT   GL_LUMINANCE_ALPHA
 #endif
@@ -79,7 +137,7 @@ enum TexFormat
 #define MAX_NUM_POLY_BUFFER_VERTICES (32768)
 #define MAX_NUM_INDEX_BUFFERS        (4096)
 
-#if defined(OGLES) || defined(RENDERER_OGL)
+#if defined(RENDERER_OGLES) || defined(RENDERER_OGL)
 typedef uint TextureID;
 typedef uint ShaderID;
 #else
