@@ -841,7 +841,7 @@ void StopChannel(int channel)
 		if (SpuGetKeyStatus(channels[channel].attr.voice) == 0)
 			break;
 #ifdef __EMSCRIPTEN__
-		emscripten_sleep(1);
+		emscripten_sleep(0);
 #endif
 	} while (VSync(-1) - vsync < 8);
 

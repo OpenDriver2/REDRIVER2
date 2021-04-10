@@ -301,6 +301,10 @@ void ShowBonusGallery()
 			ReadControllers();
 			VSync(-1);
 
+#ifdef __EMSCRIPTEN__
+			emscripten_sleep(0);
+#endif
+
 			if(Pads[0].dirnew & 0x8000)
 			{
 				currentImage--;

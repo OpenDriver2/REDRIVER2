@@ -1676,8 +1676,9 @@ void DrawGame(void)
 	}
 
 #ifdef __EMSCRIPTEN__
+	emscripten_sleep(0);
 	while ((VSync(-1) - frame) < 2)
-		emscripten_sleep(1);
+		emscripten_sleep(0);
 #else
 	while ((VSync(-1) - frame) < 2);
 #endif

@@ -866,7 +866,7 @@ void PsyX_WaitForTimestep(int count)
 		do
 		{
 #ifdef __EMSCRIPTEN__
-			emscripten_sleep(1);
+			emscripten_sleep(0);
 #endif
 		}while (g_psxSysCounters[PsxCounter_VBLANK] - swapLastVbl < count);
 

@@ -1026,6 +1026,10 @@ CDTYPE DiscSwapped(char* filename)
 		if(gImitateDiscSwap == 4)
 			g_cdNumFrames = 28;
 
+#ifdef __EMSCRIPTEN__
+		emscripten_sleep(0);
+#endif
+		
 		if (VSync(-1) - gImitateDiscSwapFrames > g_cdNumFrames)
 		{
 			gImitateDiscSwap++;
