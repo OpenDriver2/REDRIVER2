@@ -534,6 +534,7 @@ void PsyX_Initialise(char* appName, int width, int height, int fullscreen)
 
 #if defined(__EMSCRIPTEN__)
 	initFlags |= SDL_INIT_AUDIO;
+	SDL_SetHint(SDL_HINT_EMSCRIPTEN_ASYNCIFY, "1");
 #endif
 	
 	if (SDL_Init(initFlags) != 0)
@@ -859,13 +860,14 @@ void PsyX_WaitForTimestep(int count)
 
 	// wait for vblank
 	if (g_swapInterval > 0)
-	{
-		//SDL_Delay(1);
-	
+	{	
 		static int swapLastVbl = 0;
 
 		do
 		{
+#ifdef __EMSCRIPTEN__
+			emscripten_sleep(1);
+#endif
 		}while (g_psxSysCounters[PsxCounter_VBLANK] - swapLastVbl < count);
 
 		swapLastVbl = g_psxSysCounters[PsxCounter_VBLANK];

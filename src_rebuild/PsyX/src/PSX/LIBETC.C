@@ -28,6 +28,10 @@ int VSync(int mode)
 {
 	if (mode < 0)
 	{
+#ifdef __EMSCRIPTEN__
+		emscripten_sleep(1);
+#endif
+		
 		// don't wait but still return vblank count
 		return PsyX_Sys_GetVBlankCount();
 	}
