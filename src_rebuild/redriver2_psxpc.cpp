@@ -508,8 +508,17 @@ int main(int argc, char** argv)
 	GPU_printf = printf;
 #endif // _DEBUG
 
-	config = ini_load("config.ini");
+	
+#if 0 // defined(__EMSCRIPTEN__)
+	// mount the current folder as a NODEFS instance
+	// inside of emscripten
+	EM_ASM(
+		FS.mkdir('/working');
+		FS.mount(NODEFS, {}, '/working1');
+	);
+#endif
 
+	config = ini_load("config.ini");
 
 	// best distance
 	gDrawDistance = 600;
