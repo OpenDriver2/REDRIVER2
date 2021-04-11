@@ -20,9 +20,20 @@ extern "C"
 #endif //def WIN32
 
 
+#if defined(RENDERER_OGL)
+
 #define USE_PBO					1
 #define USE_OFFSCREEN_BLIT		1
 #define USE_FRAMEBUFFER_BLIT	1
+
+#else
+
+// OpenGL ES/Web GL has slowdowns and doesn't allow GL_LUMINANCE_ALPHA format as framebuffer, so it's disabled
+#define USE_PBO					0
+#define USE_OFFSCREEN_BLIT		0
+#define USE_FRAMEBUFFER_BLIT	0
+
+#endif
 
 extern SDL_Window* g_window;
 extern int g_swapInterval;
@@ -111,7 +122,7 @@ int PBO_Init(GrPBO& pbo, GLenum format, int w, int h, int num)
 	pbo.height = h;
 	pbo.num_pbos = num;
 
-#if defined(RENDERER_OGL) && USE_PBO
+#if USE_PBO
 	if (GL_RED == pbo.fmt || GL_GREEN == pbo.fmt || GL_BLUE == pbo.fmt) {
 		pbo.nbytes = pbo.width * pbo.height;
 	}
@@ -151,7 +162,7 @@ int PBO_Init(GrPBO& pbo, GLenum format, int w, int h, int num)
 
 void PBO_Destroy(GrPBO& pbo)
 {
-#if defined(RENDERER_OGL) && USE_PBO
+#if USE_PBO
 	if(pbo.pbos)
 	{
 		glDeleteBuffers(pbo.num_pbos, pbo.pbos);
@@ -178,7 +189,7 @@ void PBO_Download(GrPBO& pbo)
 {
 	unsigned char* ptr;
 	
-#if defined(RENDERER_OGL) && USE_PBO
+#if USE_PBO
 	if (pbo.num_downloads < pbo.num_pbos)
 	{
 		/*
@@ -186,14 +197,19 @@ void PBO_Download(GrPBO& pbo)
 		   read from the oldest bound buffer first.
 		*/
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo.pbos[pbo.dx]);
-		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-		//glReadPixels(0, 0, pbo.width, pbo.height, pbo.fmt, GL_UNSIGNED_BYTE, 0);   /* When a GL_PIXEL_PACK_BUFFER is bound, the last 0 is used as offset into the buffer to read into. */
-}
+
+#if defined(RENDERER_OGL)
+		glGetTexImage(GL_TEXTURE_2D, 0, pbo.fmt, GL_UNSIGNED_BYTE, 0);
+#else
+		glReadPixels(0, 0, pbo.width, pbo.height, pbo.fmt, GL_UNSIGNED_BYTE, 0);   /* When a GL_PIXEL_PACK_BUFFER is bound, the last 0 is used as offset into the buffer to read into. */
+#endif
+	}
 	else
 	{
 		/* Read from the oldest bound pbo. */
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo.pbos[pbo.dx]);
 
+#if defined(RENDERER_OGL)
 		ptr = (unsigned char*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
 		if (NULL != ptr)
 		{
@@ -201,12 +217,13 @@ void PBO_Download(GrPBO& pbo)
 			glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 		}
 		else
-		{
 			eprintwarn("Failed to map the buffer\n");
-		}
 
 		/* Trigger the next read. */
-		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+		glGetTexImage(GL_TEXTURE_2D, 0, pbo.fmt, GL_UNSIGNED_BYTE, 0);
+#else
+		glReadPixels(0, 0, pbo.width, pbo.height, GL_RGBA, GL_UNSIGNED_BYTE, pbo.pixels);
+#endif
 	}
 
 	++pbo.dx;
@@ -220,7 +237,7 @@ void PBO_Download(GrPBO& pbo)
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 #else
 	// FIXME: THIS is very slow
-	// Do not use
+	// Do not use at all
 
 	// glBindBuffer(GL_PIXEL_PACK_BUFFER, 0); /* just make sure we're not accidentilly using a PBO. */
 	// glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pbo.pixels);
@@ -533,14 +550,27 @@ void GR_ResetDevice()
 	PsyX_EnableSwapInterval(g_enableSwapInterval);
 }
 
-ShaderID g_gte_shader_4;
-ShaderID g_gte_shader_8;
-ShaderID g_gte_shader_16;
-uint g_bilinearFilterLoc;
+struct GTEShader
+{
+	// shader itself
+	ShaderID shader;
 
 #if defined(USE_OPENGL)
-GLint u_Projection;
-GLint u_Projection3D;
+	GLint projectionLoc;
+	GLint projection3DLoc;
+	GLint bilinearFilterLoc;
+#endif
+};
+
+GTEShader g_gte_shader_4;
+GTEShader g_gte_shader_8;
+GTEShader g_gte_shader_16;
+
+#if defined(USE_OPENGL)
+
+GLint u_projectionLoc;
+GLint u_projection3DLoc;
+GLint u_bilinearFilterLoc;
 
 #define GPU_PACK_RG\
 	"		float color_16 = (color_rg.y * 256.0 + color_rg.x) * 255.0;\n"
@@ -914,19 +944,26 @@ TextureID GR_CreateRGBATexture(int width, int height, u_char* data /*= nullptr*/
 	return newTexture;
 }
 
-void GR_InitialisePSXShaders()
+void GR_CompilePSXShader(GTEShader& sh, const char* source)
 {
-	g_gte_shader_4 = GR_Shader_Compile(gte_shader_4);
-	g_gte_shader_8 = GR_Shader_Compile(gte_shader_8);
-	g_gte_shader_16 = GR_Shader_Compile(gte_shader_16);
+	sh.shader = GR_Shader_Compile(source);
 
 #if defined(USE_OPENGL)
-	g_bilinearFilterLoc = glGetUniformLocation(g_gte_shader_4, "bilinearFilter");
-	u_Projection = glGetUniformLocation(g_gte_shader_4, "Projection");
+	
+	sh.bilinearFilterLoc = glGetUniformLocation(sh.shader, "bilinearFilter");
+	sh.projectionLoc = glGetUniformLocation(sh.shader, "Projection");
 #ifdef USE_PGXP
-	u_Projection3D = glGetUniformLocation(g_gte_shader_4, "Projection3D");
+	sh.projection3DLoc = glGetUniformLocation(sh.shader, "Projection3D");
 #endif
+
 #endif
+}
+
+void GR_InitialisePSXShaders()
+{
+	GR_CompilePSXShader(g_gte_shader_4, gte_shader_4);
+	GR_CompilePSXShader(g_gte_shader_8, gte_shader_8);
+	GR_CompilePSXShader(g_gte_shader_16, gte_shader_16);
 }
 
 int GR_InitialisePSX()
@@ -1021,6 +1058,8 @@ int GR_InitialisePSX()
 			glTexImage2D(GL_TEXTURE_2D, 0, VRAM_INTERNAL_FORMAT, VRAM_WIDTH, VRAM_HEIGHT, 0, VRAM_FORMAT, GL_UNSIGNED_BYTE, NULL);
 		}
 
+		g_vramTexture = g_vramTexturesDouble[0];
+
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 		// VRAM framebuffer for offscreen blitting to VRAM
@@ -1092,7 +1131,7 @@ void GR_Ortho2D(float left, float right, float bottom, float top, float znear, f
 	};
 
 #if defined(USE_OPENGL)
-	glUniformMatrix4fv(u_Projection, 1, GL_FALSE, ortho);
+	glUniformMatrix4fv(u_projectionLoc, 1, GL_FALSE, ortho);
 #endif
 }
 
@@ -1113,7 +1152,7 @@ void GR_Perspective3D(const float fov, const float width, const float height, co
 	};
 
 #if defined(USE_OPENGL)
-	glUniformMatrix4fv(u_Projection3D, 1, GL_TRUE, persp);
+	glUniformMatrix4fv(u_projection3DLoc, 1, GL_TRUE, persp);
 #endif
 }
 
@@ -1210,13 +1249,22 @@ void GR_SetTexture(TextureID texture, TexFormat texFormat)
 	switch (texFormat)
 	{
 	case TF_4_BIT:
-		GR_SetShader(g_gte_shader_4);
+		GR_SetShader(g_gte_shader_4.shader);
+		u_bilinearFilterLoc = g_gte_shader_4.bilinearFilterLoc;
+		u_projectionLoc = g_gte_shader_4.projectionLoc;
+		u_projection3DLoc = g_gte_shader_4.projection3DLoc;
 		break;
 	case TF_8_BIT:
-		GR_SetShader(g_gte_shader_8);
+		GR_SetShader(g_gte_shader_8.shader);
+		u_bilinearFilterLoc = g_gte_shader_8.bilinearFilterLoc;
+		u_projectionLoc = g_gte_shader_8.projectionLoc;
+		u_projection3DLoc = g_gte_shader_8.projection3DLoc;
 		break;
 	case TF_16_BIT:
-		GR_SetShader(g_gte_shader_16);
+		GR_SetShader(g_gte_shader_16.shader);
+		u_bilinearFilterLoc = g_gte_shader_16.bilinearFilterLoc;
+		u_projectionLoc = g_gte_shader_16.projectionLoc;
+		u_projection3DLoc = g_gte_shader_16.projection3DLoc;
 		break;
 	}
 
@@ -1230,7 +1278,7 @@ void GR_SetTexture(TextureID texture, TexFormat texFormat)
 
 #if defined(USE_OPENGL)
 	glBindTexture(GL_TEXTURE_2D, texture);
-	glUniform1i(g_bilinearFilterLoc, g_bilinearFiltering);
+	glUniform1i(u_bilinearFilterLoc, g_bilinearFiltering);
 #endif
 
 	g_lastBoundTexture = texture;
@@ -1445,7 +1493,7 @@ void GR_SetOffscreenState(const RECT16& offscreenRect, int enable)
 
 			// rebind texture
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, g_vramTexture, 0);
-			
+
 			// setup draw and read framebuffers
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, g_glOffscreenFramebuffer);					// source is backbuffer
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_glVRAMFramebuffer);

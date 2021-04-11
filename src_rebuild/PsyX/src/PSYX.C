@@ -530,14 +530,11 @@ void PsyX_Initialise(char* appName, int width, int height, int fullscreen)
 	eprintinfo("Initialising Psy-X %d.%d\n", PSYX_MAJOR_VERSION, PSYX_MINOR_VERSION);
 	eprintinfo("Build date: %s:%s\n", PSYX_COMPILE_DATE, PSYX_COMPILE_TIME);
 
-	int initFlags = SDL_INIT_VIDEO;
-
 #if defined(__EMSCRIPTEN__)
-	initFlags |= SDL_INIT_AUDIO;
 	SDL_SetHint(SDL_HINT_EMSCRIPTEN_ASYNCIFY, "1");
 #endif
 	
-	if (SDL_Init(initFlags) != 0)
+	if (SDL_Init(SDL_INIT_VIDEO) != 0)
 	{
 		eprinterr("Failed to initialise SDL\n");
 		PsyX_Shutdown();
