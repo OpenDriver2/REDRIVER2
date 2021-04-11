@@ -45,9 +45,9 @@ struct PSXBUTTON
 
 struct PSXSCREEN
 {
-	unsigned char index;
-	unsigned char numButtons;
-	unsigned char userFunctionNum;
+	u_char index;
+	u_char numButtons;
+	u_char userFunctionNum;
 	PSXBUTTON buttons[8];
 };
 
@@ -118,6 +118,7 @@ extern int GameNameScreen(int bSetup); // 0x001C60A0
 extern int CheatNumlayerSelect(int bSetup); // 0x001C6724
 extern int UserReplaySelectScreen(int bSetup);
 extern int TimeOfDaySelectScreen(int bSetup);
+extern int DemoScreen(int bSetup);
 
 screenFunc fpUserFunctions[] = {
 	CentreScreen,
@@ -142,6 +143,7 @@ screenFunc fpUserFunctions[] = {
 	CheatNumlayerSelect,
 	UserReplaySelectScreen,
 	TimeOfDaySelectScreen,
+	DemoScreen,
 };
 
 char* gfxNames[4] = {
@@ -637,7 +639,7 @@ void SetupScreenSprts(PSXSCREEN *pScr)
 	pNewScreen = NULL;
 	pCurrScreen = pScr;
 
-	if (pScr->userFunctionNum == 0) 
+	if (pScr->userFunctionNum == 0 || pScr->userFunctionNum == 128)
 	{
 		if (pNewButton != NULL) 
 		{
@@ -1122,6 +1124,11 @@ void LoadFrontendScreens(int full)
 		}
 
 #ifndef PSX
+		if(PsxScreens[0].userFunctionNum == 128)
+		{
+			PsxScreens[0].userFunctionNum = 23;
+		}
+
 		// [A] SCREEN HACKS
 		// replay theater
 		// use screen 39 for it
@@ -3871,6 +3878,41 @@ int TimeOfDaySelectScreen(int bSetup)
 		}
 		else
 			dir = 0;
+	}
+
+	return 0;
+}
+
+int DemoScreen(int bSetup)
+{
+	if (bSetup)
+		return 0;
+	
+	if (feNewPad & 0x40)
+	{
+		FESound(2);
+		GameType = GAME_PURSUIT;
+	
+		GameLevel = 1;
+		gWantNight = 0;
+		gSubGameNumber = 0;
+		
+		GameStart();
+		return 0;
+	}
+
+	if(mainScreenLoaded)
+	{
+		if (feNewPad & 0x20)
+		{
+			LoadBackgroundFile(contNames[0]);
+			FESound(2);
+		}
+	}
+	else if(bQuitToSystem)
+	{
+		bQuitToSystem = 0;
+		LoadBackgroundFile("DATA\\GFX.RAW");
 	}
 
 	return 0;

@@ -287,7 +287,7 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 				cnt++;
 			}
 
-			gDemoLevel = false; // [A]
+			gDemoLevel = 0; // [A]
 		}
 		else if (lump_type == LUMP_JUNCTIONS2)
 		{
@@ -306,6 +306,7 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 			}
 
 			gDemoLevel = 1; // [A]
+			gLoadedMotionCapture = 0;
 		}
 		else if (lump_type == LUMP_JUNCTIONS)
 		{

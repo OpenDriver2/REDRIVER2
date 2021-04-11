@@ -1,5 +1,6 @@
 #include "driver2.h"
 #include "mission.h"
+
 #include "system.h"
 #include "mgeneric.h"
 #include "debris.h"
@@ -2693,7 +2694,7 @@ int MRCreateCar(MS_TARGET *target)
 	{
 		playerid = 0xFF;
 
-		InitPlayer((PLAYER *)(player + 1), &car_data[curslot],
+		InitPlayer(&player[1], &car_data[curslot],
 			CONTROL_TYPE_LEAD_AI, target->s.car.rotation, &pos,
 			target->s.car.model, target->s.car.palette, (char *)&playerid);
 
