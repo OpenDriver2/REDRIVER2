@@ -1,0 +1,111 @@
+a {text-decoration: none!important; color: white;}
+
+html, body {overflow-x: hidden; padding: 0!important}
+
+html, section {
+	background-color: #600000;
+	color: white;
+	background-image: url(tanner.png);
+	height: 100vh;
+	width: 100vw;
+	-webkit-background-size: auto 100%;
+	background-size: auto 100%;
+	background-repeat: no-repeat;
+	background-position: right;
+	text-shadow: 1px 1px #000;
+}
+
+hr {
+	border: none;
+    color: white;
+    background-color: white;
+    height: 2px;
+    width: 100%;
+}
+
+.container {
+	font-family: 'Oswald', sans-serif;
+	font-size: 3vh;
+	width: 80%;
+	text-align: left;
+	line-height: 4vh;
+}
+
+.title{
+	font-size: 4vh;
+}
+
+.credits {
+	color: #ccc;
+	font-size: 2vh;
+	line-height: 2vh;
+}
+
+a:link { color: #FFFFFF;}
+a:hover { color: #FFC000;}
+a:visited { color: #FFFFFF;}
+a:visited:hover { color: #FFC000;}
+
+#link {
+	width: 50%;
+	text-align: center;
+	padding: 20px;
+	margin-top: -20px;
+}
+
+#link a {
+	display: block;
+	cursor: pointer;
+}
+
+#link a:hover {
+	color: #FFC000;
+}
+
+.button {
+	background-color: black;
+	height: 4vh;
+	line-height: 4vh;
+}
+
+.warn {
+	color: #FFC000;
+}
+
+.bull::before
+{
+	content: "•";
+	color: #FFC000;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+	.container {
+		-webkit-background-size: 100% auto;
+		font-size: 2vh;
+		background-size: 100% auto;
+		background-position: center 20%;
+	}
+	.modal-dialog {
+    	width: 100%;
+	}
+}
+
+
+@media (min-width: 320px) and (orientation:landscape) {
+	.container {
+		font-size: 3vh;
+		-webkit-background-size: 80% auto;
+		background-size: 80% auto;
+		background-position: center 20%;
+	}
+	#link {font-size: 2vh}
+	#footer {margin-top: 2%;}
+}
+
+@media (min-width: 320px) and (orientation:portrait) {
+	.container {
+		font-size: 2vh;
+	}
+	#link {font-size: 2vh}
+	#footer {margin-top: 2%;}
+}
