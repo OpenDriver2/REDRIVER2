@@ -108,8 +108,10 @@ int intrThreadMain(void* data)
 }
 
 #ifdef __EMSCRIPTEN__
-EM_BOOL emIntrCallback(double vblDelta, void* userData)
+EM_BOOL emIntrCallback(double animDt, void* userData)
 {
+	double vblDelta = Util_GetHPCTime(&g_vblTimer, 0);
+	
 	const long vmode = GetVideoMode();
 	const double timestep = vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;
 
@@ -129,7 +131,10 @@ EM_BOOL emIntrCallback(double vblDelta, void* userData)
 static int PsyX_Sys_InitialiseCore()
 {
 #ifdef __EMSCRIPTEN__
+	
+	Util_InitHPCTimer(&g_vblTimer);
 	emscripten_request_animation_frame_loop(emIntrCallback, NULL);
+	
 #else
 	g_intrThread = SDL_CreateThread(intrThreadMain, "psyX_intr", NULL);
 

@@ -54,9 +54,6 @@ int DrawSync(int mode)
 		drawsync_callback();
 	}
 
-	// don't wait but it will help to issue GPU commands
-	PsyX_WaitForTimestep(0);
-
 	return 0;
 }
 
