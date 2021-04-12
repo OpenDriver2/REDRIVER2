@@ -58,6 +58,59 @@ volatile bool g_stopIntrThread = false;
 
 extern void(*vsync_callback)(void);
 
+long g_vmode = -1;
+
+#ifdef __EMSCRIPTEN__
+
+long g_emIntrInterval = -1;
+long g_intrVMode = MODE_NTSC;
+double g_emOldDate = 0;
+
+void emIntrCallback(void* userData)
+{
+	if (vsync_callback)
+		vsync_callback();
+
+	// do vblank events
+	g_psxSysCounters[PsxCounter_VBLANK]++;
+}
+
+#endif
+
+long PsyX_Sys_SetVMode(long mode)
+{
+	long old = g_vmode;
+	g_vmode = mode;
+
+#ifdef __EMSCRIPTEN__
+	if (old != g_vmode)
+	{
+		if(g_emIntrInterval != -1)
+			emscripten_clear_interval(g_emIntrInterval);
+
+		int isFF = EM_ASM_INT(
+			var browser = navigator.userAgent.toLowerCase();
+			if (browser.indexOf('firefox') > -1)
+				return 1;
+			return 0;
+		);
+
+		double timestep = g_vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;
+
+		// Daaamn dude this is a very dirty hack. Firefox JS is a slow ass maaaaan
+		if (isFF)
+			timestep *= 0.8;
+		else
+			timestep *= 1.04;
+
+		g_emIntrInterval = emscripten_set_interval(emIntrCallback, timestep * 1000.0, NULL);
+	}
+#endif
+
+	return old;
+}
+
+
 int PsyX_Sys_GetVBlankCount()
 {
 	if (g_swapInterval == 0)
@@ -107,37 +160,12 @@ int intrThreadMain(void* data)
 	return 0;
 }
 
-#ifdef __EMSCRIPTEN__
-
-double g_emIntrAccumTime = 0.0;
-
-EM_BOOL emIntrCallback(double animDt, void* userData)
-{
-	const long vmode = GetVideoMode();
-	const double timestep = vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;
-
-	g_emIntrAccumTime += animDt;
-	
-	if (g_emIntrAccumTime > timestep)
-	{
-		if (vsync_callback)
-			vsync_callback();
-
-		// do vblank events
-		g_psxSysCounters[PsxCounter_VBLANK]++;
-		g_emIntrAccumTime = 0.0;
-	}
-
-	return g_stopIntrThread ? EM_FALSE : EM_TRUE;
-}
-#endif
-
 static int PsyX_Sys_InitialiseCore()
 {
 #ifdef __EMSCRIPTEN__
-	emscripten_request_animation_frame_loop(emIntrCallback, NULL);
-	
+	Util_InitHPCTimer(&g_vblTimer);
 #else
+
 	g_intrThread = SDL_CreateThread(intrThreadMain, "psyX_intr", NULL);
 
 	if (NULL == g_intrThread)
@@ -867,14 +895,17 @@ void PsyX_WaitForTimestep(int count)
 	{	
 		static int swapLastVbl = 0;
 
+		int vbl;
 		do
 		{
 #ifdef __EMSCRIPTEN__
 			emscripten_sleep(0);
 #endif
-		}while (g_psxSysCounters[PsxCounter_VBLANK] - swapLastVbl < count);
+			vbl = PsyX_Sys_GetVBlankCount();
+		}
+		while (vbl - swapLastVbl < count);
 
-		swapLastVbl = g_psxSysCounters[PsxCounter_VBLANK];
+		swapLastVbl = PsyX_Sys_GetVBlankCount();
 	}
 }
 
