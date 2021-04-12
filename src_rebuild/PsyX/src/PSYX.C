@@ -108,20 +108,24 @@ int intrThreadMain(void* data)
 }
 
 #ifdef __EMSCRIPTEN__
+
+double g_emIntrAccumTime = 0.0;
+
 EM_BOOL emIntrCallback(double animDt, void* userData)
 {
-	double vblDelta = Util_GetHPCTime(&g_vblTimer, 0);
-	
 	const long vmode = GetVideoMode();
 	const double timestep = vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;
 
-	if (vblDelta > timestep)
+	g_emIntrAccumTime += animDt;
+	
+	if (g_emIntrAccumTime > timestep)
 	{
 		if (vsync_callback)
 			vsync_callback();
 
 		// do vblank events
 		g_psxSysCounters[PsxCounter_VBLANK]++;
+		g_emIntrAccumTime = 0.0;
 	}
 
 	return g_stopIntrThread ? EM_FALSE : EM_TRUE;
@@ -131,8 +135,6 @@ EM_BOOL emIntrCallback(double animDt, void* userData)
 static int PsyX_Sys_InitialiseCore()
 {
 #ifdef __EMSCRIPTEN__
-	
-	Util_InitHPCTimer(&g_vblTimer);
 	emscripten_request_animation_frame_loop(emIntrCallback, NULL);
 	
 #else
