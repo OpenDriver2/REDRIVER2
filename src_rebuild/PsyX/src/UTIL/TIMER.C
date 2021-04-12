@@ -33,7 +33,7 @@ double Util_GetHPCTime(timerCtx_t* timer, int reset)
 
 	gettimeofday(&curr, NULL);
 
-	double value = (float(curr.tv_sec - timer->timeStart.tv_sec) + 0.000001f * float(curr.tv_usec - timer->timeStart.tv_usec));
+	double value = (double(curr.tv_sec - timer->timeStart.tv_sec) + double(curr.tv_usec - timer->timeStart.tv_usec) * 0.000001);
 
 	if (reset)
 		timer->timeStart = curr;
