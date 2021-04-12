@@ -279,9 +279,9 @@ const EGLint config16bpp[] =
 		EGL_BLUE_SIZE,8,
 		EGL_ALPHA_SIZE,0,
 		EGL_DEPTH_SIZE,24,
-		EGL_STENCIL_SIZE,0,
-		EGL_SAMPLE_BUFFERS,1,
-		EGL_SAMPLES,4,
+		EGL_STENCIL_SIZE,1,
+		//EGL_SAMPLE_BUFFERS,1,
+		//EGL_SAMPLES,4,
 		EGL_NONE
 };
 
@@ -332,6 +332,7 @@ int GR_InitialiseGLESContext(char* windowName, int fullscreen)
 #else
 	eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, (EGLNativeWindowType)systemInfo.info.win.window, NULL);
 #endif
+	
 	if (eglSurface == EGL_NO_SURFACE)
 	{
 		eprinterr("eglSurface failure! Error: %x\n", eglGetError());
@@ -588,15 +589,30 @@ GLint u_bilinearFilterLoc;
 #define GPU_DECODE_RG_FUNC\
 	"	vec4 decodeRG(float rg) { return fract(floor(rg / vec4(1.0, 32.0, 1024.0, 32768.0)) / 32.0); }\n"
 
-#define GPU_DITHERING\
-	"		fragColor *= v_color;\n"\
-	"		mat4 dither = mat4(\n"\
-	"			-4.0,  +0.0,  -3.0,  +1.0,\n"\
-	"			+2.0,  -2.0,  +3.0,  -1.0,\n"\
-	"			-3.0,  +1.0,  -4.0,  +0.0,\n"\
-	"			+3.0,  -1.0,  +2.0,  -2.0) / 255.0;\n"\
-	"		ivec2 dc = ivec2(fract(gl_FragCoord.xy / 4.0) * 4.0);\n"\
-	"		fragColor.xyz += vec3(dither[dc.x][dc.y] * v_texcoord.w);\n"
+#if defined(RENDERER_OGL) || (OGLES_VERSION == 3)
+
+#	define GPU_DITHERING\
+		"		fragColor *= v_color;\n"\
+		"		mat4 dither = mat4(\n"\
+		"			-4.0,  +0.0,  -3.0,  +1.0,\n"\
+		"			+2.0,  -2.0,  +3.0,  -1.0,\n"\
+		"			-3.0,  +1.0,  -4.0,  +0.0,\n"\
+		"			+3.0,  -1.0,  +2.0,  -2.0) / 255.0;\n"\
+		"		ivec2 dc = ivec2(fract(gl_FragCoord.xy / 4.0) * 4.0);\n"\
+		"		fragColor.xyz += vec3(dither[dc.x][dc.y] * v_texcoord.w);\n"
+
+#	define GPU_ARRAY_FUNC\
+		"	float _idx2(vec2 array, int idx) { return array[idx]; }"
+
+#else
+
+#	define GPU_DITHERING\
+		"		fragColor *= v_color;\n"
+
+#	define GPU_ARRAY_FUNC\
+		"	float _idx2(vec2 array, int idx) { if(idx == 0) return array.x; else return array.y; }"
+
+#endif
 
 #define GPU_SAMPLE_TEXTURE_4BIT_FUNC\
     "   // returns 16 bit colour\n"\
@@ -604,7 +620,7 @@ GLint u_bilinearFilterLoc;
     "       vec2 uv = (tc * vec2(0.25, 1.0) + v_page_clut.xy) * c_VRAMTexel;\n"\
     "       vec2 comp = VRAM(uv);\n"\
     "       int index = int(fract(tc.x / 4.0 + 0.0001) * 4.0);\n"\
-    "       float v = comp[index / 2] * (c_PackRange / 16.0);\n"\
+    "       float v = _idx2(comp, index / 2) * (c_PackRange / 16.0);\n"\
     "       float f = floor(v);\n"\
     "       vec2 c = vec2( (v - f) * 16.0, f );\n"\
     "       vec2 clut_pos = v_page_clut.zw;\n"\
@@ -619,7 +635,7 @@ GLint u_bilinearFilterLoc;
 	"		vec2 comp = VRAM(uv);\n"\
 	"		vec2 clut_pos = v_page_clut.zw;\n"\
 	"		int index = int(mod(tc.x, 2.0));\n"\
-	"		clut_pos.x += comp[index] * c_PackRange * c_VRAMTexel.x;\n"\
+	"		clut_pos.x += _idx2(comp, index) * c_PackRange * c_VRAMTexel.x;\n"\
 	"		vec2 color_rg = VRAM(clut_pos);\n"\
 	"		return packRG(VRAM(clut_pos));\n"\
 	"	}\n"
@@ -711,6 +727,7 @@ GLint u_bilinearFilterLoc;
 	GPU_DECODE_RG_FUNC\
 	GPU_FETCH_VRAM_FUNC\
 	"	const vec2 c_VRAMTexel = vec2(1.0 / 1024.0, 1.0 / 512.0);\n"\
+	GPU_ARRAY_FUNC\
 	GPU_SAMPLE_TEXTURE_## bit ##BIT_FUNC\
 	GPU_BILINEAR_SAMPLE_FUNC\
 	GPU_NEAREST_SAMPLE_FUNC\
@@ -1547,6 +1564,7 @@ void GR_StoreFrameBuffer(int x, int y, int w, int h)
 	g_PreviousFramebuffer.w = w;
 	g_PreviousFramebuffer.h = h;
 
+#if USE_FRAMEBUFFER_BLIT
 	glBindFramebuffer(GL_FRAMEBUFFER, g_glBlitFramebuffer);
 
 	// before drawing set source and target
@@ -1558,7 +1576,7 @@ void GR_StoreFrameBuffer(int x, int y, int w, int h)
 		glBlitFramebuffer(0, 0, g_windowWidth, g_windowHeight, x, y + h, x + w, y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 		// Blit framebuffer to VRAM screen area
-#if USE_FRAMEBUFFER_BLIT
+
 		// before drawing set source and target
 		glBindFramebuffer(GL_FRAMEBUFFER, g_glVRAMFramebuffer);
 
@@ -1572,7 +1590,7 @@ void GR_StoreFrameBuffer(int x, int y, int w, int h)
 		glBlitFramebuffer(0, 0, w, h,
 			x, y + h, x + w, y,
 			GL_COLOR_BUFFER_BIT, GL_NEAREST);
-#endif
+
 		
 		// done, unbind
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
@@ -1582,6 +1600,7 @@ void GR_StoreFrameBuffer(int x, int y, int w, int h)
 	// after drawing
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glFlush();
+#endif
 
 	GR_ReadFramebufferDataToVRAM();
 #endif

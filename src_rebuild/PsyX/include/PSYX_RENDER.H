@@ -72,18 +72,23 @@
 #define NULL		0
 #endif
 
-#if !((defined RENDERER_OGL) || (defined(RENDERER_OGLES) && OGLES_VERSION == 3))
-#define glGenVertexArrays       glGenVertexArraysOES
-#define glBindVertexArray       glBindVertexArrayOES
-#define glDeleteVertexArrays    glDeleteVertexArraysOES
+/*
+// FIXME: enable when needed
+#if defined(RENDERER_OGLES)
+
+#	define glGenVertexArrays       glGenVertexArraysOES
+#	define glBindVertexArray       glBindVertexArrayOES
+#	define glDeleteVertexArrays    glDeleteVertexArraysOES
+
 #endif
+*/
 
 #if defined(RENDERER_OGL)
-#define VRAM_FORMAT            GL_RG
-#define VRAM_INTERNAL_FORMAT   GL_RG32F
+#	define VRAM_FORMAT            GL_RG
+#	define VRAM_INTERNAL_FORMAT   GL_RG32F
 #elif defined(RENDERER_OGLES)
-#define VRAM_FORMAT            GL_LUMINANCE_ALPHA
-#define VRAM_INTERNAL_FORMAT   GL_LUMINANCE_ALPHA
+#	define VRAM_FORMAT            GL_LUMINANCE_ALPHA
+#	define VRAM_INTERNAL_FORMAT   GL_LUMINANCE_ALPHA
 #endif
 
 #define VRAM_WIDTH (1024)
