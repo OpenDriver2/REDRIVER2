@@ -3890,6 +3890,9 @@ int DemoScreen(int bSetup)
 	
 	if (feNewPad & 0x40)
 	{
+		pScreenStack[ScreenDepth] = pCurrScreen;
+		pButtonStack[ScreenDepth] = pCurrButton;
+		
 		FESound(2);
 		GameType = GAME_PURSUIT;
 	
