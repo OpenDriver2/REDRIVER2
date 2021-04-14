@@ -792,6 +792,47 @@ void State_GameInit(void* param)
 
 	xa_timeout = 0;
 
+	//-------------------------
+
+	if (NewLevel)
+	{
+#ifdef PSX
+		CloseShutters(2, 320, 512);
+#else
+		CloseShutters(16, 320, 512);
+#endif // PSX
+	}
+
+	DisableDisplay();
+	SetupDrawBuffers();
+	EnableDisplay();
+
+	srand(0x1234);
+
+	cameraview = 0;
+	FrameCnt = 0;
+	NoTextureMemory = 0;
+
+	SpoolSYNC();
+
+	if (CurrentGameMode != GAMEMODE_DIRECTOR)
+		UnPauseSound();
+
+	StartGameSounds();
+
+	SetMasterVolume(gMasterVolume);
+	SetXMVolume(gMusicVolume);
+
+	CloseControllers();
+	InitControllers();
+	VSync(0);
+
+	for (i = 0; i < 5; i++)
+	{
+		ReadControllers();
+		VSync(0);
+	}
+	
 	// switch to STATE_GAMELOOP
 	SetState(STATE_GAMELOOP);
 }
@@ -1150,7 +1191,7 @@ void StepSim(void)
 		requestStationaryCivCar = 0;
 	}
 
-	if (game_over == 0)
+	if (!game_over)
 	{
 		ControlCops();
 
@@ -1291,105 +1332,40 @@ void StepSim(void)
 // [D] [T]
 void State_GameLoop(void* param)
 {
-	int i;
-	static POLY_FT3 buffer[2];
-	static POLY_FT3* null;
+	int cnt;
+	static int frame = 0;
 
-	if (NewLevel != 0)
-	{
-#ifdef PSX
-		CloseShutters(2, 320, 512);
-#else
-		CloseShutters(16, 320, 512);
-#endif // PSX
-	}
+	CheckForPause();
 
-	DisableDisplay();
-	SetupDrawBuffers();
-	EnableDisplay();
+	// moved from StepGame
+	if (FrameCnt == 5)
+		SetDispMask(1);
 
-	srand(0x1234);
-
-	cameraview = 0;
-	FrameCnt = 0;
-	NoTextureMemory = 0;
-
-	SpoolSYNC();
-
-	if (CurrentGameMode != GAMEMODE_DIRECTOR)
-		UnPauseSound();
-
-	StartGameSounds();
-
-	SetMasterVolume(gMasterVolume);
-	SetXMVolume(gMusicVolume);
+	// always stay 30 FPS (2 vblanks)
+	if (VSync(-1) - frame < 2)
+		return;
 	
-	CloseControllers();
-	InitControllers();
-	VSync(0);
+	frame = VSync(-1);
 
-	for (i = 0; i < 5; i++)
-	{
-		ReadControllers();
-		VSync(0);
-	}
+	// game makes 7 frames
+	if(FastForward)
+		cnt = 7;
+	else
+		cnt = 1;
 
-	while (game_over == 0)
-	{
+	while (--cnt >= 0)
 		StepGame();
 
-		if (FastForward == 0 || FrameCnt == (FrameCnt / 7) * 7)
-		{
-			DrawGame();
-		}
-		else
-		{
-			FrameCnt++;
-			null = buffer + (FrameCnt & 1);
+	DrawGame();
 
-			setPolyFT3(null);
-
-			null->x0 = -1;
-			null->y0 = -1;
-			null->x1 = -1;
-			null->y1 = -1;
-			null->x2 = -1;
-			null->y2 = -1;
-			null->tpage = 0x20;
-
-			DrawPrim(null);
-			DrawSync(0);
-		}
-		
-		CheckForPause();
-	}
-
-	if (NoPlayerControl == 0)
-	{
-		ReplayParameterPtr->RecordingEnd = CameraCnt;
-	}
-
-	StopPadVibration(0);
-	StopPadVibration(1);
-	StopAllChannels();
-	FreeXM();
-
-	if (XAPrepared())
-	{
-		StopXA();
-		UnprepareXA();
-	}
-
-	// switch to STATE_GAMECOMPLETE
-	SetState(STATE_GAMECOMPLETE);
+	if (game_over)
+		SetState(STATE_GAMECOMPLETE);
 }
 
 // [D] [T]
 void StepGame(void)
 {
-	int iVar2;
 	int i;
-	unsigned char* puVar4;
 	PLAYER* pl;
 
 	if (CameraCnt == 3)
@@ -1407,9 +1383,6 @@ void StepGame(void)
 		PreLampStreak();
 
 	UpdatePadData();
-
-	if (FrameCnt == 5)
-		SetDispMask(1);
 
 	if ((padd & 0x2000U) && (padd & 0x8000U))
 		padd &= ~0xA000;
@@ -1432,29 +1405,6 @@ void StepGame(void)
 	ModifyCamera();
 
 	lis_pos = camera_position;
-
-	// pause state update
-	// DRIVER 1 leftover
-	/*if (gTimeInWater == 0 || gSinkingTimer < 100)
-	{
-		gStopPadReads = 1;
-		TargetCar = 0;
-		cameraview = 0;
-		gSinkingTimer--;
-		gCameraAngle = gCameraAngle - 0x16U & 0xfff;
-
-		if (gCameraDistance < 1000)
-		{
-			gCameraMaxDistance += 8;
-			gCameraDistance += 8;
-		}
-
-		if (gCameraOffset.vy > -1000)
-			gCameraOffset.vy -= 8;
-
-		if (gSinkingTimer < 0)
-			EnablePause(PAUSEMODE_GAMEOVER);
-	}*/
 
 	// update colours of ambience
 	if (gTimeOfDay == 0)
@@ -1589,7 +1539,19 @@ void StepGame(void)
 	}
 
 	// step physics engine
-	if (pauseflag == 0)
+	if (pauseflag)
+	{
+		if (!NoPlayerControl && !AttractMode && !game_over)
+		{
+			if (pad_connected < 1)
+				EnablePause(PAUSEMODE_PADERROR);
+			else
+				EnablePause(PAUSEMODE_PAUSE);
+		}
+
+		paused = 1;
+	}
+	else
 	{
 		StepSim();
 
@@ -1601,18 +1563,6 @@ void StepGame(void)
 			CamerasSaved = 1;
 			paused = 0;
 		}
-	}
-	else
-	{
-		if (NoPlayerControl == 0 && AttractMode == 0 && game_over == 0)
-		{
-			if (pad_connected < 1)
-				EnablePause(PAUSEMODE_PADERROR);
-			else
-				EnablePause(PAUSEMODE_PAUSE);
-		}
-
-		paused = 1;
 	}
 
 	if (NoPlayerControl && AttractMode == 0)
@@ -1645,10 +1595,6 @@ void DrawGame(void)
 		return;
 	}
 
-#ifndef PSX
-	PsyX_EnableSwapInterval(1);
-#endif
-
 	static int frame = 0;
 
 	if (NumPlayers == 1 || NoPlayerControl)
@@ -1671,21 +1617,14 @@ void DrawGame(void)
 		SwapDrawBuffers2(0);
 
 		ObjectDrawnValue += 16;
+		
 		DrawPauseMenus();
+		
 		RenderGame2(1);
 		ObjectDrawnCounter++;
 
 		SwapDrawBuffers2(1);
 	}
-
-#ifdef __EMSCRIPTEN__
-	emscripten_sleep(0);
-	while ((VSync(-1) - frame) < 2)
-		emscripten_sleep(0);
-#else
-	while ((VSync(-1) - frame) < 2);
-#endif
-	frame = VSync(-1);
 
 #ifndef PSX
 	if (!FadingScreen)
@@ -1700,7 +1639,7 @@ void DrawGame(void)
 void EndGame(GAMEMODE mode)
 {
 	WantedGameMode = mode;
-	pauseflag = 0;
+	//pauseflag = 0;
 	game_over = 1;
 }
 
@@ -1711,14 +1650,18 @@ void EnablePause(PAUSEMODE mode)
 	if (quick_replay == 0 && NoPlayerControl && mode == PAUSEMODE_GAMEOVER)
 		return;
 
+	if (pauseflag)
+		return;
+
 	WantPause = 1;
 	PauseMode = mode;
 }
 
-
 // [D] [T]
 void CheckForPause(void)
 {
+	int ret;
+	
 	if (gDieWithFade > 15 && (quick_replay || NoPlayerControl == 0))
 	{
 		PauseMode = PAUSEMODE_GAMEOVER;
@@ -1732,8 +1675,35 @@ void CheckForPause(void)
 
 		PauseSound();
 		ShowPauseMenu(PauseMode);
+	}
 
-		if (game_over == 0)
+	if(gDrawPauseMenus)
+	{
+		ret = UpdatePauseMenu(PauseMode);
+
+		switch (ret)
+		{
+			case MENU_QUIT_CONTINUE:
+				pauseflag = 0;
+				break;
+			case MENU_QUIT_QUIT:
+				EndGame(GAMEMODE_QUIT);
+				break;
+			case MENU_QUIT_RESTART:
+				EndGame(GAMEMODE_RESTART);
+				break;
+			case MENU_QUIT_DIRECTOR:
+				EndGame(GAMEMODE_DIRECTOR);
+				break;
+			case MENU_QUIT_QUICKREPLAY:
+				EndGame(GAMEMODE_REPLAY);
+				break;
+			case MENU_QUIT_NEXTMISSION:
+				EndGame(GAMEMODE_NEXTMISSION);
+				break;
+		}
+
+		if(ret != 0 && !game_over)
 		{
 			UnPauseSound();
 		}
@@ -2419,7 +2389,7 @@ void InitGameVariables(void)
 
 	gRainCount = 0;
 
-	if (NoPlayerControl == 0 || AttractMode != 0)
+	if (!NoPlayerControl || AttractMode)
 		pauseflag = 0;
 	else
 		pauseflag = 1;

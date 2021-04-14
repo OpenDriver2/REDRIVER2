@@ -1648,13 +1648,44 @@ void CreateScoreNames(SCORE_ENTRY* table, PLAYER_SCORE* score, int position)
 
 }
 
-
-// [D] [T]
-int ShowPauseMenu(PAUSEMODE mode)
+// [A]
+int UpdatePauseMenu(PAUSEMODE mode)
 {
 	PAUSEMODE passed_mode;
-	RECT16 rect;
+	passed_mode = mode;
 
+	if (mode == PAUSEMODE_PADERROR)
+		mode = PAUSEMODE_PAUSE;
+
+	UpdatePadData();
+
+	if (passed_mode == PAUSEMODE_PADERROR)
+	{
+		if (pad_connected == 1)
+			InitaliseMenu(mode);
+		else
+			InitaliseMenu(PAUSEMODE_PADERROR);
+	}
+	else
+	{
+		if (pad_connected != 1)
+			InitaliseMenu(PAUSEMODE_PADERROR);
+	}
+
+	if (pad_connected < 1)
+		playerwithcontrol[2] = 1;
+
+	ControlMenu();
+
+	if (PauseReturnValue != 0)
+		gDrawPauseMenus = 0;
+
+	return PauseReturnValue;
+}
+
+// [D] [T]
+void ShowPauseMenu(PAUSEMODE mode)
+{
 	ReadControllers();
 
 	if (mode == PAUSEMODE_PAUSEP1)
@@ -1686,85 +1717,8 @@ int ShowPauseMenu(PAUSEMODE mode)
 
 	InitaliseMenu(mode);
 	gDrawPauseMenus = 1;
-
-	passed_mode = mode;
-
-	if (mode == PAUSEMODE_PADERROR)
-		mode = PAUSEMODE_PAUSE;
-
+		
 	PauseReturnValue = 0;
-
-	do {
-		UpdatePadData();
-
-		if (passed_mode == PAUSEMODE_PADERROR)
-		{
-			if (pad_connected == 1)
-			{
-				InitaliseMenu(mode);
-				passed_mode = mode;
-			}
-			else
-			{
-				InitaliseMenu(PAUSEMODE_PADERROR);
-			}
-		}
-		else
-		{
-			if (pad_connected != 1)
-			{
-				passed_mode = PAUSEMODE_PADERROR;
-				InitaliseMenu(PAUSEMODE_PADERROR);
-			}
-		}
-
-		if (pad_connected < 1)
-			playerwithcontrol[2] = 1;
-
-		ControlMenu();
-		DrawGame();
-
-	} while (PauseReturnValue == 0);
-
-	gDrawPauseMenus = 0;
-
-	if (NumPlayers > 1)
-	{
-		rect.x = 0;
-		rect.w = 320;
-		rect.h = 1;
-		rect.y = current->draw.clip.y + current->draw.clip.h;
-
-		ClearImage2(&rect, 0, 0, 0);
-		DrawGame();
-
-		ClearImage2(&rect, 0, 0, 0);
-		DrawGame();
-	}
-
-	switch (PauseReturnValue)
-	{
-	case 1:
-		pauseflag = 0;
-		break;
-	case 2:
-		EndGame(GAMEMODE_QUIT);
-		break;
-	case 3:
-		EndGame(GAMEMODE_RESTART);
-		break;
-	case 4:
-		EndGame(GAMEMODE_DIRECTOR);
-		break;
-	case 5:
-		EndGame(GAMEMODE_REPLAY);
-		break;
-	case 7:
-		EndGame(GAMEMODE_NEXTMISSION);
-		break;
-	}
-
-	return PauseReturnValue;
 }
 
 // [D] [T]

@@ -16,6 +16,7 @@
 
 #include "LIBETC.H"
 #include "STRINGS.H"
+#include "xaplay.h"
 
 MISSION_STEP MissionLadder[68] =
 {
@@ -591,6 +592,22 @@ void State_GameComplete(void* param)
 	GameStates nextState;
 	int stateParam;
 	RECT16 rect;
+
+	if (NoPlayerControl == 0)
+	{
+		ReplayParameterPtr->RecordingEnd = CameraCnt;
+	}
+
+	StopPadVibration(0);
+	StopPadVibration(1);
+	StopAllChannels();
+	FreeXM();
+
+	if (XAPrepared())
+	{
+		StopXA();
+		UnprepareXA();
+	}
 
 	// restart is default
 	nextState = STATE_GAMEINIT;

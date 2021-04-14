@@ -459,7 +459,7 @@ void DisplayMissionTitle(void)
 #ifdef PSX
 				gShowMap = 1;
 				SetTextColour(124, 108, 40);
-				PrintStringCentred(gMissionTitle, 0x78);
+				PrintStringCentred(gMissionTitle, 120);
 				gShowMap = 0;
 #else
 				SetTextColour(124, 108, 40);

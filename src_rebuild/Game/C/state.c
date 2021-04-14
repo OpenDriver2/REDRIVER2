@@ -24,9 +24,24 @@ StateFn gStates[] = {
 GameStates gCurrentState = STATE_NONE;
 void* gCurrentStateParam = NULL;
 
+#ifdef __EMSCRIPTEN__
+void emStateFunc()
+{
+	StateFn stateFn = gStates[gCurrentState];
+
+	if (!stateFn)
+		return;
+
+	stateFn(gCurrentStateParam);
+}
+#endif
+
 // the main loop of the game
 void DoStateLoop()
 {
+#ifdef __EMSCRIPTEN__
+	emscripten_set_main_loop(emStateFunc, 120, 1);
+#else
 	do
 	{
 		StateFn stateFn = gStates[gCurrentState];
@@ -36,6 +51,7 @@ void DoStateLoop()
 
 		stateFn(gCurrentStateParam);
 	} while (true);
+#endif
 }
 
 void SetState(GameStates newState, void* param)
