@@ -10,9 +10,11 @@
 #include "director.h"
 #include "camera.h"
 #include "civ_ai.h"
+#include "state.h"
 
 #include "STRINGS.H"
 #include "RAND.H"
+
 
 char AnalogueUnpack[16] = { 
 	0, -51, -63, -75, -87, -99, -111, -123,
@@ -363,10 +365,7 @@ void LoadCutsceneRecorder(char* configFilename)
 	CameraCnt = 0;
 	ini_free(config);
 
-	LaunchGame();
-
-	gLoadedReplay = 0;
-	gCutsceneAsReplay = 0;
+	SetState(STATE_GAMELAUNCH);
 }
 
 #endif // CUTSCENE_RECORDER

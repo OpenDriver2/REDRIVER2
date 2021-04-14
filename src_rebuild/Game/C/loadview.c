@@ -429,13 +429,13 @@ void DrawFadePoly(void)
 // [D] [T]
 void DisplayMissionTitle(void)
 {
-	if (bWantFade != 0 && CameraCnt == 1) 
+	if (bWantFade && CameraCnt == 1) 
 	{
 		bWantFade = 0;
 		bMissionTitleFade = CameraCnt;
 	}
 
-	if (bMissionTitleFade != 0 && pauseflag == 0) 
+	if (bMissionTitleFade && !pauseflag) 
 	{
 		fadeVal -= 6;
 

@@ -68,6 +68,7 @@
 #include "STRINGS.H"
 
 #include "INLINE_C.H"
+#include "state.h"
 
 int levelstartpos[8][4] = {
 	{ 4785, -1024, -223340, 0},
@@ -468,7 +469,7 @@ void LoadGameLevel(void)
 }
 
 // [D] [T]
-void GameInit(void)
+void State_GameInit(void* param)
 {
 	STREAM_SOURCE* plStart;
 	int i, musicType;
@@ -653,8 +654,7 @@ void GameInit(void)
 	InitDrivingGames();
 	InitThrownBombs();
 
-	i = 0;
-	while (i < numPlayersToCreate)
+	for (i = 0; i < numPlayersToCreate; i++)
 	{
 		plStart = PlayerStartInfo[i];
 		padid = -i;
@@ -680,8 +680,6 @@ void GameInit(void)
 
 			car_data[i].ap.needsDenting = 1;
 		}
-
-		i++;
 	}
 
 	// FIXME: need to change streams properly
@@ -744,11 +742,8 @@ void GameInit(void)
 
 	if (gTimeOfDay == 2)
 	{
-		i = 0;
-		do {
+		for ( i = 0; i < MAX_CARS; i++)
 			lightsOnDelay[i] = (i * 11);
-			i++;
-		} while (i < MAX_CARS);
 	}
 
 	tracking_car = 1;
@@ -796,6 +791,9 @@ void GameInit(void)
 	}
 
 	xa_timeout = 0;
+
+	// switch to STATE_GAMELOOP
+	SetState(STATE_GAMELOOP);
 }
 
 extern short paddp;
@@ -1291,7 +1289,7 @@ void StepSim(void)
 }
 
 // [D] [T]
-void GameLoop(void)
+void State_GameLoop(void* param)
 {
 	int i;
 	static POLY_FT3 buffer[2];
@@ -1362,6 +1360,7 @@ void GameLoop(void)
 			DrawPrim(null);
 			DrawSync(0);
 		}
+		
 		CheckForPause();
 	}
 
@@ -1375,11 +1374,14 @@ void GameLoop(void)
 	StopAllChannels();
 	FreeXM();
 
-	if (XAPrepared() != 0)
+	if (XAPrepared())
 	{
 		StopXA();
 		UnprepareXA();
 	}
+
+	// switch to STATE_GAMECOMPLETE
+	SetState(STATE_GAMECOMPLETE);
 }
 
 // [D] [T]
@@ -1772,6 +1774,8 @@ void SsSetSerialVol(short s_num, short voll, short volr)
 	SpuSetCommonAttr(&attr);
 }
 
+//-------------------------------------------
+
 #ifndef PSX
 #include <SDL_messagebox.h>
 void PrintCommandLineArguments()
@@ -1909,11 +1913,11 @@ int redriver2_main(int argc, char** argv)
 	// initializes sound system
 	LoadSoundBankDynamic(NULL, 0, 0);
 
-	// load frontend bank
-	LoadBankFromLump(1, 0);
-
 	InitialiseScoreTables();
 
+	// by default go to frontend
+	SetState(STATE_INITFRONTEND, (void*)1);
+	
 #ifndef PSX
 	LoadCurrentProfile();
 	
@@ -2007,7 +2011,7 @@ int redriver2_main(int argc, char** argv)
 			i++;
 
 			GameType = GAME_TAKEADRIVE;
-			LaunchGame();
+			SetState(STATE_GAMELAUNCH);
 		}
 #endif // _DEBUG_OPTIONS
 		else if (!strcmp(argv[i], "-replay"))
@@ -2041,10 +2045,8 @@ int redriver2_main(int argc, char** argv)
 				{
 					CurrentGameMode = GAMEMODE_REPLAY;
 					gLoadedReplay = 1;
-
-					LaunchGame();
-
-					gLoadedReplay = 0;
+					
+					SetState(STATE_GAMELAUNCH);
 				}
 				else
 				{
@@ -2081,8 +2083,7 @@ int redriver2_main(int argc, char** argv)
 	}
 #endif // PSX
 
-	// now run the frontend
-	DoFrontEnd();
+	DoStateLoop();
 
 #ifndef PSX
 	SaveCurrentProfile();
@@ -2104,7 +2105,7 @@ void FadeScreen(int end_value)
 
 	do {
 		RenderGame();
-	} while (FadingScreen != 0);
+	} while (FadingScreen);
 
 	DrawSync(0);
 	SetDispMask(0);

@@ -30,10 +30,12 @@ extern int ObjectDrawnCounter;
 extern int Havana3DLevelDraw;
 
 extern void SsSetSerialVol(short s_num, short voll, short volr);		// TEMPORARY
-extern void GameInit(); // 0x00059330
+
+extern void State_GameInit(void* param); // 0x00059330
+extern void State_GameLoop(void* param); // 0x0005A8DC
 
 extern void StepSim(); // 0x00059A44
-extern void GameLoop(); // 0x0005A8DC
+
 extern void StepGame(); // 0x0005AB28
 extern void DrawGame(); // 0x0005C458
 

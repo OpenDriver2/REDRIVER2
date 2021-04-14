@@ -34,14 +34,12 @@ POLYCOORD polycoords[6] =
 void ShowHiresScreens(char **names, int delay, int wait)
 {
 	int timedelay;
-	char *filename;
+	char* filename;
 
 	filename = *names;
 
-	do {
-		if (!filename) 
-			return;
-
+	while (filename)
+	{
 		FadeInHiresScreen(filename);
 
 		timedelay = delay-1;
@@ -59,7 +57,7 @@ void ShowHiresScreens(char **names, int delay, int wait)
 		FadeOutHiresScreen();
 
 		filename = *(++names);
-	} while (true);
+	}
 }
 
 // [D] [T]

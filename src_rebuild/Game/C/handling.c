@@ -402,7 +402,8 @@ void GlobalTimeStep(void)
 	{
 		RKstep = 0;
 
-		for (RKstep = 0; RKstep < 2; RKstep++) {
+		for (RKstep = 0; RKstep < 2; RKstep++)
+		{
 			for (i = 0; i < num_active_cars; i++)
 			{
 				cp = active_car_list[i];

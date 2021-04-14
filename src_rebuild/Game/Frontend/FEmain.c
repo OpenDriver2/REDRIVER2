@@ -20,9 +20,10 @@
 #include "C/debris.h"
 #include "C/E3stuff.h"
 #include "C/fmvplay.h"
+#include "C/gamesnd.h"
 #include "C/scores.h"
 #include "C/loadsave.h"
-
+#include "C/state.h"
 
 
 struct PSXBUTTON
@@ -499,11 +500,11 @@ void SetVariable(int var)
 				{
 					StoredGameType = GameType;
 					GameType = GAME_LOADEDREPLAY;
-					GameStart();
+					SetState(STATE_GAMESTART);
 				}
 				else 
 				{
-					ReInitFrontend();
+					SetState(STATE_INITFRONTEND);
 				}
 			}
 			else
@@ -511,7 +512,7 @@ void SetVariable(int var)
 				// [A] load configuration
 				LoadCurrentProfile();
 
-				ReInitFrontend();
+				SetState(STATE_INITFRONTEND);
 				SetMasterVolume(gMasterVolume);
 				SetXMVolume(gMusicVolume);
 			}
@@ -532,7 +533,7 @@ void SetVariable(int var)
 				if(LoadCurrentGame())
 				{
 					GameType = GAME_CONTINUEMISSION;
-					GameStart();
+					SetState(STATE_GAMESTART);
 				}
 			}
 
@@ -1388,7 +1389,7 @@ int HandleKeyPress(void)
 
 					ScreenNames[ScreenDepth] = pCurrButton->Name;
 
-					GameStart();
+					SetState(STATE_GAMESTART);
 				}
 				break;
 			case 4:
@@ -1605,7 +1606,7 @@ void SetFEDrawMode(void)
 	PutDrawEnv(&current->draw);
 }
 
-// [A] - was inlined in DoFrontEnd
+// [A] - was inlined in State_FrontEnd
 void InitFrontend(void)
 {
 	FEInitCdIcon();
@@ -1622,10 +1623,13 @@ void InitFrontend(void)
 
 	SetupBackgroundPolys();
 	SetupScreenSprts(&PsxScreens[0]);
+
+	// load frontend bank
+	LoadBankFromLump(SOUND_BANK_SFX, 0);
 }
 
-// [A] - was inlined in DoFrontEnd
-void InitDisplay(void)
+// [A] - was inlined in State_FrontEnd
+void InitFrontendDisplay(void)
 {
 	SetDispMask(0);
 	ResetGraph(0);
@@ -1653,73 +1657,73 @@ void InitDisplay(void)
 }
 
 // [D] [T]
-void DoFrontEnd(void)
+void State_FrontEnd(void* param)
 {
-	InitFrontend();
-	InitDisplay();
+	PadChecks();
 
-	do
+	if (currPlayer == 2)
 	{
-		PadChecks();
-
-		if (currPlayer == 2) {
-			if (Pads[1].type < 2) {
-				feNewPad = ((feNewPad & 0x10) != 0) ? 0x10 : 0;
-			}
-			else {
-				feNewPad = Pads[1].mapnew;
-			}
-		}
-
-		if (HandleKeyPress())
+		if (Pads[1].type < 2)
 		{
-			if (pNewScreen != NULL)
-			{
-				SetupScreenSprts(pNewScreen);
-				bRedrawFrontend = 1;
-			}
+			feNewPad = ((feNewPad & 0x10) != 0) ? 0x10 : 0;
 		}
+		else 
+		{
+			feNewPad = Pads[1].mapnew;
+		}
+	}
+
+	if (HandleKeyPress())
+	{
+		if (pNewScreen != NULL)
+		{
+			SetupScreenSprts(pNewScreen);
+			bRedrawFrontend = 1;
+		}
+	}
 
 #ifndef PSX
-		DrawScreen(pCurrScreen);
+	DrawScreen(pCurrScreen);
 #else
-		if (bRedrawFrontend)
-		{
-			DrawScreen(pCurrScreen);
-			EndFrame();
+	if (bRedrawFrontend)
+	{
+		DrawScreen(pCurrScreen);
+		EndFrame();
 
-			NewSelection(0);
+		NewSelection(0);
 
-			bRedrawFrontend = 0;
-		}
+		bRedrawFrontend = 0;
+	}
 #endif
 
-		if ((VSync(-1) - idle_timer) > 1800)
+	if ((VSync(-1) - idle_timer) > 1800)
+	{
+		if (ScreenDepth == 0)
 		{
-			if (ScreenDepth == 0)
-			{
-				GameType = GAME_IDLEDEMO;
+			GameType = GAME_IDLEDEMO;
 
-				gCurrentMissionNumber = gIdleReplay + 400;
-				
-				if (++gIdleReplay == 4)
-					gIdleReplay = 0;
+			gCurrentMissionNumber = gIdleReplay + 400;
+			
+			if (++gIdleReplay == 4)
+				gIdleReplay = 0;
 
-				pScreenStack[0] = pCurrScreen;
-				pButtonStack[0] = pCurrButton;
-				ScreenNames[0] = pCurrButton->Name;
+			pScreenStack[0] = pCurrScreen;
+			pButtonStack[0] = pCurrButton;
+			ScreenNames[0] = pCurrButton->Name;
 
-				GameStart();
+			SetState(STATE_GAMESTART);
 
-				pCurrScreen = pScreenStack[0];
+			pCurrScreen = pScreenStack[0];
 
-				bRedrawFrontend = 1;
-				ScreenDepth = 0; // fail-safe?
-			}
-
-			idle_timer = VSync(-1);
+			bRedrawFrontend = 1;
+			ScreenDepth = 0; // fail-safe?
 		}
-	} while (bQuitToSystem != 2);
+
+		idle_timer = VSync(-1);
+	}
+
+	if(bQuitToSystem == 2)
+		SetState(STATE_NONE);
 }
 
 // [D] [T]
@@ -2281,7 +2285,8 @@ int MissionSelectScreen(int bSetup)
 				LoadBackgroundFile("DATA\\CITYBACK.RAW");
 		}
 
-		if (feVariableSave[0] != -1) {
+		if (feVariableSave[0] != -1) 
+		{
 			currMission = feVariableSave[0];
 			currSelIndex = feVariableSave[1];
 			currCity = feVariableSave[2];
@@ -2675,9 +2680,9 @@ int CutSceneSelectScreen(int bSetup)
 				feVariableSave[0] = cutSelection;
 
 				ScreenNames[ScreenDepth] = pCurrButton->Name;
-				StartRender(feVariableSave[0] + CutAmountsTotal[feVariableSave[1]] + 1);
+				SetState(STATE_FMVPLAY, (void*)(feVariableSave[0] + CutAmountsTotal[feVariableSave[1]] + 1));
 
-				return 0;
+				return 1;
 			}
 
 			if (cutSelection == CutAmounts[currCity + 1] - 1 || cutUnlock[gFurthestMission] <= cutSelection + CutAmountsTotal[currCity] + 1)
@@ -2818,11 +2823,7 @@ int CutSceneCitySelectScreen(int bSetup)
 		lastCity = -1;
 		lastCutCity = GameLevel;
 
-		if (GameLevel != 4)
-		{
-			lastCity = -1;
-		}
-		else
+		if (GameLevel == 4)
 		{
 			bReturnToMain = 0;
 
@@ -2833,7 +2834,12 @@ int CutSceneCitySelectScreen(int bSetup)
 
 			feVariableSave[0] = currCity;
 
-			StartRender(0x60);
+			SetState(STATE_FMVPLAY, (void*)96);
+			return 1;
+		}
+		else
+		{
+			lastCity = -1;
 		}
 
 		return 0;
@@ -3764,11 +3770,11 @@ int UserReplaySelectScreen(int bSetup)
 			{
 				StoredGameType = GameType;
 				GameType = GAME_LOADEDREPLAY;
-				GameStart();
+				SetState(STATE_GAMESTART);
 			}
 			else
 			{
-				ReInitFrontend();
+				SetState(STATE_INITFRONTEND);
 			}
 		}
 	}
@@ -3900,7 +3906,8 @@ int DemoScreen(int bSetup)
 		gWantNight = 0;
 		gSubGameNumber = 0;
 		
-		GameStart();
+		SetState(STATE_GAMESTART);
+		
 		return 0;
 	}
 
