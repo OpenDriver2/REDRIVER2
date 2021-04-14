@@ -59,6 +59,7 @@ volatile bool g_stopIntrThread = false;
 extern void(*vsync_callback)(void);
 
 long g_vmode = -1;
+int g_frameSkip = 0;
 
 #ifdef __EMSCRIPTEN__
 
@@ -68,11 +69,19 @@ double g_emOldDate = 0;
 
 void emIntrCallback(void* userData)
 {
-	if (vsync_callback)
-		vsync_callback();
+	double timestep = g_vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;
 
-	// do vblank events
-	g_psxSysCounters[PsxCounter_VBLANK]++;
+	int newVBlank = (Util_GetHPCTime(&g_vblTimer, 0) / timestep) + g_frameSkip;
+
+	int diff = newVBlank - g_psxSysCounters[PsxCounter_VBLANK];
+
+	while (diff--)
+	{
+		if (vsync_callback)
+			vsync_callback();
+
+		g_psxSysCounters[PsxCounter_VBLANK]++;
+	}
 }
 
 EM_BOOL emIntrCallback2(double time, void* userData)
@@ -95,25 +104,10 @@ long PsyX_Sys_SetVMode(long mode)
 		//	emscripten_clear_interval(g_emIntrInterval);
 		g_stopIntrThread = true;
 
-		int isFF = EM_ASM_INT(
-			var browser = navigator.userAgent.toLowerCase();
-			if (browser.indexOf('firefox') > -1)
-				return 1;
-			return 0;
-		);
-
-		double timestep = g_vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;
-
-		// Daaamn dude this is a very dirty hack. Firefox JS is a slow ass maaaaan
-		//if (isFF)
-		//	timestep *= 0.8;
-		//else
-		//	timestep *= 1.04;
+		emscripten_sleep(100);
 
 		g_stopIntrThread = false;
-
-		//g_emIntrInterval = emscripten_set_interval(emIntrCallback, timestep * 1000.0, NULL);
-		emscripten_set_timeout_loop(emIntrCallback2, timestep * 1000.0, NULL);
+		emscripten_set_timeout_loop(emIntrCallback2, 1.0, NULL);
 	}
 #endif
 
@@ -128,6 +122,7 @@ int PsyX_Sys_GetVBlankCount()
 		// extra speedup.
 		// does not affect `vsync_callback` count
 		g_psxSysCounters[PsxCounter_VBLANK] += 1;
+		g_frameSkip++;
 	}
 	
 	return g_psxSysCounters[PsxCounter_VBLANK];
@@ -141,9 +136,7 @@ int intrThreadMain(void* data)
 	{
 		// step counters
 		{
-			const long vmode = GetVideoMode();
-			const double timestep = vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;
-			
+			double timestep = g_vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;			
 			double vblDelta = Util_GetHPCTime(&g_vblTimer, 0);
 
 			if (vblDelta > timestep)
@@ -159,8 +152,8 @@ int intrThreadMain(void* data)
 				g_psxSysCounters[PsxCounter_VBLANK]++;
 			
 				Util_GetHPCTime(&g_vblTimer, 1);
-				//SDL_Delay(1);
 			}
+			
 		}
 
 		// TODO:...
