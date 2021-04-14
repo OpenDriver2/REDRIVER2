@@ -75,6 +75,12 @@ void emIntrCallback(void* userData)
 	g_psxSysCounters[PsxCounter_VBLANK]++;
 }
 
+EM_BOOL emIntrCallback2(double time, void* userData)
+{
+	emIntrCallback(userData);
+	return g_stopIntrThread ? EM_FALSE : EM_TRUE;
+}
+
 #endif
 
 long PsyX_Sys_SetVMode(long mode)
@@ -85,8 +91,9 @@ long PsyX_Sys_SetVMode(long mode)
 #ifdef __EMSCRIPTEN__
 	if (old != g_vmode)
 	{
-		if(g_emIntrInterval != -1)
-			emscripten_clear_interval(g_emIntrInterval);
+		//if(g_emIntrInterval != -1)
+		//	emscripten_clear_interval(g_emIntrInterval);
+		g_stopIntrThread = true;
 
 		int isFF = EM_ASM_INT(
 			var browser = navigator.userAgent.toLowerCase();
@@ -98,12 +105,15 @@ long PsyX_Sys_SetVMode(long mode)
 		double timestep = g_vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;
 
 		// Daaamn dude this is a very dirty hack. Firefox JS is a slow ass maaaaan
-		if (isFF)
-			timestep *= 0.8;
-		else
-			timestep *= 1.04;
+		//if (isFF)
+		//	timestep *= 0.8;
+		//else
+		//	timestep *= 1.04;
 
-		g_emIntrInterval = emscripten_set_interval(emIntrCallback, timestep * 1000.0, NULL);
+		g_stopIntrThread = false;
+
+		//g_emIntrInterval = emscripten_set_interval(emIntrCallback, timestep * 1000.0, NULL);
+		emscripten_set_timeout_loop(emIntrCallback2, timestep * 1000.0, NULL);
 	}
 #endif
 
@@ -566,7 +576,7 @@ void PsyX_Initialise(char* appName, int width, int height, int fullscreen)
 	eprintinfo("Build date: %s:%s\n", PSYX_COMPILE_DATE, PSYX_COMPILE_TIME);
 
 #if defined(__EMSCRIPTEN__)
-	SDL_SetHint(SDL_HINT_EMSCRIPTEN_ASYNCIFY, "1");
+	SDL_SetHint(SDL_HINT_EMSCRIPTEN_ASYNCIFY, "0");
 #endif
 	
 	if (SDL_Init(SDL_INIT_VIDEO) != 0)
