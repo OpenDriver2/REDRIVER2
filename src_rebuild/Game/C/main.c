@@ -1342,7 +1342,7 @@ void State_GameLoop(void* param)
 		SetDispMask(1);
 
 	// always stay 30 FPS (2 vblanks)
-	if (VSync(-1) - frame < 2)
+	if (!gSkipInGameCutscene && VSync(-1) - frame < 2)
 		return;
 	
 	frame = VSync(-1);
