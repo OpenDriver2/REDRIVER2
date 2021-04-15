@@ -494,6 +494,8 @@ void ScoreNameInputHandler(const char* input)
 	gCurrentTextChar = *input;
 }
 
+#define USE_PAD_INPUT defined(PSX)
+
 // [A] Enter the replay name to save
 char* WaitForTextEntry(char* textBufPtr, int maxLength)
 {
@@ -509,12 +511,17 @@ char* WaitForTextEntry(char* textBufPtr, int maxLength)
 	co = 1;
 	so = strlen(username);
 
-#ifndef PSX
+#if !USE_PAD_INPUT
+	// PsyX input handler
 	gameOnTextInput = ScoreNameInputHandler;
 	gCurrentTextChar = 0;
 #endif
 
 	do {
+
+		if (!FilterFrameTime())
+			continue;
+		
 		ReadControllers();
 
 		npad = Pads[0].dirnew;
@@ -524,7 +531,7 @@ char* WaitForTextEntry(char* textBufPtr, int maxLength)
 		if (npad & 0x10)
 			return NULL;
 
-#ifdef PSX
+#if USE_PAD_INPUT
 		if (dpad & 0x20)
 		{
 			// switch to end
@@ -627,7 +634,7 @@ char* WaitForTextEntry(char* textBufPtr, int maxLength)
 		else
 			username[so] = chr;
 
-#ifdef PSX
+#if USE_PAD_INPUT
 		if (npad & 0x80)
 		{
 			if (so > 0)
@@ -671,7 +678,7 @@ char* WaitForTextEntry(char* textBufPtr, int maxLength)
 		DrawGame();
 	} while (true);
 
-#ifndef PSX
+#if !USE_PAD_INPUT
 	gameOnTextInput = NULL;
 #endif
 

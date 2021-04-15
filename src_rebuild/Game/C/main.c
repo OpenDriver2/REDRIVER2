@@ -1329,37 +1329,18 @@ void StepSim(void)
 	}
 }
 
-// [D] [T]
-void State_GameLoop(void* param)
+// [A] checks VSync if can time step
+int FilterFrameTime()
 {
-	int cnt;
 	static int frame = 0;
-
-	CheckForPause();
-
-	// moved from StepGame
-	if (FrameCnt == 5)
-		SetDispMask(1);
 
 	// always stay 30 FPS (2 vblanks)
 	if (!gSkipInGameCutscene && VSync(-1) - frame < 2)
-		return;
-	
+		return 0;
+
 	frame = VSync(-1);
 
-	// game makes 7 frames
-	if(FastForward)
-		cnt = 7;
-	else
-		cnt = 1;
-
-	while (--cnt >= 0)
-		StepGame();
-
-	DrawGame();
-
-	if (game_over)
-		SetState(STATE_GAMECOMPLETE);
+	return 1;
 }
 
 // [D] [T]
@@ -1575,12 +1556,94 @@ void StepGame(void)
 		gRightWayUp = 0;
 	}
 
-	if (AttractMode != 0 && (paddp != 0 || ReplayParameterPtr->RecordingEnd <= CameraCnt))
+	if (AttractMode && (paddp || ReplayParameterPtr->RecordingEnd <= CameraCnt))
 		EndGame(GAMEMODE_QUIT);
 
 	UpdatePlayerInformation();
 }
 
+// [D] [T]
+void CheckForPause(void)
+{
+	int ret;
+
+	if (gDieWithFade > 15 && (quick_replay || NoPlayerControl == 0))
+	{
+		PauseMode = PAUSEMODE_GAMEOVER;
+		WantPause = 1;
+	}
+
+	if (WantPause)
+	{
+		WantPause = 0;
+		pauseflag = 1;
+
+		PauseSound();
+		ShowPauseMenu(PauseMode);
+	}
+
+	if (gDrawPauseMenus)
+	{
+		ret = UpdatePauseMenu(PauseMode);
+
+		switch (ret)
+		{
+		case MENU_QUIT_CONTINUE:
+			pauseflag = 0;
+			break;
+		case MENU_QUIT_QUIT:
+			EndGame(GAMEMODE_QUIT);
+			break;
+		case MENU_QUIT_RESTART:
+			EndGame(GAMEMODE_RESTART);
+			break;
+		case MENU_QUIT_DIRECTOR:
+			EndGame(GAMEMODE_DIRECTOR);
+			break;
+		case MENU_QUIT_QUICKREPLAY:
+			EndGame(GAMEMODE_REPLAY);
+			break;
+		case MENU_QUIT_NEXTMISSION:
+			EndGame(GAMEMODE_NEXTMISSION);
+			break;
+		}
+
+		if (ret != 0 && !game_over)
+		{
+			UnPauseSound();
+		}
+	}
+}
+
+
+// [D] [T]
+void State_GameLoop(void* param)
+{
+	int cnt;
+
+	CheckForPause();
+
+	if (!FilterFrameTime())
+		return;
+
+	// moved from StepGame
+	if (FrameCnt == 5)
+		SetDispMask(1);
+
+	// game makes 7 frames
+	if (FastForward)
+		cnt = 7;
+	else
+		cnt = 1;
+
+	while (--cnt >= 0)
+		StepGame();
+
+	DrawGame();
+
+	if (game_over)
+		SetState(STATE_GAMECOMPLETE);
+}
 
 // TODO: DRAW.C?
 int ObjectDrawnValue = 0;
@@ -1655,59 +1718,6 @@ void EnablePause(PAUSEMODE mode)
 
 	WantPause = 1;
 	PauseMode = mode;
-}
-
-// [D] [T]
-void CheckForPause(void)
-{
-	int ret;
-	
-	if (gDieWithFade > 15 && (quick_replay || NoPlayerControl == 0))
-	{
-		PauseMode = PAUSEMODE_GAMEOVER;
-		WantPause = 1;
-	}
-
-	if (WantPause)
-	{
-		WantPause = 0;
-		pauseflag = 1;
-
-		PauseSound();
-		ShowPauseMenu(PauseMode);
-	}
-
-	if(gDrawPauseMenus)
-	{
-		ret = UpdatePauseMenu(PauseMode);
-
-		switch (ret)
-		{
-			case MENU_QUIT_CONTINUE:
-				pauseflag = 0;
-				break;
-			case MENU_QUIT_QUIT:
-				EndGame(GAMEMODE_QUIT);
-				break;
-			case MENU_QUIT_RESTART:
-				EndGame(GAMEMODE_RESTART);
-				break;
-			case MENU_QUIT_DIRECTOR:
-				EndGame(GAMEMODE_DIRECTOR);
-				break;
-			case MENU_QUIT_QUICKREPLAY:
-				EndGame(GAMEMODE_REPLAY);
-				break;
-			case MENU_QUIT_NEXTMISSION:
-				EndGame(GAMEMODE_NEXTMISSION);
-				break;
-		}
-
-		if(ret != 0 && !game_over)
-		{
-			UnPauseSound();
-		}
-	}
 }
 
 // [D] [T] This is really a Psy-Q function
@@ -2389,7 +2399,7 @@ void InitGameVariables(void)
 
 	gRainCount = 0;
 
-	if (!NoPlayerControl || AttractMode)
+	if (!NoPlayerControl || AttractMode || quick_replay)
 		pauseflag = 0;
 	else
 		pauseflag = 1;

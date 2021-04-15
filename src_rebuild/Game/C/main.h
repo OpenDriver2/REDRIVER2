@@ -34,15 +34,12 @@ extern void SsSetSerialVol(short s_num, short voll, short volr);		// TEMPORARY
 extern void State_GameInit(void* param); // 0x00059330
 extern void State_GameLoop(void* param); // 0x0005A8DC
 
-extern void StepSim(); // 0x00059A44
+extern int FilterFrameTime();
 
-extern void StepGame(); // 0x0005AB28
 extern void DrawGame(); // 0x0005C458
 
 extern void EndGame(GAMEMODE mode); // 0x0005C574
 extern void EnablePause(PAUSEMODE mode); // 0x0005C590
-
-extern void CheckForPause(); // 0x0005C5D0
 
 extern int redriver2_main(int argc, char** argv); // 0x0005B384
 
