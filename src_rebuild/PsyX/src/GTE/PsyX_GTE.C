@@ -380,23 +380,27 @@ int GTE_RotTransPers(int idx, int lm)
 	double fMAC3 = (/*int44*/(double)((float)C2_TRZ * 4096.0f) + ((float)C2_R31 * (float)VX(idx)) + ((float)C2_R32 * (float)VY(idx)) + ((float)C2_R33 * (float)VZ(idx)));
 
 	const double one_by_v = 1.0 / (512.0 * 1024.0);
-
+	
 	g_FP_SXYZ0 = g_FP_SXYZ1;
 	g_FP_SXYZ1 = g_FP_SXYZ2;
 
-	g_FP_SXYZ2.px = (double(C2_OFX) + double(float(C2_IR1) * float(h_over_sz3))) / float(1 << 16);
-	g_FP_SXYZ2.py = (double(C2_OFY) + double(float(C2_IR2) * float(h_over_sz3))) / float(1 << 16);
-	g_FP_SXYZ2.pz = float(max(C2_SZ3, C2_H / 2)) / float(1 << 16);
+	PGXPVector3D temp;
+	
+	temp.px = (double(C2_OFX) + double(float(C2_IR1) * float(h_over_sz3))) / float(1 << 16);
+	temp.py = (double(C2_OFY) + double(float(C2_IR2) * float(h_over_sz3))) / float(1 << 16);
+	temp.pz = float(max(C2_SZ3, C2_H / 2)) / float(1 << 16);
 
 	// make half-float equivalents
-	g_FP_SXYZ2.x = g_FP_SXYZ2.px;
-	g_FP_SXYZ2.y = g_FP_SXYZ2.py;
-	g_FP_SXYZ2.z = g_FP_SXYZ2.pz;
+	temp.x = temp.px;
+	temp.y = temp.py;
+	temp.z = temp.pz;
+
+	g_FP_SXYZ2 = temp;
 
 	// do not perform perspective multiplication so it stays in object space
 	// perspective is performed exclusively in shader
 	PGXPVData vdata;
-	vdata.lookup = PGXP_LOOKUP_VALUE(g_FP_SXYZ2.x, g_FP_SXYZ2.y);		// hash short values
+	vdata.lookup = PGXP_LOOKUP_VALUE(temp.x, temp.y);		// hash short values
 
 	// FIXME: actually we scaling here entire geometry, is that correct?
 	vdata.px = fMAC1 * one_by_v * g_pgxpZScale + g_pgxpZOffset;
@@ -405,7 +409,7 @@ int GTE_RotTransPers(int idx, int lm)
 
 	vdata.ofx = float(C2_OFX) / float(1 << 16);
 	vdata.ofy = float(C2_OFY) / float(1 << 16);
-	vdata.scr_h = float(C2_H);// / float(1 << 16);
+	vdata.scr_h = float(C2_H);
 
 	g_pgxpCache[g_pgxpVertexIndex++] = vdata;
 	g_pgxpTransformed = 1;
