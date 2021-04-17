@@ -132,7 +132,7 @@ void LoadFont(char *buffer)
 	if (buffer != NULL)
 		file = buffer;
 	else
-		file = (char*)_frontend_buffer;	// 0x11b400;		// [A] FIXME: this font address might be used somewhere else
+		file = (char*)_primTab2;	// 0x11b400;		// [A] FIXME: this font address might be used somewhere else
 
 	Loadfile("GFX\\FONT2.FNT",file);
 

@@ -1896,7 +1896,7 @@ int redriver2_main(int argc, char** argv)
 	InitialiseScoreTables();
 
 	// by default go to frontend
-	SetState(STATE_INITFRONTEND, (void*)1);
+	SetState(STATE_INITFRONTEND, (void*)2);
 	
 #ifndef PSX
 	LoadCurrentProfile();

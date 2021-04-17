@@ -278,13 +278,15 @@ void State_GameStart(void* param)
 
 void State_InitFrontEnd(void* param)
 {
-	if ((int)param)
+	if ((int)param == 2)
 	{
 		InitFrontendDisplay();
 		InitFrontend();
 	}
 	else
-		ReInitFrontend();
+	{
+		ReInitFrontend((int)param == 0);
+	}
 
 	SetState(STATE_FRONTEND);
 }
@@ -293,11 +295,11 @@ void State_InitFrontEnd(void* param)
 void State_FMVPlay(void* param)
 {
 	PlayFMV((int)param);
-	SetState(STATE_INITFRONTEND);
+	SetState(STATE_INITFRONTEND, (void*)1);
 }
 
 // [D] [T]
-void ReInitFrontend(void)
+void ReInitFrontend(int returnToMain)
 {
 	RECT16 rect;
 
@@ -345,7 +347,7 @@ void ReInitFrontend(void)
 	DrawSync(0);
 
 	LoadFrontendScreens(1);
-	ReInitScreens();
+	ReInitScreens(returnToMain);
 	
 	DrawSync(0);
 	VSync(0);

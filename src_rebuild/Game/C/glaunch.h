@@ -41,7 +41,7 @@ extern void State_LaunchGame(void* param); // 0x000532B8
 
 extern void State_FMVPlay(void* param); // 0x000536B0
 
-extern void ReInitFrontend(); // 0x00052E98
+extern void ReInitFrontend(int returnToMain); // 0x00052E98
 
 extern void RunMissionLadder(int newgame); // 0x00052FE8
 

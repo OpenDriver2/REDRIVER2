@@ -428,7 +428,11 @@ int missionSetup = 0;
 
 char* ScreenNames[12] = { 0 };
 
-char loaded[3] = { -1, -1, -1 };
+char loaded[3] = {
+	-1,	// City
+	-1, // Cars
+	-1  // Cuts
+};
 
 PSXSCREEN* pCurrScreen = NULL;
 PSXSCREEN* pNewScreen = NULL;
@@ -1068,18 +1072,18 @@ void LoadBackgroundFile(char* name)
 	{
 		FEDrawCDicon();
 
-		LoadfileSeg(name, (char*)_overlay_buffer, i * 0x8000, 0x8000);
+		LoadfileSeg(name, (char*)_other_buffer, i * 0x8000, 0x8000);
 		FEDrawCDicon();
 
 		rect.y = (i / 6);
 		rect.x = (i - rect.y * 6) * 64 + 640;
 		rect.y *= 256;
 
-		LoadImage(&rect, (u_long*)_overlay_buffer);
+		LoadImage(&rect, (u_long*)_other_buffer);
 		FEDrawCDicon();
 	}
 
-	LoadfileSeg(name, (char*)_overlay_buffer, iTpage * 0x8000, 0x800);
+	LoadfileSeg(name, (char*)_other_buffer, iTpage * 0x8000, 0x800);
 	FEDrawCDicon();
 
 	rect.h = 1;
@@ -1087,7 +1091,7 @@ void LoadBackgroundFile(char* name)
 	rect.x = (iTpage - rect.y * 6) * 64 + 640;
 	rect.y *= 256;
 
-	LoadImage(&rect, (u_long*)_overlay_buffer);
+	LoadImage(&rect, (u_long*)_other_buffer);
 	DrawSync(0);
 
 	SetupBackgroundPolys();
@@ -1107,10 +1111,10 @@ void LoadFrontendScreens(int full)
 #ifndef USE_EMBEDDED_FRONTEND_SCREENS
 	if (full)
 	{
-		Loadfile("DATA\\SCRS.BIN", (char*)_frontend_buffer);
+		Loadfile("DATA\\SCRS.BIN", (char*)_other_buffer);
 
-		ptr = (char*)_frontend_buffer + 20; // skip header and number of screens
-		iNumScreens = (int)_frontend_buffer[16];
+		ptr = (char*)_other_buffer + 20; // skip header and number of screens
+		iNumScreens = (int)_other_buffer[16];
 
 		for (int i = 0; i < iNumScreens; i++)
 		{
@@ -1152,66 +1156,71 @@ void LoadFrontendScreens(int full)
 	for (int i = 0; i < 2; i++)
 	{
 		ShowLoading();
-		LoadfileSeg("DATA\\GFX.RAW", (char*)_frontend_buffer, 0x30000 + (i * 0x8000), 0x8000);
+		LoadfileSeg("DATA\\GFX.RAW", (char*)_other_buffer, 0x30000 + (i * 0x8000), 0x8000);
 
 		rect.x = 640 + (i * 64);
 		rect.y = 256;
 
-		LoadImage(&rect, (u_long*)_frontend_buffer);
+		LoadImage(&rect, (u_long*)_other_buffer);
 		DrawSync(0);
 	}
 
 	ShowLoading();
-	LoadfileSeg("DATA\\GFX.RAW", (char*)_frontend_buffer, 0x58000, 0x8000);
+	LoadfileSeg("DATA\\GFX.RAW", (char*)_other_buffer, 0x58000, 0x8000);
 
 	rect.x = 960;
 	rect.y = 256;
 
 	// load font
-	LoadImage(&rect, (u_long*)_frontend_buffer);
+	LoadImage(&rect, (u_long*)_other_buffer);
 	DrawSync(0);
 
 	if (full)
 	{
-		Loadfile("DATA\\FEFONT.BNK", (char*)_frontend_buffer);
-		memcpy((u_char*)&feFont, (u_char*)_frontend_buffer, sizeof(feFont));
+		Loadfile("DATA\\FEFONT.BNK", (char*)_other_buffer);
+		memcpy((u_char*)&feFont, (u_char*)_other_buffer, sizeof(feFont));
 	}
 }
 
 // [D] [T]
-void ReInitScreens(void)
+void ReInitScreens(int returnToMain)
 {
 #ifndef PSX
-	bCdIconSetup = 0;
-	iScreenSelect = SCREEN_NONE;
+	bReturnToMain = returnToMain;
 
-	cutSelection = 0;
-	currCity = 0;
+	if(bReturnToMain)
+	{
+		bCdIconSetup = 0;
+		iScreenSelect = SCREEN_NONE;
 
-	bRedrawFrontend = 0;
-	bReturnToMain = 1;
+		cutSelection = 0;
+		currCity = 0;
 
-	idle_timer = 0;
-	currPlayer = 1;
-	feNewPad = 0;
-	fePad = 0;
-	ScreenDepth = 0;
+		bRedrawFrontend = 0;
 
-	loaded[0] = -1;
-	loaded[1] = -1;
-	loaded[2] = -1;
-	padsConnected[0] = 1;
-	padsConnected[1] = 0;
+		idle_timer = 0;
+		currPlayer = 1;
+		feNewPad = 0;
+		fePad = 0;
+		ScreenDepth = 0;
 
-	bDrawExtra = 0;
-	mainScreenLoaded = 1;
-	bDoneAllready = 0;
-	allowVibration = 1;
+		loaded[0] = -1;
+		loaded[1] = -1;
+		loaded[2] = -1;
+	
+		padsConnected[0] = 1;
+		padsConnected[1] = 0;
 
-	ScreenNames[0] = 0;
-	gInFrontend = 1;
-	currMission = -1;
-	missionSetup = 0;
+		bDrawExtra = 0;
+		mainScreenLoaded = 1;
+		bDoneAllready = 0;
+		allowVibration = 1;
+
+		ScreenNames[0] = 0;
+		gInFrontend = 1;
+		currMission = -1;
+		missionSetup = 0;
+	}
 
 	extern void SwitchMappings(int menu);
 	SwitchMappings(1);
@@ -1557,7 +1566,7 @@ void PadChecks(void)
 
 		if (ScreenDepth != 0) 
 		{
-			ReInitScreens();
+			ReInitScreens(bReturnToMain);
 		}
 	}
 	if (bRedrawFrontend == 0 && numPadsConnected != oldnum &&
@@ -2599,8 +2608,6 @@ int MissionCityScreen(int bSetup)
 	return 0;
 }
 
-
-
 // [D] [T]
 int CutSceneSelectScreen(int bSetup)
 {
@@ -2630,7 +2637,7 @@ int CutSceneSelectScreen(int bSetup)
 		if (loaded[2] == GameLevel)
 		{
 			bDrawExtra = 1;
-			LoadImage(&rect, (u_long*)_frontend_buffer + 0x20000);
+			LoadImage(&rect, (u_long*)(_frontend_buffer + 0x20000 + cutSelection * 0x8000));
 			DrawSync(0);
 		}
 		else
@@ -2739,10 +2746,7 @@ int CutSceneCitySelectScreen(int bSetup)
 		if (feVariableSave[0] == -1)
 		{
 			if (iScreenSelect == SCREEN_NONE)
-			{
-				currCity = 0;
 				iScreenSelect = SCREEN_CUTCITY;
-			}
 		}
 		else
 		{
