@@ -1504,7 +1504,7 @@ void StepGame(void)
 	old_camera_change = camera_change;
 
 	// do camera changes
-	if (pauseflag == 0 && NoPlayerControl)
+	if (!pauseflag && NoPlayerControl)
 	{
 		if (gInGameCutsceneActive != 0)
 			camera_change = CutsceneCameraChange(CameraCnt);
@@ -1529,6 +1529,11 @@ void StepGame(void)
 			else
 				EnablePause(PAUSEMODE_PAUSE);
 		}
+		else if(quick_replay && !paused)
+		{
+			WantPause = 1;
+			PauseMode = PAUSEMODE_GAMEOVER;
+		}
 
 		paused = 1;
 	}
@@ -1539,7 +1544,7 @@ void StepGame(void)
 		if (gDieWithFade != 0)
 			gDieWithFade++;
 
-		if (paused != 0)
+		if (paused)
 		{
 			CamerasSaved = 1;
 			paused = 0;
