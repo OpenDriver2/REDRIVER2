@@ -1621,10 +1621,10 @@ void State_GameLoop(void* param)
 {
 	int cnt;
 
-	CheckForPause();
-
 	if (!FilterFrameTime())
 		return;
+
+	CheckForPause();
 
 	// moved from StepGame
 	if (FrameCnt == 5)
