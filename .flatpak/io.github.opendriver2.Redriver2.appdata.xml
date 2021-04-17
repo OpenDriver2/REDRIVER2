@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component type="desktop">
+  <id>io.github.opendriver2.Redriver2</id>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <name>REDRIVER2</name>
+  <summary>Driver 2 Playstation game reverse engineering effort</summary>
+  <description>
+    <p>Driver 2 Playstation game reverse engineering effort </p>
+  </description>
+  <categories>
+    <category>Game</category>
+  </categories>
+  <releases>
+    <release version="V_VERSION" date="V_DATE" />
+  </releases>
+</component>

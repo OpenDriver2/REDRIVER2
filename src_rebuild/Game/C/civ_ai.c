@@ -168,9 +168,9 @@ int InitCar(CAR_DATA* cp, int direction, LONGVECTOR4* startPos, unsigned char co
 // [D] [T]
 CAR_DATA* FindClosestCar(int x, int y, int z, int* distToCarSq)
 {
-	uint distSq;
+	u_int distSq;
 	CAR_DATA* lcp;
-	uint retDistSq;
+	u_int retDistSq;
 	CAR_DATA* retCar;
 	int dx; // $a0
 	int dz; // $v1
@@ -226,7 +226,6 @@ void CivCarFX(CAR_DATA* cp)
 {
 	if (cp->ai.c.thrustState != 3)
 	{
-
 		if (cp->ai.c.turnNode != -1)
 			AddIndicatorLight(cp, cp->ai.c.turnDir);
 
@@ -842,11 +841,12 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 					}
 				}
 
+
 				// fit new lane
 				newLane = tmpNewLane[roadCnt];
-				
+
 				if (newLane < 0)
-					laneFit[roadCnt] = newLane;
+					laneFit[roadCnt] = 0;
 				else if (newLane <= numLanes - 1)
 					laneFit[roadCnt] = 0;
 				else
@@ -978,10 +978,10 @@ void InitNodeList(CAR_DATA* cp, EXTRA_CIV_DATA* extraData)
 		cp->ai.c.currentLane = laneDist / 512;
 
 		// calc all dirs
-		if (ROAD_LANE_DIR(straight, cp->ai.c.currentLane) == 0)
-			cr->dir = straight->angle;
-		else
+		if (ROAD_LANE_DIR(straight, cp->ai.c.currentLane))
 			cr->dir = straight->angle + 2048U & 0xfff;
+		else
+			cr->dir = straight->angle;
 	}
 	else if (IS_CURVED_SURFACE(surfInd))
 	{
@@ -1038,7 +1038,7 @@ int GetNodePos(DRIVER2_STRAIGHT* straight, DRIVER2_JUNCTION* junction, DRIVER2_C
 	if (straight)
 	{
 		angle = straight->angle;
-		distFromCentre = distAlongPath - (straight->length >> 1);
+		distFromCentre = distAlongPath - (straight->length / 2);
 
 		if (angle < 2048)
 		{
@@ -1065,7 +1065,7 @@ int GetNodePos(DRIVER2_STRAIGHT* straight, DRIVER2_JUNCTION* junction, DRIVER2_C
 	{
 		angle = distAlongPath + curve->start;
 
-		if (oldLane < laneNo)
+		if (oldLane <= laneNo)
 			test42 = -changeLaneCount * 128;
 		else
 			test42 = changeLaneCount * 128;
@@ -1101,7 +1101,7 @@ int CheckChangeLanes(DRIVER2_STRAIGHT* straight, DRIVER2_CURVE* curve, int distA
 	CAR_COSMETICS* car_cos;
 	int dx;
 	int dz;
-	uint theta;
+	u_int theta;
 	int length;
 	CAR_DATA* lcp;
 
@@ -1413,7 +1413,7 @@ int CreateNewNode(CAR_DATA * cp)
 					}
 
 					// try parking it
-					if ((Random2(0) + cp->id * 32 & 0xf1) == 0xf1 || makeLimoPullOver != 0)
+					if ((Random2(0) + cp->id * 32 & 0xf1) == 0xf1 || makeLimoPullOver)
 					{
 						int tryToPark;
 						int newLane;
@@ -1426,7 +1426,7 @@ int CreateNewNode(CAR_DATA * cp)
 						// apply our Caine's Cash logic
 						if (gCurrentMissionNumber == 33 && cp->ap.model == 4 && limoId == cp->id) // [A] limoId was skipped, bringing it back.
 						{
-							tryToPark = (makeLimoPullOver != 0);
+							tryToPark = makeLimoPullOver;
 						}
 
 						newLane = CheckChangeLanes(roadInfo.straight, roadInfo.curve, newNode->distAlongSegment, cp, tryToPark);
@@ -1448,13 +1448,14 @@ int CreateNewNode(CAR_DATA * cp)
 								}
 							}
 						}
-					}
+					}		
+
+					tempNode.x = newNode->x;
+					tempNode.z = newNode->z;
 
 					tempNode.dir = newNode->dir;
 					tempNode.pathType = newNode->pathType;
 					tempNode.distAlongSegment = newNode->distAlongSegment;
-					tempNode.x = newNode->x;
-					tempNode.z = newNode->z;
 
 					GetNodePos(roadInfo.straight, NULL, roadInfo.curve, newNode->distAlongSegment, cp, &tempNode.x, &tempNode.z, cp->ai.c.currentLane);
 
@@ -1489,6 +1490,7 @@ int CreateNewNode(CAR_DATA * cp)
 						tmp = FIXEDH(segLength * rcossin_tbl[(cornerAngle & 0xfffU) * 2]);
 
 						newNode = retNode;
+
 						if (tmp < 0)
 						{
 							retNode->x = tempNode.x + FIXEDH(tmp * rcossin_tbl[(tempNode.dir & 0xfff) * 2]);
@@ -1504,15 +1506,16 @@ int CreateNewNode(CAR_DATA * cp)
 					// push into empty node
 					if (newNode->pathType == 127)
 					{
-						newNode->dir = tempNode.dir;
-						newNode->pathType = tempNode.pathType;
-						newNode->distAlongSegment = tempNode.distAlongSegment;
 						newNode->x = tempNode.x;
 						newNode->z = tempNode.z;
 
+						newNode->dir = tempNode.dir;
+						newNode->pathType = tempNode.pathType;
+						newNode->distAlongSegment = tempNode.distAlongSegment;
+
 						if (ABS(tempNode.x) < 600000)
 						{
-							if (turnAngle != 0)
+							if (turnAngle)
 							{
 								cp->ai.c.turnNode = GET_NODE_ID(cp, newNode);
 								cp->ai.c.turnDir = (turnAngle == 1024);
@@ -1564,7 +1567,7 @@ int InitCivState(CAR_DATA * cp, EXTRA_CIV_DATA * extraData)
 	}
 
 	if (extraData == NULL)
-		cs->currentRoad = GetSurfaceIndex((VECTOR*)(cp->hd).where.t);
+		cs->currentRoad = GetSurfaceIndex((VECTOR*)cp->hd.where.t);
 	else
 		cs->currentRoad = extraData->surfInd;
 
@@ -1955,7 +1958,7 @@ int PingInCivCar(int minPingInDist)
 	int lane;
 	int i;
 	u_char cookieCountStart;
-	uint retDistSq;
+	u_int retDistSq;
 	unsigned char* slot;
 
 	//straight = NULL;
@@ -2398,7 +2401,7 @@ int PingInCivCar(int minPingInDist)
 		if (carCnt->controlType != CONTROL_TYPE_NONE)
 		{
 			int dx, dy, dz;
-			uint sqDist;
+			u_int sqDist;
 
 			dy = randomLoc.vy - carCnt->hd.where.t[1];
 			dy = ABS(dy);
@@ -2524,7 +2527,9 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 	lbody = car_cos->colBox.vz;
 	wbody = car_cos->colBox.vx;
 
-	if (cp->id == 1 && (cp->ai.c.carMustDie == 1))
+	// why only first car must die?
+	// P.S. it's the only one with the music
+	if (cp->id == 1 && cp->ai.c.carMustDie == 1)
 	{
 		cp->ai.c.thrustState = 3;
 		cp->ai.c.ctrlState = 9;
@@ -2689,8 +2694,8 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 
 					if (tangent > 0)
 					{
-						// [A] removed constant 
-						if (ABS(normal) < wbody * sideMul && tangent < distToObstacle)
+						// keep it 6. Does work alright
+						if (ABS(normal) < wbody * sideMul * 6 && tangent < distToObstacle)
 						{
 							distToObstacle = tangent;
 						}
@@ -3193,7 +3198,7 @@ int CivFindPointOnPath(CAR_DATA * cp, int station, VECTOR * ppoint)
 
 	start = cp->ai.c.pnode;
 
-	if (start != NULL)
+	if (start)
 	{
 		currentNode = start;
 

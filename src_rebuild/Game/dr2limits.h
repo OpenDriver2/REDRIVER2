@@ -30,6 +30,11 @@
 #define MAX_DENTING_LOD_UVS		134
 #endif
 
+// Mission limits
+// DO NOT EDIT, breaks compatibility!
+#define MAX_MISSION_THREADS		16
+#define MAX_MISSION_TARGETS		16
+
 // replay definitions.
 // DO NOT EDIT, breaks compatibility!
 #define MAX_REPLAY_CAMERAS		60

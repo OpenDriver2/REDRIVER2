@@ -2311,7 +2311,7 @@ void DoDolbySS(void)
 int dd = 0;
 int de = 0;
 
-// [D]
+// [D] [T]
 int GetEmpty(int old)
 {
 	unsigned char bVar1;
@@ -2781,7 +2781,7 @@ CurrentKeyStat
 	Stops processing of any dead channels
 *****************************************************************************/
 
-// [D]
+// [D] [T]
 void CurrentKeyStat(void)
 {
 	int t;

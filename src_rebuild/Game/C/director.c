@@ -152,10 +152,8 @@ void InitDirectorVariables(void)
 	gCameraOffset.vy = 0;
 	gCameraOffset.vz = 0;
 
-	count = 23;
-	do {
-		GreyIcons[count--] = 0;
-	} while (-1 < count);
+	for (count = 0; count < 24; count++)
+		GreyIcons[count] = 0;
 
 	LastChange = NULL;
 	FastForwardCameraCnt = 0;
@@ -397,7 +395,7 @@ int CheckCameraChange(int CameraCnt)
 			return 0;
 		}
 
-		if (NextChange->next == -2)
+		if (NextChange->next == 254)
 		{
 			return 0;
 		}
@@ -990,7 +988,7 @@ void ShowReplayMenu(void)
 		ShowIcons(menu5, CursorX - 6, MenuOffset);
 	}
 
-	if (AutoDirect != 0 && pauseflag == 0)
+	if (AutoDirect && !pauseflag)
 	{
 		strobe = CameraCnt & 0x1f;
 
@@ -1029,20 +1027,18 @@ void ControlReplay(void)
 
 	PLAYBACKCAMERA* pCam;
 	GAMEMODE new_mode;
-	ROUTE_DATA routeData1;
 	VECTOR old_camera;
 	VECTOR basePos;
 	VECTOR tmpPos;
-	ROUTE_DATA routeData;
 	int speed;
 	int move;
 
 	move = 0;
 	
-	if (gInGameCutsceneActive != 0)
+	if (gInGameCutsceneActive)
 		return;
 
-	if (quick_replay != 0 || AttractMode != 0)
+	if (quick_replay || AttractMode)
 	{
 		if ((padd != 0 || ReplayParameterPtr->RecordingEnd <= CameraCnt) && CameraCnt > 2)
 		{
@@ -1056,7 +1052,8 @@ void ControlReplay(void)
 			time_taken = vblcounter;
 			return;
 		}
-		pauseflag = 0;
+		
+		//pauseflag = 0;
 		return;
 	}
 
@@ -1665,19 +1662,22 @@ void ControlReplay(void)
 						break;
 					}
 
-					new_mode = GAMEMODE_QUIT;
-
-					if (gLoadedReplay == 0)
+					if (gLoadedReplay)
 					{
-						NoPlayerControl = 0;
-						EnablePause((PAUSEMODE)gMissionCompletionState);
-						NoPlayerControl = 1;
+						EndGame(GAMEMODE_QUIT);
 						PlayMode = 0;
-						break;
 					}
 
-					EndGame(new_mode);
+					// force pause
+					NoPlayerControl = 0;
+					pauseflag = 0;
+					
+					EnablePause((PAUSEMODE)gMissionCompletionState);
+
+					pauseflag = 1;
+					NoPlayerControl = 1;
 					PlayMode = 0;
+					quick_replay = 1;
 				
 					break;
 				default:
@@ -1758,7 +1758,7 @@ void ControlReplay(void)
 				{
 					if (MenuOffset != 0)
 					{
-						if (LastChange->prev != -1 && move == 5)
+						if (LastChange->prev != 0xFF && move == 5)
 						{
 							if (EditMode == 0)
 							{

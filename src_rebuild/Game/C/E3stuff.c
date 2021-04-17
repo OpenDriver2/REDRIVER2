@@ -34,14 +34,12 @@ POLYCOORD polycoords[6] =
 void ShowHiresScreens(char **names, int delay, int wait)
 {
 	int timedelay;
-	char *filename;
+	char* filename;
 
 	filename = *names;
 
-	do {
-		if (!filename) 
-			return;
-
+	while (filename)
+	{
 		FadeInHiresScreen(filename);
 
 		timedelay = delay-1;
@@ -54,13 +52,12 @@ void ShowHiresScreens(char **names, int delay, int wait)
 
 			ReadControllers();
 			timedelay--;
-
-		} while ((wait != 0) || (Pads[0].dirnew & 0x40) == 0);
+		} while (wait || (Pads[0].dirnew & 0x40) == 0);
 
 		FadeOutHiresScreen();
 
 		filename = *(++names);
-	} while (true);
+	}
 }
 
 // [D] [T]
@@ -130,7 +127,7 @@ void FadeInHiresScreen(char *filename)
 	PutDispEnv(&disp);
 	PutDrawEnv(&draw);
 
-	LoadfileSeg(filename, _overlay_buffer, 20, 0x4ff80);
+	LoadfileSeg(filename, (char*)_overlay_buffer, 20, 0x4ff80);
 	LoadClut((u_long*)_overlay_buffer, 640, 511);
 
 	DrawSync(0);
@@ -259,7 +256,7 @@ void ShowBonusGallery()
 		else
 			sprintf(filename, "GFX\\GAL\\IMG%d.TIM", currentImage-1);
 		
-		LoadfileSeg(filename, _other_buffer, 20, 0x4ff80);
+		LoadfileSeg(filename, (char*)_other_buffer, 20, 0x4ff80);
 		LoadClut((u_long*)_other_buffer, 640, 511);
 
 		DrawSync(0);
@@ -301,6 +298,10 @@ void ShowBonusGallery()
 		do {
 			ReadControllers();
 			VSync(-1);
+
+#ifdef __EMSCRIPTEN__
+			emscripten_sleep(0);
+#endif
 
 			if(Pads[0].dirnew & 0x8000)
 			{

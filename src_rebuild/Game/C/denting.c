@@ -244,29 +244,6 @@ int gHubcapTime = 0;
 void InitHubcap(void)
 {
 	gHubcapTime = Random2(1) & 0x7ff;
-
-	gHubcap.Present[0] = 1;
-	gHubcap.Present[1] = 1;
-	gHubcap.Present[2] = 1;
-	gHubcap.Present[3] = 1;
-
-	// right
-	gHubcap.Offset[0].vx = 205;
-	gHubcap.Offset[0].vy = -7;
-	gHubcap.Offset[0].vz = 290;
-
-	gHubcap.Offset[1].vx = 205;
-	gHubcap.Offset[1].vy = -7;
-	gHubcap.Offset[1].vz = -275;
-
-	// left
-	gHubcap.Offset[2].vx = -205;
-	gHubcap.Offset[2].vy = -7;
-	gHubcap.Offset[2].vz = 290;
-
-	gHubcap.Offset[3].vx = -205;
-	gHubcap.Offset[3].vy = -7;
-	gHubcap.Offset[3].vz = -275;
 }
 
 
@@ -276,29 +253,32 @@ void LoseHubcap(int car, int Hubcap, int Velocity)
 	SVECTOR InitialLocalAngle = { 0, 0, 10 };
 	CAR_DATA* cp;
 
+	SVECTOR* wheelDisp;
+	
 	cp = &car_data[car];
 
 	// check speed and if hubcap lost
 	if (cp->hd.wheel_speed < 0 || (cp->ap.flags & 1 << Hubcap))
 		return;
 
+	wheelDisp = &cp->ap.carCos->wheelDisp[Hubcap];
+
 	cp->ap.flags |= (1 << Hubcap);		// [A] cars now hold hubcaps
 
-	gHubcap.Position.vx = gHubcap.Offset[Hubcap].vx;
-	gHubcap.Position.vy = gHubcap.Offset[Hubcap].vy;
-	gHubcap.Position.vz = gHubcap.Offset[Hubcap].vz;
+	gHubcap.Position.vx = wheelDisp->vx;
+	gHubcap.Position.vy = wheelDisp->vy;
+	gHubcap.Position.vz = wheelDisp->vz;
 
 	SetRotMatrix(&cp->hd.where);
 	_MatrixRotate(&gHubcap.Position);
 
-	gHubcap.Position.vx = gHubcap.Position.vx + cp->hd.where.t[0];
-	gHubcap.Position.vy = gHubcap.Position.vy - cp->hd.where.t[1];
-	gHubcap.Position.vz = gHubcap.Position.vz + cp->hd.where.t[2];
+	gHubcap.Position.vx += cp->hd.where.t[0];
+	gHubcap.Position.vy -= cp->hd.where.t[1];
+	gHubcap.Position.vz += cp->hd.where.t[2];
 
 	gHubcap.Orientation = cp->hd.where;
-
-	Calc_Object_MatrixYZX(&gHubcap.LocalOrientation, &InitialLocalAngle);
-
+	gHubcap.Rotation = 0;
+	
 	if (Hubcap > 1)
 	{
 		gHubcap.Orientation.m[0][0] = -gHubcap.Orientation.m[0][0];
@@ -312,9 +292,10 @@ void LoseHubcap(int car, int Hubcap, int Velocity)
 	}
 
 	gHubcap.Duration = 100;
-	gHubcap.Direction.vx = FIXEDH(FIXEDH(cp->st.n.angularVelocity[1]) * gHubcap.Offset[Hubcap].vz) + FIXEDH(cp->st.n.linearVelocity[0]);
+	
+	gHubcap.Direction.vx = FIXEDH(FIXEDH(cp->st.n.angularVelocity[1]) * wheelDisp->vz) + FIXEDH(cp->st.n.linearVelocity[0]);
 	gHubcap.Direction.vy = FIXEDH(cp->st.n.linearVelocity[1]);
-	gHubcap.Direction.vz = FIXEDH(-FIXEDH(cp->st.n.angularVelocity[1]) * gHubcap.Offset[Hubcap].vx) + FIXEDH(cp->st.n.linearVelocity[2]);
+	gHubcap.Direction.vz = FIXEDH(-FIXEDH(cp->st.n.angularVelocity[1]) * wheelDisp->vx) + FIXEDH(cp->st.n.linearVelocity[2]);
 }
 
 
@@ -364,6 +345,18 @@ void MoveHubcap()
 	MATRIX Orientation;
 	CVECTOR col = {72,72,72};
 
+	Orientation.m[0][0] = ONE;
+	Orientation.m[0][1] = 0;
+	Orientation.m[0][2] = 0;
+
+	Orientation.m[1][0] = 0;
+	Orientation.m[1][1] = ONE;
+	Orientation.m[1][2] = 0;
+
+	Orientation.m[2][0] = 0;
+	Orientation.m[2][1] = 0;
+	Orientation.m[2][2] = ONE;
+
 	if (pauseflag == 0)
 	{
 		if(gHubcapTime > 0)
@@ -382,7 +375,9 @@ void MoveHubcap()
 			gHubcap.Position.vy += gHubcap.Direction.vy;
 			gHubcap.Position.vz += gHubcap.Direction.vz;
 
-			_RotMatrixX(&gHubcap.LocalOrientation, -220);
+			gHubcap.Rotation -= 220;
+
+			_RotMatrixX(&Orientation, gHubcap.Rotation);
 
 			gHubcap.Direction.vy += 5;
 
@@ -395,7 +390,7 @@ void MoveHubcap()
 			}
 		}
 
-		MulMatrix0(&gHubcap.Orientation, &gHubcap.LocalOrientation, &Orientation);
+		MulMatrix0(&gHubcap.Orientation, &Orientation, &Orientation);
 
 		ShadowPos.vx = gHubcap.Position.vx - camera_position.vx;
 		ShadowPos.vy = -MapHeight(&gHubcap.Position);
@@ -435,7 +430,7 @@ char* LoadCarDentingFromFile(char* dest, int modelNumber)
 	sprintf(filename, "LEVELS\\%s\\CARMODEL_%d.DEN", LevelNames[GameLevel], modelNumber);
 	if(FileExists(filename))
 	{
-		mem = dest ? dest : (_other_buffer + modelNumber * 0x1000);
+		mem = dest ? dest : ((char*)_other_buffer + modelNumber * 4096);
 
 		// get model from file
 		Loadfile(filename, mem);
@@ -515,8 +510,8 @@ void SetupSpecDenting(char *loadbuffer)
 // [D] [T]
 void LoadDenting(int level)
 {
-	LoadfileSeg(DentingFiles[level], _other_buffer, 0, 12727);
-	ProcessDentLump(_other_buffer, 0);
+	LoadfileSeg(DentingFiles[level], (char*)_other_buffer, 0, 12727);
+	ProcessDentLump((char*)_other_buffer, 0);
 }
 
 

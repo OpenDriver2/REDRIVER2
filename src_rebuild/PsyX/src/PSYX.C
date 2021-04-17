@@ -11,13 +11,8 @@
 
 #include "UTIL/TIMER.H"
 
-//#include <stdio.h>
-//#include <string.h>
-#if !defined(__ANDROID__)
-//#include <thread>
-#endif
-
 #include <assert.h>
+#include <ctype.h>
 
 #define FIXED_TIME_STEP_NTSC		(1.0/60.0)		// 60 FPS clock
 #define FIXED_TIME_STEP_PAL			(1.0/50.0)		// 50 FPS clock
@@ -27,15 +22,21 @@
 
 #include "PSYX_RENDER.H"
 
+#ifdef __EMSCRIPTEN__
+int strcasecmp(const char* _l, const char* _r)
+{
+	const u_char* l = (u_char*)_l, * r = (u_char*)_r;
+	for (; *l && *r && (*l == *r || tolower(*l) == tolower(*r)); l++, r++);
+	return tolower(*l) - tolower(*r);
+}
+#endif
+
 SDL_Window* g_window = NULL;
 
 #define SWAP_INTERVAL		1
 
 int g_swapInterval = SWAP_INTERVAL;
 int g_enableSwapInterval = 1;
-
-extern SDL_GameController* padHandle[];
-extern unsigned char* padData[];
 
 PsyXKeyboardMapping g_keyboard_mapping;
 PsyXControllerMapping g_controller_mapping;
@@ -57,6 +58,63 @@ volatile bool g_stopIntrThread = false;
 
 extern void(*vsync_callback)(void);
 
+long g_vmode = -1;
+int g_frameSkip = 0;
+
+#ifdef __EMSCRIPTEN__
+
+long g_emIntrInterval = -1;
+long g_intrVMode = MODE_NTSC;
+double g_emOldDate = 0;
+
+void emIntrCallback(void* userData)
+{
+	double timestep = g_vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;
+
+	int newVBlank = (Util_GetHPCTime(&g_vblTimer, 0) / timestep) + g_frameSkip;
+
+	int diff = newVBlank - g_psxSysCounters[PsxCounter_VBLANK];
+
+	while (diff--)
+	{
+		if (vsync_callback)
+			vsync_callback();
+
+		g_psxSysCounters[PsxCounter_VBLANK]++;
+	}
+}
+
+EM_BOOL emIntrCallback2(double time, void* userData)
+{
+	emIntrCallback(userData);
+	return g_stopIntrThread ? EM_FALSE : EM_TRUE;
+}
+
+#endif
+
+long PsyX_Sys_SetVMode(long mode)
+{
+	long old = g_vmode;
+	g_vmode = mode;
+
+#ifdef __EMSCRIPTEN__
+	if (old != g_vmode)
+	{
+		//if(g_emIntrInterval != -1)
+		//	emscripten_clear_interval(g_emIntrInterval);
+		g_stopIntrThread = true;
+
+		emscripten_sleep(100);
+
+		g_stopIntrThread = false;
+		emscripten_set_timeout_loop(emIntrCallback2, 1.0, NULL);
+	}
+#endif
+
+	return old;
+}
+
+
 int PsyX_Sys_GetVBlankCount()
 {
 	if (g_swapInterval == 0)
@@ -64,6 +122,7 @@ int PsyX_Sys_GetVBlankCount()
 		// extra speedup.
 		// does not affect `vsync_callback` count
 		g_psxSysCounters[PsxCounter_VBLANK] += 1;
+		g_frameSkip++;
 	}
 	
 	return g_psxSysCounters[PsxCounter_VBLANK];
@@ -77,9 +136,7 @@ int intrThreadMain(void* data)
 	{
 		// step counters
 		{
-			const long vmode = GetVideoMode();
-			const double timestep = vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;
-			
+			double timestep = g_vmode == MODE_NTSC ? FIXED_TIME_STEP_NTSC : FIXED_TIME_STEP_PAL;			
 			double vblDelta = Util_GetHPCTime(&g_vblTimer, 0);
 
 			if (vblDelta > timestep)
@@ -95,8 +152,8 @@ int intrThreadMain(void* data)
 				g_psxSysCounters[PsxCounter_VBLANK]++;
 			
 				Util_GetHPCTime(&g_vblTimer, 1);
-				//SDL_Delay(1);
 			}
+			
 		}
 
 		// TODO:...
@@ -108,6 +165,10 @@ int intrThreadMain(void* data)
 
 static int PsyX_Sys_InitialiseCore()
 {
+#ifdef __EMSCRIPTEN__
+	Util_InitHPCTimer(&g_vblTimer);
+#else
+
 	g_intrThread = SDL_CreateThread(intrThreadMain, "psyX_intr", NULL);
 
 	if (NULL == g_intrThread)
@@ -115,14 +176,14 @@ static int PsyX_Sys_InitialiseCore()
 		eprinterr("SDL_CreateThread failed: %s\n", SDL_GetError());
 		return 0;
 	}
-
+	
 	g_intrMutex = SDL_CreateMutex();
 	if (NULL == g_intrMutex)
 	{
 		eprinterr("SDL_CreateMutex failed: %s\n", SDL_GetError());
 		return 0;
 	}
-
+#endif
 	return 1;
 }
 
@@ -507,6 +568,10 @@ void PsyX_Initialise(char* appName, int width, int height, int fullscreen)
 	eprintinfo("Initialising Psy-X %d.%d\n", PSYX_MAJOR_VERSION, PSYX_MINOR_VERSION);
 	eprintinfo("Build date: %s:%s\n", PSYX_COMPILE_DATE, PSYX_COMPILE_TIME);
 
+#if defined(__EMSCRIPTEN__)
+	SDL_SetHint(SDL_HINT_EMSCRIPTEN_ASYNCIFY, "0");
+#endif
+	
 	if (SDL_Init(SDL_INIT_VIDEO) != 0)
 	{
 		eprinterr("Failed to initialise SDL\n");
@@ -558,12 +623,17 @@ void PsyX_Sys_DoDebugKeys(int nKey, bool down); // forward decl
 void PsyX_Sys_DoDebugMouseMotion(int x, int y);
 void GR_ResetDevice();
 
+extern void PsyX_Pad_Event_ControllerRemoved(Sint32 deviceId);
+extern void PsyX_Pad_Event_ControllerAdded(Sint32 deviceId);
+
 void PsyX_Exit();
 
 GameDebugKeysHandlerFunc gameDebugKeys = NULL;
 GameDebugMouseHandlerFunc gameDebugMouse = NULL;
 GameOnTextInputHandler gameOnTextInput = NULL;
-int activeControllers = 0x1;
+
+int g_activeKeyboardControllers = 0x1;
+int g_altKeyState = 0;
 
 void PsyX_Sys_DoPollEvent()
 {
@@ -573,10 +643,10 @@ void PsyX_Sys_DoPollEvent()
 		switch (event.type)
 		{
 			case SDL_CONTROLLERDEVICEADDED:
-				padHandle[event.jbutton.which] = SDL_GameControllerOpen(event.cdevice.which);
+				PsyX_Pad_Event_ControllerAdded(event.cdevice.which);
 				break;
 			case SDL_CONTROLLERDEVICEREMOVED:
-				SDL_GameControllerClose(padHandle[event.cdevice.which]);
+				PsyX_Pad_Event_ControllerRemoved(event.cdevice.which);
 				break;
 			case SDL_QUIT:
 				PsyX_Exit();
@@ -603,6 +673,24 @@ void PsyX_Sys_DoPollEvent()
 			{
 				int nKey = event.key.keysym.scancode;
 
+				if (nKey == SDL_SCANCODE_RALT)
+				{
+					g_altKeyState = (event.type == SDL_KEYDOWN);
+				}
+				else if (nKey == SDL_SCANCODE_RETURN)
+				{
+					if (g_altKeyState && event.type == SDL_KEYDOWN)
+					{
+						bool IsFullscreen = SDL_GetWindowFlags(g_window) & SDL_WINDOW_FULLSCREEN;
+
+						SDL_SetWindowFullscreen(g_window, IsFullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
+
+						SDL_GetWindowSize(g_window, &g_windowWidth, &g_windowHeight);
+						GR_ResetDevice();
+					}
+					break;
+				}
+
 				// lshift/right shift
 				if (nKey == SDL_SCANCODE_RSHIFT)
 					nKey = SDL_SCANCODE_LSHIFT;
@@ -624,7 +712,7 @@ void PsyX_Sys_DoPollEvent()
 				if(gameOnTextInput)
 					(gameOnTextInput)(event.text.text);
 				break;
-			}
+			}			
 		}
 	}
 }
@@ -671,7 +759,7 @@ void PsyX_TakeScreenshot()
 {
 	unsigned char* pixels = new unsigned char[g_windowWidth * g_windowHeight * 4];
 	
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(RENDERER_OGL) || defined(RENDERER_OGLES)
 	glReadPixels(0, 0, g_windowWidth, g_windowHeight, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
 #endif
 
@@ -753,13 +841,13 @@ void PsyX_Sys_DoDebugKeys(int nKey, bool down)
 			break;
 		case SDL_SCANCODE_F4:
 
-			activeControllers++;
-			activeControllers = activeControllers % 4;
+			g_activeKeyboardControllers++;
+			g_activeKeyboardControllers = g_activeKeyboardControllers % 4;
 
-			if (activeControllers == 0)
-				activeControllers++;
+			if (g_activeKeyboardControllers == 0)
+				g_activeKeyboardControllers++;
 
-			eprintwarn("Active keyboard controller: %d\n", activeControllers);
+			eprintwarn("Active keyboard controller: %d\n", g_activeKeyboardControllers);
 			break;
 		case SDL_SCANCODE_F5:
 			g_pgxpTextureCorrection ^= 1;
@@ -767,7 +855,6 @@ void PsyX_Sys_DoDebugKeys(int nKey, bool down)
 		case SDL_SCANCODE_F6:
 			g_pgxpZBuffer ^= 1;
 			break;
-
 		}
 	}
 }
@@ -777,7 +864,8 @@ void PsyX_UpdateInput()
 	// also poll events here
 	PsyX_Sys_DoPollEvent();
 
-	PsyX_InternalPadUpdates();
+	if(!g_altKeyState)
+		PsyX_Pad_InternalPadUpdates();
 }
 
 uint PsyX_CalcFPS()
@@ -801,22 +889,26 @@ uint PsyX_CalcFPS()
 
 void PsyX_WaitForTimestep(int count)
 {
-#if 0 // defined(RENDERER_OGL) || defined(OGLES)
+#if 0 // defined(RENDERER_OGL) || defined(RENDERER_OGLES)
 	glFinish(); // best time to complete GPU drawing
 #endif
 
 	// wait for vblank
 	if (g_swapInterval > 0)
-	{
-		//SDL_Delay(1);
-	
+	{	
 		static int swapLastVbl = 0;
 
+		int vbl;
 		do
 		{
-		}while (g_psxSysCounters[PsxCounter_VBLANK] - swapLastVbl < count);
+#ifdef __EMSCRIPTEN__
+			emscripten_sleep(0);
+#endif
+			vbl = PsyX_Sys_GetVBlankCount();
+		}
+		while (vbl - swapLastVbl < count);
 
-		swapLastVbl = g_psxSysCounters[PsxCounter_VBLANK];
+		swapLastVbl = PsyX_Sys_GetVBlankCount();
 	}
 }
 

@@ -19,6 +19,8 @@
 
 #include <string.h>
 
+#include "event.h"
+
 
 MATRIX aspect =
 {
@@ -100,7 +102,7 @@ MATRIX inv_camera_matrix;
 MATRIX face_camera;
 MATRIX2 CompoundMatrix[64];
 
-uint farClip2Player = 36000;
+u_int farClip2Player = 36000;
 
 int goFaster = 0;	// [A] was 1
 int fasterToggle = 0;
@@ -163,8 +165,8 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 {
 	int i;
 	int z;
-	uint spriteColour;
-	uint lightdd;
+	u_int spriteColour;
+	u_int lightdd;
 	unsigned char lightLevel;
 	MODEL* model;
 	PACKED_CELL_OBJECT* pco;
@@ -251,7 +253,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 			SVECTOR* verts;
 			int numPolys;
 
-			numPolys = (uint)model->num_polys;
+			numPolys = (u_int)model->num_polys;
 			src = (POLYFT4*)model->poly_block;
 			verts = (SVECTOR*)model->vertices;
 
@@ -320,11 +322,11 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 }
 
 // [D] [T]
-void SetupPlaneColours(uint ambient)
+void SetupPlaneColours(u_int ambient)
 {
-	uint r;
-	uint g;
-	uint b;
+	u_int r;
+	u_int g;
+	u_int b;
 
 	if ((gWeather - 1U > 1) && gTimeOfDay != 0 && gTimeOfDay != 2)
 	{
@@ -388,7 +390,7 @@ void SetupDrawMapPSX(void)
 
 	GetPVSRegionCell2(
 		current_barrel_region_x1 + current_barrel_region_z1 * 2,
-		region_x1 + region_z1 * cells_across / MAP_REGION_SIZE,
+		region_x1 + region_z1 * regions_across,
 		(current_cell_z % MAP_REGION_SIZE) * MAP_REGION_SIZE + (current_cell_x % MAP_REGION_SIZE),
 		CurrentPVS);
 
@@ -469,7 +471,7 @@ void CalcObjectRotationMatrices(void)
 // [D] [T]
 void PlotMDL_less_than_128(MODEL* model)
 {
-	RenderModel(model, (MATRIX*)0x0, (VECTOR*)0x0, 0, 0, 0, 0);
+	RenderModel(model, NULL, NULL, 0, 0, 0, 0);
 }
 
 int gForceLowDetailCars = 0;
@@ -573,7 +575,7 @@ void DrawAllTheCars(int view)
 
 
 // [D] [T]
-u_int normalIndex(SVECTOR* verts, uint vidx)
+u_int normalIndex(SVECTOR* verts, u_int vidx)
 {
 	SVECTOR* v0;
 	SVECTOR* v1;
@@ -723,7 +725,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 			temp = polys->th;
 
 			if ((polys->th & 0x80) == 0) // cache normal index if it were not
-				temp = polys->th = normalIndex(srcVerts, *(uint*)&polys->v0);
+				temp = polys->th = normalIndex(srcVerts, *(u_int*)&polys->v0);
 
 			pc->colour = pc->f4colourTable[(r >> 3) * 4 - temp & 31];
 		}
@@ -776,7 +778,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 				prims = (POLY_FT4*)pc->primptr;
 
 				setPolyFT4(prims);
-				*(uint*)&prims->r0 = pc->colour;
+				*(u_int*)&prims->r0 = pc->colour;
 
 				// retrieve first three verts
 				gte_stsxy3(&prims->x0, &prims->x1, &prims->x2);
@@ -846,6 +848,7 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 	OTTYPE* ot;
 	CELL_OBJECT* cop;
 	int i;
+	int Z;
 	int prev_mat;
 
 	prev_mat = -1;
@@ -876,15 +879,15 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 
 		if (prev_mat == mat)
 		{
-			Apply_InvCameraMatrixSetTrans(&cop->pos);
+			Z = Apply_InvCameraMatrixSetTrans(&cop->pos);
 		}
 		else
 		{
-			Apply_InvCameraMatrixAndSetMatrix(&cop->pos, &CompoundMatrix[mat]);
+			Z = Apply_InvCameraMatrixAndSetMatrix(&cop->pos, &CompoundMatrix[mat]);
 			prev_mat = mat;
 		}
 
-		model = modelpointers[cop->type];
+		model = Z > 9000 ? pLodModels[cop->type] : modelpointers[cop->type];
 
 		zbias = model->zBias - 64;
 
@@ -995,6 +998,9 @@ void DrawMapPSX(int* comp_val)
 	int rightAng;
 	int i;
 	int current_object_computed_value;
+	int cellLevel;
+
+	cellLevel = events.camera ? events.draw : -1;
 
 	backPlane = 6144;
 	rightPlane = -6144;
@@ -1072,7 +1078,7 @@ void DrawMapPSX(int* comp_val)
 				cellz > -1 && cellz < cells_down &&
 				PVS_ptr[vis_v * pvs_square + vis_h]) // check PVS table
 			{
-				ppco = GetFirstPackedCop(cellx, cellz, &ci, 1);
+				ppco = GetFirstPackedCop(cellx, cellz, &ci, 1, cellLevel);
 
 				// walk each cell object in cell
 				while (ppco != NULL)

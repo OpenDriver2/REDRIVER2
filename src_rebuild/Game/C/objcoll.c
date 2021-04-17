@@ -219,7 +219,7 @@ int GlobalPositionToCellNumber(VECTOR *pPosition)
 
 	cbr = (cbrX & 1) + (cbrZ & 1) * 2;
 
-	if (RoadMapRegions[cbr] != cbrX + cbrZ * (cells_across / MAP_REGION_SIZE))
+	if (RoadMapRegions[cbr] != cbrX + cbrZ * regions_across)
 		return -1;
 
 	return cell_ptrs[(cellZ - cbrZ * MAP_REGION_SIZE) * MAP_REGION_SIZE + cbr * (MAP_REGION_SIZE*MAP_REGION_SIZE) + cellX - cbrX * MAP_REGION_SIZE];
@@ -515,62 +515,63 @@ void CollisionCopList(XZPAIR* pos, int* count)
 
 	PACKED_CELL_OBJECT* ppco;
 	CELL_OBJECT* cop;
-	int i;
-	int j;
+	int i, j, cnt;
 	XZPAIR cell;
 	CELL_ITERATOR ci;
 	XZPAIR cbr;
 	MODEL* model;
+	int cellLevel;
+	
+	cellLevel = events.camera ? events.draw : -1;
 
 	if (pos == NULL)
 	{
-		i = 0;
+		cnt = *count;
+		
 		cell.x = initial.x;
-
-		do {
-			j = 0;
-
+		for (i = 0; i < 2; i++)
+		{
+			cbr.x = cell.x / MAP_REGION_SIZE;
+			
 			cell.z = initial.z;
-
-			do {
-				cbr.x = cell.x / MAP_REGION_SIZE;
+			for (j = 0; j < 2; j++) 
+			{
 				cbr.z = cell.z / MAP_REGION_SIZE;
 
-				// [A] FIXME: replace with 'cell_header.region_size'
-				if (cbr.x + cbr.z * (cells_across / MAP_REGION_SIZE) == RoadMapRegions[(cbr.x & 1) + (cbr.z & 1) * 2])
+				// check if we have valid region
+				if (cbr.x + cbr.z * regions_across == RoadMapRegions[(cbr.x & 1) + (cbr.z & 1) * 2])
 				{
-					ppco = GetFirstPackedCop(cell.x, cell.z, &ci, 1);
-					cop = UnpackCellObject(ppco, &ci.nearCell);
-
-					while (cop != NULL)
+					ppco = GetFirstPackedCop(cell.x, cell.z, &ci, 1, cellLevel);
+					
+					while (ppco)
 					{
-						cop->pad = *count;
+						cop = UnpackCellObject(ppco, &ci.nearCell);
+						cop->pad = cnt;
 
 						model = modelpointers[cop->type];
 
 						if (model->collision_block > 0 &&
-							model->num_vertices - 3 < 300 &&
+							/*model->num_vertices - 3 < 300 &&
 							model->num_point_normals < 300 &&
-							model->num_polys < 300 &&
+							model->num_polys < 300 &&*/
 							*(int*)model->collision_block > 0)
 						{
-							coplist[*count] = cop;
-							pcoplist[*count] = ci.ppco;
-							(*count)++;
+							coplist[cnt] = cop;
+							pcoplist[cnt] = ci.ppco;
+							cnt++;
 						}
 
 						ppco = GetNextPackedCop(&ci);
-						cop = UnpackCellObject(ppco, &ci.nearCell);
 					}
 				}
 
 				cell.z++;
-				j++;
-			} while (j < 2);
+			}
 
 			cell.x++;
-			i++;
-		} while (i < 2);
+		}
+
+		*count = cnt;
 	}
 	else
 	{
@@ -632,7 +633,7 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 			trap(0x400);
 	}
 
-	if (ghost_mode != 0 || cp->controlType == CONTROL_TYPE_PLAYER && playerghost != 0)
+	if (ghost_mode || cp->controlType == CONTROL_TYPE_PLAYER && playerghost)
 		return;
 
 	EventCollisions(cp, 0);
@@ -666,12 +667,11 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 
 		model = modelpointers[cop->type];
 
-		if (model->collision_block > 0 &&
-			model->num_vertices-3 < 300 && 
+		if (model->collision_block > 0 /*&&
+			model->num_vertices - 3 < 300 &&
 			model->num_point_normals < 300 &&
-			model->num_polys < 300)
+			model->num_polys < 300*/)
 		{
-
 			dx = cop->pos.vx - player_pos.vx;
 			dz = cop->pos.vz - player_pos.vz;
 					
@@ -684,7 +684,7 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 
 				while(num_cb--)
 				{
-					yang = -cop->yang & 0x3f;
+					yang = -cop->yang & 63;
 
 					// box 'rotated' by matrix
 					// [A] FIXME: replace add+shift by division
@@ -692,10 +692,10 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 					bbox.pos.vy = cop->pos.vy + collide->ypos;
 					bbox.pos.vz = cop->pos.vz + FIXEDH(collide->xpos * matrixtable[yang].m[0][2] + collide->zpos * matrixtable[yang].m[2][2]);
 
-					bbox.pos.pad = (model->flags2 >> 10) & 1;
+					//bbox.pos.pad = (model->flags2 & MODEL_FLAG_BARRIER) > 0;
 
-					bbox.xsize = (collide->zsize >> 1);
-					bbox.zsize = (collide->xsize >> 1);
+					bbox.xsize = collide->zsize / 2;
+					bbox.zsize = collide->xsize / 2;
 
 					bbox.height = collide->ysize;
 					bbox.theta = (cop->yang + collide->yang) * 64 & 0xfff;
@@ -703,7 +703,7 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 
 					if (CAR_INDEX(cp) == TANNER_COLLIDER_CARID)
 					{
-						if (count >= mdcount && cop->pad != 0)
+						if (count >= mdcount && cop->pad != 0) // kill by Vegas train
 						{
 							if (CarBuildingCollision(cp, &bbox, cop, 0))
 							{
@@ -786,7 +786,7 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 	int count;
 	int num_cb;
 	MODEL *model;
-	uint yang;
+	u_int yang;
 	int sphereSq;
 	COLLISION_PACKET *collide;
 	CELL_OBJECT *cop;
@@ -817,16 +817,16 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 		if (count < mdcount)
 			cop = coplist[count];
 		else
-			cop = EventCop + (count - mdcount);
+			cop = &EventCop[count - mdcount];
 
 		count++;
 
 		model = modelpointers[cop->type];
 
-		if (model->collision_block > 0 &&
+		if (model->collision_block > 0 /*&&
 			model->num_vertices - 3 < 300 && 
 			model->num_point_normals < 300 && 
-			model->num_polys < 300)
+			model->num_polys < 300*/)
 		{
 			sphereSq = model->bounding_sphere + extra;
 			

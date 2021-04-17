@@ -234,7 +234,7 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 	int red, green, blue;
 	int sf, sf1, sf2;
 	
-	uint u0, u1,u2,u3;
+	u_int u0, u1,u2,u3;
 	int i;
 	VECTOR v;
 	MATRIX workmatrix;
@@ -285,8 +285,8 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 			gte_ldv3(&src[0], &src[1], &src[2]);
 			gte_rtpt();
 
-			*(uint *)&poly[0].r0 = rgb;
-			*(uint *)&poly[1].r0 = rgb;
+			*(u_int *)&poly[0].r0 = rgb;
+			*(u_int *)&poly[1].r0 = rgb;
 
 			setPolyFT4(&poly[0]);
 			setSemiTrans(&poly[0], 1);
@@ -305,15 +305,15 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 				gte_ldv3(&src[3], &src[4], &src[5]);
 				gte_rtpt();
 
-				*(uint *)&poly[0].u0 = u0;
-				*(uint *)&poly[0].u1 = u1;
-				*(uint *)&poly[0].u2 = u2;
-				*(uint *)&poly[0].u3 = u3;
+				*(u_int *)&poly[0].u0 = u0;
+				*(u_int *)&poly[0].u1 = u1;
+				*(u_int *)&poly[0].u2 = u2;
+				*(u_int *)&poly[0].u3 = u3;
 				
-				*(uint *)&poly[1].u0 = u0;
-				*(uint *)&poly[1].u1 = u1;
-				*(uint *)&poly[1].u2 = u2;
-				*(uint *)&poly[1].u3 = u3;
+				*(u_int *)&poly[1].u0 = u0;
+				*(u_int *)&poly[1].u1 = u1;
+				*(u_int *)&poly[1].u2 = u2;
+				*(u_int *)&poly[1].u3 = u3;
 
 				setPolyFT4(poly);
 				setSemiTrans(poly, 1);
@@ -370,8 +370,8 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 
 			gte_rtpt();
 
-			*(uint *)&poly[1].r0 = rgb;
-			*(uint *)&poly[0].r0 = rgb;
+			*(u_int *)&poly[1].r0 = rgb;
+			*(u_int *)&poly[0].r0 = rgb;
 
 			gte_stsxy3(&poly[0].x0, &poly[0].x1, &poly[0].x2);
 
@@ -384,14 +384,14 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 				gte_ldv3(&src[3], &src[4], &src[5]);
 				gte_rtpt();
 
-				*(uint *)&poly[0].u0 = u0;
-				*(uint *)&poly[0].u1 = u1;
-				*(uint *)&poly[0].u2 = u2;
-				*(uint *)&poly[0].u3 = u3;
-				*(uint *)&poly[1].u0 = u0;
-				*(uint *)&poly[1].u1 = u1;
-				*(uint *)&poly[1].u2 = u2;
-				*(uint *)&poly[1].u3 = u3;
+				*(u_int *)&poly[0].u0 = u0;
+				*(u_int *)&poly[0].u1 = u1;
+				*(u_int *)&poly[0].u2 = u2;
+				*(u_int *)&poly[0].u3 = u3;
+				*(u_int *)&poly[1].u0 = u0;
+				*(u_int *)&poly[1].u1 = u1;
+				*(u_int *)&poly[1].u2 = u2;
+				*(u_int *)&poly[1].u3 = u3;
 
 				setPolyFT4(poly);
 				setSemiTrans(poly, 1);

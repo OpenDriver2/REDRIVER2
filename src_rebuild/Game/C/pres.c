@@ -109,7 +109,7 @@ int PrintStringRightAligned(char *pString, int x, int y)
 	return PrintString(pString, x - StringWidth(pString), y);
 }
 
-// [D] [T
+// [D] [T]
 void PrintStringCentred(char *pString, short y)
 {
 	PrintString(pString, (320 - StringWidth(pString)) / 2, y);
@@ -132,7 +132,7 @@ void LoadFont(char *buffer)
 	if (buffer != NULL)
 		file = buffer;
 	else
-		file = _frontend_buffer;	// 0x11b400;		// [A] FIXME: this font address might be used somewhere else
+		file = (char*)_primTab2;	// 0x11b400;		// [A] FIXME: this font address might be used somewhere else
 
 	Loadfile("GFX\\FONT2.FNT",file);
 
@@ -225,7 +225,7 @@ int PrintString(char *string, int x, int y)
 {
 	u_char chr;
 	int width;
-	uint index;
+	u_int index;
 	SPRT *font;
 
 	int showMap = gShowMap;

@@ -8,6 +8,8 @@
 #include "cutscene.h"
 #include "mission.h"
 #include "handling.h"
+#include "main.h"
+#include "ASM/d2mapasm.h"
 
 sdPlane default_plane = { 0, 0, 0, 0, 2048 };
 
@@ -252,7 +254,7 @@ int sdHeightOnPlane(VECTOR *pos, sdPlane *plane)
 		if ((plane->surface & 0xE000) == 0x4000 && plane->b == 0)
 		{
 			// calculate curve point
-			curve = Driver2CurvesPtr + ((plane->surface & 0x1fff) - 32);
+			curve = &Driver2CurvesPtr[(plane->surface & 0x1fff) - 32];
 			angle = ratan2(curve->Midz - pos->vz, curve->Midx - pos->vx);
 
 			return ((curve->gradient * (angle + 2048 & 0xfff)) / ONE) - curve->height;
@@ -307,32 +309,35 @@ sdPlane* sdGetCell(VECTOR *pos)
 	XYPAIR cell;
 	XYPAIR cellPos;
 
+#ifndef PSX
+	if (gDemoLevel)
+		return sdGetCell_alpha16(pos);
+#endif
+
 	sdLevel = 0;
 
 	cellPos.x = pos->vx - 512;
 	cellPos.y = pos->vz - 512;
 
-	// [A] WARNING!
-	// retail version of game with exe dated before 20th October 2000 (so called 1.0) is only supported
-	// the later version of the game do have problem with height or BSP, so Havana's secret base ground is not solid
+	cell.x = cellPos.x & 1023;
+	cell.y = cellPos.y & 1023;
 
-	// Oct 17 2000:			RoadMapDataRegions[(v4 >> 16) & 1 ^ (((cells_across >> 6) & 1) + (((v3 - 512) >> 15) & 2)) ^ (cells_down >> 5) & 2];
-	// Oct 29 2000:			RoadMapDataRegions[(cellPos.x >> 16) & 1 ^ (((cellPos.y >> 15) & 2) + 1) ^ 2];
+	buffer = RoadMapDataRegions[(cellPos.x >> 16 & 1) ^ (regions_across / 2 & 1) + 
+								(cellPos.y >> 15 & 2) ^ (regions_down & 2)];
 
-	buffer = RoadMapDataRegions[(cellPos.x >> 16 & 1U) ^ (cells_across / (MAP_REGION_SIZE*2) & 1U) + (cellPos.y >> 15 & 2U) ^ (cells_down / MAP_REGION_SIZE) & 2U];
-	//buffer = RoadMapDataRegions[(cellPos.x >> 16) & 1 ^ (((cellPos.y >> 15) & 2) + 1) ^ 2];
+	// Alpha 1.6 code, works too; not widely tested yet
+	//buffer = *(short**)((int)RoadMapDataRegions + (cellPos.x >> 14 & 4 ^ cellPos.y >> 13 & 8 ^ sdSelfModifyingCode));
 
 	plane = NULL;
 	
-	if (*buffer == 2) 
+	if (*buffer == 2)
 	{
 		sdPlane* planeData = (sdPlane*)((char*)buffer + buffer[1]);
 		short* bspData = (short*)((char*)buffer + buffer[2]);
 		sdNode* nodeData = (sdNode*)((char*)buffer + buffer[3]);
 		
-		
-		surface = &buffer[(cellPos.x >> 10 & 0x3fU) + 
-						  (cellPos.y >> 10 & 0x3fU) * MAP_REGION_SIZE*2 + 4];
+		surface = &buffer[(cellPos.x >> 10 & 63) + 
+						  (cellPos.y >> 10 & 63) * 64 + 4];
 
 		// initial surface
 		if (*surface == -1)
@@ -341,7 +346,7 @@ sdPlane* sdGetCell(VECTOR *pos)
 		// check surface has overlapping planes flag (aka multiple levels)
 		if ((*surface & 0x6000) == 0x2000)
 		{
-			surface = &bspData[(*surface & 0x1fff)];
+			surface = &bspData[*surface & 0x1fff];
 			do {
 				if(-256 - pos->vy > *surface)
 				{
@@ -362,12 +367,9 @@ sdPlane* sdGetCell(VECTOR *pos)
 			// check if it's has BSP properties
 			// basically it determines surface bounds
 			if (*surface & 0x4000)
-			{
-				cell.x = cellPos.x & 0x3ff;
-				cell.y = cellPos.y & 0x3ff;
-				
+			{				
 				// get closest surface by BSP lookup
-				BSPSurface = sdGetBSP(&nodeData[(*surface & 0x3fff)], &cell);
+				BSPSurface = sdGetBSP(&nodeData[*surface & 0x3fff], &cell);
 
 				if (*BSPSurface == 0x7fff)
 				{
@@ -439,13 +441,27 @@ int RoadInCell(VECTOR *pos)
 	short *buffer;
 	XYPAIR cellPos;
 
+#ifndef PSX
+	if (gDemoLevel)
+	{
+		return RoadInCell_alpha16(pos);
+	}
+#endif
+
 	cellPos.x = pos->vx - 512;
 	cellPos.y = pos->vz - 512;
-	buffer = RoadMapDataRegions[cellPos.x >> 0x10 & 1U ^ (cells_across >> 6 & 1U) + (cellPos.y >> 0xf & 2U) ^ cells_down >> 5 & 2U];
+
+	buffer = RoadMapDataRegions[(cellPos.x >> 16 & 1) ^ (regions_across / 2 & 1) + 
+								(cellPos.y >> 15 & 2) ^ (regions_down & 2)];
 
 	if (*buffer == 2)
 	{
-		check = (short *)(buffer + (cellPos.x >> 10 & 0x3fU) + (cellPos.y >> 10 & 0x3fU) * 64 + 4);
+		sdPlane* planeData = (sdPlane*)((char*)buffer + buffer[1]);
+		short* bspData = (short*)((char*)buffer + buffer[2]);
+		sdNode* nodeData = (sdNode*)((char*)buffer + buffer[3]);
+
+		check = &buffer[(cellPos.x >> 10 & 63) +
+						(cellPos.y >> 10 & 63) * 64 + 4];
 
 		if (*check == -1)
 			return -1;
@@ -455,7 +471,7 @@ int RoadInCell(VECTOR *pos)
 			moreLevels = (*check & 0x6000) == 0x2000;
 
 			if (moreLevels)
-				check = (short *)((int)buffer + (*check & 0x1fff) * sizeof(short) + buffer[2] + 2);
+				check = &bspData[(*check & 0x1fff) + 1];
 
 			do
 			{
@@ -464,25 +480,25 @@ int RoadInCell(VECTOR *pos)
 
 				if (*check & 0x4000)
 				{
-					plane = FindRoadInBSP((_sdNode *)((int)buffer + (*check & 0x3fff) * sizeof(_sdNode) + buffer[3]), (sdPlane *)((int)buffer + buffer[1]));
+					plane = FindRoadInBSP(&nodeData[*check & 0x3fff], planeData);
 
 					if (plane != NULL)
 						break;
 				}
 				else
 				{
-					plane = (sdPlane *)((int)buffer + buffer[1]) + *check;
+					plane = &planeData[*check];
 
-					if (plane->surface > 31)
+					if (plane->surface >= 32)
 						break;
 				}
 
 				check += 2;
 			} while (true);
 		}
-		else if ((*check & 0xE000) == 0)
+		else if (!(*check & 0xE000))
 		{
-			plane = (sdPlane *)((int)buffer + *check * sizeof(sdPlane) + buffer[1]);
+			plane = &planeData[*check];
 		}
 		else
 			plane = NULL;
@@ -490,7 +506,7 @@ int RoadInCell(VECTOR *pos)
 		if (plane == NULL)
 			return -1;
 
-		if (plane->surface > 31)
+		if (plane->surface >= 32)
 		{
 			pos->vy = sdHeightOnPlane(pos, plane) + 256;
 			return plane->surface - 32;
@@ -529,7 +545,7 @@ int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, sdPlane **plane)
 	}
 	else
 	{
-		normal->vx = (int)(*plane)->a >> 2; // [A] was (int)((uint)(ushort)(*plane)->a << 0x10) >> 0x12;
+		normal->vx = (int)(*plane)->a >> 2;
 		normal->vy = (int)(*plane)->b >> 2;
 		normal->vz = (int)(*plane)->c >> 2;
 	}
@@ -540,7 +556,6 @@ int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, sdPlane **plane)
 	}
 	else if ((*plane)->surface == 4)
 	{
-		// [A] Rev 1.1 doesn't have this cutscene hack
 		if (gInGameCutsceneActive && gCurrentMissionNumber == 23 && gInGameCutsceneID == 0)
 			out->vy += rcossin_tbl[(pos->vx + pos->vz) * 4 & 0x1fff] >> 9;
 		else

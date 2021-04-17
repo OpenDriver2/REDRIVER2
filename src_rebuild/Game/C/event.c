@@ -856,7 +856,6 @@ int OnBoat(VECTOR* pos, EVENT* ev, int* dist)
 // [D] [T] [A] long function, please debug more
 void SetUpEvents(int full)
 {
-
 	int direction;
 	int i, n;
 	int* p;
@@ -875,14 +874,14 @@ void SetUpEvents(int full)
 	e = &firstEvent;
 
 	// Multiplayer level loaded?
-	if (doSpooling == 0)
+	if (!doSpooling)
 	{
 		firstEvent = NULL;
 		EventCop = NULL;
 		return;
 	}
 
-	MALLOC_BEGIN()
+	D_MALLOC_BEGIN()
 
 	if (full)
 	{
@@ -1406,7 +1405,7 @@ void SetUpEvents(int full)
 	if (full)
 		mallocptr += cEvents * sizeof(EVENT);
 
-	MALLOC_END();
+	D_MALLOC_END();
 }
 
 // [D] [T]
@@ -1897,7 +1896,7 @@ void StepPathEvent(EVENT* ev)
 	// move train
 	if ((flags & 0x7000) == 0x1000)
 	{
-		uint loop; // unsigned on purspose
+		u_int loop; // unsigned on purspose
 
 		if (flags & 0x8000)
 		{
@@ -2247,7 +2246,7 @@ void StepHelicopter(EVENT* ev)
 		ev->rotation += FIXEDH(FIXEDH(direction * direction) * direction);
 		ev->rotation &= 0xfff;
 
-		if (GetSurfaceIndex((VECTOR*)&ev->position) == -23)
+		if (GetSurfaceIndex(&ev->position) == -23)
 		{
 			if (ev->position.vy < -50)
 			{
@@ -2275,7 +2274,7 @@ void StepHelicopter(EVENT* ev)
 
 		if ((ev->flags & 0x100) && (Random2(0) & 3) == (CameraCnt & 3U))
 		{
-			Setup_Smoke((VECTOR*)&ev->position, 100, 500, SMOKE_BLACK, 0, &dummy, 0);
+			Setup_Smoke(&ev->position, 100, 500, SMOKE_BLACK, 0, &dummy, 0);
 		}
 	}
 
@@ -2347,7 +2346,7 @@ void StepEvents(void)
 				} while (i < MAX_CARS && i < 32);
 
 				// make Tanner on boat also
-				if (player[0].playerType == 2 && OnBoat((VECTOR*)player, ev, &dist))
+				if (player[0].playerType == 2 && OnBoat((VECTOR*)player[0].pos, ev, &dist))
 					carsOnBoat |= 0x300000;
 
 				BoatOffset(&boatOffset, ev);
@@ -2414,7 +2413,7 @@ void StepEvents(void)
 
 						if (i == TANNER_COLLIDER_CARID)
 						{
-							SetTannerPosition((VECTOR*)pos);
+							SetTannerPosition(pos);
 							carsOnBoat &= ~0x100000;
 						}
 						else if ((onBoatLastFrame & bit) == 0)
@@ -2585,7 +2584,7 @@ void StepEvents(void)
 								else
 									cop->pad = 0;
 
-								evt->flags |= 4;
+								evt->flags |= 0x4;
 							}
 							z++;
 						}
@@ -2806,6 +2805,15 @@ void DrawEvents(int camera)
 	int otherCamera;
 	int temp;
 
+#ifndef PSX
+	if (gDemoLevel)
+	{
+		firstEvent = NULL;
+		EventCop = NULL;
+		return;
+	}
+#endif
+
 	if (CurrentPlayerView == 0)
 	{
 		nearestTrain = NULL;
@@ -2868,7 +2876,7 @@ void DrawEvents(int camera)
 								}
 							}
 
-							if (FrustrumCheck((VECTOR*)&ev->position, modelpointers[ev->model]->bounding_sphere) != -1)
+							if (FrustrumCheck(&ev->position, modelpointers[ev->model]->bounding_sphere) != -1)
 							{
 								pos.vx = ev->position.vx - camera_position.vx;
 								pos.vy = ev->position.vy - camera_position.vy;
@@ -3181,8 +3189,13 @@ sdPlane* EventSurface(VECTOR* pos, sdPlane* plane)
 	}
 	else if (GameLevel == 1 || GameLevel == 3)
 	{
+		// make secret base solid due to we use surface Ids
+		// Havana 3D occlusion was made simpler in Rev 1.1
+		// this change was very sneaky
+		if (i > 8)
+			return plane;
+		
 		// Havana and Rio boats floating
-
 		if (ev->flags & 0x800)
 		{
 			int height;
@@ -3696,9 +3709,9 @@ void SetSpecialCamera(SpecialCamera type, int change)
 		}
 		else
 		{
-			camera_position.vx = (event->position).vx + boat[0];
+			camera_position.vx = event->position.vx + boat[0];
 			camera_angle.vy = boat[1];
-			camera_position.vz = (event->position).vz + boat[2];
+			camera_position.vz = event->position.vz + boat[2];
 		}
 
 		player[0].cameraPos = camera_position;
@@ -3711,7 +3724,9 @@ void SetSpecialCamera(SpecialCamera type, int change)
 
 	if (type != SPECIAL_CAMERA_WAIT)
 	{
+		Havana3DLevelDraw = -1;
 		camera_change = 1;
+		
 		VisibilityLists(VIS_SORT, 0);
 	}
 }

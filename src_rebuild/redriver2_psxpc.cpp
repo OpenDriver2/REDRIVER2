@@ -508,8 +508,17 @@ int main(int argc, char** argv)
 	GPU_printf = printf;
 #endif // _DEBUG
 
-	config = ini_load("config.ini");
+	
+#if 0 // defined(__EMSCRIPTEN__)
+	// mount the current folder as a NODEFS instance
+	// inside of emscripten
+	EM_ASM(
+		FS.mkdir('/working');
+		FS.mount(NODEFS, {}, '/working1');
+	);
+#endif
 
+	config = ini_load("config.ini");
 
 	// best distance
 	gDrawDistance = 600;
@@ -524,18 +533,33 @@ int main(int argc, char** argv)
 	if (config)
 	{
 		extern int gDisableChicagoBridges;
+		extern int gContentOverride;
 		int newScrZ = gCameraDefaultScrZ;
 		const char* dataFolderStr = ini_get(config, "fs", "dataFolder");
 		const char* userReplaysStr = ini_get(config, "game", "userChases");
+		const char* cdImageFileName = ini_get(config, "cdfs", "image");
 
 		InitUserReplays(userReplaysStr);
 
+		// configure Psy-X CD image reader
+		if(cdImageFileName)
+		{
+			PsyX_CDFS_Init(cdImageFileName);
+		}
+		
+		// configure Psy-X pads
+		ini_sget(config, "pad", "pad1device", "%d", &g_controllerToSlotMapping[0]);
+		ini_sget(config, "pad", "pad2device", "%d", &g_controllerToSlotMapping[1]);
+
+		// configure Psy-X renderer
 		ini_sget(config, "render", "windowWidth", "%d", &windowWidth);
 		ini_sget(config, "render", "windowHeight", "%d", &windowHeight);
 		ini_sget(config, "render", "fullscreen", "%d", &fullScreen);
 		ini_sget(config, "render", "pgxpTextureMapping", "%d", &g_pgxpTextureCorrection);
 		ini_sget(config, "render", "pgxpZbuffer", "%d", &g_pgxpZBuffer);
 		ini_sget(config, "render", "bilinearFiltering", "%d", &g_bilinearFiltering);
+
+		// configure host game
 		ini_sget(config, "game", "drawDistance", "%d", &gDrawDistance);
 		ini_sget(config, "game", "disableChicagoBridges", "%d", &gDisableChicagoBridges);
 		ini_sget(config, "game", "fieldOfView", "%d", &newScrZ);
@@ -544,6 +568,8 @@ int main(int argc, char** argv)
 		ini_sget(config, "game", "widescreenOverlays", "%d", &gWidescreenOverlayAlign);
 		ini_sget(config, "game", "fastLoadingScreens", "%d", &gFastLoadingScreens);
 		ini_sget(config, "game", "languageId", "%d", &gUserLanguage);
+		ini_sget(config, "game", "overrideContent", "%d", &gContentOverride);
+		
 	
 		gCameraDefaultScrZ = MAX(MIN(newScrZ, 384), 128);
 		
@@ -592,22 +618,6 @@ int main(int argc, char** argv)
 #endif
 
 	PsyX_Initialise("REDRIVER2", windowWidth, windowHeight, fullScreen);
-
-	// verify installation
-	if (!FileExists("DATA\\FEFONT.BNK") || !FileExists("GFX\\FONT2.FNT"))
-	{
-		char str[320];
-		sprintf(str, "Cannot initialize REDRIVER2\n\nGame files not found by folder '%s'\n", gDataFolder);
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR!", str, NULL);
-		return -1;
-	}
-
-	// init language
-	if (!InitStringMng())
-	{
-		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR!", "Unable to load language files!\n\nSee console for details", NULL);
-		return -1;
-	}
 	
 	if (config)
 	{

@@ -6,7 +6,9 @@ extern int gDrawPauseMenus;
 extern int pauseflag;
 extern int gMissionCompletionState;
 
-extern int ShowPauseMenu(PAUSEMODE mode);
+extern int UpdatePauseMenu(PAUSEMODE mode);
+extern void ShowPauseMenu(PAUSEMODE mode);
+
 extern void DrawPauseMenus();
 extern void ControlMenu();
 

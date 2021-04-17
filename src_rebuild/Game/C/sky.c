@@ -27,7 +27,7 @@ struct FLAREREC
 	short gapmod;
 };
 
-int sky_y_offset[4] = { 14, 14, 14, 14 };
+int sky_y_offset[4] = { 17, 17, 17, 17 };
 
 unsigned char HorizonLookup[4][4] = {
 	{0, 0, 20, 20},
@@ -278,7 +278,7 @@ void LoadSky(void)
 	}
 
 	sprintf(name, "DATA\\SKY%d.RAW", skyNum);
-	LoadfileSeg(name, _frontend_buffer, offset, 0x10000);
+	LoadfileSeg(name, (char*)_frontend_buffer, offset, 0x10000);
 
 	rect.x = 320;
 	rect.y = 0;
@@ -576,7 +576,7 @@ void DrawLensFlare(void)
 	xgap = sun_pers_conv_position.vx - 160;
 	ygap = sun_pers_conv_position.vy - 128;
 
-	//sun_pers_conv_position.vy = (short)((uint)sun_pers_conv_position >> 0x10);
+	//sun_pers_conv_position.vy = (short)((u_int)sun_pers_conv_position >> 0x10);
 	
 	distance_to_sun = SquareRoot0(xgap * xgap + ygap * ygap);
 
@@ -874,10 +874,10 @@ void PlotSkyPoly(POLYFT4* polys, int skytexnum, unsigned char r, unsigned char g
 		poly->g0 = g;
 		poly->b0 = b;
 
-		*(uint*)&poly->x0 = *(uint*)&outpoints[src->v0].vx;
-		*(uint*)&poly->x1 = *(uint*)&outpoints[src->v1].vx;
-		*(uint*)&poly->x2 = *(uint*)&outpoints[src->v3].vx;
-		*(uint*)&poly->x3 = *(uint*)&outpoints[src->v2].vx;
+		*(u_int*)&poly->x0 = *(u_int*)&outpoints[src->v0].vx;
+		*(u_int*)&poly->x1 = *(u_int*)&outpoints[src->v1].vx;
+		*(u_int*)&poly->x2 = *(u_int*)&outpoints[src->v3].vx;
+		*(u_int*)&poly->x3 = *(u_int*)&outpoints[src->v2].vx;
 	
 		*(ushort*)&poly->u0 = *(ushort*)&skytexuv[skytexnum].u2;
 		*(ushort*)&poly->u1 = *(ushort*)&skytexuv[skytexnum].u3;
@@ -937,6 +937,10 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 	v1 = verts + 1;
 	v2 = verts + 2;
 
+#ifdef USE_PGXP
+	PGXP_SetZOffsetScale(0.0f, 256.0f);
+#endif
+
 	while (count < model->num_vertices)
 	{
 		SVECTOR sv0 = *v0;
@@ -946,19 +950,6 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 		sv0.vy -= sky_y_offset[GameLevel];
 		sv1.vy -= sky_y_offset[GameLevel];
 		sv2.vy -= sky_y_offset[GameLevel];
-
-#ifndef PSX
-		// scale sky to get rid of vobbling
-		sv0.vx *= 110;
-		sv0.vy *= 110;
-		sv0.vz *= 110;
-		sv1.vx *= 110;
-		sv1.vy *= 110;
-		sv1.vz *= 110;
-		sv2.vx *= 110;
-		sv2.vy *= 110;
-		sv2.vz *= 110;
-#endif
 
 		gte_ldv3(&sv0, &sv1, &sv2);
 		gte_rtpt();
@@ -983,6 +974,10 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 
 		count += 3;
 	}
+
+#ifdef USE_PGXP
+	PGXP_SetZOffsetScale(0.0f, 1.0f);
+#endif
 
 	if (z > 0)
 	{
@@ -1014,6 +1009,9 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 // [D] [T]
 void DrawSkyDome(void)
 {
+	gte_SetRotMatrix(&inv_camera_matrix);
+	gte_SetTransVector(&dummy);
+	
 	calc_sky_brightness();
 
 #ifdef PSX

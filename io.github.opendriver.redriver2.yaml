@@ -1,0 +1,74 @@
+---
+app-id: io.github.opendriver2.Redriver2
+runtime: org.freedesktop.Platform
+runtime-version: '20.08'
+rename-icon: 'icon'
+sdk: org.freedesktop.Sdk
+command: start.sh
+finish-args:
+- "--socket=x11"
+- "--socket=wayland"
+- "--share=ipc"
+- "--device=all"
+- "--socket=pulseaudio"
+- "--persist=."
+- "--allow=multiarch"
+- "--env=SDL_DYNAMIC_API=/app/lib/i386-linux-gnu/libSDL2-2.0.so.0"
+add-extensions:
+  org.freedesktop.Platform.Compat.i386:
+    directory: lib/i386-linux-gnu
+    version: '20.08'
+  org.freedesktop.Platform.Compat.i386.Debug:
+    directory: lib/debug/lib/i386-linux-gnu
+    version: '20.08'
+    no-autodownload: true
+  org.freedesktop.Platform.GL32:
+    directory: lib/i386-linux-gnu/GL
+    version: '20.08'
+    subdirectories: true
+    no-autodownload: true
+    autodelete: false
+    add-ld-path: lib
+    merge-dirs: vulkan/icd.d;glvnd/egl_vendor.d
+    download-if: active-gl-driver
+    enable-if: active-gl-driver
+sdk-extensions:
+- org.freedesktop.Sdk.Compat.i386
+- org.freedesktop.Sdk.Extension.toolchain-i386
+build-options:
+  prepend-pkg-config-path: "/app/lib32/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig"
+  ldflags: "-L/app/lib32"
+  append-path: "/usr/lib/sdk/toolchain-i386/bin"
+  env:
+    CC: i686-unknown-linux-gnu-gcc
+    CXX: i686-unknown-linux-gnu-g++
+  libdir: "/app/lib32"
+cleanup:
+- "/include"
+modules:
+- name: ld-i386
+  buildsystem: simple
+  build-commands:
+  - mkdir -p /app/lib/i386-linux-gnu /app/lib/debug/lib/i386-linux-gnu
+  - install -Dm644 -t /app/etc ld.so.conf 
+  sources:
+    - type: shell
+      commands:
+        - echo "/app/lib32" > ld.so.conf
+- name: game
+  buildsystem: simple
+  build-commands:
+  - mkdir -p /app/game/bin /app/game/data /app/bin /app/lib /app/share/applications/ /app/share/appdata /var/data/DRIVER2/ /app/share/icons/hicolor/256x256/apps
+  - install start.sh /app/bin/
+  - install bin/* /app/game/bin
+  - cp -r data/* /app/game/data
+  - install lib/* /app/lib/
+  - install io.github.opendriver2.Redriver2.desktop /app/share/applications/
+  - install -m644 io.github.opendriver2.Redriver2.appdata.xml /app/share/appdata/
+  - install icon.png /app/share/icons/hicolor/256x256/apps/
+  - chmod a+x -R /app/game/bin
+  - ln -s /var/data/config.ini /app/game/bin/config.ini
+  - ln -s /var/data/DRIVER2 /app/game/bin/DRIVER2
+  sources:
+    - type: dir
+      path: .flatpak

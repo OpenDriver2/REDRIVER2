@@ -104,53 +104,51 @@ ANIMATED_OBJECT* Level_AnimatingObjectPtrs[] = {
 };
 
 int Level_NumAnimatedObjects[] = {
-	9,
-	5,
-	5,
-	4
+	numberOf(Lev0AnimObjects),
+	numberOf(Lev1AnimObjects),
+	numberOf(Lev2AnimObjects),
+	numberOf(Lev3AnimObjects)
 };
 
-VECTOR gMissionDoorPosition = { 108000, 0, 4294575046, 0 };
-
+// sound ids for SOUND_BANK_SFX
 SMASHABLE_OBJECT smashable[] =
 {
-	{ 0, "CONE_TASTIC", 5, 0, 800 },
-	{ 0, "BOX_TASTIC", 4, -6000, 4096 },
-	{ 0, "BOX2_TASTIC", 4, -6000, 4096 },
-	{ 0, "BOX3_TASTIC", 4, -6000, 4096 },
-	{ 0, "CONE1_TASTIC", 5, 0, 800 },
-	{ 0, "CONE2_TASTIC", 5, 0, 800 },
-	{ 0, "BIN_TASTIC", 7, -6500, 3200 },
-	{ 0, "BARRIER_TASTIC", 7, -6500, 3200 },
-	{ 0, "BARREL_TASTIC", 6, -3300, 2400 },
-	{ 0, "BARREL1_TASTIC", 6, -3300, 2400 },
-	{ 0, "BARREL2_TASTIC", 6, -3300, 2400 },
-	{ 0, "TABLE_TASTIC", 7, -6500, 3200 },
-	{ 0, "BENCH_TASTIC", 7, -6500, 3200 },
-	{ 0, "CHAIR_TASTIC", 7, -6500, 3200 },
-	{ 0, "CHAIR1_TASTIC", 7, -6500, 3200 },
-	{ 0, "CHAIR2_TASTIC", 7, -6500, 3200 },
-	{ 0, "UMBRELLA_TASTIC", 7, -6500, 3200 },
-	{ 0, "UMBRELLA1_TASTIC", 7, -6500, 3200 },
-	{ 0, "PHONE_TASTIC", 6, -3300, 3600 },
-	{ 0, "PHONE1_TASTIC", 6, -3300, 3600 },
-	{ 0, "SIGN00_TASTIC", 7, -6500, 3200 },
-	{ 0, "NEWS_TASTIC", 7, -6500, 3200 },
-	{ 0, "PARKING_TASTIC", 6, -7500, 4096 },
-	{ 0, "DRINKS_TASTIC", 6, -3300, 3600 },
-	{ 0, "FENCE_TASTIC", 7, -6500, 3200 },
-	{ 0, "FENCE00_TASTIC", 7, -6500, 3200 },
-	{ 0, "FENCE01_TASTIC", 7, -6500, 3200 },
-	{ 0, "FENCE02_TASTIC", 7, -6500, 3200 },
-	{ 0, "FENCE03_TASTIC", 7, -6500, 3200 },
-	{ 0, "FENCE04_TASTIC", 7, -6500, 3200 },
-	{ 0, "CONE_TASTIC1", 5, 0, 800 },
-	{ 0, "CONE_TASTIC2", 5, 0, 800 },
-	{ 0, "CONE_TASTIC3", 5, 0, 800 },
-	{ 0, "CONE_TASTIC4", 5, 0, 800 },
-	{ 0, "TRAININGCONES1", 5, 0, 800 },
-	{ 0, "TRAININGCONES2", 5, 0, 800 },
-	{ 0, "TRAININGCONES3", 5, 0, 800 },
+	{ 0, "", 1, 0, 800 },		// default
+	{ 0, "CONE_TASTIC", 1, 0, 1400 },
+	{ 0, "CONE1_TASTIC", 1, 0, 1400 },
+	{ 0, "CONE2_TASTIC", 1, 0, 1400 },
+	{ 0, "BOX_TASTIC", 0, -6000, 4096 },
+	{ 0, "BOX2_TASTIC", 0, -6000, 4096 },
+	{ 0, "BOX3_TASTIC", 0, -6000, 4096 },
+	{ 0, "BIN_TASTIC", 3, -6500, 3200 },
+	{ 0, "BARRIER_TASTIC", 3, -6500, 3200 },
+	{ 0, "BARRIER1_TASTIC", 3, -6500, 3200 },
+	{ 0, "BARREL_TASTIC", 2, -3300, 2400 },
+	{ 0, "BARREL1_TASTIC", 2, -3300, 2400 },
+	{ 0, "BARREL2_TASTIC", 2, -3300, 2400 },
+	{ 0, "TABLE_TASTIC", 3, -6500, 3200 },
+	{ 0, "BENCH_TASTIC", 3, -6500, 3200 },
+	{ 0, "CHAIR_TASTIC", 3, -6500, 3200 },
+	{ 0, "CHAIR1_TASTIC", 3, -6500, 3200 },
+	{ 0, "CHAIR2_TASTIC", 3, -6500, 3200 },
+	{ 0, "UMBRELLA_TASTIC", 3, -6500, 3200 },
+	{ 0, "UMBRELLA1_TASTIC", 3, -6500, 3200 },
+	{ 0, "PHONE_TASTIC", 2, -3300, 3600 },
+	{ 0, "PHONE1_TASTIC", 2, -3300, 3600 },
+	{ 0, "SIGN00_TASTIC", 3, -6500, 3200 },
+	{ 0, "NEWS_TASTIC", 3, -6500, 3200 },
+	{ 0, "PARKING_TASTIC", 2, -7500, 4096 },
+	{ 0, "DRINKS_TASTIC", 2, -3300, 3600 },
+	{ 0, "FENCE_TASTIC", 3, -6500, 3200 },
+	{ 0, "FENCE00_TASTIC", 3, -6500, 3200 },
+	{ 0, "FENCE01_TASTIC", 3, -6500, 3200 },
+	{ 0, "FENCE02_TASTIC", 3, -6500, 3200 },
+	{ 0, "FENCE03_TASTIC", 3, -6500, 3200 },
+	{ 0, "FENCE04_TASTIC", 3, -6500, 3200 },
+	{ 0, "CONE_TASTIC1", 1, 0, 800 },
+	{ 0, "CONE_TASTIC2", 1, 0, 800 },
+	{ 0, "CONE_TASTIC3", 1, 0, 800 },
+	{ 0, "CONE_TASTIC4", 1, 0, 800 },
 	{ 0, 0, 0, 0, 0 }
 };
 
@@ -308,6 +306,10 @@ void InitAnimatingObjects(void)
 			
 			aop->model_num = model_idx;
 
+			// [A] store animated object number in normals pointer
+			// after all it was always unused
+			modelPtr->normals = loop;
+
 			if (modelPtr->instance_number != -1 &&
 				modelpointers[modelPtr->instance_number] != &dummyModel)
 			{
@@ -316,6 +318,10 @@ void InitAnimatingObjects(void)
 
 				if (aop->LitPoly)
 					modelPtr->flags2 |= MODEL_FLAG_LAMP;
+
+				// [A] store animated object number in normals pointer
+				// after all it was always unused
+				modelPtr->normals = loop;
 			}
 		}
 		else
@@ -350,14 +356,16 @@ void InitSpooledAnimObj(int model_number)
 
 			if (aop->LitPoly)
 				modelPtr->flags2 |= MODEL_FLAG_LAMP;
+
+			// [A] store animated object number in normals pointer
+			// after all it was always unused
+			modelPtr->normals = i;
 			
 			break;
 		}
 		aop++;
 	}
 }
-
-
 
 GARAGE_DOOR CurrentGarage;
 
@@ -383,8 +391,12 @@ void DrawAllAnimatingObjects(CELL_OBJECT** objects, int num_animated)
 		cop = objects[i];
 		type = cop->type;
 		model = modelpointers[type];
-		type = model->instance_number == -1 ? type : model->instance_number;
 
+		// [A] optimized
+		animate_object(cop, aop[model->normals].internal_id);
+		
+#if 0
+		type = model->instance_number == -1 ? type : model->instance_number;
 		for (j = 0; j < num_anim_objects; j++)
 		{
 			if (type == aop->model_num)
@@ -396,6 +408,7 @@ void DrawAllAnimatingObjects(CELL_OBJECT** objects, int num_animated)
 
 			aop++;
 		}
+#endif
 	}
 }
 

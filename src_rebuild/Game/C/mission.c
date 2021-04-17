@@ -1,5 +1,6 @@
 #include "driver2.h"
 #include "mission.h"
+
 #include "system.h"
 #include "mgeneric.h"
 #include "debris.h"
@@ -182,8 +183,8 @@ static char NewLeadDelay = 0;
 #define MISSION_IDENT		(('D' << 24) | ('2' << 16) | ('M' << 8) | 'S' )
 
 MR_MISSION Mission;
-u_int MissionStack[16][16];
-MR_THREAD MissionThreads[16];
+u_int MissionStack[MAX_MISSION_THREADS][16];
+MR_THREAD MissionThreads[MAX_MISSION_TARGETS];
 
 unsigned char playercollected[2] = { 0, 0 };
 
@@ -283,7 +284,7 @@ void InitialiseMissionDefaults(void)
 		Mission.message_string[i] = NULL;
 	}
 
-	Driver2TempJunctionsPtr = (uint*)_overlay_buffer;
+	Driver2TempJunctionsPtr = (u_int*)_overlay_buffer;
 	NumTempJunctions = 0;
 	gPlayerWithTheFlag = -1;
 	last_flag = -1;
@@ -360,7 +361,7 @@ void SetupResidentModels()
 			singlePal = (wantedCar[i] == 0 || wantedCar[i] > 4);
 			
 			// check if chosen cop car or special car
-			if (wantedCar[i] > 4 && NumPlayers == 1)
+			if (wantedCar[i] > 4)// && NumPlayers == 1)
 			{		
 				MissionHeader->residentModels[4] = wantedCar[i];
 			}
@@ -381,7 +382,7 @@ void LoadMission(int missionnum)
 {
 	int missionSize;
 	ROUTE_INFO* rinfo;
-	uint loadsize;
+	u_int loadsize;
 	char filename[32];
 	u_int header;
 	u_int length;
@@ -424,7 +425,7 @@ void LoadMission(int missionnum)
 	}
 
 	// begin memory allocation
-	MALLOC_BEGIN();
+	D_MALLOC_BEGIN();
 
 	if (NewLevel != 0)
 	{
@@ -435,7 +436,7 @@ void LoadMission(int missionnum)
 
 	MissionHeader = MissionLoadAddress;
 	MissionTargets = (MS_TARGET *)((int)MissionLoadAddress + MissionLoadAddress->size);
-	MissionScript = (u_int *)(MissionTargets + 16);
+	MissionScript = (u_int *)(MissionTargets + MAX_MISSION_TARGETS);
 	MissionStrings = (char*)((int*)MissionScript + MissionLoadAddress->strings);
 	
 	if (MissionLoadAddress->route && !NewLevel)
@@ -498,7 +499,6 @@ void LoadMission(int missionnum)
 #endif
 	{
 		PlayerStartInfo[0]->rotation = MissionHeader->playerStartRotation;
-
 		PlayerStartInfo[0]->position.vx = MissionHeader->playerStartPosition.x;
 		PlayerStartInfo[0]->position.vz = MissionHeader->playerStartPosition.y;
 	
@@ -525,9 +525,11 @@ void LoadMission(int missionnum)
 	gTimeOfDay = MissionHeader->time;
 	gWeather = MissionHeader->weather;
 
-	if(wantedTimeOfDay > -1 && !gWantNight)
+	// [A] custom time of day
+	if(wantedTimeOfDay > -1)
 		gTimeOfDay = wantedTimeOfDay;
 
+	// [A] custom weather
 	if (wantedWeather > -1)
 		gWeather = wantedWeather;
 
@@ -661,7 +663,7 @@ void LoadMission(int missionnum)
 			NumTempJunctions = rinfo->nJunctions;
 			memcpy((u_char*)Driver2TempJunctionsPtr, (u_char*)rinfo->data, NumTempJunctions << 2);
 			LeadValues = rinfo->parameters;
-
+			
 			mallocptr = MissionStrings + MissionHeader->route;
 #ifdef PSX
 			Loadfile("LEAD.BIN", 0xE7000);
@@ -695,7 +697,7 @@ void LoadMission(int missionnum)
 		}
 	}
 
-	MALLOC_END();
+	D_MALLOC_END();
 
 	// load helicopter path if exists
 	sprintf(filename, "MISSIONS\\PATH%d.%d", gCurrentMissionNumber, 0);
@@ -710,18 +712,18 @@ void LoadMission(int missionnum)
 	// assign story mission title
 	if (gCurrentMissionNumber - 1U < 40)
 	{
-		loadsize = gCurrentMissionNumber;
+		int titleId = gCurrentMissionNumber;
 
-		if (gCurrentMissionNumber > 36) 
-			loadsize = gCurrentMissionNumber - 1U;
+		if (titleId > 36)
+			titleId--;
 
-		if (loadsize > 11) 
-			loadsize--;
+		if (titleId > 11)
+			titleId--;
 		
-		if (loadsize > 7) 
-			loadsize--;
+		if (titleId > 7)
+			titleId--;
 
-		gMissionTitle = GET_MISSION_TXT(MissionName[loadsize - 1]);
+		gMissionTitle = GET_MISSION_TXT(MissionName[titleId - 1]);
 	}
 	else
 	{
@@ -1147,9 +1149,9 @@ void RegisterChaseHit(int car1, int car2)
 	{
 		if (gPlayerWithTheFlag == -1) 
 		{
-			if (car1 == Mission.ChaseTarget->car.slot || car2 == Mission.ChaseTarget->car.slot)
+			if (car1 == Mission.ChaseTarget->s.car.slot || car2 == Mission.ChaseTarget->s.car.slot)
 			{
-				Mission.ChaseTarget->car.chasing.maxDamage--;
+				Mission.ChaseTarget->s.car.chasing.maxDamage--;
 				Mission.ChaseHitDelay = 20;
 				DamageBar.position++;
 			}
@@ -1240,7 +1242,7 @@ int TargetComplete(MS_TARGET *target, int player)
 	else
 		flag = TARGET_FLAG_COMPLETED_ALLP;
 
-	return (target->target_flags & flag) == flag;
+	return (target->s.target_flags & flag) == flag;
 }
 
 
@@ -1256,7 +1258,7 @@ int TargetActive(MS_TARGET *target, int player)
 	else
 		flag = TARGET_FLAG_ACTIVE_ALLP;
 
-	return (target->target_flags & flag) == flag;
+	return (target->s.target_flags & flag) == flag;
 }
 
 // [D] [T]
@@ -1400,6 +1402,20 @@ int Swap2Cars(int curslot, int newslot)
 
 	gDontResetCarDamage = 0;
 
+	// [A] swap cars in targets and fix "Bank Job" bug
+	for (int i = 0; i < MAX_MISSION_TARGETS; i++)
+	{
+		MS_TARGET* swapTgt = &MissionTargets[i];
+
+		if (swapTgt->type == Target_Car)
+		{
+			if (swapTgt->s.car.slot == curslot)
+				swapTgt->s.car.slot = newslot;
+			else if (swapTgt->s.car.slot == newslot)
+				swapTgt->s.car.slot = curslot;
+		}		
+	}
+
 	return newslot;
 }
 
@@ -1429,10 +1445,10 @@ void HandleMissionThreads(void)
 	int running;
 	u_int value;
 
-	for (i = 0; i < 16; i++)
-		MissionTargets[i].target_flags &= ~TARGET_FLAG_VISIBLE_ALLP;
+	for (i = 0; i < MAX_MISSION_TARGETS; i++)
+		MissionTargets[i].s.target_flags &= ~TARGET_FLAG_VISIBLE_ALLP;
 
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < MAX_MISSION_THREADS; i++)
 	{
 		thread = &MissionThreads[i];
 		running = thread->active;
@@ -1464,6 +1480,9 @@ void HandleMissionThreads(void)
 				break;
 			}
 		}
+
+		// [A] handle car requets after each thread
+		MRHandleCarRequests();
 	}
 }
 
@@ -1773,7 +1792,7 @@ void MRInitialiseThread(MR_THREAD *thread, u_int *pc, u_char player)
 void MRStartThread(MR_THREAD *callingthread, u_int addr, unsigned char player)
 {
 	int i;
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < MAX_MISSION_THREADS; i++)
 	{
 		if (!MissionThreads[i].active)
 		{
@@ -1794,7 +1813,7 @@ int MRStopThread(MR_THREAD *thread)
 void MRCommitThreadGenocide(void)
 {
 	int i;
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < MAX_MISSION_THREADS; i++)
 		MRStopThread(&MissionThreads[i]);
 }
 
@@ -1921,13 +1940,13 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 
 	ret = 0;
 
-	if (TargetComplete(target, thread->player) != 0) 
+	if (TargetComplete(target, thread->player)) 
 		return 1;
 
 	if (thread->player == 0) 
-		target->target_flags |= (TARGET_FLAG_VISIBLE_P1 | TARGET_FLAG_ACTIVE_P1);
+		target->s.target_flags |= (TARGET_FLAG_VISIBLE_P1 | TARGET_FLAG_ACTIVE_P1);
 	else 
-		target->target_flags |= (TARGET_FLAG_VISIBLE_P2 | TARGET_FLAG_ACTIVE_P2);
+		target->s.target_flags |= (TARGET_FLAG_VISIBLE_P2 | TARGET_FLAG_ACTIVE_P2);
 
 	playerId = thread->player;
 	pv.vx = player[playerId].pos[0];
@@ -1938,43 +1957,43 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 	{
 		case Target_Point: // point target
 		{
-			if (target->target_flags & TARGET_FLAG_POINT_ON_BOAT)
+			if (target->s.target_flags & TARGET_FLAG_POINT_ON_BOAT)
 			{
-				tv.vx = target->point.boatOffsetX;
-				tv.vz = target->point.boatOffsetZ;
+				tv.vx = target->s.point.boatOffsetX;
+				tv.vz = target->s.point.boatOffsetZ;
 
 				OffsetTarget(&tv);
 
-				target->point.posX = tv.vx;
-				target->point.posZ = tv.vz;
+				target->s.point.posX = tv.vx;
+				target->s.point.posZ = tv.vz;
 			}
-			else if (target->target_flags & TARGET_FLAG_POINT_STOP_COPS_TRIGGER)	// set stop cops
+			else if (target->s.target_flags & TARGET_FLAG_POINT_STOP_COPS_TRIGGER)	// set stop cops
 			{
-				target->target_flags &= ~TARGET_FLAG_POINT_STOP_COPS_TRIGGER;
+				target->s.target_flags &= ~TARGET_FLAG_POINT_STOP_COPS_TRIGGER;
 
-				gStopCops.radius = target->point.radius;
-				gStopCops.pos.vx = target->point.posX;
+				gStopCops.radius = target->s.point.radius;
+				gStopCops.pos.vx = target->s.point.posX;
 				gStopCops.pos.vy = 0;
-				gStopCops.pos.vz = target->point.posZ;
+				gStopCops.pos.vz = target->s.point.posZ;
 			}
 			else
 			{
-				tv.vx = target->point.posX;
-				tv.vz = target->point.posZ;
+				tv.vx = target->s.point.posX;
+				tv.vz = target->s.point.posZ;
 				tv.vy = 0;
 			}
 			
-			if (Long2DDistance(&tv, &pv) <= target->point.radius)
+			if (Long2DDistance(&tv, &pv) <= target->s.point.radius)
 			{
-				if (target->point.height != 0) // if target is at height (Train pursuit)
+				if (target->s.point.height != 0) // if target is at height (Train pursuit)
 				{
-					if (target->point.height < ABS(target->point.posY + pv.vy))
-						target->point.actionFlag &= ~0xFFF0;
+					if (target->s.point.height < ABS(target->s.point.posY + pv.vy))
+						target->s.point.actionFlag &= ~0xFFF0;
 				}
 
 				if (GameType == GAME_SECRET)
 				{
-					switch(target->target_flags & (TARGET_FLAG_POINT_SECRET_POINT1 | TARGET_FLAG_POINT_SECRET_POINT2 | TARGET_FLAG_POINT_SECRET_STARTFINISH))
+					switch(target->s.target_flags & (TARGET_FLAG_POINT_SECRET_POINT1 | TARGET_FLAG_POINT_SECRET_POINT2 | TARGET_FLAG_POINT_SECRET_STARTFINISH))
 					{
 						case 0: // TARGET_FLAG_POINT_SECRET_POINT0
 						{
@@ -2025,12 +2044,12 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 					return 0;
 				}
 
-				switch (target->target_flags & (TARGET_FLAG_POINT_CTF_BASE_P1 | TARGET_FLAG_POINT_CTF_BASE_P2 | TARGET_FLAG_POINT_CTF_FLAG))
+				switch (target->s.target_flags & (TARGET_FLAG_POINT_CTF_BASE_P1 | TARGET_FLAG_POINT_CTF_BASE_P2 | TARGET_FLAG_POINT_CTF_FLAG))
 				{
 					case 0:
 					{
 						int actionFlag;
-						actionFlag = target->point.actionFlag;
+						actionFlag = target->s.point.actionFlag;
 
 						if (actionFlag)
 						{
@@ -2044,7 +2063,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 								SetPlayerMessage(thread->player, message, 2, 0);
 							}
 
-							target->point.actionFlag = (actionFlag >> 0x10) << 0x10 | (val << 4) | actionFlag & 0xf;
+							target->s.point.actionFlag = (actionFlag >> 0x10) << 0x10 | (val << 4) | actionFlag & 0xf;
 							gTannerActionNeeded = 1;
 
 							if (TannerActionHappening())
@@ -2055,12 +2074,12 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						else
 						{
 							// Handling of Lose Tail message
-							if (target->point.loseTailMessage != -1 && copsAreInPursuit)
+							if (target->s.point.loseTailMessage != -1 && copsAreInPursuit)
 							{
 								if (Mission.message_timer[0] == 0 && prevCopsInPursuit == 0)
 								{
 									// lose tail
-									SetPlayerMessage(thread->player, MissionStrings + target->point.loseTailMessage, 2, 2);
+									SetPlayerMessage(thread->player, MissionStrings + target->s.point.loseTailMessage, 2, 2);
 									prevCopsInPursuit = copsAreInPursuit;
 								}
 							}
@@ -2074,10 +2093,10 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						if (ret == 0)
 							return 0;
 
-						if (target->target_flags & 0x400000)
+						if (target->s.target_flags & 0x400000)
 							return 1;
 
-						if ((target->target_flags & 0x800000) && player[thread->player].playerType != 1)
+						if ((target->s.target_flags & TARGET_FLAG_POINT_PLAYER_MUSTHAVE_CAR) && player[thread->player].playerType != 1)
 							ret = 0;
 
 						break;
@@ -2089,8 +2108,8 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						{
 							int correctZone;
 
-							correctZone =	(target->target_flags & TARGET_FLAG_POINT_CTF_BASE_P1) && thread->player == 0 ||
-											(target->target_flags & TARGET_FLAG_POINT_CTF_BASE_P2) && thread->player == 1;
+							correctZone =	(target->s.target_flags & TARGET_FLAG_POINT_CTF_BASE_P1) && thread->player == 0 ||
+											(target->s.target_flags & TARGET_FLAG_POINT_CTF_BASE_P2) && thread->player == 1;
 
 							if(correctZone)
 							{
@@ -2133,7 +2152,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 			}
 			else
 			{
-				target->point.actionFlag &= ~0xFFF0;
+				target->s.point.actionFlag &= ~0xFFF0;
 			}
 
 			break;
@@ -2141,16 +2160,16 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 		case Target_Car: // car target
 		{
 			CAR_DATA* cp;
-			tv.vx = target->car.posX;
-			tv.vz = target->car.posZ;
+			tv.vx = target->s.car.posX;
+			tv.vz = target->s.car.posZ;
 			tv.vy = 0;
 	
 			dist = Long2DDistance(&tv, &pv);
-			slot = target->car.slot;
+			slot = target->s.car.slot;
 
 			if (slot == -1)
 			{
-				if (dist < 18000 || target->car.type == 3 && (target->car.flags & 0x1) == 0)
+				if (dist < 18000 || target->s.car.type == 3 && !(target->s.car.flags & CARTARGET_FLAG_RANDOMCHASE))
 					MRRequestCar(target);
 				else
 					MRCancelCarRequest(target);
@@ -2160,15 +2179,15 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 
 			cp = &car_data[slot];
 
-			if (target->target_flags & TARGET_FLAG_CAR_PINGED_IN)
+			if (target->s.target_flags & TARGET_FLAG_CAR_PINGED_IN)
 			{
-				target->car.posX = cp->hd.where.t[0];
-				target->car.posZ = cp->hd.where.t[2];
+				target->s.car.posX = cp->hd.where.t[0];
+				target->s.car.posZ = cp->hd.where.t[2];
 
 				// make Caine's Compound vans moving
-				if (target->car.type == 1)
+				if (target->s.car.type == 1)
 				{
-					if (target->car.maxDistance != 0 && dist < target->car.maxDistance)
+					if (target->s.car.maxDistance != 0 && dist < target->s.car.maxDistance)
 					{
 						int direction, model, palette;
 						int *inform;
@@ -2189,17 +2208,17 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 
 						cp->inform = inform;
 
-						target->car.slot = slot;
-						target->car.maxDistance = 0;
+						target->s.car.slot = slot;
+						target->s.car.maxDistance = 0;
 					}
 				}
-				else if (target->car.type == 3)
+				else if (target->s.car.type == 3)
 				{
-					if((target->target_flags & TARGET_FLAG_CAR_PLAYERCONTROLLED) == 0)
+					if((target->s.target_flags & TARGET_FLAG_CAR_PLAYERCONTROLLED) == 0)
 					{
-						if(target->car.flags & 0x1)
+						if(target->s.car.flags & CARTARGET_FLAG_RANDOMCHASE)
 						{
-							if (target->car.cutscene == -1)
+							if (target->s.car.cutscene == -1)
 							{
 								if (gInGameChaseActive == 0)
 								{
@@ -2207,9 +2226,9 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 									player[0].targetCarId = -1;
 									gBombTargetVehicle = NULL;
 
-									if ((target->car.flags & 0xf0U) != 0x20)
+									if ((target->s.car.flags & 0xf0) != CARTARGET_FLAG_STEAL_TARGET)
 									{
-										if (target->car.flags & 0x10000)
+										if (target->s.car.flags & CARTARGET_FLAG_TO_BE_STOLEN)
 											SetCarToBeStolen(target, thread->player);
 										else
 											ret = 1;
@@ -2218,12 +2237,12 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 							}
 							else
 							{
-								if (dist < target->car.maxDistance && (MissionHeader->type & 4) == 0)
+								if (dist < target->s.car.maxDistance && (MissionHeader->type & 4) == 0)
 								{
-									TriggerChase(&slot, target->car.cutscene);
+									TriggerChase(&slot, target->s.car.cutscene);
 
-									target->car.cutscene = -1;
-									target->car.slot = slot;
+									target->s.car.cutscene = -1;
+									target->s.car.slot = slot;
 
 									player[0].targetCarId = slot;
 									Mission.ChaseTarget = target;
@@ -2232,13 +2251,13 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						}
 						else
 						{
-							if (cp->totalDamage >= target->car.chasing.maxDamage)
+							if (cp->totalDamage >= target->s.car.chasing.maxDamage)
 							{
 								if (NewLeadDelay != 1)
 								{
-									if (target->car.flags & 0x10000)
+									if (target->s.car.flags & CARTARGET_FLAG_TO_BE_STOLEN)
 									{
-										DamageBar.position = target->car.chasing.maxDamage;
+										DamageBar.position = target->s.car.chasing.maxDamage;
 
 										cp->totalDamage = MaxPlayerDamage[0];
 
@@ -2251,7 +2270,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 									{
 										ret = 0;
 
-										DamageBar.position = target->car.chasing.maxDamage;
+										DamageBar.position = target->s.car.chasing.maxDamage;
 
 										cp->totalDamage = MaxPlayerDamage[0] - 1;
 										SetConfusedCar(slot);
@@ -2267,31 +2286,33 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						}
 					}
 
-					if (target->car.flags & 0x4)
+					if (target->s.car.flags & CARTARGET_FLAG_THROWS_BOMBS)
 					{
 						gBombTargetVehicle = &car_data[slot];
 					}
 				}
 
-				switch(target->car.flags & 0xf0)
+				switch(target->s.car.flags & 0xf0)
 				{
 					case 0:
 					{
 						// check damage
-						if (target->car.chasing.maxDamage > 0)
+						if (target->s.car.chasing.maxDamage > 0)
 						{
 							// first we init damage bar
 							if (DamageBar.active == 0)
 							{
-								if (gCurrentMissionNumber != 2 && 
+								if (gCurrentMissionNumber != 2 &&
 									gCurrentMissionNumber != 6)
-									EnablePercentageBar(&DamageBar, target->car.chasing.maxDamage);
+								{
+									EnablePercentageBar(&DamageBar, target->s.car.chasing.maxDamage);
+								}
 
 								if (gCurrentMissionNumber == 11 ||
 									gCurrentMissionNumber == 13 ||
 									gCurrentMissionNumber == 26)
 								{
-									target->car.chasing.maxDamage = (target->car.chasing.maxDamage * 3) / 4;
+									target->s.car.chasing.maxDamage = (target->s.car.chasing.maxDamage * 3) / 4;
 								}
 							}
 						}
@@ -2306,7 +2327,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 
 							SetConfusedCar(slot);
 
-							if (target->car.flags & 0x100000)
+							if (target->s.car.flags & CARTARGET_FLAG_PED_ESCAPES)
 							{
 								cp->controlFlags &= ~CONTROL_FLAG_WAS_PARKED;
 
@@ -2317,7 +2338,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 								CreatePedAtLocation(&pos, 8);
 							}
 
-							if (target->car.flags & 0x10000)
+							if (target->s.car.flags & CARTARGET_FLAG_TO_BE_STOLEN)
 							{
 								SetCarToBeStolen(target, thread->player);
 
@@ -2337,7 +2358,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						// check distance
 						if (dist > TAIL_TOOFAR)
 						{
-							message = MissionStrings + target->car.chasing.tooFarMessage;
+							message = MissionStrings + target->s.car.chasing.tooFarMessage;
 
 							SetPlayerMessage(thread->player, message, 2, 2);
 							SetMissionFailed(FAILED_MESSAGESET);
@@ -2347,9 +2368,9 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 
 						if (dist > TAIL_GETTINGFAR)
 						{
-							if (target->car.chasing.gettingFarMessage != 255 && TAIL_GETTINGFAR != lastsay)
+							if (target->s.car.chasing.gettingFarMessage != 255 && TAIL_GETTINGFAR != lastsay)
 							{
-								MissionSay(target->car.chasing.gettingFarMessage);
+								MissionSay(target->s.car.chasing.gettingFarMessage);
 								lastsay = TAIL_GETTINGFAR;
 							}
 
@@ -2363,7 +2384,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						
 						break;
 					}
-					case 16:	// proximity extended messages
+					case CATTARGET_FLAG_PROXIMITY_TARGET:	// proximity extended messages
 					{
 						ProxyBar.active = 1;
 						ProxyBar.position = dist;
@@ -2371,7 +2392,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						if (dist < TAIL_TOOCLOSE)
 						{
 							int messageId;
-							messageId = target->car.tail.closeMessages >> 0xc & 0xfff;
+							messageId = target->s.car.tail.closeMessages >> 0xc & 0xfff;
 
 							if (messageId != 0xfff)
 							{
@@ -2387,7 +2408,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						if (dist < TAIL_GETTINGCLOSE)
 						{
 							int messageId;
-							messageId = target->car.tail.closeMessages & 0xfff;
+							messageId = target->s.car.tail.closeMessages & 0xfff;
 
 							if (messageId != 0xfff)
 							{
@@ -2395,7 +2416,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 								SetPlayerMessage(thread->player, message, 2, 1);
 							}
 
-							phrase = target->car.tail.closeMessages >> 24 & 0xFF;
+							phrase = target->s.car.tail.closeMessages >> 24 & 0xFF;
 
 							if (phrase != 0xff && lastsay != TAIL_GETTINGCLOSE)
 							{
@@ -2409,7 +2430,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						if (dist > TAIL_TOOFAR)
 						{
 							int messageId;
-							messageId = target->car.tail.farMessages >> 0xc & 0xfff;
+							messageId = target->s.car.tail.farMessages >> 0xc & 0xfff;
 
 							if (messageId != 0xfff)
 							{
@@ -2425,7 +2446,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						if (dist > TAIL_GETTINGFAR)
 						{
 							int messageId;
-							messageId = target->car.tail.farMessages & 0xfff;
+							messageId = target->s.car.tail.farMessages & 0xfff;
 
 							if (messageId != 0xfff)
 							{
@@ -2433,7 +2454,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 								SetPlayerMessage(thread->player, message, 2, 1);
 							}
 
-							phrase = target->car.tail.farMessages >> 24 & 0xFF;
+							phrase = target->s.car.tail.farMessages >> 24 & 0xFF;
 
 							if (phrase != 0xff && lastsay != TAIL_GETTINGFAR)
 							{
@@ -2456,11 +2477,11 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						
 						break;
 					}
-					case 32:
+					case 0x20:
 					{
 						break;
 					}
-					case 48:
+					case CARTARGET_FLAG_STEAL_TARGET:
 					{
 						// Find the Clue and Steal the keys
 						int failIfDamaged;
@@ -2482,37 +2503,28 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 							ret = 1;
 						}
 
-						// check all chase missions where we able to get into chased cars
-						if (gCurrentMissionNumber == 11 ||	// hijack
-							gCurrentMissionNumber == 13 ||	// stop truck
-							gCurrentMissionNumber == 14 ||	// find the clue
-							gCurrentMissionNumber == 19 ||	// pursue jericho
-							gCurrentMissionNumber == 26 ||	// steal the ambulance
-							gCurrentMissionNumber == 28)	// steal the keys
+						// check if target car is damaged
+						if(failIfDamaged && cp->totalDamage >= MaxPlayerDamage[0])
 						{
-							// check if target car is damaged
-							if(failIfDamaged && cp->totalDamage >= MaxPlayerDamage[0])
-							{
-								message = MissionStrings + MissionHeader->msgCarWrecked;
+							message = MissionStrings + MissionHeader->msgCarWrecked;
 
-								SetPlayerMessage(thread->player, message, 2, 1);
-								SetMissionFailed(FAILED_MESSAGESET);
-							}
+							SetPlayerMessage(thread->player, message, 2, 1);
+							SetMissionFailed(FAILED_MESSAGESET);
 						}
 						break;
 					}
-					case 64:
+					case CARTARGET_FLAG_ESCAPE_TARGET:
 					{
 						if (copsAreInPursuit)
 							ret = 1;
 
 						break;
 					}
-					case 80:
+					case CARTARGET_FLAG_CnR_TARGET:
 					{
-						if(target->target_flags & TARGET_FLAG_CAR_PLAYERCONTROLLED)
+						if(target->s.target_flags & TARGET_FLAG_CAR_PLAYERCONTROLLED)
 						{
-							MaxPlayerDamage[1] = target->car.chasing.maxDamage;
+							MaxPlayerDamage[1] = target->s.car.chasing.maxDamage;
 
 							if (dist > TAIL_TOOFAR)
 							{
@@ -2522,7 +2534,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 									break;
 								}
 
-								message = MissionStrings + target->car.chasing.tooFarMessage;
+								message = MissionStrings + target->s.car.chasing.tooFarMessage;
 
 								SetPlayerMessage(thread->player, message, 2, 2);
 								SetMissionFailed(FAILED_MESSAGESET);
@@ -2530,30 +2542,31 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 							}
 						}
 
-						if (cp->totalDamage < target->car.chasing.maxDamage)
-							break;
-
-						ret = 1;
-
-						// idk what it makes
-						if ((target->target_flags & TARGET_FLAG_CAR_PLAYERCONTROLLED) == 0)
+						if (cp->totalDamage >= target->s.car.chasing.maxDamage)
 						{
-							SetConfusedCar(slot);
+							ret = 1;
+
+							// idk what it makes
+							if (!(target->s.target_flags & TARGET_FLAG_CAR_PLAYERCONTROLLED))
+							{
+								SetConfusedCar(slot);
+							}
 						}
+
 						break;
 					}
 				}
 			}
 			else
 			{
-				target->car.slot = -1;
+				target->s.car.slot = -1;
 
 				if (gCarWithABerm == slot)
 					gCarWithABerm = -1;
 
-				if (target->car.type != 1)
+				if (target->s.car.type != 1)
 				{
-					message = MissionStrings + target->car.chasing.tooFarMessage;
+					message = MissionStrings + target->s.car.chasing.tooFarMessage;
 					SetPlayerMessage(thread->player, message, 2, 2);
 					SetMissionFailed(FAILED_MESSAGESET);
 				}
@@ -2563,20 +2576,20 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 		}
 		case Target_Event: // event target
 		{
-			if (target->target_flags & TARGET_FLAG_EVENT_TRIGGERED)
+			if (target->s.target_flags & TARGET_FLAG_EVENT_TRIGGERED)
 			{
 				// [A] Ahhhh, 32 bit pointers... for future full-scale refactoring
-				if (target->event.loseMessage != -1 && Long2DDistance((VECTOR*)target->event.eventPos, &pv) > 30000)
+				if (target->s.event.loseMessage != -1 && Long2DDistance(target->s.event.eventPos, &pv) > 30000)
 				{
-					message = MissionStrings + target->event.loseMessage;
+					message = MissionStrings + target->s.event.loseMessage;
 					SetPlayerMessage(thread->player, message, 2, 2);
 					SetMissionFailed(FAILED_MESSAGESET);
 				}
 			}
 			else
 			{
-				target->event.eventPos = TriggerEvent(target->event.eventId);
-				target->target_flags |= TARGET_FLAG_EVENT_TRIGGERED;
+				target->s.event.eventPos = TriggerEvent(target->s.event.eventId);
+				target->s.target_flags |= TARGET_FLAG_EVENT_TRIGGERED;
 			}
 
 			break;
@@ -2586,12 +2599,12 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 	if (ret)
 	{
 		// keep only those flags
-		target->target_flags &= ~TARGET_FLAG_COMPLETED_ALLP;
+		target->s.target_flags &= ~TARGET_FLAG_COMPLETED_ALLP;
 		
 		if (thread->player == 0)
-			target->target_flags |= TARGET_FLAG_COMPLETED_P1;
+			target->s.target_flags |= TARGET_FLAG_COMPLETED_P1;
 		else
-			target->target_flags |= TARGET_FLAG_COMPLETED_P2;
+			target->s.target_flags |= TARGET_FLAG_COMPLETED_P2;
 
 		if (GameType == GAME_CHECKPOINT)
 		{
@@ -2612,8 +2625,15 @@ int MRRequestCar(MS_TARGET *target)
 		return 0;
 
 	Mission.CarTarget = target;
-
+	
 	return 1;
+}
+
+// [D] [T]
+void MRCancelCarRequest(MS_TARGET* target)
+{
+	if (Mission.CarTarget == target)
+		Mission.CarTarget = NULL;
 }
 
 // [D] [T]
@@ -2637,20 +2657,20 @@ int MRCreateCar(MS_TARGET *target)
 	LONGVECTOR4 pos;
 	char playerid;
 
-	pos[0] = target->car.posX;
-	pos[2] = target->car.posZ;
+	pos[0] = target->s.car.posX;
+	pos[2] = target->s.car.posZ;
 	pos[1] = 10000;
 
-	if (target->car.type == 2)
+	if (target->s.car.type == 2)
 	{
 		curslot = PingInCivCar(666);	// put Rio limo
 		curslot--;
 	}
 	else
 	{
-		curslot = CreateStationaryCivCar(target->car.rotation, 0, 
-			((target->car.flags & 0x40000) != 0) << 10, &pos,
-			target->car.model, target->car.palette, (target->car.flags & 8) != 0);
+		curslot = CreateStationaryCivCar(target->s.car.rotation, 0,
+			((target->s.car.flags & CARTARGET_FLAG_FLIPPED) != 0) << 10, &pos,
+			target->s.car.model, target->s.car.palette, (target->s.car.flags & CARTARGET_FLAG_ISCOP) != 0);
 	}
 
 	if (curslot < 0)
@@ -2659,38 +2679,39 @@ int MRCreateCar(MS_TARGET *target)
 		return 0;
 	}
 
-	if (target->car.flags & 0x8)
+	if (target->s.car.flags & CARTARGET_FLAG_ISCOP)
 	{
 		newslot = NumReplayStreams + cop_adjust;
 		cop_adjust++;
+
 		curslot = Swap2Cars(curslot, newslot);
 	}
 
 	Mission.CarTarget = NULL;
 	requestStationaryCivCar = 0;
 
-	if (target->car.type == 3 && !(target->car.flags & 0x1))
+	if (target->s.car.type == 3 && !(target->s.car.flags & CARTARGET_FLAG_RANDOMCHASE))
 	{
 		playerid = 0xFF;
 
-		InitPlayer((PLAYER *)(player + 1), &car_data[curslot], 
-			CONTROL_TYPE_LEAD_AI, target->car.rotation, &pos, 
-			target->car.model, target->car.palette, (char *)&playerid);
+		InitPlayer(&player[1], &car_data[curslot],
+			CONTROL_TYPE_LEAD_AI, target->s.car.rotation, &pos,
+			target->s.car.model, target->s.car.palette, (char *)&playerid);
 
-		EnablePercentageBar(&DamageBar, target->car.chasing.maxDamage);
+		EnablePercentageBar(&DamageBar, target->s.car.chasing.maxDamage);
 		NewLeadDelay = 0;
 	}
 
-	target->car.posX = car_data[curslot].hd.where.t[0];
-	target->car.posZ = car_data[curslot].hd.where.t[2];
+	target->s.car.posX = car_data[curslot].hd.where.t[0];
+	target->s.car.posZ = car_data[curslot].hd.where.t[2];
 
-	target->car.slot = curslot;
-	target->target_flags |= TARGET_FLAG_CAR_PINGED_IN;
+	target->s.car.slot = curslot;
+	target->s.target_flags |= TARGET_FLAG_CAR_PINGED_IN;
 	
-	car_data[curslot].inform = &target->target_flags;
+	car_data[curslot].inform = &target->s.target_flags;
 
 	// make fully damaged (Car bomb escape)
-	if (target->car.flags & 0x80000)
+	if (target->s.car.flags & CARTARGET_FLAG_DAMAGED)
 	{
 		car_data[curslot].totalDamage = 65535;
 		car_data[curslot].ap.damage[0] = 4095;
@@ -2702,19 +2723,12 @@ int MRCreateCar(MS_TARGET *target)
 		car_data[curslot].ap.needsDenting = 1;
 	}
 
-	if (target->car.flags & 0x200000)
+	if (target->s.car.flags & CARTARGET_FLAG_DETONATOR)
 		gCarWithABerm = curslot;
 
 	return 1;
 }
 
-
-// [D] [T]
-void MRCancelCarRequest(MS_TARGET *target)
-{
-	if (Mission.CarTarget == target)
-		Mission.CarTarget = NULL;
-}
 
 // [D] [T]
 void PreProcessTargets(void)
@@ -2727,59 +2741,56 @@ void PreProcessTargets(void)
 		PreLoadInGameCutscene(i);
 	}
 
-	i = 15;
+	for (i = 0; i < MAX_MISSION_TARGETS; i++)
+	{
+		target = &MissionTargets[i];
 
-	target = MissionTargets;
-	do {
 		if (target->type == Target_Player2Start || 
-			target->type == Target_Car && (target->target_flags & TARGET_FLAG_CAR_PLAYERCONTROLLED))
+			target->type == Target_Car && (target->s.target_flags & TARGET_FLAG_CAR_PLAYERCONTROLLED))
 		{
 			PlayerStartInfo[1] = &ReplayStreams[1].SourceType;
 
 			ReplayStreams[1].SourceType.type = 1;
-			ReplayStreams[1].SourceType.position.vx = target->car.posX;
+			ReplayStreams[1].SourceType.position.vx = target->s.car.posX;
 			ReplayStreams[1].SourceType.position.vy = 0;
-			ReplayStreams[1].SourceType.position.vz = target->car.posZ;
-			ReplayStreams[1].SourceType.rotation = target->car.rotation;
-			ReplayStreams[1].SourceType.model = target->car.model;
-			ReplayStreams[1].SourceType.palette = target->car.palette;
+			ReplayStreams[1].SourceType.position.vz = target->s.car.posZ;
+			ReplayStreams[1].SourceType.rotation = target->s.car.rotation;
+			ReplayStreams[1].SourceType.model = target->s.car.model;
+			ReplayStreams[1].SourceType.palette = target->s.car.palette;
 			ReplayStreams[1].SourceType.controlType = CONTROL_TYPE_PLAYER;
 			ReplayStreams[1].SourceType.flags = 0;
 
-			if (target->car.type & 0x3)
-				target->car.cutscene = -1;
+			if (target->s.car.type & 0x3)
+				target->s.car.cutscene = -1;
 	
-			target->car.slot = 1;
-			target->target_flags |= TARGET_FLAG_CAR_PINGED_IN;
+			target->s.car.slot = 1;
+			target->s.target_flags |= TARGET_FLAG_CAR_PINGED_IN;
 		}
 
 		if (target->type == Target_Point)
 		{
-			if ((target->target_flags & TARGET_FLAG_POINT_CTF_FLAG) == TARGET_FLAG_POINT_CTF_FLAG)
+			if ((target->s.target_flags & TARGET_FLAG_POINT_CTF_FLAG) == TARGET_FLAG_POINT_CTF_FLAG)
 			{
-				target->target_flags |= TARGET_FLAG_COMPLETED_ALLP;
+				target->s.target_flags |= TARGET_FLAG_COMPLETED_ALLP;
 			}
 
-			if (target->target_flags & TARGET_FLAG_POINT_ON_BOAT)
+			if (target->s.target_flags & TARGET_FLAG_POINT_ON_BOAT)
 			{
-				target->point.boatOffsetX = target->point.posX;
-				target->point.boatOffsetZ = target->point.posZ;
+				target->s.point.boatOffsetX = target->s.point.posX;
+				target->s.point.boatOffsetZ = target->s.point.posZ;
 			}
 		}
 		else if (target->type == Target_Car)
 		{
-			if ((target->target_flags & TARGET_FLAG_CAR_PLAYERCONTROLLED) == 0)
+			if ((target->s.target_flags & TARGET_FLAG_CAR_PLAYERCONTROLLED) == 0)
 			{
-				if (target->car.type == 3 && (target->car.flags & 0x1))
+				if (target->s.car.type == 3 && (target->s.car.flags & CARTARGET_FLAG_RANDOMCHASE))
 				{
 					PreLoadInGameCutscene(gRandomChase);
 				}
 			}
 		}
-
-		i--;
-		target++;
-	} while (i >= 0);
+	}
 }
 
 extern int gStopPadReads;
@@ -2891,13 +2902,7 @@ int HandleGameOver(void)
 			int surf = GetSurfaceIndex((VECTOR*)lp->pos);
 
 			if ((surf == -26 || surf == -23) && lp->dying == 0)
-			{
-				// allow to soak Tanner's ass in Rio De Janeiro a little bit
-				if (GameLevel == 3 && gCurrentMissionNumber != 35)
-					tannerDeathTimer++;
-				else
-					tannerDeathTimer = 64;
-			}
+				tannerDeathTimer++;	// allow to soak Tanner's ass in Rio De Janeiro a little bit
 			else
 				tannerDeathTimer = 0;
 		}
@@ -2971,18 +2976,16 @@ void CompleteAllActiveTargets(int player)
 		flag2 = TARGET_FLAG_COMPLETED_P2;
 	}
 
-	pTarget = MissionTargets;
-	i = 0;
-	do {
-		if (pTarget->type >= Target_Point && 
-			pTarget->type <= Target_Event && (pTarget->target_flags & flag1))
-		{
-			pTarget->target_flags |= flag2;
-		}
+	for (i = 0; i < MAX_MISSION_TARGETS; i++)
+	{
+		pTarget = &MissionTargets[i];
 
-		i++;
-		pTarget++;
-	} while (i < 16);
+		if (pTarget->type >= Target_Point && 
+			pTarget->type <= Target_Event && (pTarget->s.target_flags & flag1))
+		{
+			pTarget->s.target_flags |= flag2;
+		}
+	}
 }
 
 // [D] [T]
@@ -3078,7 +3081,7 @@ void SetMissionOver(PAUSEMODE mode)
 	Mission.ChaseTarget = NULL;
 }
 
-// [D]
+// [D] [T]
 void ActivateNextFlag(void)
 {
 	int j;
@@ -3088,26 +3091,23 @@ void ActivateNextFlag(void)
 	if (last_flag == -1)
 		last_flag = 0;
 	else
-		MissionTargets[last_flag].target_flags |= TARGET_FLAG_COMPLETED_ALLP;
+		MissionTargets[last_flag].s.target_flags |= TARGET_FLAG_COMPLETED_ALLP;
 
-	i = 0;
 	j = last_flag;
 	
-	while (i < 16) 
+	for (i = 0; i < MAX_MISSION_TARGETS; i++)
 	{
 		j++;
 
-		j = j % 16;
+		j = j % MAX_MISSION_TARGETS;
 
 		target = &MissionTargets[j];
 
-		if (target->type == Target_Point && (target->target_flags & TARGET_FLAG_POINT_CTF_FLAG) == TARGET_FLAG_POINT_CTF_FLAG)
+		if (target->type == Target_Point && (target->s.target_flags & TARGET_FLAG_POINT_CTF_FLAG) == TARGET_FLAG_POINT_CTF_FLAG)
 			break;
-
-		i++;
 	}
 
-	target->target_flags &= ~TARGET_FLAG_COMPLETED_ALLP;
+	target->s.target_flags &= ~TARGET_FLAG_COMPLETED_ALLP;
 	last_flag = j;
 }
 
@@ -3129,23 +3129,24 @@ int CalcLapTime(int player, int time, int lap)
 	return time - ptime;
 }
 
-// [D]
+// [D] [T]
 void MakePhantomCarEqualPlayerCar(void)
 {
+	// store player car id
 	if (player[0].playerType == 1)
 		Mission.PhantomCarId = player[0].playerCarId;
 }
 
-// [D]
+// [D] [T]
 void SetCarToBeStolen(MS_TARGET *target, int player)
 {
-	if (target->car.flags & 0x800000)
+	if (target->s.car.flags & CARTARGET_FLAG_SET_PLAYERCAR)
 		MakePhantomCarEqualPlayerCar();
 
-	target->target_flags |= TARGET_FLAG_CAR_SAVED;
-	target->car.type = 1;
-	target->car.flags = 0x30;
-	target->car.maxDistance = 0;
+	target->s.target_flags |= TARGET_FLAG_CAR_SAVED;
+	target->s.car.type = 1;
+	target->s.car.flags = CARTARGET_FLAG_STEAL_TARGET;
+	target->s.car.maxDistance = 0;
 
 	SetPlayerMessage(player, Mission.StealMessage, 2, 2);
 }
@@ -3193,8 +3194,6 @@ void HandleMission(void)
 		}
 	}
 
-	MRHandleCarRequests();
-
 	if (bMissionTitleFade)
 		return;
 
@@ -3221,13 +3220,13 @@ void HandleMission(void)
 	HandleThrownBombs();
 	HandleMissionThreads();
 
-	if (gCopCarTheftAttempted != 0)
+	if (gCopCarTheftAttempted)
 	{
 		SetMissionMessage(MissionStrings + MissionHeader->msgPoliceCar, 2, 1);
 		gCopCarTheftAttempted = 0;
 	}
 
-	if (gLockPickingAttempted != 0 && NumPlayers == 1)
+	if (gLockPickingAttempted && NumPlayers == 1)
 	{
 		SetMissionMessage(MissionStrings + MissionHeader->msgDoorsLocked, 2, 1);
 		gLockPickingAttempted = 0;

@@ -113,6 +113,18 @@ enum GameStrId
 
 	// RED2
 	GTXT_GetawayIs,
+
+	GTXT_TimeOfDay,
+	GTXT_Condition,
+
+	GTXT_Dusk,
+	GTXT_Day,
+	GTXT_Dawn,
+	GTXT_Night,
+
+	GTXT_Clear,
+	GTXT_Rainy,
+	GTXT_Wet
 };
 
 enum MissionStrId

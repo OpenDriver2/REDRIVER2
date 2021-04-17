@@ -142,7 +142,7 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 	SPRT *sprt;
 	POLY_FT3 *null;
 
-	uint tp;
+	u_int tp;
 	int i;
 	int j;
 	int fade;
@@ -172,13 +172,13 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 	PutDispEnv(&load_disp);
 	PutDrawEnv(&load_draw);
 
-	Loadfile(screen_name, _frontend_buffer);
-	LoadClut((u_long*)&_frontend_buffer[20], 320, 511);
+	Loadfile(screen_name, (char*)_other_buffer);
+	LoadClut((u_long*)&_other_buffer[20], 320, 511);
 
 	DrawSync(0);
 
 	setRECT(&dest, 320, 0, 160, 511);
-	LoadImage(&dest, (u_long *)&_frontend_buffer[544]);
+	LoadImage(&dest, (u_long *)&_other_buffer[544]);
 
 	DrawSync(0);
 
@@ -429,13 +429,13 @@ void DrawFadePoly(void)
 // [D] [T]
 void DisplayMissionTitle(void)
 {
-	if (bWantFade != 0 && CameraCnt == 1) 
+	if (bWantFade && CameraCnt == 1) 
 	{
 		bWantFade = 0;
 		bMissionTitleFade = CameraCnt;
 	}
 
-	if (bMissionTitleFade != 0 && pauseflag == 0) 
+	if (bMissionTitleFade && !pauseflag) 
 	{
 		fadeVal -= 6;
 
@@ -459,7 +459,7 @@ void DisplayMissionTitle(void)
 #ifdef PSX
 				gShowMap = 1;
 				SetTextColour(124, 108, 40);
-				PrintStringCentred(gMissionTitle, 0x78);
+				PrintStringCentred(gMissionTitle, 120);
 				gShowMap = 0;
 #else
 				SetTextColour(124, 108, 40);

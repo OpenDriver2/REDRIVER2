@@ -344,7 +344,7 @@ void PlaceRoadBlockCops(void)
 	int wbody;
 	int lbody;
 	int cs, sn;
-	uint dir;
+	u_int dir;
 	CAR_DATA* cp;
 	CAR_DATA* pCar;
 	int i;
@@ -643,15 +643,15 @@ void AnimatePed(PEDESTRIAN* pPed)
 	}
 	else
 	{
-		int numFrames;
+		int g_cdNumFrames;
 		pPed->frame1++;
 
 		if (pPed->type - 8U < 3)	// [A] TODO: figure out what type it is to have extended frames
-			numFrames = 31;
+			g_cdNumFrames = 31;
 		else
-			numFrames = 16;
+			g_cdNumFrames = 16;
 
-		if (pPed->frame1 >= numFrames)
+		if (pPed->frame1 >= g_cdNumFrames)
 			pPed->frame1 = 0;
 	}
 
@@ -732,7 +732,7 @@ CAR_DATA* pCivCarToGetIn = NULL;
 // [D] [T]
 void CivGetIn(PEDESTRIAN* pPed)		// [A] UNUSED
 {
-	uint padid;
+	u_int padid;
 	DRIVER2_CURVE* curve;
 	DRIVER2_STRAIGHT* straight;
 
@@ -1095,7 +1095,7 @@ void SetupGetOutCar(PEDESTRIAN* pPed, CAR_DATA* pCar, int side)
 {
 	bool entrySide;
 	int sn, cs;
-	uint carDir;
+	u_int carDir;
 	int xOfs;
 	int playerId;
 
@@ -2287,7 +2287,7 @@ void add_seated(SEATED_PEDESTRIANS* seatedptr, int seat_index)
 CAR_COLLISION_BOX collision_box[8];
 CAR_DATA* collision_car_ptr[8];
 
-// [D]
+// [D] [T]
 void set_coll_box(int index, CAR_DATA* cp, int offset)
 {
 	int isPlayerCar;
@@ -2567,7 +2567,7 @@ void IHaveThePower(void)
 }
 
 // [D] [T]
-void ProcessTannerPad(PEDESTRIAN* pPed, uint pad, char PadSteer, char use_analogue)
+void ProcessTannerPad(PEDESTRIAN* pPed, u_int pad, char PadSteer, char use_analogue)
 {
 	sdPlane* SurfacePtr;
 	int direction;

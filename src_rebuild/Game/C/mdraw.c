@@ -14,7 +14,6 @@
 #include "dr2roads.h"
 #include "cars.h"
 #include "targets.h"
-#include "overlay.h"
 
 int gDisplayPosition = 0;
 
@@ -24,7 +23,7 @@ void DrawTimer(MR_TIMER* timer)
 	short digit_pos;
 	char string[16];
 
-	if ((timer->flags & 1) && (timer->flags & 0x20) == 0)
+	if ((timer->flags & TIMER_FLAG_ACTIVE) && !(timer->flags & TIMER_FLAG_BOMB_TRIGGERED))
 	{
 		if (NumPlayers == 1)
 		{
@@ -38,10 +37,10 @@ void DrawTimer(MR_TIMER* timer)
 				SetTextColour(32, 128, 32);
 		}
 
-		sprintf(string, "%02d:%02d", (uint)timer->min, (uint)timer->sec);
+		sprintf(string, "%02d:%02d", (u_int)timer->min, (u_int)timer->sec);
 		digit_pos = PrintDigit((int)timer->x, (int)timer->y, string);
 
-		sprintf(string, ".%02d", (uint)timer->frac);
+		sprintf(string, ".%02d", (u_int)timer->frac);
 		PrintString(string, digit_pos, (int)timer->y + 0xd);
 	}
 }
@@ -81,24 +80,8 @@ void DrawMission(void)
 
 	if (gDisplayPosition)
 		DisplayPlayerPosition();
-
-	if ((MissionHeader->type & 4) == 0)
-	{
-		if (!pauseflag)
-		{
-			if (Mission.message_timer[0] != 0) 
-			{
-				if (NumPlayers == 1) 
-					DrawMessage(96, Mission.message_string[0]);
-				else 
-					DrawMessage(64, Mission.message_string[0]);
-			}
-
-			if (Mission.message_timer[1] != 0)
-				DrawMessage(192, Mission.message_string[1]);
-		}
-	}
-	else 
+	
+	if (MissionHeader->type & 4)
 	{
 		SetTextColour(128, 128, 64);
 
@@ -119,19 +102,39 @@ void DrawMission(void)
 			PrintScaledString(192, string, 32 - (g321GoDelay & 0x1f));
 		}
 	}
+	else 
+	{
+		if (!pauseflag)
+		{
+			if (Mission.message_timer[0] != 0) 
+			{
+				if (NumPlayers == 1) 
+					DrawMessage(96, Mission.message_string[0]);
+				else 
+					DrawMessage(64, Mission.message_string[0]);
+			}
 
-	if (Mission.active && NoPlayerControl == 0)
+			if (Mission.message_timer[1] != 0)
+				DrawMessage(192, Mission.message_string[1]);
+		}
+	}
+
+	if (Mission.active && !NoPlayerControl)
 	{
 		DrawWorldTargets();
-		DrawTimer(Mission.timer);
-		DrawTimer(Mission.timer + 1);
 
-		DrawProximityBar(&ProxyBar);
-
-		if (gOutOfTape)
+		if (gDoOverlays)
 		{
-			SetTextColour(128, 128, 64);
-			PrintString(G_LTXT(GTXT_OutOfTape), gOverlayXPos, 236);
+			DrawTimer(&Mission.timer[0]);
+			DrawTimer(&Mission.timer[1]);
+
+			DrawProximityBar(&ProxyBar);
+
+			if (gOutOfTape)
+			{
+				SetTextColour(128, 128, 64);
+				PrintString(G_LTXT(GTXT_OutOfTape), gOverlayXPos, 236);
+			}
 		}
 	}
 }
@@ -144,7 +147,7 @@ void DrawOverheadTarget(MS_TARGET *target)
 	if (TargetComplete(target, -1))
 		return;
 
-	if ((target->target_flags & TARGET_FLAG_VISIBLE_ALLP) == 0)
+	if (!(target->s.target_flags & TARGET_FLAG_VISIBLE_ALLP))
 		return;
 
 	switch(target->type)
@@ -152,22 +155,22 @@ void DrawOverheadTarget(MS_TARGET *target)
 		case Target_Point:	// point or car target
 		case Target_Car:
 		{
-			tv.vx = target->car.posX;
-			tv.vz = target->car.posZ;
+			tv.vx = target->s.car.posX;
+			tv.vz = target->s.car.posZ;
 			tv.vy = 0;
 			break;
 		}
 		case Target_Event:	// event target
-			tv = *(VECTOR*)target->event.eventPos;
+			tv = *target->s.event.eventPos;
 			break;
 		default:
 			return;
 	}
 
-	if (target->display_flags & 0x10)
+	if (target->s.display_flags & 0x10)
 		DrawTargetBlip(&tv, 64, 64, 64, 0x11);
 
-	if (target->display_flags & 0x40)
+	if (target->s.display_flags & 0x40)
 		DrawTargetArrow(&tv, 1);
 }
 
@@ -179,7 +182,7 @@ void DrawFullscreenTarget(MS_TARGET *target)
 	if (TargetComplete(target, -1))
 		return;
 
-	if ((target->target_flags & TARGET_FLAG_VISIBLE_ALLP) == 0)
+	if (!(target->s.target_flags & TARGET_FLAG_VISIBLE_ALLP))
 		return;
 
 	switch(target->type)
@@ -187,29 +190,29 @@ void DrawFullscreenTarget(MS_TARGET *target)
 		case Target_Point:	// point or car target
 		case Target_Car:
 		{
-			tv.vx = target->car.posX;
-			tv.vz = target->car.posZ;
+			tv.vx = target->s.car.posX;
+			tv.vz = target->s.car.posZ;
 			tv.vy = 0;
 			break;
 		}
 		case Target_Event:	// event target
-			tv = *(VECTOR*)target->event.eventPos;
+			tv = *target->s.event.eventPos;
 			break;
 		default:
 			return;
 	}
 
-	if (target->display_flags & 0x10)
+	if (target->s.display_flags & 0x10)
 		DrawTargetBlip(&tv, 64, 64, 64, 0x14);
 
-	if (target->display_flags & 0x40)
+	if (target->s.display_flags & 0x40)
 		DrawTargetArrow(&tv, 4);
 }
 
-// [D]
+// [D] [T]
 void DrawWorldTarget(MS_TARGET *target)
 {
-	uint flags;
+	u_int flags;
 	VECTOR tv;
 
 	if (TargetComplete(target, CurrentPlayerView))
@@ -226,12 +229,12 @@ void DrawWorldTarget(MS_TARGET *target)
 	{
 		case Target_Point:
 		{
-			tv.vx = target->point.posX;
-			tv.vz = target->point.posZ;
+			tv.vx = target->s.point.posX;
+			tv.vz = target->s.point.posZ;
 			tv.vy = 10000;
 
 			// Capture the Flag target properties
-			switch(target->target_flags & (TARGET_FLAG_POINT_CTF_BASE_P1 | TARGET_FLAG_POINT_CTF_BASE_P2 | TARGET_FLAG_POINT_CTF_FLAG))
+			switch(target->s.target_flags & (TARGET_FLAG_POINT_CTF_BASE_P1 | TARGET_FLAG_POINT_CTF_BASE_P2 | TARGET_FLAG_POINT_CTF_FLAG))
 			{
 				case TARGET_FLAG_POINT_CTF_BASE_P1:
 				{
@@ -274,8 +277,8 @@ void DrawWorldTarget(MS_TARGET *target)
 				}
 			}
 
-			if (target->point.height != 0) 
-				tv.vy = target->point.posY;
+			if (target->s.point.height != 0)
+				tv.vy = target->s.point.posY;
 			else 
 				tv.vy = -MapHeight(&tv);
 			
@@ -284,7 +287,7 @@ void DrawWorldTarget(MS_TARGET *target)
 		case Target_Car:
 		{
 			int slot;
-			slot = target->car.slot;
+			slot = target->s.car.slot;
 
 			if (slot == -1)
 				return;
@@ -296,7 +299,7 @@ void DrawWorldTarget(MS_TARGET *target)
 		}
 		case Target_Event:
 		{
-			tv = *(VECTOR*)target->event.eventPos;
+			tv = *target->s.event.eventPos;
 			break;
 		}
 		default:
@@ -307,10 +310,10 @@ void DrawWorldTarget(MS_TARGET *target)
 	{
 		if((flags & 0x10) == 0)
 		{
-			if (target->display_flags & 0x20)
+			if (target->s.display_flags & 0x20)
 				flags |= 0x1;
 
-			if (target->display_flags & 0x80)
+			if (target->s.display_flags & 0x80)
 				flags |= 0x20;
 		}
 
@@ -358,12 +361,12 @@ void DrawMultiplayerTarget(MS_TARGET *target)
 	{
 		case Target_Point:
 		{
-			tv.vx = target->point.posX;
-			tv.vz = target->point.posZ;
+			tv.vx = target->s.point.posX;
+			tv.vz = target->s.point.posZ;
 			tv.vy = 10000;
 
 			// Capture the Flag target properties
-			switch(target->target_flags & (TARGET_FLAG_POINT_CTF_BASE_P1 | TARGET_FLAG_POINT_CTF_BASE_P2 | TARGET_FLAG_POINT_CTF_FLAG))
+			switch(target->s.target_flags & (TARGET_FLAG_POINT_CTF_BASE_P1 | TARGET_FLAG_POINT_CTF_BASE_P2 | TARGET_FLAG_POINT_CTF_FLAG))
 			{
 				case TARGET_FLAG_POINT_CTF_BASE_P1:
 				{
@@ -391,8 +394,8 @@ void DrawMultiplayerTarget(MS_TARGET *target)
 				}
 			}
 
-			if (target->point.height != 0)
-				tv.vy = target->point.posY;
+			if (target->s.point.height != 0)
+				tv.vy = target->s.point.posY;
 			else 
 				tv.vy = -MapHeight(&tv);
 
@@ -401,7 +404,7 @@ void DrawMultiplayerTarget(MS_TARGET *target)
 		case Target_Car:
 		{
 			int slot;
-			slot = target->car.slot;
+			slot = target->s.car.slot;
 
 			if (slot == -1)
 				return;
@@ -413,14 +416,14 @@ void DrawMultiplayerTarget(MS_TARGET *target)
 		}
 		case Target_Event:
 		{
-			tv = *(VECTOR*)target->event.eventPos;
+			tv = *target->s.event.eventPos;
 			break;
 		}
 		default:
 			return;
 	}
 
-	if (target->display_flags & 0x10)
+	if (target->s.display_flags & 0x10)
 	{
 		DrawTargetBlip(&tv, r, g, b, 0x30);
 	}
@@ -432,10 +435,10 @@ void DrawWorldTargets(void)
 {
 	int i;
 
-	if (Mission.active == 0)
+	if (!Mission.active)
 		return;
 
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < MAX_MISSION_TARGETS; i++)
 		DrawWorldTarget(&MissionTargets[i]);
 }
 
@@ -445,16 +448,11 @@ void DrawOverheadTargets(void)
 {
 	int i;
 
-	if (Mission.active == 0)
+	if (!Mission.active)
 		return;
 
-	i = 0;
-
-	do {
-
-		DrawOverheadTarget(MissionTargets + i);
-		i++;
-	} while (i < 16);
+	for (i = 0; i < MAX_MISSION_TARGETS; i++)
+		DrawOverheadTarget(&MissionTargets[i]);
 }
 
 
@@ -463,14 +461,11 @@ void DrawFullscreenTargets(void)
 {
 	int i;
 
-	if (Mission.active == 0)
+	if (!Mission.active)
 		return;
 
-	i = 0;
-
-	do {
-		DrawFullscreenTarget(&MissionTargets[i++]);
-	} while (i < 16);
+	for (i = 0; i < MAX_MISSION_TARGETS; i++)
+		DrawFullscreenTarget(&MissionTargets[i]);
 }
 
 // [D] [T]
@@ -478,11 +473,9 @@ void DrawMultiplayerTargets(void)
 {
 	int i;
 
-	if (Mission.active == 0)
+	if (!Mission.active)
 		return;
 
-	i = 0;
-	do {
-		DrawMultiplayerTarget(&MissionTargets[i++]);
-	} while (i < 16);
+	for (i = 0; i < MAX_MISSION_TARGETS; i++)
+		DrawMultiplayerTarget(&MissionTargets[i]);
 }

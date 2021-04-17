@@ -1,9 +1,6 @@
 #ifndef DRIVER2_H
 #define DRIVER2_H
 
-#include <stdbool.h>
-#include <stdio.h>
-
 #include "KERNEL.H"
 #include "TYPES.H"
 #include "LIBCD.H"
@@ -11,7 +8,10 @@
 #include "LIBGPU.H"
 #include "LIBSPU.H"
 
-#include "psyx_compat.h"
+#include "platform.h"
+
+#define USE_PC_FILESYSTEM !defined(PSX)		// PC filesystem is prioritized over CD
+#define USE_CD_FILESYSTEM 1					// use always
 
 #ifdef PSX
 // TODO: Include PSX STUFF
@@ -24,12 +24,17 @@
 
 #else
 
+#include <stdbool.h>
+#include <stdio.h>
+
 #define printMsg				PsyX_Log
 #define printInfo				PsyX_Log_Info
 #define printWarning			PsyX_Log_Warning
 #define printError				PsyX_Log_Error
 
-#if _MSC_VER >= 1400
+#ifdef __EMSCRIPTEN__
+#define trap(ode) {printError("EXCEPTION code: %x\n", ode);}
+#elif _MSC_VER >= 1400
 #define trap(ode) {printError("EXCEPTION code: %x\n", ode); __debugbreak();}
 #elif defined(__GNUC__)
 #define trap(ode) {__asm__("int3");}

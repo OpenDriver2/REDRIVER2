@@ -230,7 +230,7 @@ TRI_POINT_LONG* debris_data[5] = {
 VECTOR dummy = { 0 };
 
 int gNight = 0;
-char gRainCount = 30;
+u_char gRainCount = 30;
 int gEffectsTimer = 41;
 
 int NextDamagedPmeter = 0;
@@ -325,6 +325,7 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 	VECTOR toss;
 	VECTOR *pos;
 	CAR_COSMETICS* car_cos;
+	CVECTOR color;
 	int Z;
 	int sub_level;
 	int car_road_height;
@@ -488,8 +489,8 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 				*(ushort*)&poly->u3 = *(ushort*)&light_pool_texture.coords.u3;
 
 				poly->r0 = col->r / 2;
-				poly->g0 = col->b / 2;
-				poly->b0 = col->g / 2;
+				poly->g0 = col->g / 2;
+				poly->b0 = col->b / 2;
 
 				gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
 
@@ -530,19 +531,25 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 
 				if (brightness)
 				{
+					int test = col->r * brightness;
+
+					color.r = MIN(255, col->r * brightness >> 4);
+					color.g = MIN(255, col->g * brightness >> 4);
+					color.b = MIN(255, col->b * brightness >> 4);
+
 					if (i & 1) 
 					{
 						sQuad(sout + VertIdx[0],
 						      sout + VertIdx[2],
 						      sout + VertIdx[3],
-						      sout + VertIdx[1], brightness * 12, LightSortCorrect);
+						      sout + VertIdx[1], &color, LightSortCorrect);
 					}
 					else
 					{
 						sQuad(sout + VertIdx[1],
 						      sout + VertIdx[3],
 						      sout + VertIdx[2],
-						      sout + VertIdx[0], brightness * 12, LightSortCorrect);
+						      sout + VertIdx[0], &color, LightSortCorrect);
 					}
 				}
 			}
@@ -641,11 +648,11 @@ void AddLeaf(VECTOR *Position, int num_leaves, int Type)
 		// apply colors
 		if (gTimeOfDay == 3)
 		{
-			*(uint*)&myleaf->rgb = *(uint*)&myleaf->rgb >> 2 & 0x3f3f3f3f;
+			*(u_int*)&myleaf->rgb = *(u_int*)&myleaf->rgb >> 2 & 0x3f3f3f3f;
 		}
 		else if (gWeather == 1 || gWeather == 2)
 		{
-			*(uint*)&myleaf->rgb = *(uint*)&myleaf->rgb >> 1 & 0x7f7f7f7f;
+			*(u_int*)&myleaf->rgb = *(u_int*)&myleaf->rgb >> 1 & 0x7f7f7f7f;
 		}
 
 		myleaf->sin_index1 = temprand & 0xfff;
@@ -1083,6 +1090,10 @@ void DisplayLightReflections(VECTOR* v1, CVECTOR* col, short size, TEXTURE_DETAI
 
 	if (wetness > 9 && v1->vy > camera_position.vy)
 	{
+		thiscol.r = col->r * wetness >> 16;
+		thiscol.g = col->g * wetness >> 16;
+		thiscol.b = col->b * wetness >> 16;
+		
 		gte_SetTransVector(v1);
 
 		Apply_Inv_CameraMatrix(v1);
@@ -1138,10 +1149,6 @@ void DisplayLightReflections(VECTOR* v1, CVECTOR* col, short size, TEXTURE_DETAI
 
 			poly->tpage = texture->tpageid | 0x20;
 			poly->clut = texture->clutid;
-
-			thiscol.r = col->r >> 3;
-			thiscol.g = col->g >> 3;
-			thiscol.b = col->b >> 3;
 
 			poly->r0 = thiscol.r;
 			poly->g0 = thiscol.g;
@@ -1746,7 +1753,7 @@ void FindCarLightFade(MATRIX *carToCamera)
 }
 
 // [D] [T]
-void ShowCarlight(SVECTOR *v1, CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_DETAILS *texture,int flag)
+void ShowCarlight(SVECTOR *v1, CAR_DATA *cp, CVECTOR *col, short size, short flare_size, TEXTURE_DETAILS *texture,int flag)
 {
 	int CarLightFade;
 	VECTOR v1t;
@@ -1757,10 +1764,10 @@ void ShowCarlight(SVECTOR *v1, CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_D
 
 	if (flag != 0xFF)
 	{
-		CarLightFade = CarLightFadeBack;
-
-		if ((flag & 1U) != 0)
+		if (flag & 1)
 			CarLightFade = CarLightFadeFront;
+		else
+			CarLightFade = CarLightFadeBack;
 
 		if (CarLightFade < 0)
 			return;
@@ -1787,7 +1794,7 @@ void ShowCarlight(SVECTOR *v1, CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_D
 		v1t.vz = v1l.vz;
 		v1t.vy = -camera_position.vy - MapHeight((VECTOR *)cp->hd.where.t);
 
-		DisplayLightReflections(&v1t, &flareCol, size, &lightref_texture);
+		DisplayLightReflections(&v1t, &flareCol, flare_size / 2, &lightref_texture);
 	}
 
 	col->cd = flag;
@@ -1798,7 +1805,7 @@ void ShowCarlight(SVECTOR *v1, CAR_DATA *cp, CVECTOR *col, short size, TEXTURE_D
 	flareCol.g /= 2;
 	flareCol.b /= 2;
 
-	ShowFlare(&v1l, &flareCol, size * 3, (v1->vx + v1->vz) / 4 + (cp->hd.direction - camera_angle.vy) * 2);
+	ShowFlare(&v1l, &flareCol, flare_size, (v1->vx + v1->vz) / 4 + (cp->hd.direction - camera_angle.vy) * 2);
 }
 
 // [D] [T]
@@ -2839,10 +2846,10 @@ void DisplayDebris(DEBRIS *debris, char type)
 				else
 					uVar3 = debris->rgb.b << 0x10 | debris->rgb.g << 8 | 0x3c000000 | debris->rgb.r;
 
-				*(uint *)&poly1->r0 = uVar3;
-				*(uint *)&poly1->r2 = uVar3;
-				*(uint *)&poly1->r1 = uVar3 + 0x202020;
-				*(uint *)&poly1->r3 = uVar3 + 0x303030;
+				*(u_int *)&poly1->r0 = uVar3;
+				*(u_int *)&poly1->r2 = uVar3;
+				*(u_int *)&poly1->r1 = uVar3 + 0x202020;
+				*(u_int *)&poly1->r3 = uVar3 + 0x303030;
 
 				setPolyGT4(poly1);
 				addPrim(current->ot + (z >> 3), poly1);
@@ -3504,15 +3511,15 @@ void DrawRainDrops(void)
 			RainPtr->position.vx -= drift.vx * 2;
 			RainPtr->position.vz -= drift.vz * 2;
 
-			*(uint *)&poly->x0 = *(uint *)&RainPtr->oldposition;
+			*(u_int *)&poly->x0 = *(u_int *)&RainPtr->oldposition;
 		}
 
 		gte_ldv0(&v);
 		gte_rtps();
 
-		*(uint *)&poly->r2 = col;
-		*(uint *)&poly->r1 = col;
-		*(uint *)&poly->r0 = 0;
+		*(u_int *)&poly->r2 = col;
+		*(u_int *)&poly->r1 = col;
+		*(u_int *)&poly->r0 = 0;
 
 		setPolyGT3(poly);
 		setSemiTrans(poly, 1);
@@ -3525,13 +3532,13 @@ void DrawRainDrops(void)
 			poly->x2 > -101 && poly->x2 < 421 && 
 			poly->y2 > -51 && poly->y2 < 257) 
 		{
-			if (*(uint *)&RainPtr->oldposition != 0) 
+			if (*(u_int *)&RainPtr->oldposition != 0) 
 			{				
 				poly->x1 = poly->x2 - ((z >> 10) - 1);
 				poly->x2 = poly->x2 + ((z >> 10) - 1);
 				poly->y1 = poly->y2;
 
-				*(uint *)&RainPtr->oldposition = *(uint *)&poly->x2;
+				*(u_int *)&RainPtr->oldposition = *(u_int *)&poly->x2;
 
 				poly->clut = light_texture.clutid;
 				poly->tpage = light_texture.tpageid | 0x20;
@@ -3544,7 +3551,7 @@ void DrawRainDrops(void)
 				poly++;
 			}
 			else
-				*(uint *)&RainPtr->oldposition = *(uint *)&poly->x2;
+				*(u_int *)&RainPtr->oldposition = *(u_int *)&poly->x2;
 		}
 		else 
 		{
@@ -3718,7 +3725,7 @@ void DoThunder(void)
 		ThunderTimer--;
 		
 		if(ThunderTimer == 0) 
-			StartSound(-1, SOUND_BANK_SFX, 12, -ThunderDistance, (rand() % 2048) + 3072);
+			StartSound(-1, SOUND_BANK_SFX, 8, -ThunderDistance, (rand() % 2048) + 3072);
 	}
 }
 

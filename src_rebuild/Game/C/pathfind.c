@@ -7,13 +7,13 @@
 #include "players.h"
 #include "cars.h"
 #include "camera.h"
-
-#include <stdint.h>
-
 #include "map.h"
 
-#if defined(_DEBUG) && 0
+#define DEBUG_PATHFINDING_VIEW	0
+
+#if DEBUG_PATHFINDING_VIEW
 #include "SDL.h"
+#include <stdint.h>
 #endif
 
 struct tNode
@@ -22,7 +22,7 @@ struct tNode
 	int vy;
 	int vz;
 	u_short dist;
-	u_short ptoey;
+	u_short ptoey;	// just a padding. 
 };
 
 struct XZDIR
@@ -123,7 +123,7 @@ inline void OMapSet(int cellX, int cellZ, int val)
 // [A] debug obstacle map display with new debug window
 void DebugDisplayObstacleMap()
 {
-#if defined(_DEBUG) && 0
+#if DEBUG_PATHFINDING_VIEW
 	static SDL_Window* occlusionWindow;
 	static SDL_Surface* occlSurface;
 	static SDL_Texture* occlTexture;
@@ -212,9 +212,9 @@ void DebugDisplayObstacleMap()
 // [D] [T]
 tNode* popNode(tNode* __return_storage_ptr__)
 {
-	uint child;
+	u_int child;
 	ushort d;
-	uint here;
+	u_int here;
 	tNode res;
 
 	res = heap[1];
@@ -349,7 +349,7 @@ void InvalidateMap(void)
 		if (dir == 0)
 		{
 			p++;
-			bPos.vx += MAP_CELL_SIZE;
+			bPos.vx += MAP_CELL_SIZE / 2;
 
 			if (p + q == 1)
 				dir = 1;
@@ -357,7 +357,7 @@ void InvalidateMap(void)
 		else if (dir == 1)
 		{
 			q++;
-			bPos.vz += MAP_CELL_SIZE;
+			bPos.vz += MAP_CELL_SIZE / 2;
 
 			if (p == q)
 				dir = 2;
@@ -365,7 +365,7 @@ void InvalidateMap(void)
 		else if (dir == 2)
 		{
 			p--;
-			bPos.vx -= MAP_CELL_SIZE;
+			bPos.vx -= MAP_CELL_SIZE / 2;
 
 			if (p + q == 0)
 				dir = 3;
@@ -373,7 +373,7 @@ void InvalidateMap(void)
 		else
 		{
 			q--;
-			bPos.vz -= MAP_CELL_SIZE;
+			bPos.vz -= MAP_CELL_SIZE / 2;
 	
 			if (p == q)
 				dir = 0;
@@ -394,7 +394,7 @@ void BloodyHell(void)
 	int p;
 	int q;
 	int px, pz;
-	uint howMany;
+	u_int howMany;
 	int count;
 	VECTOR bPos;
 	int tile, i;
@@ -448,7 +448,7 @@ void BloodyHell(void)
 		if (dir == 0)
 		{
 			p++;
-			bPos.vx += MAP_CELL_SIZE;
+			bPos.vx += MAP_CELL_SIZE / 2;
 
 			if (p + q == 1)
 				dir = 1;
@@ -456,7 +456,7 @@ void BloodyHell(void)
 		else if (dir == 1) 
 		{
 			q++;
-			bPos.vz += MAP_CELL_SIZE;
+			bPos.vz += MAP_CELL_SIZE / 2;
 			
 			if (p == q)
 				dir = 2;
@@ -465,7 +465,7 @@ void BloodyHell(void)
 		{
 			p--;
 
-			bPos.vx -= MAP_CELL_SIZE;
+			bPos.vx -= MAP_CELL_SIZE / 2;
 
 			if (p + q == 0)
 				dir = 3;
@@ -473,7 +473,7 @@ void BloodyHell(void)
 		else 
 		{
 			q--;
-			bPos.vz -= MAP_CELL_SIZE;
+			bPos.vz -= MAP_CELL_SIZE / 2;
 
 			if (p == q)
 				dir = 0;
@@ -488,7 +488,7 @@ int slowWallTests = 0;
 // [D] [T]
 int blocked(tNode* v1, tNode* v2)
 {
-	int x, z, dmtile;
+	int x, z;
 
 	if (slowWallTests != 0)
 		return lineClear((VECTOR*)v1, (VECTOR*)v2) == 0;
@@ -520,9 +520,9 @@ void iterate(void)
 	ushort nr;
 	ushort nl;
 	int a;
-	uint pnode;
-	uint parent;
-	uint i;
+	u_int pnode;
+	u_int parent;
+	u_int i;
 	int r;
 
 	if (numHeapEntries == 0)
@@ -878,8 +878,8 @@ void UpdateCopMap(void)
 	int i, maxret;
 	int res;
 	tNode startNode;
-	uint pnode;
-	uint parent;
+	u_int pnode;
+	u_int parent;
 
 	BloodyHell();
 
@@ -1151,18 +1151,15 @@ void UpdateCopMap(void)
 
 	pathFrames++;
 
-	maxret = distanceReturnedLog[7];
-	
-	i = 6;
-	do {
-		
-		if (maxret < distanceReturnedLog[i])
+	maxret = 0;
+	for(i = 0; i < 8; i++)
+	{
+		if (distanceReturnedLog[i] > maxret)
 			maxret = distanceReturnedLog[i];
+	}
 
-		i--;
-	} while (i >= 0);
-
-	if (pathFrames > 250 || heap[1].dist - maxret > 3000)  // [A] was (pathFrames < pathFrames)
+	if (pathFrames > 250 ||		 // [A] was (pathFrames < pathFrames)
+		heap[1].dist - maxret > 3000) 
 	{
 		pathFrames = 0;
 	}

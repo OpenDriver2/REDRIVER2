@@ -127,13 +127,13 @@ void LoadCurrentProfile()
 		fileSize = ftell(fp);
 		fseek(fp, 0, SEEK_SET);
 
-		fread(_other_buffer, 1, fileSize, fp);
+		fread((char*)_other_buffer, 1, fileSize, fp);
 
 		fclose(fp);
 
 		if (fileSize <= CalcConfigDataSize())
 		{
-			LoadConfigData(_other_buffer);
+			LoadConfigData((char*)_other_buffer);
 			error = 0;
 		}
 	}
@@ -171,7 +171,7 @@ void SaveCurrentProfile()
 	ShowSavingWaitMessage(G_LTXT(GTXT_SavingConfiguration), 0);
 
 	dataSize = 0;
-	if (SaveConfigData(_other_buffer))
+	if (SaveConfigData((char*)_other_buffer))
 		dataSize = CalcConfigDataSize();
 
 	error = 1;
@@ -180,7 +180,7 @@ void SaveCurrentProfile()
 	FILE* fp = fopen(filePath, "wb");
 	if (fp)
 	{
-		fwrite(_other_buffer, 1, dataSize, fp);
+		fwrite((char*)_other_buffer, 1, dataSize, fp);
 		fclose(fp);
 
 		error = 0;
@@ -218,13 +218,13 @@ int LoadCurrentGame()
 		fileSize = ftell(fp);
 		fseek(fp, 0, SEEK_SET);
 
-		fread(_other_buffer, 1, fileSize, fp);
+		fread((char*)_other_buffer, 1, fileSize, fp);
 
 		fclose(fp);
 
 		if (fileSize <= CalcGameDataSize())
 		{
-			LoadGameData(_other_buffer);
+			LoadGameData((char*)_other_buffer);
 			return 1;
 		}
 	}
@@ -246,14 +246,14 @@ void SaveCurrentGame()
 	ShowSavingWaitMessage(G_LTXT(GTXT_SavingProgress), 0);
 
 	dataSize = 0;
-	if (SaveGameData(_other_buffer))
+	if (SaveGameData((char*)_other_buffer))
 		dataSize = CalcGameDataSize();
 
 	// load config
 	FILE* fp = fopen(filePath, "wb");
 	if (fp)
 	{
-		fwrite(_other_buffer, 1, dataSize, fp);
+		fwrite((char*)_other_buffer, 1, dataSize, fp);
 		fclose(fp);
 	}
 }
@@ -270,10 +270,10 @@ int LoadReplayFromFile(char* fileName)
 		replay_size = ftell(fp);
 		fseek(fp, 0, SEEK_SET);
 
-		fread(_other_buffer, replay_size, 1, fp);
+		fread((char*)_other_buffer, replay_size, 1, fp);
 		fclose(fp);
 
-		if (LoadReplayFromBuffer(_other_buffer))
+		if (LoadReplayFromBuffer((char*)_other_buffer))
 		{
 			char* sub, *tmp;
 
@@ -310,12 +310,12 @@ int LoadReplayFromFile(char* fileName)
 
 int SaveReplayToFile(char* filename)
 {
-	int size = SaveReplayToBuffer(_other_buffer);
+	int size = SaveReplayToBuffer((char*)_other_buffer);
 
 	FILE* fp = fopen(filename, "wb");
 	if (fp)
 	{
-		fwrite(_other_buffer, 1, size, fp);
+		fwrite((char*)_other_buffer, 1, size, fp);
 		fclose(fp);
 		return 1;
 	}

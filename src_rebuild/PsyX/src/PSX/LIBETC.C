@@ -5,7 +5,6 @@
 
 #include <SDL_timer.h>
 
-int vmode = MODE_NTSC;
 void(*vsync_callback)(void) = NULL;
 
 int StopCallback(void)
@@ -23,6 +22,8 @@ int ResetCallback(void)
 
 extern unsigned int g_swapTime;
 extern int PsyX_Sys_GetVBlankCount();
+extern long PsyX_Sys_SetVMode(long mode);
+extern long g_vmode;
 
 int VSync(int mode)
 {
@@ -53,12 +54,10 @@ int VSyncCallback(void(*f)(void))
 
 long SetVideoMode(long mode)
 {
-	int old = vmode;
-	vmode = mode;
-	return old;
+	return PsyX_Sys_SetVMode(mode);
 }
 
 long GetVideoMode()
 {
-	return vmode;
+	return g_vmode;
 }

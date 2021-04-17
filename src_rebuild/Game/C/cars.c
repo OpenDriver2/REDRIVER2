@@ -107,7 +107,7 @@ void plotCarPolyB3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *p
 
 		if (Z > -1) 
 		{
-			*(uint*)&prim->r0 = FT3rgb | 0x20000000;
+			*(u_int*)&prim->r0 = FT3rgb | 0x20000000;
 
 			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
 
@@ -164,10 +164,10 @@ void plotCarPolyFT3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *
 		if (Z > -1) 
 		{
 			ofse = pg->damageLevel[src->originalindex];
-			*(uint*)&prim->r0 = FT3rgb;
-			*(uint*)&prim->u0 = src->clut_uv0 + ofse;
-			*(uint*)&prim->u1 = src->tpage_uv1 + ofse;
-			*(uint*)&prim->u2 = src->uv3_uv2 + ofse;
+			*(u_int*)&prim->r0 = FT3rgb;
+			*(u_int*)&prim->u0 = src->clut_uv0 + ofse;
+			*(u_int*)&prim->u1 = src->tpage_uv1 + ofse;
+			*(u_int*)&prim->u2 = src->uv3_uv2 + ofse;
 
 			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
 
@@ -193,9 +193,9 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 	SVECTOR* v2;
 	SVECTOR *v1;
 	SVECTOR *v0;
-	uint indices;
+	u_int indices;
 	POLY_GT3 *prim;
-	uint r0,r1,r2;
+	u_int r0,r1,r2;
 	int ofse;
 
 	prim = (POLY_GT3 *)pg->primptr;
@@ -226,19 +226,19 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 		{
 			indices = src->nindices;
 
-			r0 = (uint)(ushort)nlist[indices & 0xff].pad;
-			r1 = (uint)(ushort)nlist[indices >> 8 & 0xff].pad;
-			r2 = (uint)(ushort)nlist[indices >> 16 & 0xff].pad;
+			r0 = (u_int)(ushort)nlist[indices & 0xff].pad;
+			r1 = (u_int)(ushort)nlist[indices >> 8 & 0xff].pad;
+			r2 = (u_int)(ushort)nlist[indices >> 16 & 0xff].pad;
 
-			*(uint*)&prim->r0 = (r0 & 0xff) << 0x10 | r0;
-			*(uint*)&prim->r1 = (r1 & 0xff) << 0x10 | r1;
-			*(uint*)&prim->r2 = (r2 & 0xff) << 0x10 | r2;
+			*(u_int*)&prim->r0 = (r0 & 0xff) << 0x10 | r0;
+			*(u_int*)&prim->r1 = (r1 & 0xff) << 0x10 | r1;
+			*(u_int*)&prim->r2 = (r2 & 0xff) << 0x10 | r2;
 
 			ofse = pg->damageLevel[src->originalindex];
 
-			*(uint*)&prim->u0 = (src->clut_uv0 & 0xffffU | pg->pciv_clut[palette + (src->clut_uv0 >> 0x10)] << 0x10) + ofse;
-			*(uint*)&prim->u1 = src->tpage_uv1 + ofse;
-			*(uint*)&prim->u2 = src->uv3_uv2 + ofse;
+			*(u_int*)&prim->u0 = (src->clut_uv0 & 0xffffU | pg->pciv_clut[palette + (src->clut_uv0 >> 0x10)] << 0x10) + ofse;
+			*(u_int*)&prim->u1 = src->tpage_uv1 + ofse;
+			*(u_int*)&prim->u2 = src->uv3_uv2 + ofse;
 
 			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
 
@@ -263,7 +263,7 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 	SVECTOR* v2;
 	SVECTOR* v1;
 	SVECTOR* v0;
-	uint indices;
+	u_int indices;
 	POLY_FT3* prim;
 	int ofse;
 
@@ -293,13 +293,13 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 
 		if (Z > -1 && otz > 0)
 		{
-			*(uint*)&prim->r0 = GT3rgb;
+			*(u_int*)&prim->r0 = GT3rgb;
 
 			ofse = pg->damageLevel[src->originalindex];
 
-			*(uint*)&prim->u0 = (src->clut_uv0 & 0xffffU | pg->pciv_clut[palette + (src->clut_uv0 >> 0x10)] << 0x10) + ofse;
-			*(uint*)&prim->u1 = src->tpage_uv1 + ofse;
-			*(uint*)&prim->u2 = src->uv3_uv2 + ofse;
+			*(u_int*)&prim->u0 = (src->clut_uv0 & 0xffffU | pg->pciv_clut[palette + (src->clut_uv0 >> 0x10)] << 0x10) + ofse;
+			*(u_int*)&prim->u1 = src->tpage_uv1 + ofse;
+			*(u_int*)&prim->u2 = src->uv3_uv2 + ofse;
 
 			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
 
@@ -359,11 +359,10 @@ void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 	SVECTOR* norms;
 	SVECTOR lightsourcevector;
 	SVECTOR colour;
-	VECTOR lightValues;
 	CVECTOR c0;
 	CVECTOR c1;
 	CVECTOR c2;
-	int GT3rgb;
+	u_int GT3rgb;
 
 	if (gTimeOfDay > -1)
 	{
@@ -405,7 +404,7 @@ void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 		if (orW < 1)
 			orW = cp->ap.qw - cp->st.n.orientation[3];
 
-		if ((200 < orY + orW) || (cp->lowDetail != (detail | lightning)))
+		if ((orY + orW > 200) || (cp->lowDetail != (detail | lightning)))
 			doLight = 1;
 
 		if ((gTimeOfDay == 0 || gTimeOfDay == 2) && (cp->id & 0xf) == (CameraCnt & 0xfU))
@@ -415,8 +414,8 @@ void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 
 		if (doLight)
 		{
-			uint rgbval = combointensity & 0xffffffU | 0x34000000;
-			gte_ldrgb(&rgbval);
+			GT3rgb = combointensity & 0xffffffU | 0x34000000;
+			gte_ldrgb(&GT3rgb);
 
 			cp->ap.qy = cp->st.n.orientation[1];
 			cp->ap.qw = cp->st.n.orientation[3];
@@ -448,7 +447,6 @@ void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 				count--;
 				norms += 3;
 				ppads += 3;
-
 			}
 		}
 
@@ -518,11 +516,11 @@ void DrawWheelObject(MODEL* model, SVECTOR* verts, int transparent, int wheelnum
 			addPrim(current->ot + (otZ >> 1) + 5, poly);
 
 			if (i < 2 || Z < 0)
-				*(uint*)&poly->r0 = 0x2c000000;
+				*(u_int*)&poly->r0 = 0x2c000000;
 			else if (((i ^ wheelnum >> 1) & 1) == 0)
-				*(uint*)&poly->r0 = dim;
+				*(u_int*)&poly->r0 = dim;
 			else
-				*(uint*)&poly->r0 = bright;
+				*(u_int*)&poly->r0 = bright;
 
 			setSemiTrans(poly, transparent);
 
@@ -813,12 +811,12 @@ void plotNewCarModel(CAR_MODEL* car, int palette)
 
 	gte_nccs();
 
-	_pg.primptr = (unsigned char*)current->primptr;
+	_pg.primptr = (u_char*)current->primptr;
 	_pg.intensity = 0;
-	_pg.pciv_clut = (unsigned short*)&civ_clut[1];
-	_pg.damageLevel = (unsigned char*)gTempCarUVPtr;
+	_pg.pciv_clut = (u_short*)&civ_clut[1];
+	_pg.damageLevel = (u_char*)gTempCarUVPtr;
 
-	_pg.ot = (OTTYPE*)(current->ot + 0x1c);
+	_pg.ot = (OTTYPE*)(current->ot + 28);
 
 	gte_strgb(&underIntensity);
 
@@ -872,17 +870,16 @@ void buildNewCars(void)
 // [D] [T]
 void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 {
-	unsigned char ptype;
-	unsigned char clut;
-	unsigned char *polyList;
+	u_char ptype;
+	u_char clut;
+	u_char *polyList;
 	CAR_POLY *cp;
 
 	int newNumPolys;
 
-	int i;
-	int pass;
+	int i, pass;
 
-	if (first != 0) 
+	if (first) 
 		whichCP = 0;
 
 	if (model == NULL || (model->shape_flags & 0xfffffff) > 0x800000)
@@ -896,11 +893,9 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 		car->vlist = (SVECTOR *)model->vertices;
 		car->nlist = (SVECTOR *)model->point_normals;
 
-		pass = 0;
-
-		do {
-			
-			polyList = (unsigned char *)model->poly_block;
+		for (pass = 0; pass < 3; pass++)
+		{
+			polyList = (u_char *)model->poly_block;
 
 			if (pass == 1)
 				car->pFT3 = carPolyBuffer + whichCP;
@@ -924,7 +919,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 					case 18:
 						if (pass == 2)	// F3
 						{
-							cp->vindices = (uint)polyList[1] | ((uint)polyList[2] | (uint)polyList[3] << 8) << 8;
+							cp->vindices = M_INT_4R(polyList[1], polyList[2], polyList[3], 0);
 							cp->originalindex = i;
 
 							newNumPolys++;
@@ -934,12 +929,12 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 					case 19:
 						if (pass == 2)	// F4
 						{
-							cp->vindices = (uint)polyList[4] | ((uint)polyList[5] | (uint)polyList[6] << 8) << 8;
+							cp->vindices = M_INT_4R(polyList[4], polyList[5], polyList[6], 0); 
 							cp->originalindex = i;
 
 							cp = carPolyBuffer + newNumPolys + 1;
 
-							cp->vindices = (uint)polyList[4] | ((uint)polyList[6] | (uint)polyList[7] << 8) << 8;
+							cp->vindices = M_INT_4R(polyList[4], polyList[6], polyList[7], 0);
 							cp->originalindex = i;
 
 							newNumPolys += 2;
@@ -950,9 +945,9 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 						{
 							POLYFT3* pft3 = (POLYFT3*)polyList;
 									
-							cp->vindices = pft3->v0 | (pft3->v1 | pft3->v2 << 8) << 8;
-							cp->clut_uv0 = SW_INT(texture_cluts[pft3->texture_set][pft3->texture_id], *(ushort*)&pft3->uv0);
-							cp->tpage_uv1 = SW_INT(texture_pages[pft3->texture_set], *(ushort*)&pft3->uv1);
+							cp->vindices = M_INT_4R(pft3->v0, pft3->v1, pft3->v2, 0);
+							cp->clut_uv0 = M_INT_2(texture_cluts[pft3->texture_set][pft3->texture_id], *(ushort*)&pft3->uv0);
+							cp->tpage_uv1 = M_INT_2(texture_pages[pft3->texture_set], *(ushort*)&pft3->uv1);
 							cp->uv3_uv2 = *(ushort*)&pft3->uv2;
 							cp->originalindex = i;
 
@@ -964,17 +959,17 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 						{
 							POLYFT4* pft4 = (POLYFT4*)polyList;
 
-							cp->vindices = pft4->v0 | (pft4->v1 | pft4->v2 << 8) << 8;
-							cp->clut_uv0 = SW_INT(texture_cluts[pft4->texture_set][pft4->texture_id], *(ushort *)&pft4->uv0);
-							cp->tpage_uv1 = SW_INT(texture_pages[pft4->texture_set], *(ushort*)&pft4->uv1);
+							cp->vindices = M_INT_4R(pft4->v0, pft4->v1, pft4->v2, 0);
+							cp->clut_uv0 = M_INT_2(texture_cluts[pft4->texture_set][pft4->texture_id], *(ushort *)&pft4->uv0);
+							cp->tpage_uv1 = M_INT_2(texture_pages[pft4->texture_set], *(ushort*)&pft4->uv1);
 							cp->uv3_uv2 = *(ushort*)&pft4->uv2;
 							cp->originalindex = i;
 
 							cp = carPolyBuffer + newNumPolys + 1;
-
-							cp->vindices = pft4->v0 | (pft4->v2 | pft4->v3 << 8) << 8;
-							cp->clut_uv0 = SW_INT(texture_cluts[polyList[1]][polyList[2]], *(ushort*)&pft4->uv0);
-							cp->tpage_uv1 = SW_INT(texture_pages[polyList[1]], *(ushort*)&pft4->uv2);
+						
+							cp->vindices = M_INT_4R(pft4->v0, pft4->v2, pft4->v3, 0);
+							cp->clut_uv0 = M_INT_2(texture_cluts[polyList[1]][polyList[2]], *(ushort*)&pft4->uv0);
+							cp->tpage_uv1 = M_INT_2(texture_pages[polyList[1]], *(ushort*)&pft4->uv2);
 							cp->uv3_uv2 = *(ushort*)&pft4->uv3;
 							cp->originalindex = i;
 
@@ -989,10 +984,10 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 							clut = GetCarPalIndex(pgt3->texture_set);
 							civ_clut[clut][pgt3->texture_id][0] = texture_cluts[pgt3->texture_set][pgt3->texture_id];
 						
-							cp->vindices = pgt3->v0 | (pgt3->v1 | pgt3->v2 << 8) << 8;
-							cp->nindices = pgt3->n0 | (pgt3->n1 | pgt3->n2 << 8) << 8;
-							cp->clut_uv0 = ((int)(clut * 384 + pgt3->texture_id * 12 - 384) >> 1) << 0x10 | *(ushort *)&pgt3->uv0;
-							cp->tpage_uv1 = SW_INT(texture_pages[pgt3->texture_set], *(ushort *)&pgt3->uv1);
+							cp->vindices = M_INT_4R(pgt3->v0, pgt3->v1, pgt3->v2, 0);
+							cp->nindices = M_INT_4R(pgt3->n0, pgt3->n1, pgt3->n2, 0);
+							cp->clut_uv0 = M_INT_2((clut * 384 + pgt3->texture_id * 12 - 384) >> 1, * (ushort*)&pgt3->uv0);
+							cp->tpage_uv1 = M_INT_2(texture_pages[pgt3->texture_set], *(ushort *)&pgt3->uv1);
 							cp->uv3_uv2 = *(ushort *)&pgt3->uv2;
 							cp->originalindex = i;
 
@@ -1007,19 +1002,19 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 							clut = GetCarPalIndex(pgt4->texture_set);
 							civ_clut[clut][pgt4->texture_id][0] = texture_cluts[pgt4->texture_set][pgt4->texture_id];
 
-							cp->vindices = pgt4->v0 | (pgt4->v1 | pgt4->v2 << 8) << 8;
-							cp->nindices = pgt4->n0 | (pgt4->n1 | pgt4->n2 << 8) << 8;
-							cp->clut_uv0 = ((int)(clut * 384 + pgt4->texture_id * 12 - 384) >> 1) << 0x10 | *(ushort*)&pgt4->uv0;
-							cp->tpage_uv1 = SW_INT(texture_pages[pgt4->texture_set], *(ushort*)&pgt4->uv1);
+							cp->vindices = M_INT_4R(pgt4->v0, pgt4->v1, pgt4->v2, 0);
+							cp->nindices = M_INT_4R(pgt4->n0, pgt4->n1, pgt4->n2, 0);
+							cp->clut_uv0 = M_INT_2((clut * 384 + pgt4->texture_id * 12 - 384) >> 1, *(ushort*)&pgt4->uv0);
+							cp->tpage_uv1 = M_INT_2(texture_pages[pgt4->texture_set], *(ushort*)&pgt4->uv1);
 							cp->uv3_uv2 = *(ushort*)&pgt4->uv2;
 							cp->originalindex = i;
 
 							cp = carPolyBuffer + newNumPolys + 1;
 
-							cp->vindices = pgt4->v0 | (pgt4->v2 | pgt4->v3 << 8) << 8;
-							cp->nindices = pgt4->n0 | (pgt4->n2 | pgt4->n3 << 8) << 8;
-							cp->clut_uv0 = ((int)(clut * 384 + pgt4->texture_id * 12 - 384) >> 1) << 0x10 | *(ushort*)&pgt4->uv0;
-							cp->tpage_uv1 = SW_INT(texture_pages[pgt4->texture_set], *(ushort *)&pgt4->uv2);
+							cp->vindices = M_INT_4R(pgt4->v0, pgt4->v2, pgt4->v3, 0);
+							cp->nindices = M_INT_4R(pgt4->n0, pgt4->n2, pgt4->n3, 0);
+							cp->clut_uv0 = M_INT_2((clut * 384 + pgt4->texture_id * 12 - 384) >> 1, *(ushort*)&pgt4->uv0);
+							cp->tpage_uv1 = M_INT_2(texture_pages[pgt4->texture_set], *(ushort *)&pgt4->uv2);
 							cp->uv3_uv2 = *(ushort *)&pgt4->uv3;
 							cp->originalindex = i;
 
@@ -1039,9 +1034,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 				car->numB3 = newNumPolys - whichCP;
 
 			whichCP = newNumPolys;
-
-			pass++;
-		} while (pass < 3);
+		}
 	}
 }
 
@@ -1049,18 +1042,17 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 void MangleWheelModels(void)
 {
 	UV_INFO tmpUV2;
-	unsigned char tmpUV;
+	u_char tmpUV;
 	int i;
-	uint v0;
-	uint v1;
-	uint v2;
+	u_int v0;
+	u_int v1;
+	u_int v2;
 	POLYFT4*src;
 	MODEL *m;
 	int j;
 
-	i = 0;
-	do {
-
+	for (i = 0; i < 3; i++)
+	{
 		if (i == 1)
 			m = gFastWheelModelPtr;
 		else if (i == 2)
@@ -1071,52 +1063,52 @@ void MangleWheelModels(void)
 		// do some fuckery swaps
 		src = (POLYFT4*)m->poly_block;
 		
-		v0 = *(uint *)&src[2].v0;
-		v1 = *(uint *)&src[2].uv0;
-		v2 = *(uint *)&src[2].uv2;
-		*(uint *)src = *(uint *)(src + 2);
-		*(uint *)&src->v0 = v0;
-		*(uint *)&src->uv0 = v1;
-		*(uint *)&src->uv2 = v2;
+		v0 = *(u_int *)&src[2].v0;
+		v1 = *(u_int *)&src[2].uv0;
+		v2 = *(u_int *)&src[2].uv2;
+		*(u_int *)src = *(u_int *)(src + 2);
+		*(u_int *)&src->v0 = v0;
+		*(u_int *)&src->uv0 = v1;
+		*(u_int *)&src->uv2 = v2;
 		src->color = src[2].color;
 
-		v0 = *(uint *)&src[3].v0;
-		v1 = *(uint *)&src[3].uv0;
-		v2 = *(uint *)&src[3].uv2;
-		*(uint *)(src + 1) = *(uint *)(src + 3);
-		*(uint *)&src[1].v0 = v0;
-		*(uint *)&src[1].uv0 = v1;
-		*(uint *)&src[1].uv2 = v2;
+		v0 = *(u_int *)&src[3].v0;
+		v1 = *(u_int *)&src[3].uv0;
+		v2 = *(u_int *)&src[3].uv2;
+		*(u_int *)(src + 1) = *(u_int *)(src + 3);
+		*(u_int *)&src[1].v0 = v0;
+		*(u_int *)&src[1].uv0 = v1;
+		*(u_int *)&src[1].uv2 = v2;
 		src[1].color = src[3].color;
 
-		v0 = *(uint *)&src[4].v0;
-		v1 = *(uint *)&src[4].uv0;
-		v2 = *(uint *)&src[4].uv2;
-		*(uint *)(src + 2) = *(uint *)(src + 4);
-		*(uint *)&src[2].v0 = v0;
-		*(uint *)&src[2].uv0 = v1;
-		*(uint *)&src[2].uv2 = v2;
+		v0 = *(u_int *)&src[4].v0;
+		v1 = *(u_int *)&src[4].uv0;
+		v2 = *(u_int *)&src[4].uv2;
+		*(u_int *)(src + 2) = *(u_int *)(src + 4);
+		*(u_int *)&src[2].v0 = v0;
+		*(u_int *)&src[2].uv0 = v1;
+		*(u_int *)&src[2].uv2 = v2;
 		src[2].color = src[4].color;
 
-		v0 = *(uint *)&src[6].v0;
-		v1 = *(uint *)&src[6].uv0;
-		v2 = *(uint *)&src[6].uv2;
-		*(uint *)(src + 3) = *(uint *)(src + 6);
-		*(uint *)&src[3].v0 = v0;
-		*(uint *)&src[3].uv0 = v1;
-		*(uint *)&src[3].uv2 = v2;
+		v0 = *(u_int *)&src[6].v0;
+		v1 = *(u_int *)&src[6].uv0;
+		v2 = *(u_int *)&src[6].uv2;
+		*(u_int *)(src + 3) = *(u_int *)(src + 6);
+		*(u_int *)&src[3].v0 = v0;
+		*(u_int *)&src[3].uv0 = v1;
+		*(u_int *)&src[3].uv2 = v2;
 		src[3].color = src[6].color;
 
-		src[2].v0 = 16;
-		src[2].v1 = 17;
 		src[2].v2 = 23;
 		src[2].v3 = 22;
 		src[3].v0 = 21;
 		src[3].v1 = 20;
 		src[3].v2 = 19;
 		src[3].v3 = 18;
+		src[2].v1 = 17;
+		src[2].v0 = 16;
 
-		tmpUV = (src->uv0.u >> 1) + (src->uv2.u >> 1);
+		tmpUV = (src->uv0.u + src->uv2.u) / 2;
 		src[3].uv3.u = tmpUV;
 		src[3].uv2.u = tmpUV;
 		src[3].uv1.u = tmpUV;
@@ -1126,7 +1118,7 @@ void MangleWheelModels(void)
 		src[2].uv1.u = tmpUV;
 		src[2].uv0.u = tmpUV;
 
-		tmpUV = (src->uv0.v >> 1) + (src->uv2.v >> 1);
+		tmpUV = (src->uv0.v + src->uv2.v) / 2;
 		src[3].uv3.v = tmpUV;
 		src[3].uv2.v = tmpUV;
 		src[3].uv1.v = tmpUV;
@@ -1138,8 +1130,8 @@ void MangleWheelModels(void)
 
 		m->num_polys = 4;
 
-		j = 0;
-		do {
+		for (j = 0; j < 2; j++)
+		{
 			tmpUV2 = src->uv0;
 			
 			src->uv0 = src->uv1;
@@ -1148,23 +1140,18 @@ void MangleWheelModels(void)
 			src->uv3 = tmpUV2;
 
 			src++;
-		} while (++j < 2);
+		}
 
 	} while (++i < 3);
 
 	// HACK: Show clean model only in Rio.
-	if (GameLevel == 3) 
-	{
-		gFastWheelModelPtr = gCleanWheelModelPtr;
-	}
+	//if (GameLevel == 3) 
+	//	gFastWheelModelPtr = gCleanWheelModelPtr;
 }
 
-// [D]
+// [D] [T]
 void ProcessPalletLump(char *lump_ptr, int lump_size)
 {
-	if (gDriver1Level)	// [A]
-		return;	// TODO: load Driver 1 civ palettes
-
 	ushort clutValue;
 	int *buffPtr;
 	int texnum;
@@ -1293,8 +1280,12 @@ void DrawCar(CAR_DATA* cp, int view)
 		if (gLightsOn == 0)
 			return;
 
-		if (lightsOnDelay[cp->id] != 0)
+		if (lightsOnDelay[cp->id])
 			return;
+
+		col.r = 128;
+		col.g = 120;
+		col.b = 110;
 
 		PlacePoolForCar(cp, &col, 1, 1);
 		return;
@@ -1485,7 +1476,7 @@ void DrawCar(CAR_DATA* cp, int view)
 	else if (cp->controlType == CONTROL_TYPE_CIV_AI)
 		CivCarFX(cp);
 
-	if (gLightsOn && lightsOnDelay[cp->id] == 0)
+	if (gLightsOn && !lightsOnDelay[cp->id])
 	{
 		if (cp->controlType == CONTROL_TYPE_CIV_AI)
 		{

@@ -29,4 +29,4 @@ typedef unsigned long long OTTYPE;
 
 #endif
 
-#endif PSYX_COMPAT_H
+#endif // PSYX_COMPAT_H

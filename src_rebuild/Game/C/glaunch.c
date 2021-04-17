@@ -1,8 +1,6 @@
 #include "driver2.h"
 #include "glaunch.h"
 
-
-
 #include "system.h"
 #include "main.h"
 #include "E3stuff.h"
@@ -13,11 +11,12 @@
 #include "gamesnd.h"
 #include "camera.h"
 #include "fmvplay.h"
+#include "state.h"
 #include "Frontend/FEmain.h"
-
 
 #include "LIBETC.H"
 #include "STRINGS.H"
+#include "xaplay.h"
 
 MISSION_STEP MissionLadder[68] =
 {
@@ -116,12 +115,26 @@ int gFurthestMission = 0;
 
 int gWantNight = 0;
 
-// [D] [T]
-void GameStart(void)
-{
-	int oldVibrationMode;
-	int SurvivalCopSettingsBackup;
+int gOldVibrationMode;
+int gSurvivalCopSettingsBackup;
+ACTIVE_CHEATS gCheatsBackup;
 
+void RestoreGameVars()
+{
+#ifdef CUTSCENE_RECORDER
+	extern int gCutsceneAsReplay;
+	gCutsceneAsReplay = 0;
+#endif
+	
+	gLoadedReplay = 0;
+	gVibration = gOldVibrationMode;
+	gCopDifficultyLevel = gSurvivalCopSettingsBackup;
+	ActiveCheats = gCheatsBackup;
+}
+
+// [D] [T]
+void State_GameStart(void* param)
+{
 	if (GameType != GAME_CONTINUEMISSION &&
 		GameType != GAME_MISSION &&
 		GameType != GAME_REPLAYMISSION)
@@ -132,15 +145,16 @@ void GameStart(void)
 	DrawSync(0);
 	VSync(0);
 
+	FreeXM();
+	SsSetSerialVol(0, 0, 0);
+	
 	gInFrontend = 0;
 	AttractMode = 0;
-
-	FreeXM();
-
-	SsSetSerialVol(0, 0, 0);
-
-	SurvivalCopSettingsBackup = gCopDifficultyLevel;
 	NewLevel = 1;
+
+	gOldVibrationMode = gVibration;
+	gSurvivalCopSettingsBackup = gCopDifficultyLevel;
+	gCheatsBackup = ActiveCheats;
 
 	switch (GameType)
 	{
@@ -156,32 +170,28 @@ void GameStart(void)
 
 			gCurrentMissionNumber += GameLevel * 2 + gWantNight + gSubGameNumber * 440;
 
-			LaunchGame();
+			SetState(STATE_GAMELAUNCH);
+		
 			break;
 		case GAME_IDLEDEMO:
-			oldVibrationMode = gVibration;
-
 			if (LoadAttractReplay(gCurrentMissionNumber))
 			{
 				gVibration = 0;
 				CurrentGameMode = GAMEMODE_DEMO;
 				gLoadedReplay = 1;
 
-				LaunchGame();
-
-				gLoadedReplay = 0;
-				gVibration = oldVibrationMode;
+				SetState(STATE_GAMELAUNCH);
 			}
 
 			break;
 		case GAME_PURSUIT:
 			gCurrentMissionNumber = 70 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
-			LaunchGame();
+			SetState(STATE_GAMELAUNCH);
 
 			break;
 		case GAME_GETAWAY:
 			gCurrentMissionNumber = 102 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
-			LaunchGame();
+			SetState(STATE_GAMELAUNCH);
 
 			break;
 		case GAME_GATERACE:
@@ -191,7 +201,8 @@ void GameStart(void)
 				gCurrentMissionNumber = 164;
 
 			gCurrentMissionNumber += GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
-			LaunchGame();
+			SetState(STATE_GAMELAUNCH);
+		
 			break;
 		case GAME_CHECKPOINT:
 			if (NumPlayers == 1)
@@ -200,12 +211,12 @@ void GameStart(void)
 				gCurrentMissionNumber = 228;
 
 			gCurrentMissionNumber += GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
-			LaunchGame();
+			SetState(STATE_GAMELAUNCH);
 
 			break;
 		case GAME_TRAILBLAZER:
 			gCurrentMissionNumber = GameLevel * 8 + 260 + gWantNight * 4 + gSubGameNumber;
-			LaunchGame();
+			SetState(STATE_GAMELAUNCH);
 
 			break;
 		case GAME_SURVIVAL:
@@ -218,28 +229,25 @@ void GameStart(void)
 
 			gCurrentMissionNumber += GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
 
-			LaunchGame();
-
-			gCopDifficultyLevel = SurvivalCopSettingsBackup;
-
+			SetState(STATE_GAMELAUNCH);
 			break;
 		case GAME_REPLAYMISSION:
 			GameType = GAME_MISSION;
 
-			if (FindMissionLadderPos(gCurrentMissionNumber) != 0)
+			if (FindMissionLadderPos(gCurrentMissionNumber))
 				RunMissionLadder(0);
 
-			GameType = GAME_REPLAYMISSION;
+			//GameType = GAME_REPLAYMISSION;
 
 			break;
 		case GAME_COPSANDROBBERS:
 			gCurrentMissionNumber = 420 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
-			LaunchGame();
+			SetState(STATE_GAMELAUNCH);
 
 			break;
 		case GAME_CAPTURETHEFLAG:
 			gCurrentMissionNumber = 352 + GameLevel * 8 + gSubGameNumber;
-			LaunchGame();
+			SetState(STATE_GAMELAUNCH);
 
 			break;
 		case GAME_SECRET:
@@ -249,7 +257,7 @@ void GameStart(void)
 				gCurrentMissionNumber = 484;
 
 			gCurrentMissionNumber += gWantNight + gSubGameNumber;
-			LaunchGame();
+			SetState(STATE_GAMELAUNCH);
 
 			break;
 		case GAME_CONTINUEMISSION:
@@ -262,39 +270,49 @@ void GameStart(void)
 			gLoadedReplay = 1;
 			GameType = StoredGameType;
 
-			LaunchGame();
-
-			gLoadedReplay = 0;
-
+			SetState(STATE_GAMELAUNCH);
+		
 			break;
 	}
-
-	wantedCar[1] = -1;
-	wantedCar[0] = -1;
-	// [A]
-	wantedWeather = -1;
-	wantedTimeOfDay = -1;
-
-	gHaveStoredData = 0;
-
-	ReInitFrontend();
 }
 
-
-// [D] [T]
-void StartRender(int renderNum)
+void State_InitFrontEnd(void* param)
 {
-	PlayFMV(renderNum);
-	ReInitFrontend();
+	if ((int)param == 2)
+	{
+		InitFrontendDisplay();
+		InitFrontend();
+	}
+	else
+	{
+		ReInitFrontend((int)param == 0);
+	}
+
+	SetState(STATE_FRONTEND);
 }
 
 // [D] [T]
-void ReInitFrontend(void)
+void State_FMVPlay(void* param)
+{
+	PlayFMV((int)param);
+	SetState(STATE_INITFRONTEND, (void*)1);
+}
+
+// [D] [T]
+void ReInitFrontend(int returnToMain)
 {
 	RECT16 rect;
 
 	old_camera_change = 0;
 	camera_change = 0;
+
+	wantedCar[1] = -1;
+	wantedCar[0] = -1;
+
+	wantedWeather = -1;
+	wantedTimeOfDay = -1;
+
+	gHaveStoredData = 0;
 
 	EnableDisplay();
 	DrawSync(0);
@@ -317,6 +335,8 @@ void ReInitFrontend(void)
 	Loadfile("FRONTEND.BIN", 0x801C0000);
 #endif // PSX
 
+	// switch to state STATE_INITFRONTEND
+
 	SetFEDrawMode();
 	DrawSync(0);
 	EnableDisplay();
@@ -325,8 +345,10 @@ void ReInitFrontend(void)
 	ClearImage(&rect, 0, 0, 0);
 
 	DrawSync(0);
+
 	LoadFrontendScreens(1);
-	ReInitScreens();
+	ReInitScreens(returnToMain);
+	
 	DrawSync(0);
 	VSync(0);
 
@@ -335,20 +357,18 @@ void ReInitFrontend(void)
 
 	SetDispMask(1);
 
-	//LoadedLevel = 0xff;
 	bRedrawFrontend = 1;
 }
 
-// [D] [T]
-void RunMissionLadder(int newgame)
+void State_MissionLadder(void* param)
 {
-	bool quit;
+	int quit;
+	int newgame;
 	MISSION_STEP* CurrentStep;
 	RENDER_ARGS RenderArgs;
 
-	quit = false;
-	if (newgame != 0)
-		gMissionLadderPos = 0;
+	newgame = (int)param;
+	quit = 0;
 
 	RenderArgs.nRenders = 0;
 	CurrentStep = MissionLadder + gMissionLadderPos;
@@ -393,8 +413,6 @@ void RunMissionLadder(int newgame)
 			SetPleaseWait(NULL);
 		}
 
-		gMissionLadderPos = CurrentStep - MissionLadder;
-
 		if (CurrentStep->flags == 2)
 		{
 			if (RenderArgs.nRenders != 0)
@@ -406,17 +424,20 @@ void RunMissionLadder(int newgame)
 
 			SetPleaseWait(NULL);
 			gCurrentMissionNumber = CurrentStep->data;
-			LaunchGame();
 
+			SetState(STATE_GAMELAUNCH);
+			quit = 1;
+
+			/*
 			if (WantedGameMode == GAMEMODE_NEXTMISSION)
 			{
-				if (gFurthestMission < gCurrentMissionNumber)
+				if (gCurrentMissionNumber > gFurthestMission)
 					gFurthestMission = gCurrentMissionNumber;
 			}
 			else
 			{
-				quit = true;
-			}
+				quit = 1;
+			}*/
 		}
 		else if (CurrentStep->flags == 1)
 		{
@@ -438,12 +459,23 @@ void RunMissionLadder(int newgame)
 
 			SetPleaseWait(NULL);
 
-			quit = true;
+			quit = 1;
 			AvailableCheats.cheat5 = true;
 		}
 
 		CurrentStep++;
+		gMissionLadderPos = CurrentStep - MissionLadder;
+
 	} while (!quit);
+}
+
+// [D] [T]
+void RunMissionLadder(int newgame)
+{
+	if (newgame)
+		gMissionLadderPos = 0;
+	
+	SetState(STATE_LADDER, (void*)newgame);
 }
 
 // [D] [T]
@@ -496,7 +528,6 @@ int FindPrevMissionFromLadderPos(int pos)
 	return 0;
 }
 
-int fakeOtherPlayer = 0;
 int gMissionCompletionState = 0;
 char NoPlayerControl = 0;
 
@@ -509,13 +540,12 @@ MISSION_DATA MissionStartData;
 MISSION_DATA MissionEndData;
 
 // [D] [T]
-void LaunchGame(void)
+void State_LaunchGame(void* param)
 {
 	int quit;
-	RECT16 rect{ 0, 0, 512, 512 };
-
-	fakeOtherPlayer = 0;
-
+	
+	// STATE_GAMELAUNCH
+	
 	ResetGraph(1);
 	SetVideoMode(video_mode);
 
@@ -534,98 +564,135 @@ void LaunchGame(void)
 		AttractMode = 0;
 		NoPlayerControl = 1;
 	}
+	else if (CurrentGameMode == GAMEMODE_REPLAY)
+	{
+		AttractMode = 0;
+		NoPlayerControl = 1;
+		quick_replay = 1;
+	}
+	else if (CurrentGameMode == GAMEMODE_DEMO)
+	{
+		AttractMode = 1;
+		NoPlayerControl = 1;
+	}
 	else
 	{
 		AttractMode = 0;
 		NoPlayerControl = 0;
-
-		if (CurrentGameMode < GAMEMODE_NEXTMISSION)
-		{
-			if (CurrentGameMode == GAMEMODE_REPLAY)
-			{
-				AttractMode = 0;
-				NoPlayerControl = 1;
-				quick_replay = 1;
-			}
-		}
-		else if (CurrentGameMode == GAMEMODE_DEMO)
-		{
-			AttractMode = 1;
-			NoPlayerControl = 1;
-		}
 	}
 
 	AutoDirect = 0;
 	NewLevel = 1;
 
-	quit = 0;
+	// switch to STATE_GAMEINIT
+	SetState(STATE_GAMEINIT);
+}
 
-	do {
-		GameInit();
-		GameLoop();
+// [A] state function
+void State_GameComplete(void* param)
+{
+	GameStates nextState;
+	int stateParam;
+	RECT16 rect;
 
-		switch (WantedGameMode)
+	if (NoPlayerControl == 0)
+	{
+		ReplayParameterPtr->RecordingEnd = CameraCnt;
+	}
+
+	StopPadVibration(0);
+	StopPadVibration(1);
+	StopAllChannels();
+	FreeXM();
+
+	if (XAPrepared())
+	{
+		StopXA();
+		UnprepareXA();
+	}
+
+	// restart is default
+	nextState = STATE_GAMEINIT;
+	stateParam = 0;
+
+	switch (WantedGameMode)
+	{
+		case GAMEMODE_NORMAL:
+		case GAMEMODE_QUIT:
+		case GAMEMODE_DEMO:
 		{
-			case GAMEMODE_NORMAL:
-			case GAMEMODE_QUIT:
-			case GAMEMODE_DEMO:
-			{
-				FadeScreen(255);
-				quit = 1;
-				break;
-			}
-			case GAMEMODE_RESTART:
-			{
-				FadeScreen(255);
-
-				NoPlayerControl = 0;
-				quick_replay = 0;
-				AutoDirect = 0;
-				WantedGameMode = GAMEMODE_NORMAL;
-				NewLevel = 0;
-
-				GetRandomChase();
-
-				break;
-			}
-			case GAMEMODE_REPLAY:
-			case GAMEMODE_DIRECTOR:
-			{
-				if (CurrentGameMode < GAMEMODE_NEXTMISSION)
-					FadeScreen(255);
-
-				NoPlayerControl = 1;
-				AutoDirect = (WantedGameMode == GAMEMODE_REPLAY);
-				quick_replay = (WantedGameMode == GAMEMODE_REPLAY);
-				NewLevel = 0;
-				break;
-			}
-			case GAMEMODE_NEXTMISSION:
-			{
-				MissionStartData = MissionEndData;
-				gHaveStoredData = 1;
-
-				FadeScreen(255);
-				quit = 1;
-
-				NoPlayerControl = 0;
-				quick_replay = 0;
-				AutoDirect = 0;
-			}
+			FadeScreen(255);
+			nextState = STATE_INITFRONTEND;
+			break;
 		}
+		case GAMEMODE_RESTART:
+		{
+			FadeScreen(255);
 
-		CurrentGameMode = WantedGameMode;
-	} while (!quit);
+			NoPlayerControl = 0;
+			quick_replay = 0;
+			AutoDirect = 0;
+			WantedGameMode = GAMEMODE_NORMAL;
+			NewLevel = 0;
 
-	lead_car = 0;
-	NoPlayerControl = 0;
-	SetDispMask(0);
-	EnableDisplay();
+			GetRandomChase();
 
-	ClearImage(&rect, 0, 0, 0);
+			break;
+		}
+		case GAMEMODE_REPLAY:
+		case GAMEMODE_DIRECTOR:
+		{
+			if (CurrentGameMode < GAMEMODE_NEXTMISSION)
+				FadeScreen(255);
 
-	DrawSync(0);
-	SetDispMask(1);
+			NoPlayerControl = 1;
+			AutoDirect = (WantedGameMode == GAMEMODE_REPLAY);
+			quick_replay = (WantedGameMode == GAMEMODE_REPLAY);
+			NewLevel = 0;
+			break;
+		}
+		case GAMEMODE_NEXTMISSION:
+		{
+			MissionStartData = MissionEndData;
+			gHaveStoredData = 1;
+
+			FadeScreen(255);
+
+			if(GameType == GAME_MISSION)
+			{
+				nextState = STATE_LADDER;
+				stateParam = 2; // don't do recap
+			}
+			else
+				nextState = STATE_INITFRONTEND;
+			
+			NoPlayerControl = 0;
+			quick_replay = 0;
+			AutoDirect = 0;
+		}
+	}
+	
+	CurrentGameMode = WantedGameMode;
+
+	SetState(nextState, (void*)stateParam);
+
+	if(nextState == STATE_INITFRONTEND)
+	{
+		RestoreGameVars();
+		
+		lead_car = 0;
+		NoPlayerControl = 0;
+		
+		SetDispMask(0);
+		EnableDisplay();
+
+		setRECT(&rect, 0, 0, 512, 512);
+
+		ClearImage(&rect, 0, 0, 0);
+
+		DrawSync(0);
+		SetDispMask(1);
+	}
 }
 
 // [D] [T]

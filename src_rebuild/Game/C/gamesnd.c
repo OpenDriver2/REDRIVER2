@@ -181,21 +181,21 @@ int CarHasSiren(int index)
 		if (GameLevel == 0)
 		{
 			if (MissionHeader->residentModels[4] == 8)
-				return 0x110;
+				return M_SHRT_2(SOUND_BANK_SFX, 12);
 		}
 		else if (GameLevel == 2)
 		{
 			if (MissionHeader->residentModels[4] == 9)
-				return 0x110;
+				return M_SHRT_2(SOUND_BANK_SFX, 12);
 		}
 		else if (GameLevel == 3)
 		{
 			if (MissionHeader->residentModels[4] == 10)
-				return 0x110;
+				return M_SHRT_2(SOUND_BANK_SFX, 12);
 		}
 	}
 
-	return (MissionHeader->residentModels[index] == 0) << 9;
+	return M_SHRT_2((MissionHeader->residentModels[index] == 0) ? SOUND_BANK_VOICES : 0, 0);
 }
 
 // [D] [T]
@@ -313,7 +313,7 @@ void LoadLevelSFX(int missionNum)
 {
 	int index;
 	int i;
-	uint city_night_fx;
+	u_int city_night_fx;
 
 	city_night_fx = (gTimeOfDay == 3);
 
@@ -322,18 +322,15 @@ void LoadLevelSFX(int missionNum)
 
 	// init sound bank memory
 	LoadSoundBankDynamic(NULL, 0, 0);
-	i = 0;
 
 	// load car banks
-	do {
+	for (i = 0; i < 3; i++)
 		LoadBankFromLump(SOUND_BANK_CARS, MapCarIndexToBank(i));
-		i++;
-	} while (i < 3);
 
 	ShowLoading();
 
 	// load footsteps, car effects etc
-	LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_MENU);
+	//LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_MENU);
 	LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_SFX);
 	LoadBankFromLump(SOUND_BANK_TANNER, SBK_ID_TANNER );
 
@@ -558,6 +555,7 @@ void StartPlayerCarSounds(int playerId, int model, VECTOR* pos)
 	if (siren)
 	{
 		channel = playerId * 3 + 2;
+		// SOUND_BANK_SFX or SOUND_BANK_VOICES
 		Start3DSoundVolPitch(channel, (siren & 0xff00) >> 8, siren & 0xff, pos->vx, pos->vy, pos->vz, -10000, 129);
 	}
 
@@ -890,7 +888,7 @@ void ControlSpeech(SPEECH_QUEUE* pSpeechQueue)
 	}
 }
 
-// [D]
+// [D] [T]
 void CopSay(int phrase, int direction)
 {
 	if (!gDoCopSpeech)
@@ -983,16 +981,16 @@ void DoDopplerSFX(void)
 	short* playerFelony;
 	int i, j;
 	int car;
-	uint car_flags;
+	u_int car_flags;
 	int num_noisy_cars;
 	int sirens;
 
-	uint car_dist[MAX_CARS];
+	u_int car_dist[MAX_CARS];
 	ushort indexlist[MAX_CARS];
 
 	CAR_DATA* car_ptr;
 	int dx, dz;
-	uint dist;
+	u_int dist;
 
 	num_noisy_cars = 0;
 
@@ -1362,7 +1360,7 @@ void DoDopplerSFX(void)
 }
 
 // [D] [T]
-void DoPoliceLoudhailer(int cars, ushort* indexlist, uint* dist)
+void DoPoliceLoudhailer(int cars, ushort* indexlist, u_int* dist)
 {
 	int rnd;
 	int carId;
@@ -1448,19 +1446,19 @@ void CollisionSound(char player_id, CAR_DATA* cp, int impact, int car_car)
 	if (player[playerid].crash_timer)
 		return;
 
-	sample = 8;
+	sample = 4;
 	phrase = 0;
 
 	if (car_car == 0)
 	{
 		if (impact > 780)
 		{
-			sample = 10;
+			sample = 6;
 			phrase = 1;
 		}
 		else if (impact > 350)
 		{
-			sample = 9;
+			sample = 5;
 			phrase = 2;
 		}
 	}
@@ -1468,12 +1466,12 @@ void CollisionSound(char player_id, CAR_DATA* cp, int impact, int car_car)
 	{
 		if (impact > 900)
 		{
-			sample = 10;
+			sample = 6;
 			phrase = 1;
 		}
 		else if (impact > 380)
 		{
-			sample = 9;
+			sample = 5;
 			phrase = 2;
 		}
 	}
@@ -1797,7 +1795,7 @@ void InitMusic(int musicnum)
 	current_music_id = musicnum;
 	LoadfileSeg(name, (char*)musicpos, musicnum * 8, sizeof(musicpos));
 
-	MALLOC_BEGIN()
+	D_MALLOC_BEGIN()
 
 		sample_len = musicpos[2] - musicpos[1];
 	music_len = musicpos[1] - musicpos[0];
@@ -1833,7 +1831,7 @@ void InitMusic(int musicnum)
 		XM_SetSongAddress((unsigned char*)song_pt);
 	}
 
-	MALLOC_END();
+	D_MALLOC_END();
 
 	InitXMData((unsigned char*)music_pt, 0, 0);
 
@@ -2243,7 +2241,7 @@ void IdentifyZone(envsound* ep, envsoundinfo* E, int pl)
 }
 
 
-// [D] [A] unprocessed arrays
+// [D] [T]
 void CalcEffPos(envsound* ep, envsoundinfo* E, int pl)
 {
 	int minX, maxX;
@@ -2331,7 +2329,7 @@ void CalcEffPos(envsound* ep, envsoundinfo* E, int pl)
 	}
 }
 
-// [D] [A] unprocessed arrays
+// [D] [T]
 void CalcEffPos2(envsound* ep, envsoundinfo* E, int pl)
 {
 	int snd;

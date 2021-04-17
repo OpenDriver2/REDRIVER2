@@ -24,17 +24,19 @@ char* CosmeticFiles[] = {
 
 CAR_COSMETICS car_cosmetics[MAX_CAR_MODELS];
 
+// [A] storage for spooled models
+// remember: we already have more than 1k of free memory with optimizations
+CAR_COSMETICS levelSpecCosmetics[5];
+
 // [D] [T]
 void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 {
 	int model;
-	char* ptr;
 	int i;
 	int offset;
 
-	i = 0;
-
-	do {
+	for (i = 0; i < MAX_CAR_MODELS; i++)
+	{
 		model = MissionHeader->residentModels[i];
 
 		if (model == 13)
@@ -50,24 +52,34 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 		if (model != -1) 
 		{
 			offset = *(int*)(lump_ptr + model * sizeof(int));
-
-			ptr = (lump_ptr + offset);
-
-			memcpy((char*)&car_cosmetics[i], ptr, sizeof(CAR_COSMETICS));
+			memcpy((char*)&car_cosmetics[i], lump_ptr + offset, sizeof(CAR_COSMETICS));
 
 			FixCarCos(&car_cosmetics[i], model);
 		}
+	}
 
-		i++;
-	} while (i < MAX_CAR_MODELS);
+	// [A] cache all special vehicle cosmetics
+	for (i = 0; i < 5; i++)
+	{
+		model = 8 + i;
+
+		offset = *(int*)(lump_ptr + model * sizeof(int));
+		memcpy((char*)&levelSpecCosmetics[i], lump_ptr + offset, sizeof(CAR_COSMETICS));
+	}
 }
 
 // [D] [T]
 void LoadCosmetics(int level)
 {
-	LoadfileSeg(CosmeticFiles[level], _other_buffer, 0, 3120);
-	ProcessCosmeticsLump(_other_buffer, 0);
+	LoadfileSeg(CosmeticFiles[level], (char*)_other_buffer, 0, 3120);
+	ProcessCosmeticsLump((char*)_other_buffer, 0);
 }
+
+#define REVERSELIGHT_SIZE		14
+#define INDICATORLIGHT_SIZE		20
+#define BRAKELIGHT_SIZE			17
+#define HEADLIGHT_SIZE			18
+#define BACKLIGHT_SIZE			17
 
 // [D] [T]
 void AddReverseLight(CAR_DATA *cp)
@@ -90,13 +102,13 @@ void AddReverseLight(CAR_DATA *cp)
 
 	if (cp->ap.damage[4] < 500)
 	{
-		ShowCarlight(&v1, cp, &col, 14, &light_texture, 0);
+		ShowCarlight(&v1, cp, &col, REVERSELIGHT_SIZE, REVERSELIGHT_SIZE * 3, &light_texture, 0);
 	}
 
 	if (cp->ap.damage[3] < 500) 
 	{
 		v1.vx = car_cos->cog.vx * 2 - v1.vx;
-		ShowCarlight(&v1, cp, &col, 14, &light_texture, 0);
+		ShowCarlight(&v1, cp, &col, REVERSELIGHT_SIZE, REVERSELIGHT_SIZE * 3, &light_texture, 0);
 	}
 }
 
@@ -106,15 +118,9 @@ void SetupSpecCosmetics(char *loadbuffer)
 	int model;
 	model = MissionHeader->residentModels[4];
 
-#ifndef PSX
-	int offset;
-
-	// [A] always load cosmetics from file
-	// fixes limo cosmetics as well
-	LoadfileSeg(CosmeticFiles[GameLevel], _other_buffer, 0, 3120);
-	offset = *(int*)(_other_buffer + model * sizeof(int));
-
-	memcpy((char*)&car_cosmetics[4], _other_buffer + offset, sizeof(CAR_COSMETICS));
+#if 1
+	// [A] always use cached cosmetics
+	memcpy((char*)&car_cosmetics[4], (char*)&levelSpecCosmetics[model - 8], sizeof(CAR_COSMETICS));
 #else
 	memcpy((char*)&car_cosmetics[4], loadbuffer, sizeof(CAR_COSMETICS));
 #endif
@@ -126,7 +132,7 @@ void SetupSpecCosmetics(char *loadbuffer)
 // [D] [T]
 void AddIndicatorLight(CAR_DATA *cp, int Type)
 {
-	uint brightness;
+	u_int brightness;
 	char *life;
 	CAR_COSMETICS *car_cos;
 	char *life2;
@@ -141,7 +147,7 @@ void AddIndicatorLight(CAR_DATA *cp, int Type)
 	life2 = &cp->ap.life2;
 
 	if (cp->ap.life < 0)
-		brightness = (0xff - (uint)cp->ap.life) * 2;
+		brightness = (0xff - (u_int)cp->ap.life) * 2;
 	else
 		brightness = cp->ap.life << 1;
 
@@ -172,12 +178,12 @@ void AddIndicatorLight(CAR_DATA *cp, int Type)
 		if (cp->ap.damage[4] < 500)
 		{
 			*life2 += brightness >> 3;
-			ShowCarlight(&vback, cp, &col, 20, &light_texture, 0);
+			ShowCarlight(&vback, cp, &col, INDICATORLIGHT_SIZE, INDICATORLIGHT_SIZE * 4, &light_texture, 0);
 		}
 
 		if (cp->ap.damage[0] < 500) 
 		{
-			ShowCarlight(&vfrnt, cp, &col, 20, &light_texture, 1);
+			ShowCarlight(&vfrnt, cp, &col, INDICATORLIGHT_SIZE, INDICATORLIGHT_SIZE * 4, &light_texture, 1);
 		}
 	}
 
@@ -188,13 +194,13 @@ void AddIndicatorLight(CAR_DATA *cp, int Type)
 			vback.vx = car_cos->cog.vx * 2 - vback.vx;
 			*life2 += brightness >> 3;
 
-			ShowCarlight(&vback, cp, &col, 20, &light_texture, 0);
+			ShowCarlight(&vback, cp, &col, INDICATORLIGHT_SIZE, INDICATORLIGHT_SIZE * 4, &light_texture, 0);
 		}
 
 		if (cp->ap.damage[1] < 500) 
 		{
 			vfrnt.vx = car_cos->cog.vx * 2 - vfrnt.vx;
-			ShowCarlight(&vfrnt, cp, &col, 20, &light_texture, 1);
+			ShowCarlight(&vfrnt, cp, &col, INDICATORLIGHT_SIZE, INDICATORLIGHT_SIZE * 4, &light_texture, 1);
 		}
 	}
 }
@@ -261,8 +267,8 @@ void AddBrakeLight(CAR_DATA *cp)
 
 				if (cp->ap.damage[damIndex] < 500)
 				{
-					ShowCarlight(&v1, cp, &col, 17, &light_texture, 0);
-					ShowCarlight(&v2, cp, &col, 17, &light_texture, 0);
+					ShowCarlight(&v1, cp, &col, BRAKELIGHT_SIZE, BRAKELIGHT_SIZE * 4, &light_texture, 0);
+					ShowCarlight(&v2, cp, &col, BRAKELIGHT_SIZE, BRAKELIGHT_SIZE * 4, &light_texture, 0);
 					*life2 += 8;
 				}
 			}
@@ -280,8 +286,8 @@ void AddBrakeLight(CAR_DATA *cp)
 
 				if (cp->ap.damage[damIndex] < 500)
 				{
-					ShowCarlight(&v1, cp, &col, 17, &light_texture, 0);
-					ShowCarlight(&v2, cp, &col, 17, &light_texture, 0);
+					ShowCarlight(&v1, cp, &col, BRAKELIGHT_SIZE, BRAKELIGHT_SIZE * 4, &light_texture, 0);
+					ShowCarlight(&v2, cp, &col, BRAKELIGHT_SIZE, BRAKELIGHT_SIZE * 4, &light_texture, 0);
 					*life2 += 8;
 				}
 			}
@@ -292,7 +298,7 @@ void AddBrakeLight(CAR_DATA *cp)
 
 			if (cp->ap.damage[damIndex] < 500)
 			{
-				ShowCarlight(&v1, cp, &col, 17, &light_texture, 0);
+				ShowCarlight(&v1, cp, &col, BRAKELIGHT_SIZE, BRAKELIGHT_SIZE * 4, &light_texture, 0);
 				*life2 += 8;
 			}
 		}
@@ -320,7 +326,7 @@ void AddCopCarLight(CAR_DATA *cp)
 	int num_lights;
 	CAR_COSMETICS *car_cos;
 	char *coplife;
-	uint pos;
+	u_int pos;
 	int side;
 	SVECTOR v1;
 	CVECTOR col;
@@ -407,7 +413,7 @@ void AddCopCarLight(CAR_DATA *cp)
 			if (pauseflag == 0) 
 				cp->ap.coplife += count_speed;
 
-			ShowCarlight(&v1, cp, &col, size, &light_texture, 0xff);
+			ShowCarlight(&v1, cp, &col, size, size*3, &light_texture, 0xff);
 
 			if (pauseflag == 0 && (CameraCnt & 1U) != 0 && GameLevel == 2) 
 				pos++;
@@ -468,9 +474,9 @@ void AddNightLights(CAR_DATA *cp)
 		lights = 0;
 		lightFlag = 8 << (loop & 0x1f);
 
-		col.r = 255;
-		col.b = 255;
-		col.g = 255;
+		col.r = 128;
+		col.g = 124;
+		col.b = 112;
 		col2 = col;
 
 		if (cp->ap.damage[loop] < 1000)
@@ -497,16 +503,16 @@ void AddNightLights(CAR_DATA *cp)
 				Position1.vz = vec.vz + (cp->ap.damage[loop] >> 6);
 				Position2.vz = vec.vz + (cp->ap.damage[loop] >> 6);
 
-				ShowCarlight(&Position1, cp, &col, 20, &light_texture, lightFlag & 0xff | 1);
+				ShowCarlight(&Position1, cp, &col, HEADLIGHT_SIZE, HEADLIGHT_SIZE*4, &light_texture, lightFlag & 0xff | 1);
 
 				lights = 1;
 				lit++;
 
 				if (cp->ap.damage[loop] < 500)
 				{
-					lights = 2;
+					lights++;
 
-					ShowCarlight(&Position2, cp, &col2, 20, &light_texture, 1);
+					ShowCarlight(&Position2, cp, &col2, HEADLIGHT_SIZE, HEADLIGHT_SIZE * 4, &light_texture, 1);
 					lit++;
 				}
 			}
@@ -518,10 +524,13 @@ void AddNightLights(CAR_DATA *cp)
 				Position1.vz = vec.vz + (cp->ap.damage[loop] >> 6);
 				Position2.vz = vec.vz + (cp->ap.damage[loop] >> 6);
 
-				lights = 1;
+				ShowCarlight(&Position1, cp, &col, HEADLIGHT_SIZE, HEADLIGHT_SIZE * 4, &light_texture, lightFlag & 0xff | 1);
 
-				ShowCarlight(&Position1, cp, &col, 20, &light_texture, lightFlag & 0xff | 1);
+				lights = 1;
 				lit++;
+
+				if (cp->ap.damage[loop] < 500)
+					lights++;
 			}
 		}
 
@@ -556,7 +565,6 @@ void AddNightLights(CAR_DATA *cp)
 			damIndex = (4 - loop);
 
 			col.r = 110;
-
 			col.b = 0;
 			col.g = 0;
 
@@ -587,14 +595,14 @@ void AddNightLights(CAR_DATA *cp)
 					Position2.vz = vec.vz - (cp->ap.damage[damIndex] >> 6);
 					Position1.vz = vec.vz - (cp->ap.damage[damIndex] >> 6);
 
-					ShowCarlight(&Position1, cp, &col, 17, &light_texture, lightFlag & 0xff);
-					ShowCarlight(&Position2, cp, &col2, 17, &light_texture, 0);
+					ShowCarlight(&Position1, cp, &col, BACKLIGHT_SIZE, BACKLIGHT_SIZE * 3, &light_texture, lightFlag & 0xff);
+					ShowCarlight(&Position2, cp, &col2, BACKLIGHT_SIZE, BACKLIGHT_SIZE * 3, &light_texture, 0);
 				}
 				else
 				{
 					Position1 = vec;
 
-					ShowCarlight(&Position1, cp, &col, 17, &light_texture, lightFlag & 0xff);
+					ShowCarlight(&Position1, cp, &col, BACKLIGHT_SIZE, BACKLIGHT_SIZE * 3, &light_texture, lightFlag & 0xff);
 				}
 
 				*life2 += 16;
@@ -608,17 +616,18 @@ void AddNightLights(CAR_DATA *cp)
 	}
 
 	// front lights pool
-	if (lit != 0)
+	if (lit)
 	{
-		col.r = (lit << 4);
-		col.g = col.r;
-		col.b = col.r;
+		col.r = 128;
+		col.g = 120;
+		col.b = 110;
+
 		PlacePoolForCar(cp, &col, 1, 0);
 	}
 
 	// back lights pool
 	col.r = *life2;
-	if (col.r != 0)
+	if (col.r)
 	{
 		col.b = 0;
 		col.g = 0;

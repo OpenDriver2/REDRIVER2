@@ -1,7 +1,13 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
+#if defined(__EMSCRIPTEN__)
+#include <emscripten/emscripten.h>
+#include <emscripten/html5.h>
+#endif
+
 #include "STRINGS.H"
+#include "psyx_compat.h"
 
 #ifndef PSX
 #include "../utils/fs.h"

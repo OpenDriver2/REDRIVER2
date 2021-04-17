@@ -14,11 +14,15 @@ extern int g_enableSwapInterval;
 extern int g_pgxpZBuffer;
 extern int g_bilinearFiltering;
 
+extern float g_pgxpZNear;
+extern float g_pgxpZFar;
+
 extern int g_emulatorPaused;
 extern int g_polygonSelected;
 extern int g_pgxpTextureCorrection;
+extern int g_controllerToSlotMapping[2];
 
-extern void PsyX_InternalPadUpdates();
+extern void PsyX_Pad_InternalPadUpdates();
 
 // logging functions
 extern void PsyX_Log(const char* fmt, ...);

@@ -1,6 +1,8 @@
 #include "PSYX_PUBLIC.H"
-#include "PSYX_RENDER.H"
+
 #include "../PLATFORM_SETUP.H"
+#include "PSYX_RENDER.H"
+
 #include "UTIL/TIMER.H"
 
 #include <assert.h>
@@ -17,9 +19,21 @@ extern "C"
 }
 #endif //def WIN32
 
+
+#if defined(RENDERER_OGL)
+
 #define USE_PBO					1
 #define USE_OFFSCREEN_BLIT		1
 #define USE_FRAMEBUFFER_BLIT	1
+
+#else
+
+// OpenGL ES/Web GL has slowdowns and doesn't allow GL_LUMINANCE_ALPHA format as framebuffer, so it's disabled
+#define USE_PBO					0
+#define USE_OFFSCREEN_BLIT		0
+#define USE_FRAMEBUFFER_BLIT	0
+
+#endif
 
 extern SDL_Window* g_window;
 extern int g_swapInterval;
@@ -58,10 +72,22 @@ int g_pgxpTextureCorrection = 1;
 int g_pgxpZBuffer = 1;
 int g_bilinearFiltering = 0;
 
+// this has to be configured for each game
+float g_pgxpZNear = 0.25f;
+float g_pgxpZFar = 1000.0f;
+
 bool vram_need_update = true;
 bool framebuffer_need_update = false;
 
+#if defined(__EMSCRIPTEN__)
 #if defined(RENDERER_OGL)
+#error It should not be enabled
+#endif
+#endif
+
+
+
+#if defined(USE_OPENGL)
 struct GrPBO
 {
 	GLenum fmt;
@@ -96,6 +122,7 @@ int PBO_Init(GrPBO& pbo, GLenum format, int w, int h, int num)
 	pbo.height = h;
 	pbo.num_pbos = num;
 
+#if USE_PBO
 	if (GL_RED == pbo.fmt || GL_GREEN == pbo.fmt || GL_BLUE == pbo.fmt) {
 		pbo.nbytes = pbo.width * pbo.height;
 	}
@@ -121,7 +148,6 @@ int PBO_Init(GrPBO& pbo, GLenum format, int w, int h, int num)
 	pbo.pbos = (GLuint*)malloc(sizeof(GLuint) * num);
 	pbo.pixels = (u_char*)malloc(pbo.nbytes);
 
-#if USE_PBO
 	glGenBuffers(num, pbo.pbos);
 	for (int i = 0; i < num; ++i)
 	{
@@ -136,6 +162,7 @@ int PBO_Init(GrPBO& pbo, GLenum format, int w, int h, int num)
 
 void PBO_Destroy(GrPBO& pbo)
 {
+#if USE_PBO
 	if(pbo.pbos)
 	{
 		glDeleteBuffers(pbo.num_pbos, pbo.pbos);
@@ -144,7 +171,8 @@ void PBO_Destroy(GrPBO& pbo)
 		pbo.num_pbos = 0;
 		pbo.pbos = NULL;
 	}
-	
+
+#endif
 	if (pbo.pixels)
 	{
 		free(pbo.pixels);
@@ -169,14 +197,19 @@ void PBO_Download(GrPBO& pbo)
 		   read from the oldest bound buffer first.
 		*/
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo.pbos[pbo.dx]);
-		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-		//glReadPixels(0, 0, pbo.width, pbo.height, pbo.fmt, GL_UNSIGNED_BYTE, 0);   /* When a GL_PIXEL_PACK_BUFFER is bound, the last 0 is used as offset into the buffer to read into. */
-}
+
+#if defined(RENDERER_OGL)
+		glGetTexImage(GL_TEXTURE_2D, 0, pbo.fmt, GL_UNSIGNED_BYTE, 0);
+#else
+		glReadPixels(0, 0, pbo.width, pbo.height, pbo.fmt, GL_UNSIGNED_BYTE, 0);   /* When a GL_PIXEL_PACK_BUFFER is bound, the last 0 is used as offset into the buffer to read into. */
+#endif
+	}
 	else
 	{
 		/* Read from the oldest bound pbo. */
 		glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo.pbos[pbo.dx]);
 
+#if defined(RENDERER_OGL)
 		ptr = (unsigned char*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
 		if (NULL != ptr)
 		{
@@ -184,12 +217,13 @@ void PBO_Download(GrPBO& pbo)
 			glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 		}
 		else
-		{
 			eprintwarn("Failed to map the buffer\n");
-		}
 
 		/* Trigger the next read. */
-		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+		glGetTexImage(GL_TEXTURE_2D, 0, pbo.fmt, GL_UNSIGNED_BYTE, 0);
+#else
+		glReadPixels(0, 0, pbo.width, pbo.height, GL_RGBA, GL_UNSIGNED_BYTE, pbo.pixels);
+#endif
 	}
 
 	++pbo.dx;
@@ -202,8 +236,11 @@ void PBO_Download(GrPBO& pbo)
 
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 #else
-	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0); /* just make sure we're not accidentilly using a PBO. */
-	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pbo.pixels);
+	// FIXME: THIS is very slow
+	// Do not use at all
+
+	// glBindBuffer(GL_PIXEL_PACK_BUFFER, 0); /* just make sure we're not accidentilly using a PBO. */
+	// glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pbo.pixels);
 #endif
 }
 
@@ -221,7 +258,7 @@ GrPBO		g_glOffscreenPBO;
 
 #endif
 
-#if defined(OGLES)
+#if defined(RENDERER_OGLES)
 EGLint majorVersion = 0, minorVersion = 0;
 EGLContext eglContext = NULL;
 EGLSurface eglSurface = NULL;
@@ -242,9 +279,9 @@ const EGLint config16bpp[] =
 		EGL_BLUE_SIZE,8,
 		EGL_ALPHA_SIZE,0,
 		EGL_DEPTH_SIZE,24,
-		EGL_STENCIL_SIZE,0,
-		EGL_SAMPLE_BUFFERS,1,
-		EGL_SAMPLES,4,
+		EGL_STENCIL_SIZE,1,
+		//EGL_SAMPLE_BUFFERS,1,
+		//EGL_SAMPLES,4,
 		EGL_NONE
 };
 
@@ -257,7 +294,7 @@ int GR_InitialiseGLESContext(char* windowName, int fullscreen)
 #endif
 
 	eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-	g_window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight, windowFlags);
+	g_window = SDL_CreateWindow(windowName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, g_windowWidth, g_windowHeight, windowFlags);
 
 	if (g_window == NULL)
 	{
@@ -267,7 +304,7 @@ int GR_InitialiseGLESContext(char* windowName, int fullscreen)
 	if (!eglInitialize(eglDisplay, &majorVersion, &minorVersion))
 	{
 		eprinterr("eglInitialize failure! Error: %x\n", eglGetError());
-		return FALSE;
+		return 0;
 	}
 
 	eglBindAPI(EGL_OPENGL_ES_API);
@@ -281,9 +318,12 @@ int GR_InitialiseGLESContext(char* windowName, int fullscreen)
 		}
 	}
 
+#if !defined(__EMSCRIPTEN__)
 	SDL_SysWMinfo systemInfo;
 	SDL_VERSION(&systemInfo.version);
 	SDL_GetWindowWMInfo(g_window, &systemInfo);
+#endif
+
 #if defined(__EMSCRIPTEN__)
 	EGLNativeWindowType dummyWindow;
 	eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, (EGLNativeWindowType)dummyWindow, NULL);
@@ -292,10 +332,11 @@ int GR_InitialiseGLESContext(char* windowName, int fullscreen)
 #else
 	eglSurface = eglCreateWindowSurface(eglDisplay, eglConfig, (EGLNativeWindowType)systemInfo.info.win.window, NULL);
 #endif
+	
 	if (eglSurface == EGL_NO_SURFACE)
 	{
 		eprinterr("eglSurface failure! Error: %x\n", eglGetError());
-		return FALSE;
+		return 0;
 	}
 
 	EGLint contextAttribs[] = { EGL_CONTEXT_CLIENT_VERSION, OGLES_VERSION, EGL_NONE };
@@ -303,12 +344,12 @@ int GR_InitialiseGLESContext(char* windowName, int fullscreen)
 
 	if (eglContext == EGL_NO_CONTEXT) {
 		eprinterr("eglContext failure! Error: %x\n", eglGetError());
-		return FALSE;
+		return 0;
 	}
 
 	eglMakeCurrent(eglDisplay, eglSurface, eglSurface, eglContext);
 
-	return TRUE;
+	return 1;
 }
 
 #elif defined(RENDERER_OGL)
@@ -329,7 +370,7 @@ int GR_InitialiseGLContext(char* windowName, int fullscreen)
 		return 0;
 	}
 	
-#if defined(OGLES)
+#if defined(RENDERER_OGLES)
 
 #if defined(__ANDROID__)
 	//Override to full screen.
@@ -342,6 +383,7 @@ int GR_InitialiseGLContext(char* windowName, int fullscreen)
 		windowHeight = displayMode.h;
 	}
 #endif
+
 	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, OGLES_VERSION);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
@@ -352,6 +394,7 @@ int GR_InitialiseGLContext(char* windowName, int fullscreen)
 		eprinterr("Failed to initialise - OpenGL ES %d.x is not supported.\n", OGLES_VERSION);
 		return 0;
 	}
+
 #elif defined(RENDERER_OGL)
 
 	int major_version = 3;
@@ -385,11 +428,13 @@ int GR_InitialiseGLContext(char* windowName, int fullscreen)
 
 int GR_InitialiseGLExt()
 {
+#ifndef __EMSCRIPTEN__
 	GLenum err = gladLoadGL();
 
 	if (err == 0)
 		return 0;
-
+#endif
+	
 	const char* rend = (const char*)glGetString(GL_RENDERER);
 	const char* vendor = (const char*)glGetString(GL_VENDOR);
 	eprintf("*Video adapter: %s by %s\n", rend, vendor);
@@ -408,25 +453,23 @@ int GR_InitialiseRender(char* windowName, int width, int height, int fullscreen)
 	g_windowWidth = width;
 	g_windowHeight = height;
 
-#if defined(RO_DOUBLE_BUFFERED)
+	// Due to debugging in fullscreen
+	SDL_SetHint(SDL_HINT_ALLOW_TOPMOST, "0");
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-#else
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 0);
-#endif
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
 
-#if defined(RENDERER_OGL)
-	if (!GR_InitialiseGLContext(windowName, fullscreen))
-	{
-		eprinterr("Failed to Initialise GL Context!\n");
-		return 0;
-	}
-#elif defined(OGLES)
+#if defined(RENDERER_OGLES)
 	if (!GR_InitialiseGLESContext(windowName, fullscreen))
 	{
 		eprinterr("Failed to Initialise GLES Context!\n");
+		return 0;
+	}
+#elif defined(RENDERER_OGL)
+	if (!GR_InitialiseGLContext(windowName, fullscreen))
+	{
+		eprinterr("Failed to Initialise GL Context!\n");
 		return 0;
 	}
 #endif
@@ -443,7 +486,7 @@ int GR_InitialiseRender(char* windowName, int width, int height, int fullscreen)
 
 void GR_Shutdown()
 {
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	glDeleteVertexArrays(2, g_glVertexArray);
 	glDeleteBuffers(2, g_glVertexBuffer);
 
@@ -467,7 +510,7 @@ void GR_BeginScene()
 {
 	g_lastBoundTexture = 0;
 
-#if defined(RENDERER_OGL) || defined(OGLES)	
+#if defined(USE_OPENGL)	
 	glClearDepth(1.0f);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	glClear(GL_STENCIL_BUFFER_BIT);
@@ -480,7 +523,7 @@ void GR_BeginScene()
 	{
 		GR_SetWireframe(true);
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 #endif
@@ -494,7 +537,7 @@ void GR_EndScene()
 	if (g_wireframeMode)
 		GR_SetWireframe(0);
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	glBindVertexArray(0);
 #endif
 }
@@ -508,15 +551,27 @@ void GR_ResetDevice()
 	PsyX_EnableSwapInterval(g_enableSwapInterval);
 }
 
-ShaderID g_gte_shader_4;
-ShaderID g_gte_shader_8;
-ShaderID g_gte_shader_16;
-uint g_bilinearFilterLoc;
+struct GTEShader
+{
+	// shader itself
+	ShaderID shader;
 
-#if defined(OGLES) || defined(RENDERER_OGL)
-GLint u_Projection;
-GLint u_Projection3D;
+#if defined(USE_OPENGL)
+	GLint projectionLoc;
+	GLint projection3DLoc;
+	GLint bilinearFilterLoc;
+#endif
+};
 
+GTEShader g_gte_shader_4;
+GTEShader g_gte_shader_8;
+GTEShader g_gte_shader_16;
+
+#if defined(USE_OPENGL)
+
+GLint u_projectionLoc;
+GLint u_projection3DLoc;
+GLint u_bilinearFilterLoc;
 
 #define GPU_PACK_RG\
 	"		float color_16 = (color_rg.y * 256.0 + color_rg.x) * 255.0;\n"
@@ -534,15 +589,30 @@ GLint u_Projection3D;
 #define GPU_DECODE_RG_FUNC\
 	"	vec4 decodeRG(float rg) { return fract(floor(rg / vec4(1.0, 32.0, 1024.0, 32768.0)) / 32.0); }\n"
 
-#define GPU_DITHERING\
-	"		fragColor *= v_color;\n"\
-	"		mat4 dither = mat4(\n"\
-	"			-4.0,  +0.0,  -3.0,  +1.0,\n"\
-	"			+2.0,  -2.0,  +3.0,  -1.0,\n"\
-	"			-3.0,  +1.0,  -4.0,  +0.0,\n"\
-	"			+3.0,  -1.0,  +2.0,  -2.0) / 255.0;\n"\
-	"		ivec2 dc = ivec2(fract(gl_FragCoord.xy / 4.0) * 4.0);\n"\
-	"		fragColor.xyz += vec3(dither[dc.x][dc.y] * v_texcoord.w);\n"
+#if defined(RENDERER_OGL) || (OGLES_VERSION == 3)
+
+#	define GPU_DITHERING\
+		"		fragColor *= v_color;\n"\
+		"		mat4 dither = mat4(\n"\
+		"			-4.0,  +0.0,  -3.0,  +1.0,\n"\
+		"			+2.0,  -2.0,  +3.0,  -1.0,\n"\
+		"			-3.0,  +1.0,  -4.0,  +0.0,\n"\
+		"			+3.0,  -1.0,  +2.0,  -2.0) / 255.0;\n"\
+		"		ivec2 dc = ivec2(fract(gl_FragCoord.xy / 4.0) * 4.0);\n"\
+		"		fragColor.xyz += vec3(dither[dc.x][dc.y] * v_texcoord.w);\n"
+
+#	define GPU_ARRAY_FUNC\
+		"	float _idx2(vec2 array, int idx) { return array[idx]; }"
+
+#else
+
+#	define GPU_DITHERING\
+		"		fragColor *= v_color;\n"
+
+#	define GPU_ARRAY_FUNC\
+		"	float _idx2(vec2 array, int idx) { if(idx == 0) return array.x; else return array.y; }"
+
+#endif
 
 #define GPU_SAMPLE_TEXTURE_4BIT_FUNC\
     "   // returns 16 bit colour\n"\
@@ -550,11 +620,11 @@ GLint u_Projection3D;
     "       vec2 uv = (tc * vec2(0.25, 1.0) + v_page_clut.xy) * c_VRAMTexel;\n"\
     "       vec2 comp = VRAM(uv);\n"\
     "       int index = int(fract(tc.x / 4.0 + 0.0001) * 4.0);\n"\
-    "       float v = comp[index / 2] * (c_PackRange / 16.0);\n"\
+    "       float v = _idx2(comp, index / 2) * (c_PackRange / 16.0);\n"\
     "       float f = floor(v);\n"\
     "       vec2 c = vec2( (v - f) * 16.0, f );\n"\
     "       vec2 clut_pos = v_page_clut.zw;\n"\
-    "       clut_pos.x += mix(c[0], c[1], mod(index, 2)) * c_VRAMTexel.x;\n"\
+    "       clut_pos.x += mix(c[0], c[1], mod(float(index), 2.0)) * c_VRAMTexel.x;\n"\
     "       return packRG(VRAM(clut_pos));\n"\
     "   }\n"
 
@@ -565,7 +635,7 @@ GLint u_Projection3D;
 	"		vec2 comp = VRAM(uv);\n"\
 	"		vec2 clut_pos = v_page_clut.zw;\n"\
 	"		int index = int(mod(tc.x, 2.0));\n"\
-	"		clut_pos.x += comp[index] * c_PackRange * c_VRAMTexel.x;\n"\
+	"		clut_pos.x += _idx2(comp, index) * c_PackRange * c_VRAMTexel.x;\n"\
 	"		vec2 color_rg = VRAM(clut_pos);\n"\
 	"		return packRG(VRAM(clut_pos));\n"\
 	"	}\n"
@@ -579,8 +649,8 @@ GLint u_Projection3D;
 
 
 #define GPU_BILINEAR_SAMPLE_FUNC \
-	"	float c_textureSize = 1;\n"\
-	"	float c_onePixel = 1;\n"\
+	"	float c_textureSize = 1.0;\n"\
+	"	float c_onePixel = 1.0;\n"\
 	"	vec4 BilinearTextureSample(vec2 P) {\n"\
 	"		vec2 frac = fract(P);\n"\
 	"		vec2 pixel = floor(P);\n"\
@@ -588,8 +658,8 @@ GLint u_Projection3D;
 	"		float C21 = samplePSX(pixel + vec2(c_onePixel, 0.0));\n"\
 	"		float C12 = samplePSX(pixel + vec2(0.0, c_onePixel));\n"\
 	"		float C22 = samplePSX(pixel + vec2(c_onePixel, c_onePixel));\n"\
-	"		float ax1 = mix(float(C11 > 0), float(C21 > 0), frac.x);\n"\
-	"		float ax2 = mix(float(C12 > 0), float(C22 > 0), frac.x);\n"\
+	"		float ax1 = mix(float(C11 > 0.0), float(C21 > 0.0), frac.x);\n"\
+	"		float ax2 = mix(float(C12 > 0.0), float(C22 > 0.0), frac.x);\n"\
 	"		if(mix(ax1, ax2, frac.y) < 0.5) { discard; }\n"\
 	"		vec4 x1 = mix(decodeRG(C11), decodeRG(C21), frac.x);\n"\
 	"		vec4 x2 = mix(decodeRG(C12), decodeRG(C22), frac.x);\n"\
@@ -604,7 +674,7 @@ GLint u_Projection3D;
 	"}\n"
 
 #if (VRAM_FORMAT == GL_LUMINANCE_ALPHA)
-#define GTE_FETCH_VRAM_FUNC\
+#define GPU_FETCH_VRAM_FUNC\
 		"	uniform sampler2D s_texture;\n"\
 		"	vec2 VRAM(vec2 uv) { return texture2D(s_texture, uv).ra; }\n"
 #else
@@ -621,7 +691,7 @@ GLint u_Projection3D;
 		"		vec4(0.0,  0.0,  1.0,  0.0),\n"\
 		"		vec4(a_zw.z, -a_zw.w,  0.0,  1.0));\n"\
 		"	vec2 geom_ofs = vec2(0.5, 0.5);\n"\
-		"	vec4 fragPosition = (a_zw.y > 100 ? ofsMat * (Projection3D * vec4((a_position.xy + geom_ofs) * vec2(1,-1) * a_zw.y, a_zw.x, 1.0)) : (Projection * vec4(a_position.xy, 0.5, 1.0)));\n" \
+		"	vec4 fragPosition = (a_zw.y > 100.0 ? ofsMat * (Projection3D * vec4((a_position.xy + geom_ofs) * vec2(1.0,-1.0) * a_zw.y, a_zw.x, 1.0)) : (Projection * vec4(a_position.xy, 0.5, 1.0)));\n" \
 		"	gl_Position = fragPosition;\n"
 #else
 #define GTE_PERSPECTIVE_CORRECTION \
@@ -649,7 +719,7 @@ GLint u_Projection3D;
 	"		v_page_clut.xy += c_UVFudge;\n"\
 	"		v_page_clut.zw += c_UVFudge;\n"\
 	GTE_PERSPECTIVE_CORRECTION\
-	"		v_z = (gl_Position.z - 40) * 0.005;\n"\
+	"		v_z = (gl_Position.z - 40.0) * 0.005;\n"\
 	"	}\n"
 
 #define GPU_FRAGMENT_SAMPLE_SHADER(bit) \
@@ -657,6 +727,7 @@ GLint u_Projection3D;
 	GPU_DECODE_RG_FUNC\
 	GPU_FETCH_VRAM_FUNC\
 	"	const vec2 c_VRAMTexel = vec2(1.0 / 1024.0, 1.0 / 512.0);\n"\
+	GPU_ARRAY_FUNC\
 	GPU_SAMPLE_TEXTURE_## bit ##BIT_FUNC\
 	GPU_BILINEAR_SAMPLE_FUNC\
 	GPU_NEAREST_SAMPLE_FUNC\
@@ -861,7 +932,7 @@ void GR_GenerateCommonTextures()
 {
 	unsigned int pixelData = 0xFFFFFFFF;
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	glGenTextures(1, &g_whiteTexture);
 	{
 		glBindTexture(GL_TEXTURE_2D, g_whiteTexture);
@@ -875,19 +946,41 @@ void GR_GenerateCommonTextures()
 #endif
 }
 
+TextureID GR_CreateRGBATexture(int width, int height, u_char* data /*= nullptr*/)
+{
+	TextureID newTexture;
+	glGenTextures(1, &newTexture);
+
+	glBindTexture(GL_TEXTURE_2D, newTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, g_bilinearFiltering ? GL_LINEAR : GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, g_bilinearFiltering ? GL_LINEAR : GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	return newTexture;
+}
+
+void GR_CompilePSXShader(GTEShader& sh, const char* source)
+{
+	sh.shader = GR_Shader_Compile(source);
+
+#if defined(USE_OPENGL)
+	
+	sh.bilinearFilterLoc = glGetUniformLocation(sh.shader, "bilinearFilter");
+	sh.projectionLoc = glGetUniformLocation(sh.shader, "Projection");
+#ifdef USE_PGXP
+	sh.projection3DLoc = glGetUniformLocation(sh.shader, "Projection3D");
+#endif
+
+#endif
+}
+
 void GR_InitialisePSXShaders()
 {
-	g_gte_shader_4 = GR_Shader_Compile(gte_shader_4);
-	g_gte_shader_8 = GR_Shader_Compile(gte_shader_8);
-	g_gte_shader_16 = GR_Shader_Compile(gte_shader_16);
-
-#if defined(RENDERER_OGL) || defined(OGLES)
-	g_bilinearFilterLoc = glGetUniformLocation(g_gte_shader_4, "bilinearFilter");
-	u_Projection = glGetUniformLocation(g_gte_shader_4, "Projection");
-#ifdef USE_PGXP
-	u_Projection3D = glGetUniformLocation(g_gte_shader_4, "Projection3D");
-#endif
-#endif
+	GR_CompilePSXShader(g_gte_shader_4, gte_shader_4);
+	GR_CompilePSXShader(g_gte_shader_8, gte_shader_8);
+	GR_CompilePSXShader(g_gte_shader_16, gte_shader_16);
 }
 
 int GR_InitialisePSX()
@@ -896,7 +989,7 @@ int GR_InitialisePSX()
 	GR_GenerateCommonTextures();
 	GR_InitialisePSXShaders();
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_STENCIL_TEST);
 	glBlendColor(0.5f, 0.5f, 0.5f, 0.25f);
@@ -982,6 +1075,8 @@ int GR_InitialisePSX()
 			glTexImage2D(GL_TEXTURE_2D, 0, VRAM_INTERNAL_FORMAT, VRAM_WIDTH, VRAM_HEIGHT, 0, VRAM_FORMAT, GL_UNSIGNED_BYTE, NULL);
 		}
 
+		g_vramTexture = g_vramTexturesDouble[0];
+
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 		// VRAM framebuffer for offscreen blitting to VRAM
@@ -1041,7 +1136,7 @@ void GR_Ortho2D(float left, float right, float bottom, float top, float znear, f
 	float x = (left + right) / (left - right);
 	float y = (bottom + top) / (bottom - top);
 
-#if defined(RENDERER_OGL) || defined(OGLES) // -1..1
+#if defined(USE_OPENGL) // -1..1
 	float z = (znear + zfar) / (znear - zfar);
 #endif
 
@@ -1052,8 +1147,8 @@ void GR_Ortho2D(float left, float right, float bottom, float top, float znear, f
 		x, y, z, 1
 	};
 
-#if defined(RENDERER_OGL) || defined(OGLES)
-	glUniformMatrix4fv(u_Projection, 1, GL_FALSE, ortho);
+#if defined(USE_OPENGL)
+	glUniformMatrix4fv(u_projectionLoc, 1, GL_FALSE, ortho);
 #endif
 }
 
@@ -1073,10 +1168,8 @@ void GR_Perspective3D(const float fov, const float width, const float height, co
 		0, 0, 1, 0
 	};
 
-#if defined(RENDERER_OGL) || defined(OGLES)
-	glUniformMatrix4fv(u_Projection3D, 1, GL_TRUE, persp);
-#elif defined(D3D9)
-	d3ddev->SetVertexShaderConstantF(u_Projection3D, persp, 4);
+#if defined(USE_OPENGL)
+	glUniformMatrix4fv(u_projection3DLoc, 1, GL_TRUE, persp);
 #endif
 }
 
@@ -1118,7 +1211,7 @@ void GR_SetupClipMode(const RECT16& rect, int enable)
 		clipRectX += 0.5f;
 	}
 
-#if defined(RENDERER_OGL) || defined(OGLES)	
+#if defined(USE_OPENGL)
 	float flipOffset = g_windowHeight - clipRectH * (float)g_windowHeight;
 
 	glScissor(clipRectX * (float)g_windowWidth,
@@ -1157,7 +1250,7 @@ void GR_SetShader(const ShaderID& shader)
 {
 	if (g_PreviousShader != shader)
 	{
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 		glUseProgram(shader);
 #else
 #error
@@ -1173,13 +1266,22 @@ void GR_SetTexture(TextureID texture, TexFormat texFormat)
 	switch (texFormat)
 	{
 	case TF_4_BIT:
-		GR_SetShader(g_gte_shader_4);
+		GR_SetShader(g_gte_shader_4.shader);
+		u_bilinearFilterLoc = g_gte_shader_4.bilinearFilterLoc;
+		u_projectionLoc = g_gte_shader_4.projectionLoc;
+		u_projection3DLoc = g_gte_shader_4.projection3DLoc;
 		break;
 	case TF_8_BIT:
-		GR_SetShader(g_gte_shader_8);
+		GR_SetShader(g_gte_shader_8.shader);
+		u_bilinearFilterLoc = g_gte_shader_8.bilinearFilterLoc;
+		u_projectionLoc = g_gte_shader_8.projectionLoc;
+		u_projection3DLoc = g_gte_shader_8.projection3DLoc;
 		break;
 	case TF_16_BIT:
-		GR_SetShader(g_gte_shader_16);
+		GR_SetShader(g_gte_shader_16.shader);
+		u_bilinearFilterLoc = g_gte_shader_16.bilinearFilterLoc;
+		u_projectionLoc = g_gte_shader_16.projectionLoc;
+		u_projection3DLoc = g_gte_shader_16.projection3DLoc;
 		break;
 	}
 
@@ -1191,9 +1293,9 @@ void GR_SetTexture(TextureID texture, TexFormat texFormat)
 		return;
 	}
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	glBindTexture(GL_TEXTURE_2D, texture);
-	glUniform1i(g_bilinearFilterLoc, g_bilinearFiltering);
+	glUniform1i(u_bilinearFilterLoc, g_bilinearFiltering);
 #endif
 
 	g_lastBoundTexture = texture;
@@ -1204,7 +1306,7 @@ void GR_DestroyTexture(TextureID texture)
 	if (texture == -1)
 		return;
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	glDeleteTextures(1, &texture);
 #else
 #error
@@ -1214,8 +1316,7 @@ void GR_DestroyTexture(TextureID texture)
 void GR_Clear(int x, int y, int w, int h, unsigned char r, unsigned char g, unsigned char b)
 {
 	// TODO clear rect if it's necessary
-#if defined(RENDERER_OGL) || defined(OGLES)
-
+#if defined(USE_OPENGL)
 	glClearColor(r / 255.0f, g / 255.0f, b / 255.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
@@ -1231,7 +1332,7 @@ void GR_SaveVRAM(const char* outputFileName, int x, int y, int width, int height
 	return;
 #endif
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 
 #define FLIP_Y (VRAM_HEIGHT - i - 1)
 
@@ -1321,7 +1422,7 @@ void GR_ReadFramebufferDataToVRAM()
 
 	// now we can read it back to VRAM texture
 	{
-#if defined(RENDERER_OGL) || defined(OGLES)	
+#if defined(USE_OPENGL)
 		// reat the texture
 		glBindTexture(GL_TEXTURE_2D, g_fbTexture);
 		PBO_Download(g_glFramebufferPBO);
@@ -1336,7 +1437,7 @@ void GR_SetScissorState(int enable)
 	if (g_PreviousScissorState == enable)
 		return;
 
-#if defined(RENDERER_OGL) || defined(OGLES)	
+#if defined(USE_OPENGL)
 	if (g_PreviousScissorState)
 		glDisable(GL_SCISSOR_TEST);
 	else
@@ -1360,9 +1461,13 @@ void GR_SetOffscreenState(const RECT16& offscreenRect, int enable)
 	{
 		// setup default viewport
 #ifdef USE_PGXP
-		float emuScreenAspect = float(g_windowWidth) / float(g_windowHeight);
+
+#define PGXP_FOV_FACTOR 0.9265f
+
+		const float emuScreenAspect = float(g_windowWidth) / float(g_windowHeight);
+		
 		GR_Ortho2D(-0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f, -0.5f, -1.0f, 1.0f);
-		GR_Perspective3D(0.9265f, 1.0f, 1.0f / (emuScreenAspect * PSX_SCREEN_ASPECT), 1.0f, 1000.0f);
+		GR_Perspective3D(PGXP_FOV_FACTOR, 1.0f, 1.0f / (emuScreenAspect * PSX_SCREEN_ASPECT), g_pgxpZNear, g_pgxpZFar);
 #else
 		GR_Ortho2D(0, activeDispEnv.disp.w, activeDispEnv.disp.h, 0, -1.0f, 1.0f);
 #endif
@@ -1373,7 +1478,7 @@ void GR_SetOffscreenState(const RECT16& offscreenRect, int enable)
 
 	g_PreviousOffscreenState = enable;
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	if (enable)
 	{
 		// set storage size first
@@ -1405,7 +1510,7 @@ void GR_SetOffscreenState(const RECT16& offscreenRect, int enable)
 
 			// rebind texture
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, g_vramTexture, 0);
-			
+
 			// setup draw and read framebuffers
 			glBindFramebuffer(GL_READ_FRAMEBUFFER, g_glOffscreenFramebuffer);					// source is backbuffer
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, g_glVRAMFramebuffer);
@@ -1441,7 +1546,7 @@ void GR_SetOffscreenState(const RECT16& offscreenRect, int enable)
 
 void GR_StoreFrameBuffer(int x, int y, int w, int h)
 {
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	// set storage size first
 	if (g_PreviousFramebuffer.w != w &&
 		g_PreviousFramebuffer.h != h)
@@ -1459,6 +1564,7 @@ void GR_StoreFrameBuffer(int x, int y, int w, int h)
 	g_PreviousFramebuffer.w = w;
 	g_PreviousFramebuffer.h = h;
 
+#if USE_FRAMEBUFFER_BLIT
 	glBindFramebuffer(GL_FRAMEBUFFER, g_glBlitFramebuffer);
 
 	// before drawing set source and target
@@ -1470,7 +1576,7 @@ void GR_StoreFrameBuffer(int x, int y, int w, int h)
 		glBlitFramebuffer(0, 0, g_windowWidth, g_windowHeight, x, y + h, x + w, y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 		// Blit framebuffer to VRAM screen area
-#if USE_FRAMEBUFFER_BLIT
+
 		// before drawing set source and target
 		glBindFramebuffer(GL_FRAMEBUFFER, g_glVRAMFramebuffer);
 
@@ -1484,7 +1590,7 @@ void GR_StoreFrameBuffer(int x, int y, int w, int h)
 		glBlitFramebuffer(0, 0, w, h,
 			x, y + h, x + w, y,
 			GL_COLOR_BUFFER_BIT, GL_NEAREST);
-#endif
+
 		
 		// done, unbind
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
@@ -1494,6 +1600,7 @@ void GR_StoreFrameBuffer(int x, int y, int w, int h)
 	// after drawing
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glFlush();
+#endif
 
 	GR_ReadFramebufferDataToVRAM();
 #endif
@@ -1542,14 +1649,19 @@ void GR_UpdateVRAM()
 
 	vram_need_update = false;
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	g_vramTexture = g_vramTexturesDouble[g_vramTextureIdx];
 	g_vramTextureIdx++;
 	g_vramTextureIdx &= 1;
 
 	glBindTexture(GL_TEXTURE_2D, g_vramTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, VRAM_WIDTH, VRAM_HEIGHT, 0, VRAM_FORMAT, GL_UNSIGNED_BYTE, vram);
-	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, VRAM_WIDTH, VRAM_HEIGHT, VRAM_FORMAT, GL_UNSIGNED_BYTE, vram);
+
+#if defined(RENDERER_OGL)
+	glTexImage2D(GL_TEXTURE_2D, 0, VRAM_INTERNAL_FORMAT, VRAM_WIDTH, VRAM_HEIGHT, 0, VRAM_FORMAT, GL_UNSIGNED_BYTE, vram);
+#else
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, VRAM_WIDTH, VRAM_HEIGHT, VRAM_FORMAT, GL_UNSIGNED_BYTE, vram);
+#endif
+
 #endif
 }
 
@@ -1557,7 +1669,7 @@ void GR_SwapWindow()
 {
 #if defined(RENDERER_OGL)
 	SDL_GL_SwapWindow(g_window);
-#elif defined(OGLES)
+#elif defined(RENDERER_OGLES)
 	eglSwapBuffers(eglDisplay, eglSurface);
 #endif
 
@@ -1571,15 +1683,11 @@ void GR_EnableDepth(int enable)
 
 	g_PreviousDepthMode = enable;
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	if (enable && g_pgxpZBuffer)
-	{
 		glEnable(GL_DEPTH_TEST);
-	}
 	else
-	{
 		glDisable(GL_DEPTH_TEST);
-	}
 #endif
 }
 
@@ -1590,7 +1698,7 @@ void GR_SetStencilMode(int drawPrim)
 
 	g_PreviousStencilMode = drawPrim;
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	if (drawPrim)
 	{
 		glStencilFunc(GL_ALWAYS, 1, 0x10);
@@ -1609,7 +1717,7 @@ void GR_SetBlendMode(BlendMode blendMode)
 	if (g_PreviousBlendMode == blendMode)
 		return;
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	if (g_PreviousBlendMode == BM_NONE)
 		glEnable(GL_BLEND);
 
@@ -1647,7 +1755,7 @@ void GR_SetBlendMode(BlendMode blendMode)
 
 void GR_SetPolygonOffset(float ofs)
 {
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	if (ofs == 0.0f)
 	{
 		glDisable(GL_POLYGON_OFFSET_FILL);
@@ -1662,7 +1770,7 @@ void GR_SetPolygonOffset(float ofs)
 
 void GR_SetViewPort(int x, int y, int width, int height)
 {
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	glViewport(x, y, width, height);
 #endif
 }
@@ -1676,7 +1784,7 @@ void GR_SetWireframe(bool enable)
 
 void GR_BindVertexBuffer()
 {
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	glBindVertexArray(g_glVertexArray[g_curVertexBuffer]);
 
 	glEnableVertexAttribArray(a_position);
@@ -1708,7 +1816,7 @@ void GR_UpdateVertexBuffer(const GrVertex* vertices, int num_vertices)
 	assert(num_vertices <= MAX_NUM_POLY_BUFFER_VERTICES);
 	GR_BindVertexBuffer();
 
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	glBufferSubData(GL_ARRAY_BUFFER, 0, num_vertices * sizeof(GrVertex), vertices);
 #else
 #error
@@ -1717,7 +1825,7 @@ void GR_UpdateVertexBuffer(const GrVertex* vertices, int num_vertices)
 
 void GR_DrawTriangles(int start_vertex, int triangles)
 {
-#if defined(RENDERER_OGL) || defined(OGLES)
+#if defined(USE_OPENGL)
 	glDrawArrays(GL_TRIANGLES, start_vertex, triangles * 3);
 #else
 #error

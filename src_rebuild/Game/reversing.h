@@ -4,11 +4,15 @@
 // reverse engineering stuff
 //----------------------------------------
 
-// byte swapped short
-#define SW_SHORT(a,b) (((a) << 8) | (b))
+// makes short out of two bytes
+#define M_SHRT_2(a,b)	(((a) << 8) | (b))
 
-// byte swapped int
-#define SW_INT(a,b) (((a) << 16) | (b))
+// makes int out of two shorts
+#define M_INT_2(a,b)	(((a) << 16) | (b))
+
+// makes int out of four bytes
+#define M_INT_4(a,b,c,d) (((a) << 24) | ((b) << 16) | ((c) << 8) | (d) )
+#define M_INT_4R(a,b,c,d) M_INT_4(d, c, b, a)
 
 //---------------------------------------
 

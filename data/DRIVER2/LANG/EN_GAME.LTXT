@@ -11,7 +11,7 @@ Checks
 -1 second
 Flags
 Lap
-You've got the flag!
+You got the flag!
 Well done!
 You've been caught!
 Out of tape
@@ -93,4 +93,12 @@ Lock to Car
 Rotate
 Zoom
 Getaway is
-
+Time
+Condition
+Dusk
+Day
+Dawn
+Night
+Clear
+Rainy
+Wet

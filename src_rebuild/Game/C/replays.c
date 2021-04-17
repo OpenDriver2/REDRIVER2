@@ -10,9 +10,11 @@
 #include "director.h"
 #include "camera.h"
 #include "civ_ai.h"
+#include "state.h"
 
 #include "STRINGS.H"
 #include "RAND.H"
+
 
 char AnalogueUnpack[16] = { 
 	0, -51, -63, -75, -87, -99, -111, -123,
@@ -60,7 +62,7 @@ void InitPadRecording(void)
 	{
 		NumReplayStreams = 0;
 
-		ReplayStart = _replay_buffer;
+		ReplayStart = (char*)_replay_buffer;
 		ReplayParameterPtr = (REPLAY_PARAMETER_BLOCK *)ReplayStart;
 
 		PlayerWayRecordPtr = (SXYPAIR *)(ReplayParameterPtr + 1);
@@ -74,7 +76,7 @@ void InitPadRecording(void)
 
 		// FIXME: is that correct?
 		bufferEnd = replayptr-13380;
-		remain = (uint)ReplayStart - (uint)bufferEnd - CalcInGameCutsceneSize();
+		remain = (u_int)ReplayStart - (u_int)bufferEnd - CalcInGameCutsceneSize();
 
 		for (i = 0; i < NumPlayers; i++)
 		{
@@ -275,9 +277,9 @@ int LoadCutsceneAsReplay(int subindex)
 
 			printWarning("cutscene size: %d\n", size);
 			
-			LoadfileSeg(filename, _other_buffer, offset, size);
+			LoadfileSeg(filename, (char*)_other_buffer, offset, size);
 
-			int result = LoadReplayFromBuffer(_other_buffer);
+			int result = LoadReplayFromBuffer((char*)_other_buffer);
 
 			return result;
 		}
@@ -363,10 +365,7 @@ void LoadCutsceneRecorder(char* configFilename)
 	CameraCnt = 0;
 	ini_free(config);
 
-	LaunchGame();
-
-	gLoadedReplay = 0;
-	gCutsceneAsReplay = 0;
+	SetState(STATE_GAMELAUNCH);
 }
 
 #endif // CUTSCENE_RECORDER
@@ -384,7 +383,7 @@ int LoadReplayFromBuffer(char *buffer)
 	if (header->magic != DRIVER2_REPLAY_MAGIC)
 		return 0;
 
-	ReplayStart = replayptr = _replay_buffer;
+	ReplayStart = replayptr = (char*)_replay_buffer;
 
 	GameLevel = header->GameLevel;
 	GameType = (GAMETYPE)header->GameType;
@@ -512,8 +511,8 @@ int LoadUserAttractReplay(int mission, int userId)
 
 		if (FileExists(customFilename))
 		{
-			if (Loadfile(customFilename, _other_buffer))
-				return LoadReplayFromBuffer(_other_buffer);
+			if (Loadfile(customFilename, (char*)_other_buffer))
+				return LoadReplayFromBuffer((char*)_other_buffer);
 		}
 	}
 
@@ -550,10 +549,10 @@ int LoadAttractReplay(int mission)
 	if (!FileExists(filename))
 		return 0;
 
-	if (!Loadfile(filename, _other_buffer))
+	if (!Loadfile(filename, (char*)_other_buffer))
 		return 0;
 
-	return LoadReplayFromBuffer(_other_buffer);
+	return LoadReplayFromBuffer((char*)_other_buffer);
 }
 
 // [D] [T]
@@ -671,7 +670,7 @@ int Get(int stream, u_int *pt0)
 
 		if (rstream->PadRecordBuffer + 1 <= rstream->PadRecordBufferEnd)
 		{
-			uint t0 = (rstream->PadRecordBuffer->pad << 8) | rstream->PadRecordBuffer->analogue;
+			u_int t0 = (rstream->PadRecordBuffer->pad << 8) | rstream->PadRecordBuffer->analogue;
 			*pt0 = t0;
 
 			if (rstream->playbackrun < rstream->PadRecordBuffer->run)
@@ -712,7 +711,7 @@ int Put(int stream, u_int*pt0)
 	{
 		if (padbuf->pad == ((t0 >> 8) & 0xff) &&
 			padbuf->analogue == (t0 & 0xff) &&
-			padbuf->run != 0x8F)
+			padbuf->run != 143)
 		{
 			padbuf->run++;
 			return 1;
@@ -853,10 +852,10 @@ void AllocateReplayStream(REPLAY_STREAM *stream, int maxpad)
 		*replayptr = 0;
 
 		stream->InitialPadRecordBuffer->analogue = 0;
-		stream->InitialPadRecordBuffer->run = 0xEE;
+		stream->InitialPadRecordBuffer->run = 238;
 	}
 
-	replayptr = (char *)(((uint)replayptr + (maxpad+1) * sizeof(PADRECORD)) & -4);
+	replayptr = (char *)(((u_int)replayptr + (maxpad+1) * sizeof(PADRECORD)) & -4);
 }
 
 // [D] [T]

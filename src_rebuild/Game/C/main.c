@@ -8,6 +8,7 @@
 #include "LIBMCRD.H"
 
 #include "ASM/rndrasm.h"
+#include "ASM/d2mapasm.h"
 
 #include "system.h"
 #include "pad.h"
@@ -66,22 +67,20 @@
 #include "RAND.H"
 #include "STRINGS.H"
 
-
 #include "INLINE_C.H"
-
-
-
-int scr_z = 0;
+#include "state.h"
 
 int levelstartpos[8][4] = {
-	{ 0x12B1, 0xFFFFFC00, 0xFFFC9794, 0},
-	{ 0xFFFC74AC, 0x800, 0xFFFC6961, 0},
-	{ 0x383CB, 0xFFFFFC00, 0xABE1E, 0},
-	{ 0x165EF, 0xFFFFFC00, 0xFFFAB3D9, 0},
-	{ 0x24548, 0x1813, 0xFFFE4A80, 0},
-	{ 0xFFFD67F0, 0x1813, 0x58228, 0},
-	{ 0xFFFFD6FC, 0xFFFFE7ED, 0xFFFFA980, 0},
-	{ 0xFFFFDCDD, 0xFFFFE7ED, 0xF8A7, 0},
+	{ 4785, -1024, -223340, 0},
+	{ -223276, 2048, -235167, 0},
+	{ 230347, -1024, 704030, 0},
+	{ 91631, -1024, -347175, 0},
+
+	// what?
+	{ 148808, 6163, -112000, 0},
+	{ -170000, 6163, 361000, 0},
+	{ -10500, -6163, -22144, 0},
+	{ -8995, -6163, 63655, 0},
 };
 
 XZPAIR gStartPos = { 0 };
@@ -126,15 +125,17 @@ enum LevLumpType
 	LUMP_JUNCTIONS2_NEW = 43,	// Only appear in release Driver2
 };
 
-int HitLeadCar = 0;
+int gStopPadReads = 0;
+int gDieWithFade = 0;
+
 int game_over = 0;
 int saved_counter = 0;
 int saved_leadcar_pos = 0;
-int gStopPadReads = 0;
-int DawnCount = 0;
-int current_camera_angle = 0x800;
-int gDieWithFade = 0;
 
+int DawnCount = 0;
+int current_camera_angle = 2048;
+
+int scr_z = 0;
 int FrameCnt = 0;
 
 static int WantPause = 0;
@@ -143,11 +144,10 @@ static PAUSEMODE PauseMode = PAUSEMODE_PAUSE;
 unsigned char defaultPlayerModel[2] = { 0 }; // offset 0xAA604
 unsigned char defaultPlayerPalette = 0; // offset 0xAA606
 
-uint* transparent_buffer;
+u_int* transparent_buffer;
 
 // system?
 int gameinit = 0;
-int gMusicType = 0;
 int xa_timeout = 0;
 
 int IconsLoaded = 0;
@@ -186,8 +186,6 @@ void InitModelNames(void)
 	InitAnimatingObjects();
 }
 
-
-int gDriver1Level = 0;
 int gDemoLevel = 0;
 
 // [D] [T]
@@ -200,7 +198,6 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 	int* ptr;
 
 	int numLumps = -1;
-	gDriver1Level = 0;
 
 	quit = 0;
 	do {
@@ -241,8 +238,8 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 			ProcessMapLump(map_lump, 0);
 
 			// [A] only used in alpha 1.6
-			// region_buffer_xor = (cells_down >> 5 & 2U | cells_across >> 6 & 1U) * 4;
-			// sdSelfModifyingCode = sdSelfModifyingCode ^ (sdSelfModifyingCode ^ region_buffer_xor) & 0xC;
+			region_buffer_xor = (cells_down >> 5 & 2U | cells_across >> 6 & 1U) << 2;
+			sdSelfModifyingCode = sdSelfModifyingCode ^ (sdSelfModifyingCode ^ region_buffer_xor) & 12;
 		}
 		else if (lump_type == LUMP_CURVES2)
 		{
@@ -291,7 +288,7 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 				cnt++;
 			}
 
-			gDemoLevel = false; // [A]
+			gDemoLevel = 0; // [A]
 		}
 		else if (lump_type == LUMP_JUNCTIONS2)
 		{
@@ -310,6 +307,7 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 			}
 
 			gDemoLevel = 1; // [A]
+			gLoadedMotionCapture = 0;
 		}
 		else if (lump_type == LUMP_JUNCTIONS)
 		{
@@ -369,8 +367,7 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 		}
 		else
 		{
-			printInfo("ERROR - unknown lump type %d... assuming it's Driver 1 level\n", lump_type);
-			gDriver1Level = 1;
+			printInfo("ERROR - unknown lump type %d\n", lump_type);
 			numLumps = lump_type;
 
 			lump_ptr += 4;
@@ -422,13 +419,13 @@ void LoadGameLevel(void)
 	loadsectors(_frontend_buffer, sector, nsectors);
 #else
 	extern char g_CurrentLevelFileName[64];
-	loadsectorsPC(g_CurrentLevelFileName, _frontend_buffer, sector, nsectors);
+	loadsectorsPC(g_CurrentLevelFileName, (char*)_frontend_buffer, sector, nsectors);
 #endif // PSX
 
 	sector += nsectors;
 
 	// CITYLUMP_DATA1 - load-time lump
-	ProcessLumps(_frontend_buffer + 8, nsectors * CDSECTOR_SIZE);
+	ProcessLumps((char*)_frontend_buffer + 8, nsectors * CDSECTOR_SIZE);
 
 	// CITYLUMP_TPAGE is right next after DATA1
 	LoadPermanentTPages(&sector);
@@ -436,9 +433,9 @@ void LoadGameLevel(void)
 	sector = citylumps[GameLevel][CITYLUMP_DATA2].x / CDSECTOR_SIZE;
 	nsectors = citylumps[GameLevel][CITYLUMP_DATA2].y / CDSECTOR_SIZE;
 
-	MALLOC_BEGIN();
+	D_MALLOC_BEGIN();
 	malloc_lump = D_MALLOC(nsectors * CDSECTOR_SIZE);
-	MALLOC_END();
+	D_MALLOC_END();
 
 #ifdef PSX
 	loadsectors(malloc_lump, sector, nsectors);
@@ -458,19 +455,24 @@ void LoadGameLevel(void)
 	InitShadow();
 	//InitTextureNames();			// [A] I know that this is obsolete and used NOWHERE
 
-#ifndef PSX
-	// [A] override textures
-	LoadPermanentTPagesFromTIM();
+#if USE_PC_FILESYSTEM
+	extern int gContentOverride;
+
+	if (gContentOverride)
+	{
+		// [A] override textures
+		LoadPermanentTPagesFromTIM();
+	}
 #endif
 	
 	ReportMode(1);
 }
 
 // [D] [T]
-void GameInit(void)
+void State_GameInit(void* param)
 {
 	STREAM_SOURCE* plStart;
-	int i;
+	int i, musicType;
 	char padid;
 
 	if (NewLevel == 0)
@@ -490,9 +492,9 @@ void GameInit(void)
 		mallocptr = (char*)malloctab;
 #endif // PSX
 
-		MALLOC_BEGIN();
+		D_MALLOC_BEGIN();
 		packed_cell_pointers = D_MALLOC(1024 * sizeof(void*));
-		MALLOC_END();
+		D_MALLOC_END();
 	}
 
 	gameinit = 1;
@@ -558,51 +560,51 @@ void GameInit(void)
 		if (GameType == GAME_TAKEADRIVE)
 		{
 			if(GameLevel == 0)
-				gMusicType = 0 + (gCurrentMissionNumber & 1);
+				musicType = 0 + (gCurrentMissionNumber & 1);
 			else if (GameLevel == 1)
-				gMusicType = 5 + (gCurrentMissionNumber & 1);
+				musicType = 5 + (gCurrentMissionNumber & 1);
 			else if (GameLevel == 2)
-				gMusicType = 2 + (gCurrentMissionNumber & 1) * 5;
+				musicType = 2 + (gCurrentMissionNumber & 1) * 5;
 			else if (GameLevel == 3)
-				gMusicType = 3 + (gCurrentMissionNumber & 1);
+				musicType = 3 + (gCurrentMissionNumber & 1);
 		}
 		else
 		{
-			gMusicType = gCurrentMissionNumber % 8;
+			musicType = gCurrentMissionNumber % 8;
 		}
 	}
 	else 
 #endif
 	if (GameLevel == 1)
 	{
-		gMusicType = 1;
+		musicType = 1;
 
 		if ((gCurrentMissionNumber & 1U) != 0)
-			gMusicType = 5;
+			musicType = 5;
 	}
 	else if (GameLevel == 0)
 	{
-		gMusicType = 2;
+		musicType = 2;
 
 		if ((gCurrentMissionNumber & 1U) != 0)
-			gMusicType = 6;
+			musicType = 6;
 	}
 	else if (GameLevel == 2)
 	{
-		gMusicType = 0;
+		musicType = 0;
 
 		if ((gCurrentMissionNumber & 1U) == 0)
-			gMusicType = 3;
+			musicType = 3;
 	}
 	else if (GameLevel == 3)
 	{
-		gMusicType = 4;
+		musicType = 4;
 
 		if ((gCurrentMissionNumber & 1U) != 0)
-			gMusicType = 7;
+			musicType = 7;
 	}
 
-	InitMusic(gMusicType);
+	InitMusic(musicType);
 
 	if (NewLevel == 0)
 	{
@@ -652,8 +654,7 @@ void GameInit(void)
 	InitDrivingGames();
 	InitThrownBombs();
 
-	i = 0;
-	while (i < numPlayersToCreate)
+	for (i = 0; i < numPlayersToCreate; i++)
 	{
 		plStart = PlayerStartInfo[i];
 		padid = -i;
@@ -679,8 +680,6 @@ void GameInit(void)
 
 			car_data[i].ap.needsDenting = 1;
 		}
-
-		i++;
 	}
 
 	// FIXME: need to change streams properly
@@ -732,20 +731,19 @@ void GameInit(void)
 		FindNextChange(CameraCnt);
 	}
 
-	FrAng = 0x200;
+	FrAng = 512;
 
 	if (gWeather == 1)
 		wetness = 7000;
+	else if (gWeather == 2)
+		wetness = 3000;
 	else
 		wetness = 0;
 
 	if (gTimeOfDay == 2)
 	{
-		i = 0;
-		do {
-			lightsOnDelay[i] = Random2(0);
-			i++;
-		} while (i < MAX_CARS);
+		for ( i = 0; i < MAX_CARS; i++)
+			lightsOnDelay[i] = (i * 11);
 	}
 
 	tracking_car = 1;
@@ -793,6 +791,50 @@ void GameInit(void)
 	}
 
 	xa_timeout = 0;
+
+	//-------------------------
+
+	if (NewLevel)
+	{
+#ifdef PSX
+		CloseShutters(2, 320, 512);
+#else
+		CloseShutters(16, 320, 512);
+#endif // PSX
+	}
+
+	DisableDisplay();
+	SetupDrawBuffers();
+	EnableDisplay();
+
+	srand(0x1234);
+
+	cameraview = 0;
+	FrameCnt = 0;
+	NoTextureMemory = 0;
+
+	SpoolSYNC();
+
+	if (CurrentGameMode != GAMEMODE_DIRECTOR)
+		UnPauseSound();
+
+	StartGameSounds();
+
+	SetMasterVolume(gMasterVolume);
+	SetXMVolume(gMusicVolume);
+
+	CloseControllers();
+	InitControllers();
+	VSync(0);
+
+	for (i = 0; i < 5; i++)
+	{
+		ReadControllers();
+		VSync(0);
+	}
+	
+	// switch to STATE_GAMELOOP
+	SetState(STATE_GAMELOOP);
 }
 
 extern short paddp;
@@ -818,7 +860,7 @@ int leadCarId = 0;
 
 VECTOR leadcar_pos;
 
-// [D]
+// [D] [T]
 void StepSim(void)
 {
 	static u_int t0; // offset 0x0
@@ -841,7 +883,7 @@ void StepSim(void)
 
 	SetUpTrafficLightPhase();
 	MoveSmashable_object();
-	animate_garage_door();
+	//animate_garage_door();
 	StepEvents();
 	HandleMission();
 	HandleInGameCutscene();
@@ -857,7 +899,7 @@ void StepSim(void)
 
 	oldsp = SetSp(0x1f8003e8); // i don't know what this does
 
-	lead_pad = (uint)controller_bits;
+	lead_pad = (u_int)controller_bits;
 
 	if (player[0].playerCarId < 0)
 		playerFelony = &pedestrianFelony;
@@ -982,7 +1024,7 @@ void StepSim(void)
 	{
 		switch (cp->controlType)
 		{
-			case 1:
+			case CONTROL_TYPE_PLAYER:
 				t0 = Pads[*cp->ai.padid].mapped;	// [A] padid might be wrong
 				t1 = Pads[*cp->ai.padid].mapanalog[2];
 				t2 = Pads[*cp->ai.padid].type & 4;
@@ -1016,13 +1058,13 @@ void StepSim(void)
 
 				ProcessCarPad(cp, t0, t1, t2);
 				break;
-			case 2:
+			case CONTROL_TYPE_CIV_AI:
 				CivControl(cp);
 				break;
-			case 3:
+			case CONTROL_TYPE_PURSUER_AI:
 				CopControl(cp);
 				break;
-			case 4:
+			case CONTROL_TYPE_LEAD_AI:
 				t2 = 0;
 				t1 = 0;
 				t0 = 0;
@@ -1040,7 +1082,7 @@ void StepSim(void)
 				}
 
 				break;
-			case 7:
+			case CONTROL_TYPE_CUTSCENE:
 #ifdef CUTSCENE_RECORDER
 				extern int gCutsceneAsReplay;
 				extern int gCutsceneAsReplay_PlayerId;
@@ -1149,7 +1191,7 @@ void StepSim(void)
 		requestStationaryCivCar = 0;
 	}
 
-	if (game_over == 0)
+	if (!game_over)
 	{
 		ControlCops();
 
@@ -1287,106 +1329,24 @@ void StepSim(void)
 	}
 }
 
-// [D] [T]
-void GameLoop(void)
+// [A] checks VSync if can time step
+int FilterFrameTime()
 {
-	int i;
-	static POLY_FT3 buffer[2];
-	static POLY_FT3* null;
+	static int frame = 0;
 
-	if (NewLevel != 0)
-	{
-#ifdef PSX
-		CloseShutters(2, 320, 512);
-#else
-		CloseShutters(16, 320, 512);
-#endif // PSX
-	}
+	// always stay 30 FPS (2 vblanks)
+	if (!gSkipInGameCutscene && VSync(-1) - frame < 2)
+		return 0;
 
-	DisableDisplay();
-	SetupDrawBuffers();
-	EnableDisplay();
+	frame = VSync(-1);
 
-	srand(0x1234);
-
-	cameraview = 0;
-	FrameCnt = 0;
-	NoTextureMemory = 0;
-
-	SpoolSYNC();
-
-	if (CurrentGameMode != GAMEMODE_DIRECTOR)
-		UnPauseSound();
-
-	StartGameSounds();
-
-	SetMasterVolume(gMasterVolume);
-	SetXMVolume(gMusicVolume);
-	
-	CloseControllers();
-	InitControllers();
-	VSync(0);
-
-	i = 4;
-	do {
-
-		ReadControllers();
-		VSync(0);
-		i--;
-	} while (i >= 0);
-
-	while (game_over == 0)
-	{
-		StepGame();
-
-		if (FastForward == 0 || FrameCnt == (FrameCnt / 7) * 7)
-		{
-			DrawGame();
-		}
-		else
-		{
-			FrameCnt++;
-			null = buffer + (FrameCnt & 1);
-
-			setPolyFT3(null);
-
-			null->x0 = -1;
-			null->y0 = -1;
-			null->x1 = -1;
-			null->y1 = -1;
-			null->x2 = -1;
-			null->y2 = -1;
-			null->tpage = 0x20;
-
-			DrawPrim(null);
-			DrawSync(0);
-		}
-		CheckForPause();
-	}
-
-	if (NoPlayerControl == 0)
-	{
-		ReplayParameterPtr->RecordingEnd = CameraCnt;
-	}
-
-	StopPadVibration(0);
-	StopPadVibration(1);
-	StopAllChannels();
-	FreeXM();
-
-	if (XAPrepared() != 0)
-	{
-		StopXA();
-		UnprepareXA();
-	}
+	return 1;
 }
 
 // [D] [T]
 void StepGame(void)
 {
-	int iVar2;
 	int i;
-	unsigned char* puVar4;
 	PLAYER* pl;
 
 	if (CameraCnt == 3)
@@ -1404,9 +1364,6 @@ void StepGame(void)
 		PreLampStreak();
 
 	UpdatePadData();
-
-	if (FrameCnt == 5)
-		SetDispMask(1);
 
 	if ((padd & 0x2000U) && (padd & 0x8000U))
 		padd &= ~0xA000;
@@ -1429,29 +1386,6 @@ void StepGame(void)
 	ModifyCamera();
 
 	lis_pos = camera_position;
-
-	// pause state update
-	// DRIVER 1 leftover
-	/*if (gTimeInWater == 0 || gSinkingTimer < 100)
-	{
-		gStopPadReads = 1;
-		TargetCar = 0;
-		cameraview = 0;
-		gSinkingTimer--;
-		gCameraAngle = gCameraAngle - 0x16U & 0xfff;
-
-		if (gCameraDistance < 1000)
-		{
-			gCameraMaxDistance += 8;
-			gCameraDistance += 8;
-		}
-
-		if (gCameraOffset.vy > -1000)
-			gCameraOffset.vy -= 8;
-
-		if (gSinkingTimer < 0)
-			EnablePause(PAUSEMODE_GAMEOVER);
-	}*/
 
 	// update colours of ambience
 	if (gTimeOfDay == 0)
@@ -1570,7 +1504,7 @@ void StepGame(void)
 	old_camera_change = camera_change;
 
 	// do camera changes
-	if (pauseflag == 0 && NoPlayerControl)
+	if (!pauseflag && NoPlayerControl)
 	{
 		if (gInGameCutsceneActive != 0)
 			camera_change = CutsceneCameraChange(CameraCnt);
@@ -1586,30 +1520,35 @@ void StepGame(void)
 	}
 
 	// step physics engine
-	if (pauseflag == 0)
+	if (pauseflag)
 	{
-		StepSim();
-
-		if (gDieWithFade != 0)
-			gDieWithFade++;
-
-		if (paused != 0)
-		{
-			CamerasSaved = 1;
-			paused = 0;
-		}
-	}
-	else
-	{
-		if (NoPlayerControl == 0 && AttractMode == 0 && game_over == 0)
+		if (!NoPlayerControl && !AttractMode && !game_over)
 		{
 			if (pad_connected < 1)
 				EnablePause(PAUSEMODE_PADERROR);
 			else
 				EnablePause(PAUSEMODE_PAUSE);
 		}
+		else if(quick_replay && !paused)
+		{
+			WantPause = 1;
+			PauseMode = PAUSEMODE_GAMEOVER;
+		}
 
 		paused = 1;
+	}
+	else
+	{
+		StepSim();
+
+		if (gDieWithFade != 0)
+			gDieWithFade++;
+
+		if (paused)
+		{
+			CamerasSaved = 1;
+			paused = 0;
+		}
 	}
 
 	if (NoPlayerControl && AttractMode == 0)
@@ -1622,12 +1561,94 @@ void StepGame(void)
 		gRightWayUp = 0;
 	}
 
-	if (AttractMode != 0 && (paddp != 0 || ReplayParameterPtr->RecordingEnd <= CameraCnt))
+	if (AttractMode && (paddp || ReplayParameterPtr->RecordingEnd <= CameraCnt))
 		EndGame(GAMEMODE_QUIT);
 
 	UpdatePlayerInformation();
 }
 
+// [D] [T]
+void CheckForPause(void)
+{
+	int ret;
+
+	if (gDieWithFade > 15 && (quick_replay || NoPlayerControl == 0))
+	{
+		PauseMode = PAUSEMODE_GAMEOVER;
+		WantPause = 1;
+	}
+
+	if (WantPause)
+	{
+		WantPause = 0;
+		pauseflag = 1;
+
+		PauseSound();
+		ShowPauseMenu(PauseMode);
+	}
+
+	if (gDrawPauseMenus)
+	{
+		ret = UpdatePauseMenu(PauseMode);
+
+		switch (ret)
+		{
+		case MENU_QUIT_CONTINUE:
+			pauseflag = 0;
+			break;
+		case MENU_QUIT_QUIT:
+			EndGame(GAMEMODE_QUIT);
+			break;
+		case MENU_QUIT_RESTART:
+			EndGame(GAMEMODE_RESTART);
+			break;
+		case MENU_QUIT_DIRECTOR:
+			EndGame(GAMEMODE_DIRECTOR);
+			break;
+		case MENU_QUIT_QUICKREPLAY:
+			EndGame(GAMEMODE_REPLAY);
+			break;
+		case MENU_QUIT_NEXTMISSION:
+			EndGame(GAMEMODE_NEXTMISSION);
+			break;
+		}
+
+		if (ret != 0 && !game_over)
+		{
+			UnPauseSound();
+		}
+	}
+}
+
+
+// [D] [T]
+void State_GameLoop(void* param)
+{
+	int cnt;
+
+	if (!FilterFrameTime())
+		return;
+
+	CheckForPause();
+
+	// moved from StepGame
+	if (FrameCnt == 5)
+		SetDispMask(1);
+
+	// game makes 7 frames
+	if (FastForward)
+		cnt = 7;
+	else
+		cnt = 1;
+
+	while (--cnt >= 0)
+		StepGame();
+
+	DrawGame();
+
+	if (game_over)
+		SetState(STATE_GAMECOMPLETE);
+}
 
 // TODO: DRAW.C?
 int ObjectDrawnValue = 0;
@@ -1642,12 +1663,6 @@ void DrawGame(void)
 		return;
 	}
 
-#ifndef PSX
-	PsyX_EnableSwapInterval(1);
-#endif
-
-	static int frame = 0;
-
 	if (NumPlayers == 1 || NoPlayerControl)
 	{
 		ObjectDrawnValue = FrameCnt;
@@ -1656,10 +1671,7 @@ void DrawGame(void)
 		RenderGame2(0);
 
 		ObjectDrawnCounter++;
-
-		while ((VSync(-1) - frame) < 2);
-		frame = VSync(-1);
-
+		
 		SwapDrawBuffers();
 	}
 	else
@@ -1671,12 +1683,11 @@ void DrawGame(void)
 		SwapDrawBuffers2(0);
 
 		ObjectDrawnValue += 16;
+		
 		DrawPauseMenus();
+		
 		RenderGame2(1);
 		ObjectDrawnCounter++;
-
-		while ((VSync(-1) - frame) < 2);
-		frame = VSync(-1);
 
 		SwapDrawBuffers2(1);
 	}
@@ -1694,44 +1705,22 @@ void DrawGame(void)
 void EndGame(GAMEMODE mode)
 {
 	WantedGameMode = mode;
-	pauseflag = 0;
+	//pauseflag = 0;
 	game_over = 1;
 }
 
 
-// [D]
+// [D] [T]
 void EnablePause(PAUSEMODE mode)
 {
 	if (quick_replay == 0 && NoPlayerControl && mode == PAUSEMODE_GAMEOVER)
 		return;
 
+	if (pauseflag)
+		return;
+
 	WantPause = 1;
 	PauseMode = mode;
-}
-
-
-// [D] [T]
-void CheckForPause(void)
-{
-	if (gDieWithFade > 15 && (quick_replay || NoPlayerControl == 0))
-	{
-		PauseMode = PAUSEMODE_GAMEOVER;
-		WantPause = 1;
-	}
-
-	if (WantPause)
-	{
-		WantPause = 0;
-		pauseflag = 1;
-
-		PauseSound();
-		ShowPauseMenu(PauseMode);
-
-		if (game_over == 0)
-		{
-			UnPauseSound();
-		}
-	}
 }
 
 // [D] [T] This is really a Psy-Q function
@@ -1768,6 +1757,8 @@ void SsSetSerialVol(short s_num, short voll, short volr)
 	SpuSetCommonAttr(&attr);
 }
 
+//-------------------------------------------
+
 #ifndef PSX
 #include <SDL_messagebox.h>
 void PrintCommandLineArguments()
@@ -1800,6 +1791,8 @@ int main(void)
 int redriver2_main(int argc, char** argv)
 #endif // PSX
 {
+	char** ScreenNames;
+	
 	char* PALScreenNames[4] = {		// [A] don't show publisher logo
 	//	"GFX\\SPLASH2.TIM",
 	//	"GFX\\SPLASH3.TIM",
@@ -1809,7 +1802,7 @@ int redriver2_main(int argc, char** argv)
 
 	char* NTSCScreenNames[4] = {		// [A] don't show publisher logo
 	//	"GFX\\SPLASH2.TIM",
-	//	"GFX\\SPLASH3.TIM",
+		//"GFX\\SPLASH3.TIM",
 		"GFX\\SPLASH1N.TIM",
 		NULL
 	};
@@ -1846,21 +1839,48 @@ int redriver2_main(int argc, char** argv)
 	InitControllers();
 	Init_FileSystem();
 	InitSound();
-	
+
+	// [A] REDRIVER 2 version auto-detection
+	// this is the only difference between the files on CD
+#ifdef DEMO_VERSION
+	ScreenNames = OPMScreenNames;
+#elif NTSC_VERSION
+	ScreenNames = NTSCScreenNames;
+
+	if (!FileExists(ScreenNames[0]))
+		ScreenNames[0] = PALScreenNames[0];
+#elif PAL_VERSION
+	ScreenNames = PALScreenNames;
+
+	if (!FileExists(ScreenNames[0]))
+		ScreenNames[0] = NTSCScreenNames[0];
+#endif
+
 #ifndef PSX
+	// verify installation
+	if (!FileExists("DATA\\FEFONT.BNK") || !FileExists("GFX\\FONT2.FNT"))
+	{
+		char str[320];
+		sprintf(str, "Cannot initialize REDRIVER2\n\nGame files not found by folder '%s'\n", gDataFolder);
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR!", str, NULL);
+		return -1;
+	}
+
+	// init language
+	if (!InitStringMng())
+	{
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR!", "Unable to load language files!\n\nSee console for details", NULL);
+		return -1;
+	}
+
+	// TODO: divide game by the states, place main loop here.
+	
 	if (argc <= 1)
 #endif
 	{
 		//PlayFMV(99);	// [A] don't show publisher logo
 
-#ifdef DEMO_VERSION
-		ShowHiresScreens(OPMScreenNames, 300, 0); // [A]
-#elif NTSC_VERSION
-		ShowHiresScreens(NTSCScreenNames, 300, 0); // [A]
-#elif PAL_VERSION
-		ShowHiresScreens(PALScreenNames, 300, 0); // [A]
-#endif
-
+		ShowHiresScreens(ScreenNames, 300, 0); // [A]
 		PlayFMV(0);		// play intro movie
 	}
 
@@ -1876,11 +1896,11 @@ int redriver2_main(int argc, char** argv)
 	// initializes sound system
 	LoadSoundBankDynamic(NULL, 0, 0);
 
-	// load frontend bank
-	LoadBankFromLump(1, 0);
-
 	InitialiseScoreTables();
 
+	// by default go to frontend
+	SetState(STATE_INITFRONTEND, (void*)2);
+	
 #ifndef PSX
 	LoadCurrentProfile();
 	
@@ -1889,21 +1909,21 @@ int redriver2_main(int argc, char** argv)
 
 	for (int i = 1; i < argc; i++)
 	{
-		if (!_stricmp(argv[i], "-nofmv"))
+		if (!strcmp(argv[i], "-nofmv"))
 		{
 			gNoFMV = 1;
 		}
-		else if (!_stricmp(argv[i], "-nointro"))
+		else if (!strcmp(argv[i], "-nointro"))
 		{
 			// do nothing. All command line features use it
 		}
 #ifdef DEBUG_OPTIONS
-		else if (!_stricmp(argv[i], "-exportxasubtitles"))
+		else if (!strcmp(argv[i], "-exportxasubtitles"))
 		{
 			extern void StoreXASubtitles();
 			StoreXASubtitles();
 		}
-		else if (!_stricmp(argv[i], "-startpos"))
+		else if (!strcmp(argv[i], "-startpos"))
 		{
 			if (argc - i < 3)
 			{
@@ -1916,7 +1936,7 @@ int redriver2_main(int argc, char** argv)
 
 			i += 2;
 		}
-		else if (!_stricmp(argv[i], "-playercar"))
+		else if (!strcmp(argv[i], "-playercar"))
 		{
 			if (argc - i < 2)
 			{
@@ -1926,7 +1946,7 @@ int redriver2_main(int argc, char** argv)
 			wantedCar[0] = atoi(argv[i + 1]);
 			i++;
 		}
-		else if (!_stricmp(argv[i], "-player2car"))
+		else if (!strcmp(argv[i], "-player2car"))
 		{
 			if (argc - i < 2)
 			{
@@ -1936,7 +1956,7 @@ int redriver2_main(int argc, char** argv)
 			wantedCar[1] = atoi(argv[i + 1]);
 			i++;
 		}
-		else if (!_stricmp(argv[i], "-players"))
+		else if (!strcmp(argv[i], "-players"))
 		{
 			if (argc - i < 2)
 			{
@@ -1946,7 +1966,7 @@ int redriver2_main(int argc, char** argv)
 			NumPlayers = atoi(argv[i + 1]);
 			i++;
 		}
-		else if (!_stricmp(argv[i], "-chase"))
+		else if (!strcmp(argv[i], "-chase"))
 		{
 			if (argc - i < 2)
 			{
@@ -1957,7 +1977,7 @@ int redriver2_main(int argc, char** argv)
 			gChaseNumber = atoi(argv[i + 1]);
 			i++;
 		}
-		else if (!_stricmp(argv[i], "-mission"))
+		else if (!strcmp(argv[i], "-mission"))
 		{
 			if (argc - i < 2)
 			{
@@ -1974,10 +1994,10 @@ int redriver2_main(int argc, char** argv)
 			i++;
 
 			GameType = GAME_TAKEADRIVE;
-			LaunchGame();
+			SetState(STATE_GAMELAUNCH);
 		}
 #endif // _DEBUG_OPTIONS
-		else if (!_stricmp(argv[i], "-replay"))
+		else if (!strcmp(argv[i], "-replay"))
 		{
 			if (argc - i < 2)
 			{
@@ -2001,17 +2021,15 @@ int redriver2_main(int argc, char** argv)
 				replay_size = ftell(fp);
 				fseek(fp, 0, SEEK_SET);
 
-				fread(_other_buffer, replay_size, 1, fp);
+				fread((char*)_other_buffer, replay_size, 1, fp);
 				fclose(fp);
 
-				if (LoadReplayFromBuffer(_other_buffer))
+				if (LoadReplayFromBuffer((char*)_other_buffer))
 				{
 					CurrentGameMode = GAMEMODE_REPLAY;
 					gLoadedReplay = 1;
-
-					LaunchGame();
-
-					gLoadedReplay = 0;
+					
+					SetState(STATE_GAMELAUNCH);
 				}
 				else
 				{
@@ -2026,7 +2044,7 @@ int redriver2_main(int argc, char** argv)
 			i++;
 		}
 #ifdef CUTSCENE_RECORDER
-		else if (!_stricmp(argv[i], "-recordcutscene"))
+		else if (!strcmp(argv[i], "-recordcutscene"))
 		{
 			SetFEDrawMode();
 
@@ -2048,8 +2066,11 @@ int redriver2_main(int argc, char** argv)
 	}
 #endif // PSX
 
-	// now run the frontend
-	DoFrontEnd();
+	DoStateLoop();
+
+#ifndef PSX
+	SaveCurrentProfile();
+#endif
 
 	return 1;
 }
@@ -2067,7 +2088,7 @@ void FadeScreen(int end_value)
 
 	do {
 		RenderGame();
-	} while (FadingScreen != 0);
+	} while (FadingScreen);
 
 	DrawSync(0);
 	SetDispMask(0);
@@ -2276,7 +2297,7 @@ void RenderGame2(int view)
 		i++;
 	} while (i < 2);
 
-	if (gLoadedOverlay != 0)
+	if (gLoadedOverlay)
 		DisplayOverlays();
 
 	DrawMission();
@@ -2325,12 +2346,11 @@ void RenderGame2(int view)
 		current->primptr += sizeof(POLY_FT3);
 	}
 
+	// Steven Adams and Andreas Tawn of Havana team
 	notInDreaAndStevesEvilLair = Havana3DOcclusion(DrawMapPSX, (int*)&ObjectDrawnValue);
 
-	ScaleCamera();
-
 	if (notInDreaAndStevesEvilLair)
-	{
+	{		
 		DrawSkyDome();
 
 		if (current->primtab - (current->primptr - PRIMTAB_SIZE) > 40000)
@@ -2364,6 +2384,9 @@ void RenderGame(void)
 	FadeGameScreen(0);
 }
 
+int Havana3DLevelDraw = -1;
+int Havana3DLevelMode = -1;			// 0 = uses 1.0 LEV file, 1 = uses v1.1 LEV file
+
 // [D] [T]
 void InitGameVariables(void)
 {
@@ -2371,7 +2394,7 @@ void InitGameVariables(void)
 	InitTyreTracks();
 	TargetCar = 0;
 
-	if (NewLevel != 0)
+	if (NewLevel)
 	{
 		gLoadedOverlay = 0;
 		gLoadedMotionCapture = 0;
@@ -2379,12 +2402,11 @@ void InitGameVariables(void)
 
 	gRainCount = 0;
 
-	if (NoPlayerControl == 0 || AttractMode != 0)
+	if (!NoPlayerControl || AttractMode || quick_replay)
 		pauseflag = 0;
 	else
 		pauseflag = 1;
 
-	HitLeadCar = 0;
 	FastForward = 0;
 	game_over = 0;
 	saved_counter = 0;
@@ -2395,6 +2417,8 @@ void InitGameVariables(void)
 	current_camera_angle = 2048;
 	gDieWithFade = 0;
 	pedestrianFelony = 0;	// [A]
+
+	Havana3DLevelDraw = -1;
 
 	srand(0x1234);
 	RandomInit(0xd431, 0x350b1);
@@ -2418,11 +2442,11 @@ void InitGameVariables(void)
 		PlayerStartInfo[0]->controlType = CONTROL_TYPE_PLAYER;
 		PlayerStartInfo[0]->flags = 0;
 
-		PlayerStartInfo[0]->rotation = levelstartpos[GameLevel][1];
+		PlayerStartInfo[0]->rotation = levelstartpos[GameLevel + (gWantNight * 4)][1];
 
 		PlayerStartInfo[0]->position.vy = 0;
-		PlayerStartInfo[0]->position.vx = levelstartpos[GameLevel][0];
-		PlayerStartInfo[0]->position.vz = levelstartpos[GameLevel][2];
+		PlayerStartInfo[0]->position.vx = levelstartpos[GameLevel + (gWantNight * 4)][0];
+		PlayerStartInfo[0]->position.vz = levelstartpos[GameLevel + (gWantNight * 4)][2];
 
 		numPlayersToCreate = 1;
 
@@ -2523,77 +2547,155 @@ int Havana3DOcclusion(occlFunc func, int* param)
 	int draw;
 	int otAltered;
 	int outside;
+	VECTOR tempPos;
 
-	outside = 1;
+#ifndef PSX
+	if (gDemoLevel)
+	{
+		(*func)(param);
+		return 1;
+	}
+#endif
 
 	if (GameLevel == 1 && 
 		camera_position.vx <= -430044 && camera_position.vx >= -480278 && 
 		camera_position.vz <= -112814 && camera_position.vz >= -134323)
 	{
-		draw = 10;
-		
-		if (camera_position.vy >= 447)
+		// TODO: Hardcode into different builds for PSX version
+		if(Havana3DLevelMode == -1)
 		{
-			outside = 0;
-			
-			if (camera_position.vx < -453093 && camera_position.vx > -457217 &&
-				camera_position.vz < -123393 && camera_position.vz > -127493 && 
-				camera_position.vy < 3955)
+			// try autodetecting
+			tempPos.vy = -3823;
+			tempPos.vx = -461964;
+			tempPos.vz = -124831;
+
+			if (GetSurfaceIndex(&tempPos) + 32 == 27)
+				Havana3DLevelMode = 1;
+			else
+				Havana3DLevelMode = 0;
+		}
+
+		if(Havana3DLevelMode == 0)
+		{
+			// v1.0 method
+			outside = 1;
+			draw = 10;
+
+			if (camera_position.vy < 447)
 			{
-				if (camera_position.vy < 1245)
-				{
-					draw = 15;
-				}
-				else if (camera_position.vy < 2001)
-				{
-					draw = 14;
-				}
-				else if (camera_position.vy < 3071)
-				{
-					draw = 13;
-				}
+				if (camera_position.vx > -469500)
+					draw = 17;
+				else
+					draw = 16;
 			}
 			else
 			{
-				if (camera_position.vy < 1730)
+				outside = 0;
+
+				if (camera_position.vx < -453093 && camera_position.vx > -457217 &&
+					camera_position.vz < -123393 && camera_position.vz > -127493 &&
+					camera_position.vy < 3955)
 				{
-					draw = 15;
+					if (camera_position.vy < 1245)
+						draw = 15;
+					else if (camera_position.vy < 2001)
+						draw = 14;
+					else if (camera_position.vy < 3071)
+						draw = 13;
 				}
 				else
 				{
-					draw = 14;
+					draw = 15;
+					
+					if (camera_position.vy >= 1730)
+					{
+						draw = 14;
 
-					if (camera_position.vy < 2100 && camera_position.vx < -472585)
-					{
-						draw = 13;
-					}
-					else
-					{
-						if ((camera_position.vy > 3071 && camera_position.vx > -457217 ||
-							(draw = 12, camera_position.vz < -129499)) &&
-							(draw = 10, camera_position.vz < -129500))
+						if (camera_position.vy >= 2500)
 						{
-							draw = 11;
+							draw = 13;
+
+							if(camera_position.vz < -120000)
+							{
+								draw = 12;
+
+								// check final room
+								if (camera_position.vy >= 3300 && camera_position.vx >= -458108)
+									draw = 10;
+							}
 						}
 					}
 				}
 			}
+
+			events.camera = 1;
+
+			loop = draw - 1;
+
+			if (loop < 10)
+				loop = 10;
 		}
-		else
+		else if(Havana3DLevelMode == 1)
 		{
-			if (camera_position.vx > -469500)
-				draw = 17;
+			// v1.1 method - simpler one
+			outside = 0;
+
+			if (camera_position.vy < 447)
+			{
+				if (camera_position.vx > -468500)
+					draw = 17;
+				else
+					draw = 16;
+			}
 			else
-				draw = 16;
+			{
+				tempPos.vy = -camera_position.vy;
+				tempPos.vx = camera_position.vx;
+				tempPos.vz = camera_position.vz;
+
+				loop = GetSurfaceIndex(&tempPos);
+
+				if (loop + 32 == 17)
+				{
+					Havana3DLevelDraw = -1;
+					draw = 9;
+				}
+				else
+				{
+					if (loop + 7 < 7)
+					{
+						draw = loop + 32 & 15;
+
+						if (Havana3DLevelDraw == -1)
+							goto still_inside;
+
+						loop = Havana3DLevelDraw - draw;
+
+						if (loop < 0)
+							loop = draw - Havana3DLevelDraw;
+
+						if (loop < 2)
+							goto still_inside;
+					}
+
+					outside = 1;
+					draw = Havana3DLevelDraw;
+				}
+			}
+
+			// FIXME: please handle this goto for me
+		still_inside:
+			if (Havana3DLevelDraw != draw)
+				Havana3DLevelDraw = draw;
+
+			events.camera = 1;
+
+			loop = draw - 1;
+
+			if (loop < 9)
+				loop = 9;
 		}
-
-		events.camera = 1;
-		
-		loop = draw - 1;
-
-		if (loop < 10)
-			loop = 10;
-
+	
 		otAltered = 0;
 
 		while (true)
@@ -2604,7 +2706,7 @@ int Havana3DOcclusion(occlFunc func, int* param)
 				return outside;
 			}
 			
-			if (loop == 0x10) 
+			if (loop == 16) 
 				break;
 			
 			if (draw != loop)
@@ -2639,6 +2741,7 @@ int Havana3DOcclusion(occlFunc func, int* param)
 	}
 
 	(*func)(param);
+
 	return 1;
 }
 

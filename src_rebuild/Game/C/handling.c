@@ -275,13 +275,12 @@ void GlobalTimeStep(void)
 	static RigidBodyState _d0[MAX_CARS]; // offset 0x410
 	static RigidBodyState _d1[MAX_CARS]; // offset 0x820
 
+	int mayBeCollidingBits;
 	int howHard;
 	int tmp;
 	RigidBodyState* thisState_i;
 	RigidBodyState* thisState_j;
 	RigidBodyState* thisDelta;
-	BOUND_BOX* bb1;
-	BOUND_BOX* bb2;
 	CAR_DATA* cp;
 	CAR_DATA* c1;
 	RigidBodyState* st;
@@ -319,19 +318,12 @@ void GlobalTimeStep(void)
 	StepCars();
 	CheckCarToCarCollisions();
 
-	i = 0;
-
 	// step car forces (when no collisions with them)
-	while (i < num_active_cars)
+	for (i = 0; i < num_active_cars; i++)
 	{
 		cp = active_car_list[i];
 
 		st = &cp->st;
-
-		if (cp->controlType == CONTROL_TYPE_PLAYER && playerghost != 0 && playerhitcopsanyway == 0) // [A]
-			cp->hd.mayBeColliding = 0;
-
-		// too many reads and writes, you know how to optimize it
 
 		st->n.linearVelocity[0] += cp->hd.acc[0];
 		st->n.linearVelocity[1] += cp->hd.acc[1];
@@ -378,7 +370,8 @@ void GlobalTimeStep(void)
 		if ((tmp < st->n.angularVelocity[2]) || (tmp = -tmp, st->n.angularVelocity[2] < tmp))
 			st->n.angularVelocity[2] = tmp;
 
-		if (cp->hd.mayBeColliding == 0)
+		// without precision
+		if (!cp->hd.mayBeColliding)
 		{
 			long* orient = st->n.orientation;	// LONGQUATERNION
 
@@ -402,32 +395,29 @@ void GlobalTimeStep(void)
 
 			RebuildCarMatrix(st, cp);
 		}
-
-		i++;
 	}
 
-	subframe = 0;
-
 	// do collision interactions
-	do {
+	for(subframe = 0; subframe < 4; subframe++) 
+	{
 		RKstep = 0;
 
-		do {
-			i = 0;
-
-			while (i < num_active_cars)
+		for (RKstep = 0; RKstep < 2; RKstep++)
+		{
+			for (i = 0; i < num_active_cars; i++)
 			{
 				cp = active_car_list[i];
 
 				// check collisions with buildings
-				if (RKstep != 0 && (subframe & 1U) != 0 && cp->controlType == CONTROL_TYPE_PLAYER)
+				if (RKstep != 0 && (subframe & 1) != 0 && cp->controlType == CONTROL_TYPE_PLAYER)
 				{
 					CheckScenaryCollisions(cp);
 				}
 
+				mayBeCollidingBits = cp->hd.mayBeColliding;
 
-				// check collisions with vehicles
-				if (cp->hd.mayBeColliding != 0)
+				// if has any collision, process with double precision
+				if (mayBeCollidingBits)
 				{
 					if (RKstep == 0)
 					{
@@ -462,29 +452,21 @@ void GlobalTimeStep(void)
 					thisDelta[i].n.angularVelocity[1] = 0;
 					thisDelta[i].n.angularVelocity[2] = 0;
 
-					if (cp->hd.mayBeColliding & 0x2) // [A] a litle skip for bbox checking
-						j = 0;
-					else
-						j = 512;
-
-					while (j < i)
+					for (j = 0; j < i; j++)
 					{
 						c1 = active_car_list[j];
 
-						if (RKstep > 0)
-							thisState_j = &_tp[j];
-						else
-							thisState_j = &c1->st;
-
-						if ((c1->hd.mayBeColliding & 0x2) && (c1->hd.speed != 0 || cp->hd.speed != 0))
+						// [A] optimized run to not use the box checking
+						// as it has already composed bitfield / pairs
+						if((mayBeCollidingBits & (1 << CAR_INDEX(c1))) != 0 && (c1->hd.speed != 0 || cp->hd.speed != 0))
 						{
-							bb1 = &bbox[cp->id];
-							bb2 = &bbox[c1->id];
-
-							if (bb2->x0 < bb1->x1 && bb2->z0 < bb1->z1 && bb1->x0 < bb2->x1 &&
-								bb1->z0 < bb2->z1 && bb2->y0 < bb1->y1 && bb1->y0 < bb2->y1 &&
-								CarCarCollision3(cp, c1, &depth, (VECTOR*)collisionpoint, (VECTOR*)normal))
+							if(CarCarCollision3(cp, c1, &depth, (VECTOR*)collisionpoint, (VECTOR*)normal))
 							{
+								if (RKstep > 0)
+									thisState_j = &_tp[j];
+								else
+									thisState_j = &c1->st;
+								
 								int c1InfiniteMass;
 								int c2InfiniteMass;
 
@@ -514,9 +496,9 @@ void GlobalTimeStep(void)
 								pointVel0[2] = (FIXEDH(thisState_i->n.angularVelocity[0] * lever0[1] - thisState_i->n.angularVelocity[1] * lever0[0]) + thisState_i->n.linearVelocity[2]) -
 									(FIXEDH(thisState_j->n.angularVelocity[0] * lever1[1] - thisState_j->n.angularVelocity[1] * lever1[0]) + thisState_j->n.linearVelocity[2]);
 
-								howHard = (pointVel0[0] / 256) * (normal[0] / 32) +
-									(pointVel0[1] / 256) * (normal[1] / 32) +
-									(pointVel0[2] / 256) * (normal[2] / 32);
+								howHard =	(pointVel0[0] / 256) * (normal[0] / 32) +
+											(pointVel0[1] / 256) * (normal[1] / 32) +
+											(pointVel0[2] / 256) * (normal[2] / 32);
 
 								if (howHard > 0 && RKstep > -1)
 								{
@@ -701,23 +683,18 @@ void GlobalTimeStep(void)
 								if (c1->id == player[0].playerCarId)
 									CarHitByPlayer(cp, howHard);
 							}
-						}
-
-						j++;
-					}
+						} // maybe colliding
+					} // j loop
 				}
-
-				i++;
 			}
 
 			// update forces and rebuild matrix of the cars
-			i = 0;
-
-			while (i < num_active_cars)
+			for (i = 0; i < num_active_cars; i++)
 			{
 				cp = active_car_list[i];
 
-				if (cp->hd.mayBeColliding != 0)
+				// if has any collision, process with double precision
+				if (cp->hd.mayBeColliding)
 				{
 					st = &cp->st;
 					tp = &_tp[i];
@@ -726,44 +703,34 @@ void GlobalTimeStep(void)
 
 					if (RKstep == 0)
 					{
-						j = 0;
-						do {
+						for (j = 0; j < 13; j++)
+						{
 							tp->v[j] = st->v[j] + (d0->v[j] >> 2);
-							j++;
-						} while (j < 13);
+						}
 
 						RebuildCarMatrix(tp, cp);
 					}
 					else if (RKstep == 1)
 					{
-						j = 0;
-						do {
+						for (j = 0; j < 13; j++)
+						{
 							st->v[j] += d0->v[j] + d1->v[j] >> 3;
-							j++;
-						} while (j < 13);
+						}
 
 						RebuildCarMatrix(st, cp);
 					}
 				}
-
-				i++;
 			}
-
-			RKstep++;
-
-		} while (RKstep < 2);
-
-		subframe++;
-	} while (subframe < 4);
+		}
+	}
 
 
 
 	// second sub frame passed, update matrices and physics direction
 	// dent cars - no more than 5 cars in per frame
-	i = 0;
 	carsDentedThisFrame = 0;
 
-	while (i < num_active_cars)
+	for (i = 0; i < num_active_cars; i++)
 	{
 		cp = active_car_list[i];
 
@@ -777,7 +744,6 @@ void GlobalTimeStep(void)
 			carsDentedThisFrame++;
 		}
 
-		i++;
 		cp->hd.direction = ratan2(cp->hd.where.m[0][2], cp->hd.where.m[2][2]);
 	}
 }
@@ -1035,8 +1001,11 @@ void CheckCarToCarCollisions(void)
 
 	// build boxes
 	do {
-		if (cp->controlType == CONTROL_TYPE_NONE) // [A] required as game crashing
+		if (cp->controlType == CONTROL_TYPE_NONE ||
+			cp->controlType == CONTROL_TYPE_PLAYER && playerghost && !playerhitcopsanyway) // [A] required as game crashing
 		{
+			bb->y1 = INT_MAX;
+			
 			cp++;
 			bb++;
 			loop1++;
@@ -1077,8 +1046,11 @@ void CheckCarToCarCollisions(void)
 		bb->y0 = (cp->hd.where.t[1] - colBox->vy * 2) / 16;
 		bb->y1 = (cp->hd.where.t[1] + colBox->vy * 4) / 16;
 
+		// make player handled cars always processed with precision
 		if (cp->hndType == 0)
-			cp->hd.mayBeColliding = 0x1;
+		{
+			cp->hd.mayBeColliding = (1 << 31);
+		}
 
 		loop1++;
 		bb++;
@@ -1096,16 +1068,17 @@ void CheckCarToCarCollisions(void)
 
 		while (loop2 < MAX_CARS)
 		{
-			if (bb2->x0 < bb1->x1 && bb2->z0 < bb1->z1 && bb1->x0 < bb2->x1 &&
-				bb1->z0 < bb2->z1 && bb2->y0 < bb1->y1 && bb1->y0 < bb2->y1 &&
-				(loop1 == 0 || car_data[loop1].controlType != CONTROL_TYPE_NONE) && car_data[loop2].controlType != CONTROL_TYPE_NONE)
+			if (bb1->y1 != INT_MAX && bb2->y1 != INT_MAX &&
+				bb2->x0 < bb1->x1 && bb2->z0 < bb1->z1 && bb1->x0 < bb2->x1 &&
+				bb1->z0 < bb2->z1 && bb2->y0 < bb1->y1 && bb1->y0 < bb2->y1)
 			{
-				car_data[loop1].hd.mayBeColliding = car_data[loop2].hd.mayBeColliding = 0x2;
+				car_data[loop1].hd.mayBeColliding |= (1 << loop2);
+				car_data[loop2].hd.mayBeColliding |= (1 << loop1);
 			}
 
 			loop2++;
 			bb2++;
-		};
+		}
 
 #if defined(COLLISION_DEBUG) && !defined(PSX)
 		extern int gShowCollisionDebug;
@@ -1602,7 +1575,7 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 		if (gWeather - 1U < 2)
 			desired_skid = -1;
 		else
-			desired_skid = 11;
+			desired_skid = 7;
 	}
 
 	// play skid sound
@@ -1657,12 +1630,12 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 		if (gWeather - 1U > 1)
 		{
 			if (wnse != 0)
-				desired_wheel = wnse + 12;
+				desired_wheel = wnse + 8;
 			else
 				desired_wheel = -1;
 		}
 		else
-			desired_wheel = 13;
+			desired_wheel = 13 - 4;
 	}
 
 	// play noise sound

@@ -196,7 +196,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 		gCarLowModelPtr[i] = NULL;
 
 		if (i == 4)
-			specmallocptr = mallocptr;
+			specmallocptr = (char*)mallocptr;
 
 		model_number = MissionHeader->residentModels[i];
 
@@ -220,34 +220,34 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 
 			if (cleanOfs != -1)
 			{
-				MALLOC_BEGIN();
-				model = GetCarModel(models_offset + cleanOfs, &mallocptr, 1, model_number, CAR_MODEL_CLEAN);
+				D_MALLOC_BEGIN();
+				model = GetCarModel(models_offset + cleanOfs, (char**)&mallocptr, 1, model_number, CAR_MODEL_CLEAN);
 				gCarCleanModelPtr[i] = model;
-				MALLOC_END();
+				D_MALLOC_END();
 			}
 
 			if (damOfs != -1)
 			{
-				MALLOC_BEGIN();
-				model = GetCarModel(models_offset + damOfs, &mallocptr, 0, model_number, CAR_MODEL_DAMAGED);
+				D_MALLOC_BEGIN();
+				model = GetCarModel(models_offset + damOfs, (char**)&mallocptr, 0, model_number, CAR_MODEL_DAMAGED);
 				gCarDamModelPtr[i] = model;
-				MALLOC_END();
+				D_MALLOC_END();
 			}
 
 			if (lowOfs != -1)
 			{
-				MALLOC_BEGIN();
-				model = GetCarModel(models_offset + lowOfs, &mallocptr, 1, model_number, CAR_MODEL_LOWDETAIL);
+				D_MALLOC_BEGIN();
+				model = GetCarModel(models_offset + lowOfs, (char**)&mallocptr, 1, model_number, CAR_MODEL_LOWDETAIL);
 				gCarLowModelPtr[i] = model;
-				MALLOC_END();
+				D_MALLOC_END();
 			}
 		}
 	}
 
-	MALLOC_BEGIN();
+	D_MALLOC_BEGIN();
 	mallocptr = specmallocptr + specMemReq;
 	specLoadBuffer = specmallocptr + specMemReq - 2048;
-	MALLOC_END();
+	D_MALLOC_END();
 
 	buildNewCars();
 
@@ -271,7 +271,7 @@ char* LoadCarModelFromFile(char* dest, int modelNumber, int type)
 	sprintf(filename, "LEVELS\\%s\\CARMODEL_%d_%s.DMODEL", LevelNames[GameLevel], modelNumber, CarModelTypeNames[type-1]);
 	if(FileExists(filename))
 	{
-		mem = dest ? dest : (_other_buffer + modelNumber * 0x10000 + (type-1) * 0x4000);
+		mem = (char*)(dest ? dest : (_other_buffer + modelNumber * 0x10000 + (type-1) * 0x4000));
 
 		// get model from file
 		Loadfile(filename, mem);

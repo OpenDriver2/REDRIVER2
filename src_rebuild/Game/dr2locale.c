@@ -52,7 +52,7 @@ int InitStringMng()
 		char table[256];
 		char* file;
 
-		file = _frontend_buffer;
+		file = (char*)_frontend_buffer;
 		
 		Loadfile("GFX\\FONT2.FNT", file);
 

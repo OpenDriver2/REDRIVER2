@@ -458,9 +458,9 @@ void ProcessMotionLump(char* lump_ptr, int lump_size)
 	{
 		int size = (lump_size + 3) & ~3;
 
-		MALLOC_BEGIN();
+		D_MALLOC_BEGIN();
 		MotionCaptureData[ThisMotion] = D_MALLOC(size);
-		MALLOC_END();
+		D_MALLOC_END();
 
 		memcpy((u_char*)MotionCaptureData[ThisMotion], (u_char*)lump_ptr, size);
 
@@ -542,7 +542,7 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	if (bone == JOINT_1)
 	{
 		// make ped thinner from side view
-		uint ang;
+		u_int ang;
 		ang = rcossin_tbl[((pDrawingPed->dir.vy + camera_angle.vy) * 4 & 0xfffU) + 1] >> 6;
 
 		z2 += ang;
@@ -1427,7 +1427,7 @@ void DrawCiv(PEDESTRIAN* pPed)
 	int boneId;
 	int frame;
 	int i, j;
-	uint phase;
+	u_int phase;
 	SVECTOR pos;
 	VECTOR pos1;
 	SVECTOR rot;
@@ -1445,6 +1445,11 @@ void DrawCiv(PEDESTRIAN* pPed)
 	frame = pPed->frame1 / 2;
 
 	vert1 = (SVECTOR*)pPed->motion;
+
+	// [A] alpha 1.6 bug fix
+	if (!vert1)
+		return;
+
 	vert2 = vert1 + frame * 30;
 
 	shift = (pPed->flags >> 15) & 0xFF; // HMMM?
@@ -1814,6 +1819,11 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 	int vx, vz;
 
 	int Tangle;
+
+#ifndef PSX
+	if (gDemoLevel)
+		return;
+#endif
 
 	memset((u_char*)&d, 0, sizeof(VECTOR));
 

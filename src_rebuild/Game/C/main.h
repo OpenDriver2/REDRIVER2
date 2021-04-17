@@ -2,8 +2,6 @@
 #define MAIN_H
 
 extern int game_over;
-
-extern int gDriver1Level;
 extern int gDemoLevel;
 
 extern XZPAIR gStartPos;
@@ -29,18 +27,19 @@ extern int DawnCount;
 extern int ObjectDrawnValue;
 extern int ObjectDrawnCounter;
 
-extern void SsSetSerialVol(short s_num, short voll, short volr);		// TEMPORARY
-extern void GameInit(); // 0x00059330
+extern int Havana3DLevelDraw;
 
-extern void StepSim(); // 0x00059A44
-extern void GameLoop(); // 0x0005A8DC
-extern void StepGame(); // 0x0005AB28
+extern void SsSetSerialVol(short s_num, short voll, short volr);		// TEMPORARY
+
+extern void State_GameInit(void* param); // 0x00059330
+extern void State_GameLoop(void* param); // 0x0005A8DC
+
+extern int FilterFrameTime();
+
 extern void DrawGame(); // 0x0005C458
 
 extern void EndGame(GAMEMODE mode); // 0x0005C574
 extern void EnablePause(PAUSEMODE mode); // 0x0005C590
-
-extern void CheckForPause(); // 0x0005C5D0
 
 extern int redriver2_main(int argc, char** argv); // 0x0005B384
 

@@ -18,14 +18,16 @@ void ClearCopUsage(void)
 }
 
 // [D] [T]
-PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci, int use_computed)
+PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci, int use_computed, int level)
 {
 	PACKED_CELL_OBJECT *ppco;
 
-	uint value;
+	u_int value;
 	unsigned short index;
 	unsigned short num;
 	int cbr;
+	CELL_DATA* cell;
+	ushort ptr;
 
 	index = (cellx / MAP_REGION_SIZE & 1) + (cellz / MAP_REGION_SIZE & 1) * 2;
 
@@ -42,49 +44,56 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 	}
 
 	cbr = (cellz % MAP_REGION_SIZE) * MAP_REGION_SIZE + index * (MAP_REGION_SIZE*MAP_REGION_SIZE) + (cellx % MAP_REGION_SIZE);
-
-	if (cell_ptrs[cbr] == 0xffff)
-	{
+	
+	ptr = cell_ptrs[cbr];
+	
+	if (ptr == 0xffff)
 		return NULL;
-	}
 
-	pci->pcd = cells + cell_ptrs[cbr];
+	cell = &cells[ptr];
 
-	num = pci->pcd->num;
-
-	if (events.camera == 0) 
+	if (level == -1) 
 	{
-		if (pci->pcd->num & 0x4000)
-		{
+		if (cell->num & 0x4000)
 			return NULL;
-		}
 	}
 	else 
 	{
-		pci->pcd++;
-		while (num != (events.draw | 0x4000))
-		{
-			if (pci->pcd->num & 0x8000)
-				return NULL;
+		/*
+			Data looks like this:
 
-			num = pci->pcd->num;
-			pci->pcd++;
+			45,34,773,456    - default list of cell objects
+			0x4000 | 100     - list 1 header - type 100
+			70,378,4557      - objects of list 1
+			0x4000 | 14      - list 2 header - type 14
+			8767,555,445,223 - objects of list 2
+			0x8000           - end of cell objects
+		*/
+		
+		while (cell->num != (level | 0x4000))	// skip until we reach the needed list header
+		{
+			cell++;
+			
+			if (cell->num & 0x8000)	// end of cell objects?
+				return NULL;
 		}
+		cell++;
 	}
 
 	pci->nearCell.x = (cellx - (cells_across / 2)) * MAP_CELL_SIZE;
 	pci->nearCell.z = (cellz - (cells_down / 2)) * MAP_CELL_SIZE;
 	pci->use_computed = use_computed;
 
-	num = pci->pcd->num;
-	
-	ppco = cell_objects + (num & 0x3fff);
+	pci->pcd = cell;
 
-	if (ppco->value == 0xffff && (ppco->pos.vy & 1) != 0) 
+	num = cell->num;
+	ppco = &cell_objects[num & 0x3fff];
+
+	if (ppco->value == 0xffff && (ppco->pos.vy & 1)) 
 	{
 		ppco = GetNextPackedCop(pci);
 	}
-	else if (use_computed != 0)
+	else if (use_computed)
 	{
 		value = 1 << (num & 7) & 0xffff;
 
@@ -95,7 +104,6 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 
 			return ppco;
 		}
-
 
 		cell_object_computed_values[(num & 0x3fff) >> 3] |= value;
 	}
@@ -110,24 +118,26 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 PACKED_CELL_OBJECT* GetNextPackedCop(CELL_ITERATOR* pci)
 {
 	ushort num;
-	uint value;
+	u_int value;
 	PACKED_CELL_OBJECT* ppco;
+	CELL_DATA* celld;
 
+	celld = pci->pcd;
+	
 	do {
 		do {
-			if (pci->pcd->num & 0x8000)
+			if (celld->num & 0x8000)	// end of cell objects?
 				return NULL;
 
-			pci->pcd++;
-			num = pci->pcd->num;
+			celld++;
+			num = celld->num;
 
-			if (num & 0x4000)
+			if (num & 0x4000)			// end of list?
 				return NULL;
 
-			ppco = cell_objects + (num & 0x3fff);
-		} while (ppco->value == 0xffff && (ppco->pos.vy & 1) != 0);
-
-
+			ppco = &cell_objects[num & 0x3fff];
+		} while (ppco->value == 0xffff && (ppco->pos.vy & 1));
+		
 		if (!pci->use_computed)
 			break;
 
@@ -141,7 +151,9 @@ PACKED_CELL_OBJECT* GetNextPackedCop(CELL_ITERATOR* pci)
 
 	} while (true);
 
+	pci->pcd = celld;
 	pci->ppco = ppco;
+
 	return ppco;
 }
 

@@ -56,7 +56,7 @@ void InitCellData(void)
 {
 	int loop;
 
-	MALLOC_BEGIN();
+	D_MALLOC_BEGIN();
 
 	cell_ptrs = (ushort*)D_MALLOC(4096 * sizeof(short));
 
@@ -68,7 +68,7 @@ void InitCellData(void)
 	cell_objects = (PACKED_CELL_OBJECT*)D_MALLOC((num_straddlers + cell_objects_add[4]) * sizeof(PACKED_CELL_OBJECT));
 	cells = (CELL_DATA*)D_MALLOC(cell_slots_add[4] * sizeof(CELL_DATA));
 
-	MALLOC_END();
+	D_MALLOC_END();
 
 	sizeof_cell_object_computed_values = (num_straddlers + cell_objects_add[4] + 7) / sizeof(PACKED_CELL_OBJECT);
 }
@@ -408,7 +408,7 @@ void ControlMap(void)
 	current_barrel_region_xcell = current_cell_x - region_x * MAP_REGION_SIZE;
 	current_barrel_region_zcell = current_cell_z - region_z * MAP_REGION_SIZE;
 
-	region_to_unpack = region_x + region_z * (cells_across / MAP_REGION_SIZE);
+	region_to_unpack = region_x + region_z * regions_across;
 
 	if (current_region == -1)
 		UnpackRegion(region_to_unpack, region_x & 1U | (region_z & 1U) * 2);		// is that ever valid for 'target_barrel_region'?
@@ -522,7 +522,7 @@ void GetVisSetAtPosition(VECTOR *pos, char *tgt, int *ccx, int *ccz)
 
 	GetPVSRegionCell2(
 		barrel_region_x + barrel_region_z * 2,
-		rx + rz * (cells_across / MAP_REGION_SIZE),
+		rx + rz * regions_across,
 		(cz - rz * MAP_REGION_SIZE) * MAP_REGION_SIZE + cx - rx * MAP_REGION_SIZE,
 		tgt);
 }
@@ -552,7 +552,7 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 	i = 0;
 	while (i < sz)
 	{
-		((ushort*)nybblearray)[i] = SW_SHORT((unsigned char)celldata[i], (unsigned char)celldata[i] >> 4) & 0xf0f;
+		((ushort*)nybblearray)[i] = M_SHRT_2((unsigned char)celldata[i], (unsigned char)celldata[i] >> 4) & 0xf0f;
 		i++;
 	}
 
@@ -573,7 +573,7 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 		{
 			symIndex = ni * 2;
 		spod:
-			sym = SW_SHORT(PVSEncodeTable[symIndex], PVSEncodeTable[symIndex + 1]);
+			sym = M_SHRT_2(PVSEncodeTable[symIndex], PVSEncodeTable[symIndex + 1]);
 		}
 		else
 		{
@@ -666,12 +666,13 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 {
 	int k;
-	uint havanaCorruptCellBodge;
+	u_int havanaCorruptCellBodge;
 	char *tbp;
 	char *bp;
 	ushort length;
 
-	if (gDriver1Level)
+#ifndef PSX
+	if (gDemoLevel)
 	{
 		// don't draw non-loaded regions
 		for (k = 0; k < pvs_square_sq; k++)
@@ -679,6 +680,7 @@ void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 
 		return;
 	}
+#endif
 
 	if (regions_unpacked[source_region] == region && loading_region[source_region] == -1) 
 	{
@@ -686,7 +688,7 @@ void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 		PVSEncodeTable = (unsigned char *)(bp + 0x802);
 		tbp = bp + cell * 2;
 
-		length = SW_SHORT((unsigned char)tbp[2], (unsigned char)tbp[3]) - SW_SHORT((unsigned char)tbp[0], (unsigned char)tbp[1]) & 0xffff;
+		length = M_SHRT_2((unsigned char)tbp[2], (unsigned char)tbp[3]) - M_SHRT_2((unsigned char)tbp[0], (unsigned char)tbp[1]) & 0xffff;
 
 		if (length == 0) 
 		{
@@ -699,7 +701,7 @@ void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 			if (regions_unpacked[source_region] == 158 && cell == 168) 
 				havanaCorruptCellBodge = (GameLevel == 1);
 
-			PVSDecode(output, bp + SW_SHORT((unsigned char)tbp[0], (unsigned char)tbp[1]), length, havanaCorruptCellBodge);
+			PVSDecode(output, bp + M_SHRT_2((unsigned char)tbp[0], (unsigned char)tbp[1]), length, havanaCorruptCellBodge);
 		}
 	}
 	else 

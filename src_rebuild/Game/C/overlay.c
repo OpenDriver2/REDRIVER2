@@ -679,7 +679,7 @@ void DisplayOverlays(void)
 {
 	short* felony;
 
-	if (NoPlayerControl != 0 || gInGameCutsceneActive != 0 || gInGameCutsceneDelay != 0)
+	if (NoPlayerControl || gInGameCutsceneActive || gInGameCutsceneDelay)
 		return;
 
 	if (NumPlayers > 1)
@@ -720,13 +720,13 @@ void DisplayOverlays(void)
 		}
 #endif
 
-		if(!gInvincibleCar)
+		if(!gInvincibleCar || ActiveCheats.cheat3)
 		{
 			DrawPercentageBar(&PlayerDamageBar);
 			DrawPercentageBar(&Player2DamageBar);
 		}
 
-		if(!gPlayerImmune)
+		if (!gPlayerImmune || ActiveCheats.cheat4)
 		{
 			DrawPercentageBar(&FelonyBar);
 		}

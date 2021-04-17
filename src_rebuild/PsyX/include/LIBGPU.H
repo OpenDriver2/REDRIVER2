@@ -630,6 +630,14 @@ typedef struct {
 	u_long  code[2];
 } DR_STP;                               /* Drawing STP */
 
+/* 
+* PSY-X commands
+*/
+
+typedef struct {
+	DECLARE_P_ADDR
+	u_long  code[1];
+} DR_PSYX_TEX;
 
 /*
  * Environment
@@ -821,6 +829,12 @@ extern void GetTexWindow(DR_TWIN *p);
 extern void GetDrawArea(DR_AREA *p);
 extern void GetDrawOffset(DR_OFFSET *p);
 extern void GetDrawEnv2(DR_ENV *p);
+
+/*
+* PSY-X commands
+*/
+
+extern void SetPsyXTexture(DR_PSYX_TEX *p, uint grTextureId);
 
 extern DISPENV activeDispEnv;
 extern DRAWENV activeDrawEnv;
