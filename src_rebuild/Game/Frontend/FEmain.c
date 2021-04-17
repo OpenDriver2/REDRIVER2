@@ -1257,10 +1257,14 @@ void ReInitScreens(int returnToMain)
 	pCurrScreen = pScreenStack[ScreenDepth];
 	pNewButton = pButtonStack[ScreenDepth];
 
+	// [A] state hack
+	if (pCurrScreen == NULL)
+		pCurrScreen = &PsxScreens[0];
+
 	SetupScreenSprts(pCurrScreen);
 	SetupBackgroundPolys();
 
-	idle_timer = VSync(0xffffffff);
+	idle_timer = VSync(-1);
 }
 
 // [D] [T]
