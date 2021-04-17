@@ -140,6 +140,19 @@ void _eCdControlF_Pause();
 
 //----------------------------------------------------------
 
+int PsyX_CD_CheckImageAvailable()
+{
+	if (g_UseCDImage)
+	{
+		if (g_imageFp == NULL)
+			eprintwarn("WARNING - CD subsystem is not initialized yet!\n");
+		else
+			return 1;
+	}
+
+	return 0;
+}
+
 CdlFILE* CdSearchFile(CdlFILE* fp, char* name)
 {
 	char pathPart[16];
@@ -152,11 +165,8 @@ CdlFILE* CdSearchFile(CdlFILE* fp, char* name)
 
 	memset(fp, 0, sizeof(CdlFILE));
 
-	if (g_imageFp == NULL)
-	{
-		eprintwarn("WARNING - CD subsystem is not initialized yet!\n");
+	if (!PsyX_CD_CheckImageAvailable())
 		return NULL;
-	}
 
 	assert(g_cdReadDoneFlag == true);
 	
@@ -276,7 +286,7 @@ int CdControl(u_char com, u_char * param, u_char * result)
 
 	g_CD_com = com;
 
-	if (g_imageFp == NULL)
+	if (!PsyX_CD_CheckImageAvailable())
 		return 0;
 
 	switch (com)
@@ -311,6 +321,9 @@ int CdControl(u_char com, u_char * param, u_char * result)
 int CdControlB(u_char com, u_char* param, u_char* result)
 {
 	int ret;
+
+	if (!PsyX_CD_CheckImageAvailable())
+		return 0;
 
 	ret = 0;
 
@@ -355,6 +368,9 @@ int CdControlF(u_char com, u_char * param)
 	// TODO: CdControlF() waits for the previous command to complete execution before issuing the new command
 	
 	g_CD_com = com;
+
+	if (!PsyX_CD_CheckImageAvailable())
+		return 0;
 
 	switch (com)
 	{

@@ -1658,8 +1658,6 @@ void DrawGame(void)
 		return;
 	}
 
-	static int frame = 0;
-
 	if (NumPlayers == 1 || NoPlayerControl)
 	{
 		ObjectDrawnValue = FrameCnt;
