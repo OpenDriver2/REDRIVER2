@@ -161,7 +161,7 @@ int SaveReplayToBuffer(char *buffer)
 		int size = (sheader->Size + sizeof(PADRECORD)) & -4;
 
 		// copy pad data to write buffer
-		memcpy(pt, (u_char*)srcStream->InitialPadRecordBuffer, size);
+		memcpy((u_char*)pt, (u_char*)srcStream->InitialPadRecordBuffer, size);
 
 		pt += size;
 	}
@@ -170,7 +170,7 @@ int SaveReplayToBuffer(char *buffer)
 	if (gCutsceneAsReplay == 0)
 #endif
 	{
-		memcpy(pt, (u_char*)ReplayParameterPtr, sizeof(REPLAY_PARAMETER_BLOCK));
+		memcpy((u_char*)pt, (u_char*)ReplayParameterPtr, sizeof(REPLAY_PARAMETER_BLOCK));
 		pt += sizeof(REPLAY_PARAMETER_BLOCK);
 	}
 
@@ -178,21 +178,21 @@ int SaveReplayToBuffer(char *buffer)
 	if (gCutsceneAsReplay == 0)
 #endif
 	{
-		memcpy(pt, (u_char*)PlayerWayRecordPtr, sizeof(SXYPAIR) * MAX_REPLAY_WAYPOINTS);
+		memcpy((u_char*)pt, (u_char*)PlayerWayRecordPtr, sizeof(SXYPAIR) * MAX_REPLAY_WAYPOINTS);
 		pt += sizeof(SXYPAIR) * MAX_REPLAY_WAYPOINTS;
 	}
 
-	memcpy(pt, (u_char*)PlaybackCamera, sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS);
+	memcpy((u_char*)pt, (u_char*)PlaybackCamera, sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS);
 	pt += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
 
-	memcpy(pt, (u_char*)PingBuffer, sizeof(PING_PACKET) * MAX_REPLAY_PINGS);
+	memcpy((u_char*)pt, (u_char*)PingBuffer, sizeof(PING_PACKET) * MAX_REPLAY_PINGS);
 	pt += sizeof(PING_PACKET) * MAX_REPLAY_PINGS;
 
 	// [A] is that ever valid?
 	if (gHaveStoredData)
 	{
 		header->HaveStoredData = 0x91827364;	// -0x6e7d8c9c
-		memcpy(pt, (u_char*)&MissionStartData, sizeof(MISSION_DATA));
+		memcpy((u_char*)pt, (u_char*)&MissionStartData, sizeof(MISSION_DATA));
 	}
 
 #ifdef PSX
@@ -439,7 +439,7 @@ int LoadReplayFromBuffer(char *buffer)
 			destStream->padCount = sheader->Size / sizeof(PADRECORD);
 
 			// copy pad data and advance buffer
-			memcpy(replayptr, pt, size);
+			memcpy((u_char*)replayptr, (u_char*)pt, size);
 			replayptr += size;
 		}
 
@@ -455,13 +455,13 @@ int LoadReplayFromBuffer(char *buffer)
 #ifdef CUTSCENE_RECORDER
 	if (gCutsceneAsReplay != 0)
 	{
-		memset(ReplayParameterPtr, 0, sizeof(REPLAY_PARAMETER_BLOCK));
+		memset((u_char*)ReplayParameterPtr, 0, sizeof(REPLAY_PARAMETER_BLOCK));
 		ReplayParameterPtr->RecordingEnd = maxLength;
 	}
 	else
 #endif
 	{
-		memcpy((u_char*)ReplayParameterPtr, pt, sizeof(REPLAY_PARAMETER_BLOCK));
+		memcpy((u_char*)ReplayParameterPtr, (u_char*)pt, sizeof(REPLAY_PARAMETER_BLOCK));
 		pt += sizeof(REPLAY_PARAMETER_BLOCK);
 	}
 
@@ -475,25 +475,25 @@ int LoadReplayFromBuffer(char *buffer)
 	else
 #endif
 	{
-		memcpy((u_char*)PlayerWayRecordPtr, pt, sizeof(SXYPAIR) * MAX_REPLAY_WAYPOINTS);
+		memcpy((u_char*)PlayerWayRecordPtr, (u_char*)pt, sizeof(SXYPAIR) * MAX_REPLAY_WAYPOINTS);
 		pt += sizeof(SXYPAIR) * MAX_REPLAY_WAYPOINTS;
 	}
 		
 
 	PlaybackCamera = (PLAYBACKCAMERA *)(PlayerWayRecordPtr + MAX_REPLAY_WAYPOINTS);
-	memcpy((u_char*)PlaybackCamera, pt, sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS);
+	memcpy((u_char*)PlaybackCamera, (u_char*)pt, sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS);
 	pt += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
 
 	PingBufferPos = 0;
 	PingBuffer = (PING_PACKET *)(PlaybackCamera + MAX_REPLAY_CAMERAS);
-	memcpy((u_char*)PingBuffer, pt, sizeof(PING_PACKET) * MAX_REPLAY_PINGS);
+	memcpy((u_char*)PingBuffer, (u_char*)pt, sizeof(PING_PACKET) * MAX_REPLAY_PINGS);
 	pt += sizeof(PING_PACKET) * MAX_REPLAY_PINGS;
 
 	replayptr = (char*)(PingBuffer + MAX_REPLAY_PINGS);
 
 	if (header->HaveStoredData == 0x91827364)	// -0x6e7d8c9c
 	{
-		memcpy((u_char*)&MissionStartData, pt, sizeof(MISSION_DATA));
+		memcpy((u_char*)&MissionStartData, (u_char*)pt, sizeof(MISSION_DATA));
 		gHaveStoredData = 1;
 	}
 

@@ -330,9 +330,9 @@ void ReInitFrontend(int returnToMain)
 
 	LoadSoundBankDynamic((char*)0x0, 0, 0);
 	LoadBankFromLump(1, 0);
-
+	
 #ifdef PSX
-	Loadfile("FRONTEND.BIN", 0x801C0000);
+	Loadfile("FRONTEND.BIN", (char*)_overlay_buffer);
 #endif // PSX
 
 	// switch to state STATE_INITFRONTEND
@@ -393,15 +393,6 @@ void State_MissionLadder(void* param)
 		}
 		else
 		{
-#ifndef PSX
-			extern int gImitateDiscSwap;
-			extern int gImitateDiscSwapFrames;
-			if (gImitateDiscSwap != -1)
-			{
-				gImitateDiscSwapFrames = VSync(-1);
-				gImitateDiscSwap = 1;
-			}
-#endif
 			CheckForCorrectDisc(1);
 		}
 

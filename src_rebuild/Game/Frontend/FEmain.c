@@ -498,6 +498,8 @@ void SetVariable(int var)
 
 			if (value == 1) 
 			{
+#ifdef PSX
+#else
 				// [A] temporary
 				// TODO: Do menu with the replays
 				if(LoadReplayFromFile("Replays/CHASE.D2RP"))
@@ -506,15 +508,18 @@ void SetVariable(int var)
 					GameType = GAME_LOADEDREPLAY;
 					SetState(STATE_GAMESTART);
 				}
-				else 
+				else
+#endif
 				{
 					SetState(STATE_INITFRONTEND);
 				}
 			}
 			else
 			{
+#ifndef PSX
 				// [A] load configuration
 				LoadCurrentProfile();
+#endif
 
 				SetState(STATE_INITFRONTEND);
 				SetMasterVolume(gMasterVolume);
@@ -526,6 +531,7 @@ void SetVariable(int var)
 			pScreenStack[ScreenDepth] = pCurrScreen;
 			pButtonStack[ScreenDepth] = pCurrButton;
 
+#ifndef PSX
 			if (value == 0) 
 			{
 				// [A] save configuration
@@ -540,6 +546,7 @@ void SetVariable(int var)
 					SetState(STATE_GAMESTART);
 				}
 			}
+#endif
 
 			break;
 		case 8:

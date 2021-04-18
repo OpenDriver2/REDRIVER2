@@ -21,15 +21,15 @@
 
 #ifdef PSX
 
-volatile char* _frontend_buffer	= 0x800FB400;
-volatile char* _other_buffer	= 0x800F3000;
-volatile char* _other_buffer2	= 0x800E7000;
-volatile OTTYPE* _OT1			= 0x800F3000;
-volatile OTTYPE* _OT2			= 0x800F7200;
-volatile char* _primTab1		= 0x800FB400;
-volatile char* _primTab2		= 0x80119400;
-volatile char* _overlay_buffer	= 0x801C0000;
-volatile char* _replay_buffer	= 0x801FABBC;
+volatile char* _frontend_buffer	= (char*)0x800FB400;
+volatile char* _other_buffer	= (char*)0x800F3000;
+volatile char* _other_buffer2	= (char*)0x800E7000;
+volatile OTTYPE* _OT1			= (OTTYPE*)0x800F3000;
+volatile OTTYPE* _OT2			= (OTTYPE*)0x800F7200;
+volatile char* _primTab1		= (char*)0x800FB400;
+volatile char* _primTab2		= (char*)0x80119400;
+volatile char* _overlay_buffer	= (char*)0x801C0000;
+volatile char* _replay_buffer	= (char*)0x801FABBC;
 
 #else
 
@@ -110,7 +110,7 @@ void sys_tempfree()
 #elif defined(PSX)
 
 volatile char* mallocptr;
-volatile const char* malloctab = 0x800137400;
+volatile const char* malloctab = (char*)0x800137400;
 
 #else
 
@@ -1003,49 +1003,10 @@ void SetCityType(CITYTYPE type)
 #endif // PSX
 }
 
-#ifndef PSX
-int gImitateDiscSwap = 0;
-int gImitateDiscSwapFrames = 0;
-#endif
-
 // [D] [T]
 CDTYPE DiscSwapped(char* filename)
 {
 #ifndef PSX
-	// Fancy sequence in homage of PS1 version
-	// any button press will skip it
-	ReadControllers();
-
-	if (Pads[0].mapnew)
-		gImitateDiscSwap = -1;
-
-	if (gImitateDiscSwap > 0)
-	{
-		int g_cdNumFrames = 80;
-
-		if(gImitateDiscSwap == 4)
-			g_cdNumFrames = 28;
-
-#ifdef __EMSCRIPTEN__
-		emscripten_sleep(0);
-#endif
-		
-		if (VSync(-1) - gImitateDiscSwapFrames > g_cdNumFrames)
-		{
-			gImitateDiscSwap++;
-			gImitateDiscSwapFrames = VSync(-1);
-		}
-
-		if(gImitateDiscSwap == 1)
-			return CDTYPE_WRONGDISC;
-		else if (gImitateDiscSwap == 2 || gImitateDiscSwap == 3)
-			return CDTYPE_SHELLOPEN;
-		else if (gImitateDiscSwap == 4)
-			return CDTYPE_DISCERROR;
-		else
-			gImitateDiscSwap = -1;
-	}
-
 	return CDTYPE_CORRECTDISC;
 #else
 	CDTYPE ret;

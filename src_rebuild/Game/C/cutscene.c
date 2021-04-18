@@ -852,7 +852,7 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 		int size = (sheader->Size + sizeof(PADRECORD)) & -4;
 
 		// copy pad data and advance buffer
-		memcpy(replayptr, pt, size);
+		memcpy((u_char*)replayptr, (u_char*)pt, size);
 		replayptr += size;
 
 		pt += size;
@@ -870,12 +870,12 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 		// copy cutscene cameras and pings
 		CutsceneCamera = (PLAYBACKCAMERA*)replayptr;
 
-		memcpy((u_char*)CutsceneCamera, pt, sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS);
+		memcpy((u_char*)CutsceneCamera, (u_char*)pt, sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS);
 		replayptr += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
 		pt += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
 	}
 
-	memcpy((u_char*)PingBuffer, pt, sizeof(PING_PACKET) * MAX_REPLAY_PINGS);
+	memcpy((u_char*)PingBuffer, (u_char*)pt, sizeof(PING_PACKET) * MAX_REPLAY_PINGS);
 	PingBufferPos = 0;
 
 	return 1;

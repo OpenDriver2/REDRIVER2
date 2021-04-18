@@ -416,7 +416,7 @@ void LoadGameLevel(void)
 	nsectors = citylumps[GameLevel][CITYLUMP_DATA1].y / CDSECTOR_SIZE;
 
 #ifdef PSX 
-	loadsectors(_frontend_buffer, sector, nsectors);
+	loadsectors((char*)_frontend_buffer, sector, nsectors);
 #else
 	extern char g_CurrentLevelFileName[64];
 	loadsectorsPC(g_CurrentLevelFileName, (char*)_frontend_buffer, sector, nsectors);
@@ -1887,10 +1887,10 @@ int redriver2_main(int argc, char** argv)
 	}
 
 	CheckForCorrectDisc(0);
-
+	
 	// Init frontend
 #ifdef PSX
-	Loadfile("FRONTEND.BIN", 0x801C0000);
+	Loadfile("FRONTEND.BIN", (char*)_overlay_buffer);
 #endif // PSX
 
 	SpuSetMute(0);

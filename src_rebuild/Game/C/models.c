@@ -348,7 +348,7 @@ int FindModelIdxWithName(char *name)
 
 	while (i < num_models_in_pack)
 	{
-		if (!strcmp(str, (const char*)name))
+		if (!strcmp(str, name))
 			return i;
 
 		while (*str++) {} // go to next string

@@ -76,7 +76,7 @@ void InitCellData(void)
 // [D] [T]
 void ProcessMapLump(char* lump_ptr, int lump_size)
 {
-	memcpy((u_char*)&cell_header, lump_ptr, sizeof(OUT_CELL_FILE_HEADER));
+	memcpy((u_char*)&cell_header, (u_char*)lump_ptr, sizeof(OUT_CELL_FILE_HEADER));
 
 	cells_across = cell_header.cells_across;
 	cells_down = cell_header.cells_down;
@@ -117,7 +117,7 @@ void ProcessMapLump(char* lump_ptr, int lump_size)
 	num_straddlers = *(int*)lump_ptr;
 
 	InitCellData();
-	memcpy((u_char*)cell_objects, lump_ptr + 4, num_straddlers * sizeof(PACKED_CELL_OBJECT));
+	memcpy((u_char*)cell_objects, (u_char*)lump_ptr + 4, num_straddlers * sizeof(PACKED_CELL_OBJECT));
 }
 
 
@@ -536,11 +536,11 @@ unsigned char *PVSEncodeTable = NULL;
 // [D] [T]
 void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBodge)
 {
-	unsigned char scratchPad[1024];
+	u_char scratchPad[1024];
 
 	int pixelIndex;
-	unsigned char* decodebuf;
-	unsigned char* op;
+	u_char* decodebuf;
+	u_char* op;
 	int i, j;
 	int symIndex;
 	int size;

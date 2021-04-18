@@ -650,7 +650,7 @@ void LoadMission(int missionnum)
 		{
 			mallocptr += (missionSize + 3U & 0xfffffffc);
 #ifdef PSX
-			Loadfile("PATH.BIN", 0xE7000);
+			Loadfile("PATH.BIN", (char*)_other_buffer2);
 #endif // PSX
 			leadAILoaded = 0;
 			pathAILoaded = 1;
@@ -666,7 +666,7 @@ void LoadMission(int missionnum)
 			
 			mallocptr = MissionStrings + MissionHeader->route;
 #ifdef PSX
-			Loadfile("LEAD.BIN", 0xE7000);
+			Loadfile("LEAD.BIN", (char*)_other_buffer2);
 #endif // PSX
 
 #ifdef DEBUG

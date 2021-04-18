@@ -39,6 +39,8 @@ void ReInitSystem(void)
 
 extern int FMV_main(RENDER_ARGS* args);
 
+volatile char* _fmv_memory = (char*)0x800ff800; // there was no 0x800
+
 // [D] [T]
 void PlayRender(RENDER_ARGS *args)
 {
@@ -53,13 +55,13 @@ void PlayRender(RENDER_ARGS *args)
 	args->screeny = draw_mode_pal.framey;
 	args->subtitle = gSubtitles;
 #ifdef PSX
-	if (Loadfile("FMV\\FMV.EXE", 0xff800) != 0)
+	if (Loadfile("FMV\\FMV.EXE", (char*)_fmv_memory) != 0)
 	{
 		oldsp = GetSp();
 		EnterCriticalSection();
 		FlushCache();
 		ExitCriticalSection();
-		Exec(0xff810, 1, (char**)args);
+		Exec((EXEC*)_fmv_memory, 1, (char**)args);
 		SetSp(oldsp);
 	}
 #else

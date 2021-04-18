@@ -414,7 +414,7 @@ void ProcessOverlayLump(char *lump_ptr, int lump_size)
 	D_MALLOC_BEGIN()
 
 	MapBitMaps = D_MALLOC(lump_size);
-	memcpy(MapBitMaps, lump_ptr, lump_size);
+	memcpy((u_char*)MapBitMaps, (u_char*)lump_ptr, lump_size);
 
 	D_MALLOC_END();
 

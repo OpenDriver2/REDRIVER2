@@ -697,7 +697,8 @@ void SaveReplay(int direction)
 	char filename[64];
 
 #ifdef PSX
-	CallMemoryCard(0x10, 1);
+	UNIMPLEMENTED();
+	// CallMemoryCard(0x10, 1);
 #else
 
 #ifdef CUTSCENE_RECORDER
@@ -805,7 +806,9 @@ void SaveReplay(int direction)
 // [D] [T]
 void SaveGame(int direction)
 {
+#ifndef PSX
 	SaveCurrentGame();
+#endif
 }
 
 // [D] [T]
@@ -1574,11 +1577,19 @@ void DrawHighScoreMenu(int selection)
 	current->primptr += sizeof(POLY_FT3);
 }
 
+int mytolower(int ch)
+{
+	if (ch >= 'A' && ch <= 'Z')
+		return ('a' + ch - 'A');
+	else
+		return ch;
+}
+	
 void strlower(char* str)
 {
 	while (*str != '\0')
 	{
-		*str = tolower(*str);
+		*str = mytolower(*str);
 		str++;
 	}
 }
