@@ -289,19 +289,6 @@ void PlayXA(int num, int index)
 
 		if (g_wavData->Load(fileName))
 		{
-			// Load subtitles for XA
-			sprintf(fileName, "%sXA\\XABNK0%d.XA[%d].SBN", gDataFolder, num + 1, index);
-			FS_FixPathSlashes(fileName);
-
-			FILE* fp = fopen(fileName, "rb");
-
-			if (fp)
-			{
-				fread(&gNumXASubtitles, sizeof(int), 1, fp);
-				fread(gXASubtitles, sizeof(XA_SUBTITLE), gNumXASubtitles, fp);
-				fclose(fp);
-			}
-
 			// make OpenAL buffer
 			g_XAWave = new CSoundSource_OpenALCache(g_wavData);
 
@@ -311,6 +298,19 @@ void PlayXA(int num, int index)
 			alSourcef(g_XASource, AL_GAIN, float(vol) / 128.0f);
 
 			alSourcePlay(g_XASource);
+		}
+
+		// Load subtitles for XA
+		sprintf(fileName, "%sXA\\XABNK0%d.XA[%d].SBN", gDataFolder, num + 1, index);
+		FS_FixPathSlashes(fileName);
+
+		FILE* fp = fopen(fileName, "rb");
+
+		if (fp)
+		{
+			fread(&gNumXASubtitles, sizeof(int), 1, fp);
+			fread(gXASubtitles, sizeof(XA_SUBTITLE), gNumXASubtitles, fp);
+			fclose(fp);
 		}
 
 		gPlaying = 1;
