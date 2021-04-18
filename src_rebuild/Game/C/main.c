@@ -1765,6 +1765,8 @@ void PrintCommandLineArguments()
 {
 	const char* argumentsMessage =
 		"Example: REDRIVER2 <command> [arguments]\n\n"
+		"  -ini <filename.ini> : starts game with specific configuration ini\n"
+		"  -cdimage <filename.iso> : starts game with specific ISO/BIN image file\n"
 #ifdef DEBUG_OPTIONS
 		"  -exportxasubtitles: Exports strings from XA WAV files to SBN\n"
 		"  -startpos <x> <z>: Set player start position\n"
@@ -1773,7 +1775,7 @@ void PrintCommandLineArguments()
 		"  -chase <number> : using specified chase number for mission\n"
 		"  -mission <number> : starts specified mission\n"
 #endif // DEBUG_OPTIONS
-		"  -replay <filename> : starts replay from file\n"
+		"  -replay <filename.d2rp> : starts replay from file\n"
 #ifdef CUTSCENE_RECORDER
 		"  -recordcutscene <filename> : starts cutscene recording session. Specify INI filename with it\n"
 #endif
@@ -1909,7 +1911,12 @@ int redriver2_main(int argc, char** argv)
 
 	for (int i = 1; i < argc; i++)
 	{
-		if (!strcmp(argv[i], "-nofmv"))
+		if (!strcmp(argv[i], "-ini") || 
+			!strcmp(argv[i], "-cdimage"))
+		{
+			i++;
+		}
+		else if (!strcmp(argv[i], "-nofmv"))
 		{
 			gNoFMV = 1;
 		}

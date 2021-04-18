@@ -518,6 +518,23 @@ int main(int argc, char** argv)
 	);
 #endif
 
+	const char* configFilename = "config.ini";
+	const char* cdImageFileName = NULL;
+
+	for (int i = 1; i < argc; i++)
+	{
+		if (!strcmp(argv[i], "-ini"))
+		{
+			i++;
+			configFilename = argv[i];
+		}
+		else if(!strcmp(argv[i], "-cdimage"))
+		{
+			i++;
+			cdImageFileName = argv[i];
+		}
+	}
+
 	config = ini_load("config.ini");
 
 	// best distance
@@ -537,15 +554,11 @@ int main(int argc, char** argv)
 		int newScrZ = gCameraDefaultScrZ;
 		const char* dataFolderStr = ini_get(config, "fs", "dataFolder");
 		const char* userReplaysStr = ini_get(config, "game", "userChases");
-		const char* cdImageFileName = ini_get(config, "cdfs", "image");
+
+		if(!cdImageFileName)
+			cdImageFileName = ini_get(config, "cdfs", "image");
 
 		InitUserReplays(userReplaysStr);
-
-		// configure Psy-X CD image reader
-		if(cdImageFileName)
-		{
-			PsyX_CDFS_Init(cdImageFileName);
-		}
 		
 		// configure Psy-X pads
 		ini_sget(config, "pad", "pad1device", "%d", &g_controllerToSlotMapping[0]);
@@ -618,6 +631,10 @@ int main(int argc, char** argv)
 #endif
 
 	PsyX_Initialise("REDRIVER2", windowWidth, windowHeight, fullScreen);
+
+	// configure Psy-X CD image reader
+	if (cdImageFileName)
+		PsyX_CDFS_Init(cdImageFileName);
 	
 	if (config)
 	{
