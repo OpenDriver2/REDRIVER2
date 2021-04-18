@@ -9,6 +9,13 @@
 #include <ctype.h>
 #include <malloc.h>
 
+#ifdef _WIN32
+#include <direct.h>
+#elif defined (__unix__)
+#include <sys/stat.h>
+#define _mkdir(str)				mkdir(str, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH)
+#endif
+
 #if defined(__ANDROID__)///@FIXME Android include order is messed up, includes SPEC_PSXPC_N MALLOC.H rather than NDK version!
 #define malloc SDL_malloc
 #define free SDL_free
@@ -76,7 +83,7 @@ struct Sector
 	u_char	sync[12];	/// Sync pattern (usually 00 FF FF FF FF FF FF FF FF FF FF 00)
 	u_char	addr[3];	/// Sector address (see below for encoding details)
 	u_char	mode;		/// Mode (usually 2 for Mode 2 Form 1/2 sectors)
-	u_char	subHead[8];	/// Sub-header (00 00 08 00 00 00 08 00 for Form 1 data sectors)
+	u_char	subHead[8];	/// Sub-header (00 00 08 00 00 00 08 00 for Form 1 data sectors). See below for more
 	u_char	data[2048];	/// Data (form 1)
 	u_char	edc[4];		/// Error-detection code (CRC32 of data area)
 	u_char	ecc[276];	/// Error-correction code (uses Reed-Solomon ECC algorithm)
@@ -90,6 +97,60 @@ struct AudioSector
 	u_char	data[2336];	/// 8 bytes Subheader, 2324 bytes Data (form 2), and 4 bytes ECC
 };
 #pragma pack(pop)
+
+/*
+ * Sub-header info
+ *
+ +----------------------+--------------------------------------------------+
+ |            | Interleaved file (1 byte)
+ |            |   1 if this file is interleaved, or 0 if not
+ | byte 1     |
+ +--        --+------------------------------------------------------------+
+ |            | Channel number (1 byte)
+ |            |   The sub-channel in this 'file'. Video, audio and data
+ |            |   sectors can be mixed into the same channel or can be
+ |            |   on separate channels. Usually used for multiple audio
+ |            |   tracks (e.g. 5 different songs in the same 'file', on
+ |            |   channels 0, 1, 2, 3 and 4)
+ | byte 2     |
+ +--        --+------------------------------------------------------------+
+ |            | Submode (1 byte)
+ |            |   bit 7: eof_marker -- set if this sector is the end
+ |            |                        of the 'file'
+ |            |   bit 6: real_time  -- always set in PSX STR streams
+ |            |   bit 5: form       -- 0 = Form 1 (2048 user data bytes)
+ |            |                        1 = Form 2 (2324 user data bytes)
+ |            |   bit 4: trigger    -- for use by reader application
+ |            |                        (unimportant)
+ |            |   bit 3: DATA       -- set to indicate DATA  sector
+ |            |   bit 2: AUDIO      -- set to indicate AUDIO sector
+ |            |   bit 1: VIDEO      -- set to indicate VIDEO sector
+ |            |   bit 0: end_audio  -- end of audio frame
+ |            |                        (rarely set in PSX STR streams)
+ |            |
+ |            |   bits 1, 2 and 3 are mutually exclusive
+ | byte 3     |
+ +--        --+------------------------------------------------------------+
+ |            | Coding info (1 byte)
+ |            | If Submode.AUDIO bit is set:
+ |            |   bit 7: reserved -- should always be 0
+ |            |   bit 6: emphasis -- boost audio volume (ignored by us)
+ |            |   bit 5: bitssamp -- must always be 0
+ |            |   bit 4: bitssamp -- 0 for mode B/C
+ |            |                        (4 bits/sample, 8 sound sectors)
+ |            |                      1 for mode A
+ |            |                        (8 bits/sample, 4 sound sectors)
+ |            |   bit 3: samprate -- must always be 0
+ |            |   bit 2: samprate -- 0 for 37.8kHz playback
+ |            |                      1 for 18.9kHz playback
+ |            |   bit 1: stereo   -- must always be 0
+ |            |   bit 0: stereo   -- 0 for mono sound, 1 for stereo sound
+ |            |
+ |            | If Submode.AUDIO bit is NOT set, this byte can be ignored
+ | byte 4     |
+ +--        --+------------------------------------------------------------+
+ | byte 5-8   | Duplicated
+*/
 
 void PsyX_CDFS_Init(const char* imageFileName, int track = 0, int sectorSize = 0)
 {
@@ -551,6 +612,118 @@ int CdSync(int mode, u_char * result)
 	return 0;
 }
 
+void DumpFiles_r(Sector* sector, const char* curPath)
+{
+	char nameStr[256];
+	TOC* toc;
+	int tocLocalOffset;
+
+	toc = (TOC*)&sector->data[0];
+	tocLocalOffset = 0;
+
+	if(*curPath == '\\')
+		curPath++;
+
+	// create directory structure
+	_mkdir(curPath);
+
+	while (toc->tocEntryLength != 0)
+	{
+		char* itemNameStr = (char*)&sector->data[tocLocalOffset + sizeof(TOC)];
+		
+		// skip . and ..
+		if (*itemNameStr == 0 || *itemNameStr == 1)
+		{
+			tocLocalOffset += toc->tocEntryLength;
+			toc = (TOC*)&sector->data[tocLocalOffset];
+
+			continue;
+		}
+
+		if (toc->flags & 2) // is directory
+		{
+			// read a sector
+			Sector nsector;
+			sprintf(nameStr, "%s\\%s", curPath, itemNameStr);
+
+			fseek(g_imageFp, toc->sectorPosition[0] * g_cdSectorSize, SEEK_SET);
+			fread(&nsector, sizeof(Sector), 1, g_imageFp);
+
+			DumpFiles_r(&nsector, nameStr);
+		}
+		else
+		{
+			//CdlLOC loc;
+			Sector nsector;
+
+			int remainingBytes = toc->fileSize[0];
+
+			// seek to start
+			fseek(g_imageFp, toc->sectorPosition[0] * g_cdSectorSize, SEEK_SET);
+			fread(&nsector, sizeof(Sector), 1, g_imageFp);
+
+			int interleaved = nsector.subHead[0] == 1;
+
+			// [A] don't extract form 2
+			if(!interleaved)
+			{
+				sprintf(nameStr, "%s\\%s", curPath, itemNameStr);
+
+				char* verStart = strchr(nameStr, ';');
+				if (verStart)
+					*verStart = '\0';
+
+				// save file
+				FILE* fp = fopen(nameStr, "wb");
+				if (fp)
+				{
+					do
+					{
+						fread(&nsector, sizeof(Sector), 1, g_imageFp);
+
+						if (!interleaved)
+						{
+							Sector* pSector = &nsector;
+							remainingBytes -= sizeof(pSector->data);
+
+							fwrite(pSector->data, 1, sizeof(pSector->data), fp);
+						}
+						else
+						{
+							// extract whole sectors?
+							// FIXME: wtf with file sizes?
+							AudioSector* pSector = (AudioSector*)&nsector;
+							remainingBytes -= sizeof(pSector->data);
+
+							fwrite(pSector, 1, sizeof(AudioSector), fp);
+						}
+
+						fread(&nsector, sizeof(Sector), 1, g_imageFp);
+
+					} while (remainingBytes > 0);
+				}
+
+				// XA flag: (nsector.subHead[2] & (1 << 5)) ? 2 : 1
+				// form 2 flag: nsector.subHead[0] & 1
+
+				eprintf("%s\\%s - form %d - %x %x %x %x %x %x %x %x\n", curPath, itemNameStr, (nsector.subHead[0] & 1) ? 2 : 1,
+					nsector.subHead[0],
+					nsector.subHead[1],
+					nsector.subHead[2],
+					nsector.subHead[3],
+					nsector.subHead[4],
+					nsector.subHead[5],
+					nsector.subHead[6],
+					nsector.subHead[7]);
+			}
+		}
+
+		// next file
+		tocLocalOffset += toc->tocEntryLength;
+		toc = (TOC*)&sector->data[tocLocalOffset];
+	}
+}
+
 int OpenBinaryImageFile()
 {
 	// already open?
@@ -578,6 +751,14 @@ int OpenBinaryImageFile()
 
 	eprintinfo("Using '%s' image, sector size: %d, frames: %d\n", g_cdImageBinaryFileName, g_cdSectorSize, g_cdNumFrames);
 
+	/*{
+	 *
+		Sector sector;
+		fseek(g_imageFp, CD_ROOT_DIRECTORY_SECTOR * g_cdSectorSize, SEEK_SET);
+		fread(&sector, sizeof(Sector), 1, g_imageFp);
+		DumpFiles_r(&sector, "");
+	}*/
+	
 	return 1;
 }
 
