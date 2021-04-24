@@ -278,14 +278,14 @@ void LoadSky(void)
 	}
 
 	sprintf(name, "DATA\\SKY%d.RAW", skyNum);
-	LoadfileSeg(name, (char*)_frontend_buffer, offset, 0x10000);
+	LoadfileSeg(name, (char*)_primTab1, offset, 0x10000);
 
 	rect.x = 320;
 	rect.y = 0;
 	rect.w = 128;
 	rect.h = 256;
 
-	LoadImage(&rect, (u_long*)_frontend_buffer);
+	LoadImage(&rect, (u_long*)_primTab1);
 
 	DrawSync(0);
 }

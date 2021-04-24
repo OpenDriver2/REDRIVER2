@@ -28,7 +28,6 @@ extern int slotsused;
 extern int nperms;
 extern int NoTextureMemory;
 extern char specTpages[4][12];
-extern int texture_is_icon;
 
 extern void ProcessPalletLump(char *lump_ptr, int lump_size); // 0x00019F44
 extern void load_civ_palettes(RECT16 *cluts); // 0x0001A094

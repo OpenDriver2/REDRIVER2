@@ -328,8 +328,9 @@ char g_Other_buffer[0x50000];		// 0xF3000
 char g_Other_buffer2[0x50000];		// 0xE7000
 OTTYPE g_OT1[OTSIZE];				// 0xF3000
 OTTYPE g_OT2[OTSIZE];				// 0xF7200
-char g_PrimTab1[PRIMTAB_SIZE];			// 0xFB400
-char g_PrimTab2[PRIMTAB_SIZE];			// 0x119400
+char g_PrimTab1[PRIMTAB_SIZE];		// 0xFB400
+char g_PrimTab2[PRIMTAB_SIZE];		// 0x119400
+char g_SBank_buffer[0x50000];		// 0x180000
 char g_Replay_buffer[0x50000];		// 0x1fABBC
 #endif
 
@@ -489,9 +490,11 @@ int main(int argc, char** argv)
 	_other_buffer2 = (char*)malloc(0x50000);			// 0xE7000
 	_OT1 = (OTTYPE*)malloc(OTSIZE * sizeof(OTTYPE));	// 0xF3000
 	_OT2 = (OTTYPE*)malloc(OTSIZE * sizeof(OTTYPE));	// 0xF7200
-	_primTab1 = (char*)malloc(PRIMTAB_SIZE);					// 0xFB400
-	_primTab2 = (char*)malloc(PRIMTAB_SIZE);					// 0x119400
+	_primTab1 = (char*)malloc(PRIMTAB_SIZE);			// 0xFB400
+	_primTab2 = (char*)malloc(PRIMTAB_SIZE);			// 0x119400
+	_sbank_buffer = (char*)malloc(0x80000);				// 0x180000
 	_replay_buffer = (char*)malloc(0x50000);			// 0x1fabbc
+	
 #else
 	_overlay_buffer = g_Overlay_buffer;		// 0x1C0000
 	_frontend_buffer = g_Frontend_buffer;	// 0xFB400
@@ -501,6 +504,7 @@ int main(int argc, char** argv)
 	_OT2 = g_OT2;							// 0xF7200
 	_primTab1 = g_PrimTab1;					// 0xFB400
 	_primTab2 = g_PrimTab2;					// 0x119400
+	_sbank_buffer = g_SBank_buffer;			// 0x180000
 	_replay_buffer = g_Replay_buffer;		// 0x1fABBC
 #endif
 

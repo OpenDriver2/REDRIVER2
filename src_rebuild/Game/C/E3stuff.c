@@ -576,8 +576,8 @@ void CheckForCorrectDisc(int disc)
 
 	rect.x = 0;
 	rect.y = 0;
-	rect.w = 0x140;
-	rect.h = 0x200;
+	rect.w = 320;
+	rect.h = 512;
 
 	ClearImage(&rect, 0, 0, 0);
 	DrawSync(0);

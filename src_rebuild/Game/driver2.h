@@ -17,12 +17,12 @@
 
 #ifdef PSX
 // TODO: Include PSX STUFF
-#define trap(code) printf("ERROR OCCURED %d!\n", code)
+#define trap(code) printf("ERROR OCCURED %s %d!\n", FUNCNAME, code)
 
-#define printMsg					(void)
-#define printInfo					(void)
-#define printWarning				(void)
-#define printError					(void)
+#define printMsg					printf
+#define printInfo					printf
+#define printWarning				printf
+#define printError					printf
 
 #else
 

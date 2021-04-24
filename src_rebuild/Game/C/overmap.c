@@ -403,13 +403,11 @@ void ProcessOverlayLump(char *lump_ptr, int lump_size)
 	MapRect.x = (MapTPage & 15) << 6;
 	MapRect.y = (MapTPage & 16) << 4;
 
-	i = 0;
-	do {
+	for (i = 0; i < 16; i++)
+	{
 		MapSegmentPos[i].x = ((i & 3) * 32 + info.coords.u0) / 4;
 		MapSegmentPos[i].y = info.coords.v0 + (i / 4) * 32;
-
-		i++;
-	} while (i < 16);
+	}
 
 	D_MALLOC_BEGIN()
 

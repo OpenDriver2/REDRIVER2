@@ -749,7 +749,6 @@ void InitDebrisNames(void)
 	GetTextureDetails("HEAD1", &texturePedHead);
 	GetTextureDetails("TSHADOW", &tannerShadow_texture);
 
-	texture_is_icon = 0;
 	head1_texture.coords.u1 = head1_texture.coords.u0 + 8;
 	head1_texture.coords.u3 = head1_texture.coords.u1;
 
@@ -766,7 +765,6 @@ void InitDebris(void)
 	int i, j;
 	TRI_POINT_LONG temptri;
 
-	texture_is_icon = 0;
 	StreakCount1 = 0;
 	next_debris = 0;
 	next_smoke = 0;

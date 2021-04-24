@@ -141,8 +141,8 @@ int FrameCnt = 0;
 static int WantPause = 0;
 static PAUSEMODE PauseMode = PAUSEMODE_PAUSE;
 
-unsigned char defaultPlayerModel[2] = { 0 }; // offset 0xAA604
-unsigned char defaultPlayerPalette = 0; // offset 0xAA606
+u_char defaultPlayerModel[2] = { 0 }; // offset 0xAA604
+u_char defaultPlayerPalette = 0; // offset 0xAA606
 
 u_int* transparent_buffer;
 
@@ -254,6 +254,7 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 			texturename_buffer = D_MALLOC(seg_size);
 			memcpy(texturename_buffer, ptr, seg_size);
 #else
+			// we need to copy texture names
 			texturename_buffer = (char*)ptr;
 #endif
 		}
@@ -324,7 +325,9 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 			printInfo("LUMP_MODELS: size: %d\n", seg_size);
 			ProcessMDSLump((char*)ptr, seg_size);
 			ProcessCarModelLump(car_models_lump, 0);
+			
 			InitModelNames();
+
 			SetUpEvents(1);
 		}
 		else if (lump_type == LUMP_ROADMAP)
@@ -383,8 +386,6 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 	} while (numLumps != 0);
 }
 
-int SpoolLumpOffset;
-
 // [D] [T]
 void LoadGameLevel(void)
 {
@@ -416,17 +417,17 @@ void LoadGameLevel(void)
 	nsectors = citylumps[GameLevel][CITYLUMP_DATA1].y / CDSECTOR_SIZE;
 
 #ifdef PSX 
-	loadsectors((char*)_frontend_buffer, sector, nsectors);
+	loadsectors((char*)_primTab1, sector, nsectors);
 #else
 	extern char g_CurrentLevelFileName[64];
-	loadsectorsPC(g_CurrentLevelFileName, (char*)_frontend_buffer, sector, nsectors);
+	loadsectorsPC(g_CurrentLevelFileName, (char*)_primTab1, sector, nsectors);
 #endif // PSX
 
 	sector += nsectors;
 
 	// CITYLUMP_DATA1 - load-time lump
-	ProcessLumps((char*)_frontend_buffer + 8, nsectors * CDSECTOR_SIZE);
-
+	ProcessLumps((char*)_primTab1 + 8, nsectors * CDSECTOR_SIZE);
+	
 	// CITYLUMP_TPAGE is right next after DATA1
 	LoadPermanentTPages(&sector);
 
@@ -444,9 +445,9 @@ void LoadGameLevel(void)
 	loadsectorsPC(g_CurrentLevelFileName, malloc_lump, sector, nsectors);
 #endif // PSX
 	sector += nsectors;
-
+	
 	// CITYLUMP_DATA2 - in-memory lump
-	ProcessLumps(malloc_lump + 8, (nsectors * CDSECTOR_SIZE));
+	ProcessLumps(malloc_lump + 8, (nsectors * CDSECTOR_SIZE));	
 
 	SpoolLumpOffset = citylumps[GameLevel][CITYLUMP_SPOOL].x; // not used anyway
 
@@ -454,7 +455,7 @@ void LoadGameLevel(void)
 	InitDebrisNames();
 	InitShadow();
 	//InitTextureNames();			// [A] I know that this is obsolete and used NOWHERE
-
+	
 #if USE_PC_FILESYSTEM
 	extern int gContentOverride;
 
@@ -475,26 +476,23 @@ void State_GameInit(void* param)
 	int i, musicType;
 	char padid;
 
-	if (NewLevel == 0)
+	if (NewLevel)
 	{
-		SetPleaseWait(NULL);
-	}
-	else
-	{
-#ifdef PSX
-		mallocptr = (char*)0x80137400;
-#else
-
 #ifdef USE_CRT_MALLOC
 		sys_freeall();
 		malloctab = D_MALLOC(0x200000);
 #endif // USE_CRT_MALLOC
+		
 		mallocptr = (char*)malloctab;
-#endif // PSX
 
+		// 4 regions, 1024 packed cell pointers
 		D_MALLOC_BEGIN();
-		packed_cell_pointers = D_MALLOC(1024 * sizeof(void*));
+		packed_cell_pointers = D_MALLOC(1024 * 4);
 		D_MALLOC_END();
+	}
+	else
+	{
+		SetPleaseWait(NULL);
 	}
 
 	gameinit = 1;
@@ -504,7 +502,7 @@ void State_GameInit(void* param)
 	InitPadRecording();
 	InitSpeechQueue(&gSpeechQueue);
 
-	if (NewLevel != 0)
+	if (NewLevel)
 	{
 		leadAIRequired = 0;
 		leadAILoaded = 0;
@@ -519,10 +517,10 @@ void State_GameInit(void* param)
 	if (GameType == GAME_MISSION)
 		SetupFadePolys();
 
-	if (NewLevel != 0)
+	if (NewLevel)
 		ShowLoadingScreen(LoadingScreenNames[GameLevel], 1, 36);
 
-	if (AttractMode != 0)
+	if (AttractMode)
 	{
 		TriggerInGameCutscene(0);
 		NoPlayerControl = 1;
@@ -1788,6 +1786,31 @@ void PrintCommandLineArguments()
 
 // [D] [T]
 #ifdef PSX
+// TODO: mapping in Linker script
+volatile u_char _memoryTab_org[0x50400];							// 0xE7000
+volatile u_char _mallocTab_org[0xD47BC /*0xC37BC*/];				// 0x137400
+
+volatile u_char* _path_org = &_memoryTab_org[0];					// 0xE7000
+volatile u_char* _otag1_org = &_memoryTab_org[0xC000];				// 0xF3000
+volatile u_char* _otag2_org = &_memoryTab_org[0x10200];				// 0xF7200
+volatile u_char* _primTab1_org = &_memoryTab_org[0x14400];			// 0xFB400
+volatile u_char* _primTab2_org = &_memoryTab_org[0x32400];			// 0x119400
+volatile u_char* _sbnk_org = &_mallocTab_org[0x48C00];				// 0x180000
+volatile u_char* _repl_org = &_mallocTab_org[0xD47BC];				// 0x1FABBC
+
+volatile char* _frontend_buffer = (char*)_otag1_org;
+volatile char* _other_buffer = (char*)_otag1_org;
+volatile char* _other_buffer2 = (char*)_path_org;
+volatile OTTYPE* _OT1 = (OTTYPE*)_otag1_org;
+volatile OTTYPE* _OT2 = (OTTYPE*)_otag2_org;
+volatile char* _primTab1 = (char*)_primTab1_org;
+volatile char* _primTab2 = (char*)_primTab2_org;
+volatile char* _overlay_buffer = (char*)_mallocTab_org;// _frnt_org;
+volatile char* _replay_buffer = (char*)_repl_org;
+volatile char* _sbank_buffer = (char*)_sbnk_org;
+volatile char* malloctab = (char*)_mallocTab_org;
+volatile char* mallocptr;
+
 int main(void)
 #else
 int redriver2_main(int argc, char** argv)
@@ -1842,6 +1865,20 @@ int redriver2_main(int argc, char** argv)
 	Init_FileSystem();
 	InitSound();
 
+#ifdef PSX
+	_frontend_buffer = (char*)_otag1_org;
+	_other_buffer = (char*)_otag1_org;
+	_other_buffer2 = (char*)_path_org;
+	_OT1 = (OTTYPE*)_otag1_org;
+	_OT2 = (OTTYPE*)_otag2_org;
+	_primTab1 = (char*)_primTab1_org;
+	_primTab2 = (char*)_primTab2_org;
+	_overlay_buffer = (char*)_mallocTab_org;// _frnt_org;
+	_replay_buffer = (char*)_repl_org;
+	_sbank_buffer = (char*)_sbnk_org;
+	malloctab = (char*)_mallocTab_org;
+#endif
+	
 	// [A] REDRIVER 2 version auto-detection
 	// this is the only difference between the files on CD
 #ifdef DEMO_VERSION
@@ -1886,11 +1923,11 @@ int redriver2_main(int argc, char** argv)
 		PlayFMV(0);		// play intro movie
 	}
 
-	CheckForCorrectDisc(0);
+	//CheckForCorrectDisc(0);
 	
 	// Init frontend
 #ifdef PSX
-	Loadfile("FRONTEND.BIN", (char*)_overlay_buffer);
+	//Loadfile("FRONTEND.BIN", (char*)_overlay_buffer);
 #endif // PSX
 
 	SpuSetMute(0);
@@ -1902,6 +1939,17 @@ int redriver2_main(int argc, char** argv)
 
 	// by default go to frontend
 	SetState(STATE_INITFRONTEND, (void*)2);
+
+	// PSX TEST
+	{
+		gInFrontend = 0;
+		AttractMode = 0;
+	
+		gCurrentMissionNumber = 50;
+	
+		GameType = GAME_TAKEADRIVE;
+		SetState(STATE_GAMELAUNCH);
+	}
 	
 #ifndef PSX
 	LoadCurrentProfile();

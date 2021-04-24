@@ -111,6 +111,8 @@ int send_bank;
 int sample_chunk;
 int chunk_complete;
 
+int SpoolLumpOffset;
+
 int new_area_location;
 int LoadingArea = 0;
 unsigned short *newmodels = NULL;
@@ -127,7 +129,7 @@ extern char g_CurrentLevelFileName[64];
 
 #endif
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(PSX)
 #define SPOOL_INFO printInfo
 #define SPOOL_WARNING printWarning
 #define SPOOL_ERROR printError
@@ -321,7 +323,7 @@ void _RequestSpool(int type, int data, int offset, int loadsize, char *address, 
 #define RequestSpool(type, data, offset, loadsize, loadaddr, func) _RequestSpool(type, data, offset, loadsize, loadaddr, func, __FUNCTION__, __LINE__)
 #else
 void RequestSpool(int type, int data, int offset, int loadsize, char *address, spooledFuncPtr func)
-#endif _DEBUG
+#endif // _DEBUG
 {
 	if (!(spoolcounter < 48))
 		trap(0x400);
@@ -332,11 +334,32 @@ void RequestSpool(int type, int data, int offset, int loadsize, char *address, s
 
 	next->type = type;
 	next->data = data;
-	next->sector = (citylumps[GameLevel][CITYLUMP_SPOOL].x / 2048) + offset;
+	next->sector = (SpoolLumpOffset >> 11) + offset;
 	next->nsectors = loadsize;
 	next->addr = address;
 	next->func = func;
 
+#ifdef PSX
+	char* nameType;
+	switch (next->type)
+	{
+	case 0:	// regions
+		nameType = "REGION";
+		break;
+	case 1:	// textures
+		nameType = "TPAGE";
+		break;
+	case 2:	// sbk
+		nameType = "SBK";
+		break;
+	case 3:	// misc
+		nameType = "MISC";
+		break;
+	}
+	
+	SPOOL_WARNING("spool type=%s cb=%d sec=%d cnt=%d id=%d\n", nameType, next->func ? 1 : 0, next->sector, next->nsectors, spoolcounter);
+#endif
+	
 #ifdef _DEBUG
 	next->requestby = requestby;
 	next->requestbyline = line;
@@ -961,9 +984,9 @@ void ready_cb_textures(unsigned char intr, unsigned char *result)
 {
 	if (intr == 1)
 	{
-		CdGetSector(target_address, 512);
+		CdGetSector(target_address, SECTOR_SIZE);
 
-		target_address = target_address + 2048;
+		target_address += 2048;
 		sectors_this_chunk--;
 		current_sector++;
 		sectors_to_read--;
@@ -1012,9 +1035,9 @@ void ready_cb_regions(unsigned char intr, unsigned char *result)
 {
 	if (intr == 1) 
 	{
-		CdGetSector(target_address, 512);
+		CdGetSector(target_address, SECTOR_SIZE);
 
-		target_address = target_address + 0x800;
+		target_address += 2048;
 		sectors_this_chunk--;
 		current_sector++;
 		sectors_to_read--;
@@ -1131,9 +1154,9 @@ void ready_cb_misc(unsigned char intr, unsigned char *result)
 {
 	if (intr == 1) 
 	{
-		CdGetSector(target_address, 512);
+		CdGetSector(target_address, SECTOR_SIZE);
 
-		target_address += 0x800;
+		target_address += 2048;
 		sectors_to_read--;
 		current_sector++;
 
@@ -1319,32 +1342,27 @@ void unpack_cellpointers(int region_to_unpack, int target_barrel_region, char* c
 	}
 	else 
 	{
-		printError("BAD PACKED CELL POINTER DATA, region = %d\n", region_to_unpack);
+		printError("BAD PACKED CELL POINTER DATA, region = %d, packtype = %d\n", region_to_unpack, packtype);
 
 		do {
 			trap(0x400);
 		} while (FrameCnt != 0x78654321);
-
+		
 		unpack_cellptr_flag = 0;
 	}
-}
-
-// [D] [T] [A] altered unpack_cellpointers
-void Unpack_CellPtrs(void)
-{
-	SPL_REGIONINFO* spool = &spool_regioninfo[spool_regionpos];
-
-	unpack_cellpointers(spool->region_to_unpack, spool->target_barrel_region, spool->cell_addr);
 }
 
 // [D] [T]
 void GotRegion(void)
 {
 	u_int target_barrel_reg;
+	SPL_REGIONINFO* spool;
 
-	Unpack_CellPtrs();
+	spool = &spool_regioninfo[spool_regionpos];
 
-	target_barrel_reg = spool_regioninfo[spool_regionpos].target_barrel_region;
+	unpack_cellpointers(spool->region_to_unpack, spool->target_barrel_region, spool->cell_addr);
+
+	target_barrel_reg = spool->target_barrel_region;
 	spool_regionpos++;
 
 	char* pvs = PVS_Buffers[target_barrel_reg];
@@ -1990,7 +2008,7 @@ void SpecialStartNextBlock(void)
 		specialState++;
 	}
 
-	fileSector = 0x1400 + (citystart[GameLevel] - citylumps[GameLevel][CITYLUMP_SPOOL].x / 2048) + (specspooldata[2]-1) * 42;
+	fileSector = 0x1400 + (citystart[GameLevel] - SpoolLumpOffset >> 11) + (specspooldata[2]-1) * 42;
 
 	switch (specialState)
 	{

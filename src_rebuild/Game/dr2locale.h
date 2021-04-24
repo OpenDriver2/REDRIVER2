@@ -246,13 +246,13 @@ enum MissionStrId
 #define MINIGAME_NAMES_START		MTXT_Downtown
 #define MINIGAME_NAMES_COUNT		(MTXT_Flamengo - MINIGAME_NAMES_START + 1)
 
+#ifndef PSX
+
 // lookup game string
 #define G_LTXT(id)	gGameLangTable[id]
 
 // lookup mission string
 #define M_LTXT(id)	gMissionLangTable[id]
-
-#ifndef PSX
 
 extern char* gGameLangTable[MAX_LANGUAGE_TEXT];
 extern char* gMissionLangTable[MAX_LANGUAGE_TEXT];
@@ -273,28 +273,17 @@ extern int InitStringLanguage(char* filename, int mission);
 
 #else
 
-/*
-static char* gGameLangTable[] = {
-	#include "GAME_ENGLISH.INC",
-};
+// lookup game string
+#define G_LTXT(id)	#id
 
-static char* gMissionLangTable[MAX_LANGUAGE_TEXT] = {
-	#include "MISSION_ENGLISH.INC",
-};*/
+// lookup mission string
+#define M_LTXT(id)	#id
 
-static char* gGameLangTable[MAX_LANGUAGE_TEXT] = {
-	"",
-};
+#define G_LTXT_ID(id)			#id //G_LTXT(id)
+#define M_LTXT_ID(id)			#id //M_LTXT(id)
 
-static char* gMissionLangTable[MAX_LANGUAGE_TEXT] = {
-	"",
-};
-
-#define G_LTXT_ID(id)	G_LTXT(id)
-#define M_LTXT_ID(id)	M_LTXT(id)
-
-#define GET_GAME_TXT(st)		st
-#define GET_MISSION_TXT(st)		st
+#define GET_GAME_TXT(st)		#st
+#define GET_MISSION_TXT(st)		#st
 
 #endif
 

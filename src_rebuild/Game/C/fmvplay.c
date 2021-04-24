@@ -55,6 +55,9 @@ void PlayRender(RENDER_ARGS *args)
 	args->screeny = draw_mode_pal.framey;
 	args->subtitle = gSubtitles;
 #ifdef PSX
+
+#if 0
+	
 	if (Loadfile("FMV\\FMV.EXE", (char*)_fmv_memory) != 0)
 	{
 		oldsp = GetSp();
@@ -64,6 +67,8 @@ void PlayRender(RENDER_ARGS *args)
 		Exec((EXEC*)_fmv_memory, 1, (char**)args);
 		SetSp(oldsp);
 	}
+#endif
+	
 #else
 
 	if (gNoFMV == 1)

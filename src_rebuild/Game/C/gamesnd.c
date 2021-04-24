@@ -149,8 +149,6 @@ static envsound envsnd[MAX_LEVEL_ENVSOUNDS];
 static envsoundinfo ESdata[2];
 tunnelinfo tunnels;
 
-char _sbank_buffer[0x80000];		// 0x180000
-
 // [D] [T]
 void LoadBankFromLump(int bank, int lump)
 {
@@ -165,10 +163,10 @@ void LoadBankFromLump(int bank, int lump)
 		LoadfileSeg(name, (char*)blockLimit, 0, sizeof(blockLimit));
 
 	size = blockLimit[lump + 1] - blockLimit[lump];
-	LoadfileSeg(name, _sbank_buffer, blockLimit[lump], size);
+	LoadfileSeg(name, (char*)_sbank_buffer, blockLimit[lump], size);
 
 	if (size > 0 && blockLimit[lump] && blockLimit[lump + 1]) // [A]
-		LoadSoundBankDynamic(_sbank_buffer, size, bank);
+		LoadSoundBankDynamic((char*)_sbank_buffer, size, bank);
 	else
 		printWarning("WARNING: sound bank lump %d is not valid!\n", lump);
 }

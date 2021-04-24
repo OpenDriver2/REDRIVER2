@@ -17,8 +17,6 @@
 
 #include "INLINE_C.H"
 
-#include <string.h>
-
 #include "event.h"
 
 

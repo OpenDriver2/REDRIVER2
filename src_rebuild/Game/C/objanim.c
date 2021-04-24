@@ -331,7 +331,6 @@ void InitAnimatingObjects(void)
 	}
 
 	FindSmashableObjects();
-	InitCyclingPals();
 }
 
 // [D] [T]

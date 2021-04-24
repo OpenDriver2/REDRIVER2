@@ -217,7 +217,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 			int cleanOfs = offsets[0];
 			int damOfs = offsets[1];
 			int lowOfs = offsets[2];
-
+			
 			if (cleanOfs != -1)
 			{
 				D_MALLOC_BEGIN();
@@ -233,7 +233,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 				gCarDamModelPtr[i] = model;
 				D_MALLOC_END();
 			}
-
+			
 			if (lowOfs != -1)
 			{
 				D_MALLOC_BEGIN();
@@ -312,8 +312,9 @@ MODEL* GetCarModel(char *src, char **dest, int KeepNormals, int modelNumber, int
 		size = model->normals;
 	else 
 		size = model->poly_block;
-	
-	*dest += size + 2;
+
+	//*dest += size + 2;
+	*dest = (char*)((int)model + size + 3 & 0xfffffffc);
 
 	model->vertices += (int)model;
 	model->normals += (int)model;

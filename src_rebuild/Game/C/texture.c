@@ -4,6 +4,7 @@
 #include "mission.h"
 #include "draw.h"
 #include "cars.h"
+#include "objanim.h"
 #include "ASM/compres.h"
 
 #include "STRINGS.H"
@@ -49,7 +50,6 @@ char carTpages[4][8] = {
 
 char *palette_lump;
 
-int texture_is_icon = 0;
 char* texturename_buffer = NULL;
 int NoTextureMemory = 0;
 
@@ -240,6 +240,8 @@ int LoadTPageAndCluts(RECT16 *tpage, RECT16 *cluts, int tpage2send, char *tpagea
 	int i;
 	RECT16 temptpage;
 
+	char* tempBuf;
+
 	npalettes = *(int *)tpageaddress;
 	tpageaddress += 4;
 
@@ -383,6 +385,9 @@ void ProcessTextureInfo(char *lump_ptr)
 
 	nspecpages = *(int *)ptr;
 	speclist = (XYPAIR *)(ptr + 4);
+
+	// initialize here on PSX
+	InitCyclingPals();
 }
 
 #ifndef PSX
@@ -604,8 +609,6 @@ void ReloadIcons(void)
 	ReportMode(1);
 }
 
-int environmenttpage = 0;
-
 // [D] [T]
 void GetTextureDetails(char *name, TEXTURE_DETAILS *info)
 {
@@ -623,8 +626,7 @@ void GetTextureDetails(char *name, TEXTURE_DETAILS *info)
 
 		for (j = 0; j < texamt; j++)
 		{
-			if (!strcmp(nametable + texinf->nameoffset, name) &&
-				(!texture_is_icon || i == environmenttpage))
+			if (!strcmp(nametable + texinf->nameoffset, name))
 			{
 				info->tpageid = texture_pages[i];
 				info->clutid = texture_cluts[i][j];
@@ -641,7 +643,6 @@ void GetTextureDetails(char *name, TEXTURE_DETAILS *info)
 		}
 	}
 
-	texture_is_icon = 0;
 	GetTextureDetails("SEA", info);	// weird but ok, ok...
 }
 
