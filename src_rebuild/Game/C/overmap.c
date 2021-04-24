@@ -445,11 +445,8 @@ void LoadMapTile(int tpage, int x, int y)
 	}
 	else
 	{
-		count = 0;
-
-		do {
+		for (count = 0; count < 512; count++)
 			MapBuffer[count++] = overlaidmaps[GameLevel].dummy;
-		} while (count < 512);
 	}
 
 	DrawSync(0);
