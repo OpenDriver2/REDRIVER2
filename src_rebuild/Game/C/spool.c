@@ -334,7 +334,7 @@ void RequestSpool(int type, int data, int offset, int loadsize, char *address, s
 
 	next->type = type;
 	next->data = data;
-	next->sector = (SpoolLumpOffset >> 11) + offset;
+	next->sector = (SpoolLumpOffset / 2048) + offset;
 	next->nsectors = loadsize;
 	next->addr = address;
 	next->func = func;
@@ -1995,7 +1995,7 @@ void SpecialStartNextBlock(void)
 		specialState++;
 	}
 
-	fileSector = 0x1400 + (citystart[GameLevel] - SpoolLumpOffset >> 11) + (specspooldata[2]-1) * 42;
+	fileSector = 0x1400 + (citystart[GameLevel] - SpoolLumpOffset / 2048) + (specspooldata[2]-1) * 42;
 
 	switch (specialState)
 	{
