@@ -9,4 +9,6 @@ extern PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATO
 extern PACKED_CELL_OBJECT* GetNextPackedCop(CELL_ITERATOR* pci); // 0x0003F5F0
 extern CELL_OBJECT* UnpackCellObject(PACKED_CELL_OBJECT* ppco, XZPAIR* near); // 0x000418E8
 
+extern void QuickUnpackCellObject(PACKED_CELL_OBJECT* ppco, XZPAIR* near, CELL_OBJECT* pco);
+
 #endif
