@@ -999,7 +999,7 @@ void SetCityType(CITYTYPE type)
 // [D] [T]
 CDTYPE DiscSwapped(char* filename)
 {
-#ifndef PSX
+#if 1//ndef PSX
 	return CDTYPE_CORRECTDISC;
 #else
 	CDTYPE ret;

@@ -107,7 +107,7 @@ char CellEmpty(VECTOR *pPosition, int radius)
 
 					ypos = pPosition->vy + (pCellObject->pos.vy + collide->ypos);	// [A] removed excessive height
 					
-#ifdef COLLISION_DEBUG
+#if defined(COLLISION_DEBUG) && !defined(PSX)
 					int result = 0;
 
 					if (collide->ysize / 2 > ABS(ypos) &&
@@ -426,7 +426,7 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 						ray.dir[2] = FIXEDH(cs * pos.vz + sn * pos.vx);
 						ray.dir[1] = vb.vy - va.vy;
 
-#if defined(COLLISION_DEBUG)
+#if defined(COLLISION_DEBUG) && !defined(PSX)
 						int rayResult = RaySlabsIntersection(&ray, &box);
 
 						extern int gShowCollisionDebug;

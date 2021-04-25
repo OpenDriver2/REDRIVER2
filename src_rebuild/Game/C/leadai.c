@@ -367,7 +367,7 @@ u_int LeadPadResponse(CAR_DATA* cp)
 	deltaTh = (dif + 2048U & 0xfff) - 2048;
 	avel = FIXEDH(cp->st.n.angularVelocity[1]);
 
-#ifdef COLLISION_DEBUG
+#if defined(COLLISION_DEBUG) && !defined(PSX)
 	extern int gShowCollisionDebug;
 	if (gShowCollisionDebug == 4)
 	{
@@ -1549,7 +1549,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 						offset.vz = FIXEDH(collide->xpos * matrixtable[yang].m[0][2] + collide->zpos * matrixtable[yang].m[2][2]) + cop->pos.vz;
 						offset.vy = -cop->pos.vy + collide->ypos;
 
-#if defined(_DEBUG) || defined(DEBUG_OPTIONS)
+#if defined(_DEBUG) || defined(DEBUG_OPTIONS) && !defined(PSX)
 						extern int gShowCollisionDebug;
 						if (gShowCollisionDebug == 4)
 						{

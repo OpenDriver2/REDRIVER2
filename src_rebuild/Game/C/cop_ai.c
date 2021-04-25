@@ -180,7 +180,7 @@ void WibbleDownTheRoad(VECTOR *from, int distance, VECTOR *to)
 		pos.vy += dir.vy;
 		pos.vz += dir.vz;
 
-#if defined(COLLISION_DEBUG)
+#if defined(COLLISION_DEBUG) && !defined(PSX)
 		extern int gShowCollisionDebug;
 		if (gShowCollisionDebug == 3)
 		{
@@ -432,7 +432,7 @@ void CopControl1(CAR_DATA *cp)
 
 		cp->ai.p.frontLClear = CellAtPositionEmpty(&pos, 80);
 
-#ifdef COLLISION_DEBUG
+#if defined(COLLISION_DEBUG) && !defined(PSX)
 		extern int gShowCollisionDebug;
 		if (gShowCollisionDebug == 3)
 		{
@@ -456,7 +456,7 @@ void CopControl1(CAR_DATA *cp)
 
 		cp->ai.p.frontRClear = CellAtPositionEmpty(&pos, 80);
 
-#ifdef COLLISION_DEBUG
+#if defined(COLLISION_DEBUG) && !defined(PSX)
 		extern int gShowCollisionDebug;
 		if (gShowCollisionDebug == 3)
 		{

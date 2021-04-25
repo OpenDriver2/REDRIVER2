@@ -1971,7 +1971,7 @@ int redriver2_main(int argc, char** argv)
 		PlayFMV(0);		// play intro movie
 	}
 
-	//CheckForCorrectDisc(0);
+	CheckForCorrectDisc(0);
 	
 	// Init frontend
 	LOAD_OVERLAY("FRONTEND.BIN", _overlay_buffer);
@@ -1993,9 +1993,9 @@ int redriver2_main(int argc, char** argv)
 		AttractMode = 0;
 	
 		wantedCar[0] = 1;
-		gCurrentMissionNumber = 50;
+		gCurrentMissionNumber = 1;
 	
-		GameType = GAME_TAKEADRIVE;
+		GameType = GAME_MISSION;
 		SetState(STATE_GAMELAUNCH);
 	}
 #endif
