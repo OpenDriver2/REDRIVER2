@@ -29,9 +29,9 @@ char* DentingFiles[] =
 #define MAX_FILE_DAMAGE_ZONE_POLYS	70
 #define MAX_FILE_DAMAGE_LEVELS		256
 
-unsigned char gCarDamageZoneVerts[MAX_CAR_MODELS][NUM_DAMAGE_ZONES][MAX_DAMAGE_ZONE_VERTS];
-unsigned char gHDCarDamageZonePolys[MAX_CAR_MODELS][NUM_DAMAGE_ZONES][MAX_DAMAGE_ZONE_POLYS];
-unsigned char gHDCarDamageLevels[MAX_CAR_MODELS][MAX_DAMAGE_LEVELS];
+u_char gCarDamageZoneVerts[MAX_CAR_MODELS][NUM_DAMAGE_ZONES][MAX_DAMAGE_ZONE_VERTS];
+u_char gHDCarDamageZonePolys[MAX_CAR_MODELS][NUM_DAMAGE_ZONES][MAX_DAMAGE_ZONE_POLYS];
+u_char gHDCarDamageLevels[MAX_CAR_MODELS][MAX_DAMAGE_LEVELS];
 
 // [D] [T]
 void InitialiseDenting(void)

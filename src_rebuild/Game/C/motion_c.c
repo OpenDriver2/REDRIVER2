@@ -1752,7 +1752,7 @@ RECT16 rectTannerWindow;
 // [D] [T]
 void InitTannerShadow(void)
 {
-	unsigned char brightness;
+	u_char brightness;
 	TILE* tile;
 	POLY_FT4* poly;
 	int i;

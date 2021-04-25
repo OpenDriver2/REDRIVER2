@@ -1848,7 +1848,7 @@ void WorldToMultiplayerMap(VECTOR *in, VECTOR *out)
 void WorldToOverheadMapPositions(VECTOR *pGlobalPosition, VECTOR *pOverheadMapPosition, int count, char inputRelative,int outputRelative)
 {
 	int scale, cs, sn;
-	MATRIX tempMatrix = {0};
+	MATRIX tempMatrix;
 	SVECTOR tempVector;
 	XZPAIR playerPos;
 	long flag;

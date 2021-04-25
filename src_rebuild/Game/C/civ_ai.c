@@ -42,10 +42,10 @@ struct
 	int TooCloseNuddaCar;
 	int TooClosePlayer;
 	int InvalidRegion;
-} civPingTest = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+} civPingTest;
 
 char modelRandomList[] = { 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 1, 0, 4 };
-unsigned char reservedSlots[MAX_CARS] = { 0 };
+u_char reservedSlots[MAX_CARS] = { 0 };
 
 int distFurthestCivCarSq = 0;
 char furthestCivID = 0;

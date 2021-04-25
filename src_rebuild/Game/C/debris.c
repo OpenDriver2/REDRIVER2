@@ -176,7 +176,7 @@ CVECTOR debris_colour[4][31] =
 	}
 };
 
-unsigned char grassColour[4][3] = {
+u_char grassColour[4][3] = {
 	{110, 115, 67},
 	{64, 55, 49},
 	{91, 104, 56},
