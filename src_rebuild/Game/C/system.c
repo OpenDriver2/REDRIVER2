@@ -351,9 +351,11 @@ int FileExists(char* filename)
 		retries--;
 		DoCDRetry();
 	} while (retries >= 0);
+
 #else
 	// don't retry or we'll have problems
-	return CdSearchFile(&cdfile, namebuffer) != NULL;
+	if(CdSearchFile(&cdfile, namebuffer) != NULL)
+		return 1;
 #endif
 	
 #endif // USE_CD_FILESYSTEM
@@ -483,11 +485,11 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 // [D] [T]
 void ReportMode(int on)
 {
-	static unsigned char param[8];
+	static u_char param[8];
 
 	if (XAPrepared() == 0)
 	{
-		if (on != 0)
+		if (on)
 			param[0] = CdlModeSpeed | CdlModeRept;
 		else
 			param[0] = CdlModeSpeed;
@@ -568,12 +570,12 @@ void loadsectors(char* addr, int sector, int nsectors)
 	sectors_left = nsectors;
 	current_address = addr;
 
+	CdDataCallback(data_ready);
+	CdReadyCallback(sector_ready);
+
 	// start asynchronous reading...
 	CdIntToPos(sector, &pos);
 	CdControlF(CdlReadS, (u_char*)&pos);
-
-	CdDataCallback(data_ready);
-	CdReadyCallback(sector_ready);
 
 	// ... but wait synchronously
 	do {
@@ -793,9 +795,7 @@ void SetupDrawBufferData(int num_players)
 	}
 	else
 	{
-		do {
-			trap(0x400);
-		} while (FrameCnt != 0x78654321);
+		D_CHECK_ERROR(true, "Erm... too many players selected. FATAL!");
 	}
 
 	SetGeomOffset(width / 2, height / 2);

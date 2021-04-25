@@ -76,14 +76,13 @@ int tsetcounter;
 int tsetpos;
 
 int spoolcounter;
-int spoolseek;		// Probably UNUSED
 
 int loadbank_read;
 int loadbank_write;
 
-int spoolpos;
-int spoolpos_reading;
-int spoolpos_writing;
+volatile int spoolpos;
+volatile int spoolpos_reading;
+volatile int spoolpos_writing;
 
 int allowSpecSpooling;
 int startSpecSpool;
@@ -98,18 +97,19 @@ static int sectors_this_chunk;
 static volatile int sectors_to_read;
 static char *target_address;
 
-static int nTPchunks;
-static int nTPchunks_reading;
-static int nTPchunks_writing;
+static volatile int nTPchunks;
+static volatile int nTPchunks_reading;
+static volatile int nTPchunks_writing;
 
-static int ntpages;
-static int current_sector;
-static int switch_spooltype;
+static volatile int ntpages;
+static volatile int current_sector;
+static volatile int switch_spooltype;
 
-static int endchunk;
+static volatile int endchunk;
 int send_bank;
 int sample_chunk;
-int chunk_complete;
+
+volatile int chunk_complete;
 
 int SpoolLumpOffset;
 
@@ -339,7 +339,7 @@ void RequestSpool(int type, int data, int offset, int loadsize, char *address, s
 	next->addr = address;
 	next->func = func;
 
-#ifdef PSX
+#if 0
 	char* nameType;
 	switch (next->type)
 	{
@@ -392,7 +392,6 @@ void InitSpooling(void)
 	spoolpos = 0;
 	unpack_roadmap_flag = 0;
 	loadbank_write = 0;
-	spoolseek = 0;
 	unpack_cellptr_flag = 0;
 }
 
@@ -931,9 +930,7 @@ void changemode(SPOOLQ *current);
 // [D] [T]
 void data_cb_textures(void)
 {
-	//printf("data_cb_textures remaining: %d\n", sectors_to_read);
-
-	if (chunk_complete != 0) 
+	if (chunk_complete) 
 	{
 		chunk_complete = 0;
 		nTPchunks = nTPchunks_writing;
@@ -952,7 +949,7 @@ void data_cb_textures(void)
 
 			if (ntpages == 0)
 			{
-				if (switch_spooltype == 0)
+				if (!switch_spooltype)
 				{
 					CdDataCallback(NULL);
 
@@ -972,7 +969,7 @@ void data_cb_textures(void)
 				}
 				else
 				{
-					changemode(spooldata + spoolpos_writing);
+					changemode(&spooldata[spoolpos_writing]);
 				}
 			}
 		}
@@ -993,7 +990,7 @@ void ready_cb_textures(unsigned char intr, unsigned char *result)
 
 		if (sectors_this_chunk == 0) 
 		{
-			if (nTPchunks_reading != 0)
+			if (nTPchunks_reading)
 				loadbank_read++;
 
 			nTPchunks_reading++;
@@ -1055,7 +1052,7 @@ void ready_cb_regions(unsigned char intr, unsigned char *result)
 			else 
 			{
 				target_address = spooldata[spoolpos_reading].addr;
-				sectors_this_chunk = (spooldata[spoolpos_reading].nsectors);
+				sectors_this_chunk = spooldata[spoolpos_reading].nsectors;
 			}
 		}
 	}
@@ -1066,11 +1063,9 @@ void ready_cb_regions(unsigned char intr, unsigned char *result)
 // [D] [T]
 void data_cb_regions(void)
 {
-	//printf("data_cb_regions remaining: %d\n", sectors_to_read);
-
 	SPOOLQ* current = &spooldata[spoolpos_writing];
 
-	if (chunk_complete != 0) 
+	if (chunk_complete) 
 	{
 		chunk_complete = 0;
 
@@ -1079,9 +1074,9 @@ void data_cb_regions(void)
 
 		spoolpos_writing++;
 
-		if (endchunk != 0)
+		if (endchunk)
 		{
-			if (switch_spooltype == 0) 
+			if (!switch_spooltype) 
 			{
 				CdDataCallback(NULL);
 
@@ -1111,11 +1106,9 @@ void data_cb_regions(void)
 // [D] [T]
 void data_cb_misc(void)
 {
-	//printf("data_cb_misc remaining: %d\n", sectors_to_read);
-
 	SPOOLQ *current = &spooldata[spoolpos_writing];
 
-	if (chunk_complete != 0) 
+	if (chunk_complete) 
 	{
 		chunk_complete = 0;
 
@@ -1124,7 +1117,7 @@ void data_cb_misc(void)
 
 		spoolpos_writing++;
 
-		if (switch_spooltype == 0)
+		if (!switch_spooltype)
 		{
 			CdDataCallback(NULL);
 			
@@ -1144,7 +1137,7 @@ void data_cb_misc(void)
 		}
 		else
 		{
-			changemode(spooldata + spoolpos_writing);
+			changemode(&spooldata[spoolpos_writing]);
 		}
 	}
 }
@@ -1188,6 +1181,7 @@ void test_changemode(void)
 	else if (current_sector == current->sector)
 	{
 		target_address = current->addr;
+
 		switch_spooltype = 1;
 
 		if (current->type == 0)
@@ -1261,7 +1255,7 @@ void StartSpooling(void)
 	if (XAPrepared())
 		return;
 
-	param[0] = CdlModeSize0 | CdlModeSize1 | CdlModeSpeed;
+	param[0] = CdlModeSpeed;
 	CdControlB(CdlSetmode, param, result);
 
 	if (*result & (CdlStatError | CdlStatShellOpen))
@@ -1272,7 +1266,6 @@ void StartSpooling(void)
 
 	if (FastForward)
 		SpoolSYNC();
-
 }
 
 // [D] [T] [A] - altered declaration
@@ -1286,7 +1279,7 @@ void unpack_cellpointers(int region_to_unpack, int target_barrel_region, char* c
 	u_int pcode;
 
 	int packtype;
-	
+
 	unpack_cellptr_flag = 0;
 	packtype = *(int *)(cell_addr + 4);
 	source_packed_data = (ushort *)(cell_addr + 8);
@@ -1344,10 +1337,8 @@ void unpack_cellpointers(int region_to_unpack, int target_barrel_region, char* c
 	{
 		printError("BAD PACKED CELL POINTER DATA, region = %d, packtype = %d\n", region_to_unpack, packtype);
 
-		do {
-			trap(0x400);
-		} while (FrameCnt != 0x78654321);
-		
+		D_CHECK_ERROR(true, "Bad cell pointer data");
+
 		unpack_cellptr_flag = 0;
 	}
 }
@@ -1483,18 +1474,14 @@ void UpdateSpool(void)
 
 		if (current->type == 0) // SPOOLTYPE_REGIONS
 		{
-			sectors_this_chunk = (current->nsectors);
+			sectors_this_chunk = current->nsectors;
 			sectors_to_read = spool_regioninfo[spool_regionpos].nsectors;
-
-			spoolseek = 5;
 
 			CdDataCallback(data_cb_regions);
 			CdReadyCallback(ready_cb_regions);
 		}
 		else if (current->type == 1) // SPOOLTYPE_TEXTURES
 		{
-			spoolseek = 5;
-
 			nTPchunks_reading = 0;
 			nTPchunks_writing = 0;
 			sectors_to_read = 17;
@@ -1504,20 +1491,20 @@ void UpdateSpool(void)
 			CdDataCallback(data_cb_textures);
 			CdReadyCallback(ready_cb_textures);
 
-			target_address = target_address + 0x4000;
+			target_address += 0x4000;
 		}
 		else if (current->type == 3)  // SPOOLTYPE_MISC
 		{
 			sectors_to_read = (current->nsectors);
 
-			spoolseek = 5;
-			
 			CdDataCallback(data_cb_misc);
 			CdReadyCallback(ready_cb_misc);
 		}
 
 		current_sector = current->sector;
+
 		endchunk = 0;
+
 		switch_spooltype = 0;
 
 		// run sector reading
@@ -1530,21 +1517,21 @@ void UpdateSpool(void)
 int LoadRegionData(int region, int target_region)
 {
 	char *cell_buffer;
-	ushort *spofs;
+	ushort spofs;
 	int offset;
 	Spool *spoolptr;
 	char *roadmap_buffer;	// D1 leftover?
 
 	roadmap_buffer = NULL; // [A]
 
-	spofs = (spoolinfo_offsets + region);
+	spofs = spoolinfo_offsets[region];
 
-	if (*spofs == 0xFFFF)	// has region offset?
+	if (spofs == 0xFFFF)	// has region offset?
 		return 0;
 
 	loading_region[target_region] = region;
 	cell_buffer = packed_cell_pointers;
-	spoolptr = (Spool *)(RegionSpoolInfo + *spofs);
+	spoolptr = (Spool *)(RegionSpoolInfo + spofs);
 
 	offset = spoolptr->offset;
 
@@ -1554,7 +1541,7 @@ int LoadRegionData(int region, int target_region)
 		RequestSpool(0, 0, offset, spoolptr->roadm_size, PVS_Buffers[target_region], NULL);
 		offset += spoolptr->roadm_size;
 
-		RequestSpool(0, 0, offset, spoolptr->cell_data_size[1], packed_cell_pointers, NULL);
+		RequestSpool(0, 0, offset, spoolptr->cell_data_size[1], cell_buffer, NULL);
 		offset += spoolptr->cell_data_size[1];
 
 		RequestSpool(0, 0, offset, spoolptr->cell_data_size[0], (char *)(cells + cell_slots_add[target_region]), NULL);
@@ -1566,7 +1553,7 @@ int LoadRegionData(int region, int target_region)
 	else
 #endif
 	{
-		RequestSpool(0, 0, offset, spoolptr->cell_data_size[1], packed_cell_pointers, NULL);
+		RequestSpool(0, 0, offset, spoolptr->cell_data_size[1], cell_buffer, NULL);
 		offset += spoolptr->cell_data_size[1];
 
 		RequestSpool(0, 0, offset, spoolptr->cell_data_size[0], (char *)(cells + cell_slots_add[target_region]), NULL);

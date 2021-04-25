@@ -627,11 +627,7 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 	else
 		lbody = cp->ap.carCos->colBox.vz;
 
-	if (cp < car_data)
-	{
-		while (FrameCnt != 0x78654321)
-			trap(0x400);
-	}
+	D_CHECK_ERROR(cp < car_data, "Invalid car");
 
 	if (ghost_mode || cp->controlType == CONTROL_TYPE_PLAYER && playerghost)
 		return;

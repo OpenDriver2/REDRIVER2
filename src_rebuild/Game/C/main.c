@@ -449,7 +449,7 @@ void LoadGameLevel(void)
 	// CITYLUMP_DATA2 - in-memory lump
 	ProcessLumps(malloc_lump + 8, (nsectors * CDSECTOR_SIZE));	
 
-	SpoolLumpOffset = citylumps[GameLevel][CITYLUMP_SPOOL].x; // not used anyway
+	SpoolLumpOffset = citylumps[GameLevel][CITYLUMP_SPOOL].x;
 
 	//Init_Reflection_Mapping();	// [A] I know that this is obsolete and used NOWHERE
 	InitDebrisNames();
@@ -686,13 +686,12 @@ void State_GameInit(void* param)
 	NextChase(0);
 #endif
 
-	if (pathAILoaded != 0)
-	{
+	if (pathAILoaded)
 		InitCops();
-	}
 
 	InitCamera(&player[0]);
 
+	printf("InitOverlays!\n");
 	if (gLoadedOverlay && NoPlayerControl == 0)
 	{
 		InitOverlays();
@@ -708,7 +707,8 @@ void State_GameInit(void* param)
 	SetupRain();
 	InitExObjects();
 
-	if (NewLevel != 0)
+	printf("Alloc COP list!\n");
+	if (NewLevel)
 	{
 		// alloc pointer list
 		// [A] use model_tile_ptrs for this since it is only used for drawing purposes
@@ -1191,7 +1191,8 @@ void StepSim(void)
 
 	if (!game_over)
 	{
-		ControlCops();
+		if(pathAILoaded)
+			ControlCops();
 
 		if (gLoadedMotionCapture)
 			HandlePedestrians();
@@ -1787,8 +1788,8 @@ void PrintCommandLineArguments()
 // [D] [T]
 #ifdef PSX
 // TODO: mapping in Linker script
-volatile u_char _memoryTab_org[0x50400];							// 0xE7000
-volatile u_char _mallocTab_org[0xD47BC /*0xC37BC*/];				// 0x137400
+volatile u_char _memoryTab_org[0x50400]  __attribute__((aligned(0x10)));						// 0xE7000
+volatile u_char _mallocTab_org[0xD47BC /*0xC37BC*/] __attribute__((aligned(0x10)));				// 0x137400
 
 volatile u_char* _path_org = &_memoryTab_org[0];					// 0xE7000
 volatile u_char* _otag1_org = &_memoryTab_org[0xC000];				// 0xF3000
@@ -1796,6 +1797,7 @@ volatile u_char* _otag2_org = &_memoryTab_org[0x10200];				// 0xF7200
 volatile u_char* _primTab1_org = &_memoryTab_org[0x14400];			// 0xFB400
 volatile u_char* _primTab2_org = &_memoryTab_org[0x32400];			// 0x119400
 volatile u_char* _sbnk_org = &_mallocTab_org[0x48C00];				// 0x180000
+volatile u_char* _frnt_org = &_mallocTab_org[0x88C00];				// 0x1C0000
 volatile u_char* _repl_org = &_mallocTab_org[0xD47BC];				// 0x1FABBC
 
 volatile char* _frontend_buffer = (char*)_otag1_org;
@@ -1805,7 +1807,7 @@ volatile OTTYPE* _OT1 = (OTTYPE*)_otag1_org;
 volatile OTTYPE* _OT2 = (OTTYPE*)_otag2_org;
 volatile char* _primTab1 = (char*)_primTab1_org;
 volatile char* _primTab2 = (char*)_primTab2_org;
-volatile char* _overlay_buffer = (char*)_mallocTab_org;// _frnt_org;
+volatile char* _overlay_buffer = (char*) _frnt_org;
 volatile char* _replay_buffer = (char*)_repl_org;
 volatile char* _sbank_buffer = (char*)_sbnk_org;
 volatile char* malloctab = (char*)_mallocTab_org;
@@ -1866,17 +1868,17 @@ int redriver2_main(int argc, char** argv)
 	InitSound();
 
 #ifdef PSX
-	_frontend_buffer = (char*)_otag1_org;
-	_other_buffer = (char*)_otag1_org;
-	_other_buffer2 = (char*)_path_org;
-	_OT1 = (OTTYPE*)_otag1_org;
-	_OT2 = (OTTYPE*)_otag2_org;
-	_primTab1 = (char*)_primTab1_org;
-	_primTab2 = (char*)_primTab2_org;
-	_overlay_buffer = (char*)_mallocTab_org;// _frnt_org;
-	_replay_buffer = (char*)_repl_org;
-	_sbank_buffer = (char*)_sbnk_org;
-	malloctab = (char*)_mallocTab_org;
+	_frontend_buffer = (char*)_otag1_org - 0x80000000;
+	_other_buffer = (char*)_otag1_org - 0x80000000;
+	_other_buffer2 = (char*)_path_org - 0x80000000;
+	_OT1 = (OTTYPE*)_otag1_org - 0x80000000;
+	_OT2 = (OTTYPE*)_otag2_org - 0x80000000;
+	_primTab1 = (char*)_primTab1_org - 0x80000000;
+	_primTab2 = (char*)_primTab2_org - 0x80000000;
+	_overlay_buffer = (char*)_frnt_org - 0x80000000;
+	_replay_buffer = (char*)_repl_org - 0x80000000;
+	_sbank_buffer = (char*)_sbnk_org - 0x80000000;
+	malloctab = (char*)_mallocTab_org - 0x80000000;
 #endif
 	
 	// [A] REDRIVER 2 version auto-detection
@@ -1926,9 +1928,7 @@ int redriver2_main(int argc, char** argv)
 	//CheckForCorrectDisc(0);
 	
 	// Init frontend
-#ifdef PSX
-	//Loadfile("FRONTEND.BIN", (char*)_overlay_buffer);
-#endif // PSX
+	LOAD_OVERLAY("FRONTEND.BIN", _overlay_buffer);
 
 	SpuSetMute(0);
 
@@ -1945,7 +1945,7 @@ int redriver2_main(int argc, char** argv)
 		gInFrontend = 0;
 		AttractMode = 0;
 	
-		gCurrentMissionNumber = 50;
+		gCurrentMissionNumber = 54;
 	
 		GameType = GAME_TAKEADRIVE;
 		SetState(STATE_GAMELAUNCH);

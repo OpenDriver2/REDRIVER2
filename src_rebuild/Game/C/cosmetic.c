@@ -681,11 +681,7 @@ void AddExhaustSmoke(CAR_DATA *cp, int black_smoke, int WheelSpeed)
 	SVECTOR svec;
 	SVECTOR smokedir;
 
-	if (cp < car_data) {
-		while (FrameCnt != 0x78654321) {
-			trap(0x400);
-		}
-	}
+	D_CHECK_ERROR(cp < car_data, "Invalid car");
 
 	if (cp->controlType == CONTROL_TYPE_CIV_AI && cp->ai.c.thrustState == 3 && (cp->ai.c.ctrlState == 5 || cp->ai.c.ctrlState == 7))
 		return;

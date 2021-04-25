@@ -48,13 +48,7 @@ void InitDrivingGames(void)
 
 	if (GameType == GAME_GATERACE || GameType == GAME_TRAILBLAZER) 
 	{
-		if (CutsceneBuffer.bytesFree < 1200)
-		{
-			while (FrameCnt != 0x78654321) 
-			{
-				trap(0x400);
-			}
-		}
+		D_CHECK_ERROR(CutsceneBuffer.bytesFree < 1200, "Cutscene buffer is less than 1200 bytes");
 
 		gTrailblazerConeCount = 0;
 		gTrailblazerConeIndex = 0;

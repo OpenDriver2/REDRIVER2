@@ -41,7 +41,7 @@ void DrawTimer(MR_TIMER* timer)
 		digit_pos = PrintDigit((int)timer->x, (int)timer->y, string);
 
 		sprintf(string, ".%02d", (u_int)timer->frac);
-		PrintString(string, digit_pos, (int)timer->y + 0xd);
+		PrintString(string, digit_pos, (int)timer->y + 13);
 	}
 }
 

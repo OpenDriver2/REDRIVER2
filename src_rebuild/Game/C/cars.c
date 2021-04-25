@@ -571,13 +571,7 @@ void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	MODEL *WheelModelBack;
 	MODEL *WheelModelFront;
 
-	if (cp < car_data) 
-	{
-		while (FrameCnt != 0x78654321) 
-		{
-			trap(0x400);
-		}
-	}
+	D_CHECK_ERROR(cp < car_data, "Invalid car");
 
 	car_id = CAR_INDEX(cp);
 
@@ -1252,11 +1246,7 @@ void DrawCar(CAR_DATA* cp, int view)
 	VECTOR dist;
 	MATRIX workmatrix;
 
-	if (cp < car_data) {
-		while (FrameCnt != 0x78654321) {
-			trap(0x400);
-		}
-	}
+	D_CHECK_ERROR(cp < car_data, "Invalid car");
 
 	model = cp->ap.model;
 

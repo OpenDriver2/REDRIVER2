@@ -644,16 +644,16 @@ void LoadMission(int missionnum)
 
 
 	// load specific AI for mission
-	if (NewLevel != 0) 
+	if (NewLevel) 
 	{
 		if (MissionHeader->route == 0)
 		{
 			mallocptr += (missionSize + 3U & 0xfffffffc);
-#ifdef PSX
-			Loadfile("PATH.BIN", (char*)_other_buffer2);
-#endif // PSX
+
+			if(LOAD_OVERLAY("PATH.BIN", _other_buffer2))
+				pathAILoaded = 1;
+
 			leadAILoaded = 0;
-			pathAILoaded = 1;
 		}
 		else 
 		{
@@ -665,9 +665,9 @@ void LoadMission(int missionnum)
 			LeadValues = rinfo->parameters;
 			
 			mallocptr = MissionStrings + MissionHeader->route;
-#ifdef PSX
-			Loadfile("LEAD.BIN", (char*)_other_buffer2);
-#endif // PSX
+
+			if(LOAD_OVERLAY("LEAD.BIN", _other_buffer2))
+				leadAILoaded = 1;
 
 #ifdef DEBUG
 			printInfo("---- LEAD VALUES ----\n");
@@ -690,8 +690,6 @@ void LoadMission(int missionnum)
 				LeadValues.hWidth80,
 				LeadValues.hWidth80Mul);
 #endif
-
-			leadAILoaded = 1;
 			pathAILoaded = 0;
 			CopsAllowed = 0;
 		}

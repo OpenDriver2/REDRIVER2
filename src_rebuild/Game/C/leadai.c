@@ -2082,13 +2082,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 
 	sindex = newTarget - 21;
 
-	if (intention == 6)
-	{
-		while (FrameCnt != 0x78654321)
-		{
-			trap(0x400);
-		}
-	}
+	D_CHECK_ERROR(intention == 6, "Unknw intention in leadai.c");
 
 	if (intention - 4U < 2)
 	{

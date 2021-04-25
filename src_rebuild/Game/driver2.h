@@ -17,12 +17,14 @@
 
 #ifdef PSX
 // TODO: Include PSX STUFF
-#define trap(code) printf("ERROR OCCURED %s %d!\n", FUNCNAME, code)
+#define trap(code)
 
 #define printMsg					printf
 #define printInfo					printf
 #define printWarning				printf
 #define printError					printf
+
+#define LOAD_OVERLAY(filename, addr) 0	// Loadfile(filename, (char*)addr);
 
 #else
 
@@ -44,7 +46,11 @@
 #define trap(ode) {_asm int 0x03}
 #endif
 
+#define LOAD_OVERLAY(filename, addr) 1
+
 #endif // PSX
+
+#define D_CHECK_ERROR(expr, message) if(expr){ printError("%s - %s\n", FUNCNAME, message); while (FrameCnt != 0x78654321) trap(0x400); }
 
 #include "reversing.h"
 

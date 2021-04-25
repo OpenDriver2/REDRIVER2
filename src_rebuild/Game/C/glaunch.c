@@ -331,9 +331,8 @@ void ReInitFrontend(int returnToMain)
 	LoadSoundBankDynamic((char*)0x0, 0, 0);
 	LoadBankFromLump(1, 0);
 	
-#ifdef PSX
-	Loadfile("FRONTEND.BIN", (char*)_overlay_buffer);
-#endif // PSX
+	// load frontend
+	LOAD_OVERLAY("FRONTEND.BIN", _overlay_buffer);
 
 	// switch to state STATE_INITFRONTEND
 
@@ -483,7 +482,7 @@ void GetRandomChase(void)
 
 	if (gLoadedReplay == 0)
 	{
-		gRandomChase = VSync(-1) % 0xd + 2;
+		gRandomChase = VSync(-1) % 13 + 2;
 
 		bump = 0;
 

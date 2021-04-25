@@ -25,8 +25,8 @@ extern char* packed_cell_pointers;
 extern int RoadMapRegions[4];
 
 extern volatile int spoolactive;
-extern int spoolpos_reading;
-extern int chunk_complete;
+extern volatile int spoolpos_reading;
+extern volatile int chunk_complete;
 extern volatile int spoolactive;
 
 extern int SpoolLumpOffset;
