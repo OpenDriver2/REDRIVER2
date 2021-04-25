@@ -62,6 +62,8 @@
 #include "shadow.h"
 #include "pause.h"
 
+#include "sysclock.h"
+
 #include "platform.h"
 
 #include "RAND.H"
@@ -756,7 +758,7 @@ void State_GameInit(void* param)
 		player[i].horn.on = 0;
 	}
 
-#ifdef DEBUG
+#if defined(DEBUG) || defined(PSX)
 	printInfo("malloctab 0x%08x to 0x%08x (%d bytes) (Final: 0x%08x)\n", &malloctab, mallocptr, mallocptr - malloctab, mallocptr);
 
 	if (mallocptr < malloctab + PSX_MALLOC_SIZE)
@@ -829,6 +831,11 @@ void State_GameInit(void* param)
 		VSync(0);
 	}
 	
+#ifdef PSX
+	inittimer(120);
+	Clock_SystemStartUp();
+#endif
+
 	// switch to STATE_GAMELOOP
 	SetState(STATE_GAMELOOP);
 }
@@ -1623,6 +1630,46 @@ void State_GameLoop(void* param)
 {
 	int cnt;
 
+#if 0//def PSX
+
+	if (!FilterFrameTime())
+		return;
+
+	static int lastTime32Hz = 0;
+
+	int curTime = clock_realTime.time32Hz;
+	int numFrames = curTime - lastTime32Hz;
+
+	CheckForPause();
+
+	// moved from StepGame
+	if (FrameCnt == 5)
+		SetDispMask(1);
+
+	// game makes 7 frames
+	if (FastForward)
+		cnt = 7;
+	else
+		cnt = numFrames;
+
+	if (cnt)
+		lastTime32Hz = curTime;
+
+	// don't do more than 3 frames in non-fastforward mode
+	if (!FastForward && cnt > 3)
+		cnt = 0;
+
+	while (--cnt >= 0)
+	{
+		if(cnt != 0)
+			InitCamera(&player[0]);
+
+		StepGame();
+	}
+
+	DrawGame();
+#else
+
 	if (!FilterFrameTime())
 		return;
 
@@ -1642,7 +1689,7 @@ void State_GameLoop(void* param)
 		StepGame();
 
 	DrawGame();
-
+#endif
 	if (game_over)
 		SetState(STATE_GAMECOMPLETE);
 }
@@ -1785,6 +1832,7 @@ void PrintCommandLineArguments()
 
 // [D] [T]
 #ifdef PSX
+
 // TODO: mapping in Linker script
 volatile u_char _memoryTab_org[0x50400]  __attribute__((aligned(0x10)));						// 0xE7000
 volatile u_char _mallocTab_org[0xD47BC /*0xC37BC*/] __attribute__((aligned(0x10)));				// 0x137400
@@ -1796,7 +1844,7 @@ volatile u_char* _primTab1_org = &_memoryTab_org[0x14400];			// 0xFB400
 volatile u_char* _primTab2_org = &_memoryTab_org[0x32400];			// 0x119400
 volatile u_char* _sbnk_org = &_mallocTab_org[0x48C00];				// 0x180000
 volatile u_char* _frnt_org = &_mallocTab_org[0x88C00];				// 0x1C0000
-volatile u_char* _repl_org = &_mallocTab_org[0xD47BC];				// 0x1FABBC
+volatile u_char* _repl_org = &_mallocTab_org[0xC47BC];				// 0x1FABBC
 
 volatile char* _frontend_buffer = (char*)_otag1_org;
 volatile char* _other_buffer = (char*)_otag1_org;
@@ -1938,16 +1986,19 @@ int redriver2_main(int argc, char** argv)
 	// by default go to frontend
 	SetState(STATE_INITFRONTEND, (void*)2);
 
-	// PSX TEST
+	
+#ifdef PSX	// PSX TEST
 	{
 		gInFrontend = 0;
 		AttractMode = 0;
 	
-		gCurrentMissionNumber = 52;
+		wantedCar[0] = 1;
+		gCurrentMissionNumber = 50;
 	
 		GameType = GAME_TAKEADRIVE;
 		SetState(STATE_GAMELAUNCH);
 	}
+#endif
 	
 #ifndef PSX
 	LoadCurrentProfile();
