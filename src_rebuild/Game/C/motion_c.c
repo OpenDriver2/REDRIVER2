@@ -24,6 +24,7 @@
 
 #include "INLINE_C.H"
 #include "GTEMAC.H"
+#include <LIBETC.H>
 
 enum LIMBS
 {
@@ -931,9 +932,12 @@ void SetupTannerSkeleton(PEDESTRIAN* pDrawingPed)
 		pC += sizeof(SVECTOR_NOPAD);
 	}
 
-	static SVECTOR scratchpad[NUM_BONES];
-
-	store = scratchpad;
+#ifdef PSX
+	store = (SVECTOR*)getScratchAddr(0x200);
+#else
+	SVECTOR scratchVectors[64];
+	store = scratchVectors;
+#endif
 
 	store[LOWERBACK].vx = Skel[LOWERBACK].pvOrigPos->vx;
 	store[LOWERBACK].vy = -Skel[LOWERBACK].pvOrigPos->vy;
@@ -1011,12 +1015,15 @@ void SetupTannerSkeleton(PEDESTRIAN* pDrawingPed)
 // [A] - was inlined in newShowTanner
 void DrawSprite(PEDESTRIAN* pDrawingPed, BONE* pBone, VECTOR* vJPos)
 {
-	static char scratchpad[sizeof(SVECTOR) * 2];		// 0x1f800200
-
 	VERTTYPE t0[2], t1[2]; // [A] was two longs
 	int z, z1, z2;
 
-	SVECTOR* data = (SVECTOR*)scratchpad;
+#ifdef PSX
+	SVECTOR* data = (SVECTOR*)getScratchAddr(0x200);
+#else
+	SVECTOR scratchVectors[64];
+	SVECTOR* data = scratchVectors;
+#endif
 
 	data[0].vx = vJPos[pBone->id & 0x7f].vx + pDrawingPed->position.vx - camera_position.vx;
 	data[0].vy = vJPos[pBone->id & 0x7f].vy + pDrawingPed->position.vy - camera_position.vy;
@@ -1047,11 +1054,16 @@ void newShowTanner(PEDESTRIAN* pDrawingPed)
 {
 	int i, j;
 	int draw;
-	static VECTOR scratchpad[32];
 
-	VECTOR* playerPos = &scratchpad[0];
-	VECTOR* cameraPos = &scratchpad[1];
-	VECTOR* vJPos = &scratchpad[2];
+#ifdef PSX
+	VECTOR* spad = (VECTOR*)getScratchAddr(0x100);
+#else
+	VECTOR spad[64];
+#endif
+
+	VECTOR* playerPos = &spad[0];
+	VECTOR* cameraPos = &spad[1];
+	VECTOR* vJPos = &spad[2];
 
 	playerPos->vx = pDrawingPed->position.vx;
 	playerPos->vy = pDrawingPed->position.vy - 15;	// [A] elevate Tanner model a little bit so his legs are not in the ground (when Z-buffer enabled)
@@ -1963,8 +1975,6 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 	addPrim(current->ot + 0x107f, dr_env);
 	current->primptr += sizeof(DR_ENV);
 }
-
-extern _pct plotContext;
 
 // [A] - totally custom function but it works pretty much same as original
 void DoCivHead(PEDESTRIAN* pPed, SVECTOR* vert1, SVECTOR* vert2)

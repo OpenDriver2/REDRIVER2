@@ -14,6 +14,8 @@ extern MATRIX face_camera;
 extern MATRIX2 matrixtable[64];
 extern MATRIX2 CompoundMatrix[64];
 
+extern _pct& plotContext;
+
 #ifdef PSX
 
 #define MAX_DRAWN_BUILDINGS		192

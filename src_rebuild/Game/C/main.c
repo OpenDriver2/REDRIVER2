@@ -691,7 +691,6 @@ void State_GameInit(void* param)
 
 	InitCamera(&player[0]);
 
-	printf("InitOverlays!\n");
 	if (gLoadedOverlay && NoPlayerControl == 0)
 	{
 		InitOverlays();
@@ -707,7 +706,6 @@ void State_GameInit(void* param)
 	SetupRain();
 	InitExObjects();
 
-	printf("Alloc COP list!\n");
 	if (NewLevel)
 	{
 		// alloc pointer list
@@ -1945,7 +1943,7 @@ int redriver2_main(int argc, char** argv)
 		gInFrontend = 0;
 		AttractMode = 0;
 	
-		gCurrentMissionNumber = 54;
+		gCurrentMissionNumber = 52;
 	
 		GameType = GAME_TAKEADRIVE;
 		SetState(STATE_GAMELAUNCH);

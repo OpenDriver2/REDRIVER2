@@ -2130,6 +2130,11 @@ struct MVERTEX
 	}uv;
 };
 
+struct MVERTEX5x5
+{
+	MVERTEX verts[5][5];
+};
+
 struct VERTEX
 {
 	DVECTOR coord;

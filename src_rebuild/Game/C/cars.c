@@ -22,6 +22,7 @@
 
 #include "INLINE_C.H"
 #include "LIBAPI.H"
+#include "LIBETC.H"
 
 #ifndef PSX
 #define CAR_LOD_SWITCH_DISTANCE switch_detail_distance
@@ -347,7 +348,7 @@ void restoreLightingMatrices(void)
 // [D] [T]
 void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 {
-	MATRIX scratchPadMat; // 0x1f800344
+	MATRIX& scratchPadMat = *(MATRIX*)getScratchAddr(0x344);
 
 	int doLight;
 	int orW;
@@ -1223,7 +1224,7 @@ void DrawCarObject(CAR_MODEL* car, MATRIX* matrix, VECTOR* pos, int palette, CAR
 
 	gte_SetTransVector(&modelLocation);
 
-	savedSP = SetSp(0x1f800308);
+	savedSP = SetSp((u_long)getScratchAddr(0x308));
 
 	plotNewCarModel(car, palette);
 

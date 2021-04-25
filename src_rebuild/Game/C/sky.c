@@ -836,9 +836,6 @@ void calc_sky_brightness(void)
 		skycolor.b = skyFade;
 }
 
-// offset: 0x1f800020
-extern _pct plotContext;
-
 #ifdef USE_PGXP
 DVECTORF scratchPad_skyVertices[35];	// 1f800044
 #else

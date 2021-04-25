@@ -959,9 +959,6 @@ void AddGroundDebris(void)
 	} while (count < MAX_GROUND_DEBRIS);
 }
 
-
-extern _pct plotContext;
-
 // [D] [T] [A]
 void DrawSmashable_sprites(void)
 {

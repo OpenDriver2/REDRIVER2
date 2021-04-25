@@ -10,8 +10,6 @@
 
 #include "INLINE_C.H"
 
-extern _pct plotContext; // scratchpad addr: 0x1F8000C0
-
 // [D] [T] [A]
 void Tile1x1(MODEL *model)
 {

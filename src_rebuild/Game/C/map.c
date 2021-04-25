@@ -13,6 +13,7 @@
 #include "main.h"
 
 #include "STRINGS.H"
+#include "LIBETC.H"
 
 char *map_lump = NULL;
 int initarea = 0;
@@ -536,8 +537,6 @@ unsigned char *PVSEncodeTable = NULL;
 // [D] [T]
 void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBodge)
 {
-	u_char scratchPad[1024];
-
 	int pixelIndex;
 	u_char* decodebuf;
 	u_char* op;
@@ -545,7 +544,7 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 	int symIndex;
 	int size;
 
-	decodebuf = scratchPad;
+	decodebuf = (u_char*)getScratchAddr(0);
 	ClearMem((char*)decodebuf,pvs_square_sq);
 
 	// decode byte-swapped array

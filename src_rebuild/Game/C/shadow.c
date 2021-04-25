@@ -465,7 +465,6 @@ void SubdivShadow(long z0, long z1, long z2, long z3, POLY_FT4 *sps)
 
 
 extern VECTOR dummy;
-extern _pct plotContext; // scratchpad addr: 0x1F8000C0
 
 // [D] [T] [A] better shadow code
 void PlaceShadowForCar(VECTOR *shadowPoints, int subdiv, int zOfs, int flag)

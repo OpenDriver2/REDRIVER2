@@ -14,6 +14,7 @@
 #include "players.h"
 #include "main.h"
 
+#include "LIBETC.H"
 
 // [D] [T]
 char CellEmpty(VECTOR *pPosition, int radius)
@@ -33,7 +34,12 @@ char CellEmpty(VECTOR *pPosition, int radius)
 	int zs;
 	int xd;
 	int cell_x, cell_z;
+
+#if 0
+	CELL_ITERATOR& ci = *(CELL_ITERATOR*)getScratchAddr(1024 - sizeof(CELL_ITERATOR));
+#else
 	CELL_ITERATOR ci;
+#endif
 
 	cell_x = (pPosition->vx + units_across_halved) / MAP_CELL_SIZE;
 	cell_z = (pPosition->vz + units_down_halved) / MAP_CELL_SIZE;
@@ -323,7 +329,6 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 	VECTOR pos;
 	VECTOR va;
 	VECTOR vb;
-	CELL_ITERATOR ci;
 	tRay ray;
 	tAABB box;
 	int we;
@@ -334,6 +339,12 @@ char lineClear(VECTOR *v1, VECTOR *v2)
  	int sphere_sq; // $v0
  	int xd; // $a0
  	int zd; // $v1
+
+#ifdef PSX
+	CELL_ITERATOR& ci = *(CELL_ITERATOR*)getScratchAddr(1024 - sizeof(CELL_ITERATOR));
+#else
+	CELL_ITERATOR ci;
+#endif
 
 	va.vx = v1->vx;
 	va.vy = v1->vy;
@@ -517,10 +528,15 @@ void CollisionCopList(XZPAIR* pos, int* count)
 	CELL_OBJECT* cop;
 	int i, j, cnt;
 	XZPAIR cell;
-	CELL_ITERATOR ci;
 	XZPAIR cbr;
 	MODEL* model;
 	int cellLevel;
+
+#if 0
+	CELL_ITERATOR& ci = *(CELL_ITERATOR*)getScratchAddr(1024 - sizeof(CELL_ITERATOR));
+#else
+	CELL_ITERATOR ci;
+#endif
 	
 	cellLevel = events.camera ? events.draw : -1;
 
@@ -778,7 +794,6 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 // [D] [T]
 int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 {
-	CDATA2D cd[2] = { 0 };
 	int count;
 	int num_cb;
 	MODEL *model;
@@ -792,6 +807,12 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 	VECTOR offset;
 	int mdcount;
 	int dx, dz;
+
+#if 0
+	CDATA2D* cd = (CDATA2D*)getScratchAddr(1024 - sizeof(CDATA2D)*2);
+#else
+	CDATA2D cd[2] = { 0 };
+#endif
 
 	gCameraBoxOverlap = -1;
 
