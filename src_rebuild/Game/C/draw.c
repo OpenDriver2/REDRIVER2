@@ -1004,7 +1004,7 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 			prev_mat = mat;
 		}
 
-		model = Z > 9000 ? pLodModels[cop->type] : modelpointers[cop->type];
+		model = Z > DRAW_LOD_DIST_LOW ? pLodModels[cop->type] : modelpointers[cop->type];
 
 		zbias = model->zBias - 64;
 
