@@ -20,6 +20,8 @@ int ResetCallback(void)
 	return old;
 }
 
+char scratchData[1024];
+
 extern unsigned int g_swapTime;
 extern int PsyX_Sys_GetVBlankCount();
 extern long PsyX_Sys_SetVMode(long mode);
