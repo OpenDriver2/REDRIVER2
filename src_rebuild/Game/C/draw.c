@@ -183,9 +183,9 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 	MVERTEX5x5 subdiVerts;
 #endif
 
-	lightdd = FIXEDH(camera_matrix.m[2][0] * day_vectors[GameLevel].vx) +
-		FIXEDH(camera_matrix.m[2][1] * day_vectors[GameLevel].vy) +
-		FIXEDH(camera_matrix.m[2][2] * day_vectors[GameLevel].vz) + 0x1000 * 0xc00;
+	lightdd =	FIXEDH(camera_matrix.m[2][0] * day_vectors[GameLevel].vx) +
+				FIXEDH(camera_matrix.m[2][1] * day_vectors[GameLevel].vy) +
+				FIXEDH(camera_matrix.m[2][2] * day_vectors[GameLevel].vz) + ONE * 3072;
 
 	lightLevel = (lightdd >> 0x12) + 0x20U & 0xff;
 
@@ -245,9 +245,10 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 		model = modelpointers[modelnumber];
 		plotContext.colour = spriteColour;
 
+#ifndef PSX
 		if ((pco->value & 0x3f) == 63 || (gTimeOfDay == 3 && modelnumber == 945)) // [A] Vegas tree fix
 			plotContext.colour = 0x2c808080;
-
+#endif
 		plotContext.scribble[0] = pco->pos.vx;
 		plotContext.scribble[1] = (pco->pos.vy << 0x10) >> 0x11;
 		plotContext.scribble[2] = pco->pos.vz;
@@ -651,8 +652,7 @@ u_int normalIndex(SVECTOR* verts, u_int vidx)
 	return th23 | 0x80;
 }
 
-// [D] [T] [A] custom
-void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
+void PlotBuildingModel(MODEL* model, int rot, _pct* pc)
 {
 	int opz;
 	int diff, minZ, maxZ;
@@ -666,20 +666,13 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 	SVECTOR* srcVerts;
 	int combo;
 
-#ifdef PSX
-	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)getScratchAddr(0);
-#else
-	MVERTEX5x5 subdiVerts;
-#endif
+	srcVerts = (SVECTOR*)model->vertices;
+	polys = (PL_POLYFT4*)model->poly_block;
 
 	srcVerts = (SVECTOR*)model->vertices;
 	polys = (PL_POLYFT4*)model->poly_block;
 
 	combo = combointensity;
-
-	// transparent object flag
-	if (pc->flags & PLOT_TRANSPARENT)
-		combo |= 0x2000000;
 
 	i = model->num_polys;
 	while (i > 0)
@@ -717,18 +710,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 
 		r = rot;
 
-		if (pc->flags & (PLOT_INV_CULL | PLOT_NO_CULL))
-		{
-			if (opz < 0)
-				r = rot + 32 & 63;
-
-			if (pc->flags & PLOT_NO_CULL)
-				opz = 1;		// no culling
-			else // PLOT_FRONT_CULL
-				opz = -opz;		// front face
-		}
-
-		if (ptype == 21 || (pc->flags & PLOT_NO_SHADE))
+		if (ptype == 21)
 		{
 			pc->colour = combo & 0x2ffffffU | 0x2c000000;
 		}
@@ -747,9 +729,132 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 			gte_stsz3(&pc->scribble[0], &pc->scribble[1], &pc->scribble[2]);
 
 			pc->tpage = (*pc->ptexture_pages)[polys->texture_set] << 0x10;
+			pc->clut = (*pc->ptexture_cluts)[polys->texture_set][polys->texture_id] << 0x10;
 
-			if ((pc->flags & PLOT_CUSTOM_PALETTE) == 0) // [A] custom palette flag - for pedestrian heads
-				pc->clut = (*pc->ptexture_cluts)[polys->texture_set][polys->texture_id] << 0x10;
+			ushort uv0, uv1, uv2, uv3;
+
+			uv0 = *(ushort*)&polys->uv0;
+			uv1 = *(ushort*)&polys->uv1;
+			uv2 = *(ushort*)&polys->uv2;
+			uv3 = *(ushort*)&polys->uv3;
+
+			prims = (POLY_FT4*)pc->primptr;
+
+			setPolyFT4(prims);
+			*(u_int*)&prims->r0 = pc->colour;
+
+			// retrieve first three verts
+			gte_stsxy3(&prims->x0, &prims->x1, &prims->x2);
+
+			// translate 4th vert and get OT Z value
+			gte_ldv0(&srcVerts[polys->v2]);
+			gte_rtps();
+			gte_avsz4();
+
+			gte_stotz(&Z);
+
+			gte_stsxy(&prims->x3);
+
+			prims->tpage = pc->tpage >> 0x10;
+			prims->clut = pc->clut >> 0x10;
+
+			*(ushort*)&prims->u0 = uv0;
+			*(ushort*)&prims->u1 = uv1;
+			*(ushort*)&prims->u2 = uv3;
+			*(ushort*)&prims->u3 = uv2;
+
+			addPrim(pc->ot + (Z >> 1), prims);
+
+			pc->primptr += sizeof(POLY_FT4);
+		}
+
+		polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
+		i--;
+	}
+}
+
+// [D] [T] [A] custom
+void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
+{
+	int opz;
+	int diff, minZ, maxZ;
+	int Z;
+	PL_POLYFT4* polys;
+	int i;
+	int r;
+	u_char temp;
+	u_char ptype;
+	POLY_FT4* prims;
+	SVECTOR* srcVerts;
+	int combo;
+
+#ifdef PSX
+	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)getScratchAddr(0);
+#else
+	MVERTEX5x5 subdiVerts;
+#endif
+
+	srcVerts = (SVECTOR*)model->vertices;
+	polys = (PL_POLYFT4*)model->poly_block;
+
+	combo = combointensity;
+
+	i = model->num_polys;
+	while (i > 0)
+	{
+		// iterate through polygons
+		// with skipping
+		ptype = polys->id & 0x1f;
+
+		if ((ptype & 0x1) == 0 && ptype != 8) // is FT3 triangle?
+		{
+			temp = polys->uv2.v;
+			polys->uv3.u = polys->uv2.u;
+			polys->uv3.v = temp;
+
+			polys->v3 = polys->v2;
+
+			polys->id |= 1;
+			ptype |= 1;
+		}
+
+		if (ptype != 11 && ptype != 21 && ptype != 23)
+		{
+			polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
+			i--;
+			continue;
+		}
+
+		// perform transform
+		gte_ldv3(&srcVerts[polys->v0], &srcVerts[polys->v1], &srcVerts[polys->v3]);
+		gte_rtpt();
+
+		// get culling value
+		gte_nclip();
+		gte_stopz(&opz);
+
+		r = rot;
+
+		if (ptype == 21)
+		{
+			pc->colour = combo & 0x2ffffffU | 0x2c000000;
+		}
+		else
+		{
+			temp = polys->th;
+
+			if ((polys->th & 0x80) == 0) // cache normal index if it were not
+				temp = polys->th = normalIndex(srcVerts, *(u_int*)&polys->v0);
+
+			pc->colour = pc->f4colourTable[(r >> 3) * 4 - temp & 31];
+		}
+
+		if (opz > 0)
+		{
+			gte_stsz3(&pc->scribble[0], &pc->scribble[1], &pc->scribble[2]);
+
+			pc->tpage = (*pc->ptexture_pages)[polys->texture_set] << 0x10;
+			pc->clut = (*pc->ptexture_cluts)[polys->texture_set][polys->texture_id] << 0x10;
 
 			minZ = pc->scribble[2];
 			if (pc->scribble[1] < minZ)
@@ -907,7 +1012,11 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 			zbias = 0;
 
 		plotContext.ot = ot + zbias * 4;
-		PlotBuildingModelSubdivNxN(model, cop->yang, &plotContext, 1);
+
+		if(Z <= 9000)
+			PlotBuildingModelSubdivNxN(model, cop->yang, &plotContext, 1);
+		else
+			PlotBuildingModel(model, cop->yang, &plotContext);
 
 		drawlimit = (int)current->primptr - (int)current->primtab;
 
@@ -923,6 +1032,206 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 
 	return 0;
 }
+
+
+// [D] [T] [A] custom
+void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
+{
+	int opz;
+	int diff, minZ, maxZ;
+	int Z;
+	PL_POLYFT4* polys;
+	int i;
+	int r;
+	u_char temp;
+	u_char ptype;
+	POLY_FT4* prims;
+	SVECTOR* srcVerts;
+	int combo;
+
+#ifdef PSX
+	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)getScratchAddr(0);
+#else
+	MVERTEX5x5 subdiVerts;
+#endif
+
+	srcVerts = (SVECTOR*)model->vertices;
+	polys = (PL_POLYFT4*)model->poly_block;
+
+	combo = combointensity;
+
+	// transparent object flag
+	if (pc->flags & PLOT_TRANSPARENT)
+		combo |= 0x2000000;
+
+	i = model->num_polys;
+	while (i > 0)
+	{
+		// iterate through polygons
+		// with skipping
+		ptype = polys->id & 0x1f;
+
+		if ((ptype & 0x1) == 0 && ptype != 8) // is FT3 triangle?
+		{
+			temp = polys->uv2.v;
+			polys->uv3.u = polys->uv2.u;
+			polys->uv3.v = temp;
+
+			polys->v3 = polys->v2;
+
+			polys->id |= 1;
+			ptype |= 1;
+		}
+
+		if (ptype != 11 && ptype != 21 && ptype != 23)
+		{
+			polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
+			i--;
+			continue;
+		}
+
+		// perform transform
+		gte_ldv3(&srcVerts[polys->v0], &srcVerts[polys->v1], &srcVerts[polys->v3]);
+		gte_rtpt();
+
+		// get culling value
+		gte_nclip();
+		gte_stopz(&opz);
+
+		r = rot;
+
+		if (pc->flags & (PLOT_INV_CULL | PLOT_NO_CULL))
+		{
+			if (opz < 0)
+				r = rot + 32 & 63;
+
+			if (pc->flags & PLOT_NO_CULL)
+				opz = 1;		// no culling
+			else // PLOT_FRONT_CULL
+				opz = -opz;		// front face
+		}
+
+		if (ptype == 21 || (pc->flags & PLOT_NO_SHADE))
+		{
+			pc->colour = combo & 0x2ffffffU | 0x2c000000;
+		}
+		else
+		{
+			temp = polys->th;
+
+			if ((polys->th & 0x80) == 0) // cache normal index if it were not
+				temp = polys->th = normalIndex(srcVerts, *(u_int*)&polys->v0);
+
+			pc->colour = pc->f4colourTable[(r >> 3) * 4 - temp & 31];
+		}
+
+		if (opz > 0)
+		{
+			gte_stsz3(&pc->scribble[0], &pc->scribble[1], &pc->scribble[2]);
+
+			pc->tpage = (*pc->ptexture_pages)[polys->texture_set] << 0x10;
+
+			if ((pc->flags & PLOT_CUSTOM_PALETTE) == 0) // [A] custom palette flag - for pedestrian heads
+				pc->clut = (*pc->ptexture_cluts)[polys->texture_set][polys->texture_id] << 0x10;
+
+			minZ = pc->scribble[2];
+			if (pc->scribble[1] < minZ)
+				minZ = pc->scribble[1];
+
+			if (pc->scribble[0] < minZ)
+				minZ = pc->scribble[0];
+
+			maxZ = pc->scribble[2];
+			if (maxZ < pc->scribble[1])
+				maxZ = pc->scribble[1];
+
+			diff = maxZ - minZ;
+			if (maxZ < pc->scribble[0])
+				diff = pc->scribble[0] - minZ;
+
+			ushort uv0, uv1, uv2, uv3;
+
+			// [A] special case
+			if (ptype == 23)
+			{
+				POLYGT4* pgt4 = (POLYGT4*)polys;
+				uv0 = *(ushort*)&pgt4->uv0;
+				uv1 = *(ushort*)&pgt4->uv1;
+				uv2 = *(ushort*)&pgt4->uv2;
+				uv3 = *(ushort*)&pgt4->uv3;
+			}
+			else
+			{
+				uv0 = *(ushort*)&polys->uv0;
+				uv1 = *(ushort*)&polys->uv1;
+				uv2 = *(ushort*)&polys->uv2;
+				uv3 = *(ushort*)&polys->uv3;
+			}
+
+			if (n == 0 || diff << 2 <= minZ - 350)
+			{
+				prims = (POLY_FT4*)pc->primptr;
+
+				setPolyFT4(prims);
+				*(u_int*)&prims->r0 = pc->colour;
+
+				// retrieve first three verts
+				gte_stsxy3(&prims->x0, &prims->x1, &prims->x2);
+
+				// translate 4th vert and get OT Z value
+				gte_ldv0(&srcVerts[polys->v2]);
+				gte_rtps();
+				gte_avsz4();
+
+				gte_stotz(&Z);
+
+				gte_stsxy(&prims->x3);
+
+				prims->tpage = pc->tpage >> 0x10;
+				prims->clut = pc->clut >> 0x10;
+
+				*(ushort*)&prims->u0 = uv0;
+				*(ushort*)&prims->u1 = uv1;
+				*(ushort*)&prims->u2 = uv3;
+				*(ushort*)&prims->u3 = uv2;
+
+				addPrim(pc->ot + (Z >> 1), prims);
+
+				pc->primptr += sizeof(POLY_FT4);
+			}
+			else
+			{
+				r = n;
+				if (n == 1)
+				{
+					if (minZ - 150 < (diff << 1))
+						r = 4;
+					else
+						r = 2;
+				}
+
+				copyVector(&subdiVerts.verts[0][0], &srcVerts[polys->v0]);
+				subdiVerts.verts[0][0].uv.val = uv0;
+
+				copyVector(&subdiVerts.verts[0][1], &srcVerts[polys->v1]);
+				subdiVerts.verts[0][1].uv.val = uv1;
+
+				copyVector(&subdiVerts.verts[0][2], &srcVerts[polys->v3]);
+				subdiVerts.verts[0][2].uv.val = uv3;
+
+				copyVector(&subdiVerts.verts[0][3], &srcVerts[polys->v2]);
+				subdiVerts.verts[0][3].uv.val = uv2;
+
+				makeMesh((MVERTEX(*)[5][5])subdiVerts.verts, r, r);
+				drawMesh((MVERTEX(*)[5][5])subdiVerts.verts, r, r, pc);
+			}
+		}
+
+		polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
+		i--;
+	}
+}
+
 
 // [D] [T]
 void RenderModel(MODEL* model, MATRIX* matrix, VECTOR* pos, int zBias, int flags, int subdiv, int nrot)
@@ -963,7 +1272,9 @@ void RenderModel(MODEL* model, MATRIX* matrix, VECTOR* pos, int zBias, int flags
 	plotContext.primptr = plotContext.current->primptr;
 
 	if ((current->primtab - (current->primptr - PRIMTAB_SIZE)) > 56000)
-		PlotBuildingModelSubdivNxN(model, nrot, &plotContext, subdiv);
+	{
+		PlotModelSubdivNxN(model, nrot, &plotContext, subdiv);
+	}
 
 	// advance primitive buffer
 	current->primptr = plotContext.primptr;
@@ -1122,7 +1433,7 @@ void DrawMapPSX(int* comp_val)
 							if (drawData.sprites_found < MAX_DRAWN_SPRITES)
 								spriteList[drawData.sprites_found++] = ppco;
 
-							if ((model->flags2 & MODEL_FLAG_ANIMOBJ) && drawData.anim_objs_found < 20)
+							if ((model->flags2 & MODEL_FLAG_ANIMOBJ) && drawData.anim_objs_found < MAX_DRAWN_ANIMATING)
 							{
 								cop = UnpackCellObject(ppco, &ci.nearCell);
 								anim_obj_buffer[drawData.anim_objs_found++] = cop;
@@ -1132,9 +1443,8 @@ void DrawMapPSX(int* comp_val)
 							{
 								if (treecount == 0)
 								{
-									cop = UnpackCellObject(ppco, &ci.nearCell);
+									QuickUnpackCellObject(ppco, &ci.nearCell, &ground_debris[groundDebrisIndex]);
 
-									ground_debris[groundDebrisIndex] = *cop;
 									if (groundDebrisIndex < MAX_GROUND_DEBRIS - 1)
 										groundDebrisIndex++;
 									else
@@ -1179,8 +1489,7 @@ void DrawMapPSX(int* comp_val)
 
 									if (alleycount == 13)
 									{
-										cop = UnpackCellObject(ppco, &ci.nearCell);
-										ground_debris[groundDebrisIndex] = *cop;
+										QuickUnpackCellObject(ppco, &ci.nearCell, &ground_debris[groundDebrisIndex]);
 
 										if (groundDebrisIndex < MAX_GROUND_DEBRIS - 1)
 											groundDebrisIndex++;

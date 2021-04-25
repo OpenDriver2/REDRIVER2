@@ -162,7 +162,7 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 			previous_matrix = yang;
 		}
 
-		if (Z <= 7000)
+		if (Z <= DRAW_LOD_DIST_HIGH)
 		{
 			if (Low2HighDetailTable[model_number] != 0xffff)
 				model_number = Low2HighDetailTable[model_number];
@@ -174,7 +174,7 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 		}
 		else
 		{
-			pModel = Z > 9000 ? pLodModels[model_number] : modelpointers[model_number];
+			pModel = Z > DRAW_LOD_DIST_LOW ? pLodModels[model_number] : modelpointers[model_number];
 			
 			Tile1x1(pModel);
 		}
@@ -184,11 +184,9 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 	current->primptr = plotContext.primptr;
 }
 
-
 // [A] custom implemented function
 void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 {
-
 	/* vertices by index in quad:
 		3---------2
 		|         |
@@ -406,14 +404,14 @@ void SubdivNxM(char *polys, int n, int m, int ofse)
 void TileNxN(MODEL *model, int levels, int Dofse)
 {
 	u_int ttype;
-	unsigned char *polys;
+	u_char *polys;
 	u_int tileTypes;
 	int i;
 	int ofse;
 
 	ttype = 0;
 
-	polys = (unsigned char *)model->poly_block;
+	polys = (u_char *)model->poly_block;
 	plotContext.verts = (SVECTOR *)model->vertices;
 
 	// tile types comes right after model header it seems
@@ -479,14 +477,14 @@ void ProcessLowDetailTable(char *lump_ptr, int lump_size)
 	int i;
 
 	Low2HighDetailTable = (ushort *)lump_ptr;
-	Low2LowerDetailTable = (ushort *)(lump_ptr + num_models_in_pack * sizeof(ushort));
+	Low2LowerDetailTable = Low2HighDetailTable + num_models_in_pack;
 
 	for (i = 0; i < num_models_in_pack; i++)
 	{
-		if (Low2LowerDetailTable[i] == 0xFFFF)
-			pLodModels[i] = modelpointers[i];
-		else
+		if (Low2LowerDetailTable[i] != 0xFFFF)
 			pLodModels[i] = modelpointers[Low2LowerDetailTable[i]];
+		else
+			pLodModels[i] = modelpointers[i];
 	}
 }
 

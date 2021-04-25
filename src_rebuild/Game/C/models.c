@@ -17,8 +17,8 @@ MODEL* pLodModels[MAX_MODEL_SLOTS];
 
 int num_models_in_pack = 0;
 
-unsigned short *Low2HighDetailTable = NULL;
-unsigned short *Low2LowerDetailTable = NULL;
+u_short *Low2HighDetailTable = NULL;
+u_short *Low2LowerDetailTable = NULL;
 
 // [A]
 int staticModelSlotBitfield[48];

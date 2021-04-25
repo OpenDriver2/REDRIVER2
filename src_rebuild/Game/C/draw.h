@@ -23,12 +23,18 @@ extern _pct& plotContext;
 #define MAX_DRAWN_ANIMATING		20
 #define MAX_DRAWN_SPRITES		75
 
+#define DRAW_LOD_DIST_HIGH		4000
+#define DRAW_LOD_DIST_LOW		7000
+
 #else
 
 #define MAX_DRAWN_BUILDINGS		384
 #define MAX_DRAWN_TILES			750
 #define MAX_DRAWN_ANIMATING		48
 #define MAX_DRAWN_SPRITES		128
+
+#define DRAW_LOD_DIST_HIGH		7000
+#define DRAW_LOD_DIST_LOW		10000
 
 #endif
 
