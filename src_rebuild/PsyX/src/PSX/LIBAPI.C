@@ -149,6 +149,18 @@ long CloseEvent(long unk00)
 	return 0;
 }
 
+long EnableEvent(unsigned long event)
+{
+	PSYX_UNIMPLEMENTED();
+	return 0;
+}
+
+long DisableEvent(unsigned long event)
+{
+	PSYX_UNIMPLEMENTED();
+	return 0;
+}
+
 long WaitEvent(long unk00)
 {
 	PSYX_UNIMPLEMENTED();
