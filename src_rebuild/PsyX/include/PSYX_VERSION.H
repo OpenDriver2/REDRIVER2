@@ -2,8 +2,8 @@
 #define PSYX_VERSION_H
 
 /* Emulator version */
-#define PSYX_MAJOR_VERSION (1)
-#define PSYX_MINOR_VERSION (700)
+#define PSYX_MAJOR_VERSION (2)
+#define PSYX_MINOR_VERSION (1)
 
 /* Compile date and time */
 #define PSYX_COMPILE_DATE (__DATE__)
