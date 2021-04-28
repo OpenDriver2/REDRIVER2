@@ -24,7 +24,7 @@
 #define printWarning				printf
 #define printError					printf
 
-#define LOAD_OVERLAY(filename, addr) 0	// Loadfile(filename, (char*)addr);
+#define LOAD_OVERLAY(filename, addr) Loadfile(filename, (char*)addr)
 
 #else
 
