@@ -602,7 +602,7 @@ void init_spooled_models(void)
 
 		if (model->instance_number == -1)
 		{
-			if (model->collision_block != 0)
+			if ((uint)model->collision_block != 0)
 				model->collision_block += (int)model;
 
 			model->vertices += (int)model;
@@ -615,7 +615,7 @@ void init_spooled_models(void)
 		{
 			parentmodel = modelpointers[model->instance_number];
 
-			if (parentmodel->collision_block != 0)
+			if ((uint)parentmodel->collision_block != 0)
 				model->collision_block = parentmodel->collision_block;
 
 			model->vertices = parentmodel->vertices;

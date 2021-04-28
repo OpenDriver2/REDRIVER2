@@ -1438,7 +1438,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	_CAR_DATA* lcp;
 
 	PACKED_CELL_OBJECT* ppco;
-	CELL_OBJECT* cop;
+	CELL_OBJECT tempCO;
 	CAR_COSMETICS* car_cos;
 
 	MODEL* model;
@@ -1497,17 +1497,20 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 
 			ppco = GetFirstPackedCop(cell_x, cell_z, &ci, 1);
 
-			while (cop = UnpackCellObject(ppco, &ci.nearCell), cop != NULL)
+			while (ppco)
 			{
-				model = modelpointers[cop->type];
+				int type = (ppco->value >> 6) | ((ppco->pos.vy & 1) << 10);
+				model = modelpointers[type];
 
 				if (/*model->num_vertices - 3 < 300 &&
 					model->num_point_normals < 300 &&
 					model->num_polys < 300 &&*/
-					model->collision_block > 0 &&
+					(uint)model->collision_block > 0 &&
 					(model->flags2 & MODEL_FLAG_SMASHABLE) == 0)
 				{
 					int num_cb;
+
+					QuickUnpackCellObject(ppco, &ci.nearCell, &tempCO);
 					
 					num_cb = *(int*)model->collision_block;
 					collide = (COLLISION_PACKET*)((int*)model->collision_block + 1);
@@ -1518,13 +1521,13 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 						int theta;
 						int xsize, zsize;
 						
-						yang = -cop->yang & 0x3f;
+						yang = -tempCO.yang & 0x3f;
 
 						if (collide->type == 0)
 						{
 							int cs, sn;
 
-							theta = (cop->yang + collide->yang) * 64 & 0xfff;
+							theta = (tempCO.yang + collide->yang) * 64 & 0xfff;
 
 							xsize = collide->xsize / 2;
 							zsize = collide->zsize / 2;
@@ -1545,9 +1548,9 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 							printError("\nERROR! unknown collision box type in leadai.c\n");
 						}
 
-						offset.vx = FIXEDH(collide->xpos * matrixtable[yang].m[0][0] + collide->zpos * matrixtable[yang].m[2][0]) + cop->pos.vx;
-						offset.vz = FIXEDH(collide->xpos * matrixtable[yang].m[0][2] + collide->zpos * matrixtable[yang].m[2][2]) + cop->pos.vz;
-						offset.vy = -cop->pos.vy + collide->ypos;
+						offset.vx = FIXEDH(collide->xpos * matrixtable[yang].m[0][0] + collide->zpos * matrixtable[yang].m[2][0]) + tempCO.pos.vx;
+						offset.vz = FIXEDH(collide->xpos * matrixtable[yang].m[0][2] + collide->zpos * matrixtable[yang].m[2][2]) + tempCO.pos.vz;
+						offset.vy = -tempCO.pos.vy + collide->ypos;
 
 #if defined(_DEBUG) || defined(DEBUG_OPTIONS) && !defined(PSX)
 						extern int gShowCollisionDebug;
@@ -1555,8 +1558,8 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 						{
 							CDATA2D cd[1];
 
-							cd[0].x.vx = offset.vx;// (cop->pos.vx + xxd);
-							cd[0].x.vz = offset.vz;// (cop->pos.vz + zzd);
+							cd[0].x.vx = offset.vx;// (tempCO.pos.vx + xxd);
+							cd[0].x.vz = offset.vz;// (tempCO.pos.vz + zzd);
 							cd[0].x.vy = cp->hd.where.t[1];
 
 							cd[0].theta = theta; // (pCellObject->yang + collide->yang) * 64 & 0xfff;

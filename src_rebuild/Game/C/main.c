@@ -791,6 +791,7 @@ void State_GameInit(void* param)
 	xa_timeout = 0;
 
 	//-------------------------
+	// GameLoop start part
 
 	if (NewLevel)
 	{
@@ -1630,7 +1631,7 @@ void State_GameLoop(void* param)
 {
 	int cnt;
 
-#if 0//def PSX
+#ifdef PSX
 
 	if (!FilterFrameTime())
 		return;
@@ -1833,31 +1834,28 @@ void PrintCommandLineArguments()
 // [D] [T]
 #ifdef PSX
 
+extern "C" u_long memTab_org;
+extern "C" u_long mallocTab_org;
+
 // TODO: mapping in Linker script
-volatile u_char _memoryTab_org[0x50400]  __attribute__((aligned(0x10)));						// 0xE7000
-volatile u_char _mallocTab_org[0xD47BC /*0xC37BC*/] __attribute__((aligned(0x10)));				// 0x137400
+//volatile u_char _memoryTab_org[0x50400]  __attribute__((aligned(0x10)));						// 0xE7000
+//volatile u_char _mallocTab_org[0xD47BC /*0xC37BC*/] __attribute__((aligned(0x10)));				// 0x137400
 
-volatile u_char* _path_org = &_memoryTab_org[0];					// 0xE7000
-volatile u_char* _otag1_org = &_memoryTab_org[0xC000];				// 0xF3000
-volatile u_char* _otag2_org = &_memoryTab_org[0x10200];				// 0xF7200
-volatile u_char* _primTab1_org = &_memoryTab_org[0x14400];			// 0xFB400
-volatile u_char* _primTab2_org = &_memoryTab_org[0x32400];			// 0x119400
-volatile u_char* _sbnk_org = &_mallocTab_org[0x48C00];				// 0x180000
-volatile u_char* _frnt_org = &_mallocTab_org[0x88C00];				// 0x1C0000
-volatile u_char* _repl_org = &_mallocTab_org[0xC47BC];				// 0x1FABBC
+volatile u_char* _memoryTab_org = (u_char*)&memTab_org;
+volatile u_char* _mallocTab_org = (u_char*)&mallocTab_org;
 
-volatile char* _frontend_buffer = (char*)_otag1_org;
-volatile char* _other_buffer = (char*)_otag1_org;
-volatile char* _other_buffer2 = (char*)_path_org;
-volatile OTTYPE* _OT1 = (OTTYPE*)_otag1_org;
-volatile OTTYPE* _OT2 = (OTTYPE*)_otag2_org;
-volatile char* _primTab1 = (char*)_primTab1_org;
-volatile char* _primTab2 = (char*)_primTab2_org;
-volatile char* _overlay_buffer = (char*) _frnt_org;
-volatile char* _replay_buffer = (char*)_repl_org;
-volatile char* _sbank_buffer = (char*)_sbnk_org;
-volatile char* malloctab = (char*)_mallocTab_org;
-volatile char* mallocptr;
+volatile char* _frontend_buffer = NULL;
+volatile char* _other_buffer = NULL;
+volatile char* _other_buffer2 = NULL;
+volatile OTTYPE* _OT1 = NULL;
+volatile OTTYPE* _OT2 = NULL;
+volatile char* _primTab1 = NULL;
+volatile char* _primTab2 = NULL;
+volatile char* _overlay_buffer = NULL;
+volatile char* _replay_buffer = NULL;
+volatile char* _sbank_buffer = NULL;
+volatile char* malloctab = NULL;
+volatile char* mallocptr = NULL;
 
 int main(void)
 #else
@@ -1890,6 +1888,42 @@ int redriver2_main(int argc, char** argv)
 	//_stacksize = 0x4000;
 	//_ramsize = 0x200000;
 
+#ifdef PSX
+	printf("------REDRIVER2 STARTUP------\n");
+
+	volatile u_char* _path_org = &_memoryTab_org[0];				// 0xE7000
+	volatile u_char* _otag1_org = &_memoryTab_org[0xC000];			// 0xF3000
+	volatile u_char* _otag2_org = &_memoryTab_org[0x10200];			// 0xF7200
+	volatile u_char* _primTab1_org = &_memoryTab_org[0x14400];		// 0xFB400
+	volatile u_char* _primTab2_org = &_memoryTab_org[0x32400];		// 0x119400
+	volatile u_char* _sbnk_org = &_mallocTab_org[0x48C00];			// 0x180000
+	volatile u_char* _frnt_org = &_mallocTab_org[0x88C00];			// 0x1C0000
+	volatile u_char* _repl_org = &_mallocTab_org[0xC47BC];			// 0x1FABBC
+
+	_frontend_buffer = (char*)_otag1_org;
+	_other_buffer = (char*)_otag1_org;
+	_other_buffer2 = (char*)_path_org;
+	_OT1 = (OTTYPE*)_otag1_org;
+	_OT2 = (OTTYPE*)_otag2_org;
+	_primTab1 = (char*)_primTab1_org;
+	_primTab2 = (char*)_primTab2_org;
+	_overlay_buffer = (char*)_frnt_org;
+	_replay_buffer = (char*)_repl_org;
+	_sbank_buffer = (char*)_sbnk_org;
+	malloctab = (char*)_mallocTab_org;
+
+	printf("path_org = %x\n", _path_org); // 0xE7000
+	printf("otag1_org = %x\n", _otag1_org); // 0xF3000
+	printf("otag2_org = %x\n", _otag2_org); // 0xF7200
+	printf("primTab1_org = %x\n", _primTab1_org); // 0xFB400
+	printf("primTab2_org = %x\n", _primTab2_org); // 0x119400
+	printf("sbnk_org = %x\n", _sbnk_org); // 0x180000
+	printf("frnt_org = %x\n", _frnt_org); // 0x1C0000
+	printf("repl_org = %x\n", _repl_org); // 0x1FABBC
+
+	printf("malloctab = %x\n", malloctab);
+#endif
+
 	SetDispMask(0);
 	StopCallback();
 	ResetCallback();
@@ -1912,20 +1946,6 @@ int redriver2_main(int argc, char** argv)
 	InitControllers();
 	Init_FileSystem();
 	InitSound();
-
-#ifdef PSX
-	_frontend_buffer = (char*)_otag1_org - 0x80000000;
-	_other_buffer = (char*)_otag1_org - 0x80000000;
-	_other_buffer2 = (char*)_path_org - 0x80000000;
-	_OT1 = (OTTYPE*)_otag1_org - 0x80000000;
-	_OT2 = (OTTYPE*)_otag2_org - 0x80000000;
-	_primTab1 = (char*)_primTab1_org - 0x80000000;
-	_primTab2 = (char*)_primTab2_org - 0x80000000;
-	_overlay_buffer = (char*)_frnt_org - 0x80000000;
-	_replay_buffer = (char*)_repl_org - 0x80000000;
-	_sbank_buffer = (char*)_sbnk_org - 0x80000000;
-	malloctab = (char*)_mallocTab_org - 0x80000000;
-#endif
 	
 	// [A] REDRIVER 2 version auto-detection
 	// this is the only difference between the files on CD
@@ -1993,9 +2013,9 @@ int redriver2_main(int argc, char** argv)
 		AttractMode = 0;
 	
 		wantedCar[0] = 1;
-		gCurrentMissionNumber = 1;
+		gCurrentMissionNumber = 52;
 	
-		GameType = GAME_MISSION;
+		GameType = GAME_TAKEADRIVE;
 		SetState(STATE_GAMELAUNCH);
 	}
 #endif

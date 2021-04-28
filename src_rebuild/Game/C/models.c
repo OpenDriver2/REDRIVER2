@@ -99,13 +99,14 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 		{
 			parentmodel = modelpointers[model->instance_number];
 
-			if (parentmodel->collision_block != 0)
-				model->collision_block = (int)(char*)parentmodel + parentmodel->collision_block;
-
 			// convert to real offsets
 			model->vertices = (int)(char*)parentmodel + parentmodel->vertices;
 			model->normals = (int)(char*)parentmodel + parentmodel->normals;
 			model->point_normals = (int)(char*)parentmodel + parentmodel->point_normals;
+
+			if ((uint)parentmodel->collision_block != 0)
+				model->collision_block = (int)(char*)parentmodel + parentmodel->collision_block;
+
 		}
 	}
 
@@ -116,12 +117,12 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 
 		if (model->instance_number == -1) 
 		{
-			if (model->collision_block != 0)
-				model->collision_block += (int)(char*)model;
+			model->vertices += (int)model;
+			model->normals += (int)model;
+			model->point_normals += (int)model;
 
-			model->vertices += (int)(char*)model;
-			model->normals += (int)(char*)model;
-			model->point_normals += (int)(char*)model;
+			if ((uint)model->collision_block != 0)
+				model->collision_block += (int)model;
 		}
 
 		model->poly_block += (int)(char*)model;
