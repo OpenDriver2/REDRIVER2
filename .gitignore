@@ -30,6 +30,8 @@ PSXToolchain/Overlay*
 PSXToolchain/0_CD_DATA/*
 PSXToolchain/PsyQ/*
 PSXToolchain/mipsel-unknown-elf/*
+PSXToolchain/REDRIVER2.bin
+PSXToolchain/REDRIVER2.cue
 src_rebuild/dependencies/*
 src_rebuild/.vs/*
 src_rebuild/bin/*
