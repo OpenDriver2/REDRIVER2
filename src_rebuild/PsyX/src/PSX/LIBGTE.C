@@ -422,7 +422,7 @@ VECTOR* ApplyRotMatrix(SVECTOR* v0, VECTOR* v1)
 	// correct Psy-Q implementation
 	gte_ldv0(v0);
 	gte_rtv0();
-	gte_stsv(v1);
+	gte_stlvnl(v1);
 #else
 	MATRIX temp;
 	gte_ReadRotMatrix(&temp);
