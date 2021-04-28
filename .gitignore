@@ -25,7 +25,11 @@
 *.code-workspace
 .vscode/*
 .vs/*
-PSXToolchain/*
+PSXToolchain/GameSRC*
+PSXToolchain/Overlay*
+PSXToolchain/0_CD_DATA/*
+PSXToolchain/PsyQ/*
+PSXToolchain/mipsel-unknown-elf/*
 src_rebuild/dependencies/*
 src_rebuild/.vs/*
 src_rebuild/bin/*
