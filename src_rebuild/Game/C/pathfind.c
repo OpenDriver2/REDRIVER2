@@ -9,7 +9,11 @@
 #include "camera.h"
 #include "map.h"
 
+#ifdef PSX
 #define DEBUG_PATHFINDING_VIEW	0
+#else
+#define DEBUG_PATHFINDING_VIEW	0
+#endif
 
 #if DEBUG_PATHFINDING_VIEW
 #include "SDL.h"
@@ -510,7 +514,7 @@ void setDistance(tNode* n, ushort dist)
 // [D] [T]
 void iterate(void)
 {
-	tNode pathNodes[250];
+	tNode pathNodes[8];
 
 	int dist;
 	tNode* nbr;
@@ -891,7 +895,6 @@ void UpdateCopMap(void)
 		DoExtraWorkForNFrames = 3;
 	}
 
-	
 	if (pathFrames != 0)
 	{
 		int iterations;
@@ -946,10 +949,9 @@ void UpdateCopMap(void)
 			searchTarget.vz = player[0].pos[2];
 		}
 
-		i = 0;
-
 		// step up distance frame (and invalidate by setting bit 1)
-		do {
+		for (i = 0; i < 16384; i++)
+		{
 			d = distanceCache[i] + 8192;
 
 			if ((d & 1) != 0)
@@ -959,8 +961,7 @@ void UpdateCopMap(void)
 				d = 0xfffe;
 
 			distanceCache[i] = d;
-			i++;
-		} while (i < 16384);
+		}
 
 		startNode.vx = ((searchTarget.vx + (searchTarget.vz >> 1 & 0x1ffU)) >> 9) * 512 - ((searchTarget.vz & 0x200U) >> 1);
 		startNode.vz = (searchTarget.vz >> 9) << 9;
