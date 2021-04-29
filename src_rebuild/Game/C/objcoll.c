@@ -211,10 +211,8 @@ char CellEmpty(VECTOR *pPosition, int radius)
 // [D] [T]
 int GlobalPositionToCellNumber(VECTOR *pPosition)
 {
-	int cellZ;
-	int cellX;
-	int cbrZ;
-	int cbrX;
+	int cellX, cellZ;
+	int cbrX, cbrZ;
 	int cbr;
 
 	cellX = (pPosition->vx + units_across_halved - (MAP_REGION_SIZE*MAP_REGION_SIZE)) / MAP_CELL_SIZE;
