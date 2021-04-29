@@ -1,6 +1,10 @@
 #ifndef GTEREG_H
 #define GTEREG_H
 
+#ifdef Status 
+// Fix for stupid GLES headers in RPI or MESA, whatever... just get rid of this dumb shit
+#undef Status
+#endif
 
 typedef union
 {
