@@ -2,6 +2,7 @@
 
 #include "PSYX_PUBLIC.H"
 #include "PSYX_GLOBALS.H"
+#include "PSYX_RENDER.H"
 
 #include "../PSYX_SETUP.H"
 

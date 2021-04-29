@@ -152,7 +152,10 @@ typedef uint ShaderID;
 #error
 #endif
 
-extern void GR_SwapWindow();
+extern TextureID	g_whiteTexture;
+extern TextureID	g_vramTexture;
+
+extern void			GR_SwapWindow();
 
 // PSX VRAM operations
 extern void			GR_SaveVRAM(const char* outputFileName, int x, int y, int width, int height, int bReadFromFrameBuffer);

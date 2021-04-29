@@ -7,6 +7,7 @@
 #include "UTIL/CRASHHANDLER.H"
 
 #include "LIBETC.H"
+#include "LIBGTE.H"
 #include "LIBGPU.H"
 
 #include "UTIL/TIMER.H"

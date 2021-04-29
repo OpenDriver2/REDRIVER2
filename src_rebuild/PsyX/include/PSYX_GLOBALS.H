@@ -1,11 +1,6 @@
 #ifndef EMULATOR_GLOBALS_H
 #define EMULATOR_GLOBALS_H
 
-#include "PSYX_RENDER.H"
-
-extern TextureID        g_whiteTexture;
-extern TextureID        g_vramTexture;
-
 extern int g_windowWidth;
 extern int g_windowHeight;
 extern int g_wireframeMode;
