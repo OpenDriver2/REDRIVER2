@@ -4,9 +4,12 @@
 /*
  * Platform specific emulator setup
  */
-#if (defined(_WIN32) || defined(__APPLE__) || defined(__linux__)) && !defined(__ANDROID__) && !defined(__EMSCRIPTEN__)
+#if (defined(_WIN32) || defined(__APPLE__) || defined(__linux__)) && !defined(__ANDROID__) && !defined(__EMSCRIPTEN__) && !defined(__RPI__)
 #   define RENDERER_OGL
 #   define USE_GLAD
+#elif defined(__RPI__)
+#   define RENDERER_OGLES
+#   define OGLES_VERSION (3)
 #elif defined(__EMSCRIPTEN__)
 #   define RENDERER_OGLES
 #   define OGLES_VERSION (3)

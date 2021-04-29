@@ -15,7 +15,7 @@
 #   include <emscripten/emscripten.h>
 #   include <emscripten/html5.h>
 #   include <SDL2/SDL.h>
-#elif defined(_WINDOWS) || defined(__MINGW32__) || defined(__linux__) || defined(__ANDROID__)
+#elif defined(_WINDOWS) || defined(__MINGW32__) || defined(__linux__) || defined(__ANDROID__) || defined(__RPI__)
 #   include <SDL.h>
 #endif
 
