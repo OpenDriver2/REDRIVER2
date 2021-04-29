@@ -1625,6 +1625,9 @@ void CheckForPause(void)
 	}
 }
 
+#ifdef PSX
+int gMultiStep = 0;
+#endif
 
 // [D] [T]
 void State_GameLoop(void* param)
@@ -1651,7 +1654,7 @@ void State_GameLoop(void* param)
 	if (FastForward)
 		cnt = 7;
 	else
-		cnt = numFrames;
+		cnt = gMultiStep ? numFrames : 1;
 
 	if (cnt)
 		lastTime32Hz = curTime;
@@ -2005,20 +2008,6 @@ int redriver2_main(int argc, char** argv)
 
 	// by default go to frontend
 	SetState(STATE_INITFRONTEND, (void*)2);
-
-	
-#ifdef PSX	// PSX TEST
-	{
-		gInFrontend = 0;
-		AttractMode = 0;
-	
-		wantedCar[0] = 1;
-		gCurrentMissionNumber = 52;
-	
-		GameType = GAME_TAKEADRIVE;
-		SetState(STATE_GAMELAUNCH);
-	}
-#endif
 	
 #ifndef PSX
 	LoadCurrentProfile();
