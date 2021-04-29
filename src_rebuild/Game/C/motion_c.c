@@ -1849,36 +1849,21 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 
 	Tangle = ratan2(-pLightPos->vx, pLightPos->vz);
 
-	vert[0].vx = -128;
-	vert[0].vy = 0;
-	vert[0].vz = -320;
-
-	vert[1].vx = 128;
-	vert[1].vy = 0;
-	vert[1].vz = -320;
-
-	vert[2].vx = -128;
-	vert[2].vy = 0;
-	vert[2].vz = 40;
-
-	vert[3].vx = 128;
-	vert[3].vy = 0;
-	vert[3].vz = 40;
+	SetVec(&vert[0], -128, 0, -320);
+	SetVec(&vert[1], 128, 0, -320);
+	SetVec(&vert[2], -128, 0, 40);
+	SetVec(&vert[3], 128, 0, 40);
 
 	for (i = 0; i < 4; i++)
 	{
-		cn = rcos(Tangle);
-		sn = rsin(Tangle);
+		cn = rcos(Tangle); sn = rsin(Tangle);
 
-		vx = vert[i].vx;
-		vz = vert[i].vz;
+		vx = vert[i].vx; vz = vert[i].vz;
 
 		vert[i].vx = FIXED(vx * cn) - FIXED(vz * sn);
 		vert[i].vz = FIXED(vx * sn) + FIXED(vz * cn);
 
-		vert[i].vx += pPedPos->vx;
-		vert[i].vy += pPedPos->vy;
-		vert[i].vz += pPedPos->vz;
+		VecAdd(&vert[i], &vert[i], pPedPos);
 	}
 
 	gte_SetRotMatrix(&inv_camera_matrix);
