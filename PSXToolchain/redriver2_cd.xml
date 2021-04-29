@@ -44,10 +44,35 @@
 				<file name = "PATH.BIN"		type = "data"	source="0_CD_DATA\Overlay.path"/>
 
 				<dir name = "DATA">
-					<file name = "SKY0.RAW"	type = "data"	source="0_CD_DATA\DATA\SKY0.RAW"/>
-					<file name = "SKY1.RAW"	type = "data"	source="0_CD_DATA\DATA\SKY1.RAW"/>
-					<file name = "SKY2.RAW"	type = "data"	source="0_CD_DATA\DATA\SKY2.RAW"/>
-					<file name = "SKY3.RAW"	type = "data"	source="0_CD_DATA\DATA\SKY3.RAW"/>
+					<file name = "SKY0.RAW"		type = "data"	source="0_CD_DATA\DATA\SKY0.RAW"/>
+					<file name = "SKY1.RAW"		type = "data"	source="0_CD_DATA\DATA\SKY1.RAW"/>
+					<file name = "SKY2.RAW"		type = "data"	source="0_CD_DATA\DATA\SKY2.RAW"/>
+					<file name = "SKY3.RAW"		type = "data"	source="0_CD_DATA\DATA\SKY3.RAW"/>
+					
+					<file name = "SCRS.BIN"		type = "data"	source="0_CD_DATA\DATA\SCRS.BIN"/>
+					<file name = "FEFONT.BNK"	type = "data"	source="0_CD_DATA\DATA\FEFONT.BNK"/>
+					<file name = "GFX.RAW"		type = "data"	source="0_CD_DATA\DATA\GFX.RAW"/>
+					<file name = "CITY.RAW"		type = "data"	source="0_CD_DATA\DATA\CITY.RAW"/>
+					<file name = "CITYBACK.RAW"	type = "data"	source="0_CD_DATA\DATA\CITYBACK.RAW"/>
+					<file name = "VOL.RAW"		type = "data"	source="0_CD_DATA\DATA\VOL.RAW"/>
+					<file name = "CARCONT.RAW"	type = "data"	source="0_CD_DATA\DATA\CARCONT.RAW"/>
+					<file name = "TANCONT.RAW"	type = "data"	source="0_CD_DATA\DATA\TANCONT.RAW"/>
+					
+					<dir name = "CARS">
+						<file name = "CARBACK.RAW"	type = "data"	source="0_CD_DATA\DATA\CARS\CARBACK.RAW"/>
+						<file name = "CCARS.RAW"	type = "data"	source="0_CD_DATA\DATA\CARS\CCARS.RAW"/>
+						<file name = "HCARS.RAW"	type = "data"	source="0_CD_DATA\DATA\CARS\HCARS.RAW"/>
+						<file name = "VCARS.RAW"	type = "data"	source="0_CD_DATA\DATA\CARS\VCARS.RAW"/>
+						<file name = "RCARS.RAW"	type = "data"	source="0_CD_DATA\DATA\CARS\RCARS.RAW"/>
+					</dir>
+					
+					<dir name = "CUTS">
+						<file name = "CUTBACK.RAW"	type = "data"	source="0_CD_DATA\DATA\CUTS\CUTBACK.RAW"/>
+						<file name = "CCUTS.RAW"	type = "data"	source="0_CD_DATA\DATA\CUTS\CCUTS.RAW"/>
+						<file name = "HCUTS.RAW"	type = "data"	source="0_CD_DATA\DATA\CUTS\HCUTS.RAW"/>
+						<file name = "VCUTS.RAW"	type = "data"	source="0_CD_DATA\DATA\CUTS\VCUTS.RAW"/>
+						<file name = "RCUTS.RAW"	type = "data"	source="0_CD_DATA\DATA\CUTS\RCUTS.RAW"/>
+					</dir>
 				</dir>
 				
 				<dir name = "GFX">
@@ -57,6 +82,8 @@
 					<file name = "LOADHAVA.TIM"	type = "data"	source="0_CD_DATA\GFX\LOADHAVA.TIM"/>
 					<file name = "LOADVEGA.TIM"	type = "data"	source="0_CD_DATA\GFX\LOADVEGA.TIM"/>
 					<file name = "LOADRIO.TIM"	type = "data"	source="0_CD_DATA\GFX\LOADRIO.TIM"/>
+					
+					<file name = "FELOAD.TIM"	type = "data"	source="0_CD_DATA\GFX\FELOAD.TIM"/>
 				</dir>
 
 				<dir name = "LEVELS">

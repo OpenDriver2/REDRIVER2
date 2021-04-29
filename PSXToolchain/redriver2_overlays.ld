@@ -1,4 +1,4 @@
-__heap_base = memTab_end;
+__heap_base = mallocTab_end;
 
 SECTIONS {		
 		
@@ -25,7 +25,7 @@ SECTIONS {
 			KEEP(GameSRC/Game/C/pathfind.o(.ctors))
 			
 			. = ALIGN(4);
-			__path_end = .;			
+			__path_end = .;
 		}
 		
 		.lead
@@ -42,10 +42,30 @@ SECTIONS {
 			KEEP(GameSRC/Game/C/leadai.o(.ctors))
 			
 			. = ALIGN(4);
-			__lead_end = .;			
+			__lead_end = .;
 		}
 	}
-		
+	
+	OVERLAY LOADADDR(.memTab) + SIZEOF(.memTab) + 0x88C00 : NOCROSSREFS SUBALIGN(4)
+	{
+		.frnt
+		{
+			KEEP(GameSRC/Game/*.o(.text))
+			__frnt_ctor = .;
+			KEEP(GameSRC/Game/Frontend/*.o(.text.startup._GLOBAL__*))
+			KEEP(GameSRC/Game/Frontend/*.o(.text.*))
+			KEEP(GameSRC/Game/Frontend/*.o(.rodata*))
+			KEEP(GameSRC/Game/Frontend/*.o(.sdata*))
+			KEEP(GameSRC/Game/Frontend/*.o(.data*))
+			KEEP(GameSRC/Game/Frontend/*.o(.sbss*))
+			KEEP(GameSRC/Game/Frontend/*.o(.bss*))
+			KEEP(GameSRC/Game/Frontend/*.o(.ctors))
+			
+			. = ALIGN(4);
+			__frnt_end = .;			
+		}
+	}
+			
 	OVERLAY LOADADDR(.memTab) + SIZEOF(.memTab) : NOCROSSREFS SUBALIGN(4)
 	{		
 		.mallocTab
@@ -54,23 +74,6 @@ SECTIONS {
 			. = 0xD7C00;
 			mallocTab_end = .;
         }
-	
-		.frnt
-        {
-			KEEP(GameSRC/Game/*.o(.text))
-			__frnt_ctor = .;
-			KEEP(GameSRC/Game/Frontend/*.o(.text.startup._GLOBAL__*))
-			KEEP(GameSRC/Game/Frontend/*.o(.text.*))
-			KEEP(GameSRC/Game/Frontend/*.o(.rodata*))
-            KEEP(GameSRC/Game/Frontend/*.o(.sdata*))
-			KEEP(GameSRC/Game/Frontend/*.o(.data*))
-            KEEP(GameSRC/Game/Frontend/*.o(.sbss*))
-			KEEP(GameSRC/Game/Frontend/*.o(.bss*))
-			KEEP(GameSRC/Game/Frontend/*.o(.ctors))
-			
-			. = ALIGN(4);
-			__frnt_end = .;			
-		}
 	}
 }
 
