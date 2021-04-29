@@ -565,12 +565,20 @@ void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	SVECTOR* wheelDisp;
 	WHEEL* wheel;
 	int car_id;
+	MODEL *WheelModelBack;
+	MODEL *WheelModelFront;
+
+#ifdef PSX
+	MATRIX& FrontMatrix = *(MATRIX*)getScratchAddr(0);
+	MATRIX& SteerMatrix = *(MATRIX*)getScratchAddr(sizeof(MATRIX));
+	VECTOR& WheelPos = *(VECTOR*)getScratchAddr(sizeof(MATRIX) * 2);
+	SVECTOR& sWheelPos = *(SVECTOR*)getScratchAddr(sizeof(MATRIX) * 2 + sizeof(VECTOR));
+#else
 	MATRIX FrontMatrix;
 	MATRIX SteerMatrix;
 	VECTOR WheelPos;
 	SVECTOR sWheelPos;
-	MODEL *WheelModelBack;
-	MODEL *WheelModelFront;
+#endif
 
 	D_CHECK_ERROR(cp < car_data, "Invalid car");
 
@@ -781,7 +789,12 @@ void PlayerCarFX(CAR_DATA *cp)
 // [D] [T]
 void plotNewCarModel(CAR_MODEL* car, int palette)
 {
+#ifdef PSX
+	plotCarGlobals& _pg = *(plotCarGlobals*)getScratchAddr(0);
+#else
 	plotCarGlobals _pg;
+#endif
+
 	u_int lightlevel;
 	u_int underIntensity;
 	SVECTOR v = { 0, -4096, 0 };
@@ -1198,7 +1211,7 @@ void ProcessPalletLump(char *lump_ptr, int lump_size)
 // [D] [T]
 void DrawCarObject(CAR_MODEL* car, MATRIX* matrix, VECTOR* pos, int palette, CAR_DATA* cp, int detail)
 {
-	static unsigned long savedSP;
+	static u_long savedSP;
 
 	VECTOR modelLocation;
 	SVECTOR cog;
