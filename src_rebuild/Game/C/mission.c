@@ -95,7 +95,7 @@ GAMETYPE StoredGameType;
 int GameLevel = 0;
 int gInvincibleCar = 0;
 int gPlayerImmune = 0;
-unsigned char NumPlayers = 1;
+u_char NumPlayers = 1;
 char NewLevel = 1;
 GAMETYPE GameType = GAME_MISSION;
 int gCurrentMissionNumber = 0;
@@ -239,23 +239,32 @@ void InitialiseMissionDefaults(void)
 	else
 		lockAllTheDoors = 0;
 
+	tannerDeathTimer = 0;
+
 	maxPlayerCars = 1;
 	maxCivCars = 14;
 	maxParkedCars = 7;
 	maxCopCars = 4;
+
 	gPlayerDamageFactor = 4096;
+
 	requestStationaryCivCar = 0;
+
 	numPlayerCars = 0;
 	numCivCars = 0;
 	numParkedCars = 0;
 	numCopCars = 0;
+
 	gMinimumCops = 0;
 	gCopDesiredSpeedScale = 4096;
 	gCopMaxPowerScale = 4096;
+
 	gCurrentResidentSlot = 0;
 	CopsAllowed = 0;
+
 	MaxPlayerDamage[0] = 22000;
 	MaxPlayerDamage[1] = 22000;
+
 	prevCopsInPursuit = 0;
 
 	for (i = 0; i < 15; i++)
@@ -304,8 +313,10 @@ void InitialiseMissionDefaults(void)
 #endif // CUTSCENE_RECORDER
 	
 	cop_adjust = 0;
+
 	playercollected[0] = 0;
 	playercollected[1] = 0;
+
 	lastsay = -1;
 	g321GoDelay = 0;
 
@@ -2868,7 +2879,8 @@ int HandleGameOver(void)
 
 		if (lp->playerType == 1)
 		{
-			if ((Mission.timer[0].flags & TIMER_FLAG_BOMB_COUNTDOWN) || TannerStuckInCar(0, player_id))
+			if ((Mission.timer[0].flags & TIMER_FLAG_BOMB_COUNTDOWN) || 
+				TannerStuckInCar(0, player_id))
 			{
 				cp = &car_data[lp->playerCarId];
 				
@@ -2894,6 +2906,9 @@ int HandleGameOver(void)
 					lp->upsideDown = 0;
 				}
 			}
+
+			// reset timer
+			tannerDeathTimer = 0;
 		}
 		else if (lp->playerType == 2)
 		{
@@ -2926,31 +2941,27 @@ int HandleGameOver(void)
 			playersdead++;
 
 		player_id++;
-
 	}
 
-	if (playersdead == 0)
-		return 0;
-
-	// allow one of players to be dead in those modes
-	if (GameType == GAME_CHECKPOINT || 
-		GameType == GAME_TAKEADRIVE || 
-		GameType == GAME_SECRET)
+	if (playersdead)
 	{
-		if (NumPlayers != 1)
+		// allow one of players to be dead in those modes
+		if (GameType == GAME_CHECKPOINT ||
+			GameType == GAME_TAKEADRIVE ||
+			GameType == GAME_SECRET)
 		{
-			if (playersdead == NumPlayers)
+			if (NumPlayers != 1)
 			{
-				SetMissionOver(PAUSEMODE_GAMEOVER);
+				if (playersdead == NumPlayers)
+					SetMissionOver(PAUSEMODE_GAMEOVER);
+				
 				return 0;
 			}
-			
-			return 0;
 		}
-	}
 
-	if (TannerStuckInCar(0, 0))
-		SetMissionOver(PAUSEMODE_GAMEOVER);
+		if (TannerStuckInCar(0, 0))
+			SetMissionOver(PAUSEMODE_GAMEOVER);
+	}
 
 	return 0;
 }
