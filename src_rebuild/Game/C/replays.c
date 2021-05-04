@@ -9,6 +9,7 @@
 #include "mission.h"
 #include "director.h"
 #include "camera.h"
+#include "cars.h"
 #include "civ_ai.h"
 #include "state.h"
 
@@ -563,24 +564,21 @@ char GetPingInfo(char *cookieCount)
 
 	retCarId = -1;
 
-	pp = PingBuffer + PingBufferPos;
-
-	if (PingBuffer != NULL && PingBufferPos < MAX_REPLAY_PINGS)
+	if (PingBuffer && PingBufferPos < MAX_REPLAY_PINGS)
 	{
-		if (pp->frame != 0xffff) 
+		pp = &PingBuffer[PingBufferPos];
+		
+		// accept only valid car pings
+		if (pp->frame != 0xFFFF)
 		{
-			if ((CameraCnt - frameStart & 0xffffU) < pp->frame) 
+			if (CameraCnt - frameStart < pp->frame) 
 				return -1;
 
 			retCarId = pp->carId;
 			*cookieCount = pp->cookieCount;
+		}
 
-			PingBufferPos++;
-		}
-		else
-		{
-			printInfo("-1 frame!\n");
-		}
+		PingBufferPos++;
 
 		return retCarId;
 	}
@@ -604,7 +602,7 @@ int StorePingInfo(int cookieCount, int carId)
 	if(PingBuffer != NULL && PingBufferPos < MAX_REPLAY_PINGS)
 	{
 		packet = &PingBuffer[PingBufferPos++];
-		packet->frame = (CameraCnt - frameStart & 0xffffU);
+		packet->frame = CameraCnt - frameStart;
 		packet->carId = carId;
 		
 		packet->cookieCount = cookieCount;
@@ -614,6 +612,31 @@ int StorePingInfo(int cookieCount, int carId)
 #endif
 	return 0;
 }
+
+#ifdef CUTSCENE_RECORDER
+void InvalidatePing(int carId)
+{
+	int pos;
+	
+	if (gCutsceneAsReplay == 0)
+		return;
+	
+	pos = PingBufferPos;
+
+	while(pos >= 0)
+	{
+		pos--;
+		if (PingBuffer[pos].carId == carId)
+		{
+			printWarning("Removing ping at %d\n", PingBuffer[pos].frame);
+			PingBuffer[pos].carId = -1;
+			
+			PingOutCar(&car_data[carId]);
+			break;
+		}
+	}
+}
+#endif
 
 // [A] returns 1 if can use ping buffer
 int IsPingInfoAvailable()

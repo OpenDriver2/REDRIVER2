@@ -937,26 +937,20 @@ void StepSim(void)
 	// control civcars pingin/pingout
 	if (requestStationaryCivCar != 1 && requestRoadblock == 0)
 	{
-		if (gInGameChaseActive == 0)
+		if (gInGameChaseActive)
 		{
-			if (numCivCars < maxCivCars && (NumPlayers == 1 || (NumPlayers == 2 && GameType == GAME_COPSANDROBBERS)))
-			{
-				// make 5 tries
-				for (i = 0; i < 5; i++)
-				{
-					if (PingInCivCar(15900))
-						break;
-				}
-			}
-		}
-		else
-		{
-			// ping buffer used to spawn civ cars
-			i = 0;
-			while (i < 10 && PingBufferPos < 400 && PingBuffer[PingBufferPos].frame <= (CameraCnt - frameStart & 0xffffU))
-			{
+			// it will use ping buffer
+			// checks are done internally
+			for (i = 0; i < 10; i++)
 				PingInCivCar(15900);
-				i++;
+		}
+		else if (numCivCars < maxCivCars && (NumPlayers == 1 || (NumPlayers == 2 && GameType == GAME_COPSANDROBBERS)))
+		{
+			// make 5 tries
+			for (i = 0; i < 5; i++)
+			{
+				if (PingInCivCar(15900))
+					break;
 			}
 		}
 

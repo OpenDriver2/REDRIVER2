@@ -432,6 +432,13 @@ void CarHitByPlayer(CAR_DATA *victim, int howHard)
 {
 	char type;
 
+#ifdef CUTSCENE_RECORDER
+	extern void InvalidatePing(int carId);
+
+	if(howHard > 60000)
+		InvalidatePing(victim->id);
+#endif
+
 	if (howHard > 0 && victim->controlType != CONTROL_TYPE_PURSUER_AI) 
 	{
 		if ((victim->controlFlags & 1) == 0)

@@ -2927,16 +2927,14 @@ void SetUpCivCollFlags(void)
 
 						dont = 0;
 
-						i = 0;
-						do {
+						for (i = 0; i < 2; i++)
+						{
 							if (horncarflag[i] == cp0)
 							{
 								dont = 1;
 								break;
 							}
-
-							i++;
-						} while (i < 2);
+						}
 
 						if (dont)
 						{
@@ -2944,8 +2942,8 @@ void SetUpCivCollFlags(void)
 							continue;
 						}
 
-						i = 0;
-						do {
+						for (i = 0; i < 2; i++) 
+						{
 							if (hornchanflag[i] == 0)
 							{
 								int sample;
@@ -2972,9 +2970,7 @@ void SetUpCivCollFlags(void)
 								channels[hornchanflag[i]].time += rnd - (rnd / 30) * 30;
 								break;
 							}
-
-							i++;
-						} while (i < 2);
+						}
 					}
 				}
 
@@ -2985,8 +2981,8 @@ void SetUpCivCollFlags(void)
 	}
 
 	// clear on timeout
-	i = 0;
-	do {
+	for (i = 0; i < 2; i++)
+	{
 		if (hornchanflag[i] != 0 && channels[hornchanflag[i]].time == 0)
 		{
 			horncarflag[i] = NULL;
@@ -2994,10 +2990,7 @@ void SetUpCivCollFlags(void)
 
 			SpuSetVoiceAR(0, 35);
 		}
-
-		i++;
-
-	} while (i < 2);
+	}
 }
 
 // [D] [T]
