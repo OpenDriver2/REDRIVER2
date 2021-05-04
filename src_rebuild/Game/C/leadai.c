@@ -16,6 +16,7 @@
 #include "main.h"
 #include "pad.h"
 #include "pres.h"
+#include "shadow.h"
 
 #define NUM_RAND_STATES		17
 #define NUM_RAND_ITERATIONS	40
@@ -169,6 +170,8 @@ void LeadUpdateState(CAR_DATA* cp)
 
 		// start him up
 		cp->ai.l.dstate = 3;
+
+		ResetTyreTracks(cp, GetPlayerId(cp));
 	}
 
 	if (ABS(cp->ai.l.panicCount) > 0)
@@ -730,6 +733,7 @@ void FakeMotion(CAR_DATA* cp)
 				
 				cp->hd.where.t[0] = FIXEDH(rcossin_tbl[(dir & 0xfff) * 2] * radius) + curve->Midx;
 				cp->hd.where.t[2] = FIXEDH(rcossin_tbl[(dir & 0xfff) * 2 + 1] * radius) + curve->Midz;
+
 				return;
 			}
 
