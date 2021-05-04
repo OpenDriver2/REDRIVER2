@@ -23,6 +23,7 @@
 #include "C/gamesnd.h"
 #include "C/scores.h"
 #include "C/loadsave.h"
+#include "C/spool.h"
 #include "C/state.h"
 
 
@@ -410,7 +411,6 @@ int gIdleReplay = 0;
 
 int padsConnected[2] = { 1, 0 };
 int feVariableSave[4] = { -1 };
-int bCdIconSetup = 0;
 
 int bDrawExtra = 0;
 int mainScreenLoaded = 1;
@@ -447,8 +447,6 @@ POLY_FT4 BackgroundPolys[6];
 FE_FONT feFont;
 
 RECT16 extraRect = { 896, 256, 64, 219 };
-
-POLY_FT4 cd_sprite;
 
 SPRT extraSprt;
 POLY_FT3 extraDummy;
@@ -929,42 +927,7 @@ void DrawScreen(PSXSCREEN *pScr)
 #endif
 }
 
-// [D] [T]
-void FEInitCdIcon(void)
-{
-	ushort* palette;
-	RECT16 rect;
-
-	palette = cd_icon + 10;
-
-	for (int i = 0; i < 14; i++)
-	{
-		*palette &= 0x7fff;
-		palette++;
-	}
-
-	cd_icon[10] = 0;
-
-	rect.x = 960;
-	rect.y = 434;
-	rect.w = 8;
-	rect.h = 32;
-
-	cd_icon[24] |= 0x8000;
-	cd_icon[25] |= 0x8000;
-
-	LoadImage(&rect, (u_long*)(cd_icon + 24));
-
-	setPolyFT4(&cd_sprite);
-	setRGB0(&cd_sprite, 128, 128, 128);
-	setUVWH(&cd_sprite, 0, 178, 32, 32);
-	setXYWH(&cd_sprite, 80, 38, 38, 21);
-	setClut(&cd_sprite, 960, 433);
-	setTPage(&cd_sprite, 0, 0, 960, 256);
-
-	bCdIconSetup = 1;
-}
-
+extern POLY_FT4 cd_sprite;
 
 // [D] [T]
 void FEDrawCDicon(void)
@@ -978,7 +941,7 @@ void FEDrawCDicon(void)
 
 	cd_icon[23] = cd_icon[11];
 
-	palette = cd_icon + 10;
+	palette = &cd_icon[10];
 
 	for (i = 0; i < 12; i++)
 	{
@@ -992,6 +955,7 @@ void FEDrawCDicon(void)
 	dest.h = 1;
 
 	LoadImage(&dest, (u_long*)(cd_icon + 10));
+
 	DrawPrim(&cd_sprite);
 	DrawSync(0);
 #ifndef PSX
@@ -1233,8 +1197,7 @@ void ReInitScreens(int returnToMain)
 	SwitchMappings(1);
 #endif // !PSX
 
-	if (!bCdIconSetup)
-		FEInitCdIcon();
+	InitCdIcon();
 
 	if (bReturnToMain)
 	{
@@ -1629,7 +1592,7 @@ void SetFEDrawMode(void)
 // [A] - was inlined in State_FrontEnd
 void InitFrontend(void)
 {
-	FEInitCdIcon();
+	InitCdIcon();
 
 	ResetGraph(1);
 	SetDispMask(0);

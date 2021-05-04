@@ -31,6 +31,8 @@ extern volatile int spoolactive;
 
 extern int SpoolLumpOffset;
 
+extern int bCdIconSetup;
+
 extern void ProcessSpoolInfoLump(char *lump_ptr, int lump_size); // 0x0007C464
 
 extern void InitSpooling(); // 0x0007E494
@@ -49,6 +51,8 @@ extern void StartSpooling(); // 0x0007E724
 extern void SpoolSYNC(void);
 
 extern void InitSpecSpool(); // 0x0007D6D8
+
+extern void InitCdIcon();
 
 extern void CheckSpecialSpool(); // 0x0007D4E0
 extern void QuickSpoolSpecial(); // 0x0007E84C

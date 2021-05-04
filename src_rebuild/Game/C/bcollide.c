@@ -16,6 +16,7 @@
 
 #include "RAND.H"
 #include "STRINGS.H"
+#include "LIMITS.H"
 
 #include "INLINE_C.H"
 #include "LIBETC.H"

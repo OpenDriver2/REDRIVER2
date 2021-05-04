@@ -2,14 +2,14 @@
 #include "cell.h"
 #include "system.h"
 #include "map.h"
-#include "event.h"
-#include "mission.h"
 #include "spool.h"
 
 int cell_object_index = 0;
 CELL_OBJECT cell_object_buffer[1024];
 
 unsigned char cell_object_computed_values[2048];
+
+extern u_char NumPlayers;
 
 // [D] [T]
 void ClearCopUsage(void)
@@ -23,8 +23,8 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 	PACKED_CELL_OBJECT *ppco;
 
 	u_int value;
-	unsigned short index;
-	unsigned short num;
+	u_short index;
+	u_short num;
 	int cbr;
 	CELL_DATA* cell;
 	ushort ptr;
@@ -166,7 +166,7 @@ CELL_OBJECT* UnpackCellObject(PACKED_CELL_OBJECT* ppco, XZPAIR* near)
 		return NULL;
 
 	pco = &cell_object_buffer[cell_object_index];
-	cell_object_index = cell_object_index + 1U & 0x3ff;
+	cell_object_index = cell_object_index + 1 & 0x3ff;
 
 	pco->pos.vx = near->x + (((ppco->pos.vx - near->x) << 0x10) >> 0x10);
 	pco->pos.vz = near->z + (((ppco->pos.vz - near->z) << 0x10) >> 0x10);
@@ -181,7 +181,7 @@ CELL_OBJECT* UnpackCellObject(PACKED_CELL_OBJECT* ppco, XZPAIR* near)
 // [D] [T]
 void QuickUnpackCellObject(PACKED_CELL_OBJECT* ppco, XZPAIR* near, CELL_OBJECT* pco)
 {
-	cell_object_index = cell_object_index + 1U & 0x3ff;
+	cell_object_index = cell_object_index + 1 & 0x3ff;
 
 	pco->pos.vx = near->x + (((ppco->pos.vx - near->x) << 0x10) >> 0x10);
 	pco->pos.vz = near->z + (((ppco->pos.vz - near->z) << 0x10) >> 0x10);

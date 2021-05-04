@@ -142,7 +142,6 @@ extern char g_CurrentLevelFileName[64];
 // [D] [T]
 int check_regions_present(void)
 {
-	int barrel_region;
 	int x, z;
 	int region_to_unpack;
 	int num_regions_to_unpack;
@@ -150,7 +149,6 @@ int check_regions_present(void)
 	int topbottom_unpack;
 	int retval;
 	AREA_LOAD_INFO regions_to_unpack[3];
-	char textbuf[128];
 
 	leftright_unpack = 0;
 	topbottom_unpack = 0;
@@ -242,32 +240,25 @@ int check_regions_present(void)
 
 	if (LoadingArea != 0) 
 	{
-		if (new_area_location == 1)
+		if (new_area_location == 0)
+		{
+			if (current_barrel_region_zcell > 26)
+				retval++;
+		}
+		else if (new_area_location == 1)
 		{
 			if (current_barrel_region_xcell > 26)
-			{
 				retval++;
-			}
 		}
-		else
+		else if (new_area_location == 2)
 		{
-			if (new_area_location < 2) 
-			{
-				if (new_area_location == 0 && current_barrel_region_zcell > 26)
-				{
-					retval++;
-				}
-			}
-			else
-			{
-				barrel_region = current_barrel_region_zcell;
-				if ((new_area_location == 2 ||
-					(barrel_region = current_barrel_region_xcell, new_area_location == 3)) &&
-					barrel_region < 6) 
-				{
-					retval++;
-				}
-			}
+			if (current_barrel_region_xcell < 6)
+				retval++;
+		}
+		else if(new_area_location == 3)
+		{
+			if(current_barrel_region_zcell < 6)
+				retval++;
 		}
 	}
 
@@ -291,8 +282,45 @@ void startgame(void)
 	UnPauseSFX();
 }
 
-extern POLY_FT4 cd_sprite;
-extern unsigned short cd_icon[288];
+int bCdIconSetup = 0;
+POLY_FT4 cd_sprite;
+extern u_short cd_icon[288];
+
+// [D] [T]
+void InitCdIcon(void)
+{
+	ushort* palette;
+	RECT16 rect;
+
+	palette = cd_icon + 10;
+
+	for (int i = 0; i < 14; i++)
+	{
+		*palette &= 0x7fff;
+		palette++;
+	}
+
+	cd_icon[10] = 0;
+
+	rect.x = 960;
+	rect.y = 434;
+	rect.w = 8;
+	rect.h = 32;
+
+	cd_icon[24] |= 0x8000;
+	cd_icon[25] |= 0x8000;
+
+	LoadImage(&rect, (u_long*)(cd_icon + 24));
+
+	setPolyFT4(&cd_sprite);
+	setRGB0(&cd_sprite, 128, 128, 128);
+	setUVWH(&cd_sprite, 0, 179, 32, 31);
+	setXYWH(&cd_sprite, 80, 38, 38, 21);
+	setClut(&cd_sprite, 960, 433);
+	setTPage(&cd_sprite, 0, 0, 960, 256);
+
+	bCdIconSetup = 1;
+}
 
 // [D] [T]
 void DrawCDicon(void)
@@ -311,7 +339,7 @@ void DrawCDicon(void)
 	}
 
 	setRECT(&dest, 960, 433, 16, 1);
-	LoadImage(&dest, (u_long *)palette);
+	LoadImage(&dest, (u_long*)(cd_icon + 10));
 
 	DrawPrim(&cd_sprite);
 	DrawSync(0);
@@ -378,6 +406,7 @@ void InitSpooling(void)
 	}
 
 	CleanSpooledModelSlots();
+	InitCdIcon();
 
 	newmodels = NULL;
 	spool_regioncounter = 0;
@@ -650,21 +679,18 @@ void CheckValidSpoolData(void)
 {
 	if (models_ready)
 		init_spooled_models();
-
-	if (spoolactive)
+	
+	if (spoolactive && check_regions_present())
 	{
-		if (check_regions_present())
+		stopgame();
+
+		while (spoolactive)
 		{
-			stopgame();
-
-			while (spoolactive)
-			{
-				DrawCDicon();
-				VSync(0);
-			}
-
-			startgame();
+			DrawCDicon();
+			VSync(0);
 		}
+
+		startgame();
 	}
 }
 
