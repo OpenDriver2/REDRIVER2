@@ -1645,7 +1645,7 @@ void InitFrontend(void)
 	SetupScreenSprts(&PsxScreens[0]);
 
 	// load frontend bank
-	LoadBankFromLump(SOUND_BANK_SFX, 0);
+	LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_MENU);
 }
 
 // [A] - was inlined in State_FrontEnd

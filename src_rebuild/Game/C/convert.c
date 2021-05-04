@@ -159,6 +159,7 @@ static int randomindex = 0;
 static int randomcounter = 0;
 
 // [D] [T]
+// this function doesn't make difference anyway...
 void RandomInit(int i1, int i2)
 {
 	int step;
@@ -175,11 +176,13 @@ void RandomInit(int i1, int i2)
 
 	count = 14;
 	sd = rseed + 2;
+	
 	do {
 		*sd++ = step;
-		count--;
 		step += 0x1c05e5f;
-	} while (-1 < count);
+		
+		count--;
+	} while (count > -1);
 
 	step = 0;
 

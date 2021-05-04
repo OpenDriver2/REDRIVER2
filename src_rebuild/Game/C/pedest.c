@@ -2882,7 +2882,7 @@ int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVEC
 	pedptr->position.vz = v.vz;
 
 	if (pCar != NULL)
-		pedptr->position.vy = (pCar->hd).where.t[1];
+		pedptr->position.vy = pCar->hd.where.t[1];
 
 	pedptr->position.vy = -130 - MapHeight(pos);
 	pedptr->dir.vz = 0;

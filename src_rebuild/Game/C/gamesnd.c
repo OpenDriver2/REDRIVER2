@@ -27,57 +27,6 @@
 #include "LIBSPU.H"
 #include "LIBMATH.H"
 
-#include <stdint.h>
-
-enum SoundBankIds
-{
-	SBK_ID_MENU					= 0,	// frontend, alpha 1.6 used it in ingame menu as well
-	
-	SBK_ID_SFX					= 1,
-	SBK_CAR_SOUNDS_START		= 2,
-	
-	SBK_ID_JERICHO				= 19,	// jericho_in_back
-	SBK_ID_JONES				= 20,
-	
-	SBK_CITY_EFFECTS_START		= 21,
-
-
-	
-	SBK_COP_PHRASES_START		= 29,
-	SBK_ID_COUNTDOWN			= 44,
-
-	// Mission banks start
-	// Jones banks
-	SBK_ID_MISSION_2			= 45,	// Chase the witness
-	SBK_ID_MISSION_3			= 46,	// Train pursuit
-	SBK_ID_MISSION_4			= 47,
-	SBK_ID_MISSION_10			= 48,
-
-	SBK_ID_MISSION_11			= 49,	// Hijack the truck
-	SBK_ID_MISSION_13			= 50,	// Steal the truck
-	SBK_ID_FERRY				= 51,	// Escape to ferry / To the docks
-	SBK_ID_MISSION_18			= 52,	// Tail Jericho
-	SBK_ID_MISSION_22			= 53,	// Beat the train
-	SBK_ID_MISSION_23			= 54,	// Car bomb
-	SBK_ID_MISSION_24			= 55,	// Stake out
-	SBK_ID_MISSION_27			= 56,
-	SBK_ID_MISSION_29			= 57,	// C4 deal
-	SBK_ID_MISSION_30			= 58,	// Destroy the yard
-	SBK_ID_MISSION_32			= 59,	// Steal the cop car
-	SBK_ID_MISSION_33			= 60,	// Caine's cash - UNUSED
-	SBK_ID_MISSION_35			= 61,	// Boat jump
-	SBK_ID_MISSION_39			= 62,	// Lenny escaping - UNUSED
-	SBK_ID_MISSION_40			= 63,	// Lenny gets caught
-
-	SBK_ID_HAVANA_TAKEADRIVE	= 64,
-	SBK_ID_VEGAS_TAKEADRIVE		= 65,
-
-	SBK_ID_TANNER				= 66,
-	SBK_ID_SPECIAL_SIREN1		= 67,
-	SBK_ID_SPECIAL_SIREN2		= 68,
-	SBK_COP_SIREN_START			= 69,
-};
-
 typedef void(*envsoundfunc)(envsound* ep /*$s1*/, envsoundinfo* E /*$a1*/, int pl /*$a2*/);
 
 void IdentifyZone(envsound* ep, envsoundinfo* E, int pl);
@@ -152,7 +101,7 @@ tunnelinfo tunnels;
 // [D] [T]
 void LoadBankFromLump(int bank, int lump)
 {
-	static unsigned int blockLimit[73] = { 0 };
+	static u_int blockLimit[73] = { 0 };
 
 	int size;
 	char* name;
@@ -346,6 +295,8 @@ void LoadLevelSFX(int missionNum)
 		missionNum != 33 && missionNum != 34 && missionNum != 38 &&
 		missionNum != 40)
 	{
+		// first bank - directions
+		// second bank - 
 		if (GameLevel & 2)
 		{
 			LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_PHRASES_START + (GameLevel & 1) * 8 + (GameLevel & 1) * 2);
@@ -1787,7 +1738,6 @@ void InitMusic(int musicnum)
 
 	copmusic = 0;
 
-	printInfo("NewLevel in InitMusic()\n");
 	AllocateReverb(3, 16384);
 
 	current_music_id = musicnum;
@@ -1795,11 +1745,13 @@ void InitMusic(int musicnum)
 
 	D_MALLOC_BEGIN()
 
-		sample_len = musicpos[2] - musicpos[1];
+	sample_len = musicpos[2] - musicpos[1];
 	music_len = musicpos[1] - musicpos[0];
 
-	if (NewLevel != 0)
+	if (NewLevel)
 	{
+		printInfo("NewLevel in InitMusic()\n");
+		
 		music_pt = D_MALLOC(music_len + 3U & 0xfffffffc);
 		sample_pt = D_TEMPALLOC(sample_len);
 
@@ -1979,24 +1931,16 @@ void InitEnvSnd(int num_envsnds)
 	if (num_envsnds > MAX_LEVEL_ENVSOUNDS)
 		num_envsnds = MAX_LEVEL_ENVSOUNDS;
 
-	i = 0;
-	while (i < num_envsnds)
-	{
+	for (i = 0; i < num_envsnds; i++)
 		envsnd[i].type = 0;
-		i++;
-	}
 
-	i = 0;
-	while (i < NumPlayers)
+	for (i = 0; i < NumPlayers; i++)
 	{
-		p = 0;
-		while (p < 4)
+		for (p = 0; p < 4; p++)
 		{
 			ESdata[i].playing_sound[p] = -1;
 			ESdata[i].thisS[p] = -1;
-			p++;
 		}
-		i++;
 	}
 
 	EStags.frame_cnt = 0;

@@ -21,7 +21,6 @@
 #include "director.h"
 #include "xaplay.h"
 #include "overlay.h"
-#include "shadow.h"
 
 #include "LIBETC.H"
 #include "STRINGS.H"

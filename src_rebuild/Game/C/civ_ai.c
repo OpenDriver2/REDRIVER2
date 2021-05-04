@@ -104,11 +104,12 @@ int InitCar(CAR_DATA* cp, int direction, LONGVECTOR4* startPos, unsigned char co
 	cp->ap.qy = 0;
 	cp->ap.qw = 0;
 	cp->ap.carCos = &car_cosmetics[model];
+
 	tmpStart.vx = (*startPos)[0];
 	tmpStart.vy = (*startPos)[1];
 	tmpStart.vz = (*startPos)[2];
-	tmpStart.vy = MapHeight(&tmpStart);
-	tmpStart.vy = tmpStart.vy - cp->ap.carCos->wheelDisp[0].vy;
+
+	tmpStart.vy = MapHeight(&tmpStart) - cp->ap.carCos->wheelDisp[0].vy;
 
 	// not valid request
 	if (control == CONTROL_TYPE_NONE)
@@ -1675,8 +1676,7 @@ int PingOutAllCivCarsAndCopCars(void)
 // checks distance from player and removes car if too far
 int CheckPingOut(CAR_DATA * cp)
 {
-	int dz;
-	int dx;
+	int dx, dz;
 	int dist;
 
 	dx = player[0].spoolXZ->vx - cp->hd.where.t[0];
@@ -1862,19 +1862,16 @@ int CreateStationaryCivCar(int direction, long orientX, long orientZ, LONGVECTOR
 		carCnt = car_data;
 		slot = reservedSlots;
 
-		if (true)
-		{
-			do {
-				if (carCnt->controlType == CONTROL_TYPE_NONE && *slot == 0)
-				{
-					newCar = carCnt;
-					break;
-				}
+		do {
+			if (carCnt->controlType == CONTROL_TYPE_NONE && *slot == 0)
+			{
+				newCar = carCnt;
+				break;
+			}
 
-				carCnt++;
-				slot++;
-			} while (carCnt < &car_data[MAX_CARS]);
-		}
+			carCnt++;
+			slot++;
+		} while (carCnt < &car_data[MAX_CARS]);
 
 		if (newCar)
 		{
@@ -2894,7 +2891,7 @@ void SetUpCivCollFlags(void)
 					}
 
 					// do overlap test between boxes
-					if (bcollided2d(cd, &boxOverlap) == 0)
+					if (!bcollided2d(cd, &boxOverlap))
 					{
 						cp1--;
 						continue;

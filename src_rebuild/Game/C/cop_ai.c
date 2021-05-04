@@ -945,7 +945,7 @@ void ControlCopDetection(void)
 	{
 		said_picked_up = 0;
 	}
-	else if (first_offence == 0 && said_picked_up == 0) 
+	else if (!first_offence && !said_picked_up) 
 	{
 		int rnd;
 		rnd = Random2(2);

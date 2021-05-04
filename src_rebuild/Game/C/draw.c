@@ -116,8 +116,7 @@ int setupYet = 0;
 
 int gDrawDistance = 441;
 
-// offset: 0x1f800020
-_pct& plotContext = *(_pct*)getScratchAddr(1024 - sizeof(_pct));
+_pct& plotContext = *(_pct*)getScratchAddr(1024 - sizeof(_pct));	// orig offset: 0x1f800020
 
 // [D] [T] [A]
 void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
@@ -588,15 +587,13 @@ u_int normalIndex(SVECTOR* verts, u_int vidx)
 	SVECTOR* v0;
 	SVECTOR* v1;
 	SVECTOR* v2;
-	int ny;
-	int y;
-	int th23;
-	int x;
 
-	int nz;
-	int nx;
-	SVECTOR p;
-	SVECTOR q;
+	int x, y;
+	int th23;
+
+	int nx, ny, nz;
+
+	SVECTOR p, q;
 
 	v0 = verts + (vidx & 0xff);
 	v1 = verts + (vidx >> 8 & 0xff);
@@ -655,7 +652,6 @@ u_int normalIndex(SVECTOR* verts, u_int vidx)
 void PlotBuildingModel(MODEL* model, int rot, _pct* pc)
 {
 	int opz;
-	int diff, minZ, maxZ;
 	int Z;
 	PL_POLYFT4* polys;
 	int i;
@@ -665,10 +661,6 @@ void PlotBuildingModel(MODEL* model, int rot, _pct* pc)
 	POLY_FT4* prims;
 	SVECTOR* srcVerts;
 	int combo;
-
-	srcVerts = (SVECTOR*)model->vertices;
-	polys = (PL_POLYFT4*)model->poly_block;
-
 	srcVerts = (SVECTOR*)model->vertices;
 	polys = (PL_POLYFT4*)model->poly_block;
 
@@ -1013,7 +1005,7 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 
 		plotContext.ot = ot + zbias * 4;
 
-		if(Z <= 9000)
+		if(Z <= DRAW_LOD_DIST_HIGH)
 			PlotBuildingModelSubdivNxN(model, cop->yang, &plotContext, 1);
 		else
 			PlotBuildingModel(model, cop->yang, &plotContext);
