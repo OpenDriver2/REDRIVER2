@@ -760,8 +760,10 @@ void PsyX_TakeScreenshot()
 {
 	unsigned char* pixels = new unsigned char[g_windowWidth * g_windowHeight * 4];
 	
-#if defined(RENDERER_OGL) || defined(RENDERER_OGLES)
+#if defined(RENDERER_OGL)
 	glReadPixels(0, 0, g_windowWidth, g_windowHeight, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
+#elif defined(RENDERER_OGLES)
+	glReadPixels(0, 0, g_windowWidth, g_windowHeight, GL_RGBA, GL_UNSIGNED_BYTE, pixels);	// FIXME: is that correct format?
 #endif
 
 	SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(pixels, g_windowWidth, g_windowHeight, 8 * 4, g_windowWidth * 4, 0, 0, 0, 0);

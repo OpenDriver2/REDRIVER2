@@ -318,7 +318,7 @@ int GR_InitialiseGLESContext(char* windowName, int fullscreen)
 		}
 	}
 
-#if !defined(__EMSCRIPTEN__)
+#if !defined(__EMSCRIPTEN__) && !defined(__RPI__)
 	SDL_SysWMinfo systemInfo;
 	SDL_VERSION(&systemInfo.version);
 	SDL_GetWindowWMInfo(g_window, &systemInfo);
