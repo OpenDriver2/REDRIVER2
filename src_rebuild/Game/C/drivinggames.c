@@ -160,7 +160,7 @@ void SetSmashedCone(int cone, VECTOR *velocity, int player, int side)
 			SetPlayerOwnsChannel(chan, player);
 
 		tbd = &gTrailblazerData[cone];
-		Start3DSoundVolPitch(chan, 1, SOUND_BANK_MISSION, tbd->x, tbd->y, tbd->z, -2000, 800);
+		Start3DSoundVolPitch(chan, SOUND_BANK_SFX, 1, tbd->x, tbd->y, tbd->z, -2000, 800);
 	}
 }
 
