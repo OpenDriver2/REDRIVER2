@@ -1,7 +1,9 @@
-# REDRIVER2
+# REDRIVER2 (Reverse-Engineered Driver 2)
 
 PC (Windows and Linux):
 [![Build status](https://ci.appveyor.com/api/projects/status/9abepvls6jexapqy/branch/master?svg=true)](https://ci.appveyor.com/project/SoapyMan/redriver2-10jm8/branch/master)
+
+![REDRIVER2 running on Windows](https://i.ibb.co/2q1pp06/red2.png)
 
 ### Timeline: 
 - Feb 19, 2019 - created skeleton, one year long preparations
@@ -27,10 +29,13 @@ PC (Windows and Linux):
 ### How to use
 See [Wiki/Installation Instructions](https://github.com/OpenDriver2/REDRIVER2/wiki/Installation-instructions)
 
+### How I can contribute?
+See [Contributing to project](https://github.com/OpenDriver2/REDRIVER2/wiki/Contributing-to-project) page
+
 ### Credits
-- Soapy - lead programmer
-- Fireboyd78 - code refactoring and improvements
-- Krishty, someone972 - formats decoding
-- Gh0stBlade - API-level PSY-Q libraries reimplementation (HLE PSX Emulator) [(link)](https://github.com/tomb5/tomb5)
-- Ben Lincoln - [This Dust Remembers What It Once Was](https://www.beneaththewaves.net/Software/This_Dust_Remembers_What_It_Once_Was.html) (*TDR*)
-- Stohrendorf - [Symdump](https://github.com/stohrendorf/symdump) utility
+- **SoapyMan** - lead reverse engineer and programmer
+- **Fireboyd78** - code refactoring and improvements
+- **Krishty, someone972** - early formats decoding
+- **Gh0stBlade** - HLE Emulator code used as a base for Psy-Cross [(link)](https://github.com/TOMB5/TOMB5/tree/master/EMULATOR)
+- **Ben Lincoln** - [This Dust Remembers What It Once Was](https://www.beneaththewaves.net/Software/This_Dust_Remembers_What_It_Once_Was.html) (*TDR*)
+- **Stohrendorf** - [Symdump](https://github.com/stohrendorf/symdump) utility

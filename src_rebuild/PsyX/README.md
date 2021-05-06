@@ -10,6 +10,7 @@ Framework aiming to build and run originally targeted **Playstation** applicatio
 - **PGXP-Z** - PGXP support with optimized vertex cache lookup and extended with *modern 3D hardware perspective transform* and *Z-buffer* support **PGXP-Z**
 - *LibSPU* with ADPCM decoding on OpenAL (SPU-AL)
 - *LibGPU* with Playstation-style polygon and image handling
+- Already proven to be *95% compatible* with the Psy-Q Playstation SDK - Psy-X game look identical to the Playstation game
 
 ## TODO
 - Add some missing LibGTE functions
