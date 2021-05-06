@@ -1,25 +1,6 @@
 #ifndef LIBSPU_H
 #define LIBSPU_H
 
-/*****************************************************************
- * -*- c -*-
- * $RCSfile: libspu.h,v $
- *
- * Copyright (c) 1993, 1994, 1995, 1996 Sony Computer Entertainment Inc.
- * All Rights Reserved.
- *
- * This file is part of ``PlayStation(R)'' Programmer Tool /
- * Runtime Library.
- *
- * R & D Division, Sony Computer Entertainment Inc.
- *
- * $Id: libspu.h,v 1.80 1997/06/24 11:14:04 kaol Exp $
- *
- *****************************************************************/
-/*
- * $PSLibId: Run-time Library Release 4.6$
- */
-
 /* ----------------------------------------------------------------
  *	CONSTANT 
  * ---------------------------------------------------------------- */
