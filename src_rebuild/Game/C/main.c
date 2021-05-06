@@ -1554,7 +1554,7 @@ void StepGame(void)
 		ControlReplay();
 
 	// player flip cheat
-	if (gRightWayUp != 0)
+	if (gRightWayUp)
 	{
 		TempBuildHandlingMatrix(&car_data[player[0].playerCarId], 0);
 		gRightWayUp = 0;
@@ -1571,10 +1571,12 @@ void CheckForPause(void)
 {
 	int ret;
 
-	if (gDieWithFade > 15 && (quick_replay || NoPlayerControl == 0))
+	if (gDieWithFade == 16 && (quick_replay || !NoPlayerControl))
 	{
 		PauseMode = PAUSEMODE_GAMEOVER;
 		WantPause = 1;
+
+		gDieWithFade = 32;
 	}
 
 	if (WantPause)
@@ -2409,7 +2411,7 @@ void RenderGame2(int view)
 
 	DrawMission();
 
-	if (FastForward == 0 && NumPlayers == 1)
+	if (!FastForward && NumPlayers == 1)
 		DrawLensFlare();
 
 	// Retro calls this BSOD...
