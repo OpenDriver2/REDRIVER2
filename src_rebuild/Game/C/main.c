@@ -1348,10 +1348,8 @@ void StepGame(void)
 	int i;
 	PLAYER* pl;
 
-	if (CameraCnt == 3)
-	{
+	if (CameraCnt == 3 && !pauseflag)
 		StartXM(gDriver1Music);
-	}
 
 	if (doSpooling)
 	{

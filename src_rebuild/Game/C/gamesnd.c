@@ -1786,7 +1786,7 @@ void InitMusic(int musicnum)
 	InitXMData((unsigned char*)music_pt, 0, 0);
 
 	// 8 XM channels start after first sfx channels
-	Song_ID = XM_Init(VABID, 0, 0, MAX_SFX_CHANNELS, 1, -1, 0, 0);
+	Song_ID = XM_Init(VABID, 0, 0, MAX_SFX_CHANNELS, 1, -1, 0x80, 0);
 
 	if (music_paused != 0)
 		XM_Pause(Song_ID);
