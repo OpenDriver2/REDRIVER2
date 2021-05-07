@@ -2,7 +2,7 @@
 #define LIBAPI_H
 
 #ifndef EMU_KERNEL_H
-#include "KERNEL.H"
+#include "kernel.h"
 #endif
 
 extern long SetRCnt(long spec, unsigned short target, long mode);

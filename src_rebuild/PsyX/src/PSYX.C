@@ -7,9 +7,9 @@
 
 #include "UTIL/CRASHHANDLER.H"
 
-#include "LIBETC.H"
-#include "LIBGTE.H"
-#include "LIBGPU.H"
+#include "libetc.h"
+#include "libgte.h"
+#include "libgpu.h"
 
 #include <assert.h>
 #include <ctype.h>

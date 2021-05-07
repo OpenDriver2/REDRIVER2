@@ -2,11 +2,11 @@
 #define KERNEL_H
 
 #ifndef R3000_H
-#include "R3000.H"
+#include "r3000.h"
 #endif
 
 #ifndef ASM_H
-#include "ASM.H"
+#include "asm.h"
 #endif
 
 #define DescMask 	0xff000000

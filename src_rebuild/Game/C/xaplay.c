@@ -28,7 +28,7 @@ CSoundSource_OpenALCache* g_XAWave = NULL;
 
 #else
 
-#include "LIBSND.H"
+#include <libsnd.h>
 
 char* XANames[] = {
 	"%sXA\\XABNK01.XA;1",

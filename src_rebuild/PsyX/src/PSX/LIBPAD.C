@@ -1,5 +1,5 @@
-#include "LIBPAD.H"
-#include "LIBETC.H"
+#include "libpad.h"
+#include "libetc.h"
 
 #include "../PSYX_SETUP.H"
 #include "PsyX/PsyX_public.h"

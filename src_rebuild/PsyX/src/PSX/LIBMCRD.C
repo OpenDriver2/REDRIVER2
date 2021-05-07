@@ -1,5 +1,5 @@
 #include "../PSYX_SETUP.H"
-#include "LIBMCRD.H"
+#include "libmcrd.h"
 #include <stdio.h>
 #include <string.h>
 

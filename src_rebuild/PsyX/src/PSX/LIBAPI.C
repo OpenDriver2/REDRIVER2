@@ -1,4 +1,4 @@
-#include "LIBAPI.H"
+#include "libapi.h"
 
 #include <stdio.h>
 #include "../PSYX_SETUP.H"

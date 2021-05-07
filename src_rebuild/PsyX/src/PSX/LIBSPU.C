@@ -1,11 +1,11 @@
 #define HAVE_M_PI
 
-#include "LIBSPU.H"
-#include "LIBETC.H"
+#include "libspu.h"
+#include "libetc.h"
 #include <stdio.h>
 
 #include "../PSYX_SETUP.H"
-#include "LIBMATH.H"
+#include "libmath.h"
 
 
 #include <string.h>

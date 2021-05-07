@@ -1,5 +1,5 @@
 
-#include "LIBSN.H"
+#include "libsn.h"
 #include <stdio.h>
 
 uintptr_t fileHandle = 0;

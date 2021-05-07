@@ -1,4 +1,4 @@
-#include "LIBETC.H"
+#include "libetc.h"
 
 #include "../PSYX_SETUP.H"
 #include "PsyX/PsyX_public.h"

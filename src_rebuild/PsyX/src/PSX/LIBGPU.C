@@ -1,5 +1,5 @@
-#include "LIBGTE.H"
-#include "LIBGPU.H"
+#include "libgte.h"
+#include "libgpu.h"
 
 #include "../GPU/PsyX_GPU.H"
 #include "PsyX/PsyX_render.h"
@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "LIBETC.H"
+#include "libetc.h"
 
 #include <stdio.h>
 #include <stdlib.h>

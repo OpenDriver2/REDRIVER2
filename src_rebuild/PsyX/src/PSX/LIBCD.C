@@ -1,4 +1,4 @@
-#include "LIBCD.H"
+#include "libcd.h"
 
 #include "../PSYX_SETUP.H"
 
