@@ -16,15 +16,9 @@
 #include "cars.h"
 #include "convert.h"
 
-#include "STRINGS.H"
-
 #ifdef USE_PGXP
 #include <math.h>
 #endif
-
-#include "INLINE_C.H"
-#include "GTEMAC.H"
-#include <LIBETC.H>
 
 enum LIMBS
 {

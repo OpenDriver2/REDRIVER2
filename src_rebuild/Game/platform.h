@@ -6,7 +6,6 @@
 #include <emscripten/html5.h>
 #endif
 
-#include "STRINGS.H"
 #include "psyx_compat.h"
 
 #ifndef PSX

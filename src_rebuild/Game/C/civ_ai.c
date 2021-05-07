@@ -24,10 +24,6 @@
 #include "objcoll.h"
 #include "overlay.h"
 
-#include "INLINE_C.H"
-#include "STRINGS.H"
-#include "ABS.H"
-
 const u_char speedLimits[3] = { 56, 97, 138 };
 
 struct

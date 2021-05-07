@@ -1,7 +1,7 @@
 #ifndef DR2MATH_H
 #define DR2MATH_H
 
-#include "ABS.H"
+#include <abs.h>
 
 // Driver 2 math definitions
 extern short rcossin_tbl[8192];

@@ -1,7 +1,3 @@
-#include "LIBGTE.H"
-#include "LIBGPU.H"
-#include "INLINE_C.H"
-
 #include "Game/driver2.h"
 
 #include "Game/C/mission.h"

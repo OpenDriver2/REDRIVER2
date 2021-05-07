@@ -3,8 +3,6 @@
 #include "system.h"
 #include "texture.h"
 
-#include <STRINGS.H>
-
 extern TEXTURE_DETAILS digit_texture;
 
 FONT_DIGIT fontDigit[] = {

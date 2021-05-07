@@ -25,7 +25,7 @@
 #include <SDL_gamecontroller.h>
 #include <SDL_messagebox.h>
 
-#include "PSYX_GLOBALS.H"
+#include "PsyX/PsyX_globals.h"
 
 int(*GPU_printf)(const char *fmt, ...);
 

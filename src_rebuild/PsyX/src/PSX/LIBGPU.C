@@ -2,8 +2,8 @@
 #include "LIBGPU.H"
 
 #include "../GPU/PsyX_GPU.H"
-#include "PSYX_RENDER.H"
-#include "PSYX_PUBLIC.H"
+#include "PsyX/PsyX_render.h"
+#include "PsyX/PsyX_public.h"
 
 #include <stdint.h>
 
@@ -14,7 +14,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "PSYX_GLOBALS.H"
+#include "PsyX/PsyX_globals.h"
 #include "../PSYX_SETUP.H"
 #include "../GPU/FONT.H"
 

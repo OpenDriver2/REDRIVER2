@@ -4,7 +4,7 @@
 #include <stddef.h>
 #endif // _WIN32
 
-#include "UTIL/TIMER.H"
+#include "PsyX/util/timer.h"
 
 void Util_InitHPCTimer(timerCtx_t* timer)
 {

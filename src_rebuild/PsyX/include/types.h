@@ -1,11 +1,10 @@
 #ifndef	TYPES_H
 #define	TYPES_H
 
-#include "PSYX_CONFIG.H"
+#include "PsyX/PsyX_config.h"
 
 #include <stdint.h>
 #include <stddef.h>
-#include <limits.h>
 
 #if !defined(__APPLE__)
 /* major part of a device */

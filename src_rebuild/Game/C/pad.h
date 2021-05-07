@@ -1,8 +1,6 @@
 #ifndef PAD_H
 #define PAD_H
 
-#include "LIBPAD.H"
-
 #define PADBUFFER_SIZE 34
 
 enum ECameraPad

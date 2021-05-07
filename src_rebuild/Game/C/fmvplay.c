@@ -7,12 +7,6 @@
 #include "E3stuff.h"
 #include "main.h"
 
-#include "LIBETC.H"
-#include "LIBSPU.H"
-#include "LIBGPU.H"
-#include "LIBAPI.H"
-#include "LIBMCRD.H"
-
 
 // FMV
 int gSubtitles = 0;

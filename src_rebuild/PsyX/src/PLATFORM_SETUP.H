@@ -27,6 +27,8 @@
 #define FUNCNAME __func__
 #endif
 
+#include "PsyX/PsyX_globals.H"
+
 #if defined(__ANDROID__)
 #   include <android/log.h>
 #   define LOG_TAG_EMU "[PsyX] "
@@ -35,7 +37,6 @@
 #   define eprintwarnf(fmt, ...)   __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG_EMU " [WARN]", fmt, ##__VA_ARGS__)
 #   define eprinterr(fmt, ...)     eprintf("[%s] - " fmt, FUNCNAME, ##__VA_ARGS__);
 #else
-#   include "PSYX_GLOBALS.H"
 #   define eprintf(fmt, ...)       PsyX_Log("[Psy-X] " fmt, ##__VA_ARGS__)
 #   define eprintinfo(fmt, ...)    PsyX_Log_Info("[Psy-X] " fmt, ##__VA_ARGS__)
 #   define eprintwarn(fmt, ...)    PsyX_Log_Warning("[Psy-X] " fmt, ##__VA_ARGS__)

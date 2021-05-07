@@ -14,9 +14,6 @@
 #include "mission.h"
 #include "tile.h"
 
-#include "INLINE_C.H"
-#include "STRINGS.H"
-
 int gShadowTexturePage;
 int gShadowTextureNum;
 

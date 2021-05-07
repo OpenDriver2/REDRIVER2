@@ -13,11 +13,6 @@
 #include "pause.h"
 #include "platform.h"
 
-#include "LIBGPU.H"
-#include "LIBETC.H"
-#include "STRINGS.H"
-
-
 #ifndef PSX
 #include <stdlib.h>		// getenv
 

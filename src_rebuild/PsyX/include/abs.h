@@ -7,6 +7,4 @@
 
 extern int fst_abs(int x);
 
-// TODO: MINMAX.H
-
 #endif

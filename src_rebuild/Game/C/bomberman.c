@@ -19,9 +19,6 @@
 
 #include "ASM/rndrasm.h"
 
-#include "INLINE_C.H"
-#include "RAND.H"
-
 MODEL* gBombModel;
 
 static BOMB ThrownBombs[MAX_THROWN_BOMBS];

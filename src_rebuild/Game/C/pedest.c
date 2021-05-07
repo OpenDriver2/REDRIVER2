@@ -27,10 +27,6 @@
 
 #include "ASM/rndrasm.h"
 
-#include "STRINGS.H"
-#include "INLINE_C.H"
-
-
 MODEL* pmTannerModels[17] = { 0 };
 MODEL* pmJerichoModels[6] = { 0 };
 

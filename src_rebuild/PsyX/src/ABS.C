@@ -1,4 +1,4 @@
-#include "ABS.H"
+#include "abs.h"
 
 // this is definitely NOT in psx runtime libs
 int fst_abs(int x)

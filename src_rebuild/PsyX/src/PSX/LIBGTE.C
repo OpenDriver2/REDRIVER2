@@ -1,13 +1,13 @@
-#include "LIBGTE.H"
+#include "libgte.h"
+
 #include <stdio.h>
-#include "PSYX_RENDER.H"
+#include "PsyX/PsyX_render.h"
 
 #include <assert.h>
 
-#include "ABS.H"
-#include "INLINE_C.H"
-#include "GTEMAC.H"
-#include "GTEREG.H"
+#include "inline_c.h"
+#include "gtemac.h"
+#include "gtereg.h"
 
 #include "../GTE/PsyX_GTE.H"
 #include "../GTE/rcossin_tbl.h"

@@ -1,5 +1,5 @@
-#include "COMMON/half_float.h"
-#include <TYPES.H>
+#include "PsyX/common/half_float.h"
+#include "types.h"
 
 // see https://gist.github.com/rygorous/2156668
 

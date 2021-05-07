@@ -16,8 +16,6 @@
 #include "platform.h"
 #include "loadsave.h"
 
-#include "STRINGS.H"
-
 #define REPLAY_NAME_LEN		16
 #define SCORE_NAME_LEN		5
 

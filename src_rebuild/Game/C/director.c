@@ -18,9 +18,6 @@
 #include "sound.h"
 #include "system.h"
 
-#include "RAND.H"
-#include "STRINGS.H"
-
 struct REPLAY_ICON
 {
 	short x;

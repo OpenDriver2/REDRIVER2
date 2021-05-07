@@ -2,7 +2,7 @@
 #define PGXP_DEFS_H
 
 #ifdef USE_PGXP
-#include "COMMON/half_float.h"
+#include "PsyX/common/half_float.h"
 
 typedef half VERTTYPE;
 #define PGXP_LOOKUP_VALUE(x, y) (x.sh | (y.sh << 16))

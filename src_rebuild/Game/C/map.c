@@ -8,12 +8,8 @@
 #include "draw.h"
 #include "camera.h"
 #include "glaunch.h"
-#include "models.h"
 #include "players.h"
 #include "main.h"
-
-#include "STRINGS.H"
-#include "LIBETC.H"
 
 char *map_lump = NULL;
 int initarea = 0;

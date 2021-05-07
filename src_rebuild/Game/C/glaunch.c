@@ -12,11 +12,9 @@
 #include "camera.h"
 #include "fmvplay.h"
 #include "state.h"
-#include "Frontend/FEmain.h"
-
-#include "LIBETC.H"
-#include "STRINGS.H"
 #include "xaplay.h"
+
+#include "Frontend/FEmain.h"
 
 MISSION_STEP MissionLadder[68] =
 {

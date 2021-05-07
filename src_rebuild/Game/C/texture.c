@@ -7,8 +7,6 @@
 #include "objanim.h"
 #include "ASM/compres.h"
 
-#include "STRINGS.H"
-
 SXYPAIR tpagepos[20] =
 {
 	{ 640, 0 },

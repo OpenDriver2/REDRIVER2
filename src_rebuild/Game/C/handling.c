@@ -23,11 +23,6 @@
 #include "shadow.h"
 #include "players.h"
 
-#include "INLINE_C.H"
-#include "STRINGS.H"
-#include "RAND.H"
-#include "LIMITS.H"
-
 inline void UpdateCarDrawMatrix(CAR_DATA* cp)
 {
 	cp->hd.drawCarMat.m[0][0] = -cp->hd.where.m[0][0];

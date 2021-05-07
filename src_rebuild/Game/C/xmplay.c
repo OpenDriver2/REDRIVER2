@@ -8,18 +8,12 @@ XMPLAY.C
 
 ****************************************************************************/
 
-#include "TYPES.H"
-#include "STRINGS.H"
-#include "ABS.H"
+#include <types.h>
+#include <abs.h>
+#include <libspu.h>
 
 #include "xmplay.h"
 #include "xmcalls.h"
-
-#include "LIBETC.H"
-#include "LIBSPU.H"
-#include "LIBMATH.H"
-
-
 
 /**** PSX SPECIFIC ****/
 

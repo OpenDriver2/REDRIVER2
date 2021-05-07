@@ -24,9 +24,6 @@
 #include "debris.h"
 #include "felony.h"
 
-#include "LIBSPU.H"
-#include "LIBMATH.H"
-
 typedef void(*envsoundfunc)(envsound* ep /*$s1*/, envsoundinfo* E /*$a1*/, int pl /*$a2*/);
 
 void IdentifyZone(envsound* ep, envsoundinfo* E, int pl);

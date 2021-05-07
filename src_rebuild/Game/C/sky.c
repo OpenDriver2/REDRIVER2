@@ -9,9 +9,6 @@
 #include "debris.h"
 #include "players.h"
 
-#include "LIBGTE.H"
-#include "INLINE_C.H"
-
 struct RGB16
 {
 	short r;

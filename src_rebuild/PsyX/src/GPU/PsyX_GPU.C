@@ -1,8 +1,8 @@
 #include "PsyX_GPU.H"
 
-#include "PSYX_PUBLIC.H"
-#include "PSYX_GLOBALS.H"
-#include "PSYX_RENDER.H"
+#include "PsyX/PsyX_public.h"
+#include "PsyX/PsyX_globals.h"
+#include "PsyX/PsyX_render.h"
 
 #include "../PSYX_SETUP.H"
 

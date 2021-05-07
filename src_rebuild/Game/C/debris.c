@@ -24,9 +24,6 @@
 
 #include "ASM/rndrasm.h"
 
-#include "INLINE_C.H"
-#include "RAND.H"
-
 TEXTURE_DETAILS digit_texture;
 
 TRI_POINT debris_rot1[32]; // offset 0xC0A60

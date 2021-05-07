@@ -10,10 +10,6 @@
 #include "gamesnd.h"
 #include "dr2roads.h"
 #include "overlay.h"
-#include "mission.h"
-
-#include "ABS.H"
-#include "STRINGS.H"
 
 short initialOccurrenceDelay[12] = { 24, 0, 0, 0, 0, 0, 0, 0, 24, 0, 24, 0 };
 short initialReccurrenceDelay[12] = { 128, 0, 128, 64, 64, 32, 32, 0, 128, 256 };

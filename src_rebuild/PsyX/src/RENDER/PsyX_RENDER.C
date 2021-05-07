@@ -1,14 +1,15 @@
-#include "PSYX_PUBLIC.H"
+#include "PsyX/PsyX_public.h"
 
 #include "../PLATFORM_SETUP.H"
-#include "PSYX_RENDER.H"
 
-#include "UTIL/TIMER.H"
+#include "PsyX/PsyX_render.h"
+#include "PsyX/PsyX_globals.h"
+#include "PsyX/util/timer.h"
 
 #include <assert.h>
 #include <string.h>
 
-#include "PSYX_GLOBALS.H"
+
 
 #ifdef _WIN32
 #include <windows.h>

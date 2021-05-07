@@ -13,9 +13,6 @@
 #include "glaunch.h"
 #include "system.h"
 
-#include "INLINE_C.H"
-#include "LIBMATH.H"
-
 struct CAR_LOCALS
 {
 	LONGVECTOR4 vel;

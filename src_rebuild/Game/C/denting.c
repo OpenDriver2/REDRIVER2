@@ -2,7 +2,6 @@
 #include "denting.h"
 #include "system.h"
 #include "mission.h"
-#include "models.h"
 #include "cars.h"
 #include "convert.h"
 #include "pause.h"
@@ -12,8 +11,6 @@
 #include "debris.h"
 #include "players.h"
 #include "main.h"
-
-#include "STRINGS.H"
 
 char* DentingFiles[] =
 {

@@ -1,16 +1,15 @@
 #include "PSYX_SETUP.H"
 
-#include "PSYX_VERSION.H"
-#include "PSYX_GLOBALS.H"
-#include "PSYX_PUBLIC.H"
+#include "PsyX/PsyX_version.h"
+#include "PsyX/PsyX_globals.h"
+#include "PsyX/PsyX_public.h"
+#include "PsyX/util/timer.h"
 
 #include "UTIL/CRASHHANDLER.H"
 
 #include "LIBETC.H"
 #include "LIBGTE.H"
 #include "LIBGPU.H"
-
-#include "UTIL/TIMER.H"
 
 #include <assert.h>
 #include <ctype.h>
@@ -21,7 +20,7 @@
 #include <stdio.h>
 #include <SDL.h>
 
-#include "PSYX_RENDER.H"
+#include "PsyX/PsyX_render.h"
 
 #ifdef __EMSCRIPTEN__
 int strcasecmp(const char* _l, const char* _r)

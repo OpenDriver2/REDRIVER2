@@ -1,6 +1,8 @@
 #include "ReadAVI.h"	// WTF, ostream/fstream
 
-#include <PSYX_RENDER.H>
+#include <PsyX/PsyX_render.h>
+#include <PsyX/util/timer.h>
+#include <strings.h>
 
 #include "driver2.h"
 
@@ -9,13 +11,9 @@
 #include "C/E3stuff.h"
 #include "C/fmv_font.h"
 
-#include "STRINGS.H"
-
 #include <AL/al.h>
 #include <jpeglib.h>
 #include "platform.h"
-
-#include <UTIL/TIMER.H>
 
 // Partially decompiled function from FMV EXE
 void InitFMVFont()

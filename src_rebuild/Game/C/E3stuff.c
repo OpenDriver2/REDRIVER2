@@ -7,8 +7,6 @@
 #include "pause.h"
 #include "sound.h"
 
-#include "LIBETC.H"
-
 struct POLYCOORD
 {
 	short x;

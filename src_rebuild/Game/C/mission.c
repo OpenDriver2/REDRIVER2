@@ -29,8 +29,6 @@
 #include "shadow.h"
 #include "handling.h"
 
-#include "STRINGS.H"
-
 #ifndef PSX
 #include <stdint.h>
 #include <SDL.h>

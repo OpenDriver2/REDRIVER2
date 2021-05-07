@@ -14,8 +14,6 @@
 #include "players.h"
 #include "main.h"
 
-#include "LIBETC.H"
-
 // [D] [T]
 char CellEmpty(VECTOR *pPosition, int radius)
 {

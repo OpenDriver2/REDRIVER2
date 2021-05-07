@@ -18,10 +18,6 @@
 #include "pad.h"
 #include "ASM/rnc_2.h"
 
-#include "STRINGS.H"
-#include "INLINE_C.H"
-
-
 OVERMAP overlaidmaps[4] =
 {
 	{ 197, 318, 384, 672, 252, 153, 2145 },

@@ -19,9 +19,6 @@
 
 #include "ASM/rndrasm.h"
 
-#include "INLINE_C.H"
-#include "RAND.H"
-
 MODEL* gTrailblazerConeModel; 
 SMASHED_CONE smashed_cones[MAX_SMASHED_CONES];
 

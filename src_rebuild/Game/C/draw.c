@@ -14,11 +14,7 @@
 #include "cars.h"
 #include "debris.h"
 #include "ASM/rndrasm.h"
-
-#include "INLINE_C.H"
-
 #include "event.h"
-#include "LIBETC.H"
 
 
 MATRIX aspect =

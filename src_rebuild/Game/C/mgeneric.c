@@ -8,8 +8,6 @@
 #include "replays.h"
 #include "system.h"
 
-#include "STRINGS.H"
-
 // [D] [T]
 void StorePlayerPosition(SAVED_PLAYER_POS *data)
 {

@@ -21,11 +21,6 @@
 #include "pedest.h"
 #include "cell.h"
 
-#include "INLINE_C.H"
-#include "LIBGTE.H"
-
-
-
 VECTOR gCameraOffset = { 0};
 VECTOR camera_position = { 0, 380, 0, 0 };
 SVECTOR camera_angle = { 0,0,0 };

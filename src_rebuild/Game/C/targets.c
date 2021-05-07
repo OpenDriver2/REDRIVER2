@@ -11,8 +11,6 @@
 
 #include "ASM/rndrasm.h"
 
-#include "INLINE_C.H"
-
 struct TARGET_ARROW_MODEL
 {
 	SVECTOR* pVerts;

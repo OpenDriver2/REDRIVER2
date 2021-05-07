@@ -2,10 +2,6 @@
 
 #include "FEmain.h"
 
-#include "LIBGPU.H"
-#include "LIBETC.H"
-#include "STRINGS.H"
-
 #include "C/cd_icon.h"
 
 #include "C/system.h"

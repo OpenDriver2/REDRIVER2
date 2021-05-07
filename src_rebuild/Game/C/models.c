@@ -5,8 +5,6 @@
 #include "mission.h"
 #include "cars.h"
 
-#include "STRINGS.H"
-
 MODEL dummyModel = { 0 };
 
 char* modelname_buffer = NULL;

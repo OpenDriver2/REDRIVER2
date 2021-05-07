@@ -22,10 +22,6 @@
 #include "xaplay.h"
 #include "overlay.h"
 
-#include "LIBETC.H"
-#include "STRINGS.H"
-#include "RAND.H"
-
 int gSkipInGameCutscene = 0;
 
 int gInGameCutsceneActive = 0;

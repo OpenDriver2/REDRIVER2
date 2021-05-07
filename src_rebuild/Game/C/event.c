@@ -14,7 +14,6 @@
 #include "main.h"
 #include "system.h"
 #include "spool.h"
-#include "map.h"
 #include "texture.h"
 #include "civ_ai.h"
 #include "pedest.h"
@@ -22,10 +21,6 @@
 #include "gamesnd.h"
 #include "dr2roads.h"
 #include "ASM/rndrasm.h"
-
-#include "INLINE_C.H"
-#include "GTEMAC.H"
-#include "RAND.H"
 
 #define PATH_NODE_WRAP		0x80000000	// go back to first node without interpolation
 #define PATH_NODE_CYCLE		0x80000001	// cycle nodes with interpolation

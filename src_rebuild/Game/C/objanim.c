@@ -15,8 +15,6 @@
 #include "system.h"
 #include "pause.h"
 
-#include "STRINGS.H"
-
 CYCLE_OBJECT Lev0[2] =
 {
 	{ "REDRVR", 0, 0, 6, 10, 2, 11, 15, 2 },

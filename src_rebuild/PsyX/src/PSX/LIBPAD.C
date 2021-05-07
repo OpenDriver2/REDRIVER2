@@ -2,7 +2,7 @@
 #include "LIBETC.H"
 
 #include "../PSYX_SETUP.H"
-#include "PSYX_PUBLIC.H"
+#include "PsyX/PsyX_public.h"
 
 #include <string.h>
 

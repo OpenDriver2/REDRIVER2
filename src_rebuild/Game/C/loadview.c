@@ -11,8 +11,6 @@
 #include "main.h"
 #include "cutscene.h"
 
-#include "LIBETC.H"
-
 DRAWENV load_draw = { 0 };
 DISPENV load_disp = { 0 };
 

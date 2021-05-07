@@ -14,14 +14,6 @@
 #include "objanim.h"
 #include "system.h"
 
-#include "RAND.H"
-#include "STRINGS.H"
-#include "LIMITS.H"
-
-#include "INLINE_C.H"
-#include "LIBETC.H"
-
-
 extern int gCameraBoxOverlap;
 
 // Checks of two bodies collides (basic check) with Separating Axis Theorem

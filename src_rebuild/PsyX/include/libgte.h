@@ -1,8 +1,8 @@
 #ifndef LIBGTE_H
 #define LIBGTE_H
 
-#include "TYPES.H"
-#include "COMMON/PGXP_DEFS.H"
+#include "types.h"
+#include "PsyX/common/pgxp_defs.h"
 
 typedef struct {
 	short	m[3][3];	/* 3x3 rotation matrix */

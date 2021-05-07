@@ -1,12 +1,6 @@
 #include "driver2.h"
 #include "main.h"
 
-#include "LIBETC.H"
-#include "LIBSPU.H"
-#include "LIBGPU.H"
-#include "LIBAPI.H"
-#include "LIBMCRD.H"
-
 #include "ASM/rndrasm.h"
 #include "ASM/d2mapasm.h"
 
@@ -61,15 +55,8 @@
 #include "xaplay.h"
 #include "shadow.h"
 #include "pause.h"
-
 #include "sysclock.h"
-
 #include "platform.h"
-
-#include "RAND.H"
-#include "STRINGS.H"
-
-#include "INLINE_C.H"
 #include "state.h"
 
 int levelstartpos[8][4] = {

@@ -13,10 +13,6 @@
 #include "civ_ai.h"
 #include "state.h"
 
-#include "STRINGS.H"
-#include "RAND.H"
-
-
 char AnalogueUnpack[16] = { 
 	0, -51, -63, -75, -87, -99, -111, -123,
 	0,  51,  63,  75,  87,  99,  111,  123

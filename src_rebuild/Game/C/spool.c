@@ -5,9 +5,6 @@
 #include <SDL.h>
 #endif // !PSX
 
-#include <STRINGS.H>
-
-#include "LIBETC.H"
 #include "pad.h"
 #include "spool.h"
 #include "map.h"
@@ -19,11 +16,9 @@
 #include "texture.h"
 #include "models.h"
 #include "objanim.h"
-#include "glaunch.h"
 #include "cars.h"
 #include "cosmetic.h"
 #include "denting.h"
-#include "handling.h"
 #include "mission.h"
 #include "civ_ai.h"
 #include "camera.h"

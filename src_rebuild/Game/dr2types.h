@@ -2,7 +2,7 @@
 #define DR2TYPES_H
 
 // Platform types
-#include "TYPES.H"
+#include <types.h>
 
 // Driver 2 system types
 typedef short	SHORTVECTOR4[4];

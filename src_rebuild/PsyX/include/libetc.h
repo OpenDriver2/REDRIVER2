@@ -1,7 +1,7 @@
 #ifndef LIBETC_H
 #define LIBETC_H
 
-#include "TYPES.H"
+#include "types.h"
 
 extern int PadIdentifier;
 

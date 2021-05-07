@@ -21,8 +21,6 @@
 #include "AL/al.h"
 #include "AL/alext.h"
 
-#include "LIBETC.H"
-
 const char* XANameFormat = "%sXA\\XABNK0%d.XA[%d].wav";
 ALuint g_XASource = AL_NONE;
 CSoundSource_WaveCache* g_wavData = NULL;

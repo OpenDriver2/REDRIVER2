@@ -10,11 +10,6 @@
 #include "director.h"
 #include "main.h"
 
-#include "INLINE_C.H"
-
-#include "RAND.H"
-#include "STRINGS.H"
-
 char* CosmeticFiles[] = {
 	"LEVELS\\CHICAGO.LCF",
 	"LEVELS\\HAVANA.LCF",

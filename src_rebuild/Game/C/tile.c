@@ -8,8 +8,6 @@
 
 #include "ASM/rndrasm.h"
 
-#include "INLINE_C.H"
-
 // [D] [T] [A]
 void Tile1x1(MODEL *model)
 {

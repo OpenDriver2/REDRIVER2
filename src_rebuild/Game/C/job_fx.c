@@ -11,9 +11,6 @@
 
 #include "ASM/rndrasm.h"
 
-#include "INLINE_C.H"
-#include "RAND.H"
-
 EXOBJECT explosion[MAX_EXPLOSION_OBJECTS];
 
 MATRIX SS = { 0 };

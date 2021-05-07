@@ -2,9 +2,6 @@
 #include "driver2.h"
 #include "sysclock.h"
 
-#include "LIBAPI.H"
-#include "STRINGS.H"
-
 tmr_func tmrsub[8];
 
 int timerflag = 0;

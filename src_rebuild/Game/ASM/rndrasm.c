@@ -2,8 +2,6 @@
 #include "C/camera.h"
 #include "C/draw.h"
 
-#include "INLINE_C.H"
-
 extern MATRIX frustrum_matrix;
 
 // [D] [T]

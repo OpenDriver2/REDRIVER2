@@ -3,8 +3,6 @@
 #include "draw.h"
 #include "camera.h"
 
-#include "INLINE_C.H"
-
 // [D] [T]
 void Calc_Object_MatrixYZX(MATRIX *mat, SVECTOR *angles)
 {

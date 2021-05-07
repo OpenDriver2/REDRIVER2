@@ -1,14 +1,23 @@
 #ifndef DRIVER2_H
 #define DRIVER2_H
 
-#include "KERNEL.H"
-#include "TYPES.H"
-#include "LIBCD.H"
-#include "LIBGTE.H"
-#include "LIBGPU.H"
-#include "LIBSPU.H"
+#include <types.h>
+#include <libcd.h>
+#include <libgte.h>
+#include <libgpu.h>
+#include <libspu.h>
+#include <libmcrd.h>
+#include <libmath.h>
+#include <libetc.h>
+#include <libapi.h>
 
+#include <gtemac.h>
+#include <inline_c.h>
+
+#include <strings.h>
+#include <rand.h>
 #include <stdio.h>
+#include <limits.h>
 
 #include "platform.h"
 

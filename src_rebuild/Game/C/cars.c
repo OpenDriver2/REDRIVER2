@@ -20,10 +20,6 @@
 #include "glaunch.h"
 #include "ASM/rndrasm.h"
 
-#include "INLINE_C.H"
-#include "LIBAPI.H"
-#include "LIBETC.H"
-
 #ifndef PSX
 #define CAR_LOD_SWITCH_DISTANCE switch_detail_distance
 #else

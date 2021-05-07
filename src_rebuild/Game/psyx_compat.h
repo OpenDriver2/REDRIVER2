@@ -5,8 +5,8 @@
 
 // Necessary includes
 #ifndef PSX
-#include "PSYX_PUBLIC.H"
-#include "PSYX_GLOBALS.H"
+#include "PsyX/PsyX_public.h"
+#include "PsyX/PsyX_globals.h"
 #endif
 
 // Necessary types
