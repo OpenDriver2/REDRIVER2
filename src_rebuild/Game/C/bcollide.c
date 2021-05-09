@@ -868,7 +868,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 						damage_object(cop, &velocity);
 
 						// smash object
-						if ((model->shape_flags & SHAPE_FLAG_SMASH_QUIET) == 0)
+						if ((model->shape_flags & SHAPE_FLAG_TRANS) == 0)
 						{
 							sip = smashable;
 							match = sip;

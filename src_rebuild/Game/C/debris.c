@@ -984,7 +984,7 @@ void DrawSmashable_sprites(void)
 			object_matrix.m[2][1] = 0;
 			object_matrix.m[2][2] = ONE;
 
-			if ((model->shape_flags & SHAPE_FLAG_SMASH_SPRITE) == 0)
+			if ((model->shape_flags & SHAPE_FLAG_SPRITE) == 0)
 				RotMatrixY(dam->rot_speed * dam->damage * 3 & 0xfff, &object_matrix);
 
 			RotMatrixZ(dam->rot_speed * dam->damage & 0xfff, &object_matrix);
@@ -1006,7 +1006,7 @@ void DrawSmashable_sprites(void)
 
 			if (FrustrumCheck(&pos, model->bounding_sphere) != -1)
 			{
-				if (model->shape_flags & SHAPE_FLAG_SMASH_SPRITE)
+				if (model->shape_flags & SHAPE_FLAG_SPRITE)
 				{
 					UNIMPLEMENTED();
 
@@ -3633,7 +3633,7 @@ void AddRainDrops(void)
 		{
 			ROADS_GetRouteData(rt->position.vx, rt->position.vz, &routeData);
 
-			if (modelpointers[routeData.type]->flags2 & MODEL_FLAG_HASROOF)
+			if (modelpointers[routeData.type]->flags2 & MODEL_FLAG_INDOORS)
 				break;
 		}
 		*/
