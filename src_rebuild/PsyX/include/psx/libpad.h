@@ -33,6 +33,10 @@ typedef struct PADRAW
 	unsigned char analog[4]; // size=4, offset=4
 } *LPPADRAW;
 
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+extern "C" {
+#endif
+
 extern void PadInitDirect(unsigned char* pad1, unsigned char* pad2);
 extern void PadInitMtap(unsigned char* unk00, unsigned char* unk01);
 extern void PadInitGun(unsigned char* unk00, int unk01);
@@ -49,5 +53,9 @@ extern int PadInfoComb(int unk00, int, int unk01);
 extern int PadSetActAlign(int port, unsigned char* table);
 extern int PadSetMainMode(int socket, int offs, int lock);
 extern void PadSetAct(int port, unsigned char* table, int len);
+	
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+}
+#endif
 
 #endif

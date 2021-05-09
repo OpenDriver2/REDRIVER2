@@ -1,6 +1,7 @@
 #include "PsyX_GTE.h"
-#include "psx/gtereg.h"
+
 #include "psx/libgte.h"
+#include "psx/gtereg.h"
 
 #include <math.h>
 
@@ -418,7 +419,7 @@ int GTE_RotTransPers(int idx, int lm)
 	return h_over_sz3;
 }
 
-int docop2(int op)
+int GTE_operator(int op)
 {
 	int v;
 	int lm;

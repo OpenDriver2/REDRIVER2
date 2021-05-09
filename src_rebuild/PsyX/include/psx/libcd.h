@@ -190,6 +190,11 @@ typedef struct {
 #define  StMOVIE_HEIGHT   0x09
 
 
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+extern "C" {
+#endif
+
+
 void	StSetRing(u_long *ring_addr,u_long ring_size);
 void	StClearRing(void);
 void	StUnSetRing(void);
@@ -244,4 +249,10 @@ int CdGetDiskType( void );
 struct EXEC *CdReadExec(char *file);
 void CdReadBreak( void );
 
+
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+}
+#endif
+
+	
 #endif

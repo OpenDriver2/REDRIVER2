@@ -716,6 +716,15 @@ typedef struct {
 
 #pragma pack(pop)
 
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+extern "C" {
+#endif
+
+
+#ifdef LoadImage
+#undef LoadImage
+#endif
+	
 /*
  * Prototypes
  */
@@ -836,7 +845,9 @@ extern void GetDrawEnv2(DR_ENV *p);
 
 extern void SetPsyXTexture(DR_PSYX_TEX *p, uint grTextureId);
 
-extern DISPENV activeDispEnv;
-extern DRAWENV activeDrawEnv;
+
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+}
+#endif
 
 #endif

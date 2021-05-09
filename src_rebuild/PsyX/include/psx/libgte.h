@@ -27,6 +27,10 @@ typedef struct {		/* 2D short vector */
 	short vx, vy;
 } DVECTOR;
 
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+extern "C" {
+#endif
+
 extern void InitGeom();
 extern void SetGeomOffset(int ofx, int ofy);
 extern void SetGeomScreen(int h);
@@ -80,5 +84,9 @@ extern long SquareRoot0(long a);
 extern int rsin(int a);
 extern int rcos(int a);
 extern long ratan2(long y, long x);
+
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+}
+#endif
 
 #endif

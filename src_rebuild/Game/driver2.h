@@ -11,8 +11,8 @@
 #include <libetc.h>
 #include <libapi.h>
 
-#include <gtemac.h>
 #include <inline_c.h>
+#include <gtemac.h>
 
 #include <strings.h>
 #include <rand.h>
