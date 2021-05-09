@@ -6,9 +6,9 @@
 #include "PsyX/util/timer.h"
 #include "util/crash_handler.h"
 
-#include "libetc.h"
-#include "libgte.h"
-#include "libgpu.h"
+#include "psx/libetc.h"
+#include "psx/libgte.h"
+#include "psx/libgpu.h"
 
 #include <assert.h>
 #include <ctype.h>
@@ -28,6 +28,8 @@ int strcasecmp(const char* _l, const char* _r)
 	for (; *l && *r && (*l == *r || tolower(*l) == tolower(*r)); l++, r++);
 	return tolower(*l) - tolower(*r);
 }
+#elif !defined(WIN32)
+#include <strings.h>
 #endif
 
 SDL_Window* g_window = NULL;

@@ -1,13 +1,12 @@
-#include "libgte.h"
-#include "libgpu.h"
+#include "psx/libgte.h"
+#include "psx/libgpu.h"
+#include "psx/libetc.h"
 
 #include "../gpu/PsyX_GPU.h"
 #include "PsyX/PsyX_render.h"
 #include "PsyX/PsyX_public.h"
 
 #include <stdint.h>
-
-#include "libetc.h"
 
 #include <stdio.h>
 #include <stdlib.h>
