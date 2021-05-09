@@ -1416,7 +1416,7 @@ void DrawMapPSX(int* comp_val)
 					if (FrustrumCheck16(ppco, model->bounding_sphere) != -1)
 					{
 						// sprity type
-						if (model->shape_flags & SHAPE_FLAG_SMASH_SPRITE)
+						if (model->shape_flags & SHAPE_FLAG_SPRITE)
 						{
 							if (drawData.sprites_found < MAX_DRAWN_SPRITES)
 								spriteList[drawData.sprites_found++] = ppco;
@@ -1468,8 +1468,8 @@ void DrawMapPSX(int* comp_val)
 								}
 							}
 
-							if ((model->shape_flags & (SHAPE_FLAG_SUBSURFACE | SHAPE_FLAG_ALLEYWAY)) || 
-								(model->flags2 & (MODEL_FLAG_SIDEWALK | MODEL_FLAG_GRASS)))
+							if ((model->shape_flags & (SHAPE_FLAG_WATER | SHAPE_FLAG_TILE)) || 
+								(model->flags2 & (MODEL_FLAG_PATH | MODEL_FLAG_GRASS)))
 							{
 								if (model->flags2 & MODEL_FLAG_ALLEY)
 								{

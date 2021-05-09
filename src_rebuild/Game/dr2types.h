@@ -345,44 +345,55 @@ struct OUT_CELL_FILE_HEADER
 };
 
 //---------------------------------------------------------------------------------------
-// TODO: MODELS.H
+// TODO: MDL.H
 
 enum ModelShapeFlags
 {
-	SHAPE_FLAG_SMASH_QUIET		= 0x8,
+	SHAPE_FLAG_LITPOLY			= 0x1,
+	SHAPE_FLAG_BSPDATA			= 0x2,
+	SHAPE_FLAG_TRANS			= 0x8,
 	SHAPE_FLAG_NOCOLLIDE		= 0x10,
-	SHAPE_FLAG_SUBSURFACE		= 0x80,		// grass, dirt, water
-	SHAPE_FLAG_ALLEYWAY			= 0x400,	// alleyway
-	SHAPE_FLAG_SMASH_SPRITE		= 0x4000,
+	SHAPE_FLAG_WATER			= 0x80,		// model is water
+	SHAPE_FLAG_AMBIENT2			= 0x100,	// Ambient sound 2 associated - maybe used in D1
+	SHAPE_FLAG_AMBIENT1			= 0x200,	// Ambient sound 1 associated - maybe used in D1
+	SHAPE_FLAG_TILE				= 0x400,	// treat as road
+	SHAPE_FLAG_SHADOW			= 0x800,	// D1 leftover flag
+	SHAPE_FLAG_ALPHA			= 0x1000,	// alpha tested object
+	SHAPE_FLAG_ROAD				= 0x2000,	// section of road
+	SHAPE_FLAG_SPRITE			= 0x4000,
 };
 
 enum ModelFlags2
 {
-	MODEL_FLAG_ANIMOBJ			= 0x1,
-	MODEL_FLAG_MEDIAN			= 0x20,
-	MODEL_FLAG_ALLEY			= 0x80,
-	MODEL_FLAG_HASROOF			= 0x100,
-	MODEL_FLAG_NOCOL_200		= 0x200,
+	MODEL_FLAG_ANIMOBJ			= 0x1,		// CUSTOM FLAG!
+
+	MODEL_FLAG_MEDIAN			= 0x20,		// Hmmmm...
+	MODEL_FLAG_JUNC				= 0x40,
+	MODEL_FLAG_ALLEY			= 0x80,		// alley tile
+	MODEL_FLAG_INDOORS			= 0x100,
+	MODEL_FLAG_CHAIR			= 0x200,
 	MODEL_FLAG_BARRIER			= 0x400,
 	MODEL_FLAG_SMASHABLE		= 0x800,
 	MODEL_FLAG_LAMP				= 0x1000,
 	MODEL_FLAG_TREE				= 0x2000,
 	MODEL_FLAG_GRASS			= 0x4000,
-	MODEL_FLAG_SIDEWALK			= 0x8000,
+	MODEL_FLAG_PATH				= 0x8000,
 };
+
+#define COLLISION_BOX		0
+#define COLLISION_CYLINDER	1
+#define COLLISION_CONE		2
+#define COLLISION_SPHERE	3
+#define	COLLISION_INDOORS	4
 
 struct COLLISION_PACKET
 {
 	short type;
-	short xpos;
-	short ypos;
-	short zpos;
+	short xpos, ypos, zpos;
 	short flags;
 	short yang;
 	short empty;
-	short xsize;
-	short ysize;
-	short zsize;
+	short xsize, ysize, zsize;
 };
 
 struct POLYFT4
@@ -391,14 +402,8 @@ struct POLYFT4
 	u_char texture_set;
 	u_char texture_id;
 	u_char spare;
-	u_char v0;
-	u_char v1;
-	u_char v2;
-	u_char v3;
-	UV_INFO uv0;
-	UV_INFO uv1;
-	UV_INFO uv2;
-	UV_INFO uv3;
+	u_char v0, v1, v2, v3;
+	UV_INFO uv0, uv1, uv2, uv3;
 	RGB color;
 };
 
@@ -408,18 +413,9 @@ struct POLYGT4
 	u_char texture_set;
 	u_char texture_id;
 	u_char spare;
-	u_char v0;
-	u_char v1;
-	u_char v2;
-	u_char v3;
-	u_char n0;
-	u_char n1;
-	u_char n2;
-	u_char n3;
-	UV_INFO uv0;
-	UV_INFO uv1;
-	UV_INFO uv2;
-	UV_INFO uv3;
+	u_char v0, v1, v2, v3;
+	u_char n0, n1, n2, n3;
+	UV_INFO uv0, uv1, uv2, uv3;
 	RGB color;
 };
 
@@ -429,14 +425,8 @@ struct PL_POLYFT4
 	u_char texture_set;
 	u_char texture_id;
 	u_char th;
-	u_char v0;
-	u_char v1;
-	u_char v2;
-	u_char v3;
-	UV_INFO uv0;
-	UV_INFO uv1;
-	UV_INFO uv2;
-	UV_INFO uv3;
+	u_char v0, v1, v2, v3;
+	UV_INFO uv0, uv1, uv2, uv3;
 };
 
 
@@ -446,14 +436,8 @@ struct POLYFT3
 	u_char texture_set;
 	u_char texture_id;
 	u_char spare;
-	u_char v0;
-	u_char v1;
-	u_char v2;
-	u_char pad;
-	UV_INFO uv0;
-	UV_INFO uv1;
-	UV_INFO uv2;
-	UV_INFO pad2;
+	u_char v0, v1, v2, pad;
+	UV_INFO uv0, uv1, uv2, pad2;
 	RGB color;
 };
 
@@ -463,18 +447,9 @@ struct POLYGT3
 	u_char texture_set;
 	u_char texture_id;
 	u_char spare;
-	u_char v0;
-	u_char v1;
-	u_char v2;
-	u_char pad;
-	u_char n0;
-	u_char n1;
-	u_char n2;
-	u_char pad2;
-	UV_INFO uv0;
-	UV_INFO uv1;
-	UV_INFO uv2;
-	UV_INFO pad3;
+	u_char v0, v1, v2, pad;
+	u_char n0, n1, n2, pad2;
+	UV_INFO uv0, uv1, uv2, pad3;
 	RGB color;
 };
 

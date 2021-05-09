@@ -1156,7 +1156,7 @@ void ControlReplay(void)
 			/*
 			ROADS_GetRouteData(player[0].cameraPos.vx, player[0].cameraPos.vz, &routeData1);
 
-			if (modelpointers[routeData1.type]->flags2 & MODEL_FLAG_HASROOF)
+			if (modelpointers[routeData1.type]->flags2 & MODEL_FLAG_INDOORS)
 			{
 				int road_height;
 				road_height = -450 - MapHeight(&player[0].cameraPos);
@@ -1291,7 +1291,7 @@ void ControlReplay(void)
 			/*
 			ROADS_GetRouteData(player[0].cameraPos.vx, player[0].cameraPos.vz, &routeData);
 
-			if ((modelpointers[routeData.type]->flags2 & MODEL_FLAG_HASROOF) && player[0].cameraPos.vy < height - 450)
+			if ((modelpointers[routeData.type]->flags2 & MODEL_FLAG_INDOORS) && player[0].cameraPos.vy < height - 450)
 			{
 				player[0].cameraPos.vy = height - 450;
 			}*/
