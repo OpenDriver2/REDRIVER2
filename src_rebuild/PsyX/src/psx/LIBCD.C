@@ -1,4 +1,4 @@
-#include "libcd.h"
+#include "psx/libcd.h"
 
 #include "../PsyX_setup.h"
 #include "../iso9660.h"

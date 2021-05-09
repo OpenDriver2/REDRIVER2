@@ -1,5 +1,5 @@
 
-#include "libsn.h"
+#include "psx/libsn.h"
 #include <stdio.h>
 
 uintptr_t fileHandle = 0;
