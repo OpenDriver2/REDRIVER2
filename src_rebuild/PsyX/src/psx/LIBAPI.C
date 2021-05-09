@@ -1,4 +1,4 @@
-#include "libapi.h"
+#include "psx/libapi.h"
 
 #include <stdio.h>
 #include "../PsyX_setup.h"

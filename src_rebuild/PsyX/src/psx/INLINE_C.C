@@ -1,6 +1,6 @@
-#include "inline_c.h"
-#include "libgte.h"
-#include "gtereg.h"
+#include "psx/inline_c.h"
+#include "psx/libgte.h"
+#include "psx/gtereg.h"
 #include "../gte/PsyX_GTE.h"
 
 unsigned int MFC2(int reg)

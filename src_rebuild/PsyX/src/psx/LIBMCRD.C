@@ -1,5 +1,5 @@
 #include "../PsyX_setup.h"
-#include "libmcrd.h"
+#include "psx/libmcrd.h"
 #include <stdio.h>
 #include <string.h>
 
