@@ -26,7 +26,7 @@ union FP16
 	};
 };
 
-half::half(const float x)
+short to_half_float(const float x)
 {
 	// this is a approximate solution
 	FP32 f = *(FP32*)&x;
@@ -50,17 +50,12 @@ half::half(const float x)
 
 	o.u = f.u >> 13; // Take the mantissa bits
 	o.u |= sign >> 16;
-	sh = o.u;
+	return o.u;
 }
 
-half::half(const half& other)
+float from_half_float(const short x)
 {
-	sh = other.sh;
-}
-
-half::operator float() const
-{
-	FP16 h = { sh };
+	FP16 h = { x };
 
 	static const FP32 magic = { 113 << 23 };
 	static const uint shifted_exp = 0x7c00 << 13; // exponent mask after shift
@@ -81,4 +76,21 @@ half::operator float() const
 
 	o.u |= (h.u & 0x8000) << 16;    // sign bit
 	return o.f;
+}
+
+// C++ parts
+
+half::half(const float x)
+{
+	sh = to_half_float(x);
+}
+
+half::half(const half& other)
+{
+	sh = other.sh;
+}
+
+half::operator float() const
+{
+	return from_half_float(sh);
 }
