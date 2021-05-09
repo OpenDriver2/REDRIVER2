@@ -9,7 +9,7 @@
 #include "gtemac.h"
 #include "gtereg.h"
 
-#include "../GTE/PsyX_GTE.H"
+#include "../GTE/PsyX_GTE.h"
 #include "../GTE/rcossin_tbl.h"
 #include "../GTE/ratan_tbl.h"
 #include "../GTE/sqrt_tbl.h"

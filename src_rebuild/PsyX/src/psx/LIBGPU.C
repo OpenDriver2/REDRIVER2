@@ -15,8 +15,8 @@
 #include <assert.h>
 
 #include "PsyX/PsyX_globals.h"
-#include "../PSYX_SETUP.H"
-#include "../GPU/FONT.H"
+#include "../PsyX_setup.h"
+//#include "../GPU/FONT.H"
 
 //#define DEBUG_POLY_COUNT
 

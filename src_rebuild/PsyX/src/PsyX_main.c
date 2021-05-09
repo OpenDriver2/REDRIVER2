@@ -1,11 +1,10 @@
-#include "PSYX_SETUP.H"
+#include "PsyX_setup.h"
 
 #include "PsyX/PsyX_version.h"
 #include "PsyX/PsyX_globals.h"
 #include "PsyX/PsyX_public.h"
 #include "PsyX/util/timer.h"
-
-#include "UTIL/CRASHHANDLER.H"
+#include "util/crash_handler.h"
 
 #include "libetc.h"
 #include "libgte.h"

@@ -1,7 +1,7 @@
 #include "inline_c.h"
 #include "libgte.h"
 #include "gtereg.h"
-#include "../GTE/PsyX_GTE.H"
+#include "../GTE/PsyX_GTE.h"
 
 unsigned int MFC2(int reg)
 {

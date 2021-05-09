@@ -1,4 +1,4 @@
-#include "../PSYX_SETUP.H"
+#include "../PsyX_setup.h"
 #include "libmcrd.h"
 #include <stdio.h>
 #include <string.h>

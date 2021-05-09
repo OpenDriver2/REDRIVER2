@@ -1,6 +1,6 @@
 #include "PsyX/PsyX_public.h"
 
-#include "../PLATFORM_SETUP.H"
+#include "../platform.h"
 
 #include "PsyX/PsyX_render.h"
 #include "PsyX/PsyX_globals.h"

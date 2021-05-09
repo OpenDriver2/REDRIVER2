@@ -1,6 +1,6 @@
 #include "libetc.h"
 
-#include "../PSYX_SETUP.H"
+#include "../PsyX_setup.h"
 #include "PsyX/PsyX_public.h"
 
 #include <SDL_timer.h>

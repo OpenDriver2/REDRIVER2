@@ -1,6 +1,6 @@
-#include "PsyX_GTE.H"
-#include "GTEREG.H"
-#include "LIBGTE.H"
+#include "PsyX_GTE.h"
+#include "gtereg.h"
+#include "libgte.h"
 
 #include <math.h>
 

@@ -1,7 +1,7 @@
 #include "libpad.h"
 #include "libetc.h"
 
-#include "../PSYX_SETUP.H"
+#include "../PsyX_setup.h"
 #include "PsyX/PsyX_public.h"
 
 #include <string.h>
