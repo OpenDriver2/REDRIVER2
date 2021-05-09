@@ -1,10 +1,10 @@
-#include "PsyX_GPU.H"
+#include "PsyX_GPU.h"
 
 #include "PsyX/PsyX_public.h"
 #include "PsyX/PsyX_globals.h"
 #include "PsyX/PsyX_render.h"
 
-#include "../PSYX_SETUP.H"
+#include "../PsyX_setup.h"
 
 #include <assert.h>
 #include <math.h>

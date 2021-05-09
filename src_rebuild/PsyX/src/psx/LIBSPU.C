@@ -4,7 +4,7 @@
 #include "libetc.h"
 #include <stdio.h>
 
-#include "../PSYX_SETUP.H"
+#include "../PsyX_setup.h"
 #include "libmath.h"
 
 

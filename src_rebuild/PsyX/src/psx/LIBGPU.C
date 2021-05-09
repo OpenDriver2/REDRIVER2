@@ -1,7 +1,7 @@
 #include "libgte.h"
 #include "libgpu.h"
 
-#include "../GPU/PsyX_GPU.H"
+#include "../gpu/PsyX_GPU.h"
 #include "PsyX/PsyX_render.h"
 #include "PsyX/PsyX_public.h"
 
@@ -16,7 +16,7 @@
 
 #include "PsyX/PsyX_globals.h"
 #include "../PsyX_setup.h"
-//#include "../GPU/FONT.H"
+//#include "../gpu/font.h"
 
 //#define DEBUG_POLY_COUNT
 
