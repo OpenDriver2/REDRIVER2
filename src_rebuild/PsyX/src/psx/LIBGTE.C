@@ -1,13 +1,12 @@
-#include "libgte.h"
+#include "psx/libgte.h"
+#include "psx/inline_c.h"
+#include "psx/gtemac.h"
+#include "psx/gtereg.h"
 
 #include <stdio.h>
 #include "PsyX/PsyX_render.h"
 
 #include <assert.h>
-
-#include "inline_c.h"
-#include "gtemac.h"
-#include "gtereg.h"
 
 #include "../gte/PsyX_GTE.h"
 #include "../gte/rcossin_tbl.h"

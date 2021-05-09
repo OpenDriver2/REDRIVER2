@@ -1,12 +1,12 @@
 #define HAVE_M_PI
 
-#include "libspu.h"
-#include "libetc.h"
+#include "psx/libspu.h"
+#include "psx/libetc.h"
+#include "psx/libmath.h"
+
 #include <stdio.h>
 
 #include "../PsyX_setup.h"
-#include "libmath.h"
-
 
 #include <string.h>
 

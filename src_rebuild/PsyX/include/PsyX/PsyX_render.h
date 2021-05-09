@@ -62,11 +62,12 @@
 #   define TEXTURE_FORMAT GL_UNSIGNED_SHORT_5_5_5_1
 #endif
 
-#include "types.h"
+#include "psx/types.h"
 
 #include "common/pgxp_defs.h"
-#include "libgte.h"
-#include "libgpu.h"
+
+#include "psx/libgte.h"
+#include "psx/libgpu.h"
 
 #include <stdio.h>
 #include <stddef.h>
