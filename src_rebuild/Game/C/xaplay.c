@@ -12,7 +12,7 @@
 #include "spool.h"
 
 #ifndef PSX
-#include "STRINGS.H"
+#include <strings.h>
 
 #include "../utils/riff.h"
 #include "../utils/audio_source/snd_al_source.h"
