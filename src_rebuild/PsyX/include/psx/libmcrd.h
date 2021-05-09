@@ -22,6 +22,10 @@ typedef void (*MemCB)( long cmds, long rslt );
 #define	McErrBlockFull		(7)
 #define	McErrExtend		(0x8000)
 
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+extern "C" {
+#endif
+
 extern void MemCardInit( long val );
 extern void MemCardEnd( void );
 extern void MemCardStart(void);
@@ -41,5 +45,9 @@ extern long MemCardUnformat(long chan);
 extern long MemCardSync( long mode, long* cmds, long* rslt );
 extern MemCB MemCardCallback( MemCB func );
 extern long MemCardGetDirentry( long chan, char* name, struct DIRENTRY* dir, long* files, long ofs, long max );
+
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+}
+#endif
 
 #endif

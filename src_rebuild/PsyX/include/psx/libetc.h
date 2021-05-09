@@ -33,11 +33,16 @@ extern int PadIdentifier;
 
 #define _PAD(x,y) ((y)<<((x)<<4))
 
-extern char scratchData[1024];
 #define getScratchAddr(offset)  ((u_long *)(&scratchData+(offset)*4))
 
 #define MODE_NTSC 0
 #define MODE_PAL 1 
+
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+extern "C" {
+#endif
+
+extern char scratchData[1024];
 
 extern int CheckCallback(void);
 extern void PadInit(int mode);
@@ -51,6 +56,12 @@ extern long SetVideoMode (long mode);
 extern u_long PadRead(int id);
 extern void PadStop(void);
 extern void(*vsync_callback)(void);
+
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+}
+#endif
+
+
 
 #endif
 

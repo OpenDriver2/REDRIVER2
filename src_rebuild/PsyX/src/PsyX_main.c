@@ -21,6 +21,9 @@
 
 #include "PsyX/PsyX_render.h"
 
+extern DISPENV activeDispEnv;
+extern DRAWENV activeDrawEnv;
+
 #ifdef __EMSCRIPTEN__
 int strcasecmp(const char* _l, const char* _r)
 {

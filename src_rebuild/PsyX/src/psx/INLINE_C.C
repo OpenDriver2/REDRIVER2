@@ -180,7 +180,9 @@ int CFC2_S(int reg)
 	return gteRegs.CP2C.p[reg].sd;
 }
 
-void gte_SetGeomScreen(int h)
+extern int GTE_operator(int);
+
+int doCOP2(int op)
 {
-	CTC2(*(uint*)&h, 26);
+	return GTE_operator(op);
 }

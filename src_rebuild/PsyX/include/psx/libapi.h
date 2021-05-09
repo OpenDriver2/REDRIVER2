@@ -1,8 +1,12 @@
 #ifndef LIBAPI_H
 #define LIBAPI_H
 
-#ifndef EMU_KERNEL_H
+#ifndef KERNEL_H
 #include "kernel.h"
+#endif
+
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+extern "C" {
 #endif
 
 extern long SetRCnt(long spec, unsigned short target, long mode);
@@ -23,23 +27,25 @@ extern void UnDeliverEvent(unsigned long ev1, long ev2);
 extern long OpenTh(long (*func)(), unsigned long , unsigned long);
 extern int CloseTh(long unk00);
 extern int ChangeTh(long unk00);
-
+	
+/*
 extern long open(char* unk00, unsigned long);
 extern long close(long unk00);
 extern long lseek(long unk00, long, long);
 extern long read(long unk00, void *, long);
 extern long write(long unk00, void *, long);
 extern long ioctl(long unk00, long, long);
+	
 extern struct DIRENTRY* firstfile(char* unk00, struct DIRENTRY *);
 extern struct DIRENTRY* nextfile(struct DIRENTRY* unk00);
+	
 extern long erase(char* unk00);
-
-
 extern long undelete(char* unk00);
 extern long format(char* unk00);
 extern long rename(char* unk00, char *);
 extern long cd(char* unk00);
-
+*/
+	
 extern long LoadTest(char*  unk00, struct EXEC *);
 extern long Load(char * unk00, struct EXEC *);
 extern long Exec(struct EXEC * unk00, long, char **);
@@ -69,9 +75,10 @@ extern unsigned long GetSysSp();
 extern long SetConf(unsigned long,unsigned long,unsigned long);
 extern void GetConf(unsigned long *,unsigned long *,unsigned long *);
 
+/*
 extern long _get_errno(void);
 extern long _get_error(long);
-
+*/
 extern void SystemError( char, long);
 extern void SetMem(long);
 
@@ -100,5 +107,10 @@ extern unsigned long _card_chan(void);
 extern long _card_write(long chan, long block, unsigned char *buf);
 extern long _card_read(long chan, long block, unsigned char *buf);
 extern long _card_format(long chan);
+
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+}
+#endif
+
 
 #endif

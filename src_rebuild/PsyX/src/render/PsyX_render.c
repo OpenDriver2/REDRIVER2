@@ -20,6 +20,8 @@ extern "C"
 }
 #endif //def WIN32
 
+extern DISPENV activeDispEnv;
+extern DRAWENV activeDrawEnv;
 
 #if defined(RENDERER_OGL)
 
