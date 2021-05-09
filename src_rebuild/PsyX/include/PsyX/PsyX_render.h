@@ -34,7 +34,7 @@
 #if defined (RENDERER_OGL)
 
 #   define GL_GLEXT_PROTOTYPES
-#   include "COMMON/glad.h"
+#   include "common/glad.h"
 
 #elif defined (RENDERER_OGLES)
 
@@ -62,11 +62,11 @@
 #   define TEXTURE_FORMAT GL_UNSIGNED_SHORT_5_5_5_1
 #endif
 
-#include "TYPES.H"
+#include "types.h"
 
-#include "COMMON/PGXP_DEFS.H"
-#include "LIBGTE.H"
-#include "LIBGPU.H"
+#include "common/pgxp_defs.h"
+#include "libgte.h"
+#include "libgpu.h"
 
 #include <stdio.h>
 #include <stddef.h>

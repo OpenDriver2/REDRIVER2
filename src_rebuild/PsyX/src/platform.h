@@ -27,7 +27,7 @@
 #define FUNCNAME __func__
 #endif
 
-#include "PsyX/PsyX_globals.H"
+#include "PsyX/PsyX_globals.h"
 
 #if defined(__ANDROID__)
 #   include <android/log.h>
