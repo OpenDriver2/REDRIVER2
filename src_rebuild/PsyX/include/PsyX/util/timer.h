@@ -12,7 +12,7 @@ typedef struct
 #ifdef _WIN32
 	uint64_t		clockStart;
 #else
-	timeval			timeStart;
+	struct timeval	timeStart;
 #endif // _WIN32
 } timerCtx_t;
 

@@ -345,6 +345,7 @@ int GetControllerButtonState(SDL_GameController* cont, int buttonOrAxis)
 
 void PsyX_Pad_UpdateGameControllerInput(SDL_GameController* cont, LPPADRAW pad)
 {
+	short leftX, leftY, rightX, rightY;
 	unsigned short ret = 0xFFFF;
 
 	if (!cont)
@@ -357,8 +358,6 @@ void PsyX_Pad_UpdateGameControllerInput(SDL_GameController* cont, LPPADRAW pad)
 		*(u_short*)pad->buttons = ret;
 		return;
 	}
-	
-	extern PsyXControllerMapping g_controller_mapping;
 
 	if (GetControllerButtonState(cont, g_controller_mapping.gc_square) > 16384)//Square
 		ret &= ~0x8000;
@@ -408,11 +407,11 @@ void PsyX_Pad_UpdateGameControllerInput(SDL_GameController* cont, LPPADRAW pad)
 	if (GetControllerButtonState(cont, g_controller_mapping.gc_start) > 16384)//START
 		ret &= ~0x8;
 
-	short leftX = GetControllerButtonState(cont, g_controller_mapping.gc_axis_left_x);
-	short leftY = GetControllerButtonState(cont, g_controller_mapping.gc_axis_left_y);
+	leftX = GetControllerButtonState(cont, g_controller_mapping.gc_axis_left_x);
+	leftY = GetControllerButtonState(cont, g_controller_mapping.gc_axis_left_y);
 
-	short rightX = GetControllerButtonState(cont, g_controller_mapping.gc_axis_right_x);
-	short rightY = GetControllerButtonState(cont, g_controller_mapping.gc_axis_right_y);
+	rightX = GetControllerButtonState(cont, g_controller_mapping.gc_axis_right_x);
+	rightY = GetControllerButtonState(cont, g_controller_mapping.gc_axis_right_y);
 	
 	*(u_short*)pad->buttons = ret;
 
@@ -425,7 +424,6 @@ void PsyX_Pad_UpdateGameControllerInput(SDL_GameController* cont, LPPADRAW pad)
 
 unsigned short UpdateKeyboardInput()
 {
-	extern PsyXKeyboardMapping g_keyboard_mapping;
 	unsigned short ret = 0xFFFF;
 
 	//Not initialised yet
@@ -502,7 +500,7 @@ void PsyX_Pad_InternalPadUpdates()
 
 		if (controller->padData)
 		{
-			pad = (LPPADRAW*)controller->padData;
+			pad = (LPPADRAW)controller->padData;
 
 			PsyX_Pad_UpdateGameControllerInput(controller->gc, pad);
 
