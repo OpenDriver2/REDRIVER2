@@ -85,7 +85,7 @@ float g_pgxpZFar = 1000.0f;
 int vram_need_update = 1;
 int framebuffer_need_update = 0;
 
-#if defined(__EMSCRIPTEN__)
+#if defined(__EMSCRIPTEN__) || defined(__RPI__) || defined(__ANDROID__)
 #if defined(RENDERER_OGL)
 #error It should not be enabled
 #endif

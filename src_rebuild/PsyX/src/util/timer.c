@@ -30,7 +30,7 @@ double Util_GetHPCTime(timerCtx_t* timer, int reset)
 	if (reset)
 		timer->clockStart = curr.QuadPart;
 #else
-	timeval curr;
+	struct timeval curr;
 
 	gettimeofday(&curr, NULL);
 
