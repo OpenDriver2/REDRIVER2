@@ -194,6 +194,8 @@ typedef struct {
 extern "C" {
 #endif
 
+/* Initializes CD filesystem using ISO 9660 compliant file */
+extern void PsyX_CDFS_Init(const char* imageFileName, int track /*= 0*/, int sectorSize /*= 0*/);
 
 void	StSetRing(u_long *ring_addr,u_long ring_size);
 void	StClearRing(void);
@@ -248,7 +250,6 @@ int CdDiskReady( int mode );
 int CdGetDiskType( void );
 struct EXEC *CdReadExec(char *file);
 void CdReadBreak( void );
-
 
 #if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
 }

@@ -134,7 +134,7 @@ int gStopCivCars = 0;
 
 extern void FunkUpDaBGMTunez(int funk);
 
-void GameDebugKeys(int nKey, bool down)
+void GameDebugKeys(int nKey, char down)
 {
 	CheckModifierKeys(nKey, down);
 	FreeCameraKeyboardHandler(nKey, down);

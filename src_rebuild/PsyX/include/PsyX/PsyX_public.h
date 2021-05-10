@@ -118,11 +118,6 @@ extern void PsyX_WaitForTimestep(int count);
 /* Changes swap interval state */
 extern void PsyX_EnableSwapInterval(int enable);
 
-//----------------------------------------------------------------------
-
-/* Initializes CD filesystem */
-extern void PsyX_CDFS_Init(const char* imageFileName, int track /*= 0*/, int sectorSize /*= 0*/);
-
 #if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
 }
 #endif
