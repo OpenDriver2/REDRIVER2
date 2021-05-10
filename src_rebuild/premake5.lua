@@ -115,7 +115,6 @@ project "REDRIVER2"
     end
 
     filter "system:Windows or linux"
-        defines { "SIMPLE_SPOOL" }
         dependson { "PsyX" }
         links { "Psy-X", "jpeg" }
 		
