@@ -4,16 +4,15 @@
 // Platform types
 #include <types.h>
 
-// Driver 2 system types
+//---------------------------------------------------------------------------------------
+// simple types
+
 typedef short	SHORTVECTOR4[4];
 
 typedef long	LONGVECTOR3[3];
 typedef long	LONGVECTOR4[4];
 
 typedef long	LONGQUATERNION[4];
-
-//---------------------------------------------------------------------------------------
-// TODO: math types
 
 struct VECTOR2
 {
@@ -79,133 +78,30 @@ struct XYPAIR
 
 struct SXYPAIR
 {
-	short x;
-	short y;
+	short x, y;
 };
 
 struct XZPAIR
 {
-	int x;
-	int z;
+	int x, z;
 };
 
 struct XYWH
 {
-	short x;
-	short y;
-	short w;
-	short h;
+	short x, y, w, h;
 };
 
-//---------------------------------------------------------------------------------------
-// TODO: image types
-
-struct TIMHDR
-{
-	int magic;
-	int flags;
-};
-
-struct TIMIMAGEHDR
-{
-	int len;
-	short origin_x;
-	short origin_y;
-	short width;
-	short height;
-};
-
-//---------------------------------------------------------------------------------------
-// TODO: DR2TYPES
-
-struct BOX
-{
-	float xmin;
-	float ymin;
-	float zmin;
-	float xmax;
-	float ymax;
-	float zmax;
-};
-
-struct BSPHERE
-{
-	VECTOR bounding_sphere_mid;
-	float bounding_sphere;
-};
-
-struct RGB // almost same as CVECTOR
-{
-	u_char r;
-	u_char g;
-	u_char b;
-	u_char pad;
-};
-
-struct PADRECORD
-{
-	u_char pad;
-	u_char analogue;
-	u_char run;
-};
-
+// might be old frustum data
 struct ARC_ENTRY
 {
 	short offset;
 	short length;
 };
 
-//---------------------------------------------------------------------------------------
-// TODO: TEXTURES.H
-
-struct UV_INFO
-{
-	u_char u;
-	u_char v;
-};
-
-struct UV
-{
-	u_char u0;
-	u_char v0;
-	u_char u1;
-	u_char v1;
-	u_char u2;
-	u_char v2;
-	u_char u3;
-	u_char v3;
-};
-
-struct TEXTURE_DETAILS
-{
-	UV coords;
-	u_short tpageid;
-	u_short clutid;
-	char texture_number;
-	char texture_page;
-};
-
-struct TP
-{
-	u_int flags;
-	u_int offset;
-};
-
-struct TEXINF
-{
-	u_short id;
-	u_short nameoffset;
-	u_char x;
-	u_char y;
-	u_char width;
-	u_char height;
-};
-
-struct TPAN
-{
-	u_char texture_page;
-	u_char texture_number;
-};
+#include "engine/cell.h"
+#include "engine/mdl.h"
+#include "engine/tim.h"
+#include "engine/tset.h"
 
 //---------------------------------------------------------------------------------------
 // TODO: ROADS.H
@@ -299,337 +195,6 @@ struct ROAD_MAP_LUMP_DATA
 	int height;
 	int unitXMid;
 	int unitZMid;
-};
-
-//---------------------------------------------------------------------------------------
-// TODO: DR2LEVEL.H
-
-struct CELL_OBJECT
-{
-	VECTOR_NOPAD pos;
-	u_char pad;
-	u_char yang;
-	u_short type;
-};
-
-struct CELL_DATA
-{
-	u_short num;
-};
-
-struct PACKED_CELL_OBJECT
-{
-	USVECTOR_NOPAD pos;
-	u_short value;
-};
-
-struct CELL_ITERATOR
-{
-	CELL_DATA* pcd;
-	PACKED_CELL_OBJECT* ppco;
-	XZPAIR nearCell;
-	int use_computed;
-};
-
-struct OUT_CELL_FILE_HEADER
-{
-	int cells_across;
-	int cells_down;
-	int cell_size;
-	int num_regions;
-	int region_size;
-	int num_cell_objects;
-	int num_cell_data;
-	int ambient_light_level;
-	VECTOR_NOPAD light_source;
-};
-
-//---------------------------------------------------------------------------------------
-// TODO: MDL.H
-
-enum ModelShapeFlags
-{
-	SHAPE_FLAG_LITPOLY			= 0x1,
-	SHAPE_FLAG_BSPDATA			= 0x2,
-	SHAPE_FLAG_TRANS			= 0x8,
-	SHAPE_FLAG_NOCOLLIDE		= 0x10,
-	SHAPE_FLAG_WATER			= 0x80,		// model is water
-	SHAPE_FLAG_AMBIENT2			= 0x100,	// Ambient sound 2 associated - maybe used in D1
-	SHAPE_FLAG_AMBIENT1			= 0x200,	// Ambient sound 1 associated - maybe used in D1
-	SHAPE_FLAG_TILE				= 0x400,	// treat as road
-	SHAPE_FLAG_SHADOW			= 0x800,	// D1 leftover flag
-	SHAPE_FLAG_ALPHA			= 0x1000,	// alpha tested object
-	SHAPE_FLAG_ROAD				= 0x2000,	// section of road
-	SHAPE_FLAG_SPRITE			= 0x4000,
-};
-
-enum ModelFlags2
-{
-	MODEL_FLAG_ANIMOBJ			= 0x1,		// CUSTOM FLAG!
-
-	MODEL_FLAG_MEDIAN			= 0x20,		// Hmmmm...
-	MODEL_FLAG_JUNC				= 0x40,
-	MODEL_FLAG_ALLEY			= 0x80,		// alley tile
-	MODEL_FLAG_INDOORS			= 0x100,
-	MODEL_FLAG_CHAIR			= 0x200,
-	MODEL_FLAG_BARRIER			= 0x400,
-	MODEL_FLAG_SMASHABLE		= 0x800,
-	MODEL_FLAG_LAMP				= 0x1000,
-	MODEL_FLAG_TREE				= 0x2000,
-	MODEL_FLAG_GRASS			= 0x4000,
-	MODEL_FLAG_PATH				= 0x8000,
-};
-
-#define COLLISION_BOX		0
-#define COLLISION_CYLINDER	1
-#define COLLISION_CONE		2
-#define COLLISION_SPHERE	3
-#define	COLLISION_INDOORS	4
-
-struct COLLISION_PACKET
-{
-	short type;
-	short xpos, ypos, zpos;
-	short flags;
-	short yang;
-	short empty;
-	short xsize, ysize, zsize;
-};
-
-struct POLYFT4
-{
-	u_char id;
-	u_char texture_set;
-	u_char texture_id;
-	u_char spare;
-	u_char v0, v1, v2, v3;
-	UV_INFO uv0, uv1, uv2, uv3;
-	RGB color;
-};
-
-struct POLYGT4
-{
-	u_char id;
-	u_char texture_set;
-	u_char texture_id;
-	u_char spare;
-	u_char v0, v1, v2, v3;
-	u_char n0, n1, n2, n3;
-	UV_INFO uv0, uv1, uv2, uv3;
-	RGB color;
-};
-
-struct PL_POLYFT4
-{
-	u_char id;
-	u_char texture_set;
-	u_char texture_id;
-	u_char th;
-	u_char v0, v1, v2, v3;
-	UV_INFO uv0, uv1, uv2, uv3;
-};
-
-
-struct POLYFT3
-{
-	u_char id;
-	u_char texture_set;
-	u_char texture_id;
-	u_char spare;
-	u_char v0, v1, v2, pad;
-	UV_INFO uv0, uv1, uv2, pad2;
-	RGB color;
-};
-
-struct POLYGT3
-{
-	u_char id;
-	u_char texture_set;
-	u_char texture_id;
-	u_char spare;
-	u_char v0, v1, v2, pad;
-	u_char n0, n1, n2, pad2;
-	UV_INFO uv0, uv1, uv2, pad3;
-	RGB color;
-};
-
-struct MODEL
-{
-	u_short shape_flags;
-	u_short flags2;
-	short instance_number;
-	u_char tri_verts;
-	unsigned char zBias;
-	short bounding_sphere;
-	u_short num_point_normals;
-	u_short num_vertices;
-	u_short num_polys;
-	int vertices;
-	int poly_block;
-	int normals;
-	int point_normals;
-	int collision_block;
-
-	SVECTOR* pVertex(int i) const
-	{
-		return (SVECTOR *)(((u_char *)this) + vertices) + i;
-	}
-
-	SVECTOR* pNormal(int i) const
-	{
-		return (SVECTOR *)(((u_char *)this) + point_normals) + i;
-	}
-
-	COLLISION_PACKET* pCollisionPacket(int i) const
-	{
-		return (COLLISION_PACKET *)(((u_char *)this) + collision_block) + i;
-	}
-
-	char* pPolyAt(int ofs) const
-	{
-		return (char *)(((u_char *)this) + poly_block + ofs);		
-	}
-};
-
-//---------------------------------------------------------------------------------------
-// TODO: DEBRIS.H
-
-struct DAMAGED_LAMP
-{
-	int index;
-	char damage;
-};
-
-struct DAMAGED_OBJECT
-{
-	CELL_OBJECT cop;
-	char active;
-	char damage;
-	int rot_speed;
-	SVECTOR velocity;
-	int vx;
-};
-
-struct ANIMATED_OBJECT
-{
-	int internal_id;
-	int model_num;
-	char* name;
-	char LitPoly;
-};
-
-struct SMASHABLE_OBJECT
-{
-	int modelIdx;
-	char* name;
-	int sound;
-	int volume;
-	int pitch;
-};
-
-struct GARAGE_DOOR
-{
-	CELL_OBJECT* cop;
-	VECTOR_NOPAD old_pos;
-	VECTOR_NOPAD pos;
-	short rotation;
-	char yang;
-};
-
-struct SMOKE
-{
-	UnpaddedHackVector position;
-	UnpaddedCharVector drift;
-	UnpaddedCharVector drift_change;
-	UnpaddedHackVector final_tail_pos;
-	u_char step;
-	u_char pos;
-	short start_w;
-	short final_w;
-	char life;
-	char halflife;
-	u_short flags;
-	u_char num;
-	u_char t_step;
-	short transparency;
-};
-
-struct DEBRIS
-{
-	VECTOR position;
-	SVECTOR direction;
-	u_short life;
-	u_short flags;
-	u_short num;
-	u_short pos;
-	RGB rgb;
-	char step;
-	char type;
-};
-
-struct LEAF
-{
-	VECTOR position;
-	SVECTOR direction;
-	u_short life;
-	u_short flags;
-	u_short num;
-	u_short pos;
-	RGB rgb;
-	char step;
-	char type;
-	short sin_index1;
-	short sin_index2;
-	char sin_addition1;
-	char sin_addition2;
-};
-
-struct TRI_POINT
-{
-	BVECTOR v0;
-	BVECTOR v1;
-	BVECTOR v2;
-};
-
-struct TRI_POINT_LONG
-{
-	VECTOR_NOPAD v0;
-	VECTOR_NOPAD v1;
-	VECTOR_NOPAD v2;
-};
-
-struct RAIN_TYPE
-{
-	VECTOR_NOPAD position;
-	SVECTOR oldposition;
-};
-
-struct LAMP_STREAK
-{
-	SXYPAIR light_trails[4];
-	int id;
-	short clock;
-	char set;
-};
-
-//---------------------------------------------------------------------------------------
-// TODO: DRIVINGGAMES.H
-
-struct TRAILBLAZER_DATA
-{
-	int x;
-	int z;
-	short y;
-	short rot;
-};
-
-struct SMASHED_CONE
-{
-	char cone;
-	u_char active : 7;
-	u_char side : 1;
-	short rot_speed;
-	VECTOR velocity;
 };
 
 //---------------------------------------------------------------------------------------
@@ -1784,6 +1349,13 @@ struct REPLAY_STREAM_HEADER
 	STREAM_SOURCE SourceType;
 	int Size;
 	int Length;
+};
+
+struct PADRECORD
+{
+	u_char pad;
+	u_char analogue;
+	u_char run;
 };
 
 struct REPLAY_STREAM

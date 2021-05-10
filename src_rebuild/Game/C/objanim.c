@@ -15,6 +15,24 @@
 #include "system.h"
 #include "pause.h"
 
+struct ANIMATED_OBJECT
+{
+	int internal_id;
+	int model_num;
+	char* name;
+	char LitPoly;
+};
+
+struct GARAGE_DOOR
+{
+	CELL_OBJECT* cop;
+	VECTOR_NOPAD old_pos;
+	VECTOR_NOPAD pos;
+	short rotation;
+	char yang;
+};
+
+
 CYCLE_OBJECT Lev0[2] =
 {
 	{ "REDRVR", 0, 0, 6, 10, 2, 11, 15, 2 },
