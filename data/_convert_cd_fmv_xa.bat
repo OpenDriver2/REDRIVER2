@@ -3,7 +3,7 @@
 
 set CD1_PATH=install/Driver2CD1.bin
 set CD2_PATH=install/Driver2CD2.bin
-set JPSXDEC_PATH=install/jpsxdec
+set JPSXDEC_PATH=install
 
 rem -- Check if Java is installed --
 java -version 1>nul 2>nul || (
