@@ -137,7 +137,7 @@ CdlFILE* CdSearchFile(CdlFILE* fp, char* name)
 	if (!PsyX_CD_CheckImageAvailable())
 		return NULL;
 
-	assert(g_cdReadDoneFlag == true);
+	assert(g_cdReadDoneFlag == 1);
 	
 	if (!g_cdReadDoneFlag)
 	{
