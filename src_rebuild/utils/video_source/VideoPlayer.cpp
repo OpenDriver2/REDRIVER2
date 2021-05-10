@@ -529,6 +529,12 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	alGenBuffers(4, audioStreamBuffers);
 	alSourcei(audioStreamSource, AL_LOOPING, AL_FALSE);
 
+	// sound.c
+	extern int master_volume;
+
+	// set volume
+	alSourcef(audioStreamSource, AL_GAIN, (float)master_volume / 16384.0f);
+
 	timerCtx_t fmvTimer;
 
 	Util_InitHPCTimer(&fmvTimer);
@@ -577,7 +583,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 			if (fade_out < 0)
 				break;
 
-			alSourcef(audioStreamSource, AL_GAIN, float(fade_out) / 255.0);
+			alSourcef(audioStreamSource, AL_GAIN, float(fade_out) / 255.0f * (float)master_volume / 16384.0f);
 		}
 
 		if (frame_size > 0)
