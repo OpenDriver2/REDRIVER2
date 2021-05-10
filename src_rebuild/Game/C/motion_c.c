@@ -611,8 +611,8 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	if (!bDoingShadow) // [A] Psy-X is currently incorrectly offsets the offscreen PGXP geometry. We don't need it anyway.
 	{
 		PGXPVData vdata1, vdata2;
-		PGXP_GetCacheData(vdata1, PGXP_LOOKUP_VALUE(v1[0], v1[1]), 0);
-		PGXP_GetCacheData(vdata2, PGXP_LOOKUP_VALUE(v2[0], v2[1]), 0);
+		PGXP_GetCacheData(&vdata1, PGXP_LOOKUP_VALUE(v1[0].sh, v1[1].sh), 0);
+		PGXP_GetCacheData(&vdata2, PGXP_LOOKUP_VALUE(v2[0].sh, v2[1].sh), 0);
 
 		{
 			float len;
@@ -664,33 +664,33 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 			}
 		}
 
-		PGXPVData v0data = { PGXP_LOOKUP_VALUE(prims->x0, prims->y0),
+		PGXPVData v0data = { PGXP_LOOKUP_VALUE(prims->x0.sh, prims->y0.sh),
 			vdata1.px + (FIXEDH(sn) - dx1) * 0.01f,
 			vdata1.py + (FIXEDH(cs) + dy1) * 0.01f,
 			vdata1.pz, vdata1.scr_h, vdata1.ofx, vdata1.ofy };
 
 
-		PGXPVData v1data = { PGXP_LOOKUP_VALUE(prims->x1, prims->y1),
+		PGXPVData v1data = { PGXP_LOOKUP_VALUE(prims->x1.sh, prims->y1.sh),
 			vdata1.px - (FIXEDH(sn) - dx1) * 0.01f,
 			vdata1.py - (FIXEDH(cs) - dy1) * 0.01f,
 			vdata1.pz, vdata1.scr_h, vdata1.ofx, vdata1.ofy };
 
 
-		PGXPVData v2data = { PGXP_LOOKUP_VALUE(prims->x2, prims->y2),
+		PGXPVData v2data = { PGXP_LOOKUP_VALUE(prims->x2.sh, prims->y2.sh),
 			vdata2.px + (FIXEDH(sn) + dx2) * 0.01f,
 			vdata2.py + (FIXEDH(cs) - dy2) * 0.01f,
 			vdata2.pz, vdata2.scr_h, vdata2.ofx, vdata2.ofy };
 
 
-		PGXPVData v3data = { PGXP_LOOKUP_VALUE(prims->x3, prims->y3),
+		PGXPVData v3data = { PGXP_LOOKUP_VALUE(prims->x3.sh, prims->y3.sh),
 			vdata2.px - (FIXEDH(sn) + dx2) * 0.01f,
 			vdata2.py - (FIXEDH(cs) + dy2) * 0.01f,
 			vdata2.pz, vdata2.scr_h, vdata2.ofx, vdata2.ofy };
 
-		PGXP_EmitCacheData(v0data);
-		PGXP_EmitCacheData(v1data);
-		PGXP_EmitCacheData(v2data);
-		PGXP_EmitCacheData(v3data);
+		PGXP_EmitCacheData(&v0data);
+		PGXP_EmitCacheData(&v1data);
+		PGXP_EmitCacheData(&v2data);
+		PGXP_EmitCacheData(&v3data);
 	}
 #endif
 

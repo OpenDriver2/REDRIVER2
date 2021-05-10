@@ -14,7 +14,7 @@
 #include <assert.h>
 
 #include "PsyX/PsyX_globals.h"
-#include "../PsyX_setup.h"
+#include "../PsyX_main.h"
 //#include "../gpu/font.h"
 
 //#define DEBUG_POLY_COUNT
@@ -414,7 +414,7 @@ void DrawOTag(u_long* p)
 		if (activeDrawEnv.isbg)
 			ClearImage(&activeDrawEnv.clip, activeDrawEnv.r0, activeDrawEnv.g0, activeDrawEnv.b0);
 
-		ParsePrimitivesToSplits(p, false);
+		ParsePrimitivesToSplits(p, 0);
 
 		GR_SetStencilMode(0);
 		DrawAllSplits();
@@ -446,7 +446,7 @@ void DrawPrim(void* p)
 	if (activeDrawEnv.isbg)
 		ClearImage(&activeDrawEnv.clip, activeDrawEnv.r0, activeDrawEnv.g0, activeDrawEnv.b0);
 
-	ParsePrimitivesToSplits((u_long*)p, true);
+	ParsePrimitivesToSplits((u_long*)p, 1);
 
 	// draw with mask 0x16
 	GR_SetStencilMode(1);

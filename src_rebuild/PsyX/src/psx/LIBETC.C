@@ -1,10 +1,11 @@
 #include "psx/libetc.h"
 
-#include "../PsyX_setup.h"
+#include "../PsyX_main.h"
 #include "PsyX/PsyX_public.h"
 
 #include <SDL_timer.h>
 
+char scratchData[1024];
 void(*vsync_callback)(void) = NULL;
 
 int StopCallback(void)
@@ -19,13 +20,6 @@ int ResetCallback(void)
 	vsync_callback = NULL;
 	return old;
 }
-
-char scratchData[1024];
-
-extern unsigned int g_swapTime;
-extern int PsyX_Sys_GetVBlankCount();
-extern long PsyX_Sys_SetVMode(long mode);
-extern long g_vmode;
 
 int VSync(int mode)
 {

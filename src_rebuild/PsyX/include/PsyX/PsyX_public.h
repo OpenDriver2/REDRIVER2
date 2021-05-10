@@ -4,7 +4,7 @@
 #define CONTROLLER_MAP_FLAG_AXIS		0x4000
 #define CONTROLLER_MAP_FLAG_INVERSE		0x8000
 
-struct PsyXKeyboardMapping
+typedef struct 
 {
 	int id;
 
@@ -28,9 +28,9 @@ struct PsyXKeyboardMapping
 	int kc_dpad_right;
 	int kc_dpad_up;
 	int kc_dpad_down;
-};
+} PsyXKeyboardMapping;
 
-struct PsyXControllerMapping
+typedef struct
 {
 	int id;
 
@@ -61,39 +61,47 @@ struct PsyXControllerMapping
 
 	int gc_axis_right_x;
 	int gc_axis_right_y;
-};
+} PsyXControllerMapping;
 
-typedef void(*GameDebugKeysHandlerFunc)(int nKey, bool down);
-extern GameDebugKeysHandlerFunc gameDebugKeys;
-
+typedef void(*GameDebugKeysHandlerFunc)(int nKey, char down);
 typedef void(*GameDebugMouseHandlerFunc)(int x, int y);
-extern GameDebugMouseHandlerFunc gameDebugMouse;
-
 typedef void(*GameOnTextInputHandler)(const char* buf);
-extern GameOnTextInputHandler gameOnTextInput;
 
 //------------------------------------------------------------------------
+
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+extern "C" {
+#endif
+
+/* Mapped inputs */
+extern PsyXControllerMapping		g_controller_mapping;
+extern PsyXKeyboardMapping			g_keyboard_mapping;
+
+/* Game and debug inputs */
+extern GameDebugKeysHandlerFunc		gameDebugKeys;
+extern GameDebugMouseHandlerFunc	gameDebugMouse;
+extern GameOnTextInputHandler		gameOnTextInput;
 
 /* Usually called at the beginning of main function */
 extern void PsyX_Initialise(char* windowName, int screenWidth, int screenHeight, int fullscreen);
 
 /* Cleans all resources and closes open instances */
-extern void PsyX_Shutdown();
+extern void PsyX_Shutdown(void);
 
 /* Returns the screen size dimensions */
-extern void PsyX_GetScreenSize(int& screenWidth, int& screenHeight);
+extern void PsyX_GetScreenSize(int* screenWidth, int* screenHeight);
 
 /* Sets mouse cursor position */
 extern void PsyX_SetCursorPosition(int x, int y);
 
 /* Usually called after ClearOTag/ClearOTagR */
-extern bool PsyX_BeginScene();
+extern char PsyX_BeginScene(void);
 
 /* Usually called after DrawOTag/DrawOTagEnv */
-extern void PsyX_EndScene();
+extern void PsyX_EndScene(void);
 
 /* Explicitly updates emulator input loop */
-extern void PsyX_UpdateInput();
+extern void PsyX_UpdateInput(void);
 
 /* Returns keyboard mapping index */
 extern int PsyX_LookupKeyboardMapping(const char* str, int default_value);
@@ -113,6 +121,10 @@ extern void PsyX_EnableSwapInterval(int enable);
 //----------------------------------------------------------------------
 
 /* Initializes CD filesystem */
-extern void PsyX_CDFS_Init(const char* imageFileName, int track = 0, int sectorSize = 0);
+extern void PsyX_CDFS_Init(const char* imageFileName, int track /*= 0*/, int sectorSize /*= 0*/);
+
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+}
+#endif
 
 #endif

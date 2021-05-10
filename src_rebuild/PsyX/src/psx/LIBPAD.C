@@ -1,20 +1,19 @@
 #include "psx/libpad.h"
 #include "psx/libetc.h"
 
-#include "../PsyX_setup.h"
+#include "../PsyX_main.h"
 #include "PsyX/PsyX_public.h"
 
 #include <string.h>
 
-
-struct PsyXController
+typedef struct
 {
 	Sint32				deviceId;	// linked device Id
 	SDL_GameController* gc;
 	SDL_Haptic*			haptic;
 
 	u_char*				padData;
-};
+} PsyXController;
 
 PsyXController			g_controllers[MAX_CONTROLLERS];
 int						g_controllerToSlotMapping[MAX_CONTROLLERS] = { -1, -1 };
@@ -58,30 +57,30 @@ void PsyX_Pad_Debug_ListControllers()
 
 void PsyX_Pad_OpenController(Sint32 deviceId, int slot)
 {
-	PsyXController& controller = g_controllers[slot];
+	PsyXController* controller = &g_controllers[slot];
 
-	if(controller.gc)
+	if(controller->gc)
 	{
 		return;
 	}
 	
-	controller.gc = SDL_GameControllerOpen(deviceId);
+	controller->gc = SDL_GameControllerOpen(deviceId);
 
-	if(controller.gc)
+	if(controller->gc)
 	{
 		// assign device id automatically
-		if (controller.deviceId == -1)
-			controller.deviceId = deviceId;
+		if (controller->deviceId == -1)
+			controller->deviceId = deviceId;
 		
-		SDL_Joystick* joy = SDL_GameControllerGetJoystick(controller.gc);
+		SDL_Joystick* joy = SDL_GameControllerGetJoystick(controller->gc);
 
 		// try open haptics
 		if(SDL_JoystickIsHaptic(joy))
-			controller.haptic = SDL_HapticOpenFromJoystick(joy);
+			controller->haptic = SDL_HapticOpenFromJoystick(joy);
 		else // try open using device ID
-			controller.haptic = SDL_HapticOpen(controller.deviceId);
+			controller->haptic = SDL_HapticOpen(controller->deviceId);
 
-		if(!controller.haptic)
+		if(!controller->haptic)
 		{
 			eprintwarn("No haptic for '%s'\n", SDL_GameControllerNameForIndex(deviceId));
 		}
@@ -90,26 +89,27 @@ void PsyX_Pad_OpenController(Sint32 deviceId, int slot)
 
 void PsyX_Pad_CloseController(int slot)
 {
-	PsyXController& controller = g_controllers[slot];
+	PsyXController* controller = &g_controllers[slot];
 
-	SDL_HapticClose(controller.haptic);
-	SDL_GameControllerClose(controller.gc);
+	SDL_HapticClose(controller->haptic);
+	SDL_GameControllerClose(controller->gc);
 	
-	//controller.deviceId = -1;
-	controller.gc = NULL;
-	controller.haptic = NULL;
+	//controller->deviceId = -1;
+	controller->gc = NULL;
+	controller->haptic = NULL;
 }
 
 void PsyX_Pad_InitPad(int slot, u_char* padData)
 {
-	PsyXController& controller = g_controllers[slot];
+	LPPADRAW pad;
+	PsyXController* controller = &g_controllers[slot];
 
-	controller.padData = padData;
-	controller.deviceId = g_controllerToSlotMapping[slot];
+	controller->padData = padData;
+	controller->deviceId = g_controllerToSlotMapping[slot];
 
 	if(padData)
 	{
-		PADRAW* pad = (PADRAW*)padData;
+		pad = (LPPADRAW)padData;
 		pad->id = slot == 0 ? 0x41 : 0xFF;	// since keyboard is a main controller - it's always on
 		pad->buttons[0] = 0xFF;
 		pad->buttons[1] = 0xFF;
@@ -123,6 +123,9 @@ void PsyX_Pad_InitPad(int slot, u_char* padData)
 // called from Psy-X SDL events
 void PsyX_Pad_Event_ControllerAdded(Sint32 deviceId)
 {
+	int i;
+	PsyXController* controller;
+
 	// reinitialize haptics (why we still here?)
 	SDL_QuitSubSystem(SDL_INIT_HAPTIC);			// FIXME: this will crash if you already have haptics
 	SDL_InitSubSystem(SDL_INIT_HAPTIC);
@@ -130,11 +133,11 @@ void PsyX_Pad_Event_ControllerAdded(Sint32 deviceId)
 	PsyX_Pad_Debug_ListControllers();
 
 	// find mapping and open
-	for(int i = 0; i < MAX_CONTROLLERS; i++)
+	for(i = 0; i < MAX_CONTROLLERS; i++)
 	{
-		PsyXController& controller = g_controllers[i];
+		controller = &g_controllers[i];
 
-		if(controller.deviceId == -1 || controller.deviceId == deviceId)
+		if(controller->deviceId == -1 || controller->deviceId == deviceId)
 		{
 			PsyX_Pad_OpenController(deviceId, i);
 			break;
@@ -145,14 +148,17 @@ void PsyX_Pad_Event_ControllerAdded(Sint32 deviceId)
 // called from Psy-X SDL events
 void PsyX_Pad_Event_ControllerRemoved(Sint32 deviceId)
 {
+	int i;
+	PsyXController* controller;
+
 	PsyX_Pad_Debug_ListControllers();
 
 	// find mapping and close
 	for (int i = 0; i < MAX_CONTROLLERS; i++)
 	{
-		PsyXController& controller = g_controllers[i];
+		controller = &g_controllers[i];
 
-		if (controller.deviceId == deviceId)
+		if (controller->deviceId == deviceId)
 		{
 			PsyX_Pad_CloseController(i);
 		}
@@ -227,15 +233,18 @@ void PadRemoveGun()
 
 int PadGetState(int port)
 {
-	int mtap = port & 3;
-	int slot = (mtap * 2) + (port >> 4) & 1;
+	PsyXController* controller;
+	int mtap, slot;
+
+	mtap = port & 3;
+	slot = (mtap * 2) + (port >> 4) & 1;
 
 	if(slot == 0)
 		return PadStateStable;	// keyboard always here
 
-	PsyXController& controller = g_controllers[slot];
+	controller = &g_controllers[slot];
 	
-	if(controller.gc && SDL_GameControllerGetAttached(controller.gc))
+	if(controller->gc && SDL_GameControllerGetAttached(controller->gc))
 		return PadStateStable;
 
 	return PadStateDiscon;
@@ -273,12 +282,15 @@ int hapticEffects[MAX_CONTROLLERS] = { -1, -1 };
 
 void PadSetAct(int port, unsigned char* table, int len)
 {
-	int mtap = port & 3;
-	int slot = (mtap * 2) + (port >> 4) & 1;
+	PsyXController* controller;
+	int mtap, slot;
 
-	PsyXController& controller = g_controllers[slot];
+	mtap = port & 3;
+	slot = (mtap * 2) + (port >> 4) & 1;
+
+	controller = &g_controllers[slot];
 	
-	if (!controller.haptic)
+	if (!controller->haptic)
 		return;
 
 	if (len == 0)
@@ -296,21 +308,21 @@ void PadSetAct(int port, unsigned char* table, int len)
 
 	eff.leftright.length = 400;
 	
-	if (SDL_HapticEffectSupported(controller.haptic, &eff) != SDL_TRUE)
+	if (SDL_HapticEffectSupported(controller->haptic, &eff) != SDL_TRUE)
 		return;
 	
 	if(hapticEffects[slot] == -1)
 	{
-		hapticEffects[slot] = SDL_HapticNewEffect(controller.haptic, &eff);
+		hapticEffects[slot] = SDL_HapticNewEffect(controller->haptic, &eff);
 		if(hapticEffects[slot] == -1)
 		{
 			eprintwarn("Warning: Unable to create haptic effect! %s\n", SDL_GetError());
 		}
 	}
 	else
-		SDL_HapticUpdateEffect(controller.haptic, hapticEffects[slot], &eff);
+		SDL_HapticUpdateEffect(controller->haptic, hapticEffects[slot], &eff);
 	
-	if (SDL_HapticRunEffect(controller.haptic, hapticEffects[slot], 1) != 0)
+	if (SDL_HapticRunEffect(controller->haptic, hapticEffects[slot], 1) != 0)
 	{
 		eprintwarn("Warning: Unable to run haptic effect! %s\n", SDL_GetError());
 	}
@@ -331,7 +343,7 @@ int GetControllerButtonState(SDL_GameController* cont, int buttonOrAxis)
 	return SDL_GameControllerGetButton(cont, (SDL_GameControllerButton)buttonOrAxis) * 32767;
 }
 
-void PsyX_Pad_UpdateGameControllerInput(SDL_GameController* cont, PADRAW* pad)
+void PsyX_Pad_UpdateGameControllerInput(SDL_GameController* cont, LPPADRAW pad)
 {
 	unsigned short ret = 0xFFFF;
 
@@ -473,24 +485,26 @@ unsigned short UpdateKeyboardInput()
 	return ret;
 }
 
-extern int g_activeKeyboardControllers;
-
 void PsyX_Pad_InternalPadUpdates()
 {
+	PsyXController* controller;
+	LPPADRAW pad;
+	u_short kbInputs;
+
 	if (g_padCommEnable == 0)
 		return;
 	
-	unsigned short kbInputs = UpdateKeyboardInput();
+	kbInputs = UpdateKeyboardInput();
 
 	for (int i = 0; i < MAX_CONTROLLERS; i++)
 	{
-		PsyXController& controller = g_controllers[i];
+		controller = &g_controllers[i];
 
-		if (controller.padData)
+		if (controller->padData)
 		{
-			PADRAW* pad = (PADRAW*)controller.padData;
+			pad = (LPPADRAW*)controller->padData;
 
-			PsyX_Pad_UpdateGameControllerInput(controller.gc, pad);
+			PsyX_Pad_UpdateGameControllerInput(controller->gc, pad);
 
 			if (i == 0)	// Update keyboard for PAD 1
 			{

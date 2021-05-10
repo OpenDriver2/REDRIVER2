@@ -61,7 +61,7 @@ void FreeCameraMouseHandler(int x, int y)
 		extern SVECTOR g_FreeCameraRotation;
 
 		int width, height;
-		PsyX_GetScreenSize(width, height);
+		PsyX_GetScreenSize(&width, &height);
 
 		cursorX = x;
 		cursorY = y;
@@ -79,7 +79,7 @@ void FreeCameraMouseHandler(int x, int y)
 	}
 }
 
-void FreeCameraKeyboardHandler(int nKey, bool down)
+void FreeCameraKeyboardHandler(int nKey, char down)
 {
 	if (g_FreeCameraEnabled)
 	{
@@ -638,7 +638,7 @@ int main(int argc, char** argv)
 
 	// configure Psy-X CD image reader
 	if (cdImageFileName)
-		PsyX_CDFS_Init(cdImageFileName);
+		PsyX_CDFS_Init(cdImageFileName, 0, 0);
 	
 	if (config)
 	{

@@ -1,7 +1,7 @@
 #include "psx/libapi.h"
 
 #include <stdio.h>
-#include "../PsyX_setup.h"
+#include "../PsyX_main.h"
 
 int sp = 0;
 
@@ -137,13 +137,13 @@ long StopRCnt(long spec)//TODO
 	return 0;
 }
 #undef OpenEvent
-long OpenEvent(unsigned long unk00, long unk01, long unk02, long(*func)())
+long OpenEvent(unsigned long event, long unk01, long unk02, long(*func)())
 {
 	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
-long CloseEvent(long unk00)
+long CloseEvent(unsigned long event)
 {
 	PSYX_UNIMPLEMENTED();
 	return 0;
@@ -161,36 +161,24 @@ long DisableEvent(unsigned long event)
 	return 0;
 }
 
-long WaitEvent(long unk00)
+long WaitEvent(unsigned long event)
 {
 	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
-long TestEvent(long unk00)
+long TestEvent(unsigned long event)
 {
 	PSYX_UNIMPLEMENTED();
 	return 0;
 }
 
-long EnableEvent(long unk00)
-{
-	PSYX_UNIMPLEMENTED();
-	return 0;
-}
-
-long DisableEvent(long unk00)
-{
-	PSYX_UNIMPLEMENTED();
-	return 0;
-}
-
-void DeliverEvent(unsigned long unk00, unsigned long unk01)
+void DeliverEvent(unsigned long ev1, long ev2)
 {
 	PSYX_UNIMPLEMENTED();
 }
 
-void UnDeliverEvent(unsigned long unk00, unsigned long unk01)
+void UnDeliverEvent(unsigned long ev1, long ev2)
 {
 	PSYX_UNIMPLEMENTED();
 }
@@ -213,6 +201,7 @@ int ChangeTh(long unk00)
 	return 0;
 }
 
+/*
 long open(char* unk00, unsigned long unk01)
 {
 	PSYX_UNIMPLEMENTED();
@@ -289,6 +278,7 @@ long cd(char* unk00)
 	PSYX_UNIMPLEMENTED();
 	return 0;
 }
+*/
 
 long LoadTest(char*  unk00, struct EXEC* unk01)
 {
@@ -424,6 +414,7 @@ void GetConf(unsigned long* unk00, unsigned long* unk01, unsigned long* unk02)
 	PSYX_UNIMPLEMENTED();
 }
 
+/*
 long _get_errno(void)
 {
 	PSYX_UNIMPLEMENTED();
@@ -435,7 +426,7 @@ long _get_error(long unk00)
 	PSYX_UNIMPLEMENTED();
 	return 0;
 }
-
+*/
 void SystemError(char unk00, long unk01)
 {
 	PSYX_UNIMPLEMENTED();

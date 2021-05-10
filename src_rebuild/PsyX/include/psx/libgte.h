@@ -14,14 +14,14 @@ typedef struct {		/* long word type 3D vector */
 	long	vz, pad;
 } VECTOR;
 
-struct SVECTOR {		/* short word type 3D vector */
+typedef struct {		/* short word type 3D vector */
 	short	vx, vy;
 	short	vz, pad;
-};
+} SVECTOR;
 
-struct CVECTOR {		/* color type vector */
+typedef struct {		/* color type vector */
 	unsigned char	r, g, b, cd;
-};
+} CVECTOR;
 
 typedef struct {		/* 2D short vector */
 	short vx, vy;
@@ -46,26 +46,26 @@ VECTOR *ApplyRotMatrix(SVECTOR *v0, VECTOR *v1);
 VECTOR *ApplyRotMatrixLV(VECTOR *v0, VECTOR *v1);
 SVECTOR *ApplyMatrixSV(MATRIX *m, SVECTOR *v0, SVECTOR *v1);
 VECTOR *ApplyMatrixLV(MATRIX *m, VECTOR *v0, VECTOR *v1);
-extern void RotTrans(struct SVECTOR* v0, VECTOR* v1, long* flag);
+extern void RotTrans(SVECTOR* v0, VECTOR* v1, long* flag);
 extern void RotTransSV(SVECTOR* v0, SVECTOR* v1, long* flag);
-extern long RotTransPers(struct SVECTOR* v0, long* sxy, long* p, long* flag);
+extern long RotTransPers(SVECTOR* v0, long* sxy, long* p, long* flag);
 extern long RotTransPers3(SVECTOR* v0, SVECTOR* v1, SVECTOR* v2, long* sxy0, long* sxy1, long* sxy2, long* p, long* flag);
 extern long RotTransPers4(SVECTOR* v0, SVECTOR* v1, SVECTOR* v2, SVECTOR* v3, long* sxy0, long* sxy1, long* sxy2, long* sxy3, long* p, long* flag);
 extern void NormalColor(SVECTOR* v0, CVECTOR* v1);
 extern void NormalColor3(SVECTOR* v0, SVECTOR* v1, SVECTOR* v2, CVECTOR* v3, CVECTOR* v4, CVECTOR* v5);
-extern void NormalColorDpq(struct SVECTOR* v0, struct CVECTOR* v1, long p, struct CVECTOR* v2);
-extern void NormalColorCol(struct SVECTOR* v0, struct CVECTOR* v1, struct CVECTOR* v2);
+extern void NormalColorDpq(SVECTOR* v0, CVECTOR* v1, long p, CVECTOR* v2);
+extern void NormalColorCol(SVECTOR* v0, CVECTOR* v1, CVECTOR* v2);
 extern void NormalColorCol3(SVECTOR* v0, SVECTOR* v1, SVECTOR* v2, CVECTOR* v3, CVECTOR* v4, CVECTOR* v5, CVECTOR* v6);
 extern void LocalLight(SVECTOR* v0, VECTOR* v1);
-extern long RotAverageNclip4(struct SVECTOR* v0, struct SVECTOR* v1, struct SVECTOR* v2, struct SVECTOR* v3, long* sxy0/*arg_10*/, long* sxy1/*arg_14*/, long* sxy2/*arg_18*/, long* sxy3/*arg_1C*/, long* p/*arg_20*/, long* otz/*arg_24*/, long* flag/*arg_28*/);
+extern long RotAverageNclip4(SVECTOR* v0, SVECTOR* v1, SVECTOR* v2, SVECTOR* v3, long* sxy0/*arg_10*/, long* sxy1/*arg_14*/, long* sxy2/*arg_18*/, long* sxy3/*arg_1C*/, long* p/*arg_20*/, long* otz/*arg_24*/, long* flag/*arg_28*/);
 extern MATRIX* MulMatrix0(MATRIX* m0, MATRIX* m1, MATRIX* m2);
 extern MATRIX* MulMatrix(MATRIX* m0, MATRIX* m1);
 extern MATRIX* MulMatrix2(MATRIX* m0, MATRIX* m1);
 extern void SetBackColor(long rbk, long gbk, long bbk);
 extern void SetFarColor(long rfc, long gfc, long bfc);
-extern MATRIX* RotMatrix(struct SVECTOR* r, MATRIX* m);
-extern MATRIX* RotMatrixYXZ(struct SVECTOR* r, MATRIX* m);
-extern MATRIX* RotMatrixZYX_gte(struct SVECTOR* r, MATRIX* m);
+extern MATRIX* RotMatrix(SVECTOR* r, MATRIX* m);
+extern MATRIX* RotMatrixYXZ(SVECTOR* r, MATRIX* m);
+extern MATRIX* RotMatrixZYX_gte(SVECTOR* r, MATRIX* m);
 extern MATRIX* RotMatrixX(long r, MATRIX *m);
 extern MATRIX* RotMatrixY(long r, MATRIX *m);
 extern MATRIX* RotMatrixZ(long r, MATRIX *m);

@@ -150,13 +150,10 @@ int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsign
 	return 0;
 }
 
-// emulator window TODO: interface
-extern int g_swapInterval;
-
 void SetupMovieRectangle(int image_w, int image_h)
 {
 	int windowWidth, windowHeight;
-	PsyX_GetScreenSize(windowWidth, windowHeight);
+	PsyX_GetScreenSize(&windowWidth, &windowHeight);
 
 	float psxScreenW = 320.0f;
 	float psxScreenH = 200.0f;	// FIXME: NTSC scaling
@@ -255,12 +252,6 @@ const char* fmv_shader =
 
 TextureID g_FMVTexture = 0;
 ShaderID g_FMVShader = 0;
-
-extern int GR_Shader_CheckShaderStatus(GLuint shader);
-extern int GR_Shader_CheckProgramStatus(GLuint program);
-
-extern ShaderID GR_Shader_Compile(const char* source);
-extern void GR_SetShader(const ShaderID& shader);
 
 #define DECODE_BUFFER_ALLOC (3840 * 2160 * 3)	// RGB in 4K frame
 
@@ -451,7 +442,7 @@ extern void GR_Ortho2D(float left, float right, float bottom, float top, float z
 void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number, int credits, int image_w, int image_h)
 {
 	int windowWidth, windowHeight;
-	PsyX_GetScreenSize(windowWidth, windowHeight);
+	PsyX_GetScreenSize(&windowWidth, &windowHeight);
 
 	PsyX_BeginScene();
 
@@ -690,7 +681,7 @@ int FMV_main(RENDER_ARGS* args)
 	PutDrawEnv(&draw);
 	PutDispEnv(&disp);
 
-	GR_SetupClipMode(draw.clip, draw.dfe);
+	GR_SetupClipMode(&draw.clip, draw.dfe);
 
 	for (int i = 0; i < args->nRenders; i++)
 	{

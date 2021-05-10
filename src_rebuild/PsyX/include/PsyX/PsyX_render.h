@@ -102,7 +102,7 @@
 #define TPAGE_HEIGHT (256)
 
 #pragma pack(push,1)
-struct GrVertex
+typedef struct
 {
 #if defined(USE_PGXP)
 	float		x, y, page, clut;
@@ -115,33 +115,33 @@ struct GrVertex
 	u_char		r, g, b, a;
 
 	char		tcx, tcy, _p0, _p1;
-};
+} GrVertex;
 #pragma pack(pop)
 
-enum ShaderAttrib
+typedef enum 
 {
 	a_position,
 	a_zw,
 	a_texcoord,
 	a_color,
 	a_extra,
-};
+} ShaderAttrib;
 
-enum BlendMode
+typedef enum
 {
 	BM_NONE,
 	BM_AVERAGE,
 	BM_ADD,
 	BM_SUBTRACT,
 	BM_ADD_QUATER_SOURCE
-};
+} BlendMode;
 
-enum TexFormat
+typedef enum
 {
 	TF_4_BIT,
 	TF_8_BIT,
 	TF_16_BIT
-};
+} TexFormat;
 
 #define MAX_NUM_POLY_BUFFER_VERTICES (32768)
 #define MAX_NUM_INDEX_BUFFERS        (4096)
@@ -151,6 +151,10 @@ typedef uint TextureID;
 typedef uint ShaderID;
 #else
 #error
+#endif
+
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+extern "C" {
 #endif
 
 extern TextureID	g_whiteTexture;
@@ -166,9 +170,10 @@ extern void			GR_ReadVRAM(unsigned short* dst, int x, int y, int dst_w, int dst_
 extern void			GR_StoreFrameBuffer(int x, int y, int w, int h);
 extern void			GR_UpdateVRAM();
 
-extern TextureID	GR_CreateRGBATexture(int width, int height, u_char* data = nullptr);
+extern TextureID	GR_CreateRGBATexture(int width, int height, u_char* data /*= nullptr*/);
+extern ShaderID		GR_Shader_Compile(const char* source);
 
-extern void			GR_SetShader(const ShaderID& shader);
+extern void			GR_SetShader(const ShaderID shader);
 extern void			GR_Perspective3D(const float fov, const float width, const float height, const float zNear, const float zFar);
 extern void			GR_Ortho2D(float left, float right, float bottom, float top, float znear, float zfar);
 
@@ -177,15 +182,19 @@ extern void			GR_SetPolygonOffset(float ofs);
 extern void			GR_SetStencilMode(int drawPrim);
 extern void			GR_EnableDepth(int enable);
 extern void			GR_SetScissorState(int enable);
-extern void			GR_SetOffscreenState(const RECT16& offscreenRect, int enable);
-extern void			GR_SetupClipMode(const RECT16& clipRect, int enable);
+extern void			GR_SetOffscreenState(const RECT16* offscreenRect, int enable);
+extern void			GR_SetupClipMode(const RECT16* clipRect, int enable);
 extern void			GR_SetViewPort(int x, int y, int width, int height);
 extern void			GR_SetTexture(TextureID texture, TexFormat texFormat);
-extern void			GR_SetWireframe(bool enable);
+extern void			GR_SetWireframe(int enable);
 
 extern void			GR_DestroyTexture(TextureID texture);
 extern void			GR_Clear(int x, int y, int w, int h, unsigned char r, unsigned char g, unsigned char b);
 extern void			GR_UpdateVertexBuffer(const GrVertex* vertices, int count);
 extern void			GR_DrawTriangles(int start_vertex, int triangles);
+
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+}
+#endif
 
 #endif

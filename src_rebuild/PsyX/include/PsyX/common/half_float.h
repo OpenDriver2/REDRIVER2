@@ -1,7 +1,8 @@
 #ifndef HALF_FLOAT
 #define HALF_FLOAT
 
-struct half
+
+typedef struct half
 {
 	unsigned short sh;
 
@@ -17,7 +18,9 @@ struct half
 		return *this;
 	}
 #endif
-};
+
+} half;
+
 
 #if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
 extern "C" {

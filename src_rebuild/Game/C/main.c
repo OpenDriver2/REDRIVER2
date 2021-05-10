@@ -2307,7 +2307,7 @@ void RenderGame2(int view)
 
 #ifndef PSX
 	int screenW, screenH;
-	PsyX_GetScreenSize(screenW, screenH);
+	PsyX_GetScreenSize(&screenW, &screenH);
 
 	float aspectVar = float(screenH) / float(screenW);
 

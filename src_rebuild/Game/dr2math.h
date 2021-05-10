@@ -3,8 +3,16 @@
 
 #include <abs.h>
 
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+extern "C" {
+#endif
+
 // Driver 2 math definitions
 extern short rcossin_tbl[8192];
+
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+}
+#endif
 
 #define ONE				4096
 #define ONE_BITS		12
