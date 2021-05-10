@@ -385,8 +385,8 @@ int GTE_RotTransPers(int idx, int lm)
 	g_FP_SXYZ0 = g_FP_SXYZ1;
 	g_FP_SXYZ1 = g_FP_SXYZ2;
 
+	// calculate projected values for cache
 	PGXPVector3D temp;
-	
 	temp.px = (double(C2_OFX) + double(float(C2_IR1) * float(h_over_sz3))) / float(1 << 16);
 	temp.py = (double(C2_OFY) + double(float(C2_IR2) * float(h_over_sz3))) / float(1 << 16);
 	temp.pz = float(max(C2_SZ3, C2_H / 2)) / float(1 << 16);
@@ -401,7 +401,7 @@ int GTE_RotTransPers(int idx, int lm)
 	// do not perform perspective multiplication so it stays in object space
 	// perspective is performed exclusively in shader
 	PGXPVData vdata;
-	vdata.lookup = PGXP_LOOKUP_VALUE(temp.x.sh, temp.y.sh);		// hash short values
+	vdata.lookup = PGXP_LOOKUP_VALUE(temp.x, temp.y);		// hash short values
 
 	// FIXME: actually we scaling here entire geometry, is that correct?
 	vdata.px = fMAC1 * one_by_v * g_pgxpZScale + g_pgxpZOffset;

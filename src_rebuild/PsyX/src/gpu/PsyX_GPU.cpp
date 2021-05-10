@@ -165,7 +165,8 @@ void MakeLineArray(GrVertex* vertex, VERTTYPE* p0, VERTTYPE* p1, ushort gteidx)
 inline void ApplyVertexPGXP(GrVertex* v, VERTTYPE* p, float ofsX, float ofsY, ushort gteidx)
 {
 #ifdef USE_PGXP
-	uint lookup = PGXP_LOOKUP_VALUE(p[0].sh, p[1].sh);
+	uint lookup = PGXP_LOOKUP_VALUE(p[0], p[1]);
+
 	PGXPVData vd;
 	if (g_pgxpTextureCorrection && PGXP_GetCacheData(&vd, lookup, gteidx))
 	{
