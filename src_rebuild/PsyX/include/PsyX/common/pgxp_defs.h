@@ -5,7 +5,7 @@
 #include "PsyX/common/half_float.h"
 
 // Helpful macro
-#define PGXP_LOOKUP_VALUE(x, y) (x | (y << 16))
+#define PGXP_LOOKUP_VALUE(x, y) (*(u_short*)&(x) | (*(u_short*)&(y) << 16))
 
 //-------------------------------------
 

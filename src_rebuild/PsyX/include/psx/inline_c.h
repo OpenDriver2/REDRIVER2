@@ -589,7 +589,7 @@ extern int doCOP2(int op);
 #define gte_stsxy0( r0 ) \
 	{	*(uint*)((char*)r0) = MFC2(12);}
 
-#endif
+#endif // USE_PGXP
 
 // swc2 8
 #define gte_stdp( r0 ) \
