@@ -499,6 +499,7 @@ void SpuInit(void)
 void SpuQuit(void)
 {
 	// do nothing!
+	PsyX_ShutdownSound();
 }
 
 void UpdateVoiceSample(SPUVoice* voice)

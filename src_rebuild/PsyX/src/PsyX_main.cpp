@@ -12,6 +12,7 @@
 #include "psx/libetc.h"
 #include "psx/libgte.h"
 #include "psx/libgpu.h"
+#include "psx/libspu.h"
 
 #include <assert.h>
 #include <ctype.h>
@@ -65,17 +66,17 @@ extern "C" {
 #endif
 
 extern void(*vsync_callback)(void);
-extern void PsyX_ShutdownSound();
-
-extern void PsyX_Pad_Event_ControllerRemoved(Sint32 deviceId);
-extern void PsyX_Pad_Event_ControllerAdded(Sint32 deviceId);
 
 #if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
 }
 #endif
 
-extern int GR_InitialisePSX();
-extern int GR_InitialiseRender(char* windowName, int width, int height, int fullscreen);
+extern int	PsyX_Pad_InitSystem();
+extern void PsyX_Pad_Event_ControllerRemoved(Sint32 deviceId);
+extern void PsyX_Pad_Event_ControllerAdded(Sint32 deviceId);
+
+extern int	GR_InitialisePSX();
+extern int	GR_InitialiseRender(char* windowName, int width, int height, int fullscreen);
 
 extern void GR_ResetDevice();
 extern void GR_Shutdown();
@@ -260,6 +261,8 @@ static void PsyX_Sys_InitialiseInput()
 	g_controller_mapping.gc_axis_left_y = SDL_CONTROLLER_AXIS_LEFTY | CONTROLLER_MAP_FLAG_AXIS;
 	g_controller_mapping.gc_axis_right_x = SDL_CONTROLLER_AXIS_RIGHTX | CONTROLLER_MAP_FLAG_AXIS;
 	g_controller_mapping.gc_axis_right_y = SDL_CONTROLLER_AXIS_RIGHTY | CONTROLLER_MAP_FLAG_AXIS;
+
+	PsyX_Pad_InitSystem();
 }
 
 #ifdef __GNUC__
@@ -953,7 +956,7 @@ void PsyX_Shutdown()
 		SDL_DestroyMutex(g_intrMutex);
 
 	GR_Shutdown();
-	PsyX_ShutdownSound();
+	SpuQuit();
 
 	SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER);
 

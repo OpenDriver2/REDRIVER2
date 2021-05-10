@@ -662,6 +662,7 @@ int FMV_main(RENDER_ARGS* args)
 	DISPENV disp;
 	DRAWENV draw;
 
+	SpuInit();
 	FMVPlayerInitGL();
 
 	InitFMVFont();
