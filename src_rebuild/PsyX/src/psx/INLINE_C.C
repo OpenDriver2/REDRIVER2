@@ -180,8 +180,6 @@ int CFC2_S(int reg)
 	return gteRegs.CP2C.p[reg].sd;
 }
 
-extern int GTE_operator(int);
-
 int doCOP2(int op)
 {
 	return GTE_operator(op);

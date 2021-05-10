@@ -1,9 +1,12 @@
-#include "PsyX_setup.h"
+#include "PsyX_main.h"
 
 #include "PsyX/PsyX_version.h"
 #include "PsyX/PsyX_globals.h"
 #include "PsyX/PsyX_public.h"
 #include "PsyX/util/timer.h"
+
+#include "gpu/PsyX_GPU.h"
+
 #include "util/crash_handler.h"
 
 #include "psx/libetc.h"
@@ -20,9 +23,6 @@
 #include <SDL.h>
 
 #include "PsyX/PsyX_render.h"
-
-extern DISPENV activeDispEnv;
-extern DRAWENV activeDrawEnv;
 
 #ifdef __EMSCRIPTEN__
 int strcasecmp(const char* _l, const char* _r)
@@ -58,9 +58,29 @@ volatile int g_psxSysCounters[PsxCounter_Num];
 
 SDL_Thread* g_intrThread = NULL;
 SDL_mutex* g_intrMutex = NULL;
-volatile bool g_stopIntrThread = false;
+volatile char g_stopIntrThread = 0;
+
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+extern "C" {
+#endif
 
 extern void(*vsync_callback)(void);
+extern void PsyX_ShutdownSound();
+
+extern void PsyX_Pad_Event_ControllerRemoved(Sint32 deviceId);
+extern void PsyX_Pad_Event_ControllerAdded(Sint32 deviceId);
+
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+}
+#endif
+
+extern int GR_InitialisePSX();
+extern int GR_InitialiseRender(char* windowName, int width, int height, int fullscreen);
+
+extern void GR_ResetDevice();
+extern void GR_Shutdown();
+extern void GR_BeginScene();
+extern void GR_EndScene();
 
 long g_vmode = -1;
 int g_frameSkip = 0;
@@ -106,11 +126,11 @@ long PsyX_Sys_SetVMode(long mode)
 	{
 		//if(g_emIntrInterval != -1)
 		//	emscripten_clear_interval(g_emIntrInterval);
-		g_stopIntrThread = true;
+		g_stopIntrThread = 1;
 
 		emscripten_sleep(100);
 
-		g_stopIntrThread = false;
+		g_stopIntrThread = 0;
 		emscripten_set_timeout_loop(emIntrCallback2, 1.0, NULL);
 	}
 #endif
@@ -334,12 +354,6 @@ int PsyX_LookupGameControllerMapping(const char* str, int default_value)
 	return default_value;
 }
 
-extern int GR_InitialisePSX();
-extern int GR_InitialiseRender(char* windowName, int width, int height, int fullscreen);
-extern void GR_Shutdown();
-extern void GR_BeginScene();
-extern void GR_EndScene();
-
 char* g_appNameStr = NULL;
 
 void PsyX_GetWindowName(char* buffer)
@@ -397,7 +411,7 @@ static unsigned short g_LastColor = 0xFFFF;
 static unsigned short g_BadColor = 0xFFFF;
 static WORD g_BackgroundFlags = 0xFFFF;
 CRITICAL_SECTION g_SpewCS;
-bool g_bSpewCSInitted = false;
+char g_bSpewCSInitted = 0;
 
 static void Spew_GetInitialColors()
 {
@@ -449,7 +463,7 @@ void Spew_ConDebugSpew(SpewType_t type, char* text)
 	{
 		Spew_GetInitialColors();
 		InitializeCriticalSection(&g_SpewCS);
-		g_bSpewCSInitted = true;
+		g_bSpewCSInitted = 1;
 	}
 
 	WORD old;
@@ -613,9 +627,9 @@ void PsyX_Initialise(char* appName, int width, int height, int fullscreen)
 	SDL_ShowCursor(0);
 }
 
-void PsyX_GetScreenSize(int& screenWidth, int& screenHeight)
+void PsyX_GetScreenSize(int* screenWidth, int* screenHeight)
 {
-	SDL_GetWindowSize(g_window, &screenWidth, &screenHeight);
+	SDL_GetWindowSize(g_window, screenWidth, screenHeight);
 }
 
 void PsyX_SetCursorPosition(int x, int y)
@@ -623,12 +637,8 @@ void PsyX_SetCursorPosition(int x, int y)
 	SDL_WarpMouseInWindow(g_window, x, y);
 }
 
-void PsyX_Sys_DoDebugKeys(int nKey, bool down); // forward decl
+void PsyX_Sys_DoDebugKeys(int nKey, char down); // forward decl
 void PsyX_Sys_DoDebugMouseMotion(int x, int y);
-void GR_ResetDevice();
-
-extern void PsyX_Pad_Event_ControllerRemoved(Sint32 deviceId);
-extern void PsyX_Pad_Event_ControllerAdded(Sint32 deviceId);
 
 void PsyX_Exit();
 
@@ -685,9 +695,9 @@ void PsyX_Sys_DoPollEvent()
 				{
 					if (g_altKeyState && event.type == SDL_KEYDOWN)
 					{
-						bool IsFullscreen = SDL_GetWindowFlags(g_window) & SDL_WINDOW_FULLSCREEN;
+						int fullscreen = SDL_GetWindowFlags(g_window) & SDL_WINDOW_FULLSCREEN > 0;
 
-						SDL_SetWindowFullscreen(g_window, IsFullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
+						SDL_SetWindowFullscreen(g_window, fullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
 
 						SDL_GetWindowSize(g_window, &g_windowWidth, &g_windowHeight);
 						GR_ResetDevice();
@@ -708,7 +718,7 @@ void PsyX_Sys_DoPollEvent()
 					(gameOnTextInput)(NULL);
 				}
 
-				PsyX_Sys_DoDebugKeys(nKey, (event.type == SDL_KEYUP) ? false : true);
+				PsyX_Sys_DoDebugKeys(nKey, (event.type == SDL_KEYUP) ? 0 : 1);
 				break;
 			}
 			case SDL_TEXTINPUT:
@@ -721,24 +731,24 @@ void PsyX_Sys_DoPollEvent()
 	}
 }
 
-bool begin_scene_flag = false;
+char begin_scene_flag = 0;
 
-bool PsyX_BeginScene()
+char PsyX_BeginScene()
 {
 	PsyX_Sys_DoPollEvent();
 
 	if (begin_scene_flag)
-		return false;
+		return 0;
 
 	assert(!begin_scene_flag);
 
 	GR_BeginScene();
 
-	begin_scene_flag = true;
+	begin_scene_flag = 1;
 
 	PsyX_Log_Flush();
 
-	return true;
+	return 1;
 }
 
 uint PsyX_CalcFPS();
@@ -749,7 +759,7 @@ void PsyX_EndScene()
 		return;
 
 	assert(begin_scene_flag);
-	begin_scene_flag = false;
+	begin_scene_flag = 0;
 
 	GR_EndScene();
 	
@@ -761,7 +771,7 @@ void PsyX_EndScene()
 #if !defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
 void PsyX_TakeScreenshot()
 {
-	unsigned char* pixels = new unsigned char[g_windowWidth * g_windowHeight * 4];
+	u_char* pixels = (u_char*)malloc(g_windowWidth * g_windowHeight * 4);
 	
 #if defined(RENDERER_OGL)
 	glReadPixels(0, 0, g_windowWidth, g_windowHeight, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
@@ -774,7 +784,7 @@ void PsyX_TakeScreenshot()
 	SDL_SaveBMP(surface, "SCREENSHOT.BMP");
 	SDL_FreeSurface(surface);
 
-	delete[] pixels;
+	free(pixels);
 }
 #endif
 
@@ -784,7 +794,7 @@ void PsyX_Sys_DoDebugMouseMotion(int x, int y)
 		gameDebugMouse(x, y);
 }
 
-void PsyX_Sys_DoDebugKeys(int nKey, bool down)
+void PsyX_Sys_DoDebugKeys(int nKey, char down)
 {
 	if (gameDebugKeys)
 		gameDebugKeys(nKey, down);
@@ -878,9 +888,11 @@ uint PsyX_CalcFPS()
 {
 #define FPS_INTERVAL 1.0
 
-	static unsigned int lastTime = SDL_GetTicks();
+	static unsigned int lastTime = 0;
 	static unsigned int currentFps = 0;
 	static unsigned int passedFrames = 0;
+
+	lastTime = SDL_GetTicks();
 
 	passedFrames++;
 	if (lastTime < SDL_GetTicks() - FPS_INTERVAL * 1000)
@@ -918,8 +930,6 @@ void PsyX_WaitForTimestep(int count)
 	}
 }
 
-void PsyX_ShutdownSound();
-
 void PsyX_Exit()
 {
 	exit(0);
@@ -933,7 +943,7 @@ void PsyX_Shutdown()
 	// quit vblank thread
 	if (g_intrThread)
 	{
-		g_stopIntrThread = true;
+		g_stopIntrThread = 1;
 
 		int returnValue;
 		SDL_WaitThread(g_intrThread, &returnValue);

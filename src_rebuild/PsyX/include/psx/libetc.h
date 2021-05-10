@@ -33,7 +33,7 @@ extern int PadIdentifier;
 
 #define _PAD(x,y) ((y)<<((x)<<4))
 
-#define getScratchAddr(offset)  ((u_long *)(&scratchData+(offset)*4))
+#define getScratchAddr(offset)  ((u_long *)(scratchData+(offset)*4))
 
 #define MODE_NTSC 0
 #define MODE_PAL 1 

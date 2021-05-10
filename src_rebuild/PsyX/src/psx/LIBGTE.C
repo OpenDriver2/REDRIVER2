@@ -121,7 +121,7 @@ void PopMatrix()
 	}
 }
 
-void RotTrans(struct SVECTOR* v0, VECTOR* v1, long* flag)
+void RotTrans(SVECTOR* v0, VECTOR* v1, long* flag)
 {
 	gte_RotTrans(v0, v1, flag);
 }
@@ -134,7 +134,7 @@ void RotTransSV(SVECTOR* v0, SVECTOR* v1, long* flag)
 	gte_stflg(flag);
 }
 
-long RotTransPers(struct SVECTOR* v0, long* sxy, long* p, long* flag)
+long RotTransPers(SVECTOR* v0, long* sxy, long* p, long* flag)
 {
 	int sz;
 	gte_RotTransPers(v0, sxy, p, flag, &sz);
@@ -185,12 +185,12 @@ void NormalColor3(SVECTOR* v0, SVECTOR* v1, SVECTOR* v2, CVECTOR* v3, CVECTOR* v
 	gte_NormalColor3(v0, v1, v2, v3, v4, v5);
 }
 
-void NormalColorDpq(struct SVECTOR* v0, struct CVECTOR* v1, long p, struct CVECTOR* v2)
+void NormalColorDpq(SVECTOR* v0, CVECTOR* v1, long p, CVECTOR* v2)
 {
 	gte_NormalColorDpq(v0, v1, p, v2);
 }
 
-void NormalColorCol(struct SVECTOR* v0, struct CVECTOR* v1, struct CVECTOR* v2)
+void NormalColorCol(SVECTOR* v0, CVECTOR* v1, CVECTOR* v2)
 {
 	gte_NormalColorCol(v0, v1, v2);
 }
@@ -229,7 +229,7 @@ void LocalLight(SVECTOR* v0, VECTOR* v1)
 	gte_LocalLight(v0, v1);
 }
 
-long RotAverageNclip4(struct SVECTOR* v0, struct SVECTOR* v1, struct SVECTOR* v2, struct SVECTOR* v3, long* sxy0/*arg_10*/, long* sxy1/*arg_14*/, long* sxy2/*arg_18*/, long* sxy3/*arg_1C*/, long* p/*arg_20*/, long* otz/*arg_24*/, long* flag/*arg_28*/)
+long RotAverageNclip4(SVECTOR* v0, SVECTOR* v1, SVECTOR* v2, SVECTOR* v3, long* sxy0/*arg_10*/, long* sxy1/*arg_14*/, long* sxy2/*arg_18*/, long* sxy3/*arg_1C*/, long* p/*arg_20*/, long* otz/*arg_24*/, long* flag/*arg_28*/)
 {
 	gte_ldv3(v0, v1, v2);
 	gte_rtpt();
@@ -608,7 +608,7 @@ VECTOR* ApplyMatrixLV(MATRIX* m, VECTOR* v0, VECTOR* v1)
 	return v1;
 }
 
-MATRIX* RotMatrix(struct SVECTOR* r, MATRIX* m)
+MATRIX* RotMatrix(SVECTOR* r, MATRIX* m)
 {
 	// correct Psy-Q implementation
 	int c0, c1, c2;
@@ -644,7 +644,7 @@ MATRIX* RotMatrix(struct SVECTOR* r, MATRIX* m)
 	return m;
 }
 
-MATRIX* RotMatrixYXZ(struct SVECTOR* r, MATRIX* m)
+MATRIX* RotMatrixYXZ(SVECTOR* r, MATRIX* m)
 {
 	// correct Psy-Q implementation
 	int c0, c1, c2;
@@ -947,9 +947,10 @@ long ratan2(long y, long x)
 	// correct Psy-Q implementation
 	long v;
 	ulong ang;
+	int xlt0, ylt0;
 
-	bool xlt0 = x < 0;
-	bool ylt0 = y < 0;
+	xlt0 = x < 0;
+	ylt0 = y < 0;
 
 	if (x == 0 && y == 0)
 		return 0;

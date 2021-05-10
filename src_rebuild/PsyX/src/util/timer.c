@@ -17,6 +17,7 @@ void Util_InitHPCTimer(timerCtx_t* timer)
 
 double Util_GetHPCTime(timerCtx_t* timer, int reset)
 {
+	double value;
 #ifdef _WIN32
 	LARGE_INTEGER curr;
 	LARGE_INTEGER performanceFrequency;
@@ -24,7 +25,7 @@ double Util_GetHPCTime(timerCtx_t* timer, int reset)
 	QueryPerformanceFrequency(&performanceFrequency);
 	QueryPerformanceCounter(&curr);
 
-	double value = double(curr.QuadPart - timer->clockStart) / double(performanceFrequency.QuadPart);
+	value = (double)(curr.QuadPart - timer->clockStart) / (double)(performanceFrequency.QuadPart);
 
 	if (reset)
 		timer->clockStart = curr.QuadPart;
@@ -33,7 +34,7 @@ double Util_GetHPCTime(timerCtx_t* timer, int reset)
 
 	gettimeofday(&curr, NULL);
 
-	double value = (double(curr.tv_sec - timer->timeStart.tv_sec) + double(curr.tv_usec - timer->timeStart.tv_usec) * 0.000001);
+	value = ((double)(curr.tv_sec - timer->timeStart.tv_sec) + (double)(curr.tv_usec - timer->timeStart.tv_usec) * 0.000001);
 
 	if (reset)
 		timer->timeStart = curr;

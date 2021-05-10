@@ -60,7 +60,7 @@
 #define CD_SECTOR_SIZE_MODE2		2352		// MODE2/2352
 
 #pragma pack(push, 1)
-struct TOC
+typedef struct
 {
 	u_char tocEntryLength;
 	u_char extEntryLength;
@@ -72,9 +72,9 @@ struct TOC
 	u_char interleaveGapSize;
 	u_short volSeqNum[2];
 	u_char nameLength;
-};
+} TOC;
 
-struct Sector
+typedef struct
 {
 	u_char	sync[12];	/// Sync pattern (usually 00 FF FF FF FF FF FF FF FF FF FF 00)
 	u_char	addr[3];	/// Sector address (see below for encoding details)
@@ -83,15 +83,15 @@ struct Sector
 	u_char	data[2048];	/// Data (form 1)
 	u_char	edc[4];		/// Error-detection code (CRC32 of data area)
 	u_char	ecc[276];	/// Error-correction code (uses Reed-Solomon ECC algorithm)
-};
+} Sector;
 
-struct AudioSector
+typedef struct
 {
 	u_char	sync[12];	/// Sync pattern (usually 00 FF FF FF FF FF FF FF FF FF FF 00)
 	u_char	addr[3];	/// Sector address (a 24-bit big-endian integer. starts at 200, 201 an onwards)
 	u_char	mode;		/// Mode (usually 2 for Mode 2 Form 1/2 sectors)
 	u_char	data[2336];	/// 8 bytes Subheader, 2324 bytes Data (form 2), and 4 bytes ECC
-};
+} AudioSector;
 #pragma pack(pop)
 
 #endif

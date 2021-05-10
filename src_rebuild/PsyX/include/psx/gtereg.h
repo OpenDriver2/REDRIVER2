@@ -99,10 +99,18 @@ typedef struct
 	psxCP2Ctrl CP2C; /* Cop2 control registers */
 } GTERegisters;
 
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+extern "C" {
+#endif
+
 extern GTERegisters gteRegs;
 
-//Externals
+extern int GTE_operator(int);
 extern int LIM(int value, int max, int min, unsigned int flag);
+
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+}
+#endif
 
 /* Data Registers mtc2 mfc2 */
 #define C2_VX0		(gteRegs.CP2D.p[ 0 ].sw.l)

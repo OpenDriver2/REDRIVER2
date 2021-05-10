@@ -1,27 +1,31 @@
 #include "PsyX/PsyX_public.h"
 
 #include "../platform.h"
+#include "../gpu/PsyX_GPU.h"
 
 #include "PsyX/PsyX_render.h"
 #include "PsyX/PsyX_globals.h"
 #include "PsyX/util/timer.h"
 
+
 #include <assert.h>
 #include <string.h>
 
-
-
 #ifdef _WIN32
 #include <windows.h>
-extern "C"
-{
+
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+extern "C" {
+#endif
+
 	__declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
 	__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
-}
-#endif //def WIN32
 
-extern DISPENV activeDispEnv;
-extern DRAWENV activeDrawEnv;
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+}
+#endif
+
+#endif //def WIN32
 
 #if defined(RENDERER_OGL)
 
@@ -39,7 +43,6 @@ extern DRAWENV activeDrawEnv;
 #endif
 
 extern SDL_Window* g_window;
-extern int g_swapInterval;
 
 #define PSX_SCREEN_ASPECT	(240.0f / 320.0f)			// PSX screen is mapped always to this aspect
 
@@ -79,8 +82,8 @@ int g_bilinearFiltering = 0;
 float g_pgxpZNear = 0.25f;
 float g_pgxpZFar = 1000.0f;
 
-bool vram_need_update = true;
-bool framebuffer_need_update = false;
+int vram_need_update = 1;
+int framebuffer_need_update = 0;
 
 #if defined(__EMSCRIPTEN__)
 #if defined(RENDERER_OGL)
@@ -91,7 +94,7 @@ bool framebuffer_need_update = false;
 
 
 #if defined(USE_OPENGL)
-struct GrPBO
+typedef struct
 {
 	GLenum fmt;
 	GLuint* pbos;
@@ -103,12 +106,11 @@ struct GrPBO
 	int height;
 	int nbytes; /* number of bytes in the pbo buffer. */
 	unsigned char* pixels; /* the downloaded pixels. */
-};
+} GrPBO;
 
-int PBO_Init(GrPBO& pbo, GLenum format, int w, int h, int num)
+int PBO_Init(GrPBO* pbo, GLenum format, int w, int h, int num)
 {
-
-	if (pbo.pbos)
+	if (pbo->pbos)
 	{
 		eprinterr("Already initialized. Not necessary to initialize again; or shutdown first.");
 		return -1;
@@ -120,21 +122,21 @@ int PBO_Init(GrPBO& pbo, GLenum format, int w, int h, int num)
 		return -2;
 	}
 
-	pbo.fmt = format;
-	pbo.width = w;
-	pbo.height = h;
-	pbo.num_pbos = num;
+	pbo->fmt = format;
+	pbo->width = w;
+	pbo->height = h;
+	pbo->num_pbos = num;
 
 #if USE_PBO
-	if (GL_RED == pbo.fmt || GL_GREEN == pbo.fmt || GL_BLUE == pbo.fmt) {
-		pbo.nbytes = pbo.width * pbo.height;
+	if (GL_RED == pbo->fmt || GL_GREEN == pbo->fmt || GL_BLUE == pbo->fmt) {
+		pbo->nbytes = pbo->width * pbo->height;
 	}
-	else if (GL_RGB == pbo.fmt || GL_BGR == pbo.fmt)
+	else if (GL_RGB == pbo->fmt || GL_BGR == pbo->fmt)
 	{
-		pbo.nbytes = pbo.width * pbo.height * 3;
+		pbo->nbytes = pbo->width * pbo->height * 3;
 	}
-	else if (GL_RGBA == pbo.fmt || GL_BGRA == pbo.fmt) {
-		pbo.nbytes = pbo.width * pbo.height * 4;
+	else if (GL_RGBA == pbo->fmt || GL_BGRA == pbo->fmt) {
+		pbo->nbytes = pbo->width * pbo->height * 4;
 	}
 	else
 	{
@@ -142,20 +144,20 @@ int PBO_Init(GrPBO& pbo, GLenum format, int w, int h, int num)
 		return -3;
 	}
 
-	if (pbo.nbytes == 0)
+	if (pbo->nbytes == 0)
 	{
-		eprinterr("Invalid width or height given: %d x %d", pbo.width, pbo.height);
+		eprinterr("Invalid width or height given: %d x %d", pbo->width, pbo->height);
 		return -4;
 	}
 
-	pbo.pbos = (GLuint*)malloc(sizeof(GLuint) * num);
-	pbo.pixels = (u_char*)malloc(pbo.nbytes);
+	pbo->pbos = (GLuint*)malloc(sizeof(GLuint) * num);
+	pbo->pixels = (u_char*)malloc(pbo->nbytes);
 
-	glGenBuffers(num, pbo.pbos);
+	glGenBuffers(num, pbo->pbos);
 	for (int i = 0; i < num; ++i)
 	{
-		glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo.pbos[i]);
-		glBufferData(GL_PIXEL_PACK_BUFFER, pbo.nbytes, NULL, GL_STREAM_READ);
+		glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo->pbos[i]);
+		glBufferData(GL_PIXEL_PACK_BUFFER, pbo->nbytes, NULL, GL_STREAM_READ);
 	}
 
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
@@ -163,79 +165,79 @@ int PBO_Init(GrPBO& pbo, GLenum format, int w, int h, int num)
 	return 0;
 }
 
-void PBO_Destroy(GrPBO& pbo)
+void PBO_Destroy(GrPBO* pbo)
 {
 #if USE_PBO
-	if(pbo.pbos)
+	if(pbo->pbos)
 	{
-		glDeleteBuffers(pbo.num_pbos, pbo.pbos);
+		glDeleteBuffers(pbo->num_pbos, pbo->pbos);
 	
-		free(pbo.pbos);
-		pbo.num_pbos = 0;
-		pbo.pbos = NULL;
+		free(pbo->pbos);
+		pbo->num_pbos = 0;
+		pbo->pbos = NULL;
 	}
 
 #endif
-	if (pbo.pixels)
+	if (pbo->pixels)
 	{
-		free(pbo.pixels);
-		pbo.pixels = NULL;
+		free(pbo->pixels);
+		pbo->pixels = NULL;
 	}
 
-	pbo.num_downloads = 0;
-	pbo.dx = 0;
-	pbo.fmt = 0;
-	pbo.nbytes = 0;
+	pbo->num_downloads = 0;
+	pbo->dx = 0;
+	pbo->fmt = 0;
+	pbo->nbytes = 0;
 }
 
-void PBO_Download(GrPBO& pbo)
+void PBO_Download(GrPBO* pbo)
 {
 	unsigned char* ptr;
 	
 #if USE_PBO
-	if (pbo.num_downloads < pbo.num_pbos)
+	if (pbo->num_downloads < pbo->num_pbos)
 	{
 		/*
 		   First we need to make sure all our pbos are bound, so glMap/Unmap will
 		   read from the oldest bound buffer first.
 		*/
-		glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo.pbos[pbo.dx]);
+		glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo->pbos[pbo->dx]);
 
 #if defined(RENDERER_OGL)
-		glGetTexImage(GL_TEXTURE_2D, 0, pbo.fmt, GL_UNSIGNED_BYTE, 0);
+		glGetTexImage(GL_TEXTURE_2D, 0, pbo->fmt, GL_UNSIGNED_BYTE, 0);
 #else
-		glReadPixels(0, 0, pbo.width, pbo.height, pbo.fmt, GL_UNSIGNED_BYTE, 0);   /* When a GL_PIXEL_PACK_BUFFER is bound, the last 0 is used as offset into the buffer to read into. */
+		glReadPixels(0, 0, pbo->width, pbo->height, pbo->fmt, GL_UNSIGNED_BYTE, 0);   /* When a GL_PIXEL_PACK_BUFFER is bound, the last 0 is used as offset into the buffer to read into. */
 #endif
 	}
 	else
 	{
-		/* Read from the oldest bound pbo. */
-		glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo.pbos[pbo.dx]);
+		/* Read from the oldest bound pbo */
+		glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo->pbos[pbo->dx]);
 
 #if defined(RENDERER_OGL)
 		ptr = (unsigned char*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
 		if (NULL != ptr)
 		{
-			memcpy(pbo.pixels, ptr, pbo.nbytes);
+			memcpy(pbo->pixels, ptr, pbo->nbytes);
 			glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
 		}
 		else
 			eprintwarn("Failed to map the buffer\n");
 
 		/* Trigger the next read. */
-		glGetTexImage(GL_TEXTURE_2D, 0, pbo.fmt, GL_UNSIGNED_BYTE, 0);
+		glGetTexImage(GL_TEXTURE_2D, 0, pbo->fmt, GL_UNSIGNED_BYTE, 0);
 #else
-		glReadPixels(0, 0, pbo.width, pbo.height, GL_RGBA, GL_UNSIGNED_BYTE, pbo.pixels);
+		glReadPixels(0, 0, pbo->width, pbo->height, GL_RGBA, GL_UNSIGNED_BYTE, pbo->pixels);
 #endif
 	}
 
-	++pbo.dx;
-	pbo.dx = pbo.dx % pbo.num_pbos;
+	++pbo->dx;
+	pbo->dx = pbo->dx % pbo->num_pbos;
 
-	pbo.num_downloads++;
+	pbo->num_downloads++;
 
-	if (pbo.num_downloads == UINT64_MAX)
-		pbo.num_downloads = pbo.num_pbos;
+	if (pbo->num_downloads == UINT64_MAX)
+		pbo->num_downloads = pbo->num_pbos;
 
 	glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 #else
@@ -243,7 +245,7 @@ void PBO_Download(GrPBO& pbo)
 	// Do not use at all
 
 	// glBindBuffer(GL_PIXEL_PACK_BUFFER, 0); /* just make sure we're not accidentilly using a PBO. */
-	// glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pbo.pixels);
+	// glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, pbo->pixels);
 #endif
 }
 
@@ -493,8 +495,8 @@ void GR_Shutdown()
 	glDeleteVertexArrays(2, g_glVertexArray);
 	glDeleteBuffers(2, g_glVertexBuffer);
 
-	PBO_Destroy(g_glFramebufferPBO);
-	PBO_Destroy(g_glOffscreenPBO);
+	PBO_Destroy(&g_glFramebufferPBO);
+	PBO_Destroy(&g_glOffscreenPBO);
 
 	glDeleteFramebuffers(1, &g_glBlitFramebuffer);
 	glDeleteFramebuffers(1, &g_glOffscreenFramebuffer);
@@ -524,7 +526,7 @@ void GR_BeginScene()
 
 	if (g_wireframeMode)
 	{
-		GR_SetWireframe(true);
+		GR_SetWireframe(1);
 
 #if defined(USE_OPENGL)
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -535,7 +537,7 @@ void GR_BeginScene()
 
 void GR_EndScene()
 {
-	framebuffer_need_update = true;
+	framebuffer_need_update = 1;
 	
 	if (g_wireframeMode)
 		GR_SetWireframe(0);
@@ -554,7 +556,7 @@ void GR_ResetDevice()
 	PsyX_EnableSwapInterval(g_enableSwapInterval);
 }
 
-struct GTEShader
+typedef struct
 {
 	// shader itself
 	ShaderID shader;
@@ -564,7 +566,7 @@ struct GTEShader
 	GLint projection3DLoc;
 	GLint bilinearFilterLoc;
 #endif
-};
+} GTEShader;
 
 GTEShader g_gte_shader_4;
 GTEShader g_gte_shader_8;
@@ -964,16 +966,16 @@ TextureID GR_CreateRGBATexture(int width, int height, u_char* data /*= nullptr*/
 	return newTexture;
 }
 
-void GR_CompilePSXShader(GTEShader& sh, const char* source)
+void GR_CompilePSXShader(GTEShader* sh, const char* source)
 {
-	sh.shader = GR_Shader_Compile(source);
+	sh->shader = GR_Shader_Compile(source);
 
 #if defined(USE_OPENGL)
 	
-	sh.bilinearFilterLoc = glGetUniformLocation(sh.shader, "bilinearFilter");
-	sh.projectionLoc = glGetUniformLocation(sh.shader, "Projection");
+	sh->bilinearFilterLoc = glGetUniformLocation(sh->shader, "bilinearFilter");
+	sh->projectionLoc = glGetUniformLocation(sh->shader, "Projection");
 #ifdef USE_PGXP
-	sh.projection3DLoc = glGetUniformLocation(sh.shader, "Projection3D");
+	sh->projection3DLoc = glGetUniformLocation(sh->shader, "Projection3D");
 #endif
 
 #endif
@@ -981,9 +983,9 @@ void GR_CompilePSXShader(GTEShader& sh, const char* source)
 
 void GR_InitialisePSXShaders()
 {
-	GR_CompilePSXShader(g_gte_shader_4, gte_shader_4);
-	GR_CompilePSXShader(g_gte_shader_8, gte_shader_8);
-	GR_CompilePSXShader(g_gte_shader_16, gte_shader_16);
+	GR_CompilePSXShader(&g_gte_shader_4, gte_shader_4);
+	GR_CompilePSXShader(&g_gte_shader_8, gte_shader_8);
+	GR_CompilePSXShader(&g_gte_shader_16, gte_shader_16);
 }
 
 int GR_InitialisePSX()
@@ -1000,7 +1002,7 @@ int GR_InitialisePSX()
 	// gen framebuffer
 	{
 		memset(&g_glFramebufferPBO, 0, sizeof(g_glFramebufferPBO));
-		PBO_Init(g_glFramebufferPBO, GL_RGBA, VRAM_WIDTH, VRAM_HEIGHT, 2);
+		PBO_Init(&g_glFramebufferPBO, GL_RGBA, VRAM_WIDTH, VRAM_HEIGHT, 2);
 		
 		// make a special texture
 		// it will be resized later
@@ -1032,7 +1034,7 @@ int GR_InitialisePSX()
 	// gen offscreen RT
 	{
 		memset(&g_glOffscreenPBO, 0, sizeof(g_glOffscreenPBO));
-		PBO_Init(g_glOffscreenPBO, GL_RGBA, VRAM_WIDTH, VRAM_HEIGHT, 2);
+		PBO_Init(&g_glOffscreenPBO, GL_RGBA, VRAM_WIDTH, VRAM_HEIGHT, 2);
 		
 		// offscreen texture render target
 		glGenTextures(1, &g_offscreenRTTexture);
@@ -1176,36 +1178,41 @@ void GR_Perspective3D(const float fov, const float width, const float height, co
 #endif
 }
 
-void GR_SetupClipMode(const RECT16& rect, int enable)
+void GR_SetupClipMode(const RECT16* rect, int enable)
 {
+	float emuScreenAspect, flipOffset;
+	float psxScreenW, psxScreenH;
+	float clipRectX, clipRectY, clipRectW, clipRectH;
+	int scissorOn;
+
 	// [A] isinterlaced dirty hack for widescreen
-	bool scissorOn = enable && (activeDispEnv.isinter ||
-		(rect.x - activeDispEnv.disp.x > 0 ||
-			rect.y - activeDispEnv.disp.y > 0 ||
-			rect.w < activeDispEnv.disp.w - 1 ||
-			rect.h < activeDispEnv.disp.h - 1));
+	scissorOn = enable && (activeDispEnv.isinter ||
+		(	rect->x - activeDispEnv.disp.x > 0 ||
+			rect->y - activeDispEnv.disp.y > 0 ||
+			rect->w < activeDispEnv.disp.w - 1 ||
+			rect->h < activeDispEnv.disp.h - 1));
 
 	GR_SetScissorState(scissorOn);
 
 	if (!scissorOn)
 		return;
 
-	float psxScreenW = activeDispEnv.disp.w;
-	float psxScreenH = activeDispEnv.disp.h;
+	psxScreenW = activeDispEnv.disp.w;
+	psxScreenH = activeDispEnv.disp.h;
 
 	// first map to 0..1
-	float clipRectX = (float)(rect.x - activeDispEnv.disp.x) / psxScreenW;
-	float clipRectY = (float)(rect.y - activeDispEnv.disp.y) / psxScreenH;
-	float clipRectW = (float)(rect.w) / psxScreenW;
-	float clipRectH = (float)(rect.h) / psxScreenH;
+	clipRectX = (float)(rect->x - activeDispEnv.disp.x) / psxScreenW;
+	clipRectY = (float)(rect->y - activeDispEnv.disp.y) / psxScreenH;
+	clipRectW = (float)(rect->w) / psxScreenW;
+	clipRectH = (float)(rect->h) / psxScreenH;
 
 	// then map to screen
 	{
 		clipRectX -= 0.5f;
 #ifdef USE_PGXP
-		float emuScreenAspect = float(g_windowWidth) / float(g_windowHeight);
+		emuScreenAspect = (float)(g_windowWidth) / (float)(g_windowHeight);
 #else
-		float emuScreenAspect = (320.0f / 240.0f);
+		emuScreenAspect = (320.0f / 240.0f);
 #endif
 
 		clipRectX /= PSX_SCREEN_ASPECT * emuScreenAspect;
@@ -1215,7 +1222,7 @@ void GR_SetupClipMode(const RECT16& rect, int enable)
 	}
 
 #if defined(USE_OPENGL)
-	float flipOffset = g_windowHeight - clipRectH * (float)g_windowHeight;
+	flipOffset = g_windowHeight - clipRectH * (float)g_windowHeight;
 
 	glScissor(clipRectX * (float)g_windowWidth,
 		flipOffset - clipRectY * (float)g_windowHeight,
@@ -1227,10 +1234,13 @@ void GR_SetupClipMode(const RECT16& rect, int enable)
 void PsyX_GetPSXWidescreenMappedViewport(struct _RECT16* rect)
 {
 #ifdef USE_PGXP
-	float emuScreenAspect = float(g_windowWidth) / float(g_windowHeight);
+	float psxScreenW, psxScreenH;
+	float emuScreenAspect;
 
-	float psxScreenW = activeDispEnv.disp.w;
-	float psxScreenH = activeDispEnv.disp.h;
+	emuScreenAspect = (float)(g_windowWidth) / (float)(g_windowHeight);
+
+	psxScreenW = activeDispEnv.disp.w;
+	psxScreenH = activeDispEnv.disp.h;
 
 	rect->x = activeDispEnv.screen.x;
 	rect->y = activeDispEnv.screen.y;
@@ -1249,7 +1259,7 @@ void PsyX_GetPSXWidescreenMappedViewport(struct _RECT16* rect)
 #endif
 }
 
-void GR_SetShader(const ShaderID& shader)
+void GR_SetShader(const ShaderID shader)
 {
 	if (g_PreviousShader != shader)
 	{
@@ -1407,7 +1417,7 @@ void GR_CopyRGBAFramebufferToVRAM(u_int* src, int x, int y, int w, int h, int up
 	free(fb);
 
 	if (update_vram)
-		vram_need_update = true;
+		vram_need_update = 1;
 }
 
 void GR_ReadFramebufferDataToVRAM()
@@ -1416,7 +1426,7 @@ void GR_ReadFramebufferDataToVRAM()
 	if (!framebuffer_need_update)
 		return;
 
-	framebuffer_need_update = false;
+	framebuffer_need_update = 0;
 
 	x = g_PreviousFramebuffer.x;
 	y = g_PreviousFramebuffer.y;
@@ -1428,7 +1438,7 @@ void GR_ReadFramebufferDataToVRAM()
 #if defined(USE_OPENGL)
 		// reat the texture
 		glBindTexture(GL_TEXTURE_2D, g_fbTexture);
-		PBO_Download(g_glFramebufferPBO);
+		PBO_Download(&g_glFramebufferPBO);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		GR_CopyRGBAFramebufferToVRAM((u_int*)g_glFramebufferPBO.pixels, x, y, w, h, 0, 0);
 #endif
@@ -1449,7 +1459,7 @@ void GR_SetScissorState(int enable)
 	g_PreviousScissorState = enable;
 }
 
-void GR_SetOffscreenState(const RECT16& offscreenRect, int enable)
+void GR_SetOffscreenState(const RECT16* offscreenRect, int enable)
 {
 	if (enable)
 	{
@@ -1467,7 +1477,7 @@ void GR_SetOffscreenState(const RECT16& offscreenRect, int enable)
 
 #define PGXP_FOV_FACTOR 0.9265f
 
-		const float emuScreenAspect = float(g_windowWidth) / float(g_windowHeight);
+		const float emuScreenAspect = (float)(g_windowWidth) / (float)(g_windowHeight);
 		
 		GR_Ortho2D(-0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f * emuScreenAspect * PSX_SCREEN_ASPECT, 0.5f, -0.5f, -1.0f, 1.0f);
 		GR_Perspective3D(PGXP_FOV_FACTOR, 1.0f, 1.0f / (emuScreenAspect * PSX_SCREEN_ASPECT), g_pgxpZNear, g_pgxpZFar);
@@ -1485,17 +1495,17 @@ void GR_SetOffscreenState(const RECT16& offscreenRect, int enable)
 	if (enable)
 	{
 		// set storage size first
-		if (g_PreviousOffscreen.w != offscreenRect.w &&
-			g_PreviousOffscreen.h != offscreenRect.h)
+		if (g_PreviousOffscreen.w != offscreenRect->w &&
+			g_PreviousOffscreen.h != offscreenRect->h)
 		{
 			glBindTexture(GL_TEXTURE_2D, g_offscreenRTTexture);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, offscreenRect.w, offscreenRect.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, offscreenRect->w, offscreenRect->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
 
-		g_PreviousOffscreen = offscreenRect;
+		g_PreviousOffscreen = *offscreenRect;
 
-		GR_SetViewPort(0, 0, offscreenRect.w, offscreenRect.h);
+		GR_SetViewPort(0, 0, offscreenRect->w, offscreenRect->h);
 		glBindFramebuffer(GL_FRAMEBUFFER, g_glOffscreenFramebuffer);
 
 		// clear it out
@@ -1534,7 +1544,7 @@ void GR_SetOffscreenState(const RECT16& offscreenRect, int enable)
 			// reat the texture
 			glBindTexture(GL_TEXTURE_2D, g_offscreenRTTexture);
 			//glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-			PBO_Download(g_glOffscreenPBO);
+			PBO_Download(&g_glOffscreenPBO);
 			glBindTexture(GL_TEXTURE_2D, g_lastBoundTexture);
 
 			// Don't forcely update VRAM
@@ -1611,13 +1621,13 @@ void GR_StoreFrameBuffer(int x, int y, int w, int h)
 
 void GR_CopyVRAM(unsigned short* src, int x, int y, int w, int h, int dst_x, int dst_y)
 {
-	vram_need_update = true;
+	vram_need_update = 1;
 
 	int stride = w;
 
 	if (!src)
 	{
-		framebuffer_need_update = true;
+		framebuffer_need_update = 1;
 
 		src = vram;
 		stride = VRAM_WIDTH;
@@ -1650,7 +1660,7 @@ void GR_UpdateVRAM()
 	if (!vram_need_update)
 		return;
 
-	vram_need_update = false;
+	vram_need_update = 0;
 
 #if defined(USE_OPENGL)
 	g_vramTexture = g_vramTexturesDouble[g_vramTextureIdx];
@@ -1778,7 +1788,7 @@ void GR_SetViewPort(int x, int y, int width, int height)
 #endif
 }
 
-void GR_SetWireframe(bool enable)
+void GR_SetWireframe(int enable)
 {
 #if defined(RENDERER_OGL)
 	glPolygonMode(GL_FRONT_AND_BACK, enable ? GL_LINE : GL_FILL);

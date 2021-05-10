@@ -1,6 +1,6 @@
 #include "psx/libcd.h"
 
-#include "../PsyX_setup.h"
+#include "../PsyX_main.h"
 #include "../iso9660.h"
 
 #include <assert.h>
@@ -55,12 +55,12 @@ int g_cdCurrentTrack = 1;					// default
 int g_cdNumFrames = 0;
 int g_CD_com = 0;
 
-bool g_cdReadDoneFlag = true;
+int g_cdReadDoneFlag = 1;
 
 char g_cdImageBinaryFileName[2048] = { 0 };
 int g_UseCDImage = 0;
 
-void PsyX_CDFS_Init(const char* imageFileName, int track = 0, int sectorSize = 0)
+void PsyX_CDFS_Init(const char* imageFileName, int track /*= 0*/, int sectorSize /*= 0*/)
 {
 	g_UseCDImage = 1;
 
@@ -199,7 +199,7 @@ CdlFILE* CdSearchFile(CdlFILE* fp, char* name)
 			fp->size = toc->fileSize[0];
 			
 			fseek(g_imageFp, toc->sectorPosition[0] * g_cdSectorSize, SEEK_SET);
-			fread(&sector, sizeof(struct Sector), 1, g_imageFp);
+			fread(&sector, sizeof(Sector), 1, g_imageFp);
 			
 			fp->pos.minute = sector.addr[0];
 			fp->pos.second = sector.addr[1];
@@ -477,7 +477,9 @@ int CdSetDebug(int level)
 
 int CdSync(int mode, u_char * result)
 {
+	CdlLOC locP;
 	CdlLOC* loc = (CdlLOC*)result;
+
 	switch (mode)
 	{
 	case 0:
@@ -489,7 +491,7 @@ int CdSync(int mode, u_char * result)
 		switch (CdLastCom())
 		{
 		case CdlGetlocP:
-			CdlLOC locP;
+			
 			CdIntToPos(g_cdCurrentSector+=20, &locP);
 			result[0] = g_cdCurrentTrack;
 			result[1] = 1;//index, usually 1
@@ -838,7 +840,7 @@ CdlCB g_readyCallback = NULL;
 
 Sector g_cdSectorData;
 
-bool g_isCdSectorDataRead = false;
+int g_isCdSectorDataRead = 0;
 
 SDL_Thread* g_cdSpoolerPCThread = NULL;
 SDL_mutex* g_cdSpoolerMutex = NULL;
@@ -855,7 +857,7 @@ void _eCdGetSector(char* dest, int count)
 	assert(dest);
 
 	memcpy(dest, g_cdSectorData.data, count);
-	g_isCdSectorDataRead = true;
+	g_isCdSectorDataRead = 1;
 }
 
 CdlDataCB _eCdDataCallback(CdlDataCB cb)
@@ -881,11 +883,13 @@ CdlCB _eCdReadyCallback(CdlCB cb)
 // Main spooler thread function
 int _eCdSpoolerThreadFunc(void* data)
 {
+	u_char zero_bytes[] = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
+
 	//Print incoming data
 	eprintwarn("Running CD thread...\n");
 
-	g_cdReadDoneFlag = false;
-	g_isCdSectorDataRead = false;
+	g_cdReadDoneFlag = 0;
+	g_isCdSectorDataRead = 0;
 
 	CdlCB readyCb = g_readyCallback;
 	CdlDataCB dataCb = g_dataCallback;
@@ -903,7 +907,7 @@ int _eCdSpoolerThreadFunc(void* data)
 				eprintinfo("CD: 'CdlPause'\n", sector);
 
 				g_cdSpoolerSeekCmd = 0;
-				g_cdReadDoneFlag = true;
+				g_cdReadDoneFlag = 1;
 			}
 			else
 			{
@@ -924,11 +928,11 @@ int _eCdSpoolerThreadFunc(void* data)
 		memset(&g_cdSectorData, 0, sizeof(g_cdSectorData));
 		fread(&g_cdSectorData, sizeof(Sector), 1, g_imageFp);
 
-		g_isCdSectorDataRead = false;
+		g_isCdSectorDataRead = 0;
 
 		if (readyCb)
 		{
-			readyCb(1, { 0x0 });
+			readyCb(1, zero_bytes);
 
 			if (g_isCdSectorDataRead && dataCb)
 				dataCb();

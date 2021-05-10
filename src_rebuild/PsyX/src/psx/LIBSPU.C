@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 
-#include "../PsyX_setup.h"
+#include "../PsyX_main.h"
 
 #include <string.h>
 
@@ -68,16 +68,16 @@ const char* getALErrorString(int err)
 #define SPU_MEMSIZE				(2048*1024)		// SPU_REALMEMSIZE
 #define SPU_VOICES 24
 
-struct SPUMemory
+typedef struct
 {
 	unsigned char	samplemem[SPU_MEMSIZE];
 	unsigned char*	writeptr;
-};
+} SPUMemory;
 
 static SPUMemory s_SpuMemory;
 SDL_mutex* g_SpuMutex = NULL;
 
-struct SPUVoice
+typedef struct
 {
 	SpuVoiceAttr attr;	// .voice is Id of this channel
 
@@ -85,7 +85,7 @@ struct SPUVoice
 	ALuint alSource;
 	ushort sampledirty;
 	ushort reverb;
-};
+} SPUVoice;
 
 SPUVoice	g_SpuVoices[SPU_VOICES];
 ALCdevice*	g_ALCdevice = NULL;
@@ -153,18 +153,29 @@ void InitOpenAlEffects()
 	alAuxiliaryEffectSloti(g_ALEffectSlots[g_currEffectSlotIdx], AL_EFFECTSLOT_EFFECT, g_nAlReverbEffect);
 }
 
-bool PsyX_InitSound()
+int PsyX_InitSound()
 {
-	if (g_ALCdevice)
-		return true;
+	int numDevices, alErr, i;
+	const char* devices;
+	const char* devStrptr;
 
-	int numDevices = 0;
+	// out_channel_formats snd_outputchannels
+	static int al_context_params[] =
+	{
+		ALC_FREQUENCY, 44100,
+		ALC_MAX_AUXILIARY_SENDS, 2,
+		0
+	};
+
+	if (g_ALCdevice)
+		return 1;
+
+	numDevices = 0;
 
 	// Init openAL
 	// check devices list
-	const char* devices;
 
-	const char* devStrptr = alcGetString(nullptr, ALC_DEVICE_SPECIFIER);
+	devStrptr = alcGetString(NULL, ALC_DEVICE_SPECIFIER);
 	devices = devStrptr;
 
 	// go through device list (each device terminated with a single NULL, list terminated with double NULL)
@@ -176,27 +187,20 @@ bool PsyX_InitSound()
 	}
 
 	if(numDevices == 0)
-		return false;
+		return 0;
 	
 	g_ALCdevice = alcOpenDevice(NULL);
 
-	int alErr = AL_NO_ERROR;
+	alErr = AL_NO_ERROR;
 
 	if (!g_ALCdevice)
 	{
-		alErr = alcGetError(nullptr);
+		alErr = alcGetError(NULL);
 		eprinterr("alcOpenDevice: NULL DEVICE error: %s\n", getALCErrorString(alErr));
-		return false;
+		return 0;
 	}
 
 #ifndef __EMSCRIPTEN__
-	// out_channel_formats snd_outputchannels
-	int al_context_params[] =
-	{
-		ALC_FREQUENCY, 44100,
-		ALC_MAX_AUXILIARY_SENDS, 2,
-		0
-	};
 	g_ALCcontext = alcCreateContext(g_ALCdevice, al_context_params);
 #else
 	g_ALCcontext = alcCreateContext(g_ALCdevice, NULL);
@@ -206,7 +210,7 @@ bool PsyX_InitSound()
 	if (alErr != AL_NO_ERROR)
 	{
 		eprinterr("alcCreateContext error: %s\n", getALCErrorString(alErr));
-		return false;
+		return 0;
 	}
 
 	alcMakeContextCurrent(g_ALCcontext);
@@ -215,7 +219,7 @@ bool PsyX_InitSound()
 	if (alErr != AL_NO_ERROR)
 	{
 		eprinterr("alcMakeContextCurrent error: %s\n", getALCErrorString(alErr));
-		return false;
+		return 0;
 	}
 
 	// Setup defaults
@@ -223,16 +227,16 @@ bool PsyX_InitSound()
 	alDistanceModel(AL_NONE);
 
 	// create channels
-	for (int i = 0; i < SPU_VOICES; i++)
+	for (i = 0; i < SPU_VOICES; i++)
 	{
-		SPUVoice& voice = g_SpuVoices[i];
-		memset(&voice, 0, sizeof(SPUVoice));
+		SPUVoice* voice = &g_SpuVoices[i];
+		memset(voice, 0, sizeof(SPUVoice));
 
-		alGenSources(1, &voice.alSource);
-		alGenBuffers(1, &voice.alBuffer);
+		alGenSources(1, &voice->alSource);
+		alGenBuffers(1, &voice->alBuffer);
 
-		alSourcei(voice.alSource, AL_SOURCE_RESAMPLER_SOFT, 2);	// Use cubic resampler
-		alSourcei(voice.alSource, AL_SOURCE_RELATIVE, AL_TRUE);
+		alSourcei(voice->alSource, AL_SOURCE_RESAMPLER_SOFT, 2);	// Use cubic resampler
+		alSourcei(voice->alSource, AL_SOURCE_RELATIVE, AL_TRUE);
 	}
 
 	memset(&s_SpuMemory, 0, sizeof(s_SpuMemory));
@@ -241,7 +245,7 @@ bool PsyX_InitSound()
 
 	g_SpuMutex = SDL_CreateMutex();
 
-	return true;
+	return 1;
 }
 
 void PsyX_ShutdownSound()
@@ -251,9 +255,9 @@ void PsyX_ShutdownSound()
 
 	for (int i = 0; i < SPU_VOICES; i++)
 	{
-		SPUVoice& voice = g_SpuVoices[i];
-		alDeleteSources(1, &voice.alSource);
-		alDeleteBuffers(1, &voice.alBuffer);
+		SPUVoice* voice = &g_SpuVoices[i];
+		alDeleteSources(1, &voice->alSource);
+		alDeleteBuffers(1, &voice->alBuffer);
 	}
 
 	if (g_ALEffectsSupported)
@@ -308,7 +312,7 @@ short vagToPcm(unsigned char soundParameter, int soundData, float* vagPrev1, flo
 	return (short)resultInt;
 }
 
-enum ADPCM_FLAGS 
+typedef enum 
 {
 	LoopEnd = 1 << 0,		// Jump to repeat address after this block
 							// 1 - Copy repeatAddress to currentAddress AFTER this block
@@ -322,11 +326,11 @@ enum ADPCM_FLAGS
 	LoopStart = 1 << 2,		// Mark current address as the beginning of repeat
 							// 1 - Load currentAddress to repeatAddress
 							// 0 - Nothing
-};
+} ADPCM_FLAGS;
 
 
 // Main decoding routine - Takes PSX ADPCM formatted audio data and converts it to PCM. It also extracts the looping information if used.
-int decodeSound(unsigned char* iData, int soundSize, short* oData, int* loopStart, int* loopLength, bool breakOnEnd = false)
+int decodeSound(unsigned char* iData, int soundSize, short* oData, int* loopStart, int* loopLength, int breakOnEnd /*= 0*/)
 {
 	unsigned char sp;
 	unsigned char flag;
@@ -359,16 +363,16 @@ int decodeSound(unsigned char* iData, int soundSize, short* oData, int* loopStar
 		if (breakOn == -1)
 		{
 			// flags parsed
-			if (flag & ADPCM_FLAGS::LoopStart)
+			if (flag & LoopStart)
 			{
 				loopStrt = k + 26; // FIXME: is that correct?
 			}
 
-			if (flag & ADPCM_FLAGS::LoopEnd)
+			if (flag & LoopEnd)
 			{
 				loopEnd = k + 26;
 
-				if (flag & ADPCM_FLAGS::Repeat)
+				if (flag & Repeat)
 				{
 					*loopStart = loopStrt;
 					*loopLength = loopEnd - loopStrt;
@@ -497,23 +501,27 @@ void SpuQuit(void)
 	// do nothing!
 }
 
-void UpdateVoiceSample(SPUVoice& voice)
+void UpdateVoiceSample(SPUVoice* voice)
 {
-	//if (!voice.sampledirty)
+	static short waveBuffer[SPU_REALMEMSIZE];
+	int loopStart, loopLen, count;
+	ALuint alSource, alBuffer;
+
+	//if (!voice->sampledirty)
 	//	return;
 
-	voice.sampledirty = 0;
+	voice->sampledirty = 0;
 
-	static short waveBuffer[SPU_REALMEMSIZE];
-
-	ALuint alSource = voice.alSource;
-	ALuint alBuffer = voice.alBuffer;
+	alSource = voice->alSource;
+	alBuffer = voice->alBuffer;
 
 	if (alSource == AL_NONE)
 		return;
 
-	int loopStart = 0, loopLen = 0;
-	int count = decodeSound(s_SpuMemory.samplemem + voice.attr.addr, SPU_REALMEMSIZE - voice.attr.addr, waveBuffer, &loopStart, &loopLen, true);
+	loopStart = 0;
+	loopLen = 0;
+	
+	count = decodeSound(s_SpuMemory.samplemem + voice->attr.addr, SPU_REALMEMSIZE - voice->attr.addr, waveBuffer, &loopStart, &loopLen, 1);
 
 	if (count == 0)
 		return;
@@ -553,7 +561,7 @@ void UpdateVoiceSample(SPUVoice& voice)
 
 	if (loopLen > 0)
 	{
-		loopStart += voice.attr.loop_addr - voice.attr.addr;
+		loopStart += voice->attr.loop_addr - voice->attr.addr;
 
 		if (loopStart-54 > 0 && loopStart + loopLen <= count)
 		{
@@ -576,6 +584,11 @@ void UpdateVoiceSample(SPUVoice& voice)
 
 void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 {
+	const float STEREO_FACTOR = 3.0f;
+	SPUVoice* voice;
+	ALuint alSource;
+	float pitch, left_gain, right_gain, pan;
+
 	SDL_LockMutex(g_SpuMutex);
 
 	for (int i = 0; i < SPU_VOICES; i++)
@@ -583,9 +596,9 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 		if (!(arg->voice & SPU_VOICECH(i)))
 			continue;
 
-		SPUVoice& voice = g_SpuVoices[i];
+		voice = &g_SpuVoices[i];
 
-		ALuint alSource = voice.alSource;
+		ALuint alSource = voice->alSource;
 
 		if (alSource == AL_NONE)
 			continue;
@@ -593,25 +606,25 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 		// update sample
 		if ((arg->mask & SPU_VOICE_WDSA) || (arg->mask & SPU_VOICE_LSAX))
 		{
-			//ALuint tmp = voice.alSource[1];
-			//voice.alSource[1] = voice.alSource[0];
-			//voice.alSource[1] = tmp;
-			//alSource = voice.alSource[0];
+			//ALuint tmp = voice->alSource[1];
+			//voice->alSource[1] = voice->alSource[0];
+			//voice->alSource[1] = tmp;
+			//alSource = voice->alSource[0];
 
 			if (arg->mask & SPU_VOICE_WDSA)
 			{
-				if (voice.attr.addr != arg->addr)
-					voice.sampledirty++;
+				if (voice->attr.addr != arg->addr)
+					voice->sampledirty++;
 
-				voice.attr.addr = arg->addr;
+				voice->attr.addr = arg->addr;
 			}
 			
 			if (arg->mask & SPU_VOICE_LSAX)
 			{
-				if(voice.attr.loop_addr != arg->loop_addr)
-					voice.sampledirty++;
+				if(voice->attr.loop_addr != arg->loop_addr)
+					voice->sampledirty++;
 
-				voice.attr.loop_addr = arg->loop_addr;
+				voice->attr.loop_addr = arg->loop_addr;
 			}			
 		}
 
@@ -619,13 +632,13 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 		if ((arg->mask & SPU_VOICE_VOLL) || (arg->mask & SPU_VOICE_VOLR))
 		{
 			if (arg->mask & SPU_VOICE_VOLL)
-				voice.attr.volume.left = arg->volume.left;
+				voice->attr.volume.left = arg->volume.left;
 
 			if (arg->mask & SPU_VOICE_VOLR)
-				voice.attr.volume.right = arg->volume.right;
+				voice->attr.volume.right = arg->volume.right;
 
-			float left_gain = float(voice.attr.volume.left) / float(16384);
-			float right_gain = float(voice.attr.volume.right) / float(16384);
+			left_gain = (float)(voice->attr.volume.left) / (float)(16384);
+			right_gain = (float)(voice->attr.volume.right) / (float)(16384);
 
 			if(left_gain > 1.0f)
 				left_gain = 1.0f;
@@ -633,9 +646,7 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 			if(right_gain > 1.0f)
 				right_gain = 1.0f;
 
-			const float STEREO_FACTOR = 3.0f;
-
-			float pan = (acosf(left_gain) + asinf(right_gain)) / (float(M_PI)); // average angle in [0,1]
+			pan = (acosf(left_gain) + asinf(right_gain)) / ((float)(M_PI)); // average angle in [0,1]
 			pan = 2.0f * pan - 1.0f; // convert to [-1, 1]
 			pan = pan * 0.5f; // 0.5 = sin(30') for a +/- 30 degree arc
 			alSource3f(alSource, AL_POSITION, pan * STEREO_FACTOR, 0, -sqrtf(1.0f - pan * pan));
@@ -646,9 +657,9 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 		// update pitch
 		if (arg->mask & SPU_VOICE_PITCH)
 		{
-			voice.attr.pitch = arg->pitch;
+			voice->attr.pitch = arg->pitch;
 
-			float pitch = float(voice.attr.pitch) / 4096.0f;
+			pitch = (float)(voice->attr.pitch) / 4096.0f;
 
 			alSourcef(alSource, AL_PITCH, pitch);
 		}
@@ -660,14 +671,17 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 
 void SpuSetKey(long on_off, unsigned long voice_bit)
 {
+	SPUVoice* voice;
+	ALuint alSource;
+
 	SDL_LockMutex(g_SpuMutex);
 	for (int i = 0; i < SPU_VOICES; i++)
 	{
 		if (voice_bit & SPU_VOICECH(i))
 		{
-			SPUVoice& voice = g_SpuVoices[i];
+			voice = &g_SpuVoices[i];
 
-			ALuint alSource = voice.alSource;
+			alSource = voice->alSource;
 
 			if (alSource == AL_NONE)
 				continue;
@@ -690,6 +704,8 @@ void SpuSetKey(long on_off, unsigned long voice_bit)
 
 long SpuGetKeyStatus(unsigned long voice_bit)
 {
+	SPUVoice* voice;
+	ALuint alSource;
 	int state = AL_STOPPED;
 
 	SDL_LockMutex(g_SpuMutex);
@@ -699,9 +715,9 @@ long SpuGetKeyStatus(unsigned long voice_bit)
 		if (voice_bit != SPU_VOICECH(i))
 			continue;
 
-		SPUVoice& voice = g_SpuVoices[i];
+		voice = &g_SpuVoices[i];
 
-		ALuint alSource = voice.alSource;
+		alSource = voice->alSource;
 
 		if (alSource == AL_NONE)
 			break; // SpuOff?
@@ -717,13 +733,16 @@ long SpuGetKeyStatus(unsigned long voice_bit)
 
 void SpuGetAllKeysStatus(char* status)
 {
+	SPUVoice* voice;
+	ALuint alSource;
+
 	SDL_LockMutex(g_SpuMutex);
 
 	for (int i = 0; i < SPU_VOICES; i++)
 	{
-		SPUVoice& voice = g_SpuVoices[i];
+		voice = &g_SpuVoices[i];
 
-		ALuint alSource = voice.alSource;
+		alSource = voice->alSource;
 
 		if (alSource == AL_NONE)
 		{
@@ -823,6 +842,9 @@ long SpuIsReverbWorkAreaReserved(long on_off)
 
 unsigned long SpuSetReverbVoice(long on_off, unsigned long voice_bit)
 {
+	SPUVoice* voice;
+	ALuint alSource;
+
 	if(!g_ALEffectsSupported)
 		return 0;
 
@@ -832,14 +854,14 @@ unsigned long SpuSetReverbVoice(long on_off, unsigned long voice_bit)
 	{
 		if (voice_bit & SPU_VOICECH(i))
 		{
-			SPUVoice& voice = g_SpuVoices[i];
+			voice = &g_SpuVoices[i];
 
-			ALuint alSource = voice.alSource;
+			alSource = voice->alSource;
 
 			if (alSource == AL_NONE)
 				continue;
 
-			voice.reverb = on_off > 0;
+			voice->reverb = on_off > 0;
 
 			if (on_off)
 			{
@@ -859,11 +881,14 @@ unsigned long SpuSetReverbVoice(long on_off, unsigned long voice_bit)
 
 unsigned long SpuGetReverbVoice(void)
 {
+	SPUVoice* voice;
+
 	unsigned long bits = 0;
+
 	for (int i = 0; i < SPU_VOICES; i++)
 	{
-		SPUVoice& voice = g_SpuVoices[i];
-		if (voice.reverb)
+		voice = &g_SpuVoices[i];
+		if (voice->reverb)
 			bits |= SPU_KEYCH(i);
 	}
 

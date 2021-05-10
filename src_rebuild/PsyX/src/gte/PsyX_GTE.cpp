@@ -302,9 +302,9 @@ ushort PGXP_GetIndex()
 	return 0xFFFF;
 }
 
-ushort PGXP_EmitCacheData(PGXPVData& newData)
+ushort PGXP_EmitCacheData(PGXPVData* newData)
 {
-	g_pgxpCache[g_pgxpVertexIndex++] = newData;
+	g_pgxpCache[g_pgxpVertexIndex++] = *newData;
 	g_pgxpTransformed = 1;
 	return g_pgxpVertexIndex;
 }
@@ -316,17 +316,17 @@ void PGXP_SetZOffsetScale(float offset, float scale)
 }
 
 // sets copy of cached vertex data to out
-bool PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint)
+int PGXP_GetCacheData(PGXPVData* out, uint lookup, ushort indexhint)
 {
 	if (indexhint == 0xFFFF)
 	{
-		out.px = 0.0f;
-		out.py = 0.0f;
-		out.pz = 1.0f;
-		out.scr_h = 0.0f;
-		out.ofx = 0.0f;
-		out.ofx = 0.0f;
-		return false;
+		out->px = 0.0f;
+		out->py = 0.0f;
+		out->pz = 1.0f;
+		out->scr_h = 0.0f;
+		out->ofx = 0.0f;
+		out->ofx = 0.0f;
+		return 0;
 	}
 
 	// index hint allows us to start from specific index
@@ -337,19 +337,19 @@ bool PGXP_GetCacheData(PGXPVData& out, uint lookup, ushort indexhint)
 	{
 		if (g_pgxpCache[i].lookup == lookup)
 		{
-			out = g_pgxpCache[i];
-			return true;
+			*out = g_pgxpCache[i];
+			return 1;
 		}
 	}
 
-	out.px = 0.0f;
-	out.py = 0.0f;
-	out.pz = 1.0f;
-	out.scr_h = 0.0f;
-	out.ofx = 0.0f;
-	out.ofx = 0.0f;
+	out->px = 0.0f;
+	out->py = 0.0f;
+	out->pz = 1.0f;
+	out->scr_h = 0.0f;
+	out->ofx = 0.0f;
+	out->ofx = 0.0f;
 
-	return false;
+	return 0;
 }
 
 #endif // USE_PGXP
@@ -401,7 +401,7 @@ int GTE_RotTransPers(int idx, int lm)
 	// do not perform perspective multiplication so it stays in object space
 	// perspective is performed exclusively in shader
 	PGXPVData vdata;
-	vdata.lookup = PGXP_LOOKUP_VALUE(temp.x, temp.y);		// hash short values
+	vdata.lookup = PGXP_LOOKUP_VALUE(temp.x.sh, temp.y.sh);		// hash short values
 
 	// FIXME: actually we scaling here entire geometry, is that correct?
 	vdata.px = fMAC1 * one_by_v * g_pgxpZScale + g_pgxpZOffset;
