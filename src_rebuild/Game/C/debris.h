@@ -1,6 +1,15 @@
 #ifndef DEBRIS_H
 #define DEBRIS_H
 
+struct SMASHABLE_OBJECT
+{
+	int modelIdx;
+	char* name;
+	int sound;
+	int volume;
+	int pitch;
+};
+
 #define SMOKE_BLACK		1
 #define SMOKE_WHITE		2
 #define SMOKE_BROWN		3
@@ -39,6 +48,8 @@ extern int NoRainIndoors;
 extern int main_cop_light_pos;
 extern int groundDebrisIndex;
 extern CELL_OBJECT ground_debris[16];
+
+extern SMASHABLE_OBJECT smashable[];
 
 extern void InitDebrisNames(); // 0x000337AC
 extern void InitDebris(); // 0x00033B9C

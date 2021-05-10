@@ -24,6 +24,98 @@
 
 #include "ASM/rndrasm.h"
 
+struct DAMAGED_LAMP
+{
+	int index;
+	char damage;
+};
+
+struct DAMAGED_OBJECT
+{
+	CELL_OBJECT cop;
+	char active;
+	char damage;
+	int rot_speed;
+	SVECTOR velocity;
+	int vx;
+};
+
+struct SMOKE
+{
+	UnpaddedHackVector position;
+	UnpaddedCharVector drift;
+	UnpaddedCharVector drift_change;
+	UnpaddedHackVector final_tail_pos;
+	u_char step;
+	u_char pos;
+	short start_w;
+	short final_w;
+	char life;
+	char halflife;
+	u_short flags;
+	u_char num;
+	u_char t_step;
+	short transparency;
+};
+
+struct DEBRIS
+{
+	VECTOR position;
+	SVECTOR direction;
+	u_short life;
+	u_short flags;
+	u_short num;
+	u_short pos;
+	RGB rgb;
+	char step;
+	char type;
+};
+
+struct LEAF
+{
+	VECTOR position;
+	SVECTOR direction;
+	u_short life;
+	u_short flags;
+	u_short num;
+	u_short pos;
+	RGB rgb;
+	char step;
+	char type;
+	short sin_index1;
+	short sin_index2;
+	char sin_addition1;
+	char sin_addition2;
+};
+
+struct TRI_POINT
+{
+	BVECTOR v0;
+	BVECTOR v1;
+	BVECTOR v2;
+};
+
+struct TRI_POINT_LONG
+{
+	VECTOR_NOPAD v0;
+	VECTOR_NOPAD v1;
+	VECTOR_NOPAD v2;
+};
+
+struct RAIN_TYPE
+{
+	VECTOR_NOPAD position;
+	SVECTOR oldposition;
+};
+
+struct LAMP_STREAK
+{
+	SXYPAIR light_trails[4];
+	int id;
+	short clock;
+	char set;
+};
+
 TEXTURE_DETAILS digit_texture;
 
 TRI_POINT debris_rot1[32]; // offset 0xC0A60

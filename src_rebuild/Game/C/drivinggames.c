@@ -19,6 +19,21 @@
 
 #include "ASM/rndrasm.h"
 
+struct TRAILBLAZER_DATA
+{
+	int x, z;
+	short y, rot;
+};
+
+struct SMASHED_CONE
+{
+	char cone;
+	u_char active : 7;
+	u_char side : 1;
+	short rot_speed;
+	VECTOR velocity;
+};
+
 MODEL* gTrailblazerConeModel; 
 SMASHED_CONE smashed_cones[MAX_SMASHED_CONES];
 
