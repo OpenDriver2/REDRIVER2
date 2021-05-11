@@ -1328,7 +1328,28 @@ void GR_DestroyTexture(TextureID texture)
 
 void GR_Clear(int x, int y, int w, int h, unsigned char r, unsigned char g, unsigned char b)
 {
-	// TODO clear rect if it's necessary
+	vram_need_update = 1;
+	framebuffer_need_update = 1;
+
+	u_short* dst = vram + x + y * VRAM_WIDTH;
+
+	if (x+w > VRAM_WIDTH)
+		w = VRAM_WIDTH - x;
+
+	if (y+h > VRAM_HEIGHT)
+		h = VRAM_HEIGHT-y;
+
+	// clear VRAM region with given color
+	for (int i = 0; i < h; i++) 
+	{
+		u_short* tmp = dst;
+		
+		for (int j = 0; j < w; j++)
+			*tmp++ = r | (g << 5) | (b << 11);
+
+		dst += VRAM_WIDTH;
+	}
+	
 #if defined(USE_OPENGL)
 	glClearColor(r / 255.0f, g / 255.0f, b / 255.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1561,12 +1582,9 @@ void GR_StoreFrameBuffer(int x, int y, int w, int h)
 {
 #if defined(USE_OPENGL)
 	// set storage size first
-	if (g_PreviousFramebuffer.w != w &&
+	if (g_PreviousFramebuffer.w != w ||
 		g_PreviousFramebuffer.h != h)
 	{
-		//PBO_Destroy(g_glFBPBO);
-		//PBO_Init(g_glFBPBO, GL_RGBA, w, h, 1);
-		
 		glBindTexture(GL_TEXTURE_2D, g_fbTexture);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 		glBindTexture(GL_TEXTURE_2D, 0);
