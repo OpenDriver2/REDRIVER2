@@ -5,7 +5,14 @@
 
 #include <SDL_timer.h>
 
-char scratchData[1024];
+#ifdef DEBUG
+char scratchData[4096 + 8];
+char* _scratchData = scratchData + 4;
+#else
+char scratchData[4096];
+char* _scratchData = scratchData;
+#endif
+
 void(*vsync_callback)(void) = NULL;
 
 int StopCallback(void)
@@ -50,6 +57,12 @@ int VSyncCallback(void(*f)(void))
 
 long SetVideoMode(long mode)
 {
+#ifdef DEBUG
+	// debug marks for overflow cheks
+	*(uint*)&scratchData[0] = 0xdeadb33f;
+	*(uint*)&scratchData[4096 + 4] = 0xdeadb33f;
+#endif
+	
 	return PsyX_Sys_SetVMode(mode);
 }
 
