@@ -163,7 +163,7 @@ int check_regions_present(void)
 	{
 		regions_to_unpack[0].xoffset = 1;
 
-		if (region_x < (cells_across >> 5))
+		if (region_x < regions_across)
 		{
 			leftright_unpack = 2;
 			num_regions_to_unpack = 1;
@@ -222,7 +222,7 @@ int check_regions_present(void)
 		x = regions_to_unpack[retval].xoffset;
 		z = regions_to_unpack[retval].zoffset;
 
-		region_to_unpack = current_region + x + z * (cells_across >> 5);
+		region_to_unpack = current_region + x + z * regions_across;
 
 		if (loading_region[(region_x + x & 1U) + (region_z + z & 1U) * 2] != -1 &&
 			spoolinfo_offsets[region_to_unpack] != 0xffff &&
