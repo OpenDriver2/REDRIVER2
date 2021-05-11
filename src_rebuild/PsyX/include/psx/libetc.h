@@ -33,16 +33,15 @@ extern int PadIdentifier;
 
 #define _PAD(x,y) ((y)<<((x)<<4))
 
-#define getScratchAddr(offset)  ((u_long *)(scratchData+(offset)*4))
+#define getScratchAddr(offset)  ((u_long *)(_scratchData+(offset)*4))
 
 #define MODE_NTSC 0
-#define MODE_PAL 1 
+#define MODE_PAL 1
 
 #if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
 extern "C" {
 #endif
-
-extern char scratchData[1024];
+extern char* _scratchData;
 
 extern int CheckCallback(void);
 extern void PadInit(int mode);
