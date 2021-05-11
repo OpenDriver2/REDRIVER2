@@ -41,6 +41,7 @@ int DrawSync(int mode)
 {
 	// Update VRAM seems needed to be here
 	GR_UpdateVRAM();
+	GR_ReadFramebufferDataToVRAM();
 
 	if (g_splitIndex > 0) // don't do flips if nothing to draw.
 	{
@@ -64,8 +65,7 @@ int LoadImagePSX(RECT16* rect, u_long* p)
 
 int LoadImage(RECT16* rect, u_long* p)
 {
-	LoadImagePSX(rect, p);
-
+	LoadImagePSX(rect, p);	
 	return 0;
 }
 
@@ -73,7 +73,9 @@ int LoadImage2(RECT16* rect, u_long* p)
 {
 	LoadImagePSX(rect, p);
 
-	// TODO: should I simulate immediate mode and wait for vsync?
+	// simulate immediate mode
+	GR_UpdateVRAM();
+	GR_ReadFramebufferDataToVRAM();
 	
 	return 0;
 }
