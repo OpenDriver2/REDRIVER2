@@ -136,7 +136,6 @@ void PsyX_Pad_CloseController(int slot)
 // Called from LIBPAD
 void PsyX_Pad_InitPad(int slot, u_char* padData)
 {
-	LPPADRAW pad;
 	PsyXController* controller = &g_controllers[slot];
 
 	controller->padData = padData;
@@ -144,8 +143,14 @@ void PsyX_Pad_InitPad(int slot, u_char* padData)
 
 	if (padData)
 	{
-		pad = (LPPADRAW)padData;
-		pad->id = slot == 0 ? 0x41 : 0xFF;	// since keyboard is a main controller - it's always on
+		LPPADRAW pad = (LPPADRAW)padData;
+		
+		bool wasConnected = (pad->id == 0x41 || pad->id == 0x73);
+
+		if(!wasConnected)
+			pad->id = slot == 0 ? 0x41 : 0xFF;	// since keyboard is a main controller - it's always on
+
+		// only reset buttons
 		pad->buttons[0] = 0xFF;
 		pad->buttons[1] = 0xFF;
 		pad->analog[0] = 128;
