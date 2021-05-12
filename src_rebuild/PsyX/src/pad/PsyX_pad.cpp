@@ -113,6 +113,8 @@ void PsyX_Pad_OpenController(Sint32 deviceId, int slot)
 		else // try open using device ID
 			controller->haptic = SDL_HapticOpen(controller->deviceId);
 
+		controller->hapticEffect = -1;
+	
 		if (!controller->haptic)
 		{
 			eprintwarn("No haptic for '%s'\n", SDL_GameControllerNameForIndex(deviceId));
@@ -125,12 +127,14 @@ void PsyX_Pad_CloseController(int slot)
 {
 	PsyXController* controller = &g_controllers[slot];
 
+	SDL_HapticDestroyEffect(controller->haptic, controller->hapticEffect);
 	SDL_HapticClose(controller->haptic);
 	SDL_GameControllerClose(controller->gc);
 
 	//controller->deviceId = -1;
 	controller->gc = NULL;
 	controller->haptic = NULL;
+	controller->hapticEffect = -1;
 }
 
 // Called from LIBPAD
