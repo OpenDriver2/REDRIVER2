@@ -7,6 +7,7 @@
 
 #include "gpu/PsyX_GPU.h"
 
+#include "platform.h"
 #include "util/crash_handler.h"
 
 #include "psx/libetc.h"
@@ -15,7 +16,7 @@
 #include "psx/libspu.h"
 
 #include <assert.h>
-#include <ctype.h>
+#include <string.h>
 
 #define FIXED_TIME_STEP_NTSC		(1.0/60.0)		// 60 FPS clock
 #define FIXED_TIME_STEP_PAL			(1.0/50.0)		// 50 FPS clock
@@ -25,6 +26,10 @@
 
 #include "PsyX/PsyX_render.h"
 
+#ifdef _WIN32
+#include <pla.h>
+#endif // _WIN32
+
 #ifdef __EMSCRIPTEN__
 int strcasecmp(const char* _l, const char* _r)
 {
@@ -32,7 +37,7 @@ int strcasecmp(const char* _l, const char* _r)
 	for (; *l && *r && (*l == *r || tolower(*l) == tolower(*r)); l++, r++);
 	return tolower(*l) - tolower(*r);
 }
-#elif !defined(WIN32)
+#elif !defined(_WIN32)
 #include <strings.h>
 #endif
 
@@ -574,8 +579,17 @@ void PsyX_Initialise(char* appName, int width, int height, int fullscreen)
 
 	g_appNameStr = appName;
 
+	InstallExceptionHandler();
+
 	PsyX_Log_Initialise();
 	PsyX_GetWindowName(windowNameStr);
+
+	int test1 = 110;
+	int test2 = 10;
+	test1 += 500;
+	test2 -= 10;
+
+	eprintf("TEST MESSAGE %d\n", test1 / test2);
 
 #if defined(_WIN32) && defined(_DEBUG)
 	if (AllocConsole())
@@ -966,4 +980,6 @@ void PsyX_Shutdown()
 	SDL_Quit();
 
 	PsyX_Log_Finalise();
+
+	UnInstallExceptionHandler();
 }
