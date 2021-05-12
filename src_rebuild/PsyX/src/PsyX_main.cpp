@@ -584,13 +584,6 @@ void PsyX_Initialise(char* appName, int width, int height, int fullscreen)
 	PsyX_Log_Initialise();
 	PsyX_GetWindowName(windowNameStr);
 
-	int test1 = 110;
-	int test2 = 10;
-	test1 += 500;
-	test2 -= 10;
-
-	eprintf("TEST MESSAGE %d\n", test1 / test2);
-
 #if defined(_WIN32) && defined(_DEBUG)
 	if (AllocConsole())
 	{
