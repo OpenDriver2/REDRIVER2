@@ -1347,8 +1347,6 @@ void StepGame(void)
 	if (gTimeOfDay == 3)
 		PreLampStreak();
 
-	UpdatePadData();
-
 	if ((padd & 0x2000U) && (padd & 0x8000U))
 		padd &= ~0xA000;
 
@@ -1658,6 +1656,8 @@ void State_GameLoop(void* param)
 	if (!FilterFrameTime())
 		return;
 
+	UpdatePadData();
+	
 	CheckForPause();
 
 	// moved from StepGame
@@ -2365,17 +2365,15 @@ void RenderGame2(int view)
 		PrintString(G_LTXT(GTXT_DEMO), 32, 15);
 	}
 
-	i = 0;
-	do {
+	for (i = 0; i < 2; i++)
+	{
 		if (player[i].playerCarId >= 0 &&
 			CarHasSiren(car_data[player[i].playerCarId].ap.model) != 0 &&
 			player[i].horn.on != 0)
 		{
 			AddCopCarLight(&car_data[player[i].playerCarId]);
 		}
-
-		i++;
-	} while (i < 2);
+	}
 
 	if (gLoadedOverlay)
 		DisplayOverlays();
@@ -2457,10 +2455,7 @@ void RenderGame2(int view)
 // [D] [T]
 void RenderGame(void)
 {
-	UpdatePadData();
-
 	DrawGame(); // [A] was inline
-
 	FadeGameScreen(0);
 }
 
