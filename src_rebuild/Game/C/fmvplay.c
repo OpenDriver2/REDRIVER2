@@ -9,7 +9,7 @@
 
 
 // FMV
-int gSubtitles = 0;
+int gSubtitles = 1;
 int gNoFMV = 0;
 
 // [D] [T]

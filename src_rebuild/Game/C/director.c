@@ -20,12 +20,10 @@
 
 struct REPLAY_ICON
 {
-	short x;
-	short y;
+	short x, y;
 	TEXTURE_DETAILS* texture;
 	char* TextPtr;
-	short tx;
-	short ty;
+	short tx, ty;
 };
 
 TEXTURE_DETAILS delcam; // address 0xC0EE0
@@ -2319,10 +2317,13 @@ void SetCameraReturnedFromCutscene(int CameraCnt)
 	int count;
 
 	count = 0;
-	next = PlaybackCamera;
+	next = &PlaybackCamera[0];
 
-	while (NextChange = next, count < MAX_REPLAY_CAMERAS && (NextChange = PlaybackCamera + count, CameraCnt < NextChange->FrameCnt ||
-		NextChange->next != 254 && (next = PlaybackCamera + NextChange->next, next->FrameCnt <= CameraCnt)))
+	// how the fuck I'm supposed to untangle this logic?
+	while (NextChange = next, 
+		count < MAX_REPLAY_CAMERAS && 
+		(NextChange = &PlaybackCamera[count], CameraCnt < NextChange->FrameCnt || NextChange->next != 254 && 
+		(next = &PlaybackCamera[NextChange->next], next->FrameCnt <= CameraCnt)))
 	{
 		count++;
 	}

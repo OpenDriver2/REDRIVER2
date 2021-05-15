@@ -241,7 +241,7 @@ void ExplosionCollisionCheck(CAR_DATA *cp, EXOBJECT *pE)
 
 		if (pE->type <= LITTLE_BANG)
 		{
-			cd[0].length[1] = minBoxSize + ((pE->time / pE->speed) * littleBoxRange) / (0x1000 / pE->speed);
+			cd[0].length[1] = minBoxSize + ((pE->time / pE->speed) * littleBoxRange) / (4096 / pE->speed);
 		}
 		else if (pE->type == HEY_MOMMA) // biggest bang that might kill Tanner
 		{

@@ -89,6 +89,7 @@ enum GameStrId
 	GTXT_Invincibility,
 	GTXT_Immunity,
 	GTXT_BonusGallery,
+	GTXT_MiniCars,
 
 	// director strings
 	GTXT_Pause,
