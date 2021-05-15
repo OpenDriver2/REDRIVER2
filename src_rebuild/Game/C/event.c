@@ -1488,17 +1488,7 @@ void SetCamera(EVENT* ev)
 	{
 		camera_position = eventCamera.position;
 
-		matrix.m[0][0] = ONE;
-		matrix.m[1][0] = 0;
-		matrix.m[2][0] = 0;
-
-		matrix.m[0][1] = 0;
-		matrix.m[1][1] = ONE;
-		matrix.m[2][1] = 0;
-
-		matrix.m[0][2] = 0;
-		matrix.m[1][2] = 0;
-		matrix.m[2][2] = ONE;
+		InitMatrix(matrix);
 
 		if (axis == 0x10)
 		{
@@ -2680,15 +2670,7 @@ void DrawRotor(VECTOR pos, MATRIX* matrix)
 		{0,0,0},
 	};
 
-	localMat.m[0][0] = ONE;
-	localMat.m[1][0] = 0;
-	localMat.m[2][0] = 0;
-	localMat.m[0][1] = 0;
-	localMat.m[1][1] = ONE;
-	localMat.m[2][1] = 0;
-	localMat.m[0][2] = 0;
-	localMat.m[1][2] = 0;
-	localMat.m[2][2] = ONE;
+	InitMatrix(localMat);
 
 	pos.vx -= camera_position.vx;
 	pos.vy -= camera_position.vy;

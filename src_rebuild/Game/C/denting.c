@@ -342,17 +342,7 @@ void MoveHubcap()
 	MATRIX Orientation;
 	CVECTOR col = {72,72,72};
 
-	Orientation.m[0][0] = ONE;
-	Orientation.m[0][1] = 0;
-	Orientation.m[0][2] = 0;
-
-	Orientation.m[1][0] = 0;
-	Orientation.m[1][1] = ONE;
-	Orientation.m[1][2] = 0;
-
-	Orientation.m[2][0] = 0;
-	Orientation.m[2][1] = 0;
-	Orientation.m[2][2] = ONE;
+	InitMatrix(Orientation);
 
 	if (pauseflag == 0)
 	{

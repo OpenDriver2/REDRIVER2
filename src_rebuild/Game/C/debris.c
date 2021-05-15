@@ -1064,17 +1064,7 @@ void DrawSmashable_sprites(void)
 		{
 			model = modelpointers[dam->cop.type];
 
-			object_matrix.m[0][0] = ONE;
-			object_matrix.m[0][1] = 0;
-			object_matrix.m[0][2] = 0;
-
-			object_matrix.m[1][0] = 0;
-			object_matrix.m[1][1] = ONE;
-			object_matrix.m[1][2] = 0;
-
-			object_matrix.m[2][0] = 0;
-			object_matrix.m[2][1] = 0;
-			object_matrix.m[2][2] = ONE;
+			InitMatrix(object_matrix);
 
 			if ((model->shape_flags & SHAPE_FLAG_SPRITE) == 0)
 				RotMatrixY(dam->rot_speed * dam->damage * 3 & 0xfff, &object_matrix);
