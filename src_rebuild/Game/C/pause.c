@@ -1672,9 +1672,7 @@ int UpdatePauseMenu(PAUSEMODE mode)
 
 	if (mode == PAUSEMODE_PADERROR)
 		mode = PAUSEMODE_PAUSE;
-
-	UpdatePadData();
-
+	
 	if (passed_mode == PAUSEMODE_PADERROR)
 	{
 		if (pad_connected == 1)
