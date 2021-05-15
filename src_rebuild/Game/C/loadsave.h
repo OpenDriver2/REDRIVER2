@@ -3,14 +3,18 @@
 
 extern char gCurrentReplayFilename[64];
 
-extern void LoadCurrentProfile();
+extern void LoadCurrentProfile(int init);
 extern void SaveCurrentProfile();
 
 extern int LoadCurrentGame();
 extern void SaveCurrentGame();
 
+#ifndef PSX
+
 extern int LoadReplayFromFile(char* fileName);
 extern int SaveReplayToFile(char* filename);
+
+#endif // PSX
 
 //--------
 

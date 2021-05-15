@@ -513,12 +513,10 @@ void SetVariable(int var)
 			}
 			else
 			{
-#ifndef PSX
 				// [A] load configuration
-				LoadCurrentProfile();
-#endif
+				LoadCurrentProfile(0);
 
-				SetState(STATE_INITFRONTEND);
+				//SetState(STATE_INITFRONTEND);
 				SetMasterVolume(gMasterVolume);
 				SetXMVolume(gMusicVolume);
 			}

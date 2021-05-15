@@ -15,6 +15,7 @@
 
 #ifndef PSX
 #include <stdlib.h>		// getenv
+#endif // PSX
 
 // [A]
 void ShowSavingWaitMessage(char *message, int height)
@@ -53,6 +54,7 @@ void ShowSavingWaitMessage(char *message, int height)
 #endif // PSX
 }
 
+#ifndef PSX
 void GetGameProfilePath(char* str)
 {
 	char* homepath;
@@ -72,18 +74,14 @@ void GetGameProfilePath(char* str)
 		str[0] = 0;
 	}
 }
+#endif // PSX
 
 // [A] loads current game config
-void LoadCurrentProfile()
+void LoadCurrentProfile(int init)
 {
-	char filePath[2048];
-	int fileSize;
 	int error;
 
-	GetGameProfilePath(filePath);
-
-	strcat(filePath, "/config.dat");
-
+	if(init)
 	{
 		RECT16 rect;
 
@@ -100,7 +98,7 @@ void LoadCurrentProfile()
 
 	SetTextColour(128, 128, 64);
 	ShowSavingWaitMessage(G_LTXT(GTXT_LoadingConfiguration), 0);
-
+	/*
 	{
 		RECT16 rect;
 		rect.x = 0;
@@ -111,9 +109,17 @@ void LoadCurrentProfile()
 		ClearImage(&rect, 0, 0, 0);
 		DrawSync(0);
 	}
-
+	*/
 	error = 1;
 
+#ifndef PSX
+
+	char filePath[2048];
+	int fileSize;
+	
+	GetGameProfilePath(filePath);
+	strcat(filePath, "/config.dat");
+	
 	// load config
 	FILE* fp = fopen(filePath, "rb");
 	if (fp)
@@ -137,6 +143,9 @@ void LoadCurrentProfile()
 		ShowSavingWaitMessage(G_LTXT(GTXT_NoSavedData), 0);
 		return;
 	}
+#else
+	// TODO: PSX memory card code
+#endif
 
 	if (error)
 	{
@@ -154,6 +163,7 @@ void LoadCurrentProfile()
 // [A] saves config to file
 void SaveCurrentProfile()
 {
+#ifndef PSX
 	int dataSize;
 	char filePath[2048];
 	int error;
@@ -190,11 +200,15 @@ void SaveCurrentProfile()
 	{
 		ShowSavingWaitMessage(G_LTXT(GTXT_OK), 0);
 	}
+#else
+	// TODO: PSX memory card code
+#endif
 }
 
 // [A] loads current game progress
 int LoadCurrentGame()
 {
+#ifndef PSX
 	char filePath[2048];
 	int fileSize;
 
@@ -223,6 +237,9 @@ int LoadCurrentGame()
 			return 1;
 		}
 	}
+#else
+	// TODO: PSX memory card code
+#endif
 
 	return 0;
 }
@@ -230,6 +247,7 @@ int LoadCurrentGame()
 // [A] saves current game progress
 void SaveCurrentGame()
 {
+#ifndef PSX
 	int dataSize = 0;
 	char filePath[2048];
 
@@ -251,7 +269,12 @@ void SaveCurrentGame()
 		fwrite((char*)_other_buffer, 1, dataSize, fp);
 		fclose(fp);
 	}
+#else
+	// TODO: PSX memory card code
+#endif
 }
+
+#ifndef PSX
 
 char gCurrentReplayFilename[64] = { 0 };
 

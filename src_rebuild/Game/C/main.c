@@ -1989,10 +1989,10 @@ int redriver2_main(int argc, char** argv)
 
 	// by default go to frontend
 	SetState(STATE_INITFRONTEND, (void*)2);
+
+	LoadCurrentProfile(1);
 	
-#ifndef PSX
-	LoadCurrentProfile();
-	
+#ifndef PSX	
 	int commandLinePropsShown;
 	commandLinePropsShown = 0;
 
