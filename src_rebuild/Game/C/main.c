@@ -2313,20 +2313,6 @@ void RenderGame2(int view)
 
 	FrAng = ratan2(160, float(scr_z) * aspectVar * 1.35f);
 
-#if 0 // old code; now relying on emulator hacks
-	aspect.m[0][0] = 5500 * aspectVar;
-	aspect.m[0][1] = 0;
-	aspect.m[0][2] = 0;
-
-	aspect.m[1][0] = 0;
-	aspect.m[1][1] = 4710;
-	aspect.m[1][2] = 0;
-
-	aspect.m[2][0] = 0;
-	aspect.m[2][1] = 0;
-	aspect.m[2][2] = 4096;
-#endif
-
 	extern void DoFreeCamera();
 	DoFreeCamera();
 #else
