@@ -85,6 +85,17 @@ extern short rcossin_tbl[8192];
 	(vecLeft)->vz *= (vecRight)->vz; \
 }
 
+#define	InitMatrix( __m )	\
+		( __m ).m[ 0 ][ 0 ] = ONE,	\
+		( __m ).m[ 1 ][ 0 ] = 0,	\
+		( __m ).m[ 2 ][ 0 ] = 0,	\
+		( __m ).m[ 0 ][ 1 ] = 0,	\
+		( __m ).m[ 1 ][ 1 ] = ONE,	\
+		( __m ).m[ 2 ][ 1 ] = 0,	\
+		( __m ).m[ 0 ][ 2 ] = 0,	\
+		( __m ).m[ 1 ][ 2 ] = 0,	\
+		( __m ).m[ 2 ][ 2 ] = ONE
+
 #define numberOf(sexToys)					(sizeof(sexToys) / sizeof(sexToys[0]))
 
 #ifndef MIN

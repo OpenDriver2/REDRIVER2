@@ -6,17 +6,7 @@
 // [D] [T]
 void Calc_Object_MatrixYZX(MATRIX *mat, SVECTOR *angles)
 {
-	mat->m[0][0] = ONE;
-	mat->m[0][1] = 0;
-	mat->m[0][2] = 0;
-
-	mat->m[1][0] = 0;
-	mat->m[1][1] = ONE;
-	mat->m[1][2] = 0;
-
-	mat->m[2][0] = 0;
-	mat->m[2][1] = 0;
-	mat->m[2][2] = ONE;
+	InitMatrix(*mat);
 
 	RotMatrixX(angles->vx, mat);
 	RotMatrixZ(angles->vz, mat);

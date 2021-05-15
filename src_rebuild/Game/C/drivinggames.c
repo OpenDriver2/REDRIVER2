@@ -227,17 +227,8 @@ void DrawCone(VECTOR *position, int cone)
 
 	if (PositionVisible(position) == 0 || FrustrumCheck(position, gTrailblazerConeModel->bounding_sphere) == -1)
 		return;
-
-	matrix.m[0][0] = ONE;
-	matrix.m[1][1] = ONE;
-	matrix.m[2][2] = ONE;
-	matrix.m[1][0] = 0;
-	matrix.m[2][0] = 0;
-	matrix.m[0][1] = 0;
-	matrix.m[2][1] = 0;
-	matrix.m[0][2] = 0;
-	matrix.m[1][2] = 0;
-
+	
+	InitMatrix(matrix);
 	_RotMatrixY(&matrix, gTrailblazerData[cone].rot);
 
 	pos.vx = position->vx - camera_position.vx;
@@ -256,15 +247,7 @@ void DrawSmashedCone(SMASHED_CONE *sc, VECTOR *wpos)
 	MATRIX object_matrix;
 	VECTOR pos;
 
-	object_matrix.m[1][0] = 0;
-	object_matrix.m[2][0] = 0;
-	object_matrix.m[0][1] = 0;
-	object_matrix.m[2][1] = 0;
-	object_matrix.m[0][2] = 0;
-	object_matrix.m[1][2] = 0;
-	object_matrix.m[0][0] = ONE;
-	object_matrix.m[1][1] = ONE;
-	object_matrix.m[2][2] = ONE;
+	InitMatrix(object_matrix);
 
 	RotMatrixY(sc->rot_speed * sc->active * 3 & 0xfff, &object_matrix);
 	RotMatrixZ(sc->rot_speed * sc->active & 0xfff, &object_matrix);

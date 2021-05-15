@@ -461,10 +461,7 @@ void CalcObjectRotationMatrices(void)
 		// simpler and faster method
 		m = (MATRIX*)&matrixtable[i];
 
-		m->m[0][0] = ONE; m->m[0][1] = 0;   m->m[0][2] = 0;
-		m->m[1][0] = 0;   m->m[1][1] = ONE; m->m[1][2] = 0;
-		m->m[2][0] = 0;   m->m[2][1] = 0;   m->m[2][2] = ONE;
-
+		InitMatrix(*m);
 		RotMatrixY(angle, m);
 
 		angle += 64;

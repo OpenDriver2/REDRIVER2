@@ -1084,9 +1084,11 @@ void DrawOverheadMap(void)
 	CAR_DATA *cp;
 	DR_AREA *drarea;
 	int intens;
+
 	SVECTOR MapMesh[5][5];
 	VECTOR MapMeshO[5][5];
 	MAPTEX MapTex[4];
+	
 	SVECTOR direction;
 	RECT16 clipped_size;
 	VECTOR vec;
@@ -1295,7 +1297,6 @@ void DrawOverheadMap(void)
 	// make grid coordinates
 	for (i = 0; i < 5; i++)
 	{
-
 		MapMesh[0][i].vx = -44;
 		MapMesh[i][0].vz = -44;
 
@@ -1331,15 +1332,15 @@ void DrawOverheadMap(void)
 	direction.vz = 0;
 	direction.vy = player[0].dir & 0xfff;
 
-	RotMatrixXYZ(&map_matrix, &direction);
-	MulMatrix0(&identity, &map_matrix, &map_matrix);
+	InitMatrix(map_matrix);
+	_RotMatrixY(&map_matrix, player[0].dir & 0xfff);
 
 	gte_SetRotMatrix(&map_matrix);
 	gte_SetTransVector(&translate);
 
 	MeshWidth = x_mod ? 4 : 3;
 	MeshHeight = y_mod ? 4 : 3;
-	
+
 	// transform the map mesh
 	for (i = 0; i <= MeshWidth; i++)
 	{
@@ -1379,7 +1380,7 @@ void DrawOverheadMap(void)
 
 			spt->clut = MapClut;
 			spt->tpage = MapTPage;
-
+			
 			spt->x0 = MapMeshO[j][i].vx;
 			spt->y0 = MapMeshO[j][i].vz;
 
@@ -1462,19 +1463,15 @@ void DrawOverheadMap(void)
 void SetFullscreenMapMatrix(void)
 {
 	VECTOR translate = { 160, 0, 128 };
-	SVECTOR direction;
-
-	direction.vx = 0;
+	int direction;
 
 	if (gUseRotatedMap == 0)
-		direction.vy = 0;
+		direction = 0;
 	else
-		direction.vy = player[0].dir & 0xfff;
+		direction = player[0].dir & 0xfff;
 
-	direction.vz = 0;
-
-	RotMatrixXYZ(&map_matrix, &direction);		// Why, Reflections? Why? You could have used RotMatrixY
-	MulMatrix0(&identity, &map_matrix, &map_matrix);
+	InitMatrix(map_matrix);
+	_RotMatrixY(&map_matrix, direction);
 
 	gte_SetRotMatrix(&map_matrix);
 	gte_SetTransVector(&translate);
