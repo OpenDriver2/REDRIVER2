@@ -123,6 +123,7 @@ void FadeGameScreen(int flag)
 		DrawPrim(&poly);
 
 #ifndef PSX
+		DrawSync(0);
 		PsyX_EndScene();
 #endif
 	}
@@ -343,6 +344,8 @@ void CloseShutters(int speed, int width, int height)
 
 		DrawPrim(&poly[0]);
 		DrawPrim(&poly[1]);
+
+		DrawSync(0);	// [A] added to avoid rendering bugs
 
 #ifndef PSX
 		VSync(0);
