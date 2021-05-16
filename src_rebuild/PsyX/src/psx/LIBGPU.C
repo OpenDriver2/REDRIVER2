@@ -43,10 +43,10 @@ int DrawSync(int mode)
 	GR_UpdateVRAM();
 	GR_ReadFramebufferDataToVRAM();
 
-	if (g_splitIndex > 0) // don't do flips if nothing to draw.
+	if (g_splitIndex > 0)// && g_GPUDisabledState == 0) // don't do flips if nothing to draw.
 	{
 		DrawAllSplits();
-		PsyX_EndScene();
+		//PsyX_EndScene();
 	}
 
 	if (drawsync_callback != NULL)
@@ -418,10 +418,7 @@ void DrawOTag(u_long* p)
 
 		ParsePrimitivesToSplits(p, 0);
 
-		GR_SetStencilMode(0);
 		DrawAllSplits();
-
-		
 	} while (g_emulatorPaused);
 }
 
@@ -449,10 +446,6 @@ void DrawPrim(void* p)
 		ClearImage(&activeDrawEnv.clip, activeDrawEnv.r0, activeDrawEnv.g0, activeDrawEnv.b0);
 
 	ParsePrimitivesToSplits((u_long*)p, 1);
-
-	// draw with mask 0x16
-	GR_SetStencilMode(1);
-	DrawAllSplits();
 }
 
 void SetSprt16(SPRT_16* p)

@@ -31,6 +31,7 @@ OT_TAG prim_terminator = { -1, 0 }; // P_TAG with zero length
 DISPENV activeDispEnv;
 DRAWENV activeDrawEnv;
 int g_GPUDisabledState = 0;
+int g_DrawPrimMode = 0;
 
 struct GPUDrawSplit
 {
@@ -41,6 +42,8 @@ struct GPUDrawSplit
 
 	TexFormat		texFormat;
 	TextureID		textureId;
+
+	int				drawPrimMode;
 
 	u_short			startVertex;
 	u_short			numVerts;
@@ -675,6 +678,7 @@ void AddSplit(bool semiTrans, TextureID textureId)
 	if (curSplit.blendMode == blendMode &&
 		curSplit.texFormat == texFormat &&
 		curSplit.textureId == textureId &&
+		curSplit.drawPrimMode == g_DrawPrimMode &&
 		curSplit.drawenv.clip.x == activeDrawEnv.clip.x &&
 		curSplit.drawenv.clip.y == activeDrawEnv.clip.y &&
 		curSplit.drawenv.clip.w == activeDrawEnv.clip.w &&
@@ -691,6 +695,7 @@ void AddSplit(bool semiTrans, TextureID textureId)
 	split.blendMode = blendMode;
 	split.texFormat = texFormat;
 	split.textureId = textureId;
+	split.drawPrimMode = g_DrawPrimMode;
 	split.drawenv = activeDrawEnv;
 	split.dispenv = activeDispEnv;
 
@@ -700,6 +705,8 @@ void AddSplit(bool semiTrans, TextureID textureId)
 
 void DrawSplit(const GPUDrawSplit& split)
 {
+	GR_SetStencilMode(split.drawPrimMode);	// draw with mask 0x16
+
 	GR_SetTexture(split.textureId, split.texFormat);
 
 	GR_SetupClipMode(&split.drawenv.clip, split.drawenv.dfe);
@@ -763,6 +770,9 @@ void ParsePrimitivesToSplits(u_long* p, int singlePrimitive)
 {
 	if (!p)
 		return;
+
+	// setup single primitive flag (needed for AddSplits)
+	g_DrawPrimMode = singlePrimitive;
 
 	if (singlePrimitive)
 	{

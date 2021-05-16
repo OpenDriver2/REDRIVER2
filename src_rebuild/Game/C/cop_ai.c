@@ -763,8 +763,7 @@ void ControlCopDetection(void)
 	int dx, dz;
 	CAR_DATA *cp;
 	VECTOR vec;
-	int ccx;
-	int ccz;
+	int ccx, ccz;
 
 	vec.vx = player[0].pos[0];
 	vec.vy = player[0].pos[1];
