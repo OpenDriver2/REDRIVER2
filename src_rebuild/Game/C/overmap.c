@@ -428,8 +428,9 @@ void LoadMapTile(int tpage, int x, int y)
 
 	MapSegment.w = 8;
 	MapSegment.h = 32;
-	MapSegment.y = MapRect.y + MapSegmentPos[tpage].y;
+	
 	MapSegment.x = MapRect.x + MapSegmentPos[tpage].x;
+	MapSegment.y = MapRect.y + MapSegmentPos[tpage].y;
 
 	idx = x + y * tilehnum;
 	temp = x << 5;
@@ -445,10 +446,13 @@ void LoadMapTile(int tpage, int x, int y)
 			MapBuffer[count++] = overlaidmaps[GameLevel].dummy;
 	}
 
+#ifdef PSX
 	DrawSync(0);
 	LoadImage(&MapSegment, (u_long*)MapBuffer);
 	DrawSync(0);
-
+#else
+	LoadImage(&MapSegment, (u_long*)MapBuffer);
+#endif
 }
 
 // [D] [T]
@@ -1483,7 +1487,7 @@ void DrawFullscreenMap(void)
 	char str[64];
 	TILE *polys;
 	TILE_1 *tile1;
-	POLY_FT4 *back;
+	POLY_FT4 *back, *prevback;
 	POLY_FT3 *null;
 	int x, y;
 	int clipped;
@@ -1493,9 +1497,8 @@ void DrawFullscreenMap(void)
 	VECTOR target;
 	VECTOR vec;
 	long flag;
-	int width;
-	int height;
-	int count;
+	int width, height;
+	int ntiles, count;
 
 	// toggle rotated map
 	if (Pads[0].dirnew & 0x20) 
@@ -1510,14 +1513,15 @@ void DrawFullscreenMap(void)
 
 	SetFullscreenMapMatrix();
 
-	polys = (TILE *)current->primptr;
+#ifdef PSX
+	polys = (TILE*)current->primptr;
 
 	setTile(polys);
 
 	polys->r0 = 0;
 	polys->g0 = 0;
 	polys->b0 = 0;
-
+	
 	polys->x0 = 0;
 	polys->y0 = 0;
 	polys->w = 320;
@@ -1525,6 +1529,7 @@ void DrawFullscreenMap(void)
 
 	DrawPrim(polys);
 	DrawSync(0);
+#endif
 
 	width = overlaidmaps[GameLevel].width;
 	height = overlaidmaps[GameLevel].height;
@@ -1637,14 +1642,15 @@ void DrawFullscreenMap(void)
 	width >>= 5;
 	height >>= 5;
 
-	px = MapSegmentPos[0].x * 4;
-	py = MapSegmentPos[0].y;
-
 #ifndef PSX
 	RECT16 emuViewport;
 	PsyX_GetPSXWidescreenMappedViewport(&emuViewport);
+
+	prevback = NULL;
 #endif
 
+	ntiles = 0;
+	
 	for(x = 0; x < width; x++)
 	{
 		for(y = 0; y < height; y++)
@@ -1690,7 +1696,7 @@ void DrawFullscreenMap(void)
 			if(clipped == 4)
 				continue;
 			
-			LoadMapTile(0, x, y);
+			LoadMapTile(ntiles & 15, x, y);
 
 			back = (POLY_FT4 *)current->primptr;
 			setPolyFT4(back);
@@ -1709,6 +1715,9 @@ void DrawFullscreenMap(void)
 			back->x3 = meshO[3].vx;
 			back->y3 = meshO[3].vz;
 
+			px = MapSegmentPos[ntiles & 15].x * 4;
+			py = MapSegmentPos[ntiles & 15].y;
+
 			back->u0 = px;
 			back->v0 = py;
 			
@@ -1721,7 +1730,13 @@ void DrawFullscreenMap(void)
 			back->u3 = px + 31;
 			back->v3 = py + 31;
 
-#ifndef PSX
+			back->clut = MapClut;
+			back->tpage = MapTPage;
+#ifdef PSX
+			DrawPrim(back);
+			DrawSync(0);
+			ntiles++;
+#else
 			// make map fully detailed when filtering is not available
 			if (!g_bilinearFiltering)
 			{
@@ -1730,13 +1745,26 @@ void DrawFullscreenMap(void)
 				back->u3 += 1;
 				back->v3 += 1;
 			}
-#endif
-			
-			back->clut = MapClut;
-			back->tpage = MapTPage;
 
-			DrawPrim(back);
-			DrawSync(0);
+			current->primptr += sizeof(POLY_FT4);
+
+			if (!prevback)
+				prevback = back;
+
+			// draw if map tiles are filled or we reached horizontal end
+			if ((ntiles & 15) == 0 || x == width - 1 || y == height - 1)
+			{
+				// upload map to GPU
+				DrawSync(0);
+
+				// draw all polys
+				while(prevback <= back)
+					DrawPrim(prevback++);
+
+				DrawSync(0);
+			}
+			ntiles++;
+#endif
 		}
 	}
 
