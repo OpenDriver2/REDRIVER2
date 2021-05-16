@@ -314,9 +314,10 @@ void InitCops(void)
 	CarTail.vy = 0;
 	CarTail.vz = 0;
 
-	lastKnownPosition.vx = 0x7fffffff;
-	lastKnownPosition.vy = 0x7fffffff;
-	lastKnownPosition.vz = 0x7fffffff;
+	
+	lastKnownPosition.vx = INT_MAX;
+	lastKnownPosition.vy = INT_MAX;
+	lastKnownPosition.vz = INT_MAX;
 
 	InitCopData(&gCopData);
 
@@ -780,7 +781,7 @@ void ControlCopDetection(void)
 
 	CopsCanSeePlayer = (GameType == GAME_SURVIVAL);
 
-	minDistanceToPlayer = 0xFFFFFFFF;
+	minDistanceToPlayer = UINT_MAX;
 
 	// check roadblock visibility
 	if (numRoadblockCars != 0)
@@ -1039,12 +1040,12 @@ void ControlNumberOfCops(void)
 
 	if (numCopCars <= numWantedCops) 
 	{
-		gCopData.cutOffDistance = 0x7fffffff;
+		gCopData.cutOffDistance = INT_MAX;
 		cop_respawn_timer = 0;
 		return;
 	}
 	
-	gCopData.cutOffDistance = 0x7fffffff;
+	gCopData.cutOffDistance = INT_MAX;
 
 	do {
 		cutOffDistance = 0;

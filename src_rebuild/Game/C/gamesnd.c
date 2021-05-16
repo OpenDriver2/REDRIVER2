@@ -2505,7 +2505,7 @@ void InitLeadHorn(void)
 		case 10:	// Follow up the lead
 		case 18:	// Tail Jericho
 		case 26:	// Steal the ambulance
-			horn_time = 0xFFFFFFFF;
+			horn_time = UINT_MAX;
 			break;
 		default:
 			horn_time = 0;
@@ -2521,7 +2521,7 @@ void LeadHorn(CAR_DATA* cp)
 	int dx,dz;
 
 	// [A] disabled horn in those missions
-	if (horn_time == 0xFFFFFFFF)
+	if (horn_time == UINT_MAX)
 		return;
 
 	// [A] do not horn if too far from camera
