@@ -173,7 +173,7 @@ CAR_DATA* FindClosestCar(int x, int y, int z, int* distToCarSq)
 	int dz; // $v1
 
 	retCar = NULL;
-	retDistSq = 0x7fffffff; // INT_MAX
+	retDistSq = INT_MAX;
 	lcp = car_data;
 
 	do {
@@ -2381,7 +2381,7 @@ int PingInCivCar(int minPingInDist)
 
 	GetNodePos(roadInfo.straight, NULL, roadInfo.curve, civDat.distAlongSegment, newCar, &newCar->ai.c.targetRoute[0].x, &newCar->ai.c.targetRoute[0].z, lane);
 
-	retDistSq = 0x7fffffff; // INT_MAX
+	retDistSq = INT_MAX;
 	pos[0] = newCar->ai.c.targetRoute[0].x;
 	pos[2] = newCar->ai.c.targetRoute[0].z;
 	pos[1] = randomLoc.vy;
