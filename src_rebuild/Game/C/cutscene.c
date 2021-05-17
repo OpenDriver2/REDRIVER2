@@ -1,5 +1,6 @@
 #include "driver2.h"
 #include "cutscene.h"
+
 #include "mission.h"
 #include "cars.h"
 #include "players.h"
@@ -45,6 +46,11 @@ int JustReturnedFromCutscene = 0;
 int CutsceneEventTrigger = 0;
 
 CUTSCENE_BUFFER CutsceneBuffer = { 0 };
+
+// [A]
+CUTSCENE_HEADER CutsceneHeader;
+CUTSCENE_HEADER ChaseHeader;
+int gReChaseAvailable = 0;
 
 static PLAYBACKCAMERA *CutLastChange;
 static PLAYBACKCAMERA *CutNextChange;
@@ -375,23 +381,96 @@ void TriggerInGameCutscene(int cutscene)
 	}
 }
 
+// [A] Function detects user chases and re-chases
+void SelectCutsceneFile(char* filename, int init, int subindex)
+{
+	filename[0] = '\0';
+
+	if (init)
+	{
+		// try load replacement bundle
+#ifndef PSX
+		int userId = -1;
+
+		// [A] REDRIVER2 PC - custom user chases
+		if (gNumUserChases)
+		{
+			userId = rand() % (gNumUserChases + 1);
+
+			// if random decides to have no user chase - get og or replacement one
+			if (userId == gNumUserChases)
+				userId = -1;
+		}
+
+		// try loading user chase
+		if (userId != -1)
+			sprintf(filename, "REPLAYS\\UserChases\\%s\\CUT%d_N.R", (char*)gUserReplayFolderList[userId], gCurrentMissionNumber);
+
+		if (FileExists(filename))
+		{
+			gUserChaseLoaded = userId;
+			gReChaseAvailable = 0;
+		}
+		else
+#endif
+		{
+			sprintf(filename, "REPLAYS\\ReChases\\CUT%d_N.R", gCurrentMissionNumber);
+			gReChaseAvailable = FileExists(filename);
+		}
+	}
+
+	if (subindex >= 2)
+	{
+		if (gReChaseAvailable == 1)
+		{
+			sprintf(filename, "REPLAYS\\ReChases\\CUT%d_N.R", gCurrentMissionNumber);
+		}
+#ifndef PSX
+		else if (gUserChaseLoaded != -1)
+		{
+			sprintf(filename, "REPLAYS\\UserChases\\%s\\CUT%d_N.R", (char*)gUserReplayFolderList[gUserChaseLoaded], gCurrentMissionNumber);
+		}
+#endif
+	}
+	else
+	{
+		if (gCurrentMissionNumber < 21)
+			sprintf(filename, "REPLAYS\\CUT%d.R", gCurrentMissionNumber);
+		else
+			sprintf(filename, "REPLAYS\\A\\CUT%d.R", gCurrentMissionNumber);
+	}
+}
+
 // [D] [T]
 int CalcInGameCutsceneSize(void)
 {
-	CUTSCENE_HEADER header;
+	int i, maxSize;
 	char filename[64];
 
-	if (gCurrentMissionNumber < 21)
-		sprintf(filename, "REPLAYS\\CUT%d.R", gCurrentMissionNumber);
-	else 
-		sprintf(filename, "REPLAYS\\A\\CUT%d.R", gCurrentMissionNumber);
+	if (NewLevel)
+	{
+		// init user/re-chases and load cutscene file header
+		SelectCutsceneFile(filename, 1, 0);
+		LoadfileSeg(filename, (char*)&CutsceneHeader, 0, sizeof(CUTSCENE_HEADER));
 
-	if (FileExists(filename) == 0)
-		return 0;
+		// load re-chase file header
+		SelectCutsceneFile(filename, 0, 2);
+		LoadfileSeg(filename, (char*)&ChaseHeader, 0, sizeof(CUTSCENE_HEADER));
 
-	LoadfileSeg(filename, (char *)&header, 0, sizeof(CUTSCENE_HEADER));
+		maxSize = 0;
+		for (i = 2; i < 15; i++)
+		{
+			if (ChaseHeader.data[i].size > maxSize)
+				maxSize = ChaseHeader.data[i].size;
+		}
 
-	return header.maxsize;
+		maxSize += MAX(CutsceneHeader.data[0].size, CutsceneHeader.data[1].size);
+
+		CutsceneBuffer.reservedSize += maxSize;
+		CutsceneBuffer.buffer = D_MALLOC(CutsceneBuffer.reservedSize);
+	}
+
+	return CutsceneHeader.maxsize;
 }
 
 // [D] [T]
@@ -884,43 +963,8 @@ int LoadCutsceneToBuffer(int subindex)
 	CUTSCENE_HEADER header;
 	char filename[64];
 	
-	filename[0] = '\0';
-
-	// try load replacement bundle
-	if(subindex >= 2)
-	{
-#ifndef PSX
-		int userId = -1;
-
-		// [A] REDRIVER2 PC - custom user chases
-		if (gNumUserChases)
-		{
-			userId = rand() % (gNumUserChases + 1);
-
-			// if random decides to have no user chase - get og or replacement one
-			if (userId == gNumUserChases)
-				userId = -1;
-		}
-
-		// try loading user chase
-		if (userId != -1)
-			sprintf(filename, "REPLAYS\\UserChases\\%s\\CUT%d_N.R", (char*)gUserReplayFolderList[userId], gCurrentMissionNumber);
-
-		if(FileExists(filename))
-			gUserChaseLoaded = userId;
-		else
-#endif
-			sprintf(filename, "REPLAYS\\ReChases\\CUT%d_N.R", gCurrentMissionNumber);
-	}
-
-	if(!FileExists(filename))
-	{
-		if (gCurrentMissionNumber < 21)
-			sprintf(filename, "REPLAYS\\CUT%d.R", gCurrentMissionNumber);
-		else
-			sprintf(filename, "REPLAYS\\A\\CUT%d.R", gCurrentMissionNumber);
-	}
-
+	SelectCutsceneFile(filename, 0, subindex);
+	
 	printInfo("Loading cutscene '%s' (%d)\n", filename, subindex);
 
 	if (FileExists(filename))
@@ -937,24 +981,6 @@ int LoadCutsceneToBuffer(int subindex)
 			{
 				if(CutsceneInReplayBuffer)
 				{
-					// reserve new buffer with malloc
-					if (CutsceneBuffer.reservedSize == 0)
-					{
-						int i, maxSize;
-
-						maxSize = 0;
-						for (i = 2; i < 15; i++)
-						{
-							if (header.data[i].size > maxSize)
-								maxSize = header.data[i].size;
-						}
-
-						maxSize += MAX(header.data[0].size, header.data[1].size);
-
-						CutsceneBuffer.reservedSize = maxSize;
-						CutsceneBuffer.buffer = D_MALLOC(maxSize);
-					}
-
 					CutsceneBuffer.currentPointer = CutsceneBuffer.buffer;
 					CutsceneBuffer.bytesFree = CutsceneBuffer.reservedSize;
 				}
@@ -963,6 +989,7 @@ int LoadCutsceneToBuffer(int subindex)
 					// obtain temp buffer
 					CutsceneBuffer.currentPointer = D_TEMPALLOC(size);
 					CutsceneBuffer.bytesFree = size;
+					CutsceneBuffer.reservedSize = size;
 				}
 			}
 
@@ -1068,16 +1095,8 @@ void FreeCutsceneBuffer(void)
 	}
 
 	CutsceneBuffer.numResident = 0;
-
-	
-	if (NewLevel) // [A] since we use malloctab we need to let it go...
-	{
-		CutsceneBuffer.buffer = NULL;
-		CutsceneBuffer.reservedSize = 0;
-	}
-
-	CutsceneBuffer.currentPointer = NULL;
-	CutsceneBuffer.bytesFree = 0;
+	CutsceneBuffer.currentPointer = CutsceneBuffer.buffer;
+	CutsceneBuffer.bytesFree = CutsceneBuffer.reservedSize;
 }
 
 // [D] [T]
