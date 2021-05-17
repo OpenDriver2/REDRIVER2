@@ -65,10 +65,9 @@ void PlayRender(RENDER_ARGS *args)
 	
 #else
 
-	if (gNoFMV == 1)
-		return;
-	
-	FMV_main(args);
+	if (gNoFMV == 0)
+		FMV_main(args);
+
 #endif
 	ReInitSystem();
 
