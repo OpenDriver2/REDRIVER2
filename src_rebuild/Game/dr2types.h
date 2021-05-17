@@ -1401,7 +1401,7 @@ struct CUTSCENE_BUFFER
 	char(*residentPointers[4]);
 	char* currentPointer;
 	int bytesFree;
-	char buffer[8192];
+	char buffer[32*1024];				// was 8192, but we have some free mem now even for PSX
 };
 
 struct CUTSCENE_INFO
