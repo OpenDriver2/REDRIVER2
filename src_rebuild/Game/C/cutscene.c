@@ -470,6 +470,8 @@ int CalcInGameCutsceneSize(void)
 		CutsceneBuffer.buffer = D_MALLOC(CutsceneBuffer.reservedSize);
 	}
 
+	ClearMem(CutsceneBuffer.buffer, CutsceneBuffer.reservedSize);
+
 	return CutsceneHeader.maxsize;
 }
 

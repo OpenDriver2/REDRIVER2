@@ -225,13 +225,19 @@ int CutRec_StorePingInfo(int cookieCount, int carId)
 	if (CurrentGameMode == GAMEMODE_REPLAY || gInGameChaseActive != 0)
 		return 0;
 
-	if (PingBuffer != NULL && PingBufferPos < MAX_REPLAY_PINGS)
+	if (PingBuffer != NULL && PingBufferPos < MAX_REPLAY_PINGS-1)
 	{
 		packet = &PingBuffer[PingBufferPos++];
 		packet->frame = CameraCnt - frameStart;
 		packet->carId = carId;
 
 		packet->cookieCount = cookieCount;
+
+		// always finalize last ping
+		packet = &PingBuffer[PingBufferPos];
+		packet->frame = 0xffff;
+		packet->carId = -1;
+		packet->cookieCount = -1;
 
 		return 1;
 	}
