@@ -1,6 +1,7 @@
 ## Changelog since Oct 12 2000 (1.0 release build)
 
 ### Gameplay:
+- Added day time selection in Take a Ride
 - Improved cop AI batter logic to better balance difficulty
 - Restored Tanner felony (can be seen in two Vegas missions)
 - Cops no longer can see player if on different heights
@@ -11,6 +12,9 @@
 - Restored Tanner drowning movement in water
 - Fixed Tanner sitting on chairs
 - Easier jump in "Boat Jump"
+- Cop difficulty and cheats now restored after replays
+- Fix "Bank Job" cars blow up after cutscene
+- Added "Mini Cars" cheat switch to main menu
 - Featured Driver Madness community chases by **Olanov, VortexStory, RacingFreak, Snoopi, Fireboyd78** and **SoapyMan**
 
 ### Effects/Visuals:
@@ -24,6 +28,9 @@
 - Restored multiplayer follow camera
 - Restored car engine smoke
 - Leaves are now affected properly by player car and chased car
+- Fixed civ car lights enabling at dusk
+- Proper positioning when hubcaps fall off
+- Remove D1 era hack - now fast wheel in Rio displayed properly :)
 
 ### Film Director:
 - Fix camera invalidation bugs
@@ -32,6 +39,7 @@
 - Improved chase camera, restored height and distance editing
 
 ### Other:
+- PC version user replay file loading from Main menu
 - PC version now automatically saves undercover campaign progress
 - PC version now has command line arguments
 - Memory card overlay removed
