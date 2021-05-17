@@ -466,7 +466,7 @@ int CalcInGameCutsceneSize(void)
 
 		maxSize += MAX(CutsceneHeader.data[0].size, CutsceneHeader.data[1].size);
 
-		CutsceneBuffer.reservedSize += maxSize;
+		CutsceneBuffer.reservedSize = maxSize;
 		CutsceneBuffer.buffer = D_MALLOC(CutsceneBuffer.reservedSize);
 	}
 
