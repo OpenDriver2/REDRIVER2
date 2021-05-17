@@ -58,6 +58,7 @@
 #include "sysclock.h"
 #include "platform.h"
 #include "state.h"
+#include "cutrecorder.h"
 
 int levelstartpos[8][4] = {
 	{ 4785, -1024, -223340, 0},
@@ -669,12 +670,6 @@ void State_GameInit(void* param)
 		}
 	}
 
-	// FIXME: need to change streams properly
-#ifdef CUTSCENE_RECORDER
-	extern void NextChase(int dir);
-	NextChase(0);
-#endif
-
 	if (pathAILoaded)
 		InitCops();
 
@@ -705,10 +700,7 @@ void State_GameInit(void* param)
 
 	if (NoPlayerControl == 0)
 	{
-#ifdef CUTSCENE_RECORDER
-		extern int gCutsceneAsReplay;
-		if (gCutsceneAsReplay == 0)
-#endif
+		if (!_CutRec_IsOn())
 			DeleteAllCameras();
 	}
 	else
@@ -1068,32 +1060,9 @@ void StepSim(void)
 
 				break;
 			case CONTROL_TYPE_CUTSCENE:
-#ifdef CUTSCENE_RECORDER
-				extern int gCutsceneAsReplay;
-				extern int gCutsceneAsReplay_PlayerId;
-
-				if (gCutsceneAsReplay != 0 && NoPlayerControl == 0 && cp->id == gCutsceneAsReplay_PlayerId)
-				{
-					t0 = Pads[0].mapped;	// [A] padid might be wrong
-					t1 = Pads[0].mapanalog[2];
-					t2 = Pads[0].type & 4;
-
-					if (gStopPadReads != 0)
-					{
-						t0 = CAR_PAD_BRAKE;
-
-						if (cp->hd.wheel_speed <= 0x9000)
-							t0 = CAR_PAD_HANDBRAKE;
-
-						t1 = 0;
-						t2 = 1;
-					}
-
-					cjpRecord(-*cp->ai.padid, &t0, &t1, &t2);
-				}
-				else
-#endif
+				if (!_CutRec_RecordPad(cp, &t0, &t1, &t2))
 					cjpPlay(-*cp->ai.padid, &t0, &t1, &t2);
+			
 				ProcessCarPad(cp, t0, t1, t2);
 		}
 
@@ -2145,9 +2114,7 @@ int redriver2_main(int argc, char** argv)
 			gInFrontend = 0;
 			AttractMode = 0;
 
-			extern void LoadCutsceneRecorder(char* filename);
-			
-			LoadCutsceneRecorder(argv[i+1]);
+			InitCutsceneRecorder(argv[i+1]);
 			i++;
 		}
 #endif
@@ -2504,11 +2471,8 @@ void InitGameVariables(void)
 
 	PlayerStartInfo[0] = &ReplayStreams[0].SourceType;
 
-#ifdef CUTSCENE_RECORDER
-	extern int gCutsceneAsReplay;
-	if (gCutsceneAsReplay == 0)
+	if (!_CutRec_InitPlayers())
 	{
-#endif
 		ClearMem((char*)PlayerStartInfo[0], sizeof(STREAM_SOURCE));
 
 		PlayerStartInfo[0]->type = 1;
@@ -2544,21 +2508,7 @@ void InitGameVariables(void)
 
 			numPlayersToCreate = NumPlayers;
 		}
-#ifdef CUTSCENE_RECORDER
 	}
-	else
-	{
-		extern int gCutsceneAsReplay_PlayerId;
-		extern int gCutsceneAsReplay_PlayerChanged;
-
-		for (int i = 0; i < NumReplayStreams; i++)
-		{
-			PlayerStartInfo[i] = &ReplayStreams[i].SourceType;
-		}
-
-		numPlayersToCreate = NumReplayStreams;
-	}
-#endif // CUTSCENE_RECORDER
 
 	InitCivCars();
 }

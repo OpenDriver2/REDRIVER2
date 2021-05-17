@@ -28,6 +28,7 @@
 #include "loadsave.h"
 #include "shadow.h"
 #include "handling.h"
+#include "cutrecorder.h"
 
 #ifndef PSX
 #include <stdint.h>
@@ -297,18 +298,7 @@ void InitialiseMissionDefaults(void)
 	last_flag = -1;
 
 	ClearMem((char *)reservedSlots, sizeof(reservedSlots));
-
-#ifdef CUTSCENE_RECORDER
-	// [A] reserve slots to avoid their use for chases
-	extern int gCutsceneAsReplay;
-	if (gCutsceneAsReplay)
-	{
-		extern int gCutsceneAsReplay_ReserveSlots;
-
-		for (int i = 0; i < gCutsceneAsReplay_ReserveSlots; i++)
-			reservedSlots[i] = 1;
-	}
-#endif // CUTSCENE_RECORDER
+	_CutRec_ReserveSlots();
 	
 	cop_adjust = 0;
 
@@ -484,28 +474,8 @@ void LoadMission(int missionnum)
 	Mission.active = 1;
 	GameLevel = MissionHeader->city;
 
-#ifdef CUTSCENE_RECORDER
-	// load some data from target cutscene mission
-	extern int gCutsceneAsReplay;
-	if(gCutsceneAsReplay)
-	{
-		LoadfileSeg(filename, (char*)&header, gCutsceneAsReplay * 4, 4);
-
-		if (header == 0)
-			return;
-
-		MS_MISSION missionTempHeader;
-
-		LoadfileSeg(filename, (char *)&missionTempHeader, header & 0x7ffff, sizeof(MS_MISSION));
-
-		memcpy((u_char*)MissionHeader->residentModels, (u_char*)missionTempHeader.residentModels, sizeof(missionTempHeader.residentModels));
-		MissionHeader->time = missionTempHeader.time;
-		MissionHeader->weather = missionTempHeader.weather;
-		MissionHeader->cops = missionTempHeader.cops;
-	}
-	
-	if (gCutsceneAsReplay == 0)
-#endif
+	// player start position init
+	if(!_CutRec_InitMission(filename))
 	{
 		PlayerStartInfo[0]->rotation = MissionHeader->playerStartRotation;
 		PlayerStartInfo[0]->position.vx = MissionHeader->playerStartPosition.x;
@@ -635,9 +605,7 @@ void LoadMission(int missionnum)
 		gCopData.immortal = 0;
 	}
 
-#ifdef CUTSCENE_RECORDER
-	if (gCutsceneAsReplay == 0)
-#endif
+	if (!_CutRec_IsOn())
 	{
 		// start on foot?
 		if (MissionHeader->type & 2)
@@ -650,7 +618,6 @@ void LoadMission(int missionnum)
 			PlayerStartInfo[0]->type = 1;
 		}
 	}
-
 
 	// load specific AI for mission
 	if (NewLevel) 
@@ -2646,11 +2613,8 @@ void MRCancelCarRequest(MS_TARGET* target)
 // [D] [T]
 void MRHandleCarRequests(void)
 {
-#ifdef CUTSCENE_RECORDER
-	extern int gCutsceneAsReplay;
-	if (gCutsceneAsReplay != 0)
+	if (_CutRec_IsOn())
 		return;
-#endif
 	
 	if (Mission.CarTarget)
 		MRCreateCar(Mission.CarTarget);

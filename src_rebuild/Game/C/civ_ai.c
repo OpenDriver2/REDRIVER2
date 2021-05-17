@@ -23,6 +23,7 @@
 #include "pedest.h"
 #include "objcoll.h"
 #include "overlay.h"
+#include "cutrecorder.h"
 
 const u_char speedLimits[3] = { 56, 97, 138 };
 
@@ -1965,14 +1966,7 @@ int PingInCivCar(int minPingInDist)
 
 	PingOutCivsOnly = 1;
 
-#ifdef CUTSCENE_RECORDER
-	extern int gCutsceneAsReplay;
-	if (gCutsceneAsReplay != 0)
-	{
-		requestCopCar = 0;
-		allowSpecSpooling = 0;
-	}
-#endif
+	_CutRec_HandleCarRequest();
 	
 	if (requestCopCar == 0 && numParkedCars < maxParkedCars && (gCurrentMissionNumber != 33 || numCivCars != 0))
 	{
@@ -2473,7 +2467,7 @@ int PingInCivCar(int minPingInDist)
 	PingOutCivsOnly = 0;
 
 	// [A] REDRIVER2 always stores pings
-	StorePingInfo(cookieCount, newCar->id);
+	_CutRec_StorePingInfo(cookieCount, newCar->id);
 
 	return newCar->id + 1;
 }
