@@ -76,6 +76,7 @@ typedef struct
 
 static SPUMemory s_SpuMemory;
 SDL_mutex* g_SpuMutex = NULL;
+int g_spuInit = 0;
 
 typedef struct
 {
@@ -105,8 +106,7 @@ LPALGENAUXILIARYEFFECTSLOTS alGenAuxiliaryEffectSlots = NULL;
 LPALDELETEAUXILIARYEFFECTSLOTS alDeleteAuxiliaryEffectSlots = NULL;
 LPALAUXILIARYEFFECTSLOTI alAuxiliaryEffectSloti = NULL;
 
-
-void InitOpenAlEffects()
+void PsyX_SPU_InitOpenAlEffects()
 {
 	g_ALEffectsSupported = 0;
 
@@ -153,7 +153,7 @@ void InitOpenAlEffects()
 	alAuxiliaryEffectSloti(g_ALEffectSlots[g_currEffectSlotIdx], AL_EFFECTSLOT_EFFECT, g_nAlReverbEffect);
 }
 
-int PsyX_InitSound()
+int PsyX_SPU_InitSound()
 {
 	int numDevices, alErr, i;
 	const char* devices;
@@ -241,14 +241,14 @@ int PsyX_InitSound()
 
 	memset(&s_SpuMemory, 0, sizeof(s_SpuMemory));
 
-	InitOpenAlEffects();
+	PsyX_SPU_InitOpenAlEffects();
 
 	g_SpuMutex = SDL_CreateMutex();
 
 	return 1;
 }
 
-void PsyX_ShutdownSound()
+void PsyX_SPU_ShutdownSound()
 {
 	if (!g_ALCcontext)
 		return;
@@ -475,7 +475,7 @@ long SpuIsTransferCompleted(long flag)
 
 void SpuStart()
 {
-	PsyX_InitSound();
+	PsyX_SPU_InitSound();
 }
 
 void _SpuInit(int a0)
@@ -489,6 +489,7 @@ void _SpuInit(int a0)
 	}
 
 	SpuStart();
+	g_spuInit = 1;
 }
 
 void SpuInit(void)
@@ -498,8 +499,8 @@ void SpuInit(void)
 
 void SpuQuit(void)
 {
-	// do nothing!
-	PsyX_ShutdownSound();
+	g_spuInit = 0;
+	PsyX_SPU_ShutdownSound();
 }
 
 void UpdateVoiceSample(SPUVoice* voice)
@@ -590,6 +591,11 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 	ALuint alSource;
 	float pitch, left_gain, right_gain, pan;
 
+	if (!g_spuInit)
+	{
+		return;
+	}
+	
 	SDL_LockMutex(g_SpuMutex);
 
 	for (int i = 0; i < SPU_VOICES; i++)
@@ -674,6 +680,11 @@ void SpuSetKey(long on_off, unsigned long voice_bit)
 {
 	SPUVoice* voice;
 	ALuint alSource;
+
+	if (!g_spuInit)
+	{
+		return;
+	}
 
 	SDL_LockMutex(g_SpuMutex);
 	for (int i = 0; i < SPU_VOICES; i++)
@@ -777,6 +788,11 @@ long SpuSetReverb(long on_off)
 	long old_state = g_enableSPUReverb;
 	g_enableSPUReverb = on_off;
 
+	if (!g_spuInit)
+	{
+		return;
+	}
+
 	// switch if needed
 	if (g_ALEffectsSupported && old_state != g_enableSPUReverb)
 	{
@@ -846,6 +862,11 @@ unsigned long SpuSetReverbVoice(long on_off, unsigned long voice_bit)
 	SPUVoice* voice;
 	ALuint alSource;
 
+	if (!g_spuInit)
+	{
+		return;
+	}
+	
 	if(!g_ALEffectsSupported)
 		return 0;
 

@@ -162,7 +162,7 @@ int intrThreadMain(void* data)
 {
 	Util_InitHPCTimer(&g_vblTimer);
 
-	do
+	while (!g_stopIntrThread)
 	{
 		// step counters
 		{
@@ -185,10 +185,7 @@ int intrThreadMain(void* data)
 			}
 			
 		}
-
-		// TODO:...
-		
-	} while (!g_stopIntrThread);
+	}
 
 	return 0;
 }
@@ -957,22 +954,19 @@ void PsyX_Shutdown()
 
 		int returnValue;
 		SDL_WaitThread(g_intrThread, &returnValue);
-	}
 
-	if (g_intrMutex)
 		SDL_DestroyMutex(g_intrMutex);
-
-	GR_Shutdown();
-	SpuQuit();
-
-	SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER);
+	}
 
 	SDL_DestroyWindow(g_window);
 	g_window = NULL;
 
+	GR_Shutdown();
+	SDL_QuitSubSystem(SDL_INIT_GAMECONTROLLER);
+
 	SDL_Quit();
 
-	PsyX_Log_Finalise();
-
 	UnInstallExceptionHandler();
+
+	PsyX_Log_Finalise();
 }
