@@ -1416,29 +1416,6 @@ void StepGame(void)
 		PrintStringFeature(G_LTXT(GTXT_Fastforward), 100, 0x1e, 0x1000, 0x1000, 0);
 	}
 
-	// check for pause mode
-	if (AttractMode == 0 && pauseflag == 0)
-	{
-		if (FrameCnt > 2)
-		{
-			if (NumPlayers == 1)
-			{
-				if (paddp == 0x800 && bMissionTitleFade == 0) // [A] && gInGameCutsceneActive == 0)		// allow pausing during cutscene
-				{
-					EnablePause(PAUSEMODE_PAUSE);
-				}
-			}
-			else if (paddp == 0x800)
-			{
-				EnablePause(PAUSEMODE_PAUSEP1);
-			}
-			else if (NumPlayers == 2 && (Pads[1].dirnew & 0x800) != 0)
-			{
-				EnablePause(PAUSEMODE_PAUSEP2);
-			}
-		}
-	}
-
 	if (NoPlayerControl == 0)
 	{
 		if (pad_connected < 1 && FrameCnt > 2 && bMissionTitleFade == 0 && gInGameCutsceneActive == 0)
@@ -1531,6 +1508,29 @@ void CheckForPause(void)
 		gDieWithFade = 32;
 	}
 
+	// check pads for pause here
+	if (AttractMode == 0 && pauseflag == 0)
+	{
+		if (FrameCnt > 2)
+		{
+			if (NumPlayers == 1)
+			{
+				if (paddp == 0x800 && bMissionTitleFade == 0) // [A] && gInGameCutsceneActive == 0)		// allow pausing during cutscene
+				{
+					EnablePause(PAUSEMODE_PAUSE);
+				}
+			}
+			else if (paddp == 0x800)
+			{
+				EnablePause(PAUSEMODE_PAUSEP1);
+			}
+			else if (NumPlayers == 2 && (Pads[1].dirnew & 0x800))
+			{
+				EnablePause(PAUSEMODE_PAUSEP2);
+			}
+		}
+	}
+	
 	if (WantPause)
 	{
 		WantPause = 0;
