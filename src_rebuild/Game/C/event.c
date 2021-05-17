@@ -21,6 +21,7 @@
 #include "gamesnd.h"
 #include "dr2roads.h"
 #include "ASM/rndrasm.h"
+#include "cutrecorder.h"
 
 #define PATH_NODE_WRAP		0x80000000	// go back to first node without interpolation
 #define PATH_NODE_CYCLE		0x80000001	// cycle nodes with interpolation
@@ -2082,11 +2083,8 @@ void StepPathEvent(EVENT* ev)
 // [D] [T]
 int GetBridgeRotation(int timer)
 {
-#ifdef CUTSCENE_RECORDER
-	extern int gCutsceneAsReplay;
-	if (gCutsceneAsReplay != 0)
+	if (_CutRec_IsOn())
 		return 0;
-#endif
 
 	if (gDisableChicagoBridges)
 		return 0;

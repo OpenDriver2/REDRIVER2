@@ -10,11 +10,11 @@
 #include "scores.h"
 #include "sound.h"
 #include "cutscene.h"
-#include "replays.h"
 #include "overmap.h"
 #include "handling.h"
 #include "platform.h"
 #include "loadsave.h"
+#include "cutrecorder.h"
 
 #define REPLAY_NAME_LEN		16
 #define SCORE_NAME_LEN		5
@@ -84,14 +84,6 @@ enum MenuItemType
 };
 
 #if defined(_DEBUG) || defined(DEBUG_OPTIONS)
-
-#ifdef CUTSCENE_RECORDER
-extern void NextCutsceneRecorderPlayer(int dir);
-extern char gCutsceneRecorderPauseText[64];
-
-extern void NextChase(int dir);
-extern char gCurrentChasePauseText[64];
-#endif
 
 void SetRightWayUp(int direction)
 {
@@ -251,7 +243,7 @@ MENU_ITEM DebugOptionsItems[] =
 {
 #ifdef CUTSCENE_RECORDER
 	//{ gCutsceneRecorderPauseText, 5u, 2u, (pauseFunc)&NextCutsceneRecorderPlayer, MENU_QUIT_NONE, NULL },
-	{ gCurrentChasePauseText, 5u, 2u, (pauseFunc)&NextChase, MENU_QUIT_NONE, NULL },
+	{ gCurrentChasePauseText, 5u, 2u, (pauseFunc)&CutRec_NextChase, MENU_QUIT_NONE, NULL },
 #endif
 	{ "Display position", PAUSE_TYPE_FUNC, 	2,	SetDisplayPosition,		MENU_QUIT_NONE,		NULL},
 	{ "Back on Wheels",	PAUSE_TYPE_FUNC, 	2,	SetRightWayUp,		MENU_QUIT_NONE,		NULL},
@@ -700,8 +692,7 @@ void SaveReplay(int direction)
 #else
 
 #ifdef CUTSCENE_RECORDER
-	extern int gCutsceneAsReplay;
-	if(gCutsceneAsReplay != 0)
+	if(_CutRec_IsOn())
 	{
 		FILE* temp;
 		int cnt;
@@ -724,7 +715,7 @@ void SaveReplay(int direction)
 				break;
 		}
 
-		if (SaveReplayToFile(filename))
+		if (CutRec_SaveReplayToFile(filename))
 		{
 			printInfo("Chase replay '%s' saved\n", filename);
 			gDisplayedMessage.header = G_LTXT(GTXT_SaveReplay);

@@ -10,9 +10,11 @@
 #include "mission.h"
 #include "gamesnd.h"
 #include "camera.h"
+#include "cutrecorder.h"
 #include "fmvplay.h"
 #include "state.h"
 #include "xaplay.h"
+#include "cutrecorder.h"
 
 #include "Frontend/FEmain.h"
 
@@ -119,10 +121,7 @@ ACTIVE_CHEATS gCheatsBackup;
 
 void RestoreGameVars()
 {
-#ifdef CUTSCENE_RECORDER
-	extern int gCutsceneAsReplay;
-	gCutsceneAsReplay = 0;
-#endif
+	_CutRec_Reset();
 	
 	gLoadedReplay = 0;
 	gVibration = gOldVibrationMode;
