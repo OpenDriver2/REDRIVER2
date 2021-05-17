@@ -52,25 +52,28 @@ void InitDrivingGames(void)
 	int i;
 	int j;
 
+	if (NewLevel)
+		gTrailblazerData = NULL;
+	
 	gPlayerScore.time = 0;
-	gTrailblazerData = NULL;
 	gPlayerScore.items = 0;
 	gPlayerScore.P2time = 0;
 	gPlayerScore.P2items = 0;
 
 	if (GameType == GAME_GATERACE || GameType == GAME_TRAILBLAZER) 
 	{
-		D_CHECK_ERROR(CutsceneBuffer.bytesFree < 1200, "Cutscene buffer is less than 1200 bytes");
-
 		gTrailblazerConeCount = 0;
 		gTrailblazerConeIndex = 0;
-		gTrailblazerData = (TRAILBLAZER_DATA *)CutsceneBuffer.currentPointer;
 
-		CutsceneBuffer.bytesFree -= 1200;
-		sprintf(filename, "TRAILS\\TRAIL.%d", gCurrentMissionNumber);
+		if(NewLevel)
+		{
+			gTrailblazerData = (TRAILBLAZER_DATA*)D_MALLOC(1200); // [A] use malloc
 
-		if (FileExists(filename) != 0) 
-			Loadfile(filename, (char *)gTrailblazerData);
+			sprintf(filename, "TRAILS\\TRAIL.%d", gCurrentMissionNumber);
+
+			if (FileExists(filename) != 0)
+				Loadfile(filename, (char*)gTrailblazerData);
+		}
 	}
 
 	for (i = 0; i < 2; i++)

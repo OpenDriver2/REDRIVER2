@@ -1399,9 +1399,13 @@ struct CUTSCENE_BUFFER
 	int numResident;
 	u_char residentCutscenes[4];
 	char(*residentPointers[4]);
+
+	char* buffer;
 	char* currentPointer;
+	
 	int bytesFree;
-	char buffer[32*1024];				// was 8192, but we have some free mem now even for PSX
+	int reservedSize;
+	// char buffer[32*1024];				// was 8192, but we have some free mem now even for PSX. Using malloc.
 };
 
 struct CUTSCENE_INFO
