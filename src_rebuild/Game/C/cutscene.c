@@ -67,8 +67,6 @@ int IsCutsceneResident(int cutscene);
 
 
 #ifndef PSX
-char* gCustomCutsceneBuffer;
-
 char gUserReplayFolderList[MAX_USER_REPLAYS][48];
 int gNumUserChases = 0;
 int gUserChaseLoaded = -1;
@@ -547,6 +545,7 @@ int LoadInGameCutscene(int subindex)
 	if (CutsceneInReplayBuffer)
 		return LoadCutsceneToBuffer(subindex);
 
+	// first cutscene (intro) always goes to replay buffer
 	if (LoadCutsceneToBuffer(subindex))
 	{
 		if (LoadCutsceneToReplayBuffer(0))
@@ -876,31 +875,6 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 	return 1;
 }
 
-#ifndef PSX
-int LoadChaseReplayFromFile(char *filename, int subindex, int userId = -1)
-{
-	gUserChaseLoaded = userId;
-
-	int size = LoadfileSeg(filename, gCustomCutsceneBuffer, 0, 0xffff);
-
-	if (size != 0)
-	{
-		// load into custom buffer
-		printInfo("Custom chase '%s' loaded\n", filename);
-
-		CutsceneBuffer.residentCutscenes[CutsceneBuffer.numResident] = subindex;
-		CutsceneBuffer.residentPointers[CutsceneBuffer.numResident] = gCustomCutsceneBuffer;
-		CutsceneBuffer.numResident++;
-
-		gCustomCutsceneBuffer += size;
-
-		return 1;
-	}
-
-	return 0;
-}
-#endif
-
 // [D] [T]
 int LoadCutsceneToBuffer(int subindex)
 {
@@ -932,10 +906,10 @@ int LoadCutsceneToBuffer(int subindex)
 		if (userId != -1)
 			sprintf(filename, "REPLAYS\\UserChases\\%s\\CUT%d_N.R", (char*)gUserReplayFolderList[userId], gCurrentMissionNumber);
 
-		//gUserChaseLoaded = userId;
+		if(FileExists(filename))
+			gUserChaseLoaded = userId;
+		else
 #endif
-		
-		if (!FileExists(filename)) // fallback
 			sprintf(filename, "REPLAYS\\ReChases\\CUT%d_N.R", gCurrentMissionNumber);
 	}
 
@@ -957,7 +931,46 @@ int LoadCutsceneToBuffer(int subindex)
 		{
 			offset = header.data[subindex].offset * 4;
 			size = header.data[subindex].size;
-			
+
+			// [A] if starting game - allocate new buffer
+			if (CutsceneBuffer.currentPointer == NULL)
+			{
+				if(CutsceneInReplayBuffer)
+				{
+					// reserve new buffer with malloc
+					if (CutsceneBuffer.reservedSize == 0)
+					{
+						int i, maxSize;
+
+						maxSize = 0;
+						for (i = 2; i < 15; i++)
+						{
+							if (header.data[i].size > maxSize)
+								maxSize = header.data[i].size;
+						}
+
+						maxSize += MAX(header.data[0].size, header.data[1].size);
+
+						CutsceneBuffer.reservedSize = maxSize;
+						CutsceneBuffer.buffer = D_MALLOC(maxSize);
+					}
+
+					CutsceneBuffer.currentPointer = CutsceneBuffer.buffer;
+					CutsceneBuffer.bytesFree = CutsceneBuffer.reservedSize;
+				}
+				else
+				{
+					// obtain temp buffer
+					CutsceneBuffer.currentPointer = D_TEMPALLOC(size);
+					CutsceneBuffer.bytesFree = size;
+				}
+			}
+
+			/*
+
+			WE DON'T NEED IT ANYMORE! EVEN ON PSX!
+
+			// we keep fallback here
 			if (size > CutsceneBuffer.bytesFree)
 			{
 				printWarning("WARNING - Using leadAI/pathAI buffer for cutscene!\n");
@@ -968,13 +981,14 @@ int LoadCutsceneToBuffer(int subindex)
 
 				CutsceneBuffer.currentPointer = (char*)_other_buffer2;
 				CutsceneBuffer.bytesFree = 0xC000;	
-			}
+			}*/
 
 			LoadfileSeg(filename, CutsceneBuffer.currentPointer, offset, size);
 
 			CutsceneBuffer.residentCutscenes[CutsceneBuffer.numResident] = subindex;
 			CutsceneBuffer.residentPointers[CutsceneBuffer.numResident] = CutsceneBuffer.currentPointer;
 			CutsceneBuffer.numResident++;
+			
 			CutsceneBuffer.currentPointer += size;
 			CutsceneBuffer.bytesFree -= size;
 
@@ -1037,7 +1051,7 @@ int LoadCutsceneInformation(int cutscene)
 				return 1;
 			}
 		}
-	};
+	}
 
 	return 0;
 }
@@ -1054,14 +1068,16 @@ void FreeCutsceneBuffer(void)
 	}
 
 	CutsceneBuffer.numResident = 0;
-	CutsceneBuffer.currentPointer = CutsceneBuffer.buffer;
 
-	CutsceneBuffer.bytesFree = sizeof(CutsceneBuffer.buffer);
-	ClearMem(CutsceneBuffer.buffer, sizeof(CutsceneBuffer.buffer));
+	
+	if (NewLevel) // [A] since we use malloctab we need to let it go...
+	{
+		CutsceneBuffer.buffer = NULL;
+		CutsceneBuffer.reservedSize = 0;
+	}
 
-#ifndef PSX
-	gCustomCutsceneBuffer = (char*)_other_buffer2;
-#endif
+	CutsceneBuffer.currentPointer = NULL;
+	CutsceneBuffer.bytesFree = 0;
 }
 
 // [D] [T]
