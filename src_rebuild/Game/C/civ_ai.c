@@ -1927,7 +1927,6 @@ int dy = 0; // offset 0xAAB44
 int dz = 0; // offset 0xAAB48
 
 // [D] [T] [A] - some register is not properly decompiled
-// TODO: store pings
 int PingInCivCar(int minPingInDist)
 {
 	int model;
@@ -1990,7 +1989,7 @@ int PingInCivCar(int minPingInDist)
 		return 0;
 	}
 
-	if (maxCivCars - 1 <= numCivCars && gInGameChaseActive == 0)
+	if (numCivCars >= maxCivCars - 1 && gInGameChaseActive == 0)
 	{
 		PingOutCivsOnly = 1;
 		return 0;

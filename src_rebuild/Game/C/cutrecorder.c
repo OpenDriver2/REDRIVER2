@@ -1,6 +1,7 @@
 #ifdef PSX
 #error This file is not applicable for PSX build
 #endif
+
 #ifdef CUTSCENE_RECORDER
 
 #include "driver2.h"
@@ -18,9 +19,13 @@
 #include "replays.h"
 #include "state.h"
 #include "system.h"
+#include "pause.h"
+#include "pres.h"
 
 #include "../utils/ini.h"
 
+int gCutsceneAsReplay_HitCars = 0;
+int gCutsceneChaseAutoTest = 0;
 int gCutsceneAsReplay = 0;
 int gCutsceneAsReplay_PlayerId = 0;
 int gCutsceneAsReplay_PlayerChanged = 0;
@@ -29,9 +34,18 @@ char gCutsceneRecorderPauseText[64] = { 0 };
 char gCurrentChasePauseText[64] = { 0 };
 
 int CutRec_LoadCutsceneAsReplayFromBuffer(char* buffer);
+void InitCutsceneRecorder(char* configFilename);
+int LoadCutsceneAsReplay(int subindex);
 
 void CutRec_Reset()
 {
+	if (gCutsceneChaseAutoTest != 0)
+	{
+		gCutsceneAsReplay_HitCars = 0;
+		return;
+	}
+	
+	gCutsceneChaseAutoTest = 0;
 	gCutsceneAsReplay = 0;
 	gCutsceneAsReplay_PlayerId = 0;
 	gCutsceneAsReplay_PlayerChanged = 0;
@@ -54,9 +68,61 @@ void CutRec_NextChase(int dir)
 	sprintf(gCurrentChasePauseText, "Chase ID: %d", gChaseNumber);
 }
 
+void CutRec_Step()
+{
+	if (!pauseflag)
+		return;
+	
+	if(gCutsceneChaseAutoTest != 0)
+	{
+		gCutsceneChaseAutoTest++;
+
+		if(gCutsceneChaseAutoTest < 15)
+		{
+			// load next replay and restart
+			if (LoadCutsceneAsReplay(gCutsceneChaseAutoTest))
+			{
+				State_GameComplete(NULL);
+
+				gDrawPauseMenus = 0;
+				gLoadedReplay = 1;
+				CurrentGameMode = GAMEMODE_REPLAY;
+
+				SetState(STATE_GAMELAUNCH);
+			}
+		}
+		else
+		{
+			// auto-test complete
+			gCutsceneChaseAutoTest = 0;
+		}
+	}
+}
+
+void CutRec_Draw()
+{
+	char text[64];
+
+	if (gCutsceneAsReplay == 0)
+		return;
+
+	SetTextColour(128, 128, 128);
+
+	if (gCutsceneAsReplay_HitCars > 0)
+		SetTextColour(128, 0, 0);
+
+	sprintf(text, "Hit cars %d", gCutsceneAsReplay_HitCars);
+	PrintString(text, 15, 140);
+
+	if(gCutsceneChaseAutoTest)
+	{
+		sprintf(text, "Chase %d", gCutsceneChaseAutoTest);
+		PrintString(text, 15, 120);
+	}
+}
+
 void CutRec_ReserveSlots()
 {
-	// [A] reserve slots to avoid their use for chases
 	if (gCutsceneAsReplay == 0)
 		return;
 
@@ -104,10 +170,14 @@ int LoadCutsceneAsReplay(int subindex)
 	CUTSCENE_HEADER header;
 	char filename[64];
 
-	if (gCutsceneAsReplay < 21)
-		sprintf(filename, "REPLAYS\\CUT%d.R", gCutsceneAsReplay);
-	else
-		sprintf(filename, "REPLAYS\\A\\CUT%d.R", gCutsceneAsReplay);
+	//sprintf(filename, "REPLAYS\\ReChases\\CUT%d_N.R", gCutsceneAsReplay);
+	//if(!FileExists(filename))
+	{
+		if (gCutsceneAsReplay < 21)
+			sprintf(filename, "REPLAYS\\CUT%d.R", gCutsceneAsReplay);
+		else
+			sprintf(filename, "REPLAYS\\A\\CUT%d.R", gCutsceneAsReplay);
+	}
 
 	if (FileExists(filename))
 	{
@@ -117,8 +187,6 @@ int LoadCutsceneAsReplay(int subindex)
 		{
 			offset = header.data[subindex].offset * 4;
 			size = header.data[subindex].size;
-
-			printWarning("cutscene size: %d\n", size);
 
 			LoadfileSeg(filename, (char*)_other_buffer, offset, size);
 
@@ -131,6 +199,12 @@ int LoadCutsceneAsReplay(int subindex)
 	printError("Invalid cutscene subindex or mission!\n");
 
 	return 0;
+}
+
+void InitChaseAutoTest(char* configFilename)
+{
+	gCutsceneChaseAutoTest = 2;
+	InitCutsceneRecorder(configFilename);
 }
 
 void InitCutsceneRecorder(char* configFilename)
@@ -163,6 +237,11 @@ void InitCutsceneRecorder(char* configFilename)
 
 	if (loadExistingCutscene)
 	{
+		if(gCutsceneChaseAutoTest != 0)
+		{
+			subindex = gCutsceneChaseAutoTest;
+		}
+		
 		if (!LoadCutsceneAsReplay(subindex))
 		{
 			ini_free(config);
@@ -255,6 +334,8 @@ void CutRec_CheckInvalidatePing(int carId, int howHard)
 	if (howHard < 60000)
 		return;
 
+	gCutsceneAsReplay_HitCars++;
+
 	pos = PingBufferPos;
 
 	while (pos >= 0)
@@ -275,7 +356,7 @@ int CutRec_InitPlayers()
 {
 	if (gCutsceneAsReplay == 0)
 		return 0;
-	
+
 	for (int i = 0; i < NumReplayStreams; i++)
 	{
 		PlayerStartInfo[i] = &ReplayStreams[i].SourceType;

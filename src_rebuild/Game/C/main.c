@@ -1642,10 +1642,14 @@ void State_GameLoop(void* param)
 	while (--cnt >= 0)
 		StepGame();
 
+	_CutRec_Draw();
 	DrawGame();
 #endif
+	
 	if (game_over)
 		SetState(STATE_GAMECOMPLETE);
+
+	_CutRec_Step();
 }
 
 // TODO: DRAW.C?
@@ -1776,6 +1780,7 @@ void PrintCommandLineArguments()
 		"  -replay <filename.d2rp> : starts replay from file\n"
 #ifdef CUTSCENE_RECORDER
 		"  -recordcutscene <filename> : starts cutscene recording session. Specify INI filename with it\n"
+		"  -chaseautotest <filename> : starts chase autotesting. Specify INI filename with it\n"
 #endif
 		"  -nointro : disable intro screens\n"
 		"  -nofmv : disable all FMVs\n";
@@ -2107,6 +2112,16 @@ int redriver2_main(int argc, char** argv)
 			i++;
 		}
 #ifdef CUTSCENE_RECORDER
+		else if (!strcmp(argv[i], "-chaseautotest"))
+		{
+			SetFEDrawMode();
+
+			gInFrontend = 0;
+			AttractMode = 0;
+
+			InitChaseAutoTest(argv[i+1]);
+			i++;
+		}
 		else if (!strcmp(argv[i], "-recordcutscene"))
 		{
 			SetFEDrawMode();
