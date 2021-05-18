@@ -21,11 +21,22 @@
 #include "system.h"
 #include "pause.h"
 #include "pres.h"
+#include "players.h"
 
 #include "../utils/ini.h"
 
-int gCutsceneAsReplay_HitCars = 0;
+typedef struct AutoTestStats
+{
+	int numHitCars;
+	int numHitWalls;
+	int stuck;
+};
+
+AutoTestStats gAutoTestStats[15];
+
 int gCutsceneChaseAutoTest = 0;
+int gChaseStuckTimer = 0;
+
 int gCutsceneAsReplay = 0;
 int gCutsceneAsReplay_PlayerId = 0;
 int gCutsceneAsReplay_PlayerChanged = 0;
@@ -33,20 +44,27 @@ int gCutsceneAsReplay_ReserveSlots = 2;
 char gCutsceneRecorderPauseText[64] = { 0 };
 char gCurrentChasePauseText[64] = { 0 };
 
+extern PAUSEMODE PauseMode;
+
 int CutRec_LoadCutsceneAsReplayFromBuffer(char* buffer);
 void InitCutsceneRecorder(char* configFilename);
 int LoadCutsceneAsReplay(int subindex);
 
 void CutRec_Reset()
 {
-	if (gCutsceneChaseAutoTest != 0)
+	if (gCutsceneChaseAutoTest != 0 && gCutsceneChaseAutoTest < 15)
 	{
-		gCutsceneAsReplay_HitCars = 0;
+		gAutoTestStats[gCutsceneChaseAutoTest].numHitCars = 0;
+		gAutoTestStats[gCutsceneChaseAutoTest].numHitWalls = 0;
+		gAutoTestStats[gCutsceneChaseAutoTest].stuck = 0;
+		gChaseStuckTimer = 0;
+		
 		return;
 	}
-	
+
 	gCutsceneChaseAutoTest = 0;
 	gCutsceneAsReplay = 0;
+
 	gCutsceneAsReplay_PlayerId = 0;
 	gCutsceneAsReplay_PlayerChanged = 0;
 	gCutsceneAsReplay_ReserveSlots = 2;
@@ -71,30 +89,48 @@ void CutRec_NextChase(int dir)
 void CutRec_Step()
 {
 	if (!pauseflag)
+	{
+		if(gCutsceneChaseAutoTest != 0)
+		{
+			int carId = player[gCutsceneAsReplay_PlayerId].playerCarId;
+			
+			if (car_data[carId].hd.speed < 5)
+				gChaseStuckTimer++;
+			else
+				gChaseStuckTimer = 0;
+
+			if(gChaseStuckTimer > 45)
+			{
+				gAutoTestStats[gCutsceneChaseAutoTest].stuck = 1;
+			}
+		}
+		
 		return;
-	
-	if(gCutsceneChaseAutoTest != 0)
+	}
+
+	if(gCutsceneChaseAutoTest != 0 && gCutsceneChaseAutoTest < 15 &&
+		NoPlayerControl && ReplayParameterPtr->RecordingEnd - 2 < CameraCnt)
 	{
 		gCutsceneChaseAutoTest++;
 
-		if(gCutsceneChaseAutoTest < 15)
+		// load next replay and restart
+		if (gCutsceneChaseAutoTest < 15 &&
+			LoadCutsceneAsReplay(gCutsceneChaseAutoTest))
 		{
-			// load next replay and restart
-			if (LoadCutsceneAsReplay(gCutsceneChaseAutoTest))
-			{
-				State_GameComplete(NULL);
+			State_GameComplete(NULL);
 
-				gDrawPauseMenus = 0;
-				gLoadedReplay = 1;
-				CurrentGameMode = GAMEMODE_REPLAY;
+			gDrawPauseMenus = 0;
+			gLoadedReplay = 1;
+			CurrentGameMode = GAMEMODE_REPLAY;
 
-				SetState(STATE_GAMELAUNCH);
-			}
+			SetState(STATE_GAMELAUNCH);
 		}
 		else
 		{
-			// auto-test complete
-			gCutsceneChaseAutoTest = 0;
+			printInfo("------- AUTOTEST RESULTS -------\n");
+			for(int i = 0; i < 15; i++)
+				printInfo("  chase %d - hit cars: %d, stuck: %d\n", i, gAutoTestStats[i].numHitCars, gAutoTestStats[i].stuck);
+			printInfo("------- ---------------- -------\n");
 		}
 	}
 }
@@ -108,16 +144,24 @@ void CutRec_Draw()
 
 	SetTextColour(128, 128, 128);
 
-	if (gCutsceneAsReplay_HitCars > 0)
-		SetTextColour(128, 0, 0);
-
-	sprintf(text, "Hit cars %d", gCutsceneAsReplay_HitCars);
-	PrintString(text, 15, 140);
-
 	if(gCutsceneChaseAutoTest)
 	{
-		sprintf(text, "Chase %d", gCutsceneChaseAutoTest);
-		PrintString(text, 15, 120);
+		sprintf(text, "Chase: %d", gCutsceneChaseAutoTest);
+		PrintString(text, 5, 120);
+	}
+
+	if (gAutoTestStats[gCutsceneChaseAutoTest].numHitCars > 0)
+		SetTextColour(128, 0, 0);
+
+	sprintf(text, "Hit cars: %d", gAutoTestStats[gCutsceneChaseAutoTest].numHitCars);
+	PrintString(text, 5, 140);
+
+	if(gAutoTestStats[gCutsceneChaseAutoTest].stuck)
+	{
+		SetTextColour(128, 0, 0);
+	
+		sprintf(text, "Car is stuck!");
+		PrintString(text, 5, 60);
 	}
 }
 
@@ -334,7 +378,7 @@ void CutRec_CheckInvalidatePing(int carId, int howHard)
 	if (howHard < 60000)
 		return;
 
-	gCutsceneAsReplay_HitCars++;
+	gAutoTestStats[gCutsceneChaseAutoTest].numHitCars++;
 
 	pos = PingBufferPos;
 
