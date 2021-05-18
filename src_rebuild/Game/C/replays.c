@@ -353,19 +353,15 @@ char GetPingInfo(char *cookieCount)
 		}
 
 		PingBufferPos++;
-
-		return retCarId;
 	}
 
-	return -1;
+	return retCarId;
 }
 
 // [A] returns 1 if can use ping buffer
 int IsPingInfoAvailable()
 {
-	// [A] loaded replays pings temporarily disabled...
-	
-	if (gUseStoredPings == 0 || gInGameChaseActive == 0)// && gLoadedReplay == 0)
+	if (!_CutRec_IsOn() && (gUseStoredPings == 0 || gInGameChaseActive == 0))// && gLoadedReplay == 0)
 		return 0;
 	
 	return PingBuffer != NULL && PingBufferPos < MAX_REPLAY_PINGS;
