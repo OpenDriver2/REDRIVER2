@@ -44,7 +44,7 @@ int gCutsceneAsReplay_ReserveSlots = 2;
 char gCutsceneRecorderPauseText[64] = { 0 };
 char gCurrentChasePauseText[64] = { 0 };
 
-extern PAUSEMODE PauseMode;
+extern int gDieWithFade;
 
 int CutRec_LoadCutsceneAsReplayFromBuffer(char* buffer);
 void InitCutsceneRecorder(char* configFilename);
@@ -102,6 +102,7 @@ void CutRec_Step()
 			if(gChaseStuckTimer > 45)
 			{
 				gAutoTestStats[gCutsceneChaseAutoTest].stuck = 1;
+				gChaseStuckTimer = 0;
 			}
 		}
 		
@@ -109,7 +110,7 @@ void CutRec_Step()
 	}
 
 	if(gCutsceneChaseAutoTest != 0 && gCutsceneChaseAutoTest < 15 &&
-		NoPlayerControl && ReplayParameterPtr->RecordingEnd - 2 < CameraCnt)
+		NoPlayerControl && ReplayParameterPtr->RecordingEnd - 2 < CameraCnt || gDieWithFade)
 	{
 		gCutsceneChaseAutoTest++;
 
@@ -146,7 +147,7 @@ void CutRec_Draw()
 
 	if(gCutsceneChaseAutoTest)
 	{
-		sprintf(text, "Chase: %d", gCutsceneChaseAutoTest);
+		sprintf(text, "Chase: %d - frame %d of %d", gCutsceneChaseAutoTest, CameraCnt, ReplayParameterPtr->RecordingEnd);
 		PrintString(text, 5, 120);
 	}
 
