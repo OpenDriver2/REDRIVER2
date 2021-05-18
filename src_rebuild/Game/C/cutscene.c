@@ -382,7 +382,7 @@ void TriggerInGameCutscene(int cutscene)
 }
 
 // [A] Function detects user chases and re-chases
-void SelectCutsceneFile(char* filename, int init, int subindex)
+int SelectCutsceneFile(char* filename, int init, int subindex)
 {
 	filename[0] = '\0';
 
@@ -439,6 +439,8 @@ void SelectCutsceneFile(char* filename, int init, int subindex)
 		else
 			sprintf(filename, "REPLAYS\\A\\CUT%d.R", gCurrentMissionNumber);
 	}
+
+	return FileExists(filename);
 }
 
 // [D] [T]
@@ -449,13 +451,16 @@ int CalcInGameCutsceneSize(void)
 
 	if (NewLevel)
 	{
+		ClearMem((char*)&CutsceneHeader, sizeof(CUTSCENE_HEADER));
+		ClearMem((char*)&ChaseHeader, sizeof(CUTSCENE_HEADER));
+		
 		// init user/re-chases and load cutscene file header
-		SelectCutsceneFile(filename, 1, 0);
-		LoadfileSeg(filename, (char*)&CutsceneHeader, 0, sizeof(CUTSCENE_HEADER));
+		if(SelectCutsceneFile(filename, 1, 0))
+			LoadfileSeg(filename, (char*)&CutsceneHeader, 0, sizeof(CUTSCENE_HEADER));
 
 		// load re-chase file header
-		SelectCutsceneFile(filename, 0, 2);
-		LoadfileSeg(filename, (char*)&ChaseHeader, 0, sizeof(CUTSCENE_HEADER));
+		if(SelectCutsceneFile(filename, 0, 2))
+			LoadfileSeg(filename, (char*)&ChaseHeader, 0, sizeof(CUTSCENE_HEADER));
 
 		maxSize = 0;
 		for (i = 2; i < 15; i++)
