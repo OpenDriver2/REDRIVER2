@@ -16,6 +16,7 @@
 #include "main.h"
 #include "pad.h"
 #include "pres.h"
+#include "shadow.h"
 
 #define NUM_RAND_STATES		17
 #define NUM_RAND_ITERATIONS	40
@@ -169,6 +170,8 @@ void LeadUpdateState(CAR_DATA* cp)
 
 		// start him up
 		cp->ai.l.dstate = 3;
+
+		ResetTyreTracks(cp, GetPlayerId(cp));
 	}
 
 	if (ABS(cp->ai.l.panicCount) > 0)
@@ -367,7 +370,7 @@ u_int LeadPadResponse(CAR_DATA* cp)
 	deltaTh = (dif + 2048U & 0xfff) - 2048;
 	avel = FIXEDH(cp->st.n.angularVelocity[1]);
 
-#ifdef COLLISION_DEBUG
+#if defined(COLLISION_DEBUG) && !defined(PSX)
 	extern int gShowCollisionDebug;
 	if (gShowCollisionDebug == 4)
 	{
@@ -730,6 +733,7 @@ void FakeMotion(CAR_DATA* cp)
 				
 				cp->hd.where.t[0] = FIXEDH(rcossin_tbl[(dir & 0xfff) * 2] * radius) + curve->Midx;
 				cp->hd.where.t[2] = FIXEDH(rcossin_tbl[(dir & 0xfff) * 2 + 1] * radius) + curve->Midz;
+
 				return;
 			}
 
@@ -1438,7 +1442,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	_CAR_DATA* lcp;
 
 	PACKED_CELL_OBJECT* ppco;
-	CELL_OBJECT* cop;
+	CELL_OBJECT tempCO;
 	CAR_COSMETICS* car_cos;
 
 	MODEL* model;
@@ -1497,17 +1501,20 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 
 			ppco = GetFirstPackedCop(cell_x, cell_z, &ci, 1);
 
-			while (cop = UnpackCellObject(ppco, &ci.nearCell), cop != NULL)
+			while (ppco)
 			{
-				model = modelpointers[cop->type];
+				int type = (ppco->value >> 6) | ((ppco->pos.vy & 1) << 10);
+				model = modelpointers[type];
 
 				if (/*model->num_vertices - 3 < 300 &&
 					model->num_point_normals < 300 &&
 					model->num_polys < 300 &&*/
-					model->collision_block > 0 &&
+					(uint)model->collision_block > 0 &&
 					(model->flags2 & MODEL_FLAG_SMASHABLE) == 0)
 				{
 					int num_cb;
+
+					QuickUnpackCellObject(ppco, &ci.nearCell, &tempCO);
 					
 					num_cb = *(int*)model->collision_block;
 					collide = (COLLISION_PACKET*)((int*)model->collision_block + 1);
@@ -1518,13 +1525,13 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 						int theta;
 						int xsize, zsize;
 						
-						yang = -cop->yang & 0x3f;
+						yang = -tempCO.yang & 0x3f;
 
 						if (collide->type == 0)
 						{
 							int cs, sn;
 
-							theta = (cop->yang + collide->yang) * 64 & 0xfff;
+							theta = (tempCO.yang + collide->yang) * 64 & 0xfff;
 
 							xsize = collide->xsize / 2;
 							zsize = collide->zsize / 2;
@@ -1545,18 +1552,18 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 							printError("\nERROR! unknown collision box type in leadai.c\n");
 						}
 
-						offset.vx = FIXEDH(collide->xpos * matrixtable[yang].m[0][0] + collide->zpos * matrixtable[yang].m[2][0]) + cop->pos.vx;
-						offset.vz = FIXEDH(collide->xpos * matrixtable[yang].m[0][2] + collide->zpos * matrixtable[yang].m[2][2]) + cop->pos.vz;
-						offset.vy = -cop->pos.vy + collide->ypos;
+						offset.vx = FIXEDH(collide->xpos * matrixtable[yang].m[0][0] + collide->zpos * matrixtable[yang].m[2][0]) + tempCO.pos.vx;
+						offset.vz = FIXEDH(collide->xpos * matrixtable[yang].m[0][2] + collide->zpos * matrixtable[yang].m[2][2]) + tempCO.pos.vz;
+						offset.vy = -tempCO.pos.vy + collide->ypos;
 
-#if defined(_DEBUG) || defined(DEBUG_OPTIONS)
+#if defined(_DEBUG) || defined(DEBUG_OPTIONS) && !defined(PSX)
 						extern int gShowCollisionDebug;
 						if (gShowCollisionDebug == 4)
 						{
 							CDATA2D cd[1];
 
-							cd[0].x.vx = offset.vx;// (cop->pos.vx + xxd);
-							cd[0].x.vz = offset.vz;// (cop->pos.vz + zzd);
+							cd[0].x.vx = offset.vx;// (tempCO.pos.vx + xxd);
+							cd[0].x.vz = offset.vz;// (tempCO.pos.vz + zzd);
 							cd[0].x.vy = cp->hd.where.t[1];
 
 							cd[0].theta = theta; // (pCellObject->yang + collide->yang) * 64 & 0xfff;
@@ -2082,13 +2089,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 
 	sindex = newTarget - 21;
 
-	if (intention == 6)
-	{
-		while (FrameCnt != 0x78654321)
-		{
-			trap(0x400);
-		}
-	}
+	D_CHECK_ERROR(intention == 6, "Unknw intention in leadai.c");
 
 	if (intention - 4U < 2)
 	{

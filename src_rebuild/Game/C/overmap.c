@@ -18,10 +18,6 @@
 #include "pad.h"
 #include "ASM/rnc_2.h"
 
-#include "STRINGS.H"
-#include "INLINE_C.H"
-
-
 OVERMAP overlaidmaps[4] =
 {
 	{ 197, 318, 384, 672, 252, 153, 2145 },
@@ -403,18 +399,16 @@ void ProcessOverlayLump(char *lump_ptr, int lump_size)
 	MapRect.x = (MapTPage & 15) << 6;
 	MapRect.y = (MapTPage & 16) << 4;
 
-	i = 0;
-	do {
+	for (i = 0; i < 16; i++)
+	{
 		MapSegmentPos[i].x = ((i & 3) * 32 + info.coords.u0) / 4;
 		MapSegmentPos[i].y = info.coords.v0 + (i / 4) * 32;
-
-		i++;
-	} while (i < 16);
+	}
 
 	D_MALLOC_BEGIN()
 
 	MapBitMaps = D_MALLOC(lump_size);
-	memcpy(MapBitMaps, lump_ptr, lump_size);
+	memcpy((u_char*)MapBitMaps, (u_char*)lump_ptr, lump_size);
 
 	D_MALLOC_END();
 
@@ -434,8 +428,9 @@ void LoadMapTile(int tpage, int x, int y)
 
 	MapSegment.w = 8;
 	MapSegment.h = 32;
-	MapSegment.y = MapRect.y + MapSegmentPos[tpage].y;
+	
 	MapSegment.x = MapRect.x + MapSegmentPos[tpage].x;
+	MapSegment.y = MapRect.y + MapSegmentPos[tpage].y;
 
 	idx = x + y * tilehnum;
 	temp = x << 5;
@@ -447,17 +442,17 @@ void LoadMapTile(int tpage, int x, int y)
 	}
 	else
 	{
-		count = 0;
-
-		do {
+		for (count = 0; count < 512; count++)
 			MapBuffer[count++] = overlaidmaps[GameLevel].dummy;
-		} while (count < 512);
 	}
 
+#ifdef PSX
 	DrawSync(0);
 	LoadImage(&MapSegment, (u_long*)MapBuffer);
 	DrawSync(0);
-
+#else
+	LoadImage(&MapSegment, (u_long*)MapBuffer);
+#endif
 }
 
 // [D] [T]
@@ -1093,9 +1088,11 @@ void DrawOverheadMap(void)
 	CAR_DATA *cp;
 	DR_AREA *drarea;
 	int intens;
+
 	SVECTOR MapMesh[5][5];
 	VECTOR MapMeshO[5][5];
 	MAPTEX MapTex[4];
+	
 	SVECTOR direction;
 	RECT16 clipped_size;
 	VECTOR vec;
@@ -1304,7 +1301,6 @@ void DrawOverheadMap(void)
 	// make grid coordinates
 	for (i = 0; i < 5; i++)
 	{
-
 		MapMesh[0][i].vx = -44;
 		MapMesh[i][0].vz = -44;
 
@@ -1340,15 +1336,15 @@ void DrawOverheadMap(void)
 	direction.vz = 0;
 	direction.vy = player[0].dir & 0xfff;
 
-	RotMatrixXYZ(&map_matrix, &direction);
-	MulMatrix0(&identity, &map_matrix, &map_matrix);
+	InitMatrix(map_matrix);
+	_RotMatrixY(&map_matrix, player[0].dir & 0xfff);
 
 	gte_SetRotMatrix(&map_matrix);
 	gte_SetTransVector(&translate);
 
 	MeshWidth = x_mod ? 4 : 3;
 	MeshHeight = y_mod ? 4 : 3;
-	
+
 	// transform the map mesh
 	for (i = 0; i <= MeshWidth; i++)
 	{
@@ -1388,7 +1384,7 @@ void DrawOverheadMap(void)
 
 			spt->clut = MapClut;
 			spt->tpage = MapTPage;
-
+			
 			spt->x0 = MapMeshO[j][i].vx;
 			spt->y0 = MapMeshO[j][i].vz;
 
@@ -1471,19 +1467,15 @@ void DrawOverheadMap(void)
 void SetFullscreenMapMatrix(void)
 {
 	VECTOR translate = { 160, 0, 128 };
-	SVECTOR direction;
-
-	direction.vx = 0;
+	int direction;
 
 	if (gUseRotatedMap == 0)
-		direction.vy = 0;
+		direction = 0;
 	else
-		direction.vy = player[0].dir & 0xfff;
+		direction = player[0].dir & 0xfff;
 
-	direction.vz = 0;
-
-	RotMatrixXYZ(&map_matrix, &direction);		// Why, Reflections? Why? You could have used RotMatrixY
-	MulMatrix0(&identity, &map_matrix, &map_matrix);
+	InitMatrix(map_matrix);
+	_RotMatrixY(&map_matrix, direction);
 
 	gte_SetRotMatrix(&map_matrix);
 	gte_SetTransVector(&translate);
@@ -1495,7 +1487,7 @@ void DrawFullscreenMap(void)
 	char str[64];
 	TILE *polys;
 	TILE_1 *tile1;
-	POLY_FT4 *back;
+	POLY_FT4 *back, *prevback;
 	POLY_FT3 *null;
 	int x, y;
 	int clipped;
@@ -1505,9 +1497,8 @@ void DrawFullscreenMap(void)
 	VECTOR target;
 	VECTOR vec;
 	long flag;
-	int width;
-	int height;
-	int count;
+	int width, height;
+	int ntiles, count;
 
 	// toggle rotated map
 	if (Pads[0].dirnew & 0x20) 
@@ -1522,14 +1513,15 @@ void DrawFullscreenMap(void)
 
 	SetFullscreenMapMatrix();
 
-	polys = (TILE *)current->primptr;
+#ifdef PSX
+	polys = (TILE*)current->primptr;
 
 	setTile(polys);
 
 	polys->r0 = 0;
 	polys->g0 = 0;
 	polys->b0 = 0;
-
+	
 	polys->x0 = 0;
 	polys->y0 = 0;
 	polys->w = 320;
@@ -1537,6 +1529,7 @@ void DrawFullscreenMap(void)
 
 	DrawPrim(polys);
 	DrawSync(0);
+#endif
 
 	width = overlaidmaps[GameLevel].width;
 	height = overlaidmaps[GameLevel].height;
@@ -1649,14 +1642,15 @@ void DrawFullscreenMap(void)
 	width >>= 5;
 	height >>= 5;
 
-	px = MapSegmentPos[0].x * 4;
-	py = MapSegmentPos[0].y;
-
 #ifndef PSX
 	RECT16 emuViewport;
 	PsyX_GetPSXWidescreenMappedViewport(&emuViewport);
+
+	prevback = NULL;
 #endif
 
+	ntiles = 0;
+	
 	for(x = 0; x < width; x++)
 	{
 		for(y = 0; y < height; y++)
@@ -1702,7 +1696,7 @@ void DrawFullscreenMap(void)
 			if(clipped == 4)
 				continue;
 			
-			LoadMapTile(0, x, y);
+			LoadMapTile(ntiles & 15, x, y);
 
 			back = (POLY_FT4 *)current->primptr;
 			setPolyFT4(back);
@@ -1721,6 +1715,9 @@ void DrawFullscreenMap(void)
 			back->x3 = meshO[3].vx;
 			back->y3 = meshO[3].vz;
 
+			px = MapSegmentPos[ntiles & 15].x * 4;
+			py = MapSegmentPos[ntiles & 15].y;
+
 			back->u0 = px;
 			back->v0 = py;
 			
@@ -1733,7 +1730,13 @@ void DrawFullscreenMap(void)
 			back->u3 = px + 31;
 			back->v3 = py + 31;
 
-#ifndef PSX
+			back->clut = MapClut;
+			back->tpage = MapTPage;
+#ifdef PSX
+			DrawPrim(back);
+			DrawSync(0);
+			ntiles++;
+#else
 			// make map fully detailed when filtering is not available
 			if (!g_bilinearFiltering)
 			{
@@ -1742,13 +1745,26 @@ void DrawFullscreenMap(void)
 				back->u3 += 1;
 				back->v3 += 1;
 			}
-#endif
-			
-			back->clut = MapClut;
-			back->tpage = MapTPage;
 
-			DrawPrim(back);
-			DrawSync(0);
+			current->primptr += sizeof(POLY_FT4);
+
+			if (!prevback)
+				prevback = back;
+
+			// draw if map tiles are filled or we reached horizontal end
+			if ((ntiles & 15) == 0 || x == width - 1 || y == height - 1)
+			{
+				// upload map to GPU
+				DrawSync(0);
+
+				// draw all polys
+				while(prevback <= back)
+					DrawPrim(prevback++);
+
+				DrawSync(0);
+			}
+			ntiles++;
+#endif
 		}
 	}
 
@@ -1853,7 +1869,7 @@ void WorldToMultiplayerMap(VECTOR *in, VECTOR *out)
 void WorldToOverheadMapPositions(VECTOR *pGlobalPosition, VECTOR *pOverheadMapPosition, int count, char inputRelative,int outputRelative)
 {
 	int scale, cs, sn;
-	MATRIX tempMatrix = {0};
+	MATRIX tempMatrix;
 	SVECTOR tempVector;
 	XZPAIR playerPos;
 	long flag;

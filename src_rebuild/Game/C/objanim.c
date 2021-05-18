@@ -15,7 +15,23 @@
 #include "system.h"
 #include "pause.h"
 
-#include "STRINGS.H"
+struct ANIMATED_OBJECT
+{
+	int internal_id;
+	int model_num;
+	char* name;
+	char LitPoly;
+};
+
+struct GARAGE_DOOR
+{
+	CELL_OBJECT* cop;
+	VECTOR_NOPAD old_pos;
+	VECTOR_NOPAD pos;
+	short rotation;
+	char yang;
+};
+
 
 CYCLE_OBJECT Lev0[2] =
 {
@@ -331,7 +347,6 @@ void InitAnimatingObjects(void)
 	}
 
 	FindSmashableObjects();
-	InitCyclingPals();
 }
 
 // [D] [T]

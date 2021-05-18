@@ -62,5 +62,5 @@ project "Psy-X"
 	filter "configurations:Release_dev"
         optimize "Speed"
 	
-    filter { "files:**.c", "files:**.C" }
-        compileas "C++"
+    --filter { "files:**.c", "files:**.C" }
+    --    compileas "C++"

@@ -1,8 +1,6 @@
 #ifndef PATHFIND_H
 #define PATHFIND_H
 
-extern void iterate(); // 0x000E7814
-
 extern void InitPathFinding(); // 0x000E7BD0
 
 extern int getInterpolatedDistance(VECTOR *pos); // 0x000E7CA8

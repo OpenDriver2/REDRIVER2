@@ -1,12 +1,6 @@
 #include "driver2.h"
 #include "main.h"
 
-#include "LIBETC.H"
-#include "LIBSPU.H"
-#include "LIBGPU.H"
-#include "LIBAPI.H"
-#include "LIBMCRD.H"
-
 #include "ASM/rndrasm.h"
 #include "ASM/d2mapasm.h"
 
@@ -61,14 +55,10 @@
 #include "xaplay.h"
 #include "shadow.h"
 #include "pause.h"
-
+#include "sysclock.h"
 #include "platform.h"
-
-#include "RAND.H"
-#include "STRINGS.H"
-
-#include "INLINE_C.H"
 #include "state.h"
+#include "cutrecorder.h"
 
 int levelstartpos[8][4] = {
 	{ 4785, -1024, -223340, 0},
@@ -141,8 +131,8 @@ int FrameCnt = 0;
 static int WantPause = 0;
 static PAUSEMODE PauseMode = PAUSEMODE_PAUSE;
 
-unsigned char defaultPlayerModel[2] = { 0 }; // offset 0xAA604
-unsigned char defaultPlayerPalette = 0; // offset 0xAA606
+u_char defaultPlayerModel[2] = { 0 }; // offset 0xAA604
+u_char defaultPlayerPalette = 0; // offset 0xAA606
 
 u_int* transparent_buffer;
 
@@ -254,6 +244,7 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 			texturename_buffer = D_MALLOC(seg_size);
 			memcpy(texturename_buffer, ptr, seg_size);
 #else
+			// we need to copy texture names
 			texturename_buffer = (char*)ptr;
 #endif
 		}
@@ -324,7 +315,9 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 			printInfo("LUMP_MODELS: size: %d\n", seg_size);
 			ProcessMDSLump((char*)ptr, seg_size);
 			ProcessCarModelLump(car_models_lump, 0);
+			
 			InitModelNames();
+
 			SetUpEvents(1);
 		}
 		else if (lump_type == LUMP_ROADMAP)
@@ -383,8 +376,6 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 	} while (numLumps != 0);
 }
 
-int SpoolLumpOffset;
-
 // [D] [T]
 void LoadGameLevel(void)
 {
@@ -416,17 +407,17 @@ void LoadGameLevel(void)
 	nsectors = citylumps[GameLevel][CITYLUMP_DATA1].y / CDSECTOR_SIZE;
 
 #ifdef PSX 
-	loadsectors(_frontend_buffer, sector, nsectors);
+	loadsectors((char*)_primTab1, sector, nsectors);
 #else
 	extern char g_CurrentLevelFileName[64];
-	loadsectorsPC(g_CurrentLevelFileName, (char*)_frontend_buffer, sector, nsectors);
+	loadsectorsPC(g_CurrentLevelFileName, (char*)_primTab1, sector, nsectors);
 #endif // PSX
 
 	sector += nsectors;
 
 	// CITYLUMP_DATA1 - load-time lump
-	ProcessLumps((char*)_frontend_buffer + 8, nsectors * CDSECTOR_SIZE);
-
+	ProcessLumps((char*)_primTab1 + 8, nsectors * CDSECTOR_SIZE);
+	
 	// CITYLUMP_TPAGE is right next after DATA1
 	LoadPermanentTPages(&sector);
 
@@ -444,17 +435,17 @@ void LoadGameLevel(void)
 	loadsectorsPC(g_CurrentLevelFileName, malloc_lump, sector, nsectors);
 #endif // PSX
 	sector += nsectors;
-
+	
 	// CITYLUMP_DATA2 - in-memory lump
-	ProcessLumps(malloc_lump + 8, (nsectors * CDSECTOR_SIZE));
+	ProcessLumps(malloc_lump + 8, (nsectors * CDSECTOR_SIZE));	
 
-	SpoolLumpOffset = citylumps[GameLevel][CITYLUMP_SPOOL].x; // not used anyway
+	SpoolLumpOffset = citylumps[GameLevel][CITYLUMP_SPOOL].x;
 
 	//Init_Reflection_Mapping();	// [A] I know that this is obsolete and used NOWHERE
 	InitDebrisNames();
 	InitShadow();
 	//InitTextureNames();			// [A] I know that this is obsolete and used NOWHERE
-
+	
 #if USE_PC_FILESYSTEM
 	extern int gContentOverride;
 
@@ -475,26 +466,23 @@ void State_GameInit(void* param)
 	int i, musicType;
 	char padid;
 
-	if (NewLevel == 0)
+	if (NewLevel)
 	{
-		SetPleaseWait(NULL);
-	}
-	else
-	{
-#ifdef PSX
-		mallocptr = (char*)0x80137400;
-#else
-
 #ifdef USE_CRT_MALLOC
 		sys_freeall();
 		malloctab = D_MALLOC(0x200000);
 #endif // USE_CRT_MALLOC
+		
 		mallocptr = (char*)malloctab;
-#endif // PSX
 
+		// 4 regions, 1024 packed cell pointers
 		D_MALLOC_BEGIN();
-		packed_cell_pointers = D_MALLOC(1024 * sizeof(void*));
+		packed_cell_pointers = D_MALLOC(1024 * 4);
 		D_MALLOC_END();
+	}
+	else
+	{
+		SetPleaseWait(NULL);
 	}
 
 	gameinit = 1;
@@ -504,7 +492,7 @@ void State_GameInit(void* param)
 	InitPadRecording();
 	InitSpeechQueue(&gSpeechQueue);
 
-	if (NewLevel != 0)
+	if (NewLevel)
 	{
 		leadAIRequired = 0;
 		leadAILoaded = 0;
@@ -519,10 +507,10 @@ void State_GameInit(void* param)
 	if (GameType == GAME_MISSION)
 		SetupFadePolys();
 
-	if (NewLevel != 0)
+	if (NewLevel)
 		ShowLoadingScreen(LoadingScreenNames[GameLevel], 1, 36);
 
-	if (AttractMode != 0)
+	if (AttractMode)
 	{
 		TriggerInGameCutscene(0);
 		NoPlayerControl = 1;
@@ -682,16 +670,8 @@ void State_GameInit(void* param)
 		}
 	}
 
-	// FIXME: need to change streams properly
-#ifdef CUTSCENE_RECORDER
-	extern void NextChase(int dir);
-	NextChase(0);
-#endif
-
-	if (pathAILoaded != 0)
-	{
+	if (pathAILoaded)
 		InitCops();
-	}
 
 	InitCamera(&player[0]);
 
@@ -710,7 +690,7 @@ void State_GameInit(void* param)
 	SetupRain();
 	InitExObjects();
 
-	if (NewLevel != 0)
+	if (NewLevel)
 	{
 		// alloc pointer list
 		// [A] use model_tile_ptrs for this since it is only used for drawing purposes
@@ -720,10 +700,7 @@ void State_GameInit(void* param)
 
 	if (NoPlayerControl == 0)
 	{
-#ifdef CUTSCENE_RECORDER
-		extern int gCutsceneAsReplay;
-		if (gCutsceneAsReplay == 0)
-#endif
+		if (!_CutRec_IsOn())
 			DeleteAllCameras();
 	}
 	else
@@ -760,7 +737,7 @@ void State_GameInit(void* param)
 		player[i].horn.on = 0;
 	}
 
-#ifdef DEBUG
+#if defined(DEBUG) || defined(PSX)
 	printInfo("malloctab 0x%08x to 0x%08x (%d bytes) (Final: 0x%08x)\n", &malloctab, mallocptr, mallocptr - malloctab, mallocptr);
 
 	if (mallocptr < malloctab + PSX_MALLOC_SIZE)
@@ -793,6 +770,7 @@ void State_GameInit(void* param)
 	xa_timeout = 0;
 
 	//-------------------------
+	// GameLoop start part
 
 	if (NewLevel)
 	{
@@ -833,6 +811,11 @@ void State_GameInit(void* param)
 		VSync(0);
 	}
 	
+#ifdef PSX
+	inittimer(120);
+	Clock_SystemStartUp();
+#endif
+
 	// switch to STATE_GAMELOOP
 	SetState(STATE_GAMELOOP);
 }
@@ -933,26 +916,20 @@ void StepSim(void)
 	// control civcars pingin/pingout
 	if (requestStationaryCivCar != 1 && requestRoadblock == 0)
 	{
-		if (gInGameChaseActive == 0)
+		if (gInGameChaseActive)
 		{
-			if (numCivCars < maxCivCars && (NumPlayers == 1 || (NumPlayers == 2 && GameType == GAME_COPSANDROBBERS)))
-			{
-				// make 5 tries
-				for (i = 0; i < 5; i++)
-				{
-					if (PingInCivCar(15900))
-						break;
-				}
-			}
-		}
-		else
-		{
-			// ping buffer used to spawn civ cars
-			i = 0;
-			while (i < 10 && PingBufferPos < 400 && PingBuffer[PingBufferPos].frame <= (CameraCnt - frameStart & 0xffffU))
-			{
+			// it will use ping buffer
+			// checks are done internally
+			for (i = 0; i < 10; i++)
 				PingInCivCar(15900);
-				i++;
+		}
+		else if (numCivCars < maxCivCars && (NumPlayers == 1 || (NumPlayers == 2 && GameType == GAME_COPSANDROBBERS)))
+		{
+			// make 5 tries
+			for (i = 0; i < 5; i++)
+			{
+				if (PingInCivCar(15900))
+					break;
 			}
 		}
 
@@ -1083,32 +1060,9 @@ void StepSim(void)
 
 				break;
 			case CONTROL_TYPE_CUTSCENE:
-#ifdef CUTSCENE_RECORDER
-				extern int gCutsceneAsReplay;
-				extern int gCutsceneAsReplay_PlayerId;
-
-				if (gCutsceneAsReplay != 0 && NoPlayerControl == 0 && cp->id == gCutsceneAsReplay_PlayerId)
-				{
-					t0 = Pads[0].mapped;	// [A] padid might be wrong
-					t1 = Pads[0].mapanalog[2];
-					t2 = Pads[0].type & 4;
-
-					if (gStopPadReads != 0)
-					{
-						t0 = CAR_PAD_BRAKE;
-
-						if (cp->hd.wheel_speed <= 0x9000)
-							t0 = CAR_PAD_HANDBRAKE;
-
-						t1 = 0;
-						t2 = 1;
-					}
-
-					cjpRecord(-*cp->ai.padid, &t0, &t1, &t2);
-				}
-				else
-#endif
+				if (!_CutRec_RecordPad(cp, &t0, &t1, &t2))
 					cjpPlay(-*cp->ai.padid, &t0, &t1, &t2);
+			
 				ProcessCarPad(cp, t0, t1, t2);
 		}
 
@@ -1193,7 +1147,8 @@ void StepSim(void)
 
 	if (!game_over)
 	{
-		ControlCops();
+		if(pathAILoaded)
+			ControlCops();
 
 		if (gLoadedMotionCapture)
 			HandlePedestrians();
@@ -1349,10 +1304,8 @@ void StepGame(void)
 	int i;
 	PLAYER* pl;
 
-	if (CameraCnt == 3)
-	{
+	if (CameraCnt == 3 && !pauseflag)
 		StartXM(gDriver1Music);
-	}
 
 	if (doSpooling)
 	{
@@ -1362,8 +1315,6 @@ void StepGame(void)
 
 	if (gTimeOfDay == 3)
 		PreLampStreak();
-
-	UpdatePadData();
 
 	if ((padd & 0x2000U) && (padd & 0x8000U))
 		padd &= ~0xA000;
@@ -1465,29 +1416,6 @@ void StepGame(void)
 		PrintStringFeature(G_LTXT(GTXT_Fastforward), 100, 0x1e, 0x1000, 0x1000, 0);
 	}
 
-	// check for pause mode
-	if (AttractMode == 0 && pauseflag == 0)
-	{
-		if (FrameCnt > 2)
-		{
-			if (NumPlayers == 1)
-			{
-				if (paddp == 0x800 && bMissionTitleFade == 0) // [A] && gInGameCutsceneActive == 0)		// allow pausing during cutscene
-				{
-					EnablePause(PAUSEMODE_PAUSE);
-				}
-			}
-			else if (paddp == 0x800)
-			{
-				EnablePause(PAUSEMODE_PAUSEP1);
-			}
-			else if (NumPlayers == 2 && (Pads[1].dirnew & 0x800) != 0)
-			{
-				EnablePause(PAUSEMODE_PAUSEP2);
-			}
-		}
-	}
-
 	if (NoPlayerControl == 0)
 	{
 		if (pad_connected < 1 && FrameCnt > 2 && bMissionTitleFade == 0 && gInGameCutsceneActive == 0)
@@ -1555,7 +1483,7 @@ void StepGame(void)
 		ControlReplay();
 
 	// player flip cheat
-	if (gRightWayUp != 0)
+	if (gRightWayUp)
 	{
 		TempBuildHandlingMatrix(&car_data[player[0].playerCarId], 0);
 		gRightWayUp = 0;
@@ -1572,12 +1500,37 @@ void CheckForPause(void)
 {
 	int ret;
 
-	if (gDieWithFade > 15 && (quick_replay || NoPlayerControl == 0))
+	if (gDieWithFade == 16 && (quick_replay || !NoPlayerControl))
 	{
 		PauseMode = PAUSEMODE_GAMEOVER;
 		WantPause = 1;
+
+		gDieWithFade = 32;
 	}
 
+	// check pads for pause here
+	if (AttractMode == 0 && pauseflag == 0)
+	{
+		if (FrameCnt > 2)
+		{
+			if (NumPlayers == 1)
+			{
+				if (paddp == 0x800 && bMissionTitleFade == 0) // [A] && gInGameCutsceneActive == 0)		// allow pausing during cutscene
+				{
+					EnablePause(PAUSEMODE_PAUSE);
+				}
+			}
+			else if (paddp == 0x800)
+			{
+				EnablePause(PAUSEMODE_PAUSEP1);
+			}
+			else if (NumPlayers == 2 && (Pads[1].dirnew & 0x800))
+			{
+				EnablePause(PAUSEMODE_PAUSEP2);
+			}
+		}
+	}
+	
 	if (WantPause)
 	{
 		WantPause = 0;
@@ -1620,15 +1573,60 @@ void CheckForPause(void)
 	}
 }
 
+#ifdef PSX
+int gMultiStep = 0;
+#endif
 
 // [D] [T]
 void State_GameLoop(void* param)
 {
 	int cnt;
 
+#ifdef PSX
+
 	if (!FilterFrameTime())
 		return;
 
+	static int lastTime32Hz = 0;
+
+	int curTime = clock_realTime.time32Hz;
+	int numFrames = curTime - lastTime32Hz;
+
+	CheckForPause();
+
+	// moved from StepGame
+	if (FrameCnt == 5)
+		SetDispMask(1);
+
+	// game makes 7 frames
+	if (FastForward)
+		cnt = 7;
+	else
+		cnt = gMultiStep ? numFrames : 1;
+
+	if (cnt)
+		lastTime32Hz = curTime;
+
+	// don't do more than 3 frames in non-fastforward mode
+	if (!FastForward && cnt > 3)
+		cnt = 0;
+
+	while (--cnt >= 0)
+	{
+		if(cnt != 0)
+			InitCamera(&player[0]);
+
+		StepGame();
+	}
+
+	DrawGame();
+#else
+
+	if (!FilterFrameTime())
+		return;
+
+	UpdatePadData();
+	
 	CheckForPause();
 
 	// moved from StepGame
@@ -1645,7 +1643,7 @@ void State_GameLoop(void* param)
 		StepGame();
 
 	DrawGame();
-
+#endif
 	if (game_over)
 		SetState(STATE_GAMECOMPLETE);
 }
@@ -1765,6 +1763,8 @@ void PrintCommandLineArguments()
 {
 	const char* argumentsMessage =
 		"Example: REDRIVER2 <command> [arguments]\n\n"
+		"  -ini <filename.ini> : starts game with specific configuration ini\n"
+		"  -cdimage <filename.iso> : starts game with specific ISO/BIN image file\n"
 #ifdef DEBUG_OPTIONS
 		"  -exportxasubtitles: Exports strings from XA WAV files to SBN\n"
 		"  -startpos <x> <z>: Set player start position\n"
@@ -1773,7 +1773,7 @@ void PrintCommandLineArguments()
 		"  -chase <number> : using specified chase number for mission\n"
 		"  -mission <number> : starts specified mission\n"
 #endif // DEBUG_OPTIONS
-		"  -replay <filename> : starts replay from file\n"
+		"  -replay <filename.d2rp> : starts replay from file\n"
 #ifdef CUTSCENE_RECORDER
 		"  -recordcutscene <filename> : starts cutscene recording session. Specify INI filename with it\n"
 #endif
@@ -1786,6 +1786,30 @@ void PrintCommandLineArguments()
 
 // [D] [T]
 #ifdef PSX
+
+extern "C" u_long memTab_org;
+extern "C" u_long mallocTab_org;
+
+// TODO: mapping in Linker script
+//volatile u_char _memoryTab_org[0x50400]  __attribute__((aligned(0x10)));						// 0xE7000
+//volatile u_char _mallocTab_org[0xD47BC /*0xC37BC*/] __attribute__((aligned(0x10)));				// 0x137400
+
+volatile u_char* _memoryTab_org = (u_char*)&memTab_org;
+volatile u_char* _mallocTab_org = (u_char*)&mallocTab_org;
+
+volatile char* _frontend_buffer = NULL;
+volatile char* _other_buffer = NULL;
+volatile char* _other_buffer2 = NULL;
+volatile OTTYPE* _OT1 = NULL;
+volatile OTTYPE* _OT2 = NULL;
+volatile char* _primTab1 = NULL;
+volatile char* _primTab2 = NULL;
+volatile char* _overlay_buffer = NULL;
+volatile char* _replay_buffer = NULL;
+volatile char* _sbank_buffer = NULL;
+volatile char* malloctab = NULL;
+volatile char* mallocptr = NULL;
+
 int main(void)
 #else
 int redriver2_main(int argc, char** argv)
@@ -1817,6 +1841,42 @@ int redriver2_main(int argc, char** argv)
 	//_stacksize = 0x4000;
 	//_ramsize = 0x200000;
 
+#ifdef PSX
+	printf("------REDRIVER2 STARTUP------\n");
+
+	volatile u_char* _path_org = &_memoryTab_org[0];				// 0xE7000
+	volatile u_char* _otag1_org = &_memoryTab_org[0xC000];			// 0xF3000
+	volatile u_char* _otag2_org = &_memoryTab_org[0x10200];			// 0xF7200
+	volatile u_char* _primTab1_org = &_memoryTab_org[0x14400];		// 0xFB400
+	volatile u_char* _primTab2_org = &_memoryTab_org[0x32400];		// 0x119400
+	volatile u_char* _sbnk_org = &_mallocTab_org[0x48C00];			// 0x180000
+	volatile u_char* _frnt_org = &_mallocTab_org[0x88C00];			// 0x1C0000
+	volatile u_char* _repl_org = &_mallocTab_org[0xC47BC];			// 0x1FABBC
+
+	_frontend_buffer = (char*)_otag1_org;
+	_other_buffer = (char*)_otag1_org;
+	_other_buffer2 = (char*)_path_org;
+	_OT1 = (OTTYPE*)_otag1_org;
+	_OT2 = (OTTYPE*)_otag2_org;
+	_primTab1 = (char*)_primTab1_org;
+	_primTab2 = (char*)_primTab2_org;
+	_overlay_buffer = (char*)_frnt_org;
+	_replay_buffer = (char*)_repl_org;
+	_sbank_buffer = (char*)_sbnk_org;
+	malloctab = (char*)_mallocTab_org;
+
+	printf("path_org = %x\n", _path_org); // 0xE7000
+	printf("otag1_org = %x\n", _otag1_org); // 0xF3000
+	printf("otag2_org = %x\n", _otag2_org); // 0xF7200
+	printf("primTab1_org = %x\n", _primTab1_org); // 0xFB400
+	printf("primTab2_org = %x\n", _primTab2_org); // 0x119400
+	printf("sbnk_org = %x\n", _sbnk_org); // 0x180000
+	printf("frnt_org = %x\n", _frnt_org); // 0x1C0000
+	printf("repl_org = %x\n", _repl_org); // 0x1FABBC
+
+	printf("malloctab = %x\n", malloctab);
+#endif
+
 	SetDispMask(0);
 	StopCallback();
 	ResetCallback();
@@ -1839,7 +1899,7 @@ int redriver2_main(int argc, char** argv)
 	InitControllers();
 	Init_FileSystem();
 	InitSound();
-
+	
 	// [A] REDRIVER 2 version auto-detection
 	// this is the only difference between the files on CD
 #ifdef DEMO_VERSION
@@ -1885,11 +1945,9 @@ int redriver2_main(int argc, char** argv)
 	}
 
 	CheckForCorrectDisc(0);
-
+	
 	// Init frontend
-#ifdef PSX
-	Loadfile("FRONTEND.BIN", 0x801C0000);
-#endif // PSX
+	LOAD_OVERLAY("FRONTEND.BIN", _overlay_buffer);
 
 	SpuSetMute(0);
 
@@ -1900,16 +1958,21 @@ int redriver2_main(int argc, char** argv)
 
 	// by default go to frontend
 	SetState(STATE_INITFRONTEND, (void*)2);
+
+	LoadCurrentProfile(1);
 	
-#ifndef PSX
-	LoadCurrentProfile();
-	
+#ifndef PSX	
 	int commandLinePropsShown;
 	commandLinePropsShown = 0;
 
 	for (int i = 1; i < argc; i++)
 	{
-		if (!strcmp(argv[i], "-nofmv"))
+		if (!strcmp(argv[i], "-ini") || 
+			!strcmp(argv[i], "-cdimage"))
+		{
+			i++;
+		}
+		else if (!strcmp(argv[i], "-nofmv"))
 		{
 			gNoFMV = 1;
 		}
@@ -2051,9 +2114,7 @@ int redriver2_main(int argc, char** argv)
 			gInFrontend = 0;
 			AttractMode = 0;
 
-			extern void LoadCutsceneRecorder(char* filename);
-			
-			LoadCutsceneRecorder(argv[i+1]);
+			InitCutsceneRecorder(argv[i+1]);
 			i++;
 		}
 #endif
@@ -2213,25 +2274,11 @@ void RenderGame2(int view)
 
 #ifndef PSX
 	int screenW, screenH;
-	PsyX_GetScreenSize(screenW, screenH);
+	PsyX_GetScreenSize(&screenW, &screenH);
 
 	float aspectVar = float(screenH) / float(screenW);
 
 	FrAng = ratan2(160, float(scr_z) * aspectVar * 1.35f);
-
-#if 0 // old code; now relying on emulator hacks
-	aspect.m[0][0] = 5500 * aspectVar;
-	aspect.m[0][1] = 0;
-	aspect.m[0][2] = 0;
-
-	aspect.m[1][0] = 0;
-	aspect.m[1][1] = 4710;
-	aspect.m[1][2] = 0;
-
-	aspect.m[2][0] = 0;
-	aspect.m[2][1] = 0;
-	aspect.m[2][2] = 4096;
-#endif
 
 	extern void DoFreeCamera();
 	DoFreeCamera();
@@ -2285,24 +2332,22 @@ void RenderGame2(int view)
 		PrintString(G_LTXT(GTXT_DEMO), 32, 15);
 	}
 
-	i = 0;
-	do {
+	for (i = 0; i < 2; i++)
+	{
 		if (player[i].playerCarId >= 0 &&
 			CarHasSiren(car_data[player[i].playerCarId].ap.model) != 0 &&
 			player[i].horn.on != 0)
 		{
 			AddCopCarLight(&car_data[player[i].playerCarId]);
 		}
-
-		i++;
-	} while (i < 2);
+	}
 
 	if (gLoadedOverlay)
 		DisplayOverlays();
 
 	DrawMission();
 
-	if (FastForward == 0 && NumPlayers == 1)
+	if (!FastForward && NumPlayers == 1)
 		DrawLensFlare();
 
 	// Retro calls this BSOD...
@@ -2377,10 +2422,7 @@ void RenderGame2(int view)
 // [D] [T]
 void RenderGame(void)
 {
-	UpdatePadData();
-
 	DrawGame(); // [A] was inline
-
 	FadeGameScreen(0);
 }
 
@@ -2429,11 +2471,8 @@ void InitGameVariables(void)
 
 	PlayerStartInfo[0] = &ReplayStreams[0].SourceType;
 
-#ifdef CUTSCENE_RECORDER
-	extern int gCutsceneAsReplay;
-	if (gCutsceneAsReplay == 0)
+	if (!_CutRec_InitPlayers())
 	{
-#endif
 		ClearMem((char*)PlayerStartInfo[0], sizeof(STREAM_SOURCE));
 
 		PlayerStartInfo[0]->type = 1;
@@ -2469,21 +2508,7 @@ void InitGameVariables(void)
 
 			numPlayersToCreate = NumPlayers;
 		}
-#ifdef CUTSCENE_RECORDER
 	}
-	else
-	{
-		extern int gCutsceneAsReplay_PlayerId;
-		extern int gCutsceneAsReplay_PlayerChanged;
-
-		for (int i = 0; i < NumReplayStreams; i++)
-		{
-			PlayerStartInfo[i] = &ReplayStreams[i].SourceType;
-		}
-
-		numPlayersToCreate = NumReplayStreams;
-	}
-#endif // CUTSCENE_RECORDER
 
 	InitCivCars();
 }

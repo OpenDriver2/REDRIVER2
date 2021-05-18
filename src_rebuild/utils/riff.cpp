@@ -1,6 +1,6 @@
 #include "riff.h"
 #include "driver2.h"
-#include "STRINGS.H"
+#include <strings.h>
 
 CRIFF_Parser::CRIFF_Parser(const char* szFilename)
 {

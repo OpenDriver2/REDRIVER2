@@ -1,4 +1,4 @@
-version: 6.0.{build}
+version: 7.0.{build}
 
 branches:
   only:
@@ -18,12 +18,12 @@ environment:
   # Dependency URLs
   windows_premake_url: 'https://github.com/premake/premake-core/releases/download/v5.0.0-alpha15/premake-5.0.0-alpha15-windows.zip'
   windows_jpeg_url: 'http://www.ijg.org/files/jpegsr9d.zip'
-  windows_openal_url: 'https://openal-soft.org/openal-binaries/openal-soft-1.20.1-bin.zip'
+  windows_openal_url: 'https://openal-soft.org/openal-binaries/openal-soft-1.21.1-bin.zip'
   windows_sdl2_url: 'https://www.libsdl.org/release/SDL2-devel-2.0.14-VC.zip'
   linux_premake_url: 'https://github.com/premake/premake-core/releases/download/v5.0.0-alpha15/premake-5.0.0-alpha15-linux.tar.gz'
   # Dependency Directories
   windows_jpeg_dir: '%dependency_folder%\jpeg-9d'
-  windows_openal_dir: '%dependency_folder%\openal-soft-1.20.1-bin'
+  windows_openal_dir: '%dependency_folder%\openal-soft-1.21.1-bin'
   windows_sdl2_dir: '%dependency_folder%\SDL2-2.0.14'
 
 

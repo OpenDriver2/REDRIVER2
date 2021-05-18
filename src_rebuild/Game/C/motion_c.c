@@ -16,14 +16,9 @@
 #include "cars.h"
 #include "convert.h"
 
-#include "STRINGS.H"
-
 #ifdef USE_PGXP
 #include <math.h>
 #endif
-
-#include "INLINE_C.H"
-#include "GTEMAC.H"
 
 enum LIMBS
 {
@@ -616,8 +611,8 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	if (!bDoingShadow) // [A] Psy-X is currently incorrectly offsets the offscreen PGXP geometry. We don't need it anyway.
 	{
 		PGXPVData vdata1, vdata2;
-		PGXP_GetCacheData(vdata1, PGXP_LOOKUP_VALUE(v1[0], v1[1]), 0);
-		PGXP_GetCacheData(vdata2, PGXP_LOOKUP_VALUE(v2[0], v2[1]), 0);
+		PGXP_GetCacheData(&vdata1, PGXP_LOOKUP_VALUE(v1[0], v1[1]), 0);
+		PGXP_GetCacheData(&vdata2, PGXP_LOOKUP_VALUE(v2[0], v2[1]), 0);
 
 		{
 			float len;
@@ -692,10 +687,10 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 			vdata2.py - (FIXEDH(cs) + dy2) * 0.01f,
 			vdata2.pz, vdata2.scr_h, vdata2.ofx, vdata2.ofy };
 
-		PGXP_EmitCacheData(v0data);
-		PGXP_EmitCacheData(v1data);
-		PGXP_EmitCacheData(v2data);
-		PGXP_EmitCacheData(v3data);
+		PGXP_EmitCacheData(&v0data);
+		PGXP_EmitCacheData(&v1data);
+		PGXP_EmitCacheData(&v2data);
+		PGXP_EmitCacheData(&v3data);
 	}
 #endif
 
@@ -931,9 +926,12 @@ void SetupTannerSkeleton(PEDESTRIAN* pDrawingPed)
 		pC += sizeof(SVECTOR_NOPAD);
 	}
 
-	static SVECTOR scratchpad[NUM_BONES];
-
-	store = scratchpad;
+#ifdef PSX
+	store = (SVECTOR*)getScratchAddr(0x200);
+#else
+	SVECTOR scratchVectors[64];
+	store = scratchVectors;
+#endif
 
 	store[LOWERBACK].vx = Skel[LOWERBACK].pvOrigPos->vx;
 	store[LOWERBACK].vy = -Skel[LOWERBACK].pvOrigPos->vy;
@@ -1011,12 +1009,15 @@ void SetupTannerSkeleton(PEDESTRIAN* pDrawingPed)
 // [A] - was inlined in newShowTanner
 void DrawSprite(PEDESTRIAN* pDrawingPed, BONE* pBone, VECTOR* vJPos)
 {
-	static char scratchpad[sizeof(SVECTOR) * 2];		// 0x1f800200
-
 	VERTTYPE t0[2], t1[2]; // [A] was two longs
 	int z, z1, z2;
 
-	SVECTOR* data = (SVECTOR*)scratchpad;
+#ifdef PSX
+	SVECTOR* data = (SVECTOR*)getScratchAddr(0x200);
+#else
+	SVECTOR scratchVectors[64];
+	SVECTOR* data = scratchVectors;
+#endif
 
 	data[0].vx = vJPos[pBone->id & 0x7f].vx + pDrawingPed->position.vx - camera_position.vx;
 	data[0].vy = vJPos[pBone->id & 0x7f].vy + pDrawingPed->position.vy - camera_position.vy;
@@ -1047,11 +1048,16 @@ void newShowTanner(PEDESTRIAN* pDrawingPed)
 {
 	int i, j;
 	int draw;
-	static VECTOR scratchpad[32];
 
-	VECTOR* playerPos = &scratchpad[0];
-	VECTOR* cameraPos = &scratchpad[1];
-	VECTOR* vJPos = &scratchpad[2];
+#ifdef PSX
+	VECTOR* spad = (VECTOR*)getScratchAddr(0x100);
+#else
+	VECTOR spad[64];
+#endif
+
+	VECTOR* playerPos = &spad[0];
+	VECTOR* cameraPos = &spad[1];
+	VECTOR* vJPos = &spad[2];
 
 	playerPos->vx = pDrawingPed->position.vx;
 	playerPos->vy = pDrawingPed->position.vy - 15;	// [A] elevate Tanner model a little bit so his legs are not in the ground (when Z-buffer enabled)
@@ -1740,7 +1746,7 @@ RECT16 rectTannerWindow;
 // [D] [T]
 void InitTannerShadow(void)
 {
-	unsigned char brightness;
+	u_char brightness;
 	TILE* tile;
 	POLY_FT4* poly;
 	int i;
@@ -1837,36 +1843,21 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 
 	Tangle = ratan2(-pLightPos->vx, pLightPos->vz);
 
-	vert[0].vx = -128;
-	vert[0].vy = 0;
-	vert[0].vz = -320;
-
-	vert[1].vx = 128;
-	vert[1].vy = 0;
-	vert[1].vz = -320;
-
-	vert[2].vx = -128;
-	vert[2].vy = 0;
-	vert[2].vz = 40;
-
-	vert[3].vx = 128;
-	vert[3].vy = 0;
-	vert[3].vz = 40;
+	SetVec(&vert[0], -128, 0, -320);
+	SetVec(&vert[1], 128, 0, -320);
+	SetVec(&vert[2], -128, 0, 40);
+	SetVec(&vert[3], 128, 0, 40);
 
 	for (i = 0; i < 4; i++)
 	{
-		cn = rcos(Tangle);
-		sn = rsin(Tangle);
+		cn = rcos(Tangle); sn = rsin(Tangle);
 
-		vx = vert[i].vx;
-		vz = vert[i].vz;
+		vx = vert[i].vx; vz = vert[i].vz;
 
 		vert[i].vx = FIXED(vx * cn) - FIXED(vz * sn);
 		vert[i].vz = FIXED(vx * sn) + FIXED(vz * cn);
 
-		vert[i].vx += pPedPos->vx;
-		vert[i].vy += pPedPos->vy;
-		vert[i].vz += pPedPos->vz;
+		VecAdd(&vert[i], &vert[i], pPedPos);
 	}
 
 	gte_SetRotMatrix(&inv_camera_matrix);
@@ -1963,8 +1954,6 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 	addPrim(current->ot + 0x107f, dr_env);
 	current->primptr += sizeof(DR_ENV);
 }
-
-extern _pct plotContext;
 
 // [A] - totally custom function but it works pretty much same as original
 void DoCivHead(PEDESTRIAN* pPed, SVECTOR* vert1, SVECTOR* vert2)

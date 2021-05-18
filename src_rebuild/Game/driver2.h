@@ -1,12 +1,23 @@
 #ifndef DRIVER2_H
 #define DRIVER2_H
 
-#include "KERNEL.H"
-#include "TYPES.H"
-#include "LIBCD.H"
-#include "LIBGTE.H"
-#include "LIBGPU.H"
-#include "LIBSPU.H"
+#include <types.h>
+#include <libcd.h>
+#include <libgte.h>
+#include <libgpu.h>
+#include <libspu.h>
+#include <libmcrd.h>
+#include <libmath.h>
+#include <libetc.h>
+#include <libapi.h>
+
+#include <inline_c.h>
+#include <gtemac.h>
+
+#include <strings.h>
+#include <rand.h>
+#include <stdio.h>
+#include <limits.h>
 
 #include "platform.h"
 
@@ -15,12 +26,14 @@
 
 #ifdef PSX
 // TODO: Include PSX STUFF
-#define trap(code) printf("ERROR OCCURED %d!\n", code)
+#define trap(code)
 
-#define printMsg					(void)
-#define printInfo					(void)
-#define printWarning				(void)
-#define printError					(void)
+#define printMsg					printf
+#define printInfo					printf
+#define printWarning				printf
+#define printError					printf
+
+#define LOAD_OVERLAY(filename, addr) Loadfile(filename, (char*)addr)
 
 #else
 
@@ -42,7 +55,11 @@
 #define trap(ode) {_asm int 0x03}
 #endif
 
+#define LOAD_OVERLAY(filename, addr) 1
+
 #endif // PSX
+
+#define D_CHECK_ERROR(expr, message) if(expr){ printError("%s - %s\n", FUNCNAME, message); while (FrameCnt != 0x78654321) trap(0x400); }
 
 #include "reversing.h"
 

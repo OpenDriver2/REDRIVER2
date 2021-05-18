@@ -2,7 +2,6 @@
 #include "denting.h"
 #include "system.h"
 #include "mission.h"
-#include "models.h"
 #include "cars.h"
 #include "convert.h"
 #include "pause.h"
@@ -12,8 +11,6 @@
 #include "debris.h"
 #include "players.h"
 #include "main.h"
-
-#include "STRINGS.H"
 
 char* DentingFiles[] =
 {
@@ -29,9 +26,9 @@ char* DentingFiles[] =
 #define MAX_FILE_DAMAGE_ZONE_POLYS	70
 #define MAX_FILE_DAMAGE_LEVELS		256
 
-unsigned char gCarDamageZoneVerts[MAX_CAR_MODELS][NUM_DAMAGE_ZONES][MAX_DAMAGE_ZONE_VERTS];
-unsigned char gHDCarDamageZonePolys[MAX_CAR_MODELS][NUM_DAMAGE_ZONES][MAX_DAMAGE_ZONE_POLYS];
-unsigned char gHDCarDamageLevels[MAX_CAR_MODELS][MAX_DAMAGE_LEVELS];
+u_char gCarDamageZoneVerts[MAX_CAR_MODELS][NUM_DAMAGE_ZONES][MAX_DAMAGE_ZONE_VERTS];
+u_char gHDCarDamageZonePolys[MAX_CAR_MODELS][NUM_DAMAGE_ZONES][MAX_DAMAGE_ZONE_POLYS];
+u_char gHDCarDamageLevels[MAX_CAR_MODELS][MAX_DAMAGE_LEVELS];
 
 // [D] [T]
 void InitialiseDenting(void)
@@ -345,17 +342,7 @@ void MoveHubcap()
 	MATRIX Orientation;
 	CVECTOR col = {72,72,72};
 
-	Orientation.m[0][0] = ONE;
-	Orientation.m[0][1] = 0;
-	Orientation.m[0][2] = 0;
-
-	Orientation.m[1][0] = 0;
-	Orientation.m[1][1] = ONE;
-	Orientation.m[1][2] = 0;
-
-	Orientation.m[2][0] = 0;
-	Orientation.m[2][1] = 0;
-	Orientation.m[2][2] = ONE;
+	InitMatrix(Orientation);
 
 	if (pauseflag == 0)
 	{

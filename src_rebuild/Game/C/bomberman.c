@@ -19,9 +19,6 @@
 
 #include "ASM/rndrasm.h"
 
-#include "INLINE_C.H"
-#include "RAND.H"
-
 MODEL* gBombModel;
 
 static BOMB ThrownBombs[MAX_THROWN_BOMBS];
@@ -63,17 +60,7 @@ void DrawThrownBombs(void)
 	{
 		if ((bomb->flags & 1) != 0) 
 		{
-			object_matrix.m[0][0] = 0x1000;
-			object_matrix.m[0][1] = 0;
-			object_matrix.m[0][2] = 0;
-
-			object_matrix.m[1][0] = 0;
-			object_matrix.m[1][1] = 0x1000;
-			object_matrix.m[1][2] = 0;
-
-			object_matrix.m[2][0] = 0;
-			object_matrix.m[2][1] = 0;
-			object_matrix.m[2][2] = 0x1000;
+			InitMatrix(object_matrix);
 
 			RotMatrixY(bomb->rot_speed * bomb->active * 3 & 0xfff, &object_matrix);
 			RotMatrixZ(bomb->rot_speed * bomb->active & 0xfff, &object_matrix);
@@ -244,7 +231,7 @@ void ExplosionCollisionCheck(CAR_DATA *cp, EXOBJECT *pE)
 
 		if (pE->type <= LITTLE_BANG)
 		{
-			cd[0].length[1] = minBoxSize + ((pE->time / pE->speed) * littleBoxRange) / (0x1000 / pE->speed);
+			cd[0].length[1] = minBoxSize + ((pE->time / pE->speed) * littleBoxRange) / (4096 / pE->speed);
 		}
 		else if (pE->type == HEY_MOMMA) // biggest bang that might kill Tanner
 		{

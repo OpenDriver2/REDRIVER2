@@ -180,7 +180,7 @@ void WibbleDownTheRoad(VECTOR *from, int distance, VECTOR *to)
 		pos.vy += dir.vy;
 		pos.vz += dir.vz;
 
-#if defined(COLLISION_DEBUG)
+#if defined(COLLISION_DEBUG) && !defined(PSX)
 		extern int gShowCollisionDebug;
 		if (gShowCollisionDebug == 3)
 		{
@@ -314,9 +314,10 @@ void InitCops(void)
 	CarTail.vy = 0;
 	CarTail.vz = 0;
 
-	lastKnownPosition.vx = 0x7fffffff;
-	lastKnownPosition.vy = 0x7fffffff;
-	lastKnownPosition.vz = 0x7fffffff;
+	
+	lastKnownPosition.vx = INT_MAX;
+	lastKnownPosition.vy = INT_MAX;
+	lastKnownPosition.vz = INT_MAX;
 
 	InitCopData(&gCopData);
 
@@ -432,7 +433,7 @@ void CopControl1(CAR_DATA *cp)
 
 		cp->ai.p.frontLClear = CellAtPositionEmpty(&pos, 80);
 
-#ifdef COLLISION_DEBUG
+#if defined(COLLISION_DEBUG) && !defined(PSX)
 		extern int gShowCollisionDebug;
 		if (gShowCollisionDebug == 3)
 		{
@@ -456,7 +457,7 @@ void CopControl1(CAR_DATA *cp)
 
 		cp->ai.p.frontRClear = CellAtPositionEmpty(&pos, 80);
 
-#ifdef COLLISION_DEBUG
+#if defined(COLLISION_DEBUG) && !defined(PSX)
 		extern int gShowCollisionDebug;
 		if (gShowCollisionDebug == 3)
 		{
@@ -762,8 +763,7 @@ void ControlCopDetection(void)
 	int dx, dz;
 	CAR_DATA *cp;
 	VECTOR vec;
-	int ccx;
-	int ccz;
+	int ccx, ccz;
 
 	vec.vx = player[0].pos[0];
 	vec.vy = player[0].pos[1];
@@ -780,7 +780,7 @@ void ControlCopDetection(void)
 
 	CopsCanSeePlayer = (GameType == GAME_SURVIVAL);
 
-	minDistanceToPlayer = 0xFFFFFFFF;
+	minDistanceToPlayer = UINT_MAX;
 
 	// check roadblock visibility
 	if (numRoadblockCars != 0)
@@ -945,7 +945,7 @@ void ControlCopDetection(void)
 	{
 		said_picked_up = 0;
 	}
-	else if (first_offence == 0 && said_picked_up == 0) 
+	else if (!first_offence && !said_picked_up) 
 	{
 		int rnd;
 		rnd = Random2(2);
@@ -1039,12 +1039,12 @@ void ControlNumberOfCops(void)
 
 	if (numCopCars <= numWantedCops) 
 	{
-		gCopData.cutOffDistance = 0x7fffffff;
+		gCopData.cutOffDistance = INT_MAX;
 		cop_respawn_timer = 0;
 		return;
 	}
 	
-	gCopData.cutOffDistance = 0x7fffffff;
+	gCopData.cutOffDistance = INT_MAX;
 
 	do {
 		cutOffDistance = 0;

@@ -13,9 +13,6 @@
 #include "glaunch.h"
 #include "system.h"
 
-#include "INLINE_C.H"
-#include "LIBMATH.H"
-
 struct CAR_LOCALS
 {
 	LONGVECTOR4 vel;
@@ -84,13 +81,7 @@ void GetFrictionScalesDriver1(CAR_DATA* cp, CAR_LOCALS* cl, int* frontFS, int* r
 
 		*frontFS += (q + autoBrake) * 15;
 
-		if (hp->autoBrakeOn == 2)
-		{
-			while (FrameCnt != 0x78654321)
-			{
-				trap(0x400);
-			}
-		}
+		D_CHECK_ERROR(hp->autoBrakeOn == 2, "invalid autoBrakeOn");
 	}
 
 	if ((cp->thrust < 0 && cp->hd.wheel_speed > 41943 && cp->hndType == 0) ||

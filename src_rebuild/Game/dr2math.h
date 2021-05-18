@@ -1,10 +1,18 @@
 #ifndef DR2MATH_H
 #define DR2MATH_H
 
-#include "ABS.H"
+#include <abs.h>
+
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+extern "C" {
+#endif
 
 // Driver 2 math definitions
 extern short rcossin_tbl[8192];
+
+#if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
+}
+#endif
 
 #define ONE				4096
 #define ONE_BITS		12
@@ -21,6 +29,8 @@ extern short rcossin_tbl[8192];
 
 #define RSIN(a)			rcossin_tbl[(a & 0xFFFU) * 2]
 #define RCOS(a)			rcossin_tbl[(a & 0xFFFU) * 2 + 1]
+
+#define DIFF_ANGLES( _ang1, _ang2 ) (((((_ang2) - (_ang1)) + 2048) & 4095) - 2048)
 
 // Remap a value in the range [A,B] to [C,D].
 #define RemapVal( val, A, B, C, D) \
@@ -74,6 +84,17 @@ extern short rcossin_tbl[8192];
 	(vecLeft)->vy *= (vecRight)->vy; \
 	(vecLeft)->vz *= (vecRight)->vz; \
 }
+
+#define	InitMatrix( __m )	\
+		( __m ).m[ 0 ][ 0 ] = ONE,	\
+		( __m ).m[ 1 ][ 0 ] = 0,	\
+		( __m ).m[ 2 ][ 0 ] = 0,	\
+		( __m ).m[ 0 ][ 1 ] = 0,	\
+		( __m ).m[ 1 ][ 1 ] = ONE,	\
+		( __m ).m[ 2 ][ 1 ] = 0,	\
+		( __m ).m[ 0 ][ 2 ] = 0,	\
+		( __m ).m[ 1 ][ 2 ] = 0,	\
+		( __m ).m[ 2 ][ 2 ] = ONE
 
 #define numberOf(sexToys)					(sizeof(sexToys) / sizeof(sexToys[0]))
 

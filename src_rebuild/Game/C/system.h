@@ -3,21 +3,22 @@
 
 extern volatile char* _overlay_buffer;		// 0x1C0000
 extern volatile char* _frontend_buffer;		// 0xFB400
-extern volatile char* _other_buffer;			// 0xF3000
+extern volatile char* _other_buffer;		// 0xF3000
 extern volatile char* _other_buffer2;		// 0xE7000
 
 extern volatile OTTYPE* _OT1;				// 0xF3000
 extern volatile OTTYPE* _OT2;				// 0xF7200
 
-extern volatile char* _primTab1;				// 0xFB400
-extern volatile char* _primTab2;				// 0x119400
+extern volatile char* _primTab1;			// 0xFB400
+extern volatile char* _primTab2;			// 0x119400
+extern volatile char* _sbank_buffer;		// 0x180000
 extern volatile char* _replay_buffer;		// 0x1FABBC
 
 extern char gDataFolder[32];
 
 #define PSX_MALLOC_SIZE 870332
 
-extern volatile const char* malloctab;
+extern volatile char* malloctab;
 extern volatile char* mallocptr;
 
 #ifdef USE_CRT_MALLOC
@@ -39,7 +40,7 @@ extern void sys_freeall();
 #endif
 
 #else
-#define D_MALLOC(size)		(char*)mallocptr; mallocptr += (size)
+#define D_MALLOC(size)		(char*)mallocptr; mallocptr += (size);// (char*)((int)mallocptr + size + 3 & 0xfffffffc);
 #define D_TEMPALLOC(size)	(char*)mallocptr
 #define D_TEMPFREE()
 #endif
@@ -88,7 +89,7 @@ extern DB* current;
 
 // ordering table size 
 #ifdef PSX
-#define	OTSIZE	0x1080		
+#define	OTSIZE	0x1080
 #else
 #define	OTSIZE	0x2000
 #endif

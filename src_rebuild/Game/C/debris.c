@@ -24,8 +24,97 @@
 
 #include "ASM/rndrasm.h"
 
-#include "INLINE_C.H"
-#include "RAND.H"
+struct DAMAGED_LAMP
+{
+	int index;
+	char damage;
+};
+
+struct DAMAGED_OBJECT
+{
+	CELL_OBJECT cop;
+	char active;
+	char damage;
+	int rot_speed;
+	SVECTOR velocity;
+	int vx;
+};
+
+struct SMOKE
+{
+	UnpaddedHackVector position;
+	UnpaddedCharVector drift;
+	UnpaddedCharVector drift_change;
+	UnpaddedHackVector final_tail_pos;
+	u_char step;
+	u_char pos;
+	short start_w;
+	short final_w;
+	char life;
+	char halflife;
+	u_short flags;
+	u_char num;
+	u_char t_step;
+	short transparency;
+};
+
+struct DEBRIS
+{
+	VECTOR position;
+	SVECTOR direction;
+	u_short life;
+	u_short flags;
+	u_short num;
+	u_short pos;
+	RGB rgb;
+	char step;
+	char type;
+};
+
+struct LEAF
+{
+	VECTOR position;
+	SVECTOR direction;
+	u_short life;
+	u_short flags;
+	u_short num;
+	u_short pos;
+	RGB rgb;
+	char step;
+	char type;
+	short sin_index1;
+	short sin_index2;
+	char sin_addition1;
+	char sin_addition2;
+};
+
+struct TRI_POINT
+{
+	BVECTOR v0;
+	BVECTOR v1;
+	BVECTOR v2;
+};
+
+struct TRI_POINT_LONG
+{
+	VECTOR_NOPAD v0;
+	VECTOR_NOPAD v1;
+	VECTOR_NOPAD v2;
+};
+
+struct RAIN_TYPE
+{
+	VECTOR_NOPAD position;
+	SVECTOR oldposition;
+};
+
+struct LAMP_STREAK
+{
+	SXYPAIR light_trails[4];
+	int id;
+	short clock;
+	char set;
+};
 
 TEXTURE_DETAILS digit_texture;
 
@@ -176,7 +265,7 @@ CVECTOR debris_colour[4][31] =
 	}
 };
 
-unsigned char grassColour[4][3] = {
+u_char grassColour[4][3] = {
 	{110, 115, 67},
 	{64, 55, 49},
 	{91, 104, 56},
@@ -749,7 +838,6 @@ void InitDebrisNames(void)
 	GetTextureDetails("HEAD1", &texturePedHead);
 	GetTextureDetails("TSHADOW", &tannerShadow_texture);
 
-	texture_is_icon = 0;
 	head1_texture.coords.u1 = head1_texture.coords.u0 + 8;
 	head1_texture.coords.u3 = head1_texture.coords.u1;
 
@@ -766,7 +854,6 @@ void InitDebris(void)
 	int i, j;
 	TRI_POINT_LONG temptri;
 
-	texture_is_icon = 0;
 	StreakCount1 = 0;
 	next_debris = 0;
 	next_smoke = 0;
@@ -961,9 +1048,6 @@ void AddGroundDebris(void)
 	} while (count < MAX_GROUND_DEBRIS);
 }
 
-
-extern _pct plotContext;
-
 // [D] [T] [A]
 void DrawSmashable_sprites(void)
 {
@@ -980,19 +1064,9 @@ void DrawSmashable_sprites(void)
 		{
 			model = modelpointers[dam->cop.type];
 
-			object_matrix.m[0][0] = ONE;
-			object_matrix.m[0][1] = 0;
-			object_matrix.m[0][2] = 0;
+			InitMatrix(object_matrix);
 
-			object_matrix.m[1][0] = 0;
-			object_matrix.m[1][1] = ONE;
-			object_matrix.m[1][2] = 0;
-
-			object_matrix.m[2][0] = 0;
-			object_matrix.m[2][1] = 0;
-			object_matrix.m[2][2] = ONE;
-
-			if ((model->shape_flags & SHAPE_FLAG_SMASH_SPRITE) == 0)
+			if ((model->shape_flags & SHAPE_FLAG_SPRITE) == 0)
 				RotMatrixY(dam->rot_speed * dam->damage * 3 & 0xfff, &object_matrix);
 
 			RotMatrixZ(dam->rot_speed * dam->damage & 0xfff, &object_matrix);
@@ -1014,7 +1088,7 @@ void DrawSmashable_sprites(void)
 
 			if (FrustrumCheck(&pos, model->bounding_sphere) != -1)
 			{
-				if (model->shape_flags & SHAPE_FLAG_SMASH_SPRITE)
+				if (model->shape_flags & SHAPE_FLAG_SPRITE)
 				{
 					UNIMPLEMENTED();
 
@@ -3641,7 +3715,7 @@ void AddRainDrops(void)
 		{
 			ROADS_GetRouteData(rt->position.vx, rt->position.vz, &routeData);
 
-			if (modelpointers[routeData.type]->flags2 & MODEL_FLAG_HASROOF)
+			if (modelpointers[routeData.type]->flags2 & MODEL_FLAG_INDOORS)
 				break;
 		}
 		*/

@@ -20,9 +20,6 @@
 #include "glaunch.h"
 #include "ASM/rndrasm.h"
 
-#include "INLINE_C.H"
-#include "LIBAPI.H"
-
 #ifndef PSX
 #define CAR_LOD_SWITCH_DISTANCE switch_detail_distance
 #else
@@ -347,7 +344,7 @@ void restoreLightingMatrices(void)
 // [D] [T]
 void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 {
-	MATRIX scratchPadMat; // 0x1f800344
+	MATRIX& scratchPadMat = *(MATRIX*)getScratchAddr(0x344);
 
 	int doLight;
 	int orW;
@@ -564,20 +561,22 @@ void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	SVECTOR* wheelDisp;
 	WHEEL* wheel;
 	int car_id;
+	MODEL *WheelModelBack;
+	MODEL *WheelModelFront;
+
+#ifdef PSX
+	MATRIX& FrontMatrix = *(MATRIX*)getScratchAddr(0);
+	MATRIX& SteerMatrix = *(MATRIX*)getScratchAddr(sizeof(MATRIX));
+	VECTOR& WheelPos = *(VECTOR*)getScratchAddr(sizeof(MATRIX) * 2);
+	SVECTOR& sWheelPos = *(SVECTOR*)getScratchAddr(sizeof(MATRIX) * 2 + sizeof(VECTOR));
+#else
 	MATRIX FrontMatrix;
 	MATRIX SteerMatrix;
 	VECTOR WheelPos;
 	SVECTOR sWheelPos;
-	MODEL *WheelModelBack;
-	MODEL *WheelModelFront;
+#endif
 
-	if (cp < car_data) 
-	{
-		while (FrameCnt != 0x78654321) 
-		{
-			trap(0x400);
-		}
-	}
+	D_CHECK_ERROR(cp < car_data, "Invalid car");
 
 	car_id = CAR_INDEX(cp);
 
@@ -786,7 +785,12 @@ void PlayerCarFX(CAR_DATA *cp)
 // [D] [T]
 void plotNewCarModel(CAR_MODEL* car, int palette)
 {
+#ifdef PSX
+	plotCarGlobals& _pg = *(plotCarGlobals*)getScratchAddr(0);
+#else
 	plotCarGlobals _pg;
+#endif
+
 	u_int lightlevel;
 	u_int underIntensity;
 	SVECTOR v = { 0, -4096, 0 };
@@ -1203,7 +1207,7 @@ void ProcessPalletLump(char *lump_ptr, int lump_size)
 // [D] [T]
 void DrawCarObject(CAR_MODEL* car, MATRIX* matrix, VECTOR* pos, int palette, CAR_DATA* cp, int detail)
 {
-	static unsigned long savedSP;
+	static u_long savedSP;
 
 	VECTOR modelLocation;
 	SVECTOR cog;
@@ -1229,7 +1233,7 @@ void DrawCarObject(CAR_MODEL* car, MATRIX* matrix, VECTOR* pos, int palette, CAR
 
 	gte_SetTransVector(&modelLocation);
 
-	savedSP = SetSp(0x1f800308);
+	savedSP = SetSp((u_long)getScratchAddr(0x308));
 
 	plotNewCarModel(car, palette);
 
@@ -1252,11 +1256,7 @@ void DrawCar(CAR_DATA* cp, int view)
 	VECTOR dist;
 	MATRIX workmatrix;
 
-	if (cp < car_data) {
-		while (FrameCnt != 0x78654321) {
-			trap(0x400);
-		}
-	}
+	D_CHECK_ERROR(cp < car_data, "Invalid car");
 
 	model = cp->ap.model;
 

@@ -9,9 +9,6 @@
 #include "debris.h"
 #include "players.h"
 
-#include "LIBGTE.H"
-#include "INLINE_C.H"
-
 struct RGB16
 {
 	short r;
@@ -278,14 +275,14 @@ void LoadSky(void)
 	}
 
 	sprintf(name, "DATA\\SKY%d.RAW", skyNum);
-	LoadfileSeg(name, (char*)_frontend_buffer, offset, 0x10000);
+	LoadfileSeg(name, (char*)_primTab1, offset, 0x10000);
 
 	rect.x = 320;
 	rect.y = 0;
 	rect.w = 128;
 	rect.h = 256;
 
-	LoadImage(&rect, (u_long*)_frontend_buffer);
+	LoadImage(&rect, (u_long*)_primTab1);
 
 	DrawSync(0);
 }
@@ -835,9 +832,6 @@ void calc_sky_brightness(void)
 	if (skycolor.b > skyFade)
 		skycolor.b = skyFade;
 }
-
-// offset: 0x1f800020
-extern _pct plotContext;
 
 #ifdef USE_PGXP
 DVECTORF scratchPad_skyVertices[35];	// 1f800044

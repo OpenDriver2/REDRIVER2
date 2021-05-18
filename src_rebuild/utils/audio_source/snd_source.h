@@ -1,7 +1,7 @@
 #ifndef SND_SOURCE_H
 #define SND_SOURCE_H
 
-#include "TYPES.H"
+#include <types.h>
 
 typedef struct soundFormat_s
 {

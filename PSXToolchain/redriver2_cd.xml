@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- MKPSXISO example XML script -->
+
+<iso_project image_name="REDRIVER2.bin" cue_sheet="REDRIVER2.cue">
+
+	<!-- <track>
+		Specifies a track to the ISO project. This example element creates a data
+		track for storing data files and CD-XA/STR streams.
+	
+		Only one data track is allowed and data tracks must only be specified as the
+		first track in the ISO image and cannot	be specified after an audio track.
+		
+		Attributes:
+			type		- Track type (either data or audio).
+			source		- For audio tracks only, specifies the file name of a wav audio
+						  file to use for the audio track.	
+	-->
+
+	<track type = "data" >
+	
+		<identifiers
+			system		= "PLAYSTATION"
+			application	= "PLAYSTATION"
+			volume		= "DRIVER2"
+			volumeset	= "DRIVER2"
+			publisher	= "INFOGRAMES"
+			datapreparer	= "INFOGRAMES"
+		/>
+		
+
+		<license file = "licensea.dat"/>
+		
+
+		<directory_tree>
+		
+			<file name = "SYSTEM.CNF"	type = "data"	source="SYSTEM.CNF"/>
+			<file name = "DRIVER2.EXE"	type = "data"		source="0_CD_DATA\DRIVER2.ps-exe"/>
+			
+			<dir name = "DRIVER2">
+
+				<file name = "FRONTEND.BIN"	type = "data"	source="0_CD_DATA\Overlay.frnt"/>
+				<file name = "LEAD.BIN"		type = "data"	source="0_CD_DATA\Overlay.lead"/>
+				<file name = "PATH.BIN"		type = "data"	source="0_CD_DATA\Overlay.path"/>
+
+				<dir name = "DATA">
+					<file name = "SKY0.RAW"		type = "data"	source="0_CD_DATA\DATA\SKY0.RAW"/>
+					<file name = "SKY1.RAW"		type = "data"	source="0_CD_DATA\DATA\SKY1.RAW"/>
+					<file name = "SKY2.RAW"		type = "data"	source="0_CD_DATA\DATA\SKY2.RAW"/>
+					<file name = "SKY3.RAW"		type = "data"	source="0_CD_DATA\DATA\SKY3.RAW"/>
+					
+					<file name = "SCRS.BIN"		type = "data"	source="0_CD_DATA\DATA\SCRS.BIN"/>
+					<file name = "FEFONT.BNK"	type = "data"	source="0_CD_DATA\DATA\FEFONT.BNK"/>
+					<file name = "GFX.RAW"		type = "data"	source="0_CD_DATA\DATA\GFX.RAW"/>
+					<file name = "CITY.RAW"		type = "data"	source="0_CD_DATA\DATA\CITY.RAW"/>
+					<file name = "CITYBACK.RAW"	type = "data"	source="0_CD_DATA\DATA\CITYBACK.RAW"/>
+					<file name = "VOL.RAW"		type = "data"	source="0_CD_DATA\DATA\VOL.RAW"/>
+					<file name = "CARCONT.RAW"	type = "data"	source="0_CD_DATA\DATA\CARCONT.RAW"/>
+					<file name = "TANCONT.RAW"	type = "data"	source="0_CD_DATA\DATA\TANCONT.RAW"/>
+					
+					<dir name = "CARS">
+						<file name = "CARBACK.RAW"	type = "data"	source="0_CD_DATA\DATA\CARS\CARBACK.RAW"/>
+						<file name = "CCARS.RAW"	type = "data"	source="0_CD_DATA\DATA\CARS\CCARS.RAW"/>
+						<file name = "HCARS.RAW"	type = "data"	source="0_CD_DATA\DATA\CARS\HCARS.RAW"/>
+						<file name = "VCARS.RAW"	type = "data"	source="0_CD_DATA\DATA\CARS\VCARS.RAW"/>
+						<file name = "RCARS.RAW"	type = "data"	source="0_CD_DATA\DATA\CARS\RCARS.RAW"/>
+					</dir>
+					
+					<dir name = "CUTS">
+						<file name = "CUTBACK.RAW"	type = "data"	source="0_CD_DATA\DATA\CUTS\CUTBACK.RAW"/>
+						<file name = "CCUTS.RAW"	type = "data"	source="0_CD_DATA\DATA\CUTS\CCUTS.RAW"/>
+						<file name = "HCUTS.RAW"	type = "data"	source="0_CD_DATA\DATA\CUTS\HCUTS.RAW"/>
+						<file name = "VCUTS.RAW"	type = "data"	source="0_CD_DATA\DATA\CUTS\VCUTS.RAW"/>
+						<file name = "RCUTS.RAW"	type = "data"	source="0_CD_DATA\DATA\CUTS\RCUTS.RAW"/>
+					</dir>
+				</dir>
+				
+				<dir name = "GFX">
+					<file name = "FONT2.FNT"	type = "data"	source="0_CD_DATA\GFX\FONT2.FNT"/>
+					<file name = "SPLASH1N.TIM"	type = "data"	source="0_CD_DATA\GFX\SPLASH1N.TIM"/>
+					<file name = "LOADCHIC.TIM"	type = "data"	source="0_CD_DATA\GFX\LOADCHIC.TIM"/>
+					<file name = "LOADHAVA.TIM"	type = "data"	source="0_CD_DATA\GFX\LOADHAVA.TIM"/>
+					<file name = "LOADVEGA.TIM"	type = "data"	source="0_CD_DATA\GFX\LOADVEGA.TIM"/>
+					<file name = "LOADRIO.TIM"	type = "data"	source="0_CD_DATA\GFX\LOADRIO.TIM"/>
+					
+					<file name = "FELOAD.TIM"	type = "data"	source="0_CD_DATA\GFX\FELOAD.TIM"/>
+				</dir>
+
+				<dir name = "LEVELS">
+					<file name = "CHICAGO.LEV"	type = "data"	source="0_CD_DATA\LEVELS\CHICAGO.LEV"/>
+					<file name = "CHICAGO.LCF"	type = "data"	source="0_CD_DATA\LEVELS\CHICAGO.LCF"/>
+					<file name = "CHICAGO.DEN"	type = "data"	source="0_CD_DATA\LEVELS\CHICAGO.DEN"/>
+					
+					<file name = "HAVANA.LEV"	type = "data"	source="0_CD_DATA\LEVELS\HAVANA.LEV"/>
+					<file name = "HAVANA.LCF"	type = "data"	source="0_CD_DATA\LEVELS\HAVANA.LCF"/>
+					<file name = "HAVANA.DEN"	type = "data"	source="0_CD_DATA\LEVELS\HAVANA.DEN"/>
+					
+					<file name = "VEGAS.LEV"	type = "data"	source="0_CD_DATA\LEVELS\VEGAS.LEV"/>
+					<file name = "VEGAS.LCF"	type = "data"	source="0_CD_DATA\LEVELS\VEGAS.LCF"/>
+					<file name = "VEGAS.DEN"	type = "data"	source="0_CD_DATA\LEVELS\VEGAS.DEN"/>
+					
+					<file name = "RIO.LEV"		type = "data"	source="0_CD_DATA\LEVELS\RIO.LEV"/>
+					<file name = "RIO.DEN"		type = "data"	source="0_CD_DATA\LEVELS\RIO.DEN"/>
+					<file name = "RIO.LCF"		type = "data"	source="0_CD_DATA\LEVELS\RIO.LCF"/>
+				</dir>
+
+				<dir name = "MISSIONS">
+					<file name = "MISSIONS.BLK"	type = "data"	source="0_CD_DATA\MISSIONS\MISSIONS.BLK"/>
+					<file name = "PATH40.0"		type = "data"	source="0_CD_DATA\MISSIONS\PATH40.0"/>
+				</dir>
+
+				<dir name = "SOUND">
+					<file name = "MUSIC.BIN"	type = "data"	source="0_CD_DATA\SOUND\MUSIC.BIN"/>
+					<file name = "VOICES2.BLK"	type = "data"	source="0_CD_DATA\SOUND\VOICES2.BLK"/>
+				</dir>
+
+			</dir>
+
+		
+		</directory_tree>
+		
+	</track>
+	
+</iso_project>

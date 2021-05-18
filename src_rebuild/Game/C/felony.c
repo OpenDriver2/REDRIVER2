@@ -10,10 +10,7 @@
 #include "gamesnd.h"
 #include "dr2roads.h"
 #include "overlay.h"
-#include "mission.h"
-
-#include "ABS.H"
-#include "STRINGS.H"
+#include "cutrecorder.h"
 
 short initialOccurrenceDelay[12] = { 24, 0, 0, 0, 0, 0, 0, 0, 24, 0, 24, 0 };
 short initialReccurrenceDelay[12] = { 128, 0, 128, 64, 64, 32, 32, 0, 128, 256 };
@@ -431,6 +428,8 @@ void InitFelonySystem(void)
 void CarHitByPlayer(CAR_DATA *victim, int howHard)
 {
 	char type;
+
+	_CutRec_CheckInvalidatePing(victim->id, howHard);
 
 	if (howHard > 0 && victim->controlType != CONTROL_TYPE_PURSUER_AI) 
 	{

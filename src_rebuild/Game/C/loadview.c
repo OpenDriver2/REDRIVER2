@@ -11,8 +11,6 @@
 #include "main.h"
 #include "cutscene.h"
 
-#include "LIBETC.H"
-
 DRAWENV load_draw = { 0 };
 DISPENV load_disp = { 0 };
 
@@ -125,6 +123,7 @@ void FadeGameScreen(int flag)
 		DrawPrim(&poly);
 
 #ifndef PSX
+		DrawSync(0);
 		PsyX_EndScene();
 #endif
 	}
@@ -328,12 +327,10 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 // [D] [T]
 void CloseShutters(int speed, int width, int height)
 {
-	bool done;
 	int h;
 	POLY_F4 poly[2];
 
 	h = 0;
-	done = false;
 
 	setPolyF4(&poly[0]);
 	setPolyF4(&poly[1]);
@@ -348,20 +345,19 @@ void CloseShutters(int speed, int width, int height)
 		DrawPrim(&poly[0]);
 		DrawPrim(&poly[1]);
 
-		VSync(0);
+		DrawSync(0);	// [A] added to avoid rendering bugs
+
 #ifndef PSX
+		VSync(0);
 		PsyX_EndScene();
 #endif
 
-		if (h > 255) 
-			done = true;
+		if (h >= 255)
+			break;
 
 		h += speed;
 
-	} while (!done);
-
-	ClearOTagR((u_long*)current->ot, OTSIZE);
-	ClearOTagR((u_long*)last->ot, OTSIZE);
+	} while (true);
 
 	SetDispMask(0);
 }

@@ -3,22 +3,10 @@
 #include "draw.h"
 #include "camera.h"
 
-#include "INLINE_C.H"
-
 // [D] [T]
 void Calc_Object_MatrixYZX(MATRIX *mat, SVECTOR *angles)
 {
-	mat->m[0][0] = ONE;
-	mat->m[0][1] = 0;
-	mat->m[0][2] = 0;
-
-	mat->m[1][0] = 0;
-	mat->m[1][1] = ONE;
-	mat->m[1][2] = 0;
-
-	mat->m[2][0] = 0;
-	mat->m[2][1] = 0;
-	mat->m[2][2] = ONE;
+	InitMatrix(*mat);
 
 	RotMatrixX(angles->vx, mat);
 	RotMatrixZ(angles->vz, mat);
@@ -159,6 +147,7 @@ static int randomindex = 0;
 static int randomcounter = 0;
 
 // [D] [T]
+// this function doesn't make difference anyway...
 void RandomInit(int i1, int i2)
 {
 	int step;
@@ -175,11 +164,13 @@ void RandomInit(int i1, int i2)
 
 	count = 14;
 	sd = rseed + 2;
+	
 	do {
 		*sd++ = step;
-		count--;
 		step += 0x1c05e5f;
-	} while (-1 < count);
+		
+		count--;
+	} while (count > -1);
 
 	step = 0;
 

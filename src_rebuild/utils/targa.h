@@ -1,7 +1,7 @@
 #ifndef TARGA_H
 #define TARGA_H
 
-#include "TYPES.H"
+#include <types.h>
 
 #pragma pack (push, 1)
 

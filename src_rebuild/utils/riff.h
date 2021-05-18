@@ -1,7 +1,7 @@
 #ifndef SND_RIFF_H
 #define SND_RIFF_H
 
-#include "TYPES.H"
+#include <types.h>
 #include <stdio.h>
 
 #define RIFF_ID				(('F' << 24) | ('F' << 16) | ('I' << 8) | 'R' )

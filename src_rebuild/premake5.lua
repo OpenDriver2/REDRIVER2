@@ -14,12 +14,24 @@ GAME_REGION = os.getenv("GAME_REGION") or "NTSC_VERSION" -- or PAL_VERSION
 if not (GAME_REGION == "NTSC_VERSION" or GAME_REGION == "PAL_VERSION") then
     error("'GAME_REGION' should be 'NTSC_VERSION' or 'PAL_VERSION'")
 end
+
+------------------------------------------
+
+newoption {
+   trigger     = "raspberry-pi",
+   description = "adds specific define for compiling on Raspberry Pi"
+}
+
+------------------------------------------
 	
 workspace "REDRIVER2"
     configurations { "Debug", "Release", "Release_dev" }
 	platforms { "x86" } --, "x86_64" }
 
     defines { VERSION } 
+	
+	configuration "raspberry-pi"
+		defines { "__RPI__" }
 
 	filter "system:Linux"
 		buildoptions {
@@ -103,12 +115,12 @@ project "REDRIVER2"
     end
 
     filter "system:Windows or linux"
-        defines { "SIMPLE_SPOOL" }
         dependson { "PsyX" }
         links { "Psy-X", "jpeg" }
 		
 		includedirs { 
-			"PsyX/include"
+			"PsyX/include",
+			"PsyX/include/psx"
 		}
 		
 		files {

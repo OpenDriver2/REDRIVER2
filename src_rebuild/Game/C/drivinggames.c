@@ -19,8 +19,20 @@
 
 #include "ASM/rndrasm.h"
 
-#include "INLINE_C.H"
-#include "RAND.H"
+struct TRAILBLAZER_DATA
+{
+	int x, z;
+	short y, rot;
+};
+
+struct SMASHED_CONE
+{
+	char cone;
+	u_char active : 7;
+	u_char side : 1;
+	short rot_speed;
+	VECTOR velocity;
+};
 
 MODEL* gTrailblazerConeModel; 
 SMASHED_CONE smashed_cones[MAX_SMASHED_CONES];
@@ -40,31 +52,28 @@ void InitDrivingGames(void)
 	int i;
 	int j;
 
+	if (NewLevel)
+		gTrailblazerData = NULL;
+	
 	gPlayerScore.time = 0;
-	gTrailblazerData = NULL;
 	gPlayerScore.items = 0;
 	gPlayerScore.P2time = 0;
 	gPlayerScore.P2items = 0;
 
 	if (GameType == GAME_GATERACE || GameType == GAME_TRAILBLAZER) 
 	{
-		if (CutsceneBuffer.bytesFree < 1200)
-		{
-			while (FrameCnt != 0x78654321) 
-			{
-				trap(0x400);
-			}
-		}
-
 		gTrailblazerConeCount = 0;
 		gTrailblazerConeIndex = 0;
-		gTrailblazerData = (TRAILBLAZER_DATA *)CutsceneBuffer.currentPointer;
 
-		CutsceneBuffer.bytesFree -= 1200;
-		sprintf(filename, "TRAILS\\TRAIL.%d", gCurrentMissionNumber);
+		if(NewLevel)
+		{
+			gTrailblazerData = (TRAILBLAZER_DATA*)D_MALLOC(1200); // [A] use malloc
 
-		if (FileExists(filename) != 0) 
-			Loadfile(filename, (char *)gTrailblazerData);
+			sprintf(filename, "TRAILS\\TRAIL.%d", gCurrentMissionNumber);
+
+			if (FileExists(filename) != 0)
+				Loadfile(filename, (char*)gTrailblazerData);
+		}
 	}
 
 	for (i = 0; i < 2; i++)
@@ -166,7 +175,7 @@ void SetSmashedCone(int cone, VECTOR *velocity, int player, int side)
 			SetPlayerOwnsChannel(chan, player);
 
 		tbd = &gTrailblazerData[cone];
-		Start3DSoundVolPitch(chan, 1, SOUND_BANK_MISSION, tbd->x, tbd->y, tbd->z, -2000, 800);
+		Start3DSoundVolPitch(chan, SOUND_BANK_SFX, 1, tbd->x, tbd->y, tbd->z, -2000, 800);
 	}
 }
 
@@ -221,17 +230,8 @@ void DrawCone(VECTOR *position, int cone)
 
 	if (PositionVisible(position) == 0 || FrustrumCheck(position, gTrailblazerConeModel->bounding_sphere) == -1)
 		return;
-
-	matrix.m[0][0] = ONE;
-	matrix.m[1][1] = ONE;
-	matrix.m[2][2] = ONE;
-	matrix.m[1][0] = 0;
-	matrix.m[2][0] = 0;
-	matrix.m[0][1] = 0;
-	matrix.m[2][1] = 0;
-	matrix.m[0][2] = 0;
-	matrix.m[1][2] = 0;
-
+	
+	InitMatrix(matrix);
 	_RotMatrixY(&matrix, gTrailblazerData[cone].rot);
 
 	pos.vx = position->vx - camera_position.vx;
@@ -250,15 +250,7 @@ void DrawSmashedCone(SMASHED_CONE *sc, VECTOR *wpos)
 	MATRIX object_matrix;
 	VECTOR pos;
 
-	object_matrix.m[1][0] = 0;
-	object_matrix.m[2][0] = 0;
-	object_matrix.m[0][1] = 0;
-	object_matrix.m[2][1] = 0;
-	object_matrix.m[0][2] = 0;
-	object_matrix.m[1][2] = 0;
-	object_matrix.m[0][0] = ONE;
-	object_matrix.m[1][1] = ONE;
-	object_matrix.m[2][2] = ONE;
+	InitMatrix(object_matrix);
 
 	RotMatrixY(sc->rot_speed * sc->active * 3 & 0xfff, &object_matrix);
 	RotMatrixZ(sc->rot_speed * sc->active & 0xfff, &object_matrix);

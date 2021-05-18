@@ -3,8 +3,6 @@
 #include "glaunch.h"
 #include "mission.h"
 
-#include "STRINGS.H"
-
 SCORE_TABLES ScoreTables;
 PLAYER_SCORE gPlayerScore;
 

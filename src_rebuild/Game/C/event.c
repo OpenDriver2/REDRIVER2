@@ -14,7 +14,6 @@
 #include "main.h"
 #include "system.h"
 #include "spool.h"
-#include "map.h"
 #include "texture.h"
 #include "civ_ai.h"
 #include "pedest.h"
@@ -22,10 +21,7 @@
 #include "gamesnd.h"
 #include "dr2roads.h"
 #include "ASM/rndrasm.h"
-
-#include "INLINE_C.H"
-#include "GTEMAC.H"
-#include "RAND.H"
+#include "cutrecorder.h"
 
 #define PATH_NODE_WRAP		0x80000000	// go back to first node without interpolation
 #define PATH_NODE_CYCLE		0x80000001	// cycle nodes with interpolation
@@ -1493,17 +1489,7 @@ void SetCamera(EVENT* ev)
 	{
 		camera_position = eventCamera.position;
 
-		matrix.m[0][0] = ONE;
-		matrix.m[1][0] = 0;
-		matrix.m[2][0] = 0;
-
-		matrix.m[0][1] = 0;
-		matrix.m[1][1] = ONE;
-		matrix.m[2][1] = 0;
-
-		matrix.m[0][2] = 0;
-		matrix.m[1][2] = 0;
-		matrix.m[2][2] = ONE;
+		InitMatrix(matrix);
 
 		if (axis == 0x10)
 		{
@@ -2097,11 +2083,8 @@ void StepPathEvent(EVENT* ev)
 // [D] [T]
 int GetBridgeRotation(int timer)
 {
-#ifdef CUTSCENE_RECORDER
-	extern int gCutsceneAsReplay;
-	if (gCutsceneAsReplay != 0)
+	if (_CutRec_IsOn())
 		return 0;
-#endif
 
 	if (gDisableChicagoBridges)
 		return 0;
@@ -2685,15 +2668,7 @@ void DrawRotor(VECTOR pos, MATRIX* matrix)
 		{0,0,0},
 	};
 
-	localMat.m[0][0] = ONE;
-	localMat.m[1][0] = 0;
-	localMat.m[2][0] = 0;
-	localMat.m[0][1] = 0;
-	localMat.m[1][1] = ONE;
-	localMat.m[2][1] = 0;
-	localMat.m[0][2] = 0;
-	localMat.m[1][2] = 0;
-	localMat.m[2][2] = ONE;
+	InitMatrix(localMat);
 
 	pos.vx -= camera_position.vx;
 	pos.vy -= camera_position.vy;

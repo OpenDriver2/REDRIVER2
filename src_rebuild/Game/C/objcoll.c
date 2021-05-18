@@ -14,44 +14,49 @@
 #include "players.h"
 #include "main.h"
 
-
 // [D] [T]
 char CellEmpty(VECTOR *pPosition, int radius)
 {
 	PACKED_CELL_OBJECT* ppco;
-	CELL_OBJECT* pCellObject;
+	CELL_OBJECT tempCO;
 	MODEL* pModel;
 	int num_cb;
 	int box_loop;
 	int sphere_sq;
-	int zd;
-	int sn;
+	int xd, zd;
+	int sn, cs;
+	int xs, zs;
 	int ypos;
-	int cs;
 	COLLISION_PACKET* collide;
-	int xs;
-	int zs;
-	int xd;
+	
 	int cell_x, cell_z;
+	int type;
+
+#if 0
+	CELL_ITERATOR& ci = *(CELL_ITERATOR*)getScratchAddr(1024 - sizeof(CELL_ITERATOR));
+#else
 	CELL_ITERATOR ci;
+#endif
 
 	cell_x = (pPosition->vx + units_across_halved) / MAP_CELL_SIZE;
 	cell_z = (pPosition->vz + units_down_halved) / MAP_CELL_SIZE;
 
 	ppco = GetFirstPackedCop(cell_x, cell_z, &ci, 0);
-	pCellObject = UnpackCellObject(ppco, &ci.nearCell);
 
-	while(pCellObject)
+	while(ppco)
 	{
-		pModel = modelpointers[pCellObject->type];
+		type = (ppco->value >> 6) | ((ppco->pos.vy & 1) << 10);
+		pModel = modelpointers[type];
 
-		if (pModel->collision_block > 0 && 
-			(pModel->flags2 & (MODEL_FLAG_NOCOL_200 | MODEL_FLAG_SMASHABLE)) == 0)
+		if ((uint)pModel->collision_block > 0 && 
+			(pModel->flags2 & (MODEL_FLAG_CHAIR | MODEL_FLAG_SMASHABLE)) == 0)
 		{
+			QuickUnpackCellObject(ppco, &ci.nearCell, &tempCO);
+
 			num_cb = *(int*)pModel->collision_block;
 
-			xd = (pCellObject->pos.vx - pPosition->vx);
-			zd = (pCellObject->pos.vz - pPosition->vz);
+			xd = (tempCO.pos.vx - pPosition->vx);
+			zd = (tempCO.pos.vz - pPosition->vz);
 
 			sphere_sq = pModel->bounding_sphere + 580;
 			sphere_sq = (sphere_sq * sphere_sq);
@@ -69,8 +74,8 @@ char CellEmpty(VECTOR *pPosition, int radius)
 					zs = collide->zsize * 0x800 + radius * 0x1000;
 					xs = collide->xsize * 0x800 + radius * 0x1000;
 
-					theta = (pCellObject->yang + collide->yang) * 64 & 0xfff;
-					ypos = pPosition->vy + (pCellObject->pos.vy + collide->ypos) + 80;
+					theta = (tempCO.yang + collide->yang) * 64 & 0xfff;
+					ypos = pPosition->vy + (tempCO.pos.vy + collide->ypos) + 80;
 
 					cs = rcossin_tbl[theta * 2 + 1];
 					sn = rcossin_tbl[theta * 2];
@@ -82,8 +87,8 @@ char CellEmpty(VECTOR *pPosition, int radius)
 					int theta;
 					MATRIX2* mat;
 
-					yang = -pCellObject->yang & 0x3f;
-					theta = (pCellObject->yang + collide->yang) * 64 & 0xfff;
+					yang = -tempCO.yang & 0x3f;
+					theta = (tempCO.yang + collide->yang) * 64 & 0xfff;
 
 					mat = &matrixtable[yang];
 
@@ -93,15 +98,15 @@ char CellEmpty(VECTOR *pPosition, int radius)
 					xxd = FIXEDH(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]);
 					zzd = FIXEDH(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]);
 
-					xd = (pCellObject->pos.vx - pPosition->vx) + xxd;
-					zd = (pCellObject->pos.vz - pPosition->vz) + zzd;
+					xd = (tempCO.pos.vx - pPosition->vx) + xxd;
+					zd = (tempCO.pos.vz - pPosition->vz) + zzd;
 
 					zs = ((collide->zsize + 10) * 2048 + radius * 4096);
 					xs = ((collide->xsize + 10) * 2048 + radius * 4096);
 
-					ypos = pPosition->vy + (pCellObject->pos.vy + collide->ypos);	// [A] removed excessive height
+					ypos = pPosition->vy + (tempCO.pos.vy + collide->ypos);	// [A] removed excessive height
 					
-#ifdef COLLISION_DEBUG
+#if defined(COLLISION_DEBUG) && !defined(PSX)
 					int result = 0;
 
 					if (collide->ysize / 2 > ABS(ypos) &&
@@ -116,11 +121,11 @@ char CellEmpty(VECTOR *pPosition, int radius)
 					{
 						CDATA2D cd[1];
 
-						cd[0].x.vx = (pCellObject->pos.vx + xxd);//FIXEDH(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
-						cd[0].x.vz = (pCellObject->pos.vz + zzd);//FIXEDH(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
+						cd[0].x.vx = (tempCO.pos.vx + xxd);//FIXEDH(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
+						cd[0].x.vz = (tempCO.pos.vz + zzd);//FIXEDH(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
 						cd[0].x.vy = pPosition->vy;
 
-						cd[0].theta = theta; // (pCellObject->yang + collide->yang) * 64 & 0xfff;
+						cd[0].theta = theta; // (tempCO.yang + collide->yang) * 64 & 0xfff;
 						cd[0].length[0] = collide->zsize / 2;
 						cd[0].length[1] = collide->xsize / 2;
 
@@ -195,7 +200,6 @@ char CellEmpty(VECTOR *pPosition, int radius)
 		}
 
 		ppco = GetNextPackedCop(&ci);
-		pCellObject = UnpackCellObject(ppco, &ci.nearCell);
 	}
 
 	return 1;
@@ -205,10 +209,8 @@ char CellEmpty(VECTOR *pPosition, int radius)
 // [D] [T]
 int GlobalPositionToCellNumber(VECTOR *pPosition)
 {
-	int cellZ;
-	int cellX;
-	int cbrZ;
-	int cbrX;
+	int cellX, cellZ;
+	int cbrX, cbrZ;
 	int cbr;
 
 	cellX = (pPosition->vx + units_across_halved - (MAP_REGION_SIZE*MAP_REGION_SIZE)) / MAP_CELL_SIZE;
@@ -306,7 +308,7 @@ int testRadius = 222;
 char lineClear(VECTOR *v1, VECTOR *v2)
 {
 	PACKED_CELL_OBJECT* ppco;
-	CELL_OBJECT* pCellObject;
+	CELL_OBJECT tempCO;
 	MATRIX2* mat;
 	int cell_z;
 	int cell_x;
@@ -323,7 +325,6 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 	VECTOR pos;
 	VECTOR va;
 	VECTOR vb;
-	CELL_ITERATOR ci;
 	tRay ray;
 	tAABB box;
 	int we;
@@ -334,6 +335,12 @@ char lineClear(VECTOR *v1, VECTOR *v2)
  	int sphere_sq; // $v0
  	int xd; // $a0
  	int zd; // $v1
+
+#ifdef PSX
+	CELL_ITERATOR& ci = *(CELL_ITERATOR*)getScratchAddr(1024 - sizeof(CELL_ITERATOR));
+#else
+	CELL_ITERATOR ci;
+#endif
 
 	va.vx = v1->vx;
 	va.vy = v1->vy;
@@ -367,17 +374,18 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 		{
 			ppco = GetFirstPackedCop(cell_x, cell_z, &ci, 0);
 
-			while (pCellObject = UnpackCellObject(ppco, &ci.nearCell), pCellObject != NULL)
+			while (ppco)
 			{
-				pModel = modelpointers[pCellObject->type];
+				QuickUnpackCellObject(ppco, &ci.nearCell, &tempCO);
+				pModel = modelpointers[tempCO.type];
 
-				xd = ((pCellObject->pos.vx - ((va.vx + vb.vx) / 2 & 0xffffU)) * 0x10000) >> 0x10;
-				zd = ((pCellObject->pos.vz - ((va.vz + vb.vz) / 2 & 0xffffU)) * 0x10000) >> 0x10;
+				xd = ((tempCO.pos.vx - ((va.vx + vb.vx) / 2 & 0xffffU)) * 0x10000) >> 0x10;
+				zd = ((tempCO.pos.vz - ((va.vz + vb.vz) / 2 & 0xffffU)) * 0x10000) >> 0x10;
 
 				sphere_sq = pModel->bounding_sphere + 800;
 
-				if (pModel->collision_block > 0 && 
-					(pModel->flags2 & (MODEL_FLAG_NOCOL_200 | MODEL_FLAG_SMASHABLE)) == 0 && 
+				if ((uint)pModel->collision_block > 0 &&
+					(pModel->flags2 & (MODEL_FLAG_CHAIR | MODEL_FLAG_SMASHABLE)) == 0 && 
 					(xd*xd + zd*zd < sphere_sq*sphere_sq))
 				{
 					num_cb = *(int*)pModel->collision_block;
@@ -387,16 +395,16 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 
 					while (box_loop < num_cb)
 					{
-						yang = -pCellObject->yang & 0x3f;
-						theta = (pCellObject->yang + collide->yang) * 64 & 0xfff;
+						yang = -tempCO.yang & 0x3f;
+						theta = (tempCO.yang + collide->yang) * 64 & 0xfff;
 
 						mat = &matrixtable[yang];
 
 						cs = rcossin_tbl[theta * 2 + 1];
 						sn = rcossin_tbl[theta * 2];
 
-						dx = va.vx - (pCellObject->pos.vx + FIXEDH(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
-						dz = va.vz - (pCellObject->pos.vz + FIXEDH(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
+						dx = va.vx - (tempCO.pos.vx + FIXEDH(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
+						dz = va.vz - (tempCO.pos.vz + FIXEDH(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
 						
 						box.slab[0].upper = collide->xsize / 2 +testRadius;
 						box.slab[0].lower = -box.slab[0].upper;
@@ -409,13 +417,13 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 
 						ray.org[0] = FIXEDH(cs * dx - sn * dz);
 						ray.org[2] = FIXEDH(cs * dz + sn * dx);
-						ray.org[1] = (va.vy - (((-collide->ypos - pCellObject->pos.vy) * 0x10000) >> 0x10)) + 80;
+						ray.org[1] = (va.vy - (((-collide->ypos - tempCO.pos.vy) * 0x10000) >> 0x10)) + 80;
 
 						ray.dir[0] = FIXEDH(cs * pos.vx - sn * pos.vz);
 						ray.dir[2] = FIXEDH(cs * pos.vz + sn * pos.vx);
 						ray.dir[1] = vb.vy - va.vy;
 
-#if defined(COLLISION_DEBUG)
+#if defined(COLLISION_DEBUG) && !defined(PSX)
 						int rayResult = RaySlabsIntersection(&ray, &box);
 
 						extern int gShowCollisionDebug;
@@ -423,11 +431,11 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 						{
 							CDATA2D cd[1];
 
-							cd[0].x.vx = (pCellObject->pos.vx + FIXEDH(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
-							cd[0].x.vz = (pCellObject->pos.vz + FIXEDH(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
+							cd[0].x.vx = (tempCO.pos.vx + FIXEDH(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
+							cd[0].x.vz = (tempCO.pos.vz + FIXEDH(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
 							cd[0].x.vy = va.vy;
 
-							cd[0].theta = (pCellObject->yang + collide->yang) * 64 & 0xfff;
+							cd[0].theta = (tempCO.yang + collide->yang) * 64 & 0xfff;
 							cd[0].length[0] = collide->zsize / 2;
 							cd[0].length[1] = collide->xsize / 2;
 
@@ -517,10 +525,16 @@ void CollisionCopList(XZPAIR* pos, int* count)
 	CELL_OBJECT* cop;
 	int i, j, cnt;
 	XZPAIR cell;
-	CELL_ITERATOR ci;
 	XZPAIR cbr;
 	MODEL* model;
 	int cellLevel;
+	int type;
+
+#if 0
+	CELL_ITERATOR& ci = *(CELL_ITERATOR*)getScratchAddr(1024 - sizeof(CELL_ITERATOR));
+#else
+	CELL_ITERATOR ci;
+#endif
 	
 	cellLevel = events.camera ? events.draw : -1;
 
@@ -545,19 +559,21 @@ void CollisionCopList(XZPAIR* pos, int* count)
 					
 					while (ppco)
 					{
-						cop = UnpackCellObject(ppco, &ci.nearCell);
-						cop->pad = cnt;
+						type = (ppco->value >> 6) | ((ppco->pos.vy & 1) << 10);
 
-						model = modelpointers[cop->type];
+						model = modelpointers[type];
 
-						if (model->collision_block > 0 &&
+						if ((uint)model->collision_block > 0 &&
 							/*model->num_vertices - 3 < 300 &&
 							model->num_point_normals < 300 &&
 							model->num_polys < 300 &&*/
 							*(int*)model->collision_block > 0)
 						{
+							cop = UnpackCellObject(ppco, &ci.nearCell);
+							cop->pad = cnt;
+
 							coplist[cnt] = cop;
-							pcoplist[cnt] = ci.ppco;
+							pcoplist[cnt] = ppco;
 							cnt++;
 						}
 
@@ -627,11 +643,7 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 	else
 		lbody = cp->ap.carCos->colBox.vz;
 
-	if (cp < car_data)
-	{
-		while (FrameCnt != 0x78654321)
-			trap(0x400);
-	}
+	D_CHECK_ERROR(cp < car_data, "Invalid car");
 
 	if (ghost_mode || cp->controlType == CONTROL_TYPE_PLAYER && playerghost)
 		return;
@@ -666,11 +678,13 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 			cop = &EventCop[count - mdcount];
 
 		model = modelpointers[cop->type];
+		num_cb = *(int*)model->collision_block;	// box count
 
-		if (model->collision_block > 0 /*&&
+		if ((uint)model->collision_block > 0 /*&&
 			model->num_vertices - 3 < 300 &&
 			model->num_point_normals < 300 &&
-			model->num_polys < 300*/)
+			model->num_polys < 300*/ &&
+			num_cb > 0)
 		{
 			dx = cop->pos.vx - player_pos.vx;
 			dz = cop->pos.vz - player_pos.vz;
@@ -679,7 +693,6 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 
 			if (dx * dx + dz * dz < sphereSq * sphereSq)
 			{
-				num_cb = *(int *)model->collision_block;	// box count
 				collide = (COLLISION_PACKET*)(model->collision_block + sizeof(int));
 
 				while(num_cb--)
@@ -720,7 +733,7 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 					}
 					else if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER)
 					{
-						if ((model->flags2 & (MODEL_FLAG_NOCOL_200 | MODEL_FLAG_SMASHABLE)) == 0 && 
+						if ((model->flags2 & (MODEL_FLAG_CHAIR | MODEL_FLAG_SMASHABLE)) == 0 && 
 							(bbox.xsize > 100 || (bbox.zsize > 100)))
 						{
 							coll_test_count = 5;
@@ -782,7 +795,6 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 // [D] [T]
 int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 {
-	CDATA2D cd[2] = { 0 };
 	int count;
 	int num_cb;
 	MODEL *model;
@@ -796,6 +808,12 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 	VECTOR offset;
 	int mdcount;
 	int dx, dz;
+
+#if 0
+	CDATA2D* cd = (CDATA2D*)getScratchAddr(1024 - sizeof(CDATA2D)*2);
+#else
+	CDATA2D cd[2] = { 0 };
+#endif
 
 	gCameraBoxOverlap = -1;
 
@@ -823,7 +841,7 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 
 		model = modelpointers[cop->type];
 
-		if (model->collision_block > 0 /*&&
+		if ((uint)model->collision_block > 0 /*&&
 			model->num_vertices - 3 < 300 && 
 			model->num_point_normals < 300 && 
 			model->num_polys < 300*/)

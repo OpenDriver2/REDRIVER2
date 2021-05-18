@@ -8,15 +8,6 @@
 #include "xaplay.h"
 #include "players.h"
 
-#include "LIBSPU.H"
-#include "LIBETC.H"
-#include "LIBGTE.H"
-
-#include "INLINE_C.H"
-
-#include "RAND.H"
-#include "STRINGS.H"
-
 #define SPU_CHANNEL_COUNT 24
 #define LSB_BANK_COUNT 7
 

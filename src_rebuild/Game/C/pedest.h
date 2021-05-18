@@ -41,8 +41,6 @@ extern void ControlPedestrians(); // 0x0006F16C
 
 extern void DeActivatePlayerPedestrian(PEDESTRIAN *pPed); // 0x0007216C
 
-extern void CivPedDoNothing(PEDESTRIAN *pPed); // 0x00072CE0
-
 extern void SetupCivPedRouteData(VECTOR *pPos); // 0x0007313C
 
 extern void PingInPedestrians(); // 0x0007047C
@@ -57,13 +55,7 @@ extern int PingOutPed(PEDESTRIAN *pPed); // 0x000731F8
 
 extern void SetupCivJump(PEDESTRIAN *pPed, CAR_DATA *cp); // 0x00071054
 
-extern void CivPedJump(PEDESTRIAN *pPed); // 0x00072CF0
-
 extern void SetupCivPedWalk(PEDESTRIAN *pPed); // 0x00073270
-
-extern void CivPedWalk(PEDESTRIAN *pPed); // 0x00071324
-
-extern void CivPedSit(PEDESTRIAN *pPed); // 0x00072CE8
 
 extern void HandlePedestrians(); // 0x0007211C
 

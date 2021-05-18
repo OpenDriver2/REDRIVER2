@@ -7,8 +7,6 @@
 #include "pause.h"
 #include "sound.h"
 
-#include "LIBETC.H"
-
 struct POLYCOORD
 {
 	short x;
@@ -576,8 +574,8 @@ void CheckForCorrectDisc(int disc)
 
 	rect.x = 0;
 	rect.y = 0;
-	rect.w = 0x140;
-	rect.h = 0x200;
+	rect.w = 320;
+	rect.h = 512;
 
 	ClearImage(&rect, 0, 0, 0);
 	DrawSync(0);
@@ -622,20 +620,20 @@ void CheckForCorrectDisc(int disc)
 		}
 
 		VSync(0);
-		rect.y = 0x6e;
+		rect.y = 110;
 		rect.x = 0;
-		rect.w = 0x140;
-		rect.h = 0x3c;
+		rect.w = 320;
+		rect.h = 60;
 		
 		ClearImage(&rect, 0, 0, 0);
 		DrawSync(0);
 		gShowMap = 1;
 
 		SetTextColour(128, 128, 128);
-		PrintStringCentred(mess, 0x6e);
+		PrintStringCentred(mess, 110);
 
 		SetTextColour(128, 16, 16);
-		PrintStringCentred(mess2, 0x8c);
+		PrintStringCentred(mess2, 140);
 
 #ifndef PSX
 		PsyX_EndScene();

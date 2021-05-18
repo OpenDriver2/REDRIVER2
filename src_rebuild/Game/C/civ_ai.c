@@ -23,10 +23,7 @@
 #include "pedest.h"
 #include "objcoll.h"
 #include "overlay.h"
-
-#include "INLINE_C.H"
-#include "STRINGS.H"
-#include "ABS.H"
+#include "cutrecorder.h"
 
 const u_char speedLimits[3] = { 56, 97, 138 };
 
@@ -42,10 +39,10 @@ struct
 	int TooCloseNuddaCar;
 	int TooClosePlayer;
 	int InvalidRegion;
-} civPingTest = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+} civPingTest;
 
 char modelRandomList[] = { 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 1, 0, 4 };
-unsigned char reservedSlots[MAX_CARS] = { 0 };
+u_char reservedSlots[MAX_CARS] = { 0 };
 
 int distFurthestCivCarSq = 0;
 char furthestCivID = 0;
@@ -104,11 +101,12 @@ int InitCar(CAR_DATA* cp, int direction, LONGVECTOR4* startPos, unsigned char co
 	cp->ap.qy = 0;
 	cp->ap.qw = 0;
 	cp->ap.carCos = &car_cosmetics[model];
+
 	tmpStart.vx = (*startPos)[0];
 	tmpStart.vy = (*startPos)[1];
 	tmpStart.vz = (*startPos)[2];
-	tmpStart.vy = MapHeight(&tmpStart);
-	tmpStart.vy = tmpStart.vy - cp->ap.carCos->wheelDisp[0].vy;
+
+	tmpStart.vy = MapHeight(&tmpStart) - cp->ap.carCos->wheelDisp[0].vy;
 
 	// not valid request
 	if (control == CONTROL_TYPE_NONE)
@@ -176,7 +174,7 @@ CAR_DATA* FindClosestCar(int x, int y, int z, int* distToCarSq)
 	int dz; // $v1
 
 	retCar = NULL;
-	retDistSq = 0x7fffffff; // INT_MAX
+	retDistSq = INT_MAX;
 	lcp = car_data;
 
 	do {
@@ -1675,8 +1673,7 @@ int PingOutAllCivCarsAndCopCars(void)
 // checks distance from player and removes car if too far
 int CheckPingOut(CAR_DATA * cp)
 {
-	int dz;
-	int dx;
+	int dx, dz;
 	int dist;
 
 	dx = player[0].spoolXZ->vx - cp->hd.where.t[0];
@@ -1862,19 +1859,16 @@ int CreateStationaryCivCar(int direction, long orientX, long orientZ, LONGVECTOR
 		carCnt = car_data;
 		slot = reservedSlots;
 
-		if (true)
-		{
-			do {
-				if (carCnt->controlType == CONTROL_TYPE_NONE && *slot == 0)
-				{
-					newCar = carCnt;
-					break;
-				}
+		do {
+			if (carCnt->controlType == CONTROL_TYPE_NONE && *slot == 0)
+			{
+				newCar = carCnt;
+				break;
+			}
 
-				carCnt++;
-				slot++;
-			} while (carCnt < &car_data[MAX_CARS]);
-		}
+			carCnt++;
+			slot++;
+		} while (carCnt < &car_data[MAX_CARS]);
 
 		if (newCar)
 		{
@@ -1972,14 +1966,7 @@ int PingInCivCar(int minPingInDist)
 
 	PingOutCivsOnly = 1;
 
-#ifdef CUTSCENE_RECORDER
-	extern int gCutsceneAsReplay;
-	if (gCutsceneAsReplay != 0)
-	{
-		requestCopCar = 0;
-		allowSpecSpooling = 0;
-	}
-#endif
+	_CutRec_HandleCarRequest();
 	
 	if (requestCopCar == 0 && numParkedCars < maxParkedCars && (gCurrentMissionNumber != 33 || numCivCars != 0))
 	{
@@ -2388,7 +2375,7 @@ int PingInCivCar(int minPingInDist)
 
 	GetNodePos(roadInfo.straight, NULL, roadInfo.curve, civDat.distAlongSegment, newCar, &newCar->ai.c.targetRoute[0].x, &newCar->ai.c.targetRoute[0].z, lane);
 
-	retDistSq = 0x7fffffff; // INT_MAX
+	retDistSq = INT_MAX;
 	pos[0] = newCar->ai.c.targetRoute[0].x;
 	pos[2] = newCar->ai.c.targetRoute[0].z;
 	pos[1] = randomLoc.vy;
@@ -2480,7 +2467,7 @@ int PingInCivCar(int minPingInDist)
 	PingOutCivsOnly = 0;
 
 	// [A] REDRIVER2 always stores pings
-	StorePingInfo(cookieCount, newCar->id);
+	_CutRec_StorePingInfo(cookieCount, newCar->id);
 
 	return newCar->id + 1;
 }
@@ -2894,7 +2881,7 @@ void SetUpCivCollFlags(void)
 					}
 
 					// do overlap test between boxes
-					if (bcollided2d(cd, &boxOverlap) == 0)
+					if (!bcollided2d(cd, &boxOverlap))
 					{
 						cp1--;
 						continue;
@@ -2930,16 +2917,14 @@ void SetUpCivCollFlags(void)
 
 						dont = 0;
 
-						i = 0;
-						do {
+						for (i = 0; i < 2; i++)
+						{
 							if (horncarflag[i] == cp0)
 							{
 								dont = 1;
 								break;
 							}
-
-							i++;
-						} while (i < 2);
+						}
 
 						if (dont)
 						{
@@ -2947,8 +2932,8 @@ void SetUpCivCollFlags(void)
 							continue;
 						}
 
-						i = 0;
-						do {
+						for (i = 0; i < 2; i++) 
+						{
 							if (hornchanflag[i] == 0)
 							{
 								int sample;
@@ -2975,9 +2960,7 @@ void SetUpCivCollFlags(void)
 								channels[hornchanflag[i]].time += rnd - (rnd / 30) * 30;
 								break;
 							}
-
-							i++;
-						} while (i < 2);
+						}
 					}
 				}
 
@@ -2988,8 +2971,8 @@ void SetUpCivCollFlags(void)
 	}
 
 	// clear on timeout
-	i = 0;
-	do {
+	for (i = 0; i < 2; i++)
+	{
 		if (hornchanflag[i] != 0 && channels[hornchanflag[i]].time == 0)
 		{
 			horncarflag[i] = NULL;
@@ -2997,10 +2980,7 @@ void SetUpCivCollFlags(void)
 
 			SpuSetVoiceAR(0, 35);
 		}
-
-		i++;
-
-	} while (i < 2);
+	}
 }
 
 // [D] [T]

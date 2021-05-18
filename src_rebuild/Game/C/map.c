@@ -8,11 +8,8 @@
 #include "draw.h"
 #include "camera.h"
 #include "glaunch.h"
-#include "models.h"
 #include "players.h"
 #include "main.h"
-
-#include "STRINGS.H"
 
 char *map_lump = NULL;
 int initarea = 0;
@@ -76,7 +73,7 @@ void InitCellData(void)
 // [D] [T]
 void ProcessMapLump(char* lump_ptr, int lump_size)
 {
-	memcpy((u_char*)&cell_header, lump_ptr, sizeof(OUT_CELL_FILE_HEADER));
+	memcpy((u_char*)&cell_header, (u_char*)lump_ptr, sizeof(OUT_CELL_FILE_HEADER));
 
 	cells_across = cell_header.cells_across;
 	cells_down = cell_header.cells_down;
@@ -117,7 +114,7 @@ void ProcessMapLump(char* lump_ptr, int lump_size)
 	num_straddlers = *(int*)lump_ptr;
 
 	InitCellData();
-	memcpy((u_char*)cell_objects, lump_ptr + 4, num_straddlers * sizeof(PACKED_CELL_OBJECT));
+	memcpy((u_char*)cell_objects, (u_char*)lump_ptr + 4, num_straddlers * sizeof(PACKED_CELL_OBJECT));
 }
 
 
@@ -267,7 +264,7 @@ int CheckUnpackNewRegions(void)
 	}
 	else if (32 - force_load_boundary < current_barrel_region_xcell)
 	{
-		if (region_x < cells_across >> 5)
+		if (region_x < regions_across)
 		{
 			leftright_unpack = 2;
 			num_regions_to_unpack = 1;
@@ -298,8 +295,6 @@ int CheckUnpackNewRegions(void)
 	{
 		if (topbottom_unpack == 1)
 		{
-			num_regions_to_unpack = 3;
-
 			if (leftright_unpack == 1)
 			{
 				regions_to_unpack[2].xoffset = -1;
@@ -450,7 +445,16 @@ void InitMap(void)
 	}
 
 	// load regions synchronously
-	if (doSpooling == 0)
+	if (doSpooling)
+	{
+		regions_unpacked[0] = -1;
+		regions_unpacked[1] = -1;
+		regions_unpacked[2] = -1;
+		regions_unpacked[3] = -1;
+
+		ControlMap();
+	}
+	else
 	{
 		old_region = -1;
 
@@ -461,8 +465,8 @@ void InitMap(void)
 			multiplayerregions[3] = multiplayerregions[2] + 1;
 		}
 
-		i = 0;
-		do {
+		for (i = 0; i < 4; i++)
+		{
 			region_to_unpack = multiplayerregions[i];
 
 			if (spoolinfo_offsets[region_to_unpack] != 0xffff)
@@ -472,13 +476,12 @@ void InitMap(void)
 				if (spoolptr->super_region != 0xff)
 					initarea = spoolptr->super_region;
 
-				barrel_region = (region_to_unpack % (cells_across >> 5) & 1U) + (region_to_unpack / (cells_across >> 5) & 1U) * 2;
+				barrel_region = (region_to_unpack % regions_across & 1U) +
+								(region_to_unpack / regions_across & 1U) * 2;
 
 				UnpackRegion(region_to_unpack, barrel_region);
 			}
-
-			i++;
-		} while (i < 4);
+		}
 
 		LoadInAreaTSets(initarea);
 		LoadInAreaModels(initarea);
@@ -488,25 +491,13 @@ void InitMap(void)
 
 		StartSpooling();
 	}
-	else
-	{
-		regions_unpacked[0] = -1;
-		regions_unpacked[1] = -1;
-		regions_unpacked[2] = -1;
-		regions_unpacked[3] = -1;
-
-		ControlMap();
-	}
 }
 
 // [D] [T] [A]
 void GetVisSetAtPosition(VECTOR *pos, char *tgt, int *ccx, int *ccz)
 {
-	int cz;
-	int cx;
-
-	int rz;
-	int rx;
+	int cx, cz;
+	int rx, rz;
 
 	cx = (pos->vx + units_across_halved) / MAP_CELL_SIZE;
 	cz = (pos->vz + units_down_halved) / MAP_CELL_SIZE;
@@ -527,8 +518,6 @@ void GetVisSetAtPosition(VECTOR *pos, char *tgt, int *ccx, int *ccz)
 		tgt);
 }
 
-unsigned char nybblearray[512] = { 0 };
-
 char* PVS_Buffers[4] = { 0 };
 int pvsSize[4] = { 0, 0, 0, 0 };
 unsigned char *PVSEncodeTable = NULL;
@@ -536,16 +525,15 @@ unsigned char *PVSEncodeTable = NULL;
 // [D] [T]
 void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBodge)
 {
-	unsigned char scratchPad[1024];
-
+	u_char nybblearray[256];
 	int pixelIndex;
-	unsigned char* decodebuf;
-	unsigned char* op;
+	u_char* decodebuf;
+	u_char* op;
 	int i, j;
 	int symIndex;
 	int size;
 
-	decodebuf = scratchPad;
+	decodebuf = (u_char*)getScratchAddr(0);
 	ClearMem((char*)decodebuf,pvs_square_sq);
 
 	// decode byte-swapped array
@@ -625,8 +613,8 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 
 	size = pvs_square - 1;
 	op = (decodebuf - 2) + (size * pvs_square + pvs_square);
-	i = size;
 
+	i = size;
 	while (i >= 0) 
 	{
 		j = pvs_square-2;
@@ -688,20 +676,18 @@ void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 		PVSEncodeTable = (unsigned char *)(bp + 0x802);
 		tbp = bp + cell * 2;
 
-		length = M_SHRT_2((unsigned char)tbp[2], (unsigned char)tbp[3]) - M_SHRT_2((unsigned char)tbp[0], (unsigned char)tbp[1]) & 0xffff;
+		length = M_SHRT_2((u_char)tbp[2], (u_char)tbp[3]) - M_SHRT_2((u_char)tbp[0], (u_char)tbp[1]) & 0xffff;
 
-		if (length == 0) 
+		if (length != 0) 
 		{
-			for (k = 0; k < pvs_square_sq; k++)
-				output[k] = 1;
+			havanaCorruptCellBodge = (regions_unpacked[source_region] == 158 && cell == 168);
+
+			PVSDecode(output, bp + M_SHRT_2((u_char)tbp[0], (u_char)tbp[1]), length, havanaCorruptCellBodge);
 		}
 		else 
 		{
-			havanaCorruptCellBodge = 0;
-			if (regions_unpacked[source_region] == 158 && cell == 168) 
-				havanaCorruptCellBodge = (GameLevel == 1);
-
-			PVSDecode(output, bp + M_SHRT_2((unsigned char)tbp[0], (unsigned char)tbp[1]), length, havanaCorruptCellBodge);
+			for (k = 0; k < pvs_square_sq; k++)
+				output[k] = 1;
 		}
 	}
 	else 

@@ -27,10 +27,6 @@
 
 #include "ASM/rndrasm.h"
 
-#include "STRINGS.H"
-#include "INLINE_C.H"
-
-
 MODEL* pmTannerModels[17] = { 0 };
 MODEL* pmJerichoModels[6] = { 0 };
 
@@ -2766,8 +2762,7 @@ int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVEC
 	int playerId;
 	VECTOR* pos;
 	VECTOR v;
-	int y;
-	int d;
+	int d, y;
 	PLAYER* lp;
 	int x, z;
 
@@ -2822,7 +2817,8 @@ int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVEC
 
 	wbody += 90;
 
-	dir = d - 0x800;
+	dir = d - 2048;
+
 	v.vy = y;
 	v.vx = x - FIXED(wbody * rcossin_tbl[(d & 0xfffU) * 2 + 1]);
 	v.vz = z + FIXED(wbody * rcossin_tbl[(d & 0xfffU) * 2]);
@@ -2831,7 +2827,8 @@ int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVEC
 
 	if (pCar != NULL)
 	{
-		if (QuickBuildingCollisionCheck(&v, dir, 10, 10, 10) != 0 || TannerCarCollisionCheck(&v, d, 1) != 0)
+		if (QuickBuildingCollisionCheck(&v, dir, 10, 10, 10) || 
+			TannerCarCollisionCheck(&v, d, 1))
 		{
 			side = 1;
 
@@ -2840,9 +2837,10 @@ int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVEC
 			v.vx = x - FIXED(-wbody * rcossin_tbl[(d & 0xfffU) * 2 + 1]);
 			v.vz = z + FIXED(-wbody * rcossin_tbl[(d & 0xfffU) * 2]);
 
-			if (QuickBuildingCollisionCheck(&v, dir, 10, 10, 10) != 0)
+			if (QuickBuildingCollisionCheck(&v, dir, 10, 10, 10))
 				return 0;
-			if (TannerCarCollisionCheck(&v, d, 1) != 0)
+			
+			if (TannerCarCollisionCheck(&v, d, 1))
 				return 0;
 		}
 	}
@@ -2880,7 +2878,7 @@ int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVEC
 	pedptr->position.vz = v.vz;
 
 	if (pCar != NULL)
-		pedptr->position.vy = (pCar->hd).where.t[1];
+		pedptr->position.vy = pCar->hd.where.t[1];
 
 	pedptr->position.vy = -130 - MapHeight(pos);
 	pedptr->dir.vz = 0;
@@ -2924,11 +2922,10 @@ int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVEC
 			}
 			else
 			{
-				pedptr->pallet = ((Random2(0) % 3) + (Random2(0) % 3)) * 16;
-
-				//rnd1 = Random2(0);
-				//rnd2 = Random2(0);
-				//pedptr->pallet = rnd1 - (rnd1 / 3) * 3 + (rnd2 - (rnd2 / 3) * 3) * 16;
+				int rnd1 = Random2(0);
+				int rnd2 = Random2(0);
+				
+				pedptr->pallet = rnd1 - rnd1 / 3 * 3 + (rnd2 - rnd2 / 3 * 3) * 16;
 			}
 		}
 	}

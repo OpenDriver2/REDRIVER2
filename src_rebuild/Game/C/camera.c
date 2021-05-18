@@ -19,11 +19,7 @@
 #include "models.h"
 #include "map.h"
 #include "pedest.h"
-
-#include "INLINE_C.H"
-#include "LIBGTE.H"
-
-
+#include "cell.h"
 
 VECTOR gCameraOffset = { 0};
 VECTOR camera_position = { 0, 380, 0, 0 };
@@ -259,7 +255,7 @@ int CameraCollisionCheck(void)
 {
 	int sphere;
 	PACKED_CELL_OBJECT *ppco;
-	CELL_OBJECT *cop;
+	CELL_OBJECT tempCO;
 	MODEL *model;
 	MATRIX2* mat;
 	int zd;
@@ -289,17 +285,20 @@ int CameraCollisionCheck(void)
 		if (gCameraDistance > 0)
 		{
 			ppco = GetFirstPackedCop(cellx, cellz, &ci, 0, cellLevel);
-			cop = UnpackCellObject(ppco, &ci.nearCell);
-
-			while (cop != NULL) 
+			
+			while (ppco) 
 			{
-				model = modelpointers[cop->type];
+				int type = (ppco->value >> 6) | ((ppco->pos.vy & 1) << 10);
+
+				model = modelpointers[type];
 				boxptr = (int *)model->collision_block;
 
 				if (boxptr != NULL && (model->flags2 & MODEL_FLAG_SMASHABLE) == 0)
 				{
-					xd = ABS(cop->pos.vx - camera_position.vx);
-					zd = ABS(cop->pos.vz - camera_position.vz);
+					QuickUnpackCellObject(ppco, &ci.nearCell, &tempCO);
+
+					xd = ABS(tempCO.pos.vx - camera_position.vx);
+					zd = ABS(tempCO.pos.vz - camera_position.vz);
 
 					num_cb = *boxptr;
 					collide = (COLLISION_PACKET *)(boxptr + 1);
@@ -312,11 +311,11 @@ int CameraCollisionCheck(void)
 							VECTOR cam_vec;
 							VECTOR offset;
 
-							cam_vec.vx = camera_position.vx - cop->pos.vx;
-							cam_vec.vy = camera_position.vy - cop->pos.vy;
-							cam_vec.vz = camera_position.vz - cop->pos.vz;
+							cam_vec.vx = camera_position.vx - tempCO.pos.vx;
+							cam_vec.vy = camera_position.vy - tempCO.pos.vy;
+							cam_vec.vz = camera_position.vz - tempCO.pos.vz;
 
-							mat = &matrixtable[cop->yang];
+							mat = &matrixtable[tempCO.yang];
 
 							offset.vx = FIXED(cam_vec.vx * mat->m[0][0] + cam_vec.vz * mat->m[2][0]) - collide->xpos;
 							offset.vy = cam_vec.vy - collide->ypos;
@@ -349,7 +348,6 @@ int CameraCollisionCheck(void)
 					}
 				}
 				ppco = GetNextPackedCop(&ci);
-				cop = UnpackCellObject(ppco, &ci.nearCell);
 			}
 		}
 		count++;

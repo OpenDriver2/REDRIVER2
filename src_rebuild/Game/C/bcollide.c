@@ -12,10 +12,6 @@
 #include "handling.h"
 #include "camera.h"
 #include "objanim.h"
-
-#include "RAND.H"
-#include "STRINGS.H"
-#include "INLINE_C.H"
 #include "system.h"
 
 extern int gCameraBoxOverlap;
@@ -562,9 +558,6 @@ void DamageCar(CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVel
 // [D] [T]
 int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop, int flags)
 {
-	static CDATA2D cd[2] = {0}; // offset 0x0
-	static CRET2D collisionResult = { 0 }; // offset 0xd0
-
 	int temp;
 	int strikeVel;
 	int boxDiffY;
@@ -588,7 +581,18 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 	int displacement;
 	int denom;
 	int buildingHeightY;
-	
+
+#if 0 //def PSX
+	CDATA2D* cd = (CDATA2D*)getScratchAddr(0);
+	CRET2D& collisionResult = *(CRET2D*)getScratchAddr(sizeof(CDATA2D) * 2);
+
+	memset((u_char*)cd, 0, sizeof(CDATA2D));
+	memset((u_char*)&collisionResult, 0, sizeof(CRET2D));
+#else
+	static CDATA2D cd[2] = { 0 }; // offset 0x0
+	static CRET2D collisionResult = { 0 }; // offset 0xd0
+#endif
+
 	model = modelpointers[cop->type];
 	player_id = GetPlayerId(cp);
 
@@ -864,7 +868,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 						damage_object(cop, &velocity);
 
 						// smash object
-						if ((model->shape_flags & SHAPE_FLAG_SMASH_QUIET) == 0)
+						if ((model->shape_flags & SHAPE_FLAG_TRANS) == 0)
 						{
 							sip = smashable;
 							match = sip;

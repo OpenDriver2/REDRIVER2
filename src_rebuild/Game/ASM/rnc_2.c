@@ -8,8 +8,6 @@
 
 #include "driver2.h"
 
-#include "STRINGS.H"
-
 struct RNCheader
 {
     u_int identifier;    //must contain 'R', 'N', 'C', method

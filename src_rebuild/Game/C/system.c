@@ -16,20 +16,27 @@
 #include "draw.h"
 #include "pause.h"
 
-#include "LIBETC.H"
-#include "STRINGS.H"
+char gDataFolder[32] = "DRIVER2\\";
 
 #ifdef PSX
 
-volatile char* _frontend_buffer	= 0x800FB400;
-volatile char* _other_buffer	= 0x800F3000;
-volatile char* _other_buffer2	= 0x800E7000;
-volatile OTTYPE* _OT1			= 0x800F3000;
-volatile OTTYPE* _OT2			= 0x800F7200;
-volatile char* _primTab1		= 0x800FB400;
-volatile char* _primTab2		= 0x80119400;
-volatile char* _overlay_buffer	= 0x801C0000;
-volatile char* _replay_buffer	= 0x801FABBC;
+/* those should be passed to linker script
+
+------------------------------------------------------------------------------------
+NAME					| OFFSET   | SIZE	 | DESCRIPTION
+------------------------|----------|---------|--------------------------------------
+_path_org				| 0xE7000  | 0xB7C8	 |
+_otag1_org				| 0xF3000  | 0x4200	 |
+_otag2_org				| 0xF7200  | 0x4200	 |
+_primTab1_org			| 0xFB400  | 1E000	 |
+_primTab2_org			| 0x119400 | 1E000	 |
+_mallocTab_org			| 0x137400 | 0xD47BC |(this is bigger, real is 0xC37BC)
+_frnt_org				| 0x1C0000 | no size | inside mallocTab
+_sbnk_org				| 0x180000 | no size | inside mallocTab
+_repl_org				| 0x1FABBC | 0x3444  | probably inside mallocTab
+
+*/
+
 
 #else
 
@@ -41,17 +48,18 @@ volatile OTTYPE* _OT1 = NULL;				// 0xF3000
 volatile OTTYPE* _OT2 = NULL;				// 0xF7200
 volatile char* _primTab1 = NULL;			// 0xFB400
 volatile char* _primTab2 = NULL;			// 0x119400
+volatile char* _sbank_buffer = NULL;		// 0x180000
 volatile char* _overlay_buffer = NULL;		// 0x1C0000
 volatile char* _replay_buffer = NULL;		// 0x1FABBC
 
 #endif
 
-char gDataFolder[32] = "DRIVER2\\";
 
-#ifdef USE_CRT_MALLOC
+
+#if defined(USE_CRT_MALLOC)
 
 char* mallocptr = NULL;
-volatile const char* malloctab = NULL;
+volatile char* malloctab = NULL;
 
 void* g_dynamicAllocs[1024] = { 0 };
 int g_numDynamicAllocs = 0;
@@ -107,16 +115,11 @@ void sys_tempfree()
 	free(g_dynamicAllocs[g_numDynamicAllocs]);
 	g_dynamicAllocs[g_numDynamicAllocs] = NULL;
 }
-#elif defined(PSX)
-
-volatile char* mallocptr;
-volatile const char* malloctab = 0x800137400;
-
-#else
+#elif !defined(PSX)
 
 char g_allocatedMem[0x200000];			// 0x137400 (_ramsize). TODO: use real malloc  size: 870332
 volatile char* mallocptr = g_allocatedMem;
-volatile const char* malloctab = g_allocatedMem;
+volatile char* malloctab = g_allocatedMem;
 
 #endif
 
@@ -345,9 +348,11 @@ int FileExists(char* filename)
 		retries--;
 		DoCDRetry();
 	} while (retries >= 0);
+
 #else
 	// don't retry or we'll have problems
-	return CdSearchFile(&cdfile, namebuffer) != NULL;
+	if(CdSearchFile(&cdfile, namebuffer) != NULL)
+		return 1;
 #endif
 	
 #endif // USE_CD_FILESYSTEM
@@ -360,7 +365,7 @@ int FileExists(char* filename)
 int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 {
 	char namebuffer[64];
-	
+
 #if USE_PC_FILESYSTEM
 	int fileSize;
 
@@ -388,11 +393,11 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 #endif // USE_PC_FILESYSTEM
 
 #if USE_CD_FILESYSTEM
-	int first;
-	int i;
+	char* readPtr;
+	char* sectorPtr;
+	int remainingBytes;
+	int remainingOffset;
 	int sector;
-	int toload;
-	int nsectors;
 	u_char result[8];
 	char sectorbuffer[2048];
 	CdlLOC pos;
@@ -409,77 +414,61 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 		}
 	}
 
-	// skip sectors
-	sector = offset / 2048 + CdPosToInt(&currentfileinfo.pos);
-	nsectors = offset & 0x7ff;
-	toload = loadsize;
+	remainingOffset = offset & 0x7ff;
+	remainingBytes = loadsize;
 
-	if (nsectors)
+	// seek to the sector
+	sector = offset / 2048 + CdPosToInt(&currentfileinfo.pos);
+		
+	// start reading sectors from CD
+	while(remainingBytes > 0)
 	{
+		// start reading if we getting to desired offset
 		CdIntToPos(sector, &pos);
+
+		// if we don't have offset or we have more than 2048 bytes
+		//   - we can read into buffer directly (which is faster)
+		if (remainingBytes >= 2048 && remainingOffset == 0)
+			sectorPtr = addr;
+		else
+			sectorPtr = sectorbuffer;
+
+		// read sector
 		do
 		{
 			if (CdDiskReady(0) != CdlComplete)
 				DoCDRetry();
-		} while (CdControlB(CdlSetloc, (u_char*)&pos, NULL) == 0 ||
-				CdRead(1, (u_long*)sectorbuffer, CdlModeSpeed) == 0 ||
-				CdReadSync(0, result) != 0);
 
-		if (loadsize <= 2048 - nsectors)
+		} while (CdControlB(CdlSetloc, (u_char*)&pos, NULL) == 0 ||
+			CdRead(1, (u_long*)sectorPtr, CdlModeSpeed) == 0 ||
+			CdReadSync(0, result) != 0);
+
+		// non-direct reads must be handled
+		if(sectorPtr == sectorbuffer)
 		{
-			int cnt = nsectors + loadsize;
-			while (nsectors < cnt)
+			// fetch
+			readPtr = sectorbuffer + remainingOffset;
+
+			// copy bytes
+			while (remainingBytes > 0 &&
+				readPtr - sectorbuffer < 2048)	// don't leave boundary
 			{
-				*addr++ = sectorbuffer[nsectors++];
+				*addr++ = *readPtr++;
+				remainingBytes--;
 			}
 
-			return loadsize;
+			remainingOffset = 0;
+		}
+		else
+		{
+			addr += 2048;
+			remainingBytes -= 2048;
 		}
 
-		toload = loadsize - (2048 - nsectors);
+		// go to next sector
 		sector++;
-
-		while (nsectors < 2048)
-			*addr++ = sectorbuffer[nsectors++];
 	}
-
-	first = toload / 2048;
-
-	// load sectors
-	if (first)
-	{
-		CdIntToPos(sector, &pos);
-		sector = sector + first;
-
-		do
-		{
-			if (CdDiskReady(0) != CdlComplete)
-				DoCDRetry();
-		} while (CdControlB(CdlSetloc, (u_char*)&pos, NULL) == 0 ||
-				CdRead(first, (u_long*)addr, CdlModeSpeed) == 0 ||
-				CdReadSync(0, result) != 0);
-
-		addr += first * 2048;
-		toload -= first * 2048;
-	}
-
-	// cap
-	if (toload > 0)
-	{
-		CdIntToPos(sector, &pos);
-
-		do
-		{
-			if (CdDiskReady(0) != CdlComplete)
-				DoCDRetry();
-		} while (CdControlB(CdlSetloc, (u_char*)&pos, NULL) == 0 ||
-				CdRead(1, (u_long*)sectorbuffer, CdlModeSpeed) == 0 ||
-				CdReadSync(0, result) != 0);
-		i = 0;
-		while (i < toload)
-			*addr++ = sectorbuffer[i++];
-	}
-
+	
 	return loadsize;
 #elif USE_PC_FILESYSTEM
 	char errPrint[1024];
@@ -493,11 +482,11 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 // [D] [T]
 void ReportMode(int on)
 {
-	static unsigned char param[8];
+	static u_char param[8];
 
 	if (XAPrepared() == 0)
 	{
-		if (on != 0)
+		if (on)
 			param[0] = CdlModeSpeed | CdlModeRept;
 		else
 			param[0] = CdlModeSpeed;
@@ -506,13 +495,13 @@ void ReportMode(int on)
 	}
 }
 
-static u_char endread = 0;
-static u_char load_complete = 0;
+static volatile u_char endread = 0;
+static volatile u_char load_complete = 0;
 
 // [D] [T]
 void data_ready(void)
 {
-	if (endread != 0)
+	if (endread)
 	{
 		CdDataCallback(NULL);
 		load_complete = 1;
@@ -522,9 +511,6 @@ void data_ready(void)
 static int current_sector = 0; // offset 0xAB27C
 static char* current_address = NULL; // offset 0xAB288
 static int sectors_left = 0; // offset 0xAB280
-static int sectors_read = 0; // offset 0xAB284
-static int sectors_this_chunk = 0; // offset 0xAB174
-static int sectors_to_read = 0; // offset 0xAB170
 
 // [D] [T]
 void sector_ready(u_char intr, u_char* result)
@@ -534,7 +520,7 @@ void sector_ready(u_char intr, u_char* result)
 	if (intr == 1)
 	{
 		// read sector data
-		CdGetSector(current_address, 512);
+		CdGetSector(current_address, SECTOR_SIZE);
 
 		current_address += 2048;
 		current_sector++;
@@ -543,6 +529,7 @@ void sector_ready(u_char intr, u_char* result)
 		if (sectors_left == 0)
 		{
 			endread = 1;
+			
 			CdReadyCallback(NULL);
 			CdControlF(CdlPause, 0);
 		}
@@ -569,6 +556,10 @@ void loadsectors(char* addr, int sector, int nsectors)
 {
 	CdlLOC pos;
 
+	// [A]
+	if (nsectors == 0)
+		return;
+
 	load_complete = 0;
 	endread = 0;
 
@@ -579,10 +570,11 @@ void loadsectors(char* addr, int sector, int nsectors)
 	CdDataCallback(data_ready);
 	CdReadyCallback(sector_ready);
 
-	// start asynchronous reading
+	// start asynchronous reading...
 	CdIntToPos(sector, &pos);
 	CdControlF(CdlReadS, (u_char*)&pos);
 
+	// ... but wait synchronously
 	do {
 	} while (load_complete == 0);
 
@@ -800,9 +792,7 @@ void SetupDrawBufferData(int num_players)
 	}
 	else
 	{
-		do {
-			trap(0x400);
-		} while (FrameCnt != 0x78654321);
+		D_CHECK_ERROR(true, "Erm... too many players selected. FATAL!");
 	}
 
 	SetGeomOffset(width / 2, height / 2);
@@ -1003,49 +993,10 @@ void SetCityType(CITYTYPE type)
 #endif // PSX
 }
 
-#ifndef PSX
-int gImitateDiscSwap = 0;
-int gImitateDiscSwapFrames = 0;
-#endif
-
 // [D] [T]
 CDTYPE DiscSwapped(char* filename)
 {
-#ifndef PSX
-	// Fancy sequence in homage of PS1 version
-	// any button press will skip it
-	ReadControllers();
-
-	if (Pads[0].mapnew)
-		gImitateDiscSwap = -1;
-
-	if (gImitateDiscSwap > 0)
-	{
-		int g_cdNumFrames = 80;
-
-		if(gImitateDiscSwap == 4)
-			g_cdNumFrames = 28;
-
-#ifdef __EMSCRIPTEN__
-		emscripten_sleep(0);
-#endif
-		
-		if (VSync(-1) - gImitateDiscSwapFrames > g_cdNumFrames)
-		{
-			gImitateDiscSwap++;
-			gImitateDiscSwapFrames = VSync(-1);
-		}
-
-		if(gImitateDiscSwap == 1)
-			return CDTYPE_WRONGDISC;
-		else if (gImitateDiscSwap == 2 || gImitateDiscSwap == 3)
-			return CDTYPE_SHELLOPEN;
-		else if (gImitateDiscSwap == 4)
-			return CDTYPE_DISCERROR;
-		else
-			gImitateDiscSwap = -1;
-	}
-
+#if 1//ndef PSX
 	return CDTYPE_CORRECTDISC;
 #else
 	CDTYPE ret;

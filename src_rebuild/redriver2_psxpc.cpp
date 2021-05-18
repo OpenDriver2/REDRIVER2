@@ -25,7 +25,7 @@
 #include <SDL_gamecontroller.h>
 #include <SDL_messagebox.h>
 
-#include "PSYX_GLOBALS.H"
+#include "PsyX/PsyX_globals.h"
 
 int(*GPU_printf)(const char *fmt, ...);
 
@@ -61,7 +61,7 @@ void FreeCameraMouseHandler(int x, int y)
 		extern SVECTOR g_FreeCameraRotation;
 
 		int width, height;
-		PsyX_GetScreenSize(width, height);
+		PsyX_GetScreenSize(&width, &height);
 
 		cursorX = x;
 		cursorY = y;
@@ -79,7 +79,7 @@ void FreeCameraMouseHandler(int x, int y)
 	}
 }
 
-void FreeCameraKeyboardHandler(int nKey, bool down)
+void FreeCameraKeyboardHandler(int nKey, char down)
 {
 	if (g_FreeCameraEnabled)
 	{
@@ -134,7 +134,7 @@ int gStopCivCars = 0;
 
 extern void FunkUpDaBGMTunez(int funk);
 
-void GameDebugKeys(int nKey, bool down)
+void GameDebugKeys(int nKey, char down)
 {
 	CheckModifierKeys(nKey, down);
 	FreeCameraKeyboardHandler(nKey, down);
@@ -328,8 +328,9 @@ char g_Other_buffer[0x50000];		// 0xF3000
 char g_Other_buffer2[0x50000];		// 0xE7000
 OTTYPE g_OT1[OTSIZE];				// 0xF3000
 OTTYPE g_OT2[OTSIZE];				// 0xF7200
-char g_PrimTab1[PRIMTAB_SIZE];			// 0xFB400
-char g_PrimTab2[PRIMTAB_SIZE];			// 0x119400
+char g_PrimTab1[PRIMTAB_SIZE];		// 0xFB400
+char g_PrimTab2[PRIMTAB_SIZE];		// 0x119400
+char g_SBank_buffer[0x50000];		// 0x180000
 char g_Replay_buffer[0x50000];		// 0x1fABBC
 #endif
 
@@ -489,9 +490,11 @@ int main(int argc, char** argv)
 	_other_buffer2 = (char*)malloc(0x50000);			// 0xE7000
 	_OT1 = (OTTYPE*)malloc(OTSIZE * sizeof(OTTYPE));	// 0xF3000
 	_OT2 = (OTTYPE*)malloc(OTSIZE * sizeof(OTTYPE));	// 0xF7200
-	_primTab1 = (char*)malloc(PRIMTAB_SIZE);					// 0xFB400
-	_primTab2 = (char*)malloc(PRIMTAB_SIZE);					// 0x119400
+	_primTab1 = (char*)malloc(PRIMTAB_SIZE);			// 0xFB400
+	_primTab2 = (char*)malloc(PRIMTAB_SIZE);			// 0x119400
+	_sbank_buffer = (char*)malloc(0x80000);				// 0x180000
 	_replay_buffer = (char*)malloc(0x50000);			// 0x1fabbc
+	
 #else
 	_overlay_buffer = g_Overlay_buffer;		// 0x1C0000
 	_frontend_buffer = g_Frontend_buffer;	// 0xFB400
@@ -501,6 +504,7 @@ int main(int argc, char** argv)
 	_OT2 = g_OT2;							// 0xF7200
 	_primTab1 = g_PrimTab1;					// 0xFB400
 	_primTab2 = g_PrimTab2;					// 0x119400
+	_sbank_buffer = g_SBank_buffer;			// 0x180000
 	_replay_buffer = g_Replay_buffer;		// 0x1fABBC
 #endif
 
@@ -517,6 +521,23 @@ int main(int argc, char** argv)
 		FS.mount(NODEFS, {}, '/working1');
 	);
 #endif
+
+	const char* configFilename = "config.ini";
+	const char* cdImageFileName = NULL;
+
+	for (int i = 1; i < argc; i++)
+	{
+		if (!strcmp(argv[i], "-ini"))
+		{
+			i++;
+			configFilename = argv[i];
+		}
+		else if(!strcmp(argv[i], "-cdimage"))
+		{
+			i++;
+			cdImageFileName = argv[i];
+		}
+	}
 
 	config = ini_load("config.ini");
 
@@ -537,15 +558,11 @@ int main(int argc, char** argv)
 		int newScrZ = gCameraDefaultScrZ;
 		const char* dataFolderStr = ini_get(config, "fs", "dataFolder");
 		const char* userReplaysStr = ini_get(config, "game", "userChases");
-		const char* cdImageFileName = ini_get(config, "cdfs", "image");
+
+		if(!cdImageFileName)
+			cdImageFileName = ini_get(config, "cdfs", "image");
 
 		InitUserReplays(userReplaysStr);
-
-		// configure Psy-X CD image reader
-		if(cdImageFileName)
-		{
-			PsyX_CDFS_Init(cdImageFileName);
-		}
 		
 		// configure Psy-X pads
 		ini_sget(config, "pad", "pad1device", "%d", &g_controllerToSlotMapping[0]);
@@ -618,6 +635,10 @@ int main(int argc, char** argv)
 #endif
 
 	PsyX_Initialise("REDRIVER2", windowWidth, windowHeight, fullScreen);
+
+	// configure Psy-X CD image reader
+	if (cdImageFileName)
+		PsyX_CDFS_Init(cdImageFileName, 0, 0);
 	
 	if (config)
 	{

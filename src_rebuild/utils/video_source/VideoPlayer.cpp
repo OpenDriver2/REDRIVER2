@@ -1,6 +1,8 @@
 #include "ReadAVI.h"	// WTF, ostream/fstream
 
-#include <PSYX_RENDER.H>
+#include <PsyX/PsyX_render.h>
+#include <PsyX/util/timer.h>
+#include <strings.h>
 
 #include "driver2.h"
 
@@ -9,13 +11,9 @@
 #include "C/E3stuff.h"
 #include "C/fmv_font.h"
 
-#include "STRINGS.H"
-
 #include <AL/al.h>
 #include <jpeglib.h>
 #include "platform.h"
-
-#include <UTIL/TIMER.H>
 
 // Partially decompiled function from FMV EXE
 void InitFMVFont()
@@ -152,13 +150,10 @@ int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsign
 	return 0;
 }
 
-// emulator window TODO: interface
-extern int g_swapInterval;
-
 void SetupMovieRectangle(int image_w, int image_h)
 {
 	int windowWidth, windowHeight;
-	PsyX_GetScreenSize(windowWidth, windowHeight);
+	PsyX_GetScreenSize(&windowWidth, &windowHeight);
 
 	float psxScreenW = 320.0f;
 	float psxScreenH = 200.0f;	// FIXME: NTSC scaling
@@ -257,12 +252,6 @@ const char* fmv_shader =
 
 TextureID g_FMVTexture = 0;
 ShaderID g_FMVShader = 0;
-
-extern int GR_Shader_CheckShaderStatus(GLuint shader);
-extern int GR_Shader_CheckProgramStatus(GLuint program);
-
-extern ShaderID GR_Shader_Compile(const char* source);
-extern void GR_SetShader(const ShaderID& shader);
 
 #define DECODE_BUFFER_ALLOC (3840 * 2160 * 3)	// RGB in 4K frame
 
@@ -453,7 +442,7 @@ extern void GR_Ortho2D(float left, float right, float bottom, float top, float z
 void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number, int credits, int image_w, int image_h)
 {
 	int windowWidth, windowHeight;
-	PsyX_GetScreenSize(windowWidth, windowHeight);
+	PsyX_GetScreenSize(&windowWidth, &windowHeight);
 
 	PsyX_BeginScene();
 
@@ -540,6 +529,12 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	alGenBuffers(4, audioStreamBuffers);
 	alSourcei(audioStreamSource, AL_LOOPING, AL_FALSE);
 
+	// sound.c
+	extern int master_volume;
+
+	// set volume
+	alSourcef(audioStreamSource, AL_GAIN, (float)master_volume / 16384.0f);
+
 	timerCtx_t fmvTimer;
 
 	Util_InitHPCTimer(&fmvTimer);
@@ -588,7 +583,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 			if (fade_out < 0)
 				break;
 
-			alSourcef(audioStreamSource, AL_GAIN, float(fade_out) / 255.0);
+			alSourcef(audioStreamSource, AL_GAIN, float(fade_out) / 255.0f * (float)master_volume / 16384.0f);
 		}
 
 		if (frame_size > 0)
@@ -673,6 +668,7 @@ int FMV_main(RENDER_ARGS* args)
 	DISPENV disp;
 	DRAWENV draw;
 
+	SpuInit();
 	FMVPlayerInitGL();
 
 	InitFMVFont();
@@ -692,7 +688,7 @@ int FMV_main(RENDER_ARGS* args)
 	PutDrawEnv(&draw);
 	PutDispEnv(&disp);
 
-	GR_SetupClipMode(draw.clip, draw.dfe);
+	GR_SetupClipMode(&draw.clip, draw.dfe);
 
 	for (int i = 0; i < args->nRenders; i++)
 	{

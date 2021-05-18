@@ -5,8 +5,6 @@
 #include "mission.h"
 #include "cars.h"
 
-#include "STRINGS.H"
-
 MODEL dummyModel = { 0 };
 
 char* modelname_buffer = NULL;
@@ -17,8 +15,8 @@ MODEL* pLodModels[MAX_MODEL_SLOTS];
 
 int num_models_in_pack = 0;
 
-unsigned short *Low2HighDetailTable = NULL;
-unsigned short *Low2LowerDetailTable = NULL;
+u_short *Low2HighDetailTable = NULL;
+u_short *Low2LowerDetailTable = NULL;
 
 // [A]
 int staticModelSlotBitfield[48];
@@ -99,13 +97,14 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 		{
 			parentmodel = modelpointers[model->instance_number];
 
-			if (parentmodel->collision_block != 0)
-				model->collision_block = (int)(char*)parentmodel + parentmodel->collision_block;
-
 			// convert to real offsets
 			model->vertices = (int)(char*)parentmodel + parentmodel->vertices;
 			model->normals = (int)(char*)parentmodel + parentmodel->normals;
 			model->point_normals = (int)(char*)parentmodel + parentmodel->point_normals;
+
+			if ((uint)parentmodel->collision_block != 0)
+				model->collision_block = (int)(char*)parentmodel + parentmodel->collision_block;
+
 		}
 	}
 
@@ -116,12 +115,12 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 
 		if (model->instance_number == -1) 
 		{
-			if (model->collision_block != 0)
-				model->collision_block += (int)(char*)model;
+			model->vertices += (int)model;
+			model->normals += (int)model;
+			model->point_normals += (int)model;
 
-			model->vertices += (int)(char*)model;
-			model->normals += (int)(char*)model;
-			model->point_normals += (int)(char*)model;
+			if ((uint)model->collision_block != 0)
+				model->collision_block += (int)model;
 		}
 
 		model->poly_block += (int)(char*)model;
@@ -217,7 +216,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 			int cleanOfs = offsets[0];
 			int damOfs = offsets[1];
 			int lowOfs = offsets[2];
-
+			
 			if (cleanOfs != -1)
 			{
 				D_MALLOC_BEGIN();
@@ -233,7 +232,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 				gCarDamModelPtr[i] = model;
 				D_MALLOC_END();
 			}
-
+			
 			if (lowOfs != -1)
 			{
 				D_MALLOC_BEGIN();
@@ -312,8 +311,9 @@ MODEL* GetCarModel(char *src, char **dest, int KeepNormals, int modelNumber, int
 		size = model->normals;
 	else 
 		size = model->poly_block;
-	
-	*dest += size + 2;
+
+	//*dest += size + 2;
+	*dest = (char*)((int)model + size + 3 & 0xfffffffc);
 
 	model->vertices += (int)model;
 	model->normals += (int)model;
@@ -348,7 +348,7 @@ int FindModelIdxWithName(char *name)
 
 	while (i < num_models_in_pack)
 	{
-		if (!strcmp(str, (const char*)name))
+		if (!strcmp(str, name))
 			return i;
 
 		while (*str++) {} // go to next string

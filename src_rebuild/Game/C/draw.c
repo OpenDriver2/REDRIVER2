@@ -14,11 +14,6 @@
 #include "cars.h"
 #include "debris.h"
 #include "ASM/rndrasm.h"
-
-#include "INLINE_C.H"
-
-#include <string.h>
-
 #include "event.h"
 
 
@@ -61,17 +56,17 @@ int PolySizes[56] = {
 
 SVECTOR day_vectors[4] =
 {
-  { 62404, 2520, 783, 0 },
-  { 62404, 2520, 783, 0 },
-  { 63172, 2364, 2364, 0 },
-  { 62404, 2520, 783, 0 }
+  { -3132, 2520, 783, 0 },
+  { -3132, 2520, 783, 0 },
+  { -2364, 2364, 2364, 0 },
+  { -3132, 2520, 783, 0 }
 };
 
 SVECTOR night_vectors[4] =
 {
   { 3132, 2520, 783, 0 },
   { 3132, 2520, 783, 0 },
-  { 63172, 2364, 63172, 0 },
+  { -2364, 2364, -2364, 0 },
   { 3132, 2520, 783, 0 }
 };
 
@@ -117,8 +112,7 @@ int setupYet = 0;
 
 int gDrawDistance = 441;
 
-// offset: 0x1f800020
-_pct plotContext;
+_pct& plotContext = *(_pct*)getScratchAddr(1024 - sizeof(_pct));	// orig offset: 0x1f800020
 
 // [D] [T] [A]
 void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
@@ -127,7 +121,11 @@ void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
 
 	m = 4;
 
-	MVERTEX subdiVerts[5][5];
+#ifdef PSX
+	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)getScratchAddr(0);
+#else
+	MVERTEX5x5 subdiVerts;
+#endif
 
 	plotContext.colour = 0x2E000000;
 	plotContext.flags = PLOT_INV_CULL;
@@ -139,20 +137,20 @@ void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
 
 	plotContext.ot += 28;
 
-	copyVector(&subdiVerts[0][0], &verts[src->v0]);
-	subdiVerts[0][0].uv.val = *(ushort*)&src->uv0;
+	copyVector(&subdiVerts.verts[0][0], &verts[src->v0]);
+	subdiVerts.verts[0][0].uv.val = *(ushort*)&src->uv0;
 
-	copyVector(&subdiVerts[0][1], &verts[src->v1]);
-	subdiVerts[0][1].uv.val = *(ushort*)&src->uv1;
+	copyVector(&subdiVerts.verts[0][1], &verts[src->v1]);
+	subdiVerts.verts[0][1].uv.val = *(ushort*)&src->uv1;
 
-	copyVector(&subdiVerts[0][2], &verts[src->v3]);
-	subdiVerts[0][2].uv.val = *(ushort*)&src->uv3;
+	copyVector(&subdiVerts.verts[0][2], &verts[src->v3]);
+	subdiVerts.verts[0][2].uv.val = *(ushort*)&src->uv3;
 
-	copyVector(&subdiVerts[0][3], &verts[src->v2]);
-	subdiVerts[0][3].uv.val = *(ushort*)&src->uv2;
+	copyVector(&subdiVerts.verts[0][3], &verts[src->v2]);
+	subdiVerts.verts[0][3].uv.val = *(ushort*)&src->uv2;
 
-	makeMesh((MVERTEX(*)[5][5])subdiVerts, m, m);
-	drawMesh((MVERTEX(*)[5][5])subdiVerts, m, m, &plotContext);
+	makeMesh((MVERTEX(*)[5][5])subdiVerts.verts, m, m);
+	drawMesh((MVERTEX(*)[5][5])subdiVerts.verts, m, m, &plotContext);
 
 	plotContext.ot -= 28;
 }
@@ -167,18 +165,22 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 	int z;
 	u_int spriteColour;
 	u_int lightdd;
-	unsigned char lightLevel;
+	u_char lightLevel;
 	MODEL* model;
 	PACKED_CELL_OBJECT* pco;
 	PACKED_CELL_OBJECT** list;
 	int numShadows;
 	int count;
 
-	MVERTEX subdiVerts[5][5];
+#ifdef PSX
+	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)getScratchAddr(0);
+#else
+	MVERTEX5x5 subdiVerts;
+#endif
 
-	lightdd = FIXEDH(camera_matrix.m[2][0] * day_vectors[GameLevel].vx) +
-		FIXEDH(camera_matrix.m[2][1] * day_vectors[GameLevel].vy) +
-		FIXEDH(camera_matrix.m[2][2] * day_vectors[GameLevel].vz) + 0x1000 * 0xc00;
+	lightdd =	FIXEDH(camera_matrix.m[2][0] * day_vectors[GameLevel].vx) +
+				FIXEDH(camera_matrix.m[2][1] * day_vectors[GameLevel].vy) +
+				FIXEDH(camera_matrix.m[2][2] * day_vectors[GameLevel].vz) + ONE * 3072;
 
 	lightLevel = (lightdd >> 0x12) + 0x20U & 0xff;
 
@@ -238,9 +240,10 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 		model = modelpointers[modelnumber];
 		plotContext.colour = spriteColour;
 
+#ifndef PSX
 		if ((pco->value & 0x3f) == 63 || (gTimeOfDay == 3 && modelnumber == 945)) // [A] Vegas tree fix
 			plotContext.colour = 0x2c808080;
-
+#endif
 		plotContext.scribble[0] = pco->pos.vx;
 		plotContext.scribble[1] = (pco->pos.vy << 0x10) >> 0x11;
 		plotContext.scribble[2] = pco->pos.vz;
@@ -264,20 +267,20 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 				plotContext.clut = texture_cluts[src->texture_set][src->texture_id] << 0x10;
 				plotContext.tpage = texture_pages[src->texture_set] << 0x10;
 
-				copyVector(&subdiVerts[0][0], &verts[src->v0]);
-				subdiVerts[0][0].uv.val = *(ushort*)&src->uv0;
+				copyVector(&subdiVerts.verts[0][0], &verts[src->v0]);
+				subdiVerts.verts[0][0].uv.val = *(ushort*)&src->uv0;
 
-				copyVector(&subdiVerts[0][1], &verts[src->v1]);
-				subdiVerts[0][1].uv.val = *(ushort*)&src->uv1;
+				copyVector(&subdiVerts.verts[0][1], &verts[src->v1]);
+				subdiVerts.verts[0][1].uv.val = *(ushort*)&src->uv1;
 
-				copyVector(&subdiVerts[0][2], &verts[src->v3]);
-				subdiVerts[0][2].uv.val = *(ushort*)&src->uv3;
+				copyVector(&subdiVerts.verts[0][2], &verts[src->v3]);
+				subdiVerts.verts[0][2].uv.val = *(ushort*)&src->uv3;
 
-				copyVector(&subdiVerts[0][3], &verts[src->v2]);
-				subdiVerts[0][3].uv.val = *(ushort*)&src->uv2;
+				copyVector(&subdiVerts.verts[0][3], &verts[src->v2]);
+				subdiVerts.verts[0][3].uv.val = *(ushort*)&src->uv2;
 
-				makeMesh((MVERTEX(*)[5][5])subdiVerts, 4, 4);
-				drawMesh((MVERTEX(*)[5][5])subdiVerts, 4, 4, &plotContext);
+				makeMesh((MVERTEX(*)[5][5])subdiVerts.verts, 4, 4);
+				drawMesh((MVERTEX(*)[5][5])subdiVerts.verts, 4, 4, &plotContext);
 
 				src++;
 			}
@@ -458,10 +461,7 @@ void CalcObjectRotationMatrices(void)
 		// simpler and faster method
 		m = (MATRIX*)&matrixtable[i];
 
-		m->m[0][0] = ONE; m->m[0][1] = 0;   m->m[0][2] = 0;
-		m->m[1][0] = 0;   m->m[1][1] = ONE; m->m[1][2] = 0;
-		m->m[2][0] = 0;   m->m[2][1] = 0;   m->m[2][2] = ONE;
-
+		InitMatrix(*m);
 		RotMatrixY(angle, m);
 
 		angle += 64;
@@ -580,15 +580,13 @@ u_int normalIndex(SVECTOR* verts, u_int vidx)
 	SVECTOR* v0;
 	SVECTOR* v1;
 	SVECTOR* v2;
-	int ny;
-	int y;
-	int th23;
-	int x;
 
-	int nz;
-	int nx;
-	SVECTOR p;
-	SVECTOR q;
+	int x, y;
+	int th23;
+
+	int nx, ny, nz;
+
+	SVECTOR p, q;
 
 	v0 = verts + (vidx & 0xff);
 	v1 = verts + (vidx >> 8 & 0xff);
@@ -644,6 +642,122 @@ u_int normalIndex(SVECTOR* verts, u_int vidx)
 	return th23 | 0x80;
 }
 
+void PlotBuildingModel(MODEL* model, int rot, _pct* pc)
+{
+	int opz;
+	int Z;
+	PL_POLYFT4* polys;
+	int i;
+	int r;
+	u_char temp;
+	u_char ptype;
+	POLY_FT4* prims;
+	SVECTOR* srcVerts;
+	int combo;
+	srcVerts = (SVECTOR*)model->vertices;
+	polys = (PL_POLYFT4*)model->poly_block;
+
+	combo = combointensity;
+
+	i = model->num_polys;
+	while (i > 0)
+	{
+		// iterate through polygons
+		// with skipping
+		ptype = polys->id & 0x1f;
+
+		if ((ptype & 0x1) == 0 && ptype != 8) // is FT3 triangle?
+		{
+			temp = polys->uv2.v;
+			polys->uv3.u = polys->uv2.u;
+			polys->uv3.v = temp;
+
+			polys->v3 = polys->v2;
+
+			polys->id |= 1;
+			ptype |= 1;
+		}
+
+		if (ptype != 11 && ptype != 21 && ptype != 23)
+		{
+			polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
+			i--;
+			continue;
+		}
+
+		// perform transform
+		gte_ldv3(&srcVerts[polys->v0], &srcVerts[polys->v1], &srcVerts[polys->v3]);
+		gte_rtpt();
+
+		// get culling value
+		gte_nclip();
+		gte_stopz(&opz);
+
+		r = rot;
+
+		if (ptype == 21)
+		{
+			pc->colour = combo & 0x2ffffffU | 0x2c000000;
+		}
+		else
+		{
+			temp = polys->th;
+
+			if ((polys->th & 0x80) == 0) // cache normal index if it were not
+				temp = polys->th = normalIndex(srcVerts, *(u_int*)&polys->v0);
+
+			pc->colour = pc->f4colourTable[(r >> 3) * 4 - temp & 31];
+		}
+
+		if (opz > 0)
+		{
+			gte_stsz3(&pc->scribble[0], &pc->scribble[1], &pc->scribble[2]);
+
+			pc->tpage = (*pc->ptexture_pages)[polys->texture_set] << 0x10;
+			pc->clut = (*pc->ptexture_cluts)[polys->texture_set][polys->texture_id] << 0x10;
+
+			ushort uv0, uv1, uv2, uv3;
+
+			uv0 = *(ushort*)&polys->uv0;
+			uv1 = *(ushort*)&polys->uv1;
+			uv2 = *(ushort*)&polys->uv2;
+			uv3 = *(ushort*)&polys->uv3;
+
+			prims = (POLY_FT4*)pc->primptr;
+
+			setPolyFT4(prims);
+			*(u_int*)&prims->r0 = pc->colour;
+
+			// retrieve first three verts
+			gte_stsxy3(&prims->x0, &prims->x1, &prims->x2);
+
+			// translate 4th vert and get OT Z value
+			gte_ldv0(&srcVerts[polys->v2]);
+			gte_rtps();
+			gte_avsz4();
+
+			gte_stotz(&Z);
+
+			gte_stsxy(&prims->x3);
+
+			prims->tpage = pc->tpage >> 0x10;
+			prims->clut = pc->clut >> 0x10;
+
+			*(ushort*)&prims->u0 = uv0;
+			*(ushort*)&prims->u1 = uv1;
+			*(ushort*)&prims->u2 = uv3;
+			*(ushort*)&prims->u3 = uv2;
+
+			addPrim(pc->ot + (Z >> 1), prims);
+
+			pc->primptr += sizeof(POLY_FT4);
+		}
+
+		polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
+		i--;
+	}
+}
+
 // [D] [T] [A] custom
 void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 {
@@ -657,8 +771,274 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 	u_char ptype;
 	POLY_FT4* prims;
 	SVECTOR* srcVerts;
-	MVERTEX subdiVerts[5][5];
 	int combo;
+
+#ifdef PSX
+	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)getScratchAddr(0);
+#else
+	MVERTEX5x5 subdiVerts;
+#endif
+
+	srcVerts = (SVECTOR*)model->vertices;
+	polys = (PL_POLYFT4*)model->poly_block;
+
+	combo = combointensity;
+
+	i = model->num_polys;
+	while (i > 0)
+	{
+		// iterate through polygons
+		// with skipping
+		ptype = polys->id & 0x1f;
+
+		if ((ptype & 0x1) == 0 && ptype != 8) // is FT3 triangle?
+		{
+			temp = polys->uv2.v;
+			polys->uv3.u = polys->uv2.u;
+			polys->uv3.v = temp;
+
+			polys->v3 = polys->v2;
+
+			polys->id |= 1;
+			ptype |= 1;
+		}
+
+		if (ptype != 11 && ptype != 21 && ptype != 23)
+		{
+			polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
+			i--;
+			continue;
+		}
+
+		// perform transform
+		gte_ldv3(&srcVerts[polys->v0], &srcVerts[polys->v1], &srcVerts[polys->v3]);
+		gte_rtpt();
+
+		// get culling value
+		gte_nclip();
+		gte_stopz(&opz);
+
+		r = rot;
+
+		if (ptype == 21)
+		{
+			pc->colour = combo & 0x2ffffffU | 0x2c000000;
+		}
+		else
+		{
+			temp = polys->th;
+
+			if ((polys->th & 0x80) == 0) // cache normal index if it were not
+				temp = polys->th = normalIndex(srcVerts, *(u_int*)&polys->v0);
+
+			pc->colour = pc->f4colourTable[(r >> 3) * 4 - temp & 31];
+		}
+
+		if (opz > 0)
+		{
+			gte_stsz3(&pc->scribble[0], &pc->scribble[1], &pc->scribble[2]);
+
+			pc->tpage = (*pc->ptexture_pages)[polys->texture_set] << 0x10;
+			pc->clut = (*pc->ptexture_cluts)[polys->texture_set][polys->texture_id] << 0x10;
+
+			minZ = pc->scribble[2];
+			if (pc->scribble[1] < minZ)
+				minZ = pc->scribble[1];
+
+			if (pc->scribble[0] < minZ)
+				minZ = pc->scribble[0];
+
+			maxZ = pc->scribble[2];
+			if (maxZ < pc->scribble[1])
+				maxZ = pc->scribble[1];
+
+			diff = maxZ - minZ;
+			if (maxZ < pc->scribble[0])
+				diff = pc->scribble[0] - minZ;
+
+			ushort uv0, uv1, uv2, uv3;
+
+			// [A] special case
+			if(ptype == 23)
+			{
+				POLYGT4* pgt4 = (POLYGT4*)polys;
+				uv0 = *(ushort*)&pgt4->uv0;
+				uv1 = *(ushort*)&pgt4->uv1;
+				uv2 = *(ushort*)&pgt4->uv2;
+				uv3 = *(ushort*)&pgt4->uv3;
+			}
+			else
+			{
+				uv0 = *(ushort*)&polys->uv0;
+				uv1 = *(ushort*)&polys->uv1;
+				uv2 = *(ushort*)&polys->uv2;
+				uv3 = *(ushort*)&polys->uv3;
+			}
+
+			if (n == 0 || diff << 2 <= minZ - 350)
+			{
+				prims = (POLY_FT4*)pc->primptr;
+
+				setPolyFT4(prims);
+				*(u_int*)&prims->r0 = pc->colour;
+
+				// retrieve first three verts
+				gte_stsxy3(&prims->x0, &prims->x1, &prims->x2);
+
+				// translate 4th vert and get OT Z value
+				gte_ldv0(&srcVerts[polys->v2]);
+				gte_rtps();
+				gte_avsz4();
+
+				gte_stotz(&Z);
+
+				gte_stsxy(&prims->x3);
+
+				prims->tpage = pc->tpage >> 0x10;
+				prims->clut = pc->clut >> 0x10;
+
+				*(ushort*)&prims->u0 = uv0;
+				*(ushort*)&prims->u1 = uv1;
+				*(ushort*)&prims->u2 = uv3;
+				*(ushort*)&prims->u3 = uv2;
+
+				addPrim(pc->ot + (Z >> 1), prims);
+
+				pc->primptr += sizeof(POLY_FT4);
+			}
+			else
+			{
+				r = n;
+				if (n == 1)
+				{
+					if (minZ - 150 < (diff << 1))
+						r = 4;
+					else
+						r = 2;
+				}
+
+				copyVector(&subdiVerts.verts[0][0], &srcVerts[polys->v0]);
+				subdiVerts.verts[0][0].uv.val = uv0;
+
+				copyVector(&subdiVerts.verts[0][1], &srcVerts[polys->v1]);
+				subdiVerts.verts[0][1].uv.val = uv1;
+
+				copyVector(&subdiVerts.verts[0][2], &srcVerts[polys->v3]);
+				subdiVerts.verts[0][2].uv.val = uv3;
+
+				copyVector(&subdiVerts.verts[0][3], &srcVerts[polys->v2]);
+				subdiVerts.verts[0][3].uv.val = uv2;
+
+				makeMesh((MVERTEX(*)[5][5])subdiVerts.verts, r, r);
+				drawMesh((MVERTEX(*)[5][5])subdiVerts.verts, r, r, pc);
+			}
+		}
+
+		polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
+		i--;
+	}
+}
+
+
+// [D] [T]
+int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
+{
+	int mat;
+	int zbias;
+	int drawlimit;
+	MODEL* model;
+	OTTYPE* ot;
+	CELL_OBJECT* cop;
+	int i;
+	int Z;
+	int prev_mat;
+
+	prev_mat = -1;
+
+	for (i = 0; i < 8; i++)
+	{
+		plotContext.f4colourTable[i * 4 + 0] = planeColours[i] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 1] = planeColours[0] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 2] = planeColours[5] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
+	}
+
+	plotContext.current = current;
+	plotContext.ptexture_pages = &texture_pages;
+	plotContext.ptexture_cluts = &texture_cluts;
+	plotContext.polySizes = PolySizes;
+	plotContext.flags = 0;
+	plotContext.primptr = plotContext.current->primptr;
+
+	ot = plotContext.current->ot + 8;
+
+	i = 0;
+
+	while (i < num_buildings)
+	{
+		cop = (CELL_OBJECT*)*objects;
+		mat = cop->yang;
+
+		if (prev_mat == mat)
+		{
+			Z = Apply_InvCameraMatrixSetTrans(&cop->pos);
+		}
+		else
+		{
+			Z = Apply_InvCameraMatrixAndSetMatrix(&cop->pos, &CompoundMatrix[mat]);
+			prev_mat = mat;
+		}
+
+		model = Z > DRAW_LOD_DIST_LOW ? pLodModels[cop->type] : modelpointers[cop->type];
+
+		zbias = model->zBias - 64;
+
+		if (zbias < 0)
+			zbias = 0;
+
+		plotContext.ot = ot + zbias * 4;
+
+		if(Z <= DRAW_LOD_DIST_HIGH)
+			PlotBuildingModelSubdivNxN(model, cop->yang, &plotContext, 1);
+		else
+			PlotBuildingModel(model, cop->yang, &plotContext);
+
+		drawlimit = (int)current->primptr - (int)current->primtab;
+
+		if (PRIMTAB_SIZE - drawlimit < 60000)
+			break;
+
+		i++;
+		objects++;
+	}
+
+	// advance primitive buffer
+	current->primptr = plotContext.primptr;
+
+	return 0;
+}
+
+
+// [D] [T] [A] custom
+void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
+{
+	int opz;
+	int diff, minZ, maxZ;
+	int Z;
+	PL_POLYFT4* polys;
+	int i;
+	int r;
+	u_char temp;
+	u_char ptype;
+	POLY_FT4* prims;
+	SVECTOR* srcVerts;
+	int combo;
+
+#ifdef PSX
+	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)getScratchAddr(0);
+#else
+	MVERTEX5x5 subdiVerts;
+#endif
 
 	srcVerts = (SVECTOR*)model->vertices;
 	polys = (PL_POLYFT4*)model->poly_block;
@@ -757,7 +1137,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 			ushort uv0, uv1, uv2, uv3;
 
 			// [A] special case
-			if(ptype == 23)
+			if (ptype == 23)
 			{
 				POLYGT4* pgt4 = (POLYGT4*)polys;
 				uv0 = *(ushort*)&pgt4->uv0;
@@ -815,20 +1195,20 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 						r = 2;
 				}
 
-				copyVector(&subdiVerts[0][0], &srcVerts[polys->v0]);
-				subdiVerts[0][0].uv.val = uv0;
+				copyVector(&subdiVerts.verts[0][0], &srcVerts[polys->v0]);
+				subdiVerts.verts[0][0].uv.val = uv0;
 
-				copyVector(&subdiVerts[0][1], &srcVerts[polys->v1]);
-				subdiVerts[0][1].uv.val = uv1;
+				copyVector(&subdiVerts.verts[0][1], &srcVerts[polys->v1]);
+				subdiVerts.verts[0][1].uv.val = uv1;
 
-				copyVector(&subdiVerts[0][2], &srcVerts[polys->v3]);
-				subdiVerts[0][2].uv.val = uv3;
+				copyVector(&subdiVerts.verts[0][2], &srcVerts[polys->v3]);
+				subdiVerts.verts[0][2].uv.val = uv3;
 
-				copyVector(&subdiVerts[0][3], &srcVerts[polys->v2]);
-				subdiVerts[0][3].uv.val = uv2;
+				copyVector(&subdiVerts.verts[0][3], &srcVerts[polys->v2]);
+				subdiVerts.verts[0][3].uv.val = uv2;
 
-				makeMesh((MVERTEX(*)[5][5])subdiVerts, r, r);
-				drawMesh((MVERTEX(*)[5][5])subdiVerts, r, r, pc);
+				makeMesh((MVERTEX(*)[5][5])subdiVerts.verts, r, r);
+				drawMesh((MVERTEX(*)[5][5])subdiVerts.verts, r, r, pc);
 			}
 		}
 
@@ -837,80 +1217,6 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 	}
 }
 
-
-// [D] [T]
-int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
-{
-	int mat;
-	int zbias;
-	int drawlimit;
-	MODEL* model;
-	OTTYPE* ot;
-	CELL_OBJECT* cop;
-	int i;
-	int Z;
-	int prev_mat;
-
-	prev_mat = -1;
-
-	for (i = 0; i < 8; i++)
-	{
-		plotContext.f4colourTable[i * 4 + 0] = planeColours[i] | 0x2C000000;
-		plotContext.f4colourTable[i * 4 + 1] = planeColours[0] | 0x2C000000;
-		plotContext.f4colourTable[i * 4 + 2] = planeColours[5] | 0x2C000000;
-		plotContext.f4colourTable[i * 4 + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
-	}
-
-	plotContext.current = current;
-	plotContext.ptexture_pages = &texture_pages;
-	plotContext.ptexture_cluts = &texture_cluts;
-	plotContext.polySizes = PolySizes;
-	plotContext.flags = 0;
-	plotContext.primptr = plotContext.current->primptr;
-
-	ot = plotContext.current->ot + 8;
-
-	i = 0;
-
-	while (i < num_buildings)
-	{
-		cop = (CELL_OBJECT*)*objects;
-		mat = cop->yang;
-
-		if (prev_mat == mat)
-		{
-			Z = Apply_InvCameraMatrixSetTrans(&cop->pos);
-		}
-		else
-		{
-			Z = Apply_InvCameraMatrixAndSetMatrix(&cop->pos, &CompoundMatrix[mat]);
-			prev_mat = mat;
-		}
-
-		model = Z > 9000 ? pLodModels[cop->type] : modelpointers[cop->type];
-
-		zbias = model->zBias - 64;
-
-		if (zbias < 0)
-			zbias = 0;
-
-		plotContext.ot = ot + zbias * 4;
-		PlotBuildingModelSubdivNxN(model, cop->yang, &plotContext, 1);
-
-		drawlimit = (int)current->primptr - (int)current->primtab;
-
-		if (PRIMTAB_SIZE - drawlimit < 60000)
-			break;
-
-		i++;
-		objects++;
-	}
-
-	// advance primitive buffer
-	current->primptr = plotContext.primptr;
-
-	return 0;
-}
 
 // [D] [T]
 void RenderModel(MODEL* model, MATRIX* matrix, VECTOR* pos, int zBias, int flags, int subdiv, int nrot)
@@ -951,11 +1257,43 @@ void RenderModel(MODEL* model, MATRIX* matrix, VECTOR* pos, int zBias, int flags
 	plotContext.primptr = plotContext.current->primptr;
 
 	if ((current->primtab - (current->primptr - PRIMTAB_SIZE)) > 56000)
-		PlotBuildingModelSubdivNxN(model, nrot, &plotContext, subdiv);
+	{
+		PlotModelSubdivNxN(model, nrot, &plotContext, subdiv);
+	}
 
 	// advance primitive buffer
 	current->primptr = plotContext.primptr;
 }
+
+struct DrawMapData
+{
+	int rightPlane;
+	int leftPlane;
+	int backPlane;
+
+	int farClipLimit;
+
+	int current_object_computed_value;
+	int cellLevel;
+
+	int cellxpos, cellzpos;
+
+	short backAng;
+	short leftAng;
+	short rightAng;
+
+	short rightcos;
+	short rightsin;
+	short leftcos;
+	short leftsin;
+	short backcos;
+	short backsin;
+
+	u_short tiles_found;
+	u_short other_models_found;
+	u_short sprites_found;
+	u_short anim_objs_found;
+};
 
 // [D] [T]
 void DrawMapPSX(int* comp_val)
@@ -969,70 +1307,22 @@ void DrawMapPSX(int* comp_val)
 	MODEL* model;
 	int hloop;
 	int vloop;
-	int backPlane;
+
+#ifdef PSX
+	CELL_ITERATOR& ci = *(CELL_ITERATOR*)getScratchAddr(0);
+	MATRIX& mRotStore = *(MATRIX*)getScratchAddr(sizeof(CELL_ITERATOR));
+	DrawMapData& drawData = *(DrawMapData*)getScratchAddr(sizeof(CELL_ITERATOR) + sizeof(MATRIX));
+#else
 	CELL_ITERATOR ci;
 	MATRIX mRotStore;
-	int cellxpos;
-	int cellzpos;
-	char* PVS_ptr;
+	DrawMapData drawData;
+#endif
 
-	int tiles_found;
-	int other_models_found;
-	int sprites_found;
-	int anim_objs_found;
+	char* PVS_ptr;
+	int i;
 
 	static int treecount = 0;
 	static int alleycount = 0;
-
-	int rightcos;
-	int rightsin;
-	int leftcos;
-	int leftsin;
-	int backcos;
-	int backsin;
-	int rightPlane;
-	int leftPlane;
-	int farClipLimit;
-	int backAng;
-	int leftAng;
-	int rightAng;
-	int i;
-	int current_object_computed_value;
-	int cellLevel;
-
-	cellLevel = events.camera ? events.draw : -1;
-
-	backPlane = 6144;
-	rightPlane = -6144;
-	leftPlane = 6144;
-
-	farClipLimit = 80000;
-
-	// setup planes
-	rightAng = camera_angle.vy - FrAng & 0xfff;
-	leftAng = camera_angle.vy + FrAng & 0xfff;
-	backAng = camera_angle.vy + 0x400U & 0xfff;
-
-	rightcos = rcossin_tbl[rightAng * 2 + 1];
-	rightsin = rcossin_tbl[rightAng * 2];
-
-	leftcos = rcossin_tbl[leftAng * 2 + 1];
-	leftsin = rcossin_tbl[leftAng * 2];
-	backcos = rcossin_tbl[backAng * 2 + 1];
-	backsin = rcossin_tbl[backAng * 2];
-
-	if (NumPlayers == 2)
-	{
-		farClipLimit = farClip2Player;
-	}
-
-	tiles_found = 0;
-	sprites_found = 0;
-	goFaster = goFaster ^ fasterToggle;
-	current_object_computed_value = *comp_val;
-	other_models_found = 0;
-
-	anim_objs_found = 0;
 
 	if (setupYet == 0)
 	{
@@ -1040,11 +1330,46 @@ void DrawMapPSX(int* comp_val)
 		setupYet = 0;
 	}
 
-	cellzpos = current_cell_z;
-	cellxpos = current_cell_x;
-
 	// clean cell cache
 	ClearCopUsage();
+
+	drawData.cellLevel = events.camera ? events.draw : -1;
+
+	drawData.backPlane = 6144;
+	drawData.rightPlane = -6144;
+	drawData.leftPlane = 6144;
+
+	drawData.farClipLimit = 80000;
+
+	// setup planes
+	drawData.rightAng = camera_angle.vy - FrAng & 0xfff;
+	drawData.leftAng = camera_angle.vy + FrAng & 0xfff;
+	drawData.backAng = camera_angle.vy + 0x400U & 0xfff;
+
+	drawData.rightcos = rcossin_tbl[drawData.rightAng * 2 + 1];
+	drawData.rightsin = rcossin_tbl[drawData.rightAng * 2];
+
+	drawData.leftcos = rcossin_tbl[drawData.leftAng * 2 + 1];
+	drawData.leftsin = rcossin_tbl[drawData.leftAng * 2];
+	drawData.backcos = rcossin_tbl[drawData.backAng * 2 + 1];
+	drawData.backsin = rcossin_tbl[drawData.backAng * 2];
+
+	if (NumPlayers == 2)
+	{
+		drawData.farClipLimit = farClip2Player;
+	}
+
+	drawData.tiles_found = 0;
+	drawData.sprites_found = 0;
+	drawData.current_object_computed_value = *comp_val;
+	drawData.other_models_found = 0;
+
+	goFaster = goFaster ^ fasterToggle;
+
+	drawData.anim_objs_found = 0;
+
+	drawData.cellzpos = current_cell_z;
+	drawData.cellxpos = current_cell_x;
 
 	PVS_ptr = CurrentPVS + 220;
 
@@ -1068,17 +1393,17 @@ void DrawMapPSX(int* comp_val)
 			int vis_h = MIN(MAX(hloop, -9), 10);
 			int vis_v = MIN(MAX(vloop, -9), 10);
 
-			cellx = cellxpos + hloop;
-			cellz = cellzpos + vloop;
+			cellx = drawData.cellxpos + hloop;
+			cellz = drawData.cellzpos + vloop;
 
-			if (rightPlane < 0 &&
-				leftPlane > 0 &&
-				backPlane < farClipLimit &&  // check planes
+			if (drawData.rightPlane < 0 &&
+				drawData.leftPlane > 0 &&
+				drawData.backPlane < drawData.farClipLimit &&  // check planes
 				cellx > -1 && cellx < cells_across &&							// check cell ranges
 				cellz > -1 && cellz < cells_down &&
 				PVS_ptr[vis_v * pvs_square + vis_h]) // check PVS table
 			{
-				ppco = GetFirstPackedCop(cellx, cellz, &ci, 1, cellLevel);
+				ppco = GetFirstPackedCop(cellx, cellz, &ci, 1, drawData.cellLevel);
 
 				// walk each cell object in cell
 				while (ppco != NULL)
@@ -1088,24 +1413,23 @@ void DrawMapPSX(int* comp_val)
 					if (FrustrumCheck16(ppco, model->bounding_sphere) != -1)
 					{
 						// sprity type
-						if (model->shape_flags & SHAPE_FLAG_SMASH_SPRITE)
+						if (model->shape_flags & SHAPE_FLAG_SPRITE)
 						{
-							if (sprites_found < MAX_DRAWN_SPRITES)
-								spriteList[sprites_found++] = ppco;
+							if (drawData.sprites_found < MAX_DRAWN_SPRITES)
+								spriteList[drawData.sprites_found++] = ppco;
 
-							if ((model->flags2 & MODEL_FLAG_ANIMOBJ) && anim_objs_found < 20)
+							if ((model->flags2 & MODEL_FLAG_ANIMOBJ) && drawData.anim_objs_found < MAX_DRAWN_ANIMATING)
 							{
 								cop = UnpackCellObject(ppco, &ci.nearCell);
-								anim_obj_buffer[anim_objs_found++] = cop;
+								anim_obj_buffer[drawData.anim_objs_found++] = cop;
 							}
 
 							if (model->flags2 & MODEL_FLAG_TREE)
 							{
 								if (treecount == 0)
 								{
-									cop = UnpackCellObject(ppco, &ci.nearCell);
+									QuickUnpackCellObject(ppco, &ci.nearCell, &ground_debris[groundDebrisIndex]);
 
-									ground_debris[groundDebrisIndex] = *cop;
 									if (groundDebrisIndex < MAX_GROUND_DEBRIS - 1)
 										groundDebrisIndex++;
 									else
@@ -1128,9 +1452,9 @@ void DrawMapPSX(int* comp_val)
 								MATRIX2* cmat;
 								cmat = &CompoundMatrix[modelNumber];
 
-								if (cmat->computed != current_object_computed_value)
+								if (cmat->computed != drawData.current_object_computed_value)
 								{
-									cmat->computed = current_object_computed_value;
+									cmat->computed = drawData.current_object_computed_value;
 
 									gte_ReadRotMatrix(&mRotStore);
 									gte_sttr(mRotStore.t);
@@ -1141,8 +1465,8 @@ void DrawMapPSX(int* comp_val)
 								}
 							}
 
-							if ((model->shape_flags & (SHAPE_FLAG_SUBSURFACE | SHAPE_FLAG_ALLEYWAY)) || 
-								(model->flags2 & (MODEL_FLAG_SIDEWALK | MODEL_FLAG_GRASS)))
+							if ((model->shape_flags & (SHAPE_FLAG_WATER | SHAPE_FLAG_TILE)) || 
+								(model->flags2 & (MODEL_FLAG_PATH | MODEL_FLAG_GRASS)))
 							{
 								if (model->flags2 & MODEL_FLAG_ALLEY)
 								{
@@ -1150,8 +1474,7 @@ void DrawMapPSX(int* comp_val)
 
 									if (alleycount == 13)
 									{
-										cop = UnpackCellObject(ppco, &ci.nearCell);
-										ground_debris[groundDebrisIndex] = *cop;
+										QuickUnpackCellObject(ppco, &ci.nearCell, &ground_debris[groundDebrisIndex]);
 
 										if (groundDebrisIndex < MAX_GROUND_DEBRIS - 1)
 											groundDebrisIndex++;
@@ -1162,18 +1485,18 @@ void DrawMapPSX(int* comp_val)
 									}
 								}
 
-								if (tiles_found < MAX_DRAWN_TILES)
-									model_tile_ptrs[tiles_found++] = ppco;
+								if (drawData.tiles_found < MAX_DRAWN_TILES)
+									model_tile_ptrs[drawData.tiles_found++] = ppco;
 							}
 							else
 							{
 								cop = UnpackCellObject(ppco, &ci.nearCell);
 
-								if (other_models_found < MAX_DRAWN_BUILDINGS)
-									model_object_ptrs[other_models_found++] = cop;
+								if (drawData.other_models_found < MAX_DRAWN_BUILDINGS)
+									model_object_ptrs[drawData.other_models_found++] = cop;
 
-								if ((model->flags2 & MODEL_FLAG_ANIMOBJ) && anim_objs_found < MAX_DRAWN_ANIMATING)
-									anim_obj_buffer[anim_objs_found++] = cop;
+								if ((model->flags2 & MODEL_FLAG_ANIMOBJ) && drawData.anim_objs_found < MAX_DRAWN_ANIMATING)
+									anim_obj_buffer[drawData.anim_objs_found++] = cop;
 							}
 						}
 					}
@@ -1185,9 +1508,9 @@ void DrawMapPSX(int* comp_val)
 
 		if (dir == 0)
 		{
-			leftPlane += leftcos;
-			backPlane += backcos;
-			rightPlane += rightcos;
+			drawData.leftPlane += drawData.leftcos;
+			drawData.backPlane += drawData.backcos;
+			drawData.rightPlane += drawData.rightcos;
 
 			hloop++;
 
@@ -1196,9 +1519,9 @@ void DrawMapPSX(int* comp_val)
 		}
 		else if (dir == 1)
 		{
-			leftPlane += leftsin;
-			backPlane += backsin;
-			rightPlane += rightsin;
+			drawData.leftPlane += drawData.leftsin;
+			drawData.backPlane += drawData.backsin;
+			drawData.rightPlane += drawData.rightsin;
 			vloop++;
 
 			//PVS_ptr += pvs_square;
@@ -1209,18 +1532,18 @@ void DrawMapPSX(int* comp_val)
 		else if (dir == 2)
 		{
 			hloop--;
-			leftPlane -= leftcos;
-			backPlane -= backcos;
-			rightPlane -= rightcos;
+			drawData.leftPlane -= drawData.leftcos;
+			drawData.backPlane -= drawData.backcos;
+			drawData.rightPlane -= drawData.rightcos;
 
 			if (hloop + vloop == 0)
 				dir = 3;
 		}
 		else
 		{
-			leftPlane -= leftsin;
-			backPlane -= backsin;
-			rightPlane -= rightsin;
+			drawData.leftPlane -= drawData.leftsin;
+			drawData.backPlane -= drawData.backsin;
+			drawData.rightPlane -= drawData.rightsin;
 			vloop--;
 
 			//PVS_ptr -= pvs_square;
@@ -1255,15 +1578,15 @@ void DrawMapPSX(int* comp_val)
 
 	SetupPlaneColours(combointensity);
 
-	if (sprites_found)
-		DrawSprites((PACKED_CELL_OBJECT**)spriteList, sprites_found);
+	if (drawData.sprites_found)
+		DrawSprites((PACKED_CELL_OBJECT**)spriteList, drawData.sprites_found);
 
-	if (tiles_found)
-		DrawTILES((PACKED_CELL_OBJECT**)model_tile_ptrs, tiles_found);
+	if (drawData.tiles_found)
+		DrawTILES((PACKED_CELL_OBJECT**)model_tile_ptrs, drawData.tiles_found);
 
-	if (other_models_found)
-		DrawAllBuildings((CELL_OBJECT**)model_object_ptrs, other_models_found);
+	if (drawData.other_models_found)
+		DrawAllBuildings((CELL_OBJECT**)model_object_ptrs, drawData.other_models_found);
 
-	if (anim_objs_found)
-		DrawAllAnimatingObjects((CELL_OBJECT**)anim_obj_buffer, anim_objs_found);
+	if (drawData.anim_objs_found)
+		DrawAllAnimatingObjects((CELL_OBJECT**)anim_obj_buffer, drawData.anim_objs_found);
 }

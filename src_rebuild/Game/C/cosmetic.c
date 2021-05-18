@@ -10,11 +10,6 @@
 #include "director.h"
 #include "main.h"
 
-#include "INLINE_C.H"
-
-#include "RAND.H"
-#include "STRINGS.H"
-
 char* CosmeticFiles[] = {
 	"LEVELS\\CHICAGO.LCF",
 	"LEVELS\\HAVANA.LCF",
@@ -52,7 +47,7 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 		if (model != -1) 
 		{
 			offset = *(int*)(lump_ptr + model * sizeof(int));
-			memcpy((char*)&car_cosmetics[i], lump_ptr + offset, sizeof(CAR_COSMETICS));
+			memcpy((u_char*)&car_cosmetics[i], (u_char*)lump_ptr + offset, sizeof(CAR_COSMETICS));
 
 			FixCarCos(&car_cosmetics[i], model);
 		}
@@ -64,7 +59,7 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 		model = 8 + i;
 
 		offset = *(int*)(lump_ptr + model * sizeof(int));
-		memcpy((char*)&levelSpecCosmetics[i], lump_ptr + offset, sizeof(CAR_COSMETICS));
+		memcpy((u_char*)&levelSpecCosmetics[i], (u_char*)lump_ptr + offset, sizeof(CAR_COSMETICS));
 	}
 }
 
@@ -120,9 +115,9 @@ void SetupSpecCosmetics(char *loadbuffer)
 
 #if 1
 	// [A] always use cached cosmetics
-	memcpy((char*)&car_cosmetics[4], (char*)&levelSpecCosmetics[model - 8], sizeof(CAR_COSMETICS));
+	memcpy((u_char*)&car_cosmetics[4], (u_char*)&levelSpecCosmetics[model - 8], sizeof(CAR_COSMETICS));
 #else
-	memcpy((char*)&car_cosmetics[4], loadbuffer, sizeof(CAR_COSMETICS));
+	memcpy((u_char*)&car_cosmetics[4], loadbuffer, sizeof(CAR_COSMETICS));
 #endif
 
 	// [A] don't forget
@@ -681,11 +676,7 @@ void AddExhaustSmoke(CAR_DATA *cp, int black_smoke, int WheelSpeed)
 	SVECTOR svec;
 	SVECTOR smokedir;
 
-	if (cp < car_data) {
-		while (FrameCnt != 0x78654321) {
-			trap(0x400);
-		}
-	}
+	D_CHECK_ERROR(cp < car_data, "Invalid car");
 
 	if (cp->controlType == CONTROL_TYPE_CIV_AI && cp->ai.c.thrustState == 3 && (cp->ai.c.ctrlState == 5 || cp->ai.c.ctrlState == 7))
 		return;

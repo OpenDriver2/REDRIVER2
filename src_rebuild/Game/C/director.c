@@ -18,17 +18,12 @@
 #include "sound.h"
 #include "system.h"
 
-#include "RAND.H"
-#include "STRINGS.H"
-
 struct REPLAY_ICON
 {
-	short x;
-	short y;
+	short x, y;
 	TEXTURE_DETAILS* texture;
 	char* TextPtr;
-	short tx;
-	short ty;
+	short tx, ty;
 };
 
 TEXTURE_DETAILS delcam; // address 0xC0EE0
@@ -1159,7 +1154,7 @@ void ControlReplay(void)
 			/*
 			ROADS_GetRouteData(player[0].cameraPos.vx, player[0].cameraPos.vz, &routeData1);
 
-			if (modelpointers[routeData1.type]->flags2 & MODEL_FLAG_HASROOF)
+			if (modelpointers[routeData1.type]->flags2 & MODEL_FLAG_INDOORS)
 			{
 				int road_height;
 				road_height = -450 - MapHeight(&player[0].cameraPos);
@@ -1294,7 +1289,7 @@ void ControlReplay(void)
 			/*
 			ROADS_GetRouteData(player[0].cameraPos.vx, player[0].cameraPos.vz, &routeData);
 
-			if ((modelpointers[routeData.type]->flags2 & MODEL_FLAG_HASROOF) && player[0].cameraPos.vy < height - 450)
+			if ((modelpointers[routeData.type]->flags2 & MODEL_FLAG_INDOORS) && player[0].cameraPos.vy < height - 450)
 			{
 				player[0].cameraPos.vy = height - 450;
 			}*/
@@ -2322,10 +2317,13 @@ void SetCameraReturnedFromCutscene(int CameraCnt)
 	int count;
 
 	count = 0;
-	next = PlaybackCamera;
+	next = &PlaybackCamera[0];
 
-	while (NextChange = next, count < MAX_REPLAY_CAMERAS && (NextChange = PlaybackCamera + count, CameraCnt < NextChange->FrameCnt ||
-		NextChange->next != 254 && (next = PlaybackCamera + NextChange->next, next->FrameCnt <= CameraCnt)))
+	// how the fuck I'm supposed to untangle this logic?
+	while (NextChange = next, 
+		count < MAX_REPLAY_CAMERAS && 
+		(NextChange = &PlaybackCamera[count], CameraCnt < NextChange->FrameCnt || NextChange->next != 254 && 
+		(next = &PlaybackCamera[NextChange->next], next->FrameCnt <= CameraCnt)))
 	{
 		count++;
 	}

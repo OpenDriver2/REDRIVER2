@@ -11,7 +11,7 @@
 
 #define DEBUG_PATHFINDING_VIEW	0
 
-#if DEBUG_PATHFINDING_VIEW
+#if DEBUG_PATHFINDING_VIEW && !defined(PSX)
 #include "SDL.h"
 #include <stdint.h>
 #endif
@@ -47,7 +47,7 @@ int distLogIndex;
 int lastDistanceFound;
 
 tNode heap[201];
-unsigned int numHeapEntries = 0;
+u_int numHeapEntries = 0;
 
 XZDIR ends[6][2] = {
 	{
@@ -115,7 +115,7 @@ XZDIR dirs[6] = {
 // [A] sets obstacle map bit
 inline void OMapSet(int cellX, int cellZ, int val)
 {
-	unsigned char prev = OMAP_V(cellX, cellZ);
+	u_char prev = OMAP_V(cellX, cellZ);
 	int bit = (1 << (cellZ & 7));
 	OMAP_V(cellX, cellZ) = prev ^ bit & (prev ^ (val ? 0xFF : 0));
 }
@@ -123,7 +123,7 @@ inline void OMapSet(int cellX, int cellZ, int val)
 // [A] debug obstacle map display with new debug window
 void DebugDisplayObstacleMap()
 {
-#if DEBUG_PATHFINDING_VIEW
+#if DEBUG_PATHFINDING_VIEW && !defined(PSX)
 	static SDL_Window* occlusionWindow;
 	static SDL_Surface* occlSurface;
 	static SDL_Texture* occlTexture;
@@ -210,35 +210,39 @@ void DebugDisplayObstacleMap()
 }
 
 // [D] [T]
-tNode* popNode(tNode* __return_storage_ptr__)
+void popNode(tNode* __return_storage_ptr__)
 {
-	u_int child;
+	int num;
+	int child;
 	ushort d;
-	u_int here;
+	int here;
 	tNode res;
+	ushort lastDist;
 
-	res = heap[1];
+	here = 1;
+	res = heap[here];
 
-	if (numHeapEntries > 1)
+	if (numHeapEntries > 1) 
 	{
-		here = 1;
+		lastDist = heap[numHeapEntries].dist;
 
-		while (true)
+		while (true) 
 		{
-			child = here + 1;
+			child = here * 2;
 
 			d = heap[child].dist;
 
 			if (child >= numHeapEntries - 2 || d > heap[child + 1].dist)
 			{
 				d = heap[child + 1].dist;
-				child = child + 1;
+				child++;
 			}
 
-			if (child > numHeapEntries - 2 || d >= heap[numHeapEntries].dist)
+			if ((numHeapEntries - 2 < child) || (lastDist <= d))
 				break;
 
-			heap[here] = heap[child];
+			copyVector(&heap[here], &heap[child]);
+			heap[here].dist = d;
 
 			here = child;
 		}
@@ -249,7 +253,6 @@ tNode* popNode(tNode* __return_storage_ptr__)
 	numHeapEntries--;
 
 	*__return_storage_ptr__ = res;
-	return __return_storage_ptr__;
 }
 
 // [D] [T]
@@ -277,7 +280,8 @@ void WunCell(VECTOR* pbase)
 	v[1].vy = v[0].vy;
 
 	// [A] definitely better code
-	// new 16 vs old 12 passes but map is not leaky at all#
+	// new 16 vs old 12 passes but map is not leaky at all
+
 	for (i = 0; i < 4; i++)
 	{
 		for (j = 0; j < 4; j++)
@@ -384,8 +388,8 @@ void InvalidateMap(void)
 }
 
 
-unsigned int cellsThisFrame;
-unsigned int cellsPerFrame = 4;
+u_int cellsThisFrame;
+u_int cellsPerFrame = 4;
 
 // [D] [T]
 void BloodyHell(void)
@@ -441,7 +445,7 @@ void BloodyHell(void)
 
 			cellsThisFrame++;
 
-			if (howMany <= cellsThisFrame)
+			if (cellsThisFrame >= howMany)
 				return;
 		}
 
@@ -510,15 +514,14 @@ void setDistance(tNode* n, ushort dist)
 // [D] [T]
 void iterate(void)
 {
-	tNode pathNodes[250];
+	tNode pathNodes[8];
 
 	int dist;
 	tNode* nbr;
 	int dir;
 	tNode itHere;
 
-	ushort nr;
-	ushort nl;
+	ushort nl, nr;
 	int a;
 	u_int pnode;
 	u_int parent;
@@ -567,7 +570,7 @@ void iterate(void)
 			}
 		}
 	}
-
+	
 	// now we have distance let's compute the rest of the map
 	for(dir = 0; dir < 6; dir++)
 	{
@@ -622,13 +625,13 @@ void iterate(void)
 		// store distance and get to the next lesser node
 		if (numHeapEntries != 198)
 		{
-			setDistance(pathNodes + dir + 1, dist);
+			setDistance(&pathNodes[dir + 1], dist);
 				
 			i = numHeapEntries + 1;
 
 			pnode = i;
 			parent = i >> 1;
-			
+
 			while (parent != 0 && dist < heap[parent].dist)
 			{
 				heap[i] = heap[parent];
@@ -655,10 +658,8 @@ void InitPathFinding(void)
 
 	lastDistanceFound = 18000;
 
-	i = 0;
-	do {
+	for (i = 0; i < 8; i++)
 		distanceReturnedLog[i++] = 18000;
-	} while (i < 8);
 
 	pathFrames = 80;
 	DoExtraWorkForNFrames = 6;
@@ -855,8 +856,8 @@ void addCivs(void)
 			vx2 = x - rx >> 8;
 			vz2 = z - rz >> 8;
 			
-			if ((vx ^ (vz & 0x7e) << 8) == vx2 && vz2 & 0x7e != 0 || 
-				vz2 & 0x7e << 8 != 1)
+			if ((vx ^ (vz & 0x7e) << 8) == vx2 && 
+				(vz2 & 0x7e) != 0 || (vz2 & 0x7e << 8) != 1)
 			{
 				bits = 3 << (vz2 & 6);
 
@@ -891,20 +892,19 @@ void UpdateCopMap(void)
 		DoExtraWorkForNFrames = 3;
 	}
 
-	
 	if (pathFrames != 0)
 	{
 		int iterations;
-		
+
 		// add cars
 		addCivs();
 
 		iterations = cellsThisFrame;
 
-		if (cellsThisFrame > 6)
+		if (iterations > 6)
 			iterations = 6;
 
-		i = pathIterations - (iterations * 4) * 4 - iterations * 5;
+		i = pathIterations - iterations * 4 * 4 - iterations * 5;
 
 		if (DoExtraWorkForNFrames != 0)
 		{
@@ -915,12 +915,8 @@ void UpdateCopMap(void)
 		if (i < 36)
 			i = 36;
 
-		i -= 1;
-
-		while (i-- >= 0)
-		{
+		while (--i >= 0)
 			iterate();
-		}
 
 		DebugDisplayObstacleMap();
 		
@@ -946,10 +942,9 @@ void UpdateCopMap(void)
 			searchTarget.vz = player[0].pos[2];
 		}
 
-		i = 0;
-
 		// step up distance frame (and invalidate by setting bit 1)
-		do {
+		for (i = 0; i < 16384; i++)
+		{
 			d = distanceCache[i] + 8192;
 
 			if ((d & 1) != 0)
@@ -959,9 +954,8 @@ void UpdateCopMap(void)
 				d = 0xfffe;
 
 			distanceCache[i] = d;
-			i++;
-		} while (i < 16384);
-
+		}
+		
 		startNode.vx = ((searchTarget.vx + (searchTarget.vz >> 1 & 0x1ffU)) >> 9) * 512 - ((searchTarget.vz & 0x200U) >> 1);
 		startNode.vz = (searchTarget.vz >> 9) << 9;
 		startNode.vy = searchTarget.vy;
@@ -1120,7 +1114,7 @@ void UpdateCopMap(void)
 				heap[pnode] = startNode;
 				numHeapEntries++;
 			}
-
+			
 			startNode.vx -= 512;
 			
 			dist = SquareRoot0((startNode.vx - searchTarget.vx) * (startNode.vx - searchTarget.vx) + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));

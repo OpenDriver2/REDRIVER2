@@ -25,9 +25,13 @@ extern char* packed_cell_pointers;
 extern int RoadMapRegions[4];
 
 extern volatile int spoolactive;
-extern int spoolpos_reading;
-extern int chunk_complete;
+extern volatile int spoolpos_reading;
+extern volatile int chunk_complete;
 extern volatile int spoolactive;
+
+extern int SpoolLumpOffset;
+
+extern int bCdIconSetup;
 
 extern void ProcessSpoolInfoLump(char *lump_ptr, int lump_size); // 0x0007C464
 
@@ -47,6 +51,8 @@ extern void StartSpooling(); // 0x0007E724
 extern void SpoolSYNC(void);
 
 extern void InitSpecSpool(); // 0x0007D6D8
+
+extern void InitCdIcon();
 
 extern void CheckSpecialSpool(); // 0x0007D4E0
 extern void QuickSpoolSpecial(); // 0x0007E84C

@@ -12,7 +12,7 @@
 #include "spool.h"
 
 #ifndef PSX
-#include "STRINGS.H"
+#include <strings.h>
 
 #include "../utils/riff.h"
 #include "../utils/audio_source/snd_al_source.h"
@@ -21,8 +21,6 @@
 #include "AL/al.h"
 #include "AL/alext.h"
 
-#include "LIBETC.H"
-
 const char* XANameFormat = "%sXA\\XABNK0%d.XA[%d].wav";
 ALuint g_XASource = AL_NONE;
 CSoundSource_WaveCache* g_wavData = NULL;
@@ -30,7 +28,7 @@ CSoundSource_OpenALCache* g_XAWave = NULL;
 
 #else
 
-#include "LIBSND.H"
+#include <libsnd.h>
 
 char* XANames[] = {
 	"%sXA\\XABNK01.XA;1",
@@ -289,19 +287,6 @@ void PlayXA(int num, int index)
 
 		if (g_wavData->Load(fileName))
 		{
-			// Load subtitles for XA
-			sprintf(fileName, "%sXA\\XABNK0%d.XA[%d].SBN", gDataFolder, num + 1, index);
-			FS_FixPathSlashes(fileName);
-
-			FILE* fp = fopen(fileName, "rb");
-
-			if (fp)
-			{
-				fread(&gNumXASubtitles, sizeof(int), 1, fp);
-				fread(gXASubtitles, sizeof(XA_SUBTITLE), gNumXASubtitles, fp);
-				fclose(fp);
-			}
-
 			// make OpenAL buffer
 			g_XAWave = new CSoundSource_OpenALCache(g_wavData);
 
@@ -311,6 +296,19 @@ void PlayXA(int num, int index)
 			alSourcef(g_XASource, AL_GAIN, float(vol) / 128.0f);
 
 			alSourcePlay(g_XASource);
+		}
+
+		// Load subtitles for XA
+		sprintf(fileName, "%sXA\\XABNK0%d.XA[%d].SBN", gDataFolder, num + 1, index);
+		FS_FixPathSlashes(fileName);
+
+		FILE* fp = fopen(fileName, "rb");
+
+		if (fp)
+		{
+			fread(&gNumXASubtitles, sizeof(int), 1, fp);
+			fread(gXASubtitles, sizeof(XA_SUBTITLE), gNumXASubtitles, fp);
+			fclose(fp);
 		}
 
 		gPlaying = 1;

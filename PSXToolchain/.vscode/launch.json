@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "gdb",
+            "request": "attach",
+            "name": "Attach to gdbserver",
+            "executable": "0_CD_DATA/DRIVER2.ps-exe",
+            "gdbpath": "C:/mingw/bin/gdb.exe",
+            "target": "localhost:3333",
+            "remote": true,
+            "cwd": "${workspaceRoot}"
+        }
+    ]
+}

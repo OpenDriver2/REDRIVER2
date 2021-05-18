@@ -1,6 +1,5 @@
 #include "driver2.h"
 #include "pad.h"
-#include "system.h"
 #include "mission.h"
 #include "cutscene.h"
 #include "pause.h"
@@ -9,7 +8,7 @@
 #include "players.h"
 #include "cars.h"
 
-#include "STRINGS.H"
+#include <libpad.h>
 
 #ifdef PSX
 typedef struct PADRAW

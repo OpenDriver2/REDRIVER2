@@ -10,13 +10,13 @@
 #include "mission.h"
 #include "gamesnd.h"
 #include "camera.h"
+#include "cutrecorder.h"
 #include "fmvplay.h"
 #include "state.h"
-#include "Frontend/FEmain.h"
-
-#include "LIBETC.H"
-#include "STRINGS.H"
 #include "xaplay.h"
+#include "cutrecorder.h"
+
+#include "Frontend/FEmain.h"
 
 MISSION_STEP MissionLadder[68] =
 {
@@ -121,10 +121,7 @@ ACTIVE_CHEATS gCheatsBackup;
 
 void RestoreGameVars()
 {
-#ifdef CUTSCENE_RECORDER
-	extern int gCutsceneAsReplay;
-	gCutsceneAsReplay = 0;
-#endif
+	_CutRec_Reset();
 	
 	gLoadedReplay = 0;
 	gVibration = gOldVibrationMode;
@@ -330,10 +327,9 @@ void ReInitFrontend(int returnToMain)
 
 	LoadSoundBankDynamic((char*)0x0, 0, 0);
 	LoadBankFromLump(1, 0);
-
-#ifdef PSX
-	Loadfile("FRONTEND.BIN", 0x801C0000);
-#endif // PSX
+	
+	// load frontend
+	LOAD_OVERLAY("FRONTEND.BIN", _overlay_buffer);
 
 	// switch to state STATE_INITFRONTEND
 
@@ -393,15 +389,6 @@ void State_MissionLadder(void* param)
 		}
 		else
 		{
-#ifndef PSX
-			extern int gImitateDiscSwap;
-			extern int gImitateDiscSwapFrames;
-			if (gImitateDiscSwap != -1)
-			{
-				gImitateDiscSwapFrames = VSync(-1);
-				gImitateDiscSwap = 1;
-			}
-#endif
 			CheckForCorrectDisc(1);
 		}
 
@@ -492,7 +479,7 @@ void GetRandomChase(void)
 
 	if (gLoadedReplay == 0)
 	{
-		gRandomChase = VSync(-1) % 0xd + 2;
+		gRandomChase = VSync(-1) % 13 + 2;
 
 		bump = 0;
 

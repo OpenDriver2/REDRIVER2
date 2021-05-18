@@ -3,8 +3,6 @@
 #include "system.h"
 #include "texture.h"
 
-#include <STRINGS.H>
-
 extern TEXTURE_DETAILS digit_texture;
 
 FONT_DIGIT fontDigit[] = {
@@ -140,10 +138,10 @@ void LoadFont(char *buffer)
 	file += sizeof(int);
 
 	// copy character info
-	memcpy((u_char*)fontinfo,file,nchars * sizeof(OUT_FONTINFO));
+	memcpy((u_char*)fontinfo, (u_char*)file,nchars * sizeof(OUT_FONTINFO));
 
 	file += nchars * sizeof(OUT_FONTINFO);
-	memcpy((u_char*)AsciiTable, file, 256);
+	memcpy((u_char*)AsciiTable, (u_char*)file, 256);
 
 	file += 256;
 
