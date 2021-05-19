@@ -191,6 +191,7 @@ extern void			GR_SetWireframe(int enable);
 
 extern void			GR_DestroyTexture(TextureID texture);
 extern void			GR_Clear(int x, int y, int w, int h, unsigned char r, unsigned char g, unsigned char b);
+extern void			GR_ClearVRAM(int x, int y, int w, int h, unsigned char r, unsigned char g, unsigned char b);
 extern void			GR_UpdateVertexBuffer(const GrVertex* vertices, int count);
 extern void			GR_DrawTriangles(int start_vertex, int triangles);
 
