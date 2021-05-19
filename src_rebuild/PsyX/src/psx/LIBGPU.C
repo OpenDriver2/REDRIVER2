@@ -27,12 +27,18 @@ void(*drawsync_callback)(void) = NULL;
 
 int ClearImage(RECT16* rect, u_char r, u_char g, u_char b)
 {
+	GR_ClearVRAM(rect->x, rect->y, rect->w, rect->h, r, g, b);
+
+	// TODO: clear all affected backbuffers
 	GR_Clear(rect->x, rect->y, rect->w, rect->h, r, g, b);
 	return 0;
 }
 
 int ClearImage2(RECT16* rect, u_char r, u_char g, u_char b)
 {
+	GR_ClearVRAM(rect->x, rect->y, rect->w, rect->h, r, g, b);
+
+	// TODO: clear all affected backbuffers
 	GR_Clear(rect->x, rect->y, rect->w, rect->h, r, g, b);
 	return 0;
 }
