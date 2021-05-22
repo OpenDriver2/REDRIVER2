@@ -47,8 +47,11 @@ void InitPadRecording(void)
 {
 	char *bufferEnd;
 
-	int remain;
+	int remain, cutsSize;
 	int i;
+
+	// initialize chases
+	cutsSize = CalcInGameCutsceneSize();
 
 	gOutOfTape = 0;
 
@@ -72,7 +75,7 @@ void InitPadRecording(void)
 
 		// FIXME: is that correct?
 		bufferEnd = replayptr-13380;
-		remain = (u_int)ReplayStart - (u_int)bufferEnd - CalcInGameCutsceneSize();
+		remain = (u_int)ReplayStart - (u_int)bufferEnd - cutsSize;
 
 		for (i = 0; i < NumPlayers; i++)
 		{

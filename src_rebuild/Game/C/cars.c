@@ -427,7 +427,7 @@ void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 			norms = (SVECTOR*)model->point_normals;
 
 			ppads = gTempCarVertDump[cp->id];
-			count = num_norms + 1;
+			count = num_norms;// +1;
 
 			while (count >= 0)
 			{
