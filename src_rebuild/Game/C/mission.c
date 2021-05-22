@@ -29,6 +29,7 @@
 #include "shadow.h"
 #include "handling.h"
 #include "cutrecorder.h"
+#include "felony.h"
 
 #ifndef PSX
 #include <stdint.h>

@@ -4,6 +4,10 @@
 #define FELONY_MIN_VALUE		(658)
 #define FELONY_MAX_VALUE		(4096)
 
+
+extern int CopsCanSeePlayer;
+extern short pedestrianFelony;
+
 extern FELONY_DATA felonyData;
 
 extern void InitFelonySystem(); // 0x0004D280

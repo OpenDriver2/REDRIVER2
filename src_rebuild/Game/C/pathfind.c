@@ -7,6 +7,7 @@
 #include "players.h"
 #include "cars.h"
 #include "camera.h"
+#include "felony.h"
 #include "map.h"
 
 #define DEBUG_PATHFINDING_VIEW	0

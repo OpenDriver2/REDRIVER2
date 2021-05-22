@@ -8,14 +8,13 @@
 #include "Game/C/pres.h"
 #include "Game/C/spool.h"
 #include "Game/C/cars.h"
-#include "Game/C/cop_ai.h"
 #include "Game/C/draw.h"
 #include "Game/C/players.h"
 #include "Game/C/glaunch.h"
-#include "Game/C/dr2roads.h"
-
 
 #include <stdio.h>
+
+#include "C/felony.h"
 
 
 int gDisplayDrawStats = 0;

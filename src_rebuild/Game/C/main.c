@@ -681,9 +681,6 @@ void State_GameInit(void* param)
 		IconsLoaded = 0;
 	}
 
-	//gSinkingTimer = 100;
-	//gTimeInWater = 25;
-
 	InWater = 0;
 
 	gBobIndex = 0;
@@ -2475,7 +2472,9 @@ void InitGameVariables(void)
 	variable_weather = 0;
 	current_camera_angle = 2048;
 	gDieWithFade = 0;
-	pedestrianFelony = 0;	// [A]
+
+	pedestrianFelony = 0;	// [A] reset pedestrian felony and also cop visibility state
+	CopsCanSeePlayer = 0;
 
 	Havana3DLevelDraw = -1;
 
