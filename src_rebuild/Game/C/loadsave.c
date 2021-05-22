@@ -378,7 +378,7 @@ int SaveGameData(char* buffer)
 	ClearMem((char*)saveHeader, sizeof(GAME_SAVE_HEADER));
 
 	saveHeader->magic = 0x54876421;
-	saveHeader->gMissionLadderPos = gMissionLadderPos + 1;
+	saveHeader->gMissionLadderPos = gMissionLadderPos;
 	
 	saveHeader->SavedData = MissionEndData;
 
