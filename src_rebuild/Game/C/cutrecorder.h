@@ -1,6 +1,7 @@
 #ifndef CUTRECORDER_H
 #define CUTRECORDER_H
 
+extern int gCutsceneChaseAutoTest;
 extern int gCutsceneAsReplay;
 extern int gCutsceneAsReplay_PlayerId;
 extern int gCutsceneAsReplay_PlayerChanged;
@@ -26,6 +27,7 @@ extern int		CutRec_SaveReplayToFile(char* filename);
 
 #ifdef CUTSCENE_RECORDER
 
+#define _CutRec_IsAutoTestOn()				(gCutsceneChaseAutoTest != 0)
 #define _CutRec_IsOn()						(gCutsceneAsReplay != 0)
 #define _CutRec_Step()						CutRec_Step()
 #define _CutRec_Draw()						CutRec_Draw()

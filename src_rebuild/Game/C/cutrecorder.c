@@ -148,14 +148,14 @@ void CutRec_Draw()
 	if(gCutsceneChaseAutoTest)
 	{
 		sprintf(text, "Chase: %d - frame %d of %d", gCutsceneChaseAutoTest, CameraCnt, ReplayParameterPtr->RecordingEnd);
-		PrintString(text, 5, 120);
+		PrintString(text, 5, 220);
 	}
 
 	if (gAutoTestStats[gCutsceneChaseAutoTest].numHitCars > 0)
 		SetTextColour(128, 0, 0);
 
 	sprintf(text, "Hit cars: %d", gAutoTestStats[gCutsceneChaseAutoTest].numHitCars);
-	PrintString(text, 5, 140);
+	PrintString(text, 5, 200);
 
 	if(gAutoTestStats[gCutsceneChaseAutoTest].stuck)
 	{
@@ -433,6 +433,9 @@ int CutRec_InitMission(char* filename)
 	MissionHeader->time = missionTempHeader.time;
 	MissionHeader->weather = missionTempHeader.weather;
 	MissionHeader->cops = missionTempHeader.cops;
+
+	if(gCutsceneChaseAutoTest == 0)
+		ClearMem((char*)gAutoTestStats, sizeof(gAutoTestStats));
 
 	return 1;
 }
