@@ -1289,7 +1289,7 @@ int FilterFrameTime()
 	static int frame = 0;
 
 	// always stay 30 FPS (2 vblanks)
-	if (!gSkipInGameCutscene && VSync(-1) - frame < 2)
+	if (VSync(-1) - frame < 2)
 		return 0;
 
 	frame = VSync(-1);
@@ -1394,7 +1394,7 @@ void StepGame(void)
 
 	HandleExplosion();
 
-	if (FastForward == 0)
+	if (FastForward == 0 && gSkipInGameCutscene == 0)
 		ColourCycle();
 
 	combointensity = NightAmbient | NightAmbient << 8 | NightAmbient << 0x10;
@@ -1621,6 +1621,13 @@ void State_GameLoop(void* param)
 	DrawGame();
 #else
 
+	if (gSkipInGameCutscene)
+	{
+		StepGame();
+		ClearCurrentDrawBuffers();
+		return;
+	}
+	
 	if (!FilterFrameTime())
 		return;
 
@@ -1658,12 +1665,6 @@ int ObjectDrawnCounter = 0;
 // [D] [T]
 void DrawGame(void)
 {
-	if (gSkipInGameCutscene)
-	{
-		ClearCurrentDrawBuffers();
-		return;
-	}
-
 	if (NumPlayers == 1 || NoPlayerControl)
 	{
 		ObjectDrawnValue = FrameCnt;
