@@ -11,6 +11,8 @@ PSYQ_DIR = os.getenv("PSYQ_DIR") or "PSY-Q"
 
 GAME_REGION = os.getenv("GAME_REGION") or "NTSC_VERSION" -- or PAL_VERSION
 
+GAME_VERSION = os.getenv("APPVEYOR_BUILD_VERSION") or nil
+
 if not (GAME_REGION == "NTSC_VERSION" or GAME_REGION == "PAL_VERSION") then
     error("'GAME_REGION' should be 'NTSC_VERSION' or 'PAL_VERSION'")
 end
@@ -96,6 +98,10 @@ project "REDRIVER2"
     }
 
     defines { GAME_REGION }
+	
+	if GAME_VERSION ~= nil then
+		defines{ "GAME_VERSION_N=\""..GAME_VERSION.."\"" }
+	end
 
     files {
         "Game/**.h",
