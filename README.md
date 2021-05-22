@@ -6,8 +6,8 @@ Build status (Windows and Linux):
 [![Build status](https://ci.appveyor.com/api/projects/status/9abepvls6jexapqy/branch/master?svg=true)](https://ci.appveyor.com/project/SoapyMan/redriver2-10jm8/branch/master)
 
 ### Information
-- This is an original game - it was carefully and completely disassembled and translated from MIPS back to C (except Memory Card menu) - ***no emulation involved***.
-- Game has been *significantly improved over the original Playstation version*, original bugs was fixed and completed some unfinished gameplay aspects
+- This is an original game - it was carefully and completely disassembled and translated from MIPS back to C (except Memory Card menu) - ***no emulation involved***
+- Game has been *significantly improved over the original Playstation version*, original bugs were fixed and completed some unfinished gameplay aspects
 - It now runs on Windows, Linux and soon to be on the other platforms (including backport to Playstation) and utilizes [Psy-X (Psy-Cross) (formely extended TOMB5 emulator)](https://github.com/OpenDriver2/REDRIVER2/tree/master/src_rebuild/PsyX) as a layer for porting from Playstation
 - Basic modding support - with textures and models replacement provided with [OpenDriver2Tools](https://github.com/OpenDriver2/OpenDriver2Tools)
 
@@ -25,7 +25,7 @@ History:
 ### How to use
 See [Wiki/Installation Instructions](https://github.com/OpenDriver2/REDRIVER2/wiki/Installation-instructions)
 
-### How I can contribute?
+### How can I contribute?
 See [Contributing to project](https://github.com/OpenDriver2/REDRIVER2/wiki/Contributing-to-project) page
 
 ### What's next
