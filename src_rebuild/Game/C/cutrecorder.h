@@ -43,6 +43,7 @@ extern int		CutRec_SaveReplayToFile(char* filename);
 
 #else
 
+#define _CutRec_IsAutoTestOn()				(0)
 #define _CutRec_IsOn()						(0)
 #define _CutRec_Step()						(0)
 #define _CutRec_Draw()						(0)
