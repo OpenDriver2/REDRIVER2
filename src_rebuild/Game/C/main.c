@@ -790,6 +790,8 @@ void State_GameInit(void* param)
 	cameraview = 0;
 	FrameCnt = 0;
 	NoTextureMemory = 0;
+	WantPause = 0;
+	gDrawPauseMenus = 0;
 
 	SpoolSYNC();
 
