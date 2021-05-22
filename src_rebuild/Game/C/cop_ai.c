@@ -40,9 +40,6 @@ COP_DATA gCopData = {
 int speed1[] = { 203, 210, 217 };
 int speed2[] = { 238, 266, 294 };
 
-int CopsCanSeePlayer = 0;
-short pedestrianFelony = 0;
-
 int numRoadblockCars = 0;
 int roadblockCount = 0;
 int copsAreInPursuit = 0;
@@ -308,7 +305,6 @@ void InitCops(void)
 
 	OutOfSightCount = 0;
 	cop_respawn_timer = 0;
-	CopsCanSeePlayer = 0;
 
 	CarTail.vx = 0;
 	CarTail.vy = 0;

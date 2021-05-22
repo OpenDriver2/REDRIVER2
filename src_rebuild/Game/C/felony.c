@@ -15,6 +15,9 @@
 short initialOccurrenceDelay[12] = { 24, 0, 0, 0, 0, 0, 0, 0, 24, 0, 24, 0 };
 short initialReccurrenceDelay[12] = { 128, 0, 128, 64, 64, 32, 32, 0, 128, 256 };
 
+int CopsCanSeePlayer = 0;
+short pedestrianFelony = 0;
+
 FELONY_VALUE initialFelonyValue[12] =
 {
   { 659, 0 },
