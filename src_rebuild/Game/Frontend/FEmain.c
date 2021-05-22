@@ -3858,6 +3858,7 @@ int TimeOfDaySelectScreen(int bSetup)
 			}
 		}
 
+		pNewButton = &pCurrScreen->buttons[2];
 		iScreenSelect = SCREEN_TIMEOFDAY;
 
 		return 0;
