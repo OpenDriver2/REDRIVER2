@@ -431,6 +431,8 @@ void State_MissionLadder(void* param)
 
 			SetPleaseWait(NULL);
 			AvailableCheats.cheat5 = true;
+			
+			SetState(STATE_INITFRONTEND);
 
 			quit = 1;
 		}
