@@ -2108,9 +2108,18 @@ int PingInCivCar(int minPingInDist)
 				dz = rcossin_tbl[(angle & 0xfff) * 2 + 1] * 10;
 			}
 
-			randomLoc.vx = baseLoc.vx + FIXEDH(dx) * 2048;
-			randomLoc.vz = baseLoc.vz + FIXEDH(dz) * 2048;
-
+			// [A] make limo ping in closer and in right direction
+			if (minPingInDist == 666)
+			{
+				randomLoc.vx = baseLoc.vx + FIXEDH(dx) * 1024;
+				randomLoc.vz = baseLoc.vz + FIXEDH(dz) * 1024;
+			}
+			else
+			{
+				randomLoc.vx = baseLoc.vx + FIXEDH(dx) * 2048;
+				randomLoc.vz = baseLoc.vz + FIXEDH(dz) * 2048;
+			}
+			
 			roadSeg = RoadInCell(&randomLoc);
 
 		} while (!IS_STRAIGHT_SURFACE(roadSeg) && !IS_CURVED_SURFACE(roadSeg));
@@ -2140,7 +2149,7 @@ int PingInCivCar(int minPingInDist)
 		numPossibleLanes = 0;
 
 		// Caine's Cash limo spawned always on lane 1. Don't allow it parked!
-		if (gCurrentMissionNumber == 33 && minPingInDist == 666)
+		if (minPingInDist == 666)
 		{
 			lane = 1;
 		}
@@ -2251,7 +2260,7 @@ int PingInCivCar(int minPingInDist)
 	}
 
 	// force spawn limo nearby in Caine's Cash
-	if (gCurrentMissionNumber == 33 && minPingInDist == 666)
+	if (minPingInDist == 666)
 		model = 4;
 
 	// select car color palette
@@ -2438,7 +2447,7 @@ int PingInCivCar(int minPingInDist)
 	// set the lane
 	newCar->ai.c.currentLane = lane;
 
-	if (gCurrentMissionNumber == 33 && minPingInDist == 666)
+	if (minPingInDist == 666)
 		limoId = newCar->id;
 
 	if (newCar->ai.c.ctrlState == 5)
