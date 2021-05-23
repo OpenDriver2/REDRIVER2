@@ -189,17 +189,14 @@ void MapPad(int pad, PADRAW *pData)
 	if (Pads[pad].active) 
 	{
 		mapped = 0;
-		i = 0;
 
-		do {
+		for (i = 0; i < 16; i++)
+		{
 			if (((buttons >> i) & 1) != 0)
 			{
 				mapped |= Pads[pad].mappings.button_lookup[i];
 			}
-
-			i++;
-		} while (i < 16);
-
+		}
 
 		Pads[pad].mapnew = mapped & ~Pads[pad].mapped;
 		Pads[pad].mapped = mapped;

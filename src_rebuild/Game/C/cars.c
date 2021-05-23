@@ -1425,9 +1425,6 @@ void DrawCar(CAR_DATA* cp, int view)
 
 		AddExhaustSmoke(cp, doSmoke > 1, WheelSpeed);
 
-		//gTimeInWater = 25;
-		//gSinkingTimer = 100;
-
 		SetShadowPoints(cp, corners);
 		PlaceShadowForCar(corners, 4, 10, yVal < 0 ? 0 : 2);
 

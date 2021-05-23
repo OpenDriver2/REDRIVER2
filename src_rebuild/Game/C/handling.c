@@ -130,27 +130,23 @@ void UpdateCarPoints(CAR_COSMETICS* carCos)
 	groundCollPoints = carCos->cPoints;
 	wheelPoints = carCos->wheelDisp;
 
-	i = 0;
-
-	do {
+	for (i = 0; i < 12; i++)
+	{
 		groundCollPoints->vx += delta.vx;
 		groundCollPoints->vy -= delta.vy;
 		groundCollPoints->vz += delta.vz;
 		groundCollPoints++;
-		i++;
-	} while (i < 12);
+	}
 
 	if (doWheels)
 	{
-		i = 0;
-
-		do {
+		for (i = 0; i < 4; i++)
+		{
 			wheelPoints->vx += delta.vx;
 			wheelPoints->vy -= delta.vy;
 			wheelPoints->vz += delta.vz;
 			wheelPoints++;
-			i++;
-		} while (i < 4);
+		}
 	}
 
 	carCos->cog.vx += delta.vx;
@@ -761,10 +757,10 @@ void SetShadowPoints(CAR_DATA* c0, VECTOR* outpoints)
 	gte_SetRotMatrix(&c0->hd.where);
 	gte_SetTransMatrix(&c0->hd.where);
 
-	i = 0;
 	car_cos = &car_cosmetics[c0->ap.model];
 
-	do {
+	for (i = 0; i < 4; i++)
+	{
 		disp = car_cos->cPoints[i];
 
 		gte_ldv0(&disp);
@@ -774,9 +770,7 @@ void SetShadowPoints(CAR_DATA* c0, VECTOR* outpoints)
 		gte_stlvnl(&pointPos);
 
 		FindSurfaceD2(&pointPos, &surfaceNormal, &outpoints[i], &surfacePtr);
-
-		i++;
-	} while (i < 4);
+	}
 }
 
 // [D] [T]
@@ -1385,15 +1379,13 @@ void InitSkidding(void)
 {
 	int i;
 
-	i = 2;
-	do
+	for(i = 0; i < 2; i++)
 	{
 		player[i].wheelnoise.sound = -1;
 		player[i].wheelnoise.chan = -1;
 		player[i].skidding.sound = -1;
 		player[i].skidding.chan = -1;
-		i--;
-	} while (i >= 0);
+	}
 }
 
 
@@ -1450,12 +1442,10 @@ void jump_debris(CAR_DATA* cp)
 	VECTOR position;
 	VECTOR velocity;
 
-	count = 0;
 	wheel = cp->hd.wheel;
 
-	do
+	for(count = 0; count < 4; count++)
 	{
-
 		if (wheel->susCompression != 0)
 		{
 			DebrisTimer = 0;
@@ -1464,8 +1454,7 @@ void jump_debris(CAR_DATA* cp)
 		}
 
 		wheel++;
-		count++;
-	} while (count < 4);
+	}
 
 	if (cp->wasOnGround == 1)
 	{
@@ -1525,14 +1514,11 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 	// [A] do hubcaps here
 	HandlePlayerHubcaps(player_id);
 
-	cnt = 0;
-	do
+	for (cnt = 0; cnt < 4; cnt++)
 	{
 		if (cp->hd.wheel[cnt].susCompression != 0)
 			wheels_on_ground = 1;
-
-		cnt++;
-	} while (cnt < 4);
+	}
 
 	skidsound = 0;
 

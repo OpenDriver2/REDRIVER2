@@ -17,10 +17,7 @@ extern MS_MISSION*MissionHeader;
 extern STREAM_SOURCE* PlayerStartInfo[8];
 extern int numPlayersToCreate;
 extern int gStartOnFoot;
-//extern int gSinkingTimer;
-//extern int gTimeInWater;
-extern char InWater;
-extern int gBobIndex;
+
 extern int gWeather;
 extern int gTimeOfDay;
 extern int gShowPlayerDamage;
