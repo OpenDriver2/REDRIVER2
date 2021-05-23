@@ -681,9 +681,6 @@ void State_GameInit(void* param)
 		IconsLoaded = 0;
 	}
 
-	InWater = 0;
-
-	gBobIndex = 0;
 	SetupRain();
 	InitExObjects();
 
@@ -1161,13 +1158,11 @@ void StepSim(void)
 	SetSp(oldsp);
 
 	CameraCnt++;
-	gBobIndex = gBobIndex + 0x3cU & 0xfff;
 
-	i = 0;
 	pl = player;
 
 	// deal with car horns
-	while (i < NumPlayers)
+	for (i = 0; i < NumPlayers; i++)
 	{
 		int playerCarId;
 
@@ -1190,10 +1185,7 @@ void StepSim(void)
 			{
 				int spuKeys;
 
-				if (i != 0)
-					spuKeys = 0x20;
-				else
-					spuKeys = 0x4;
+				spuKeys = SPU_KEYCH(i != 0 ? 5 : 2);
 
 				if (SpuGetKeyStatus(spuKeys) == 0)
 				{
@@ -1207,8 +1199,6 @@ void StepSim(void)
 
 			DealWithHorn(&pl->horn.request, i);
 		}
-
-		i++;
 		pl++;
 	}
 
@@ -1216,43 +1206,35 @@ void StepSim(void)
 
 	static int stupid_logic[4];
 
-	if (gInGameCutsceneActive == 0 || gCurrentMissionNumber != 23 || gInGameCutsceneID != 0)
-		stupid_logic[0] = player[0].playerCarId;
-	else
+	// "Car Bomb"?
+	if (gInGameCutsceneActive != 0 && gCurrentMissionNumber == 23 && gInGameCutsceneID == 0)
 		stupid_logic[0] = 2;
-
-	i = 0;
+	else
+		stupid_logic[0] = player[0].playerCarId;
 
 	stupid_logic[1] = player[1].playerCarId;
 	stupid_logic[2] = gThePlayerCar;
 	stupid_logic[3] = leadCarId;
 
-	while (i < 3)
+	for (i = 0; i < 3; i++)
 	{
-		j = i + 1;
-		while (j < 4)
+		for (j = i+1; j < 4; j++)
 		{
 			if (stupid_logic[i] == stupid_logic[j])
 				stupid_logic[j] = -1;
-
-			j++;
 		}
-		i++;
 	}
 
-	car = 0;
-	i = 0;
-
-	do {
+	for (car = 0, i = 0; car < 4 && i < 2; car++)
+	{
 		if (stupid_logic[car] != -1 && SilenceThisCar(car) == 0)
 		{
 			CheckCarEffects(&car_data[stupid_logic[car]], i);
 			SwirlLeaves(&car_data[stupid_logic[car]]);
+			
 			i++;
 		}
-
-		car++;
-	} while (car < 4 && i < 2);
+	}
 
 	// save car positions
 	if (gStopPadReads == 1 && lead_car != 0)

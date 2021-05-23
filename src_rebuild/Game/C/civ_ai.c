@@ -119,42 +119,42 @@ int InitCar(CAR_DATA* cp, int direction, LONGVECTOR4* startPos, unsigned char co
 
 	switch (control)
 	{
-	case 1:
-	case 7:
-		// player car or cutscene car
-		cp->ai.padid = extraData;
+		case CONTROL_TYPE_PLAYER:
+		case CONTROL_TYPE_CUTSCENE:
+			// player car or cutscene car
+			cp->ai.padid = extraData;
 
-		player[cp->id].worldCentreCarId = cp->id;
-		cp->hndType = 0;
-		break;
-	case 2:
-		cp->hndType = 1;
+			player[cp->id].worldCentreCarId = cp->id;
+			cp->hndType = 0;
+			break;
+		case CONTROL_TYPE_CIV_AI:
+			cp->hndType = 1;
 
-		if (extraData == NULL)
-		{
-			cp->controlFlags = 0;
+			if (extraData == NULL)
+			{
+				cp->controlFlags = 0;
+				cp->ap.palette = 0;
+			}
+			else
+			{
+				cp->controlFlags = ((EXTRA_CIV_DATA*)extraData)->controlFlags;
+				cp->ap.palette = ((EXTRA_CIV_DATA*)extraData)->palette;
+			}
+
+			InitCivState(cp, (EXTRA_CIV_DATA*)extraData);
+
+			break;
+		case CONTROL_TYPE_PURSUER_AI:
+			InitCopState(cp, extraData);
 			cp->ap.palette = 0;
-		}
-		else
-		{
-			cp->controlFlags = ((EXTRA_CIV_DATA*)extraData)->controlFlags;
-			cp->ap.palette = ((EXTRA_CIV_DATA*)extraData)->palette;
-		}
-
-		InitCivState(cp, (EXTRA_CIV_DATA*)extraData);
-
-		break;
-	case 3:
-		InitCopState(cp, extraData);
-		cp->ap.palette = 0;
-		numCopCars++;
-		break;
-	case 4:
-		// free roamer lead car
-		InitLead(cp);
-		leadCarId = cp->id;
-		cp->hndType = 5;
-		break;
+			numCopCars++;
+			break;
+		case CONTROL_TYPE_LEAD_AI:
+			// free roamer lead car
+			InitLead(cp);
+			leadCarId = cp->id;
+			cp->hndType = 5;
+			break;
 	}
 
 	CreateDentableCar(cp);

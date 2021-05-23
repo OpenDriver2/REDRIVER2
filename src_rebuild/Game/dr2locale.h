@@ -23,6 +23,7 @@ enum GameStrId
 	GTXT_Flags,
 	GTXT_Lap,
 	GTXT_YouGotTheFlag,
+	GTXT_Draw,
 	GTXT_WellDone,
 	GTXT_YouveBeenCaught,
 
