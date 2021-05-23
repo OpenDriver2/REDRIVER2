@@ -1573,6 +1573,8 @@ void State_GameLoop(void* param)
 	int curTime = clock_realTime.time32Hz;
 	int numFrames = curTime - lastTime32Hz;
 
+	UpdatePadData();
+	
 	CheckForPause();
 
 	// moved from StepGame
