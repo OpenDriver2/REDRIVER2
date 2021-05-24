@@ -3119,8 +3119,6 @@ void SetCarToBeStolen(MS_TARGET *target, int player)
 	SetPlayerMessage(player, Mission.StealMessage, 2, 2);
 }
 
-
-
 // [D] [T]
 void HandleMission(void)
 {
