@@ -177,10 +177,6 @@ void HandleInGameCutscene(void)
 	if (CameraCnt < 2)
 		BlackBorderHeight = 28;
 
-	gCameraOffset.vx = 0;
-	gCameraOffset.vy = 0;
-	gCameraOffset.vz = 0;
-
 	if (CutsceneLength-28 < CutsceneFrameCnt) 
 	{
 		gSkipInGameCutscene = 0;
