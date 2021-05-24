@@ -397,7 +397,7 @@ enum MenuSelectScreens
 
 MenuSelectScreens iScreenSelect = SCREEN_NONE;
 
-int bRedrawFrontend = 0;
+int bRedrawFrontend = 1;
 int bReturnToMain = 1;
 
 int idle_timer = 0;
@@ -1067,6 +1067,8 @@ void LoadBackgroundFile(char* name)
 	DrawSync(0);
 
 	SetupBackgroundPolys();
+
+	bRedrawFrontend = 1;
 }
 
 // [D] [T]

@@ -584,7 +584,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 
 #if 0 //def PSX
 	CDATA2D* cd = (CDATA2D*)getScratchAddr(0);
-	CRET2D& collisionResult = *(CRET2D*)getScratchAddr(sizeof(CDATA2D) * 2);
+	CRET2D& collisionResult = *(CRET2D*)(getScratchAddr(0) + sizeof(CDATA2D) * 2);
 
 	memset((u_char*)cd, 0, sizeof(CDATA2D));
 	memset((u_char*)&collisionResult, 0, sizeof(CRET2D));

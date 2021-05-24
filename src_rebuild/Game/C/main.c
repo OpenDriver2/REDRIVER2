@@ -2285,10 +2285,10 @@ void RenderGame2(int view)
 	FrAng = ratan2(160, scr_z);
 #endif
 
-	Set_Inv_CameraMatrix();
-	SetCameraVector();
+	//Set_Inv_CameraMatrix();
+	//SetCameraVector();
 
-	SetupDrawMapPSX();
+	//SetupDrawMapPSX();
 
 	if (gLoadedMotionCapture != 0)
 		DrawAllPedestrians();
@@ -2302,7 +2302,8 @@ void RenderGame2(int view)
 
 	Set_Inv_CameraMatrix();
 	SetCameraVector();
-	SetupDrawMapPSX();
+
+	//SetupDrawMapPSX();
 	DrawDrivingGames();
 	DrawThrownBombs();
 	AddGroundDebris();

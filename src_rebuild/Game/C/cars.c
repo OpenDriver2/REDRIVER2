@@ -344,7 +344,7 @@ void restoreLightingMatrices(void)
 // [D] [T]
 void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 {
-	MATRIX& scratchPadMat = *(MATRIX*)getScratchAddr(0x344);
+	MATRIX& scratchPadMat = *(MATRIX*)(getScratchAddr(0) + 0x344);
 
 	int doLight;
 	int orW;
@@ -566,9 +566,9 @@ void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 
 #ifdef PSX
 	MATRIX& FrontMatrix = *(MATRIX*)getScratchAddr(0);
-	MATRIX& SteerMatrix = *(MATRIX*)getScratchAddr(sizeof(MATRIX));
-	VECTOR& WheelPos = *(VECTOR*)getScratchAddr(sizeof(MATRIX) * 2);
-	SVECTOR& sWheelPos = *(SVECTOR*)getScratchAddr(sizeof(MATRIX) * 2 + sizeof(VECTOR));
+	MATRIX& SteerMatrix = *(MATRIX*)(getScratchAddr(0) + sizeof(MATRIX));
+	VECTOR& WheelPos = *(VECTOR*)(getScratchAddr(0) + sizeof(MATRIX) * 2);
+	SVECTOR& sWheelPos = *(SVECTOR*)(getScratchAddr(0) + sizeof(MATRIX) * 2 + sizeof(VECTOR));
 #else
 	MATRIX FrontMatrix;
 	MATRIX SteerMatrix;
@@ -1233,7 +1233,7 @@ void DrawCarObject(CAR_MODEL* car, MATRIX* matrix, VECTOR* pos, int palette, CAR
 
 	gte_SetTransVector(&modelLocation);
 
-	savedSP = SetSp((u_long)getScratchAddr(0x308));
+	savedSP = SetSp((u_long)(getScratchAddr(0) + 0x308));
 
 	plotNewCarModel(car, palette);
 

@@ -33,7 +33,7 @@ char CellEmpty(VECTOR *pPosition, int radius)
 	int type;
 
 #if 0
-	CELL_ITERATOR& ci = *(CELL_ITERATOR*)getScratchAddr(1024 - sizeof(CELL_ITERATOR));
+	CELL_ITERATOR& ci = *(CELL_ITERATOR*)(getScratchAddr(0) + 1024 - sizeof(CELL_ITERATOR));
 #else
 	CELL_ITERATOR ci;
 #endif
@@ -337,7 +337,7 @@ char lineClear(VECTOR *v1, VECTOR *v2)
  	int zd; // $v1
 
 #ifdef PSX
-	CELL_ITERATOR& ci = *(CELL_ITERATOR*)getScratchAddr(1024 - sizeof(CELL_ITERATOR));
+	CELL_ITERATOR& ci = *(CELL_ITERATOR*)(getScratchAddr(0) + 1024 - sizeof(CELL_ITERATOR));
 #else
 	CELL_ITERATOR ci;
 #endif
@@ -531,7 +531,7 @@ void CollisionCopList(XZPAIR* pos, int* count)
 	int type;
 
 #if 0
-	CELL_ITERATOR& ci = *(CELL_ITERATOR*)getScratchAddr(1024 - sizeof(CELL_ITERATOR));
+	CELL_ITERATOR& ci = *(CELL_ITERATOR*)(getScratchAddr(0) + 1024 - sizeof(CELL_ITERATOR));
 #else
 	CELL_ITERATOR ci;
 #endif
@@ -810,7 +810,7 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 	int dx, dz;
 
 #if 0
-	CDATA2D* cd = (CDATA2D*)getScratchAddr(1024 - sizeof(CDATA2D)*2);
+	CDATA2D* cd = (CDATA2D*)(getScratchAddr(0) + 1024 - sizeof(CDATA2D) * 2);
 #else
 	CDATA2D cd[2] = { 0 };
 #endif
