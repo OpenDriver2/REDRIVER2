@@ -106,7 +106,8 @@ void CalcCameraBasePos(PLAYER* lp)
 		gte_rtv0tr();
 		gte_stlvnl(basePos);
 
-		basePos[1] -= gCameraOffset.vy;
+		if(gInGameCutsceneActive == 0)
+			basePos[1] -= gCameraOffset.vy;
 
 		baseDir = car_data[lp->cameraCarId].hd.direction;
 	}
@@ -134,6 +135,7 @@ void InitCamera(PLAYER *lp)
 
 				gCameraAngle = 2048;
 				gCameraMaxDistance = 0;
+				
 				gCameraOffset.vx = 0;
 				gCameraOffset.vy = 0;
 				gCameraOffset.vz = 0;
