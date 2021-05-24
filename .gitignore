@@ -27,11 +27,12 @@
 .vs/*
 PSXToolchain/GameSRC*
 PSXToolchain/Overlay*
-PSXToolchain/0_CD_DATA/*
 PSXToolchain/PsyQ/*
 PSXToolchain/mipsel-unknown-elf/*
-PSXToolchain/REDRIVER2.bin
-PSXToolchain/REDRIVER2.cue
+PSXToolchain/CDSrc/0_CD_DATA/*
+PSXToolchain/CDSrc/REDRIVER2.bin
+PSXToolchain/CDSrc/REDRIVER2.cue
+PSXToolchain/CDSrc/*.txt
 src_rebuild/dependencies/*
 src_rebuild/.vs/*
 src_rebuild/bin/*

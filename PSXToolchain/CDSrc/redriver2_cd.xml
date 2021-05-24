@@ -114,7 +114,11 @@
 					<file name = "VOICES2.BLK"	type = "data"	source="0_CD_DATA\SOUND\VOICES2.BLK"/>
 				</dir>
 
+				<dir name = "REPLAYS">
+					<file name = "ATTRACT.400"	type = "data"	source="0_CD_DATA\REPLAYS\ATTRACT.400"/>
+				</dir>
 			</dir>
+
 
 		
 		</directory_tree>
