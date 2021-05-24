@@ -1,7 +1,8 @@
 PSYQ_DIR 	?= X:/PsyQ
+NPSYQ_DIR 	?= X:/NPsyQ
 
 OBJDIR		= obj
-BINDIR 		?= 0_CD_DATA/
+BINDIR 		?= CDSrc/0_CD_DATA/
 TARGET      = DRIVER2
 TYPE        = ps-exe
 BUILD       = Release
@@ -90,7 +91,7 @@ SRCS += \
   $(SOURCES)/C/leadai.c
   
 SRCS += $(PSYQ_DIR)/common/crt0/crt0.s 
-INCL = $(SOURCES) $(PSYQ_DIR)/include
+INCL = $(SOURCES) $(PSYQ_DIR)/include $(NPSYQ_DIR)/include
 
 DEFS = PSX NTSC_VERSION RELOC DEBUG_OPTIONS
 
@@ -106,4 +107,4 @@ LDFLAGS += -Wl,--start-group
 LDFLAGS += $(addprefix -l,$(LIBS))
 LDFLAGS += -Wl,--end-group
 
-include common.mk
+include NPsyQ/common.mk

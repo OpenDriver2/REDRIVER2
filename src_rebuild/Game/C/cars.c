@@ -344,7 +344,7 @@ void restoreLightingMatrices(void)
 // [D] [T]
 void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 {
-	MATRIX& scratchPadMat = *(MATRIX*)getScratchAddr(0x344);
+	MATRIX& scratchPadMat = *(MATRIX*)((u_char*)getScratchAddr(0) + 0x344);
 
 	int doLight;
 	int orW;
@@ -427,7 +427,7 @@ void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 			norms = (SVECTOR*)model->point_normals;
 
 			ppads = gTempCarVertDump[cp->id];
-			count = num_norms + 1;
+			count = num_norms;// +1;
 
 			while (count >= 0)
 			{
@@ -565,10 +565,10 @@ void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	MODEL *WheelModelFront;
 
 #ifdef PSX
-	MATRIX& FrontMatrix = *(MATRIX*)getScratchAddr(0);
-	MATRIX& SteerMatrix = *(MATRIX*)getScratchAddr(sizeof(MATRIX));
-	VECTOR& WheelPos = *(VECTOR*)getScratchAddr(sizeof(MATRIX) * 2);
-	SVECTOR& sWheelPos = *(SVECTOR*)getScratchAddr(sizeof(MATRIX) * 2 + sizeof(VECTOR));
+	MATRIX& FrontMatrix = *(MATRIX*)(u_char*)getScratchAddr(0);
+	MATRIX& SteerMatrix = *(MATRIX*)((u_char*)getScratchAddr(0) + sizeof(MATRIX));
+	VECTOR& WheelPos = *(VECTOR*)((u_char*)getScratchAddr(0) + sizeof(MATRIX) * 2);
+	SVECTOR& sWheelPos = *(SVECTOR*)((u_char*)getScratchAddr(0) + sizeof(MATRIX) * 2 + sizeof(VECTOR));
 #else
 	MATRIX FrontMatrix;
 	MATRIX SteerMatrix;
@@ -786,7 +786,7 @@ void PlayerCarFX(CAR_DATA *cp)
 void plotNewCarModel(CAR_MODEL* car, int palette)
 {
 #ifdef PSX
-	plotCarGlobals& _pg = *(plotCarGlobals*)getScratchAddr(0);
+	plotCarGlobals& _pg = *(plotCarGlobals*)(u_char*)getScratchAddr(0);
 #else
 	plotCarGlobals _pg;
 #endif
@@ -1233,7 +1233,7 @@ void DrawCarObject(CAR_MODEL* car, MATRIX* matrix, VECTOR* pos, int palette, CAR
 
 	gte_SetTransVector(&modelLocation);
 
-	savedSP = SetSp((u_long)getScratchAddr(0x308));
+	savedSP = SetSp((u_long)((u_char*)getScratchAddr(0) + 0x308));
 
 	plotNewCarModel(car, palette);
 
@@ -1424,9 +1424,6 @@ void DrawCar(CAR_DATA* cp, int view)
 			AddSmokingEngine(cp, doSmoke - 1, WheelSpeed);
 
 		AddExhaustSmoke(cp, doSmoke > 1, WheelSpeed);
-
-		//gTimeInWater = 25;
-		//gSinkingTimer = 100;
 
 		SetShadowPoints(cp, corners);
 		PlaceShadowForCar(corners, 4, 10, yVal < 0 ? 0 : 2);

@@ -29,6 +29,7 @@
 #include "shadow.h"
 #include "handling.h"
 #include "cutrecorder.h"
+#include "felony.h"
 
 #ifndef PSX
 #include <stdint.h>
@@ -150,10 +151,6 @@ MS_MISSION* MissionHeader;
 STREAM_SOURCE* PlayerStartInfo[8];
 int numPlayersToCreate = 0;
 int gStartOnFoot = 0;
-//int gSinkingTimer = 100;
-//int gTimeInWater = 25;
-char InWater = 0;
-int gBobIndex = 0;
 int gWeather = 0;
 int gTimeOfDay = 0;
 int gShowPlayerDamage = 0;
@@ -1139,7 +1136,7 @@ void RegisterChaseHit(int car1, int car2)
 			Mission.ChaseHitDelay = 20;
 			player[1 - player_id].targetCarId = gPlayerWithTheFlag;
 
-			SetPlayerMessage(player_id, "You've got the flag!",2,1);
+			SetPlayerMessage(player_id, G_LTXT(GTXT_YouGotTheFlag),2,1);
 		}
 	}
 }
@@ -2977,8 +2974,8 @@ void SetMissionComplete(void)
 			{
 				if (gPlayerScore.P2items == gPlayerScore.items)
 				{
-					SetPlayerMessage(0, "Draw!", 3, 2);
-					SetPlayerMessage(1, "Draw!", 3, 2);
+					SetPlayerMessage(0, G_LTXT(GTXT_Draw), 3, 2);
+					SetPlayerMessage(1, G_LTXT(GTXT_Draw), 3, 2);
 					break;
 				}
 
@@ -3121,8 +3118,6 @@ void SetCarToBeStolen(MS_TARGET *target, int player)
 
 	SetPlayerMessage(player, Mission.StealMessage, 2, 2);
 }
-
-
 
 // [D] [T]
 void HandleMission(void)

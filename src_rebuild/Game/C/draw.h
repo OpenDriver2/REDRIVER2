@@ -55,6 +55,8 @@ extern int pvs_square;
 extern int pvs_square_sq;
 extern int PolySizes[56];
 
+extern int setupYet;
+
 extern int combointensity;
 
 extern int gForceLowDetailCars;

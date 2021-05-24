@@ -927,7 +927,7 @@ void SetupTannerSkeleton(PEDESTRIAN* pDrawingPed)
 	}
 
 #ifdef PSX
-	store = (SVECTOR*)getScratchAddr(0x200);
+	store = (SVECTOR*)((u_char*)getScratchAddr(0) + 0x200);
 #else
 	SVECTOR scratchVectors[64];
 	store = scratchVectors;
@@ -1013,7 +1013,7 @@ void DrawSprite(PEDESTRIAN* pDrawingPed, BONE* pBone, VECTOR* vJPos)
 	int z, z1, z2;
 
 #ifdef PSX
-	SVECTOR* data = (SVECTOR*)getScratchAddr(0x200);
+	SVECTOR* data = (SVECTOR*)(getScratchAddr(0) + 0x200);
 #else
 	SVECTOR scratchVectors[64];
 	SVECTOR* data = scratchVectors;
@@ -1050,7 +1050,7 @@ void newShowTanner(PEDESTRIAN* pDrawingPed)
 	int draw;
 
 #ifdef PSX
-	VECTOR* spad = (VECTOR*)getScratchAddr(0x100);
+	VECTOR* spad = (VECTOR*)(getScratchAddr(0) + 0x100);
 #else
 	VECTOR spad[64];
 #endif

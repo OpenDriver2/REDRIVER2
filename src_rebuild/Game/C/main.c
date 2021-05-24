@@ -681,12 +681,6 @@ void State_GameInit(void* param)
 		IconsLoaded = 0;
 	}
 
-	//gSinkingTimer = 100;
-	//gTimeInWater = 25;
-
-	InWater = 0;
-
-	gBobIndex = 0;
 	SetupRain();
 	InitExObjects();
 
@@ -790,6 +784,8 @@ void State_GameInit(void* param)
 	cameraview = 0;
 	FrameCnt = 0;
 	NoTextureMemory = 0;
+	WantPause = 0;
+	gDrawPauseMenus = 0;
 
 	SpoolSYNC();
 
@@ -880,7 +876,7 @@ void StepSim(void)
 		pauseflag = 1;
 	}
 
-	oldsp = SetSp(0x1f8003e8); // i don't know what this does
+	oldsp = SetSp((u_long)((u_char*)getScratchAddr(0) + 0x3e8)); // i don't know what this does
 
 	lead_pad = (u_int)controller_bits;
 
@@ -1162,13 +1158,11 @@ void StepSim(void)
 	SetSp(oldsp);
 
 	CameraCnt++;
-	gBobIndex = gBobIndex + 0x3cU & 0xfff;
 
-	i = 0;
 	pl = player;
 
 	// deal with car horns
-	while (i < NumPlayers)
+	for (i = 0; i < NumPlayers; i++)
 	{
 		int playerCarId;
 
@@ -1191,10 +1185,7 @@ void StepSim(void)
 			{
 				int spuKeys;
 
-				if (i != 0)
-					spuKeys = 0x20;
-				else
-					spuKeys = 0x4;
+				spuKeys = SPU_KEYCH(i != 0 ? 5 : 2);
 
 				if (SpuGetKeyStatus(spuKeys) == 0)
 				{
@@ -1208,8 +1199,6 @@ void StepSim(void)
 
 			DealWithHorn(&pl->horn.request, i);
 		}
-
-		i++;
 		pl++;
 	}
 
@@ -1217,43 +1206,35 @@ void StepSim(void)
 
 	static int stupid_logic[4];
 
-	if (gInGameCutsceneActive == 0 || gCurrentMissionNumber != 23 || gInGameCutsceneID != 0)
-		stupid_logic[0] = player[0].playerCarId;
-	else
+	// "Car Bomb"?
+	if (gInGameCutsceneActive != 0 && gCurrentMissionNumber == 23 && gInGameCutsceneID == 0)
 		stupid_logic[0] = 2;
-
-	i = 0;
+	else
+		stupid_logic[0] = player[0].playerCarId;
 
 	stupid_logic[1] = player[1].playerCarId;
 	stupid_logic[2] = gThePlayerCar;
 	stupid_logic[3] = leadCarId;
 
-	while (i < 3)
+	for (i = 0; i < 3; i++)
 	{
-		j = i + 1;
-		while (j < 4)
+		for (j = i+1; j < 4; j++)
 		{
 			if (stupid_logic[i] == stupid_logic[j])
 				stupid_logic[j] = -1;
-
-			j++;
 		}
-		i++;
 	}
 
-	car = 0;
-	i = 0;
-
-	do {
+	for (car = 0, i = 0; car < 4 && i < 2; car++)
+	{
 		if (stupid_logic[car] != -1 && SilenceThisCar(car) == 0)
 		{
 			CheckCarEffects(&car_data[stupid_logic[car]], i);
 			SwirlLeaves(&car_data[stupid_logic[car]]);
+			
 			i++;
 		}
-
-		car++;
-	} while (car < 4 && i < 2);
+	}
 
 	// save car positions
 	if (gStopPadReads == 1 && lead_car != 0)
@@ -1290,7 +1271,7 @@ int FilterFrameTime()
 	static int frame = 0;
 
 	// always stay 30 FPS (2 vblanks)
-	if (!gSkipInGameCutscene && VSync(-1) - frame < 2)
+	if (VSync(-1) - frame < 2)
 		return 0;
 
 	frame = VSync(-1);
@@ -1395,7 +1376,7 @@ void StepGame(void)
 
 	HandleExplosion();
 
-	if (FastForward == 0)
+	if (FastForward == 0 && gSkipInGameCutscene == 0)
 		ColourCycle();
 
 	combointensity = NightAmbient | NightAmbient << 8 | NightAmbient << 0x10;
@@ -1592,6 +1573,8 @@ void State_GameLoop(void* param)
 	int curTime = clock_realTime.time32Hz;
 	int numFrames = curTime - lastTime32Hz;
 
+	UpdatePadData();
+	
 	CheckForPause();
 
 	// moved from StepGame
@@ -1622,6 +1605,13 @@ void State_GameLoop(void* param)
 	DrawGame();
 #else
 
+	if (gSkipInGameCutscene)
+	{
+		StepGame();
+		ClearCurrentDrawBuffers();
+		return;
+	}
+	
 	if (!FilterFrameTime())
 		return;
 
@@ -1659,12 +1649,6 @@ int ObjectDrawnCounter = 0;
 // [D] [T]
 void DrawGame(void)
 {
-	if (gSkipInGameCutscene)
-	{
-		ClearCurrentDrawBuffers();
-		return;
-	}
-
 	if (NumPlayers == 1 || NoPlayerControl)
 	{
 		ObjectDrawnValue = FrameCnt;
@@ -2305,6 +2289,7 @@ void RenderGame2(int view)
 	SetCameraVector();
 
 	SetupDrawMapPSX();
+	setupYet = 0;
 
 	if (gLoadedMotionCapture != 0)
 		DrawAllPedestrians();
@@ -2318,7 +2303,9 @@ void RenderGame2(int view)
 
 	Set_Inv_CameraMatrix();
 	SetCameraVector();
+
 	SetupDrawMapPSX();
+	
 	DrawDrivingGames();
 	DrawThrownBombs();
 	AddGroundDebris();
@@ -2473,7 +2460,9 @@ void InitGameVariables(void)
 	variable_weather = 0;
 	current_camera_angle = 2048;
 	gDieWithFade = 0;
-	pedestrianFelony = 0;	// [A]
+
+	pedestrianFelony = 0;	// [A] reset pedestrian felony and also cop visibility state
+	CopsCanSeePlayer = 0;
 
 	Havana3DLevelDraw = -1;
 

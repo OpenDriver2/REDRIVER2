@@ -119,42 +119,42 @@ int InitCar(CAR_DATA* cp, int direction, LONGVECTOR4* startPos, unsigned char co
 
 	switch (control)
 	{
-	case 1:
-	case 7:
-		// player car or cutscene car
-		cp->ai.padid = extraData;
+		case CONTROL_TYPE_PLAYER:
+		case CONTROL_TYPE_CUTSCENE:
+			// player car or cutscene car
+			cp->ai.padid = extraData;
 
-		player[cp->id].worldCentreCarId = cp->id;
-		cp->hndType = 0;
-		break;
-	case 2:
-		cp->hndType = 1;
+			player[cp->id].worldCentreCarId = cp->id;
+			cp->hndType = 0;
+			break;
+		case CONTROL_TYPE_CIV_AI:
+			cp->hndType = 1;
 
-		if (extraData == NULL)
-		{
-			cp->controlFlags = 0;
+			if (extraData == NULL)
+			{
+				cp->controlFlags = 0;
+				cp->ap.palette = 0;
+			}
+			else
+			{
+				cp->controlFlags = ((EXTRA_CIV_DATA*)extraData)->controlFlags;
+				cp->ap.palette = ((EXTRA_CIV_DATA*)extraData)->palette;
+			}
+
+			InitCivState(cp, (EXTRA_CIV_DATA*)extraData);
+
+			break;
+		case CONTROL_TYPE_PURSUER_AI:
+			InitCopState(cp, extraData);
 			cp->ap.palette = 0;
-		}
-		else
-		{
-			cp->controlFlags = ((EXTRA_CIV_DATA*)extraData)->controlFlags;
-			cp->ap.palette = ((EXTRA_CIV_DATA*)extraData)->palette;
-		}
-
-		InitCivState(cp, (EXTRA_CIV_DATA*)extraData);
-
-		break;
-	case 3:
-		InitCopState(cp, extraData);
-		cp->ap.palette = 0;
-		numCopCars++;
-		break;
-	case 4:
-		// free roamer lead car
-		InitLead(cp);
-		leadCarId = cp->id;
-		cp->hndType = 5;
-		break;
+			numCopCars++;
+			break;
+		case CONTROL_TYPE_LEAD_AI:
+			// free roamer lead car
+			InitLead(cp);
+			leadCarId = cp->id;
+			cp->hndType = 5;
+			break;
 	}
 
 	CreateDentableCar(cp);
@@ -2108,9 +2108,18 @@ int PingInCivCar(int minPingInDist)
 				dz = rcossin_tbl[(angle & 0xfff) * 2 + 1] * 10;
 			}
 
-			randomLoc.vx = baseLoc.vx + FIXEDH(dx) * 2048;
-			randomLoc.vz = baseLoc.vz + FIXEDH(dz) * 2048;
-
+			// [A] make limo ping in closer and in right direction
+			if (minPingInDist == 666)
+			{
+				randomLoc.vx = baseLoc.vx + FIXEDH(dx) * 1024;
+				randomLoc.vz = baseLoc.vz + FIXEDH(dz) * 1024;
+			}
+			else
+			{
+				randomLoc.vx = baseLoc.vx + FIXEDH(dx) * 2048;
+				randomLoc.vz = baseLoc.vz + FIXEDH(dz) * 2048;
+			}
+			
 			roadSeg = RoadInCell(&randomLoc);
 
 		} while (!IS_STRAIGHT_SURFACE(roadSeg) && !IS_CURVED_SURFACE(roadSeg));
@@ -2140,7 +2149,7 @@ int PingInCivCar(int minPingInDist)
 		numPossibleLanes = 0;
 
 		// Caine's Cash limo spawned always on lane 1. Don't allow it parked!
-		if (gCurrentMissionNumber == 33 && minPingInDist == 666)
+		if (minPingInDist == 666)
 		{
 			lane = 1;
 		}
@@ -2251,7 +2260,7 @@ int PingInCivCar(int minPingInDist)
 	}
 
 	// force spawn limo nearby in Caine's Cash
-	if (gCurrentMissionNumber == 33 && minPingInDist == 666)
+	if (minPingInDist == 666)
 		model = 4;
 
 	// select car color palette
@@ -2438,7 +2447,7 @@ int PingInCivCar(int minPingInDist)
 	// set the lane
 	newCar->ai.c.currentLane = lane;
 
-	if (gCurrentMissionNumber == 33 && minPingInDist == 666)
+	if (minPingInDist == 666)
 		limoId = newCar->id;
 
 	if (newCar->ai.c.ctrlState == 5)

@@ -367,7 +367,7 @@ void State_MissionLadder(void* param)
 	quit = 0;
 
 	RenderArgs.nRenders = 0;
-	CurrentStep = MissionLadder + gMissionLadderPos;
+	CurrentStep = &MissionLadder[gMissionLadderPos];
 
 	if (newgame == 0 && CurrentStep->flags != 0)
 	{
@@ -383,20 +383,15 @@ void State_MissionLadder(void* param)
 	}
 
 	do {
-		if (CurrentStep->disc == 0)
-		{
-			CheckForCorrectDisc(0);
-		}
-		else
-		{
-			CheckForCorrectDisc(1);
-		}
+		CheckForCorrectDisc(CurrentStep->disc);
 
 		if (RenderArgs.nRenders == 4)
 		{
 			SetPleaseWait(NULL);
+			
 			PlayRender(&RenderArgs);
 			RenderArgs.nRenders = 0;
+			
 			SetPleaseWait(NULL);
 		}
 
@@ -410,30 +405,20 @@ void State_MissionLadder(void* param)
 			}
 
 			SetPleaseWait(NULL);
+			
 			gCurrentMissionNumber = CurrentStep->data;
-
 			SetState(STATE_GAMELAUNCH);
+			
 			quit = 1;
-
-			/*
-			if (WantedGameMode == GAMEMODE_NEXTMISSION)
-			{
-				if (gCurrentMissionNumber > gFurthestMission)
-					gFurthestMission = gCurrentMissionNumber;
-			}
-			else
-			{
-				quit = 1;
-			}*/
 		}
-		else if (CurrentStep->flags == 1)
+		else if (CurrentStep->flags == 1) // any render
 		{
 			RenderArgs.Args[RenderArgs.nRenders].render = CurrentStep->data;
 			RenderArgs.Args[RenderArgs.nRenders].recap = 0;
 			RenderArgs.Args[RenderArgs.nRenders].credits = 0;
 			RenderArgs.nRenders++;
 		}
-		else if (CurrentStep->flags == 4)
+		else if (CurrentStep->flags == 4) // ending
 		{
 			SetPleaseWait(NULL);
 
@@ -445,14 +430,15 @@ void State_MissionLadder(void* param)
 			PlayRender(&RenderArgs);
 
 			SetPleaseWait(NULL);
+			AvailableCheats.cheat5 = true;
+			
+			SetState(STATE_INITFRONTEND);
 
 			quit = 1;
-			AvailableCheats.cheat5 = true;
 		}
-
+		
 		CurrentStep++;
 		gMissionLadderPos = CurrentStep - MissionLadder;
-
 	} while (!quit);
 }
 

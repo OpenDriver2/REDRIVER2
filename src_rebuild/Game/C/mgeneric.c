@@ -4,7 +4,7 @@
 #include "glaunch.h"
 #include "cars.h"
 #include "players.h"
-#include "cop_ai.h"
+#include "felony.h"
 #include "replays.h"
 #include "system.h"
 
@@ -15,7 +15,8 @@ void StorePlayerPosition(SAVED_PLAYER_POS *data)
 	ushort type;
 	int slot;
 
-	slot = player[0].playerCarId;
+	// store previous player car?
+	slot = Mission.PhantomCarId != -1 ? Mission.PhantomCarId : player[0].playerCarId;
 
 	cp = &car_data[slot];
 
@@ -25,10 +26,10 @@ void StorePlayerPosition(SAVED_PLAYER_POS *data)
 		type = 0;
 
 	data->type = type;
-	data->direction = player[0].dir;
-	data->vx = player[0].pos[0];
-	data->vy = player[0].pos[1];
-	data->vz = player[0].pos[2];
+	data->direction = cp->hd.direction;
+	data->vx = cp->hd.where.t[0];
+	data->vy = cp->hd.where.t[1];
+	data->vz = cp->hd.where.t[2];
 
 	if (slot < 0)
 		data->felony = pedestrianFelony;
@@ -100,17 +101,13 @@ void StoreCarPosition(MS_TARGET *target, SAVED_CAR_POS *data)
 	int slot;
 	CAR_DATA* cp;
 
-	// if target is a swapable, make sure it gonna be previous player car
-	if (target->s.car.flags & CARTARGET_FLAG_BACK_TO_PLAYERCAR)
-		slot = Mission.PhantomCarId;
-	else
-		slot = target->s.car.slot;
+	slot = target->s.car.slot;
 
 	if (slot == -1)
 		return;
 
-	if (slot == player[0].playerCarId)
-		return;
+	//if (slot == player[0].playerCarId)
+	//	return;
 
 	cp = &car_data[slot];
 
@@ -229,7 +226,8 @@ void StoreEndData(void)
 		carpos = &MissionEndData.CarPos[numStored];
 
 		if (target->type == Target_Car &&
-			(target->s.target_flags & TARGET_FLAG_CAR_SAVED))
+			(target->s.target_flags & TARGET_FLAG_CAR_SAVED) && 
+			(target->s.target_flags & TARGET_FLAG_CAR_PINGED_IN))
 		{
 			StoreCarPosition(target, carpos);
 

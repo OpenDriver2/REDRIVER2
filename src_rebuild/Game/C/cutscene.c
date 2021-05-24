@@ -177,18 +177,9 @@ void HandleInGameCutscene(void)
 	if (CameraCnt < 2)
 		BlackBorderHeight = 28;
 
-	gCameraOffset.vx = 0;
-	gCameraOffset.vy = 0;
-	gCameraOffset.vz = 0;
-
 	if (CutsceneLength-28 < CutsceneFrameCnt) 
 	{
-		// disable cutscene skip when it's about to end
-		if (gSkipInGameCutscene)
-		{
-			FastForward = 0;
-			gSkipInGameCutscene = 0;
-		}
+		gSkipInGameCutscene = 0;
 		
 		if (BlackBorderHeight > 0)
 			BlackBorderHeight--;
@@ -203,8 +194,6 @@ void HandleInGameCutscene(void)
 
 	if (gSkipInGameCutscene)
 	{
-		// fast forward and stop XA
-		FastForward = 1;
 		StopXA();
 		UnprepareXA();
 	}

@@ -47,8 +47,11 @@ void InitPadRecording(void)
 {
 	char *bufferEnd;
 
-	int remain;
+	int remain, cutsSize;
 	int i;
+
+	// initialize chases
+	cutsSize = CalcInGameCutsceneSize();
 
 	gOutOfTape = 0;
 
@@ -72,7 +75,7 @@ void InitPadRecording(void)
 
 		// FIXME: is that correct?
 		bufferEnd = replayptr-13380;
-		remain = (u_int)ReplayStart - (u_int)bufferEnd - CalcInGameCutsceneSize();
+		remain = (u_int)ReplayStart - (u_int)bufferEnd - cutsSize;
 
 		for (i = 0; i < NumPlayers; i++)
 		{
@@ -361,7 +364,7 @@ char GetPingInfo(char *cookieCount)
 // [A] returns 1 if can use ping buffer
 int IsPingInfoAvailable()
 {
-	if (!_CutRec_IsOn() && (gUseStoredPings == 0 || gInGameChaseActive == 0))// && gLoadedReplay == 0)
+	if (!_CutRec_IsAutoTestOn() && (gUseStoredPings == 0 || gInGameChaseActive == 0))// && gLoadedReplay == 0)
 		return 0;
 	
 	return PingBuffer != NULL && PingBufferPos < MAX_REPLAY_PINGS;
