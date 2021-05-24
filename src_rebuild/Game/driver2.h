@@ -11,7 +11,12 @@
 #include <libetc.h>
 #include <libapi.h>
 
+#ifdef PSX
+#include <inline_n.h>		// for Nugget PsyQ which doesn't use DMPSX
+#else
 #include <inline_c.h>
+#endif
+
 #include <gtemac.h>
 
 #include <strings.h>
