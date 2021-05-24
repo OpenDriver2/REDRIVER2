@@ -927,7 +927,7 @@ void SetupTannerSkeleton(PEDESTRIAN* pDrawingPed)
 	}
 
 #ifdef PSX
-	store = (SVECTOR*)(getScratchAddr(0) + 0x200);
+	store = (SVECTOR*)((u_char*)getScratchAddr(0) + 0x200);
 #else
 	SVECTOR scratchVectors[64];
 	store = scratchVectors;

@@ -876,7 +876,7 @@ void StepSim(void)
 		pauseflag = 1;
 	}
 
-	oldsp = SetSp(0x1f8003e8); // i don't know what this does
+	oldsp = SetSp((u_long)((u_char*)getScratchAddr(0) + 0x3e8)); // i don't know what this does
 
 	lead_pad = (u_int)controller_bits;
 
@@ -2285,10 +2285,11 @@ void RenderGame2(int view)
 	FrAng = ratan2(160, scr_z);
 #endif
 
-	//Set_Inv_CameraMatrix();
-	//SetCameraVector();
+	Set_Inv_CameraMatrix();
+	SetCameraVector();
 
-	//SetupDrawMapPSX();
+	SetupDrawMapPSX();
+	setupYet = 0;
 
 	if (gLoadedMotionCapture != 0)
 		DrawAllPedestrians();
@@ -2303,7 +2304,8 @@ void RenderGame2(int view)
 	Set_Inv_CameraMatrix();
 	SetCameraVector();
 
-	//SetupDrawMapPSX();
+	SetupDrawMapPSX();
+	
 	DrawDrivingGames();
 	DrawThrownBombs();
 	AddGroundDebris();
