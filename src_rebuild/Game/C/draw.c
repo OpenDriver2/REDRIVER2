@@ -112,7 +112,7 @@ int setupYet = 0;
 
 int gDrawDistance = 441;
 
-_pct& plotContext = *(_pct*)(getScratchAddr(0) + 1024 - sizeof(_pct));	// orig offset: 0x1f800020
+_pct& plotContext = *(_pct*)((u_char*)getScratchAddr(0) + 1024 - sizeof(_pct));	// orig offset: 0x1f800020
 
 // [D] [T] [A]
 void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
@@ -122,7 +122,7 @@ void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
 	m = 4;
 
 #ifdef PSX
-	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)getScratchAddr(0);
+	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)(u_char*)getScratchAddr(0);
 #else
 	MVERTEX5x5 subdiVerts;
 #endif
@@ -173,7 +173,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 	int count;
 
 #ifdef PSX
-	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)getScratchAddr(0);
+	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)(u_char*)getScratchAddr(0);
 #else
 	MVERTEX5x5 subdiVerts;
 #endif
@@ -379,8 +379,10 @@ void SetupDrawMapPSX(void)
 	int region_z1;
 	int current_barrel_region_x1;
 	int current_barrel_region_z1;
-
 	int theta;
+
+	if (setupYet != 0)
+		return;
 
 	current_cell_x = (camera_position.vx + units_across_halved) / MAP_CELL_SIZE;
 	current_cell_z = (camera_position.vz + units_down_halved) / MAP_CELL_SIZE;
@@ -396,7 +398,6 @@ void SetupDrawMapPSX(void)
 		region_x1 + region_z1 * regions_across,
 		(current_cell_z % MAP_REGION_SIZE) * MAP_REGION_SIZE + (current_cell_x % MAP_REGION_SIZE),
 		CurrentPVS);
-
 
 	for (theta = 0; theta < 64; theta++)
 		MulMatrix0(&inv_camera_matrix, (MATRIX*)&matrixtable[theta], (MATRIX*)&CompoundMatrix[theta]);
@@ -774,7 +775,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 	int combo;
 
 #ifdef PSX
-	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)getScratchAddr(0);
+	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)(u_char*)getScratchAddr(0);
 #else
 	MVERTEX5x5 subdiVerts;
 #endif
@@ -1035,7 +1036,7 @@ void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 	int combo;
 
 #ifdef PSX
-	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)getScratchAddr(0);
+	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)(u_char*)getScratchAddr(0);
 #else
 	MVERTEX5x5 subdiVerts;
 #endif
@@ -1309,9 +1310,9 @@ void DrawMapPSX(int* comp_val)
 	int vloop;
 
 #ifdef PSX
-	CELL_ITERATOR& ci = *(CELL_ITERATOR*)getScratchAddr(0);
-	MATRIX& mRotStore = *(MATRIX*)(getScratchAddr(0) + sizeof(CELL_ITERATOR));
-	DrawMapData& drawData = *(DrawMapData*)(getScratchAddr(0) + sizeof(CELL_ITERATOR) + sizeof(MATRIX));
+	CELL_ITERATOR& ci = *(CELL_ITERATOR*)(u_char*)getScratchAddr(0);
+	MATRIX& mRotStore = *(MATRIX*)((u_char*)getScratchAddr(0) + sizeof(CELL_ITERATOR));
+	DrawMapData& drawData = *(DrawMapData*)((u_char*)getScratchAddr(0) + sizeof(CELL_ITERATOR) + sizeof(MATRIX));
 #else
 	CELL_ITERATOR ci;
 	MATRIX mRotStore;
@@ -1324,8 +1325,7 @@ void DrawMapPSX(int* comp_val)
 	static int treecount = 0;
 	static int alleycount = 0;
 
-	if (setupYet == 0)
-		SetupDrawMapPSX();
+	SetupDrawMapPSX();
 
 	// clean cell cache
 	ClearCopUsage();
