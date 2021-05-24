@@ -525,7 +525,7 @@ unsigned char *PVSEncodeTable = NULL;
 // [D] [T]
 void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBodge)
 {
-	u_char nybblearray[256];
+	u_char* nybblearray;
 	int pixelIndex;
 	u_char* decodebuf;
 	u_char* op;
@@ -534,15 +534,13 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 	int size;
 
 	decodebuf = (u_char*)getScratchAddr(0);
+	nybblearray = (u_char*)getScratchAddr(0) + pvs_square_sq;
+
 	ClearMem((char*)decodebuf,pvs_square_sq);
 
 	// decode byte-swapped array
-	i = 0;
-	while (i < sz)
-	{
+	for (i = 0; i < sz; i++)
 		((ushort*)nybblearray)[i] = M_SHRT_2((unsigned char)celldata[i], (unsigned char)celldata[i] >> 4) & 0xf0f;
-		i++;
-	}
 
 	pixelIndex = 0;
 	symIndex = 0;
@@ -673,7 +671,7 @@ void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 	if (regions_unpacked[source_region] == region && loading_region[source_region] == -1) 
 	{
 		bp = PVS_Buffers[source_region];
-		PVSEncodeTable = (unsigned char *)(bp + 0x802);
+		PVSEncodeTable = (u_char *)(bp + 0x802);
 		tbp = bp + cell * 2;
 
 		length = M_SHRT_2((u_char)tbp[2], (u_char)tbp[3]) - M_SHRT_2((u_char)tbp[0], (u_char)tbp[1]) & 0xffff;

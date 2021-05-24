@@ -112,7 +112,7 @@ int setupYet = 0;
 
 int gDrawDistance = 441;
 
-_pct& plotContext = *(_pct*)getScratchAddr(1024 - sizeof(_pct));	// orig offset: 0x1f800020
+_pct& plotContext = *(_pct*)(getScratchAddr(0) + 1024 - sizeof(_pct));	// orig offset: 0x1f800020
 
 // [D] [T] [A]
 void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
@@ -954,7 +954,7 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 	int prev_mat;
 
 	prev_mat = -1;
-
+	
 	for (i = 0; i < 8; i++)
 	{
 		plotContext.f4colourTable[i * 4 + 0] = planeColours[i] | 0x2C000000;
@@ -1310,8 +1310,8 @@ void DrawMapPSX(int* comp_val)
 
 #ifdef PSX
 	CELL_ITERATOR& ci = *(CELL_ITERATOR*)getScratchAddr(0);
-	MATRIX& mRotStore = *(MATRIX*)getScratchAddr(sizeof(CELL_ITERATOR));
-	DrawMapData& drawData = *(DrawMapData*)getScratchAddr(sizeof(CELL_ITERATOR) + sizeof(MATRIX));
+	MATRIX& mRotStore = *(MATRIX*)(getScratchAddr(0) + sizeof(CELL_ITERATOR));
+	DrawMapData& drawData = *(DrawMapData*)(getScratchAddr(0) + sizeof(CELL_ITERATOR) + sizeof(MATRIX));
 #else
 	CELL_ITERATOR ci;
 	MATRIX mRotStore;
@@ -1325,10 +1325,7 @@ void DrawMapPSX(int* comp_val)
 	static int alleycount = 0;
 
 	if (setupYet == 0)
-	{
 		SetupDrawMapPSX();
-		setupYet = 0;
-	}
 
 	// clean cell cache
 	ClearCopUsage();
@@ -1363,11 +1360,8 @@ void DrawMapPSX(int* comp_val)
 	drawData.sprites_found = 0;
 	drawData.current_object_computed_value = *comp_val;
 	drawData.other_models_found = 0;
-
-	goFaster = goFaster ^ fasterToggle;
-
 	drawData.anim_objs_found = 0;
-
+	
 	drawData.cellzpos = current_cell_z;
 	drawData.cellxpos = current_cell_x;
 
@@ -1376,6 +1370,8 @@ void DrawMapPSX(int* comp_val)
 	vloop = 0;
 	hloop = 0;
 	dir = 0;
+
+	goFaster ^= fasterToggle;
 
 	if (NumPlayers == 2)
 		distScale = goFaster & 31 | 1;
@@ -1589,4 +1585,6 @@ void DrawMapPSX(int* comp_val)
 
 	if (drawData.anim_objs_found)
 		DrawAllAnimatingObjects((CELL_OBJECT**)anim_obj_buffer, drawData.anim_objs_found);
+
+	setupYet = 0;
 }
