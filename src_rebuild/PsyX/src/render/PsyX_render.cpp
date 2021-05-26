@@ -78,6 +78,8 @@ int g_pgxpTextureCorrection = 1;
 int g_pgxpZBuffer = 1;
 int g_bilinearFiltering = 0;
 
+extern int g_skipSwapInterval;
+
 // this has to be configured for each game
 float g_pgxpZNear = 0.25f;
 float g_pgxpZFar = 1000.0f;
@@ -511,6 +513,13 @@ void GR_Shutdown()
 #endif
 }
 
+void GR_UpdateSwapIntervalState()
+{
+#if defined(RENDERER_OGL)
+	SDL_GL_SetSwapInterval((g_enableSwapInterval && !g_skipSwapInterval) ? g_swapInterval : 0);
+#endif
+}
+
 void GR_BeginScene()
 {
 	g_lastBoundTexture = 0;
@@ -523,6 +532,7 @@ void GR_BeginScene()
 
 	GR_UpdateVRAM();
 	GR_SetViewPort(0, 0, g_windowWidth, g_windowHeight);
+	GR_UpdateSwapIntervalState();
 
 	if (g_wireframeMode)
 	{
@@ -553,7 +563,7 @@ unsigned short vram[VRAM_WIDTH * VRAM_HEIGHT];
 
 void GR_ResetDevice()
 {
-	PsyX_EnableSwapInterval(g_enableSwapInterval);
+	GR_UpdateSwapIntervalState();
 }
 
 typedef struct
@@ -1119,17 +1129,18 @@ int GR_InitialisePSX()
 #endif
 
 	GR_ResetDevice();
-	PsyX_EnableSwapInterval(g_enableSwapInterval);
 
 	return 1;
+}
+
+void PsyX_SetSwapInterval(int interval)
+{
+	g_swapInterval = interval;
 }
 
 void PsyX_EnableSwapInterval(int enable)
 {
 	g_enableSwapInterval = enable;
-#if defined(RENDERER_OGL)
-	SDL_GL_SetSwapInterval(g_enableSwapInterval ? g_swapInterval : 0);
-#endif
 }
 
 void GR_Ortho2D(float left, float right, float bottom, float top, float znear, float zfar)
