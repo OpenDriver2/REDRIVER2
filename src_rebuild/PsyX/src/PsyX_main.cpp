@@ -43,10 +43,9 @@ int strcasecmp(const char* _l, const char* _r)
 
 SDL_Window* g_window = NULL;
 
-#define SWAP_INTERVAL		1
-
-int g_swapInterval = SWAP_INTERVAL;
+int g_swapInterval = 1;
 int g_enableSwapInterval = 1;
+int g_skipSwapInterval = 0;
 
 PsyXKeyboardMapping g_keyboard_mapping;
 PsyXControllerMapping g_controller_mapping;
@@ -147,7 +146,7 @@ long PsyX_Sys_SetVMode(long mode)
 
 int PsyX_Sys_GetVBlankCount()
 {
-	if (g_swapInterval == 0)
+	if (g_skipSwapInterval)
 	{
 		// extra speedup.
 		// does not affect `vsync_callback` count
@@ -801,6 +800,7 @@ void PsyX_Sys_DoDebugMouseMotion(int x, int y)
 		gameDebugMouse(x, y);
 }
 
+
 void PsyX_Sys_DoDebugKeys(int nKey, char down)
 {
 	if (gameDebugKeys)
@@ -809,21 +809,9 @@ void PsyX_Sys_DoDebugKeys(int nKey, char down)
 	if (nKey == SDL_SCANCODE_BACKSPACE)
 	{
 		if (down)
-		{
-			if (g_swapInterval != 0)
-			{
-				g_swapInterval = 0;
-				GR_ResetDevice();
-			}
-		}
+			g_skipSwapInterval = 1;
 		else
-		{
-			if (g_swapInterval != SWAP_INTERVAL)
-			{
-				g_swapInterval = SWAP_INTERVAL;
-				GR_ResetDevice();
-			}
-		}
+			g_skipSwapInterval = 0;
 	}
 
 	if (!down)
@@ -919,7 +907,7 @@ void PsyX_WaitForTimestep(int count)
 #endif
 
 	// wait for vblank
-	if (g_swapInterval > 0)
+	if (!g_skipSwapInterval)
 	{	
 		static int swapLastVbl = 0;
 
