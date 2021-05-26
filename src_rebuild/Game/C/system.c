@@ -719,7 +719,7 @@ void UpdatePadData(void)
 
 #ifndef PSX
 	extern void SwitchMappings(int menu);
-	SwitchMappings(pauseflag || CurrentGameMode == GAMEMODE_DIRECTOR);
+	SwitchMappings(pauseflag || CurrentGameMode == GAMEMODE_DIRECTOR);	// FIXME: maybe gDrawPauseMenus instead of pauseflag?
 #endif
 }
 

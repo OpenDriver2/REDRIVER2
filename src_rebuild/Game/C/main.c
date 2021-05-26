@@ -814,6 +814,12 @@ void State_GameInit(void* param)
 
 	// switch to STATE_GAMELOOP
 	SetState(STATE_GAMELOOP);
+
+#ifndef PSX
+	// set to 30 FPS VSync
+	// PsyX_SetSwapInterval(2);
+	// PsyX_EnableSwapInterval(1);
+#endif
 }
 
 extern short paddp;
@@ -1376,9 +1382,6 @@ void StepGame(void)
 
 	HandleExplosion();
 
-	if (FastForward == 0 && gSkipInGameCutscene == 0)
-		ColourCycle();
-
 	combointensity = NightAmbient | NightAmbient << 8 | NightAmbient << 0x10;
 
 	if (NoPlayerControl && AttractMode == 0)
@@ -1413,7 +1416,7 @@ void StepGame(void)
 	old_camera_change = camera_change;
 
 	// do camera changes
-	if (!pauseflag && NoPlayerControl)
+	if (pauseflag && NoPlayerControl)
 	{
 		if (gInGameCutsceneActive != 0)
 			camera_change = CutsceneCameraChange(CameraCnt);
@@ -1449,6 +1452,10 @@ void StepGame(void)
 	else
 	{
 		StepSim();
+		UpdatePlayerInformation();
+
+		if (FastForward == 0)
+			ColourCycle();
 
 		if (gDieWithFade != 0)
 			gDieWithFade++;
@@ -1472,8 +1479,6 @@ void StepGame(void)
 
 	if (AttractMode && (paddp || ReplayParameterPtr->RecordingEnd <= CameraCnt))
 		EndGame(GAMEMODE_QUIT);
-
-	UpdatePlayerInformation();
 }
 
 // [D] [T]
@@ -1691,7 +1696,6 @@ void DrawGame(void)
 void EndGame(GAMEMODE mode)
 {
 	WantedGameMode = mode;
-	//pauseflag = 0;
 	game_over = 1;
 }
 
@@ -1702,11 +1706,11 @@ void EnablePause(PAUSEMODE mode)
 	if (quick_replay == 0 && NoPlayerControl && mode == PAUSEMODE_GAMEOVER)
 		return;
 
-	if (pauseflag)
-		return;
-
-	WantPause = 1;
-	PauseMode = mode;
+	if (!pauseflag)
+	{
+		WantPause = 1;
+		PauseMode = mode;
+	}
 }
 
 // [D] [T] This is really a Psy-Q function
