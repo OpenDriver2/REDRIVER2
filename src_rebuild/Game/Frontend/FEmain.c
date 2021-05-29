@@ -1135,8 +1135,12 @@ void LoadFrontendScreens(int full)
 
 	for (int i = 0; i < 2; i++)
 	{
+		// [A] optimized. Before it was to wasteful to load 16 sectors
+		int loadSize = i == 0 ? 0x8000 : (36 * 128);
+		rect.h = i == 0 ? 256 : 36;
+		
 		ShowLoading();
-		LoadfileSeg("DATA\\GFX.RAW", (char*)_other_buffer, 0x30000 + (i * 0x8000), 0x8000);
+		LoadfileSeg("DATA\\GFX.RAW", (char*)_other_buffer, 0x30000 + (i * 0x8000), loadSize);
 
 		rect.x = 640 + (i * 64);
 		rect.y = 256;
@@ -1145,13 +1149,14 @@ void LoadFrontendScreens(int full)
 		DrawSync(0);
 	}
 
+	// Load clut
 	ShowLoading();
-	LoadfileSeg("DATA\\GFX.RAW", (char*)_other_buffer, 0x58000, 0x8000);
+	LoadfileSeg("DATA\\GFX.RAW", (char*)_other_buffer, 0x58000, /*0x8000*/ 512);
 
 	rect.x = 960;
 	rect.y = 256;
+	rect.h = 4;
 
-	// load font
 	LoadImage(&rect, (u_long*)_other_buffer);
 	DrawSync(0);
 
