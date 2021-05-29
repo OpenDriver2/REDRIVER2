@@ -1815,11 +1815,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 	SVECTOR ca;
 
 	VECTOR myVector;
-	int z0;
-	int z1;
-	int z2;
-	int z3;
-	
+	int z0, z1, z2, z3;
 	int i;
 	int cn, sn;
 	int vx, vz;
@@ -1830,6 +1826,9 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 	if (gDemoLevel)
 		return;
 #endif
+
+	if (NumPlayers > 1)
+		return;
 
 	memset((u_char*)&d, 0, sizeof(VECTOR));
 
