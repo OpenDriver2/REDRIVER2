@@ -5,6 +5,7 @@
 #include "cop_ai.h"
 #include "cars.h"
 #include "felony.h"
+#include "glaunch.h"
 #include "players.h"
 #include "replays.h"
 
@@ -31,6 +32,9 @@ int TannerCanEnterCar(CAR_DATA *cp, int distToCarSq)
 		if (ABS(FIXEDH(cp->hd.wheel_speed)) < 3)
 		{
 			carRange = car_cosmetics[cp->ap.model].colBox.vx * 2;
+
+			if (ActiveCheats.cheat13 != 0)
+				carRange <<= 1;
 			
 			if (carRange > 5000)
 				carRange = 5000;
