@@ -1621,6 +1621,8 @@ int PingOutCar(CAR_DATA * cp)
 	// inform target that car was pinged out
 	if (cp->inform)
 		*cp->inform ^= TARGET_FLAG_CAR_PINGED_IN;
+	
+	cp->inform = NULL;
 
 	ClearMem((char*)cp, sizeof(CAR_DATA));
 
