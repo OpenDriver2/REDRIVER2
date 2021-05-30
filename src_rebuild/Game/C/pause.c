@@ -151,11 +151,6 @@ void ToggleSecretCarFun(int direction)
 	FixCarCos(&car_cosmetics[4], 12);
 }
 
-void ToggleMiniCars(int direction)
-{
-	ActiveCheats.cheat13 ^= 1;
-}
-
 void ToggleJerichoMode(int direction)
 {
 	ActiveCheats.cheat12 ^= 1;
@@ -231,7 +226,6 @@ MENU_HEADER DebugTimeOfDayHeader =
 MENU_ITEM DebugJustForFunItems[] =
 {
 	{ "Secret Car Fun", PAUSE_TYPE_FUNC,	2,  ToggleSecretCarFun, MENU_QUIT_RESTART,	NULL },
-	{ "Mini Cars", PAUSE_TYPE_FUNC,	2,  ToggleMiniCars, MENU_QUIT_NONE,	NULL },
 	{ "Jericho Mode",	PAUSE_TYPE_FUNC,	2,  ToggleJerichoMode,	MENU_QUIT_NONE,		NULL },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
