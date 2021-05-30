@@ -189,8 +189,8 @@ const int TAIL_GETTINGFAR = 12900;
 const int TAIL_TOOCLOSE = 4000;
 const int TAIL_TOOFAR = 15900;
 
-#ifdef DEBUG_OPTIONS
-#define MR_DebugPrint //printInfo
+#ifdef _DEBUG
+#define MR_DebugPrint // printInfo
 #define MR_DebugWarn printWarning
 #else
 #define MR_DebugPrint

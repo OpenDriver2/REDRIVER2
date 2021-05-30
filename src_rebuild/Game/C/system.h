@@ -45,6 +45,12 @@ extern void sys_freeall();
 #define D_TEMPFREE()
 #endif
 
+#ifdef _DEBUG
+#define DMalloc_DebugPrint printWarning
+#else
+#define DMalloc_DebugPrint (void)
+#endif
+
 #define D_MALLOC_BEGIN() \
 	{ \
 		volatile const char* _oldmalloc = mallocptr;
@@ -53,13 +59,13 @@ extern void sys_freeall();
 #define D_MALLOC_END() \
 		D_TEMPFREE();\
 		if(mallocptr > _oldmalloc)\
-			printWarning("malloc(%d) in %s, line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __FUNCTION__, __LINE__, (mallocptr-malloctab));\
+			DMalloc_DebugPrint("malloc(%d) in %s, line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __FUNCTION__, __LINE__, (mallocptr-malloctab));\
 	} // D_MALLOC_BEGIN block
 #else
 #define D_MALLOC_END() \
 		D_TEMPFREE();\
 		if(mallocptr > _oldmalloc)\
-			printWarning("malloc(%d) in " __FUNCTION__ ", line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __LINE__, (mallocptr-malloctab));\
+			DMalloc_DebugPrint("malloc(%d) in " __FUNCTION__ ", line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __LINE__, (mallocptr-malloctab));\
 	} // D_MALLOC_BEGIN block
 #endif
 
