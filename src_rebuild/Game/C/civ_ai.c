@@ -3674,7 +3674,7 @@ int CivControl(CAR_DATA* cp)
 		cp->wheel_angle = steer;
 		cp->thrust = thrust;
 
-#if 1
+#if 0
 		{
 			// maxCivCars = 2;
 			// maxCopCars = 0;
