@@ -731,7 +731,7 @@ void CopControl1(CAR_DATA *cp)
 	cp->thrust = (cp->thrust * 7) / 10;
 
 	// calculate steering and direction
-	steeringFac = ((desiredSteerAngle + 0x800U & 0xfff) - 0x800) - cp->wheel_angle;
+	steeringFac = DIFF_ANGLES(0, desiredSteerAngle) - cp->wheel_angle; //((desiredSteerAngle + 2048U & 0xfff) - 2048) - cp->wheel_angle;
 
 	if (steeringFac < -200)
 		steeringFac = -200;

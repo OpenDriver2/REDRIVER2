@@ -214,7 +214,7 @@ int NotTravellingAlongCurve(int x, int z, int dir, DRIVER2_CURVE* cv)
 	int cvDiff;
 
 	curveDir = ratan2(x - cv->Midx, z - cv->Midz);
-	cvDiff = ((dir - curveDir) + 2048U & 0xfff) - 2048U;
+	cvDiff = DIFF_ANGLES(curveDir, dir); //((dir - curveDir) + 2048U & 0xfff) - 2048U;
 
 	return (cvDiff < 1) * 2048;
 }
@@ -285,7 +285,7 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 			dx = oldNode->x - currentRoadInfo.curve->Midx;
 			dz = oldNode->z - currentRoadInfo.curve->Midz;
 
-			oldOppDir = (((oldNode->dir - ratan2(dx, dz)) + 2048U & 0xfff) - 2048);
+			oldOppDir = DIFF_ANGLES(ratan2(dx, dz), oldNode->dir); // (((oldNode->dir - ratan2(dx, dz)) + 2048U & 0xfff) - 2048);
 			oldOppDir = (oldOppDir < 1) * 2048;
 		}
 
@@ -430,7 +430,7 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 						dx = oldNode->x - roadInfo.curve->Midx;
 						dz = oldNode->z - roadInfo.curve->Midz;
 
-						oppDir = ((turnDir - ratan2(dx, dz)) + 2048U & 0xfff) - 2048; // [A]
+						oppDir = DIFF_ANGLES(ratan2(dx, dz), turnDir);// ((turnDir - ratan2(dx, dz)) + 2048U & 0xfff) - 2048; // [A]
 						oppDir = (oppDir < 1) * 2048;
 					}
 
@@ -678,7 +678,7 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 				dx = oldNode->x - roadInfo.curve->Midx;
 				dz = oldNode->z - roadInfo.curve->Midz;
 
-				oppDir = (((turnDir - ratan2(dx, dz)) + 2048U & 0xfff) - 2048);
+				oppDir = DIFF_ANGLES(ratan2(dx, dz), turnDir); // (((turnDir - ratan2(dx, dz)) + 2048U & 0xfff) - 2048);
 				oppDir = (oppDir < 1) * 2048;
 			}
 
@@ -1481,7 +1481,7 @@ int CreateNewNode(CAR_DATA * cp)
 						dz = tempNode.z - start->z;
 
 						segLength = (SquareRoot0(dx * dx + dz * dz) - (cp->hd.wheel_speed / 170));
-						cornerAngle = ((ratan2(dx, dz) - start->dir) + 2048U & 0xfff) - 2048;
+						cornerAngle = DIFF_ANGLES(start->dir, ratan2(dx, dz)); //((ratan2(dx, dz) - start->dir) + 2048U & 0xfff) - 2048;
 
 						tmp = FIXEDH(segLength * rcossin_tbl[(cornerAngle & 0xfffU) * 2 + 1]);
 
@@ -3321,7 +3321,7 @@ int CivSteerAngle(CAR_DATA* cp)
 					dx = pathPoint.vx - cp->hd.where.t[0];
 					dz = pathPoint.vz - cp->hd.where.t[2];
 
-					ret = ((ratan2(dx, dz) - cp->hd.direction) + 2048U & 0xfff) - 2048;
+					ret = DIFF_ANGLES(cp->hd.direction, ratan2(dx, dz)); // ((ratan2(dx, dz) - cp->hd.direction) + 2048U & 0xfff) - 2048;
 
 					if (ret < -maxSteer)
 						ret = -maxSteer;
