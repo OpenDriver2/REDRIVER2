@@ -1745,7 +1745,7 @@ void AddTrafficLight(CELL_OBJECT *cop, int x, int y, int z, int flag, int yang)
 	lDiffAnglesX = DIFF_ANGLES(0, camera_angle.vx);// (camera_angle.vx + 2048) & 0xfff) - 2048;
 	AbsX = ABS(lDiffAnglesX);
 
-	lDiffAnglesY = DIFF_ANGLES(camera_angle.vy, 0); //((-camera_angle.vy & 0xfffU) - yang + 2048 & 0xfff) - 2048;
+	lDiffAnglesY = DIFF_ANGLES(yang, -camera_angle.vy & 4095); //((-camera_angle.vy & 0xfffU) - yang + 2048 & 0xfff) - 2048;
 	AbsY = ABS(lDiffAnglesY);
 
 	c.r = a.r >> 3;
