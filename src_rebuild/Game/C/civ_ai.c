@@ -398,18 +398,19 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 				//exitDir = exitDir - (exitDir / 4) * 4;
 
 				if (exitDir == 1)
-					*turnAngle = -1024;
+					*turnAngle = -1024;	// left
 				else if (exitDir == 2)
-					*turnAngle = 0;
+					*turnAngle = 0;		// forward
 				else if (exitDir == 3)
-					*turnAngle = 1024;
+					*turnAngle = 1024;	// right
 				else
-					*turnAngle = 0;
+					*turnAngle = 0;		// forward again?
 
 				test123 = 666;
 				test555 = 666;
 				test42 = 666;
-				
+
+				// current node direction and new direction
 				turnDir = oldNode->dir + *turnAngle;
 
 				if (GetSurfaceRoadInfo(&roadInfo, exitSurfId))
@@ -496,13 +497,24 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 							{
 								test42 = (ROAD_LANE_DIR(&roadInfo, count) ^ 1) & 1;
 								newLane = count;
+
+								if (test42 == 0)
+								{
+									if (oppDir != 0)
+										break;
+								}
+								else
+								{
+									if (oppDir == 0)
+										break;
+								}
 							}
 							count--;
-						} while (count >= 0);
+						} while (count >= -1);
 					}
 
 					// validate lane
-					if (newLane >= 0 && newLane < laneCount)
+					if (turnAng == 0 || newLane >= 0 && newLane < laneCount)
 					{
 						valid = ROAD_IS_AI_LANE(&roadInfo, newLane) && !ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, newLane);
 					}
@@ -3662,10 +3674,10 @@ int CivControl(CAR_DATA* cp)
 		cp->wheel_angle = steer;
 		cp->thrust = thrust;
 
-#if 0
+#if 1
 		{
-			//maxCivCars = 2;
-			//maxCopCars = 0;
+			// maxCivCars = 2;
+			// maxCopCars = 0;
 
 			extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
 			extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
