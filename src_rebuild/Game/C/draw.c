@@ -1309,7 +1309,7 @@ void DrawMapPSX(int* comp_val)
 	int hloop;
 	int vloop;
 
-#ifdef PSX
+#if 0 //def PSX
 	CELL_ITERATOR& ci = *(CELL_ITERATOR*)(u_char*)getScratchAddr(0);
 	MATRIX& mRotStore = *(MATRIX*)((u_char*)getScratchAddr(0) + sizeof(CELL_ITERATOR));
 	DrawMapData& drawData = *(DrawMapData*)((u_char*)getScratchAddr(0) + sizeof(CELL_ITERATOR) + sizeof(MATRIX));
@@ -1336,8 +1336,6 @@ void DrawMapPSX(int* comp_val)
 	drawData.rightPlane = -6144;
 	drawData.leftPlane = 6144;
 
-	drawData.farClipLimit = 80000;
-
 	// setup planes
 	drawData.rightAng = camera_angle.vy - FrAng & 0xfff;
 	drawData.leftAng = camera_angle.vy + FrAng & 0xfff;
@@ -1351,10 +1349,14 @@ void DrawMapPSX(int* comp_val)
 	drawData.backcos = rcossin_tbl[drawData.backAng * 2 + 1];
 	drawData.backsin = rcossin_tbl[drawData.backAng * 2];
 
+#ifdef PSX
 	if (NumPlayers == 2)
-	{
 		drawData.farClipLimit = farClip2Player;
-	}
+	else
+		drawData.farClipLimit = 60000;
+#else
+	drawData.farClipLimit = 125000;
+#endif
 
 	drawData.tiles_found = 0;
 	drawData.sprites_found = 0;
