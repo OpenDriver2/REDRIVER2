@@ -870,7 +870,7 @@ void InitMultiplayerMap(void)
 	{
 		Loadfile(filename, MapBitMaps);
 
-		rect.x = MapRect.x + MapSegmentPos[0].x;
+		rect.x = MapRect.x + MapSegmentPos[0].x / 4;
 		rect.y = MapRect.y + MapSegmentPos[0].y;
 		rect.w = 16;
 		rect.h = 64;
