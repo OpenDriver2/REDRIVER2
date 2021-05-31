@@ -1,5 +1,5 @@
 /*
- *	GTE Macro definitions without use of DMPSX
+ *	GTE Macro definitions - special version for Nugget (NO DMPSX)
  */
 
 /*
@@ -607,7 +607,7 @@
 #define gte_llv1bk() __asm__ volatile (				\
 	"nop;"							\
 	"nop;"							\
-	"cop2 0x4AA012;" )
+	"cop2 0x04AA012;" )
 
 #define gte_llv2bk() __asm__ volatile (				\
 	"nop;"							\
@@ -841,7 +841,7 @@
 #define gte_llv2tr_b()		__asm__ volatile ( "cop2 0x04B0012;" )
 #define gte_llirtr_b()		__asm__ volatile ( "cop2 0x04B8012;" )
 #define gte_llv0bk_b()		__asm__ volatile ( "cop2 0x04A2012;" )
-#define gte_llv1bk_b()		__asm__ volatile ( "cop2 0x4AA012;" )
+#define gte_llv1bk_b()		__asm__ volatile ( "cop2 0x04AA012;" )
 #define gte_llv2bk_b()		__asm__ volatile ( "cop2 0x04B2012;" )
 #define gte_llirbk_b()		__asm__ volatile ( "cop2 0x04BA012;" )
 #define gte_lc_b()		__asm__ volatile ( "cop2 0x04DA412;" )

@@ -1568,19 +1568,24 @@ void State_GameLoop(void* param)
 {
 	int cnt;
 
-#ifdef PSX
+	if (gSkipInGameCutscene)
+	{
+		StepGame();
+		ClearCurrentDrawBuffers();
+		return;
+	}
 
 	if (!FilterFrameTime())
 		return;
 
+	UpdatePadData();
+	CheckForPause();
+
+#ifdef PSX
 	static int lastTime32Hz = 0;
 
 	int curTime = clock_realTime.time32Hz;
 	int numFrames = curTime - lastTime32Hz;
-
-	UpdatePadData();
-	
-	CheckForPause();
 
 	// moved from StepGame
 	if (FrameCnt == 5)
@@ -1609,21 +1614,6 @@ void State_GameLoop(void* param)
 
 	DrawGame();
 #else
-
-	if (gSkipInGameCutscene)
-	{
-		StepGame();
-		ClearCurrentDrawBuffers();
-		return;
-	}
-	
-	if (!FilterFrameTime())
-		return;
-
-	UpdatePadData();
-	
-	CheckForPause();
-
 	// moved from StepGame
 	if (FrameCnt == 5)
 		SetDispMask(1);
