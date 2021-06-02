@@ -1416,20 +1416,12 @@ void StepGame(void)
 	old_camera_change = camera_change;
 
 	// do camera changes
-	if (pauseflag && NoPlayerControl)
-	{
-		if (gInGameCutsceneActive != 0)
-			camera_change = CutsceneCameraChange(CameraCnt);
-		else
-			camera_change = CheckCameraChange(CameraCnt);
-	}
+	if (gInGameCutsceneActive != 0)
+		camera_change = CutsceneCameraChange(CameraCnt);
+	else if (pauseflag == 0 && NoPlayerControl != 0)
+		camera_change = CheckCameraChange(CameraCnt);
 	else
-	{
-		if (gInGameCutsceneActive != 0)
-			camera_change = CutsceneCameraChange(CameraCnt);
-		else
-			camera_change = 0;
-	}
+		camera_change = 0;
 
 	// step physics engine
 	if (pauseflag)
