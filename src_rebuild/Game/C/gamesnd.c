@@ -1991,20 +1991,24 @@ int AddEnvSnd(int type, char flags, int bank, int sample, int vol, int px, int p
 		case 2:
 		case 4:
 			ep->pos.vx = px;
+			ep->pos.vz = pz;
+
 			ep->pos2.vx = px2;
 			ep->pos2.vz = pz2;
-			ep->pos.vz = pz;
 			break;
 		case 3:
-			ep->pos2.vx = px;
 			ep->pos.vx = px;
-			ep->pos2.vz = pz;
 			ep->pos.vz = pz;
+
+			ep->pos2.vx = px;
+			ep->pos2.vz = pz;
 			break;
 		case 5:
 			ep->type = 1;
+
 			ep->pos.vx = px - px2;
 			ep->pos.vz = pz - px2;
+
 			ep->pos2.vx = px + px2;
 			ep->pos2.vz = pz + px2;
 	}
@@ -2036,10 +2040,8 @@ void IdentifyZone(envsound* ep, envsoundinfo* E, int pl)
 	zones.l = 0;
 	zones.h = 0;
 
-	i = 0;
-	do {
-		tmp[i++] = -1;
-	} while (i < 4);
+	for (i = 0; i < 4; i++)
+		tmp[i] = -1;
 
 	E->cam_pos.vx = player[pl].cameraPos.vx;
 	E->cam_pos.vy = player[pl].cameraPos.vy;
@@ -2071,7 +2073,7 @@ void IdentifyZone(envsound* ep, envsoundinfo* E, int pl)
 				ldz = ep[i].pos2.vz - ep[i].pos.vz;
 				
 				// find inverse length of line
-				l_inv_len = 1.0 / sqrt(ldx * ldx + ldz * ldz);
+				l_inv_len = 1.0f / sqrt(ldx * ldx + ldz * ldz);
 				
 				// find normal (perpendicular) by using cross product and normalize
 				ndx = ldz * l_inv_len;
@@ -2274,8 +2276,8 @@ void CalcEffPos2(envsound* ep, envsoundinfo* E, int pl)
 	int snd;
 	int i;
 
-	i = 0;
-	do {
+	for (i = 0; i < 4; i++)
+	{
 		snd = E->thisS[i];
 
 		if (snd > -1 && (E->flags & 1 << i) == 0)
@@ -2439,9 +2441,7 @@ void CalcEffPos2(envsound* ep, envsoundinfo* E, int pl)
 		}
 
 		E->eff_pos[i].vy = -E->cam_pos.vy;
-
-		i++;
-	} while (i < 4);
+	}
 
 }
 
