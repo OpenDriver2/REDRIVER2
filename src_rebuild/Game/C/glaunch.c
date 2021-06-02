@@ -277,8 +277,8 @@ void State_InitFrontEnd(void* param)
 {
 	if ((int)param == 2)
 	{
-		InitFrontendDisplay();
 		InitFrontend();
+		InitFrontendDisplay();
 	}
 	else
 	{
