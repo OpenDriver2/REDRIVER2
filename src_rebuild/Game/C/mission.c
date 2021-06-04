@@ -365,6 +365,11 @@ void SetupResidentModels()
 			{
 				MissionHeader->residentModels[takenSlots++] = wantedCar[i];
 			}
+			else
+			{
+				// this can make things ugly
+				takenSlots = foundRM+1;
+			}
 
 			// force palette
 			if (singlePal)
