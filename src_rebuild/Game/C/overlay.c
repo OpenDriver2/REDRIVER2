@@ -135,7 +135,7 @@ void SetFullscreenDrawing(void)
 
 	SetDrawEnv(drenv, &drawenv);
 
-	addPrim(current->ot + 8, drenv);
+	addPrim(current->ot + 4, drenv);
 	current->primptr += sizeof(DR_ENV);
 }
 
