@@ -888,6 +888,11 @@ void InitOverheadMap(void)
 	int c;
 	int tpage;
 
+	if (NumPlayers > 1)
+		gMapYOffset = 96;
+	else
+		gMapYOffset = 181;
+
 	if (gMultiplayerLevels) 
 	{
 		InitMultiplayerMap();
@@ -977,9 +982,6 @@ void DrawMultiplayerMap(void)
 		yPos = gMapYOffset;
 	else
 		yPos = 96;
-
-	if (MissionHeader->region == 0)
-		return;
 
 	DrawMultiplayerTargets();
 
@@ -1094,25 +1096,24 @@ void DrawOverheadMap(void)
 		0
 	};
 
+	if (NumPlayers > 1)
+	{
+		if(MissionHeader->region != 0)
+			DrawMultiplayerMap();
+
+		return;
+	}
+
 	map_minX = gMapXOffset;
-	map_maxX = gMapXOffset + MAP_SIZE_W;
 	map_minY = gMapYOffset;
-	map_maxY = gMapYOffset + MAP_SIZE_H;
+	map_maxX = map_minX + MAP_SIZE_W;
+	map_maxY = map_minY + MAP_SIZE_H;
 
 	VECTOR translate = {
 		map_minX + MAP_SIZE_W/2,
 		0,
 		map_minY + MAP_SIZE_H/2
 	};
-
-	if (gMultiplayerLevels)
-	{
-		DrawMultiplayerMap();
-		return;
-	}
-
-	if (NumPlayers > 1)
-		return;
 
 	SetMapPos();	
 	draw_box(map_minY, MAP_SIZE_H);
@@ -1434,8 +1435,7 @@ void DrawOverheadMap(void)
 	drarea = (DR_AREA*)current->primptr;
 
 	SetDrawArea(drarea, &clipped_size);
-
-	addPrim(current->ot+1, drarea);
+	addPrim(current->ot + 1, drarea);
 	current->primptr += sizeof(DR_AREA);
 }
 
