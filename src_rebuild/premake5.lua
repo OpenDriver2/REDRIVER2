@@ -1,6 +1,7 @@
 -- premake5.lua
 
-require "premake_modules/psx"
+require "premake_modules/usage"
+--require "premake_modules/emscripten"
 
 -- you can redefine dependencies
 SDL2_DIR = os.getenv("SDL2_DIR") or "dependencies/SDL2"
@@ -80,11 +81,8 @@ workspace "REDRIVER2"
 		dofile("premake_libjpeg.lua")
 	end
 	
-	if os.target() ~= "psx" then
-		dofile("PsyX/premake5.lua")
-	end
-	
--- TODO: overlays
+-- Psy-Cross layer
+include "PsyCross/premake5.lua"
 
 -- game iteslf
 project "REDRIVER2"
@@ -96,6 +94,10 @@ project "REDRIVER2"
     includedirs { 
         "Game", 
     }
+	
+	uses { 
+		"PsyCross",
+	}
 
     defines { GAME_REGION }
 	
@@ -107,28 +109,11 @@ project "REDRIVER2"
         "Game/**.h",
         "Game/**.c"
     }
-	
-	-- exclude sources which belong to overlays
-	if os.target() == "psx" then
-		excludes {
-			"Game/MemCard/**.c",
-			"Game/MemCard/**.h",
-			"Game/Frontend/**.c",
-			"Game/Frontend/**.h",
-			"Game/C/leadai.c",
-			"Game/C/pathfind.c",
-		}
-    end
 
     filter "system:Windows or linux"
-        dependson { "PsyX" }
-        links { "Psy-X", "jpeg" }
-		
-		includedirs { 
-			"PsyX/include",
-			"PsyX/include/psx"
-		}
-		
+        --dependson { "PsyX" }
+        links { "jpeg" }
+				
 		files {
 			"utils/**.h",
 			"utils/**.cpp",
@@ -166,22 +151,6 @@ project "REDRIVER2"
             "openal",
             "SDL2",
             "dl",
-        }
-		
-	filter "system:psx"
-		defines { "PSX" }
-		includedirs {
-            PSYQ_DIR.."/include"
-        }
-		links {
-			PSYQ_DIR.."/lib/LIBETC",
-			PSYQ_DIR.."/lib/LIBPAD",
-			PSYQ_DIR.."/lib/LIBGTE",
-			PSYQ_DIR.."/lib/LIBMCRD",
-			PSYQ_DIR.."/lib/LIBCD",
-			PSYQ_DIR.."/lib/LIBSN",
-			PSYQ_DIR.."/lib/LIBSPU",
-			PSYQ_DIR.."/lib/LIBAPI"
         }
 
     filter "configurations:Debug"

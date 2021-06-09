@@ -232,7 +232,9 @@ void PsyX_Pad_InternalPadUpdates()
 
 			ushort test = *(u_short*)pad->buttons;
 
-			// Select + Start pressed + Down
+			// In order to switch From/To analog user has to use left gamepad stick
+
+			// Select + Start pressed + left stick Down
 			if (pad->analog[3] == 255)
 			{
 				if ((test & 0x1) == 0 && (test & 0x8) == 0)
@@ -246,7 +248,7 @@ void PsyX_Pad_InternalPadUpdates()
 				}
 			}
 
-			// Select + Start pressed + Up
+			// Select + Start pressed + left stick Up
 			if (pad->analog[3] == 0)
 			{
 				if ((test & 0x1) == 0 && (test & 0x8) == 0)

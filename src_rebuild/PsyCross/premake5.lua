@@ -1,10 +1,8 @@
-
 -- Psy-Cross layer
-project "Psy-X"
+project "PsyCross"
     kind "StaticLib"
     language "C++"
     targetdir "bin/%{cfg.buildcfg}"
-	removeplatforms "psx" 
 
     defines { GAME_REGION }
 
@@ -64,3 +62,10 @@ project "Psy-X"
 	
     --filter { "files:**.c", "files:**.C" }
     --    compileas "C++"
+	
+usage "PsyCross"
+	links "PsyCross"
+	includedirs {
+		"include",
+		"include/psx"
+	}
