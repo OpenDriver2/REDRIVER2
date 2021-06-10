@@ -21,7 +21,7 @@
 --
 -- project "app"
 --   kind "ConsoleApp"
---   uses "core_lib"
+--   uses "core"
 --
 -- "core" will link vendor and openssh and define 'USING_VENDOR'
 -- "app" will link 'core' and define 'USING_VENDOR'
@@ -44,48 +44,32 @@
 -- Using a project will link the project and resolves nested uses,
 -- in addition to any declared usage.
 --
--- TO CONSIDER: not sure this is needed anymore.
--- 'uses' can filter down to 'linkoptions' or 'buildoptions'
---    uses "linkoptions:opengl"
---    uses "buildoptions:opengl"
--- link options are defined as: links, linkoptions, libdirs.
--- buildoptions are defined as anything that isn't a link option.
--- TO CONSIDER: separate api, uses_linkoptions/uses_buildoptions?
---
--- The context of a 'usage' is the ultimate target context it is being
--- used in.
---
--- usage "external_lib"
---   links "external_lib-%{cfg.buildcfg}"
---
--- Filters work as you'd expect:
---
--- usage "debug_stuff"
---     defines "DEBUG_STUFF"
---
--- project "shared"
---   kind "SharedLib"
---   filter "configurations:debug"
---     uses "debug_stuff"
---
--- project "app"
---   kind "ConsoleApp"
---   uses "shared"  -- DEBUG_STUFF will be defined in the debug configuration.
---
--- Todo
--- ----
---
---   Cyclic reference detection. We are allowed to use a project more than
---   once, (eg. from different configurations) but not along the same call path.
---   Decide what to do with diamond shaped uses graphs, include twice, or
---   first use?
---
---   Handle block insertion ordering and 'removes' correctly
---
+-- "uses" do not respect configurations/filters due to havy optimizations
+-- "usage" can contain configuration filters
+
+	require 'stack'
 
 	local p = premake
 	local oven = p.oven
 	local context = p.context
+
+	local keyLinks 		= "links"
+	local field 		= p.field
+	local fieldLinks 	= field.get(keyLinks)
+
+	newoption {
+	   trigger     = "usage-optimization-off",
+	   description = "Turn off optimization for usage module. Useful for debuging dependencies (50% slower generation)."
+	}
+
+	local optimization = (_OPTIONS["usage-optimization-off"] == nil)
+
+---
+-- Two stacks which stores actual order of projects and usages
+-- Projects stack and uses stack are aligned
+--
+	local usesStack = Stack:Create()
+	local sourcesStack = Stack:Create()
 
 --
 -- 'uses' api
@@ -122,383 +106,469 @@ p.api.register {
 		return nil
 	end
 
---
--- Given the current usage filter, does the new filter fit into it?
+---
+-- Push usage and source project name on stack
+-- * if "usage" is already on stack it mean that "usage" in this configuration was in use, 
 --
 
-	local function compatibleUsage(currentUsageFilter, newUsageFilter)
-		if newUsageFilter and currentUsageFilter then
-			if currentUsageFilter ~= newUsageFilter then
-				return false
-			end
+	local printUsesStack
+	local function pushUsage( usageName, sourceName )
+
+		-- search for uses
+		local usesStackIndex = usesStack:find_value(usageName)
+
+		if usesStackIndex == nil then
+        	verbosef("{PUSH} USES_STACK [%s]: %s", sourceName, usageName)
+
+			-- push on stack
+			usesStack:push(usageName)
+			sourcesStack:push(sourceName)
+		else
+        	verbosef("{EXIST} USES_STACK [%s]: %s", sourceName, usageName)
+
 		end
-		return true
 	end
 
+---
+-- Pop usage and source name form stack
+--
+
+	local function popUsage( count )
+		local count = count or 1
+		for i = 1, count do
+
+			-- pop form stack
+			local sourceName = sourcesStack:pop()
+			local usageName  = usesStack:pop()
+
+			verbosef("{POP} USES_STACK [%s]: %s", sourceName, usageName)
+		end 
+	end
 
 --
--- resolveUsage
+-- During baking we can start new bake so we have to stash current stack 
+--
+	local stackStash = Stack:Create()	
+
+---
+-- During "bake" process it is posible to call another "bake", 
+-- to starts new bake we have to stash current uses stack and create new empty
+---
+
+	local function stashStack()	
+		if _OPTIONS["verbose"] then
+			for i , sourceName in ipairs(sourcesStack._et) do					
+				verbosef("{STASH} USES_STACK [%s]: %s", sourceName, usesStack:get(i))
+			end
+		end		
+		stackStash:push( {["sourcesStack"] = sourcesStack, ["usesStack"] = usesStack} )
+		sourcesStack = Stack:Create()
+		usesStack = Stack:Create()
+	end
+
+---
+-- After "bake" previous uses stack have to be recreated
+---
+
+	local function unstashStack()			
+		local stash  = stackStash:pop()		
+		sourcesStack = stash.sourcesStack
+		usesStack    = stash.usesStack
+		if _OPTIONS["verbose"] then
+			for i , sourceName in ipairs(sourcesStack._et) do					
+				verbosef("{UNSTASH} USES_STACK [%s]: %s", sourceName, usesStack:get(i))
+			end
+		end	
+	end
+
+--
+-- Print stack
 --
 
-	local resolveAllUsesInBlock
+	printUsesStack = function()
+		-- reconstructed full stack from stashed and current stacks		
+		local fullStack = {} 
+		-- for formating we need max length of sourceName, it will be first column
+		local maxSourceNameLen = 1 
 
-	local function resolveUsage( targetProject, targetBlock,
-								 usage, usageName, usageFilter,
-								 inheritedCriteria )
-
-		verbosef("\nProject %s is using usage %s %s\n",
-				 targetProject.name, usage.name, usageFilter or "" )
-
-		-- A map for how to copy the usage blocks into the target project.
-		-- Each entry in the map creates a new block.
-
-		local propagateMap = {}
-
-		local commonFields = { "_criteria", "_basedir", "uses" }
-		local linkFields   = { "links", "linkoptions", "libdirs" }
-
-		if usageFilter == nil then
-
-			-- We don't have a filter.
-			-- Create one block with the build options,
-			-- and another with only the links options that is filtered
-			-- for just link targets.
-
-			table.insert( propagateMap, {
-					usageFilter   = "buildoptions",
-					excludeFields = linkFields
-				} )
-
-			table.insert( propagateMap, {
-					terms = {'kind:not StaticLib'},
-					usageFilter   = "linkoptions",
-					includeFields = table.join( commonFields, linkFields )
-				} )
-		else
-
-			-- Respect the filter we have, and create one block with
-			-- either build or linkoptions
-
-			if usageFilter == "buildoptions" then
-				table.insert( propagateMap, {
-					usageFilter   = "buildoptions",
-					excludeFields = linkFields
-				} )
-			end
-
-			if usageFilter == "linkoptions" then
-				table.insert( propagateMap, {
-					usageFilter   = "linkoptions",
-					includeFields = table.join( commonFields, linkFields )
-				} )
-			end
-
+		-- get full stack form stashed stacks. form oldest to newest
+		for _, stacks in ipairs(stackStash._et) do
+			if stacks.sourcesStack:getn() > 0 then
+				for i, sourceName in ipairs(stacks.sourcesStack._et) do
+					local len = sourceName:len()
+					if len > maxSourceNameLen then
+						maxSourceNameLen = len
+					end
+					table.insert(fullStack, { ["sourceName"] = sourceName, ["usageName"] = stacks.usesStack:get(i) } )
+				end
+			end 
 		end
+
+		-- get stack form currect "bake"
+		for i, sourceName in ipairs(sourcesStack._et) do
+			local len = sourceName:len()
+			if len > maxSourceNameLen then
+				maxSourceNameLen = len
+			end
+			table.insert(fullStack, { ["sourceName"] = sourceName, ["usageName"] = usesStack:get(i) } )
+		end
+
+		-- print full stack in three columns
+		-- SOURCE: ACRION: USAGE:
+		--
+		-- Actions:
+		-- BAKES - mean that usage requred "bake" project
+		-- USES  - use project or usage
+		print("\nUses stack:\n")
+		local line = string.format("%-" .. maxSourceNameLen .. "s ACRION: USAGE: \n", "SOURCE:")
+		print(line)
+		for _, entry in ipairs(fullStack) do
+			if not entry.sourceName:find('"bake"') then
+				if entry.usageName:find('"bake"') then
+					line = string.format("%-" .. maxSourceNameLen .. "s BAKES   %s", entry.sourceName, entry.usageName:gsub('"bake" ', ""))
+				else
+					line = string.format("%-" .. maxSourceNameLen .. "s USES    %s", entry.sourceName, entry.usageName)
+				end
+				print(line)
+			end			
+		end
+	end
+
+---
+-- Resolve usage of targetProject.targetBlock
+--
+	local function resolveUsage( targetProject, targetBlock, usage )		
+
+
+		verbosef("\nProject %s is using usage %s\n",
+				 targetProject.name, usage.name)
+
 
 		-- Clone each block in the usage and insert it into the target project
+		for _,usageBlock in ipairs(usage.blocks) do
+		
+			-- Merge the criteria for the usage and target
 
-		for _,propagate in ipairs(propagateMap) do
+			-- detach fat references before deepcopy
+			usageOrigin        = usageBlock._origin
+			usageBlock._origin = nil
+			
+			local newBlock = table.deepcopy(usageBlock)
 
-			verbosef("\nApplying %s to project %s from using usage %s\n",
-					 propagate.usageFilter, targetProject.name, usage.name )
+			-- attach fat references after deepcopy
+			newBlock._origin   = usageOrigin
+			usageBlock._origin = usageOrigin
+			
 
-			for _,usageBlock in ipairs(usage.blocks) do
+			newBlock._criteria.patterns = table.join(
+			newBlock._criteria.patterns,
+			targetBlock._criteria.patterns )
 
-				-- Merge the criteria for the usage, target, propagate
-				-- with any inherited criteria
+			newBlock._criteria.data =
+				p.criteria._compile(newBlock._criteria.patterns)
 
-				local newBlock = table.deepcopy(usageBlock)
-
-				newBlock._criteria.patterns = table.join(
-					newBlock._criteria.patterns,
-					targetBlock._criteria.patterns )
-
-				if inheritedCriteria ~= nil then
-					newBlock._criteria.patterns = table.join(
-						newBlock._criteria.patterns,
-						inheritedCriteria.patterns )
-				end
-
-				if propagate.terms ~= nil then
-					local propagateCriteria =
-						p.criteria.new( propagate.terms )
-
-					newBlock._criteria.patterns = table.join(
-						newBlock._criteria.patterns,
-						propagateCriteria.patterns )
-				end
-
-				newBlock._criteria.data =
-					p.criteria._compile(newBlock._criteria.patterns)
-
-				-- todo: would be nice not to do this.
-				--  	 needs to be in sync with internal block logic.
-				if newBlock.filename then
-					newBlock.filename = nil
-					newBlock._basedir = newBlock.basedir
-					newBlock.basedir = nil
-				end
-
-				-- Filter the field set of the new block to the ones we
-				-- are propagating
-
-				for field,v in pairs(usageBlock) do
-
-					local reject = false
-
-					if propagate.excludeFields ~= nil then
-						reject = table.contains(
-							propagate.excludeFields, field )
-					end
-
-					if propagate.includeFields ~= nil then
-						reject = reject or not table.contains(
-							propagate.includeFields, field )
-					end
-
-					if reject then
-						verbosef("ignoring %s from %s %s",
-								 field, usage.name, propagate.usageFilter)
-
-						newBlock[field] = nil
-					else
-						verbosef("keeping %s from %s %s",
-								 field, usage.name, propagate.usageFilter)
-					end
-				end
-
-				-- Insert the new block into the target project.
-				-- TODO: We need to insert as if at the call site,
-				--  	 and it need to deal with with 'removes'
-				--  	 merging between the two blocks.
-
-				table.insert( targetProject.blocks, newBlock )
-
-				-- Recurse into the new block and resolve any 'uses' there
-
-				resolveAllUsesInBlock(
-					targetProject,
-					newBlock,
-					propagate.usageFilter )
+			-- todo: would be nice not to do this.
+			--  	 needs to be in sync with internal block logic.
+			if newBlock.filename then
+				newBlock.filename = nil
+				newBlock._basedir = newBlock.basedir
+				newBlock.basedir = nil
 			end
+		
+			-- Insert the new block into the target project.
+			-- TODO: We need to insert as if at the call site,
+			--  	 and it need to deal with with 'removes'
+			--  	 merging between the two blocks.
+			table.insert( targetProject.blocks, newBlock )
+
+
+			-- Recursion in usage is to fuzzy
+			if newBlock.uses then
+				error("Usage '" .. usage.name .. "'. Uses in usage is forbidden, move 'uses' to project.")
+			end
+
 		end
+	end 
+
+---
+-- Insert usageName to outTable and push usageName on stack,
+-- if srcProjectName and usageName are equal push is not performed.
+-- This is common case and it should be in separeted function
+--
+	local function insertUsage( usesTable, usageName, sourceName )
+		local usagePushed = 0
+		-- project can use own usage and it is valid use
+		-- without this check we will get error about double push on stack
+		if usageName ~= sourceName then
+			pushUsage( usageName, sourceName )
+			usagePushed = 1
+		end
+		table.insert( usesTable, usageName )
+		return usagePushed
 	end
 
-
+---
+-- Manually run "bake" process on source project if need,
+-- if "bake" on sourceProject is under way this mean that we have circular dependence
 --
--- Resolve a single 'use', with a given filter and criteria,
--- into a target block of a target project
---
-
-	local function resolveUse( targetProject, targetBlock,
-							   usageName, usageFilter, inheritedCriteria )
-
-		local targetWorkspace = targetProject.solution
-
-		local sourceProject = p.workspace.findproject(
-			targetWorkspace, usageName )
-
-		local usage = p.workspace.findusage( targetWorkspace, usageName)
-
-		if sourceProject == nil and usage == nil then
+	local function bakeProject( sourceProject, targetProject )
+		-- _isUsageBaking - is flag on project which informs that premake alredy starts "bake" process
+				--                  such situation occure with circular dependence
+		if sourceProject._isUsageBaking then
+			printUsesStack()
 			error("Use of "
-				  .. "'" .. usageName.. "'"
-				  .. ", is not defined as a usage or project in workspace "
-				  .. "'" .. targetWorkspace.name .. "'")
+				  .. "'" .. sourceProject.name .. "' in '" .. targetProject.name .. "'"
+				  .." circular dependence!!!" )	
+		else
+			if not sourceProject._usageBaked then
+				verbosef("\nUsage starts baking %s\n", sourceProject.name )
+
+				sourceProject._isUsageBaking = true
+				
+				pushUsage( '"bake" ' .. sourceProject.name, targetProject.name ) -- source mark "bake" process on stack
+				if optimization then
+					bakeProjectUsage( sourceProject )
+				else
+					sourceProject.ctx = p.container.bake(sourceProject) -- bake context is temporary in current version of premake5, we have to store it
+					sourceProject._isBaked = false -- premake5 thinks that object was not baked					
+				end
+				popUsage()
+				
+				sourceProject._isUsageBaking = false
+				sourceProject._usageBaked = true
+				
+				verbosef("\nUsage ends baking %s\n", sourceProject.name )
+			end
 		end
+	end
 
-		if sourceProject ~= nil and sourceProject.name ~= targetProject.name then
+---
+-- Resolve a sourceProject 'uses' into a target block of a target project
+--
 
-			verbosef("\nProject %s is using project %s\n",
-					 targetProject.name, sourceProject.name )
+	local resolveUse
 
-			-- The source project might not be baked yet, bake it now.
-			-- We need this for the configuration list.
-			-- TODO: not sure if we need to do some project configuration
-			-- mapping between source and target too? project.getconfig?
+	local function resolveUses( sourceProject, targetProject, targetBlock )
+		
+		if optimization then
+			local targetProjectResolvedUses			= targetProject.resolvedUses -- get table of already resolved uses for this projects
+			local sourceProjectResolvedUses 		= sourceProject.resolvedUses
+			local sourceProjectName					= sourceProject.name
+			local targetBlockResolvedUsesLinks		= targetBlock.resolvedUsesLinks
 
-			sourceProject = p.container.bake(sourceProject)
+			-- Iterate over the source project uses
+			for usageName,usageInfo in pairs(sourceProjectResolvedUses) do
+				-- project can use own usage and it is valid use
+				-- without this check we will get error about double push on stack
+				if usageName ~= usageInfo.parent  then
+					pushUsage( '"bake" ' .. usageInfo.parent, '???' )
+					pushUsage( usageName, usageInfo.parent )
+					popUsage(2)
+				end
+				if not targetProjectResolvedUses[usageName] then
 
-			-- Iterate over the source project configurations and propagate
-			-- any 'uses' in each configuration from the source project to
-			-- the target project.
-			-- We do this per configuration so we know the 'kind' of that
-			-- configuration to influence what options are propagated
-			-- through the project.
+					usage = usageInfo.block
+					-- sourceProject include own usage
+					if usage then
+						resolveUsage( targetProject, targetBlock, usage )
+					end
 
-			for configName,configCtx in pairs(sourceProject.configs) do
+					if usageInfo.type == "project" then
+						-- When referring to a project, 'uses' acts like 'links' too.
+						table.insert(targetBlockResolvedUsesLinks, usageName )
+					end
 
-				-- If this source configuration is link target, we only want to
-				-- propagate buildoptions.
-				-- For example, if the source project is a shared library,
-				-- that linked with a static library, we don't also want the
-				-- target to link the same static library since it's already
-				-- linked in the source project.
+					targetProjectResolvedUses[usageName] = usageInfo
+				end
+			end
+		else
+			local pushCount = 0
 
-				local configKind = context.fetchvalue(configCtx, 'kind')
+			-- Store feched uses for future usage
+			if sourceProject.ctx.usesValues == nil then
+				sourceProject.ctx.usesValues = context.fetchvalue( sourceProject.ctx, 'uses' )
+			end 
 
-				local configUsageFilter
-				if configKind ~= 'StaticLib' then
-					configUsageFilter = 'buildoptions'
+			local usesToResolve = {}
+			-- push all uses on stack before resolve, it guranty that all uses on current level are before uses are resolved
+			-- this is essential for duplicated uses detection
+			for k,v in ipairs(sourceProject.ctx.usesValues ) do
+				if type(v) == "table" then
+					for _, vName in ipairs(v) do
+						pushCount = pushCount + insertUsage( usesToResolve, vName, sourceProject.name )
+					end 
+				else 
+					pushCount = pushCount + insertUsage( usesToResolve, v, sourceProject.name )
+				end
+			end 
+
+			-- Iterate over the source project uses' 
+			for _,v in ipairs(usesToResolve) do
+				if v == sourceProject.name then
+					if not usage then
+						error( "Project " .. sourceProject.name .. " used itself but declares no usage")
+					end
+				else							
+					resolveUse( targetProject,
+								targetBlock,
+								v )
+				end
+			end	
+			
+			if pushCount > 0 then
+				popUsage(pushCount)
+			end
+		end
+	end
+	
+---
+-- Resolve a single 'use' into a target block of a target project
+--
+
+	resolveUse = function( targetProject, targetBlock, usageName )
+
+		-- get table of already resolved uses for this projects
+		local resolvedUses = targetProject.resolvedUses
+
+		local usageType = "project"
+		local usageScriptPath = ""
+		-- if use already resolved SKIP it
+		if not resolvedUses[usageName] then
+
+			local targetWorkspace = targetProject.solution
+
+			local sourceProject = p.workspace.findproject( targetWorkspace, usageName )
+			local usage 		= p.workspace.findusage(   targetWorkspace, usageName )
+
+			if sourceProject ~= nil and sourceProject.name ~= targetProject.name then
+
+				verbosef("\nProject %s is using project %s\n",
+						 targetProject.name, sourceProject.name )
+
+				-- The source project might not be baked yet, bake it now.
+				-- We need this for the context.
+				bakeProject( sourceProject, targetProject )
+
+				resolveUses( sourceProject, targetProject, targetBlock )
+				
+				-- sourceProject include own usage
+				if usage then
+					resolveUsage( targetProject, targetBlock, usage )
 				end
 
-				if compatibleUsage( usageFilter, configUsageFilter ) then
-
-					verbosef("== %s %s", configName,configKind)
-
-					-- Resolve the 'uses' in this configuration to the target.
-					-- Pass on this configuration as a criteria for the resolve.
-
-					-- todo: already exists in configCtx._criteria
-					-- todo: should be merging with inheritedCriteria?
-					local configCriteria =
-						p.criteria.new( {'configurations:' .. configName } )
-
-					local configUses = context.fetchvalue( configCtx, 'uses' )
-
-					local usedSelf = false
-
-					for k,v in ipairs(configUses) do
-
-						if v == sourceProject.name then
-							usedSelf = true
-							if usage then
-								resolveUsage( targetProject, targetBlock,
-											  usage, v, configUsageFilter or usageFilter,
-											  configCriteria )
-							else
-								error( "Project " .. sourceProject.name
-									   .. " used itself but declares no usage")
-							end
-						else
-							resolveUse( targetProject,
-										targetBlock,
-										v,
-										configUsageFilter or usageFilter,
-										configCriteria )
-						end
-					end
-
-					-- The project did not use it's own usage
-					-- It is only exposing it only visible to other project.
-					-- Don't apply configUsageFilter
-					-- TO CONSIDER: not sure about that, but makes sense if we've not
-					--              linked internally what's specified in our usage.
-
-					if usage and not usedSelf then
-
-						verbosef("= Project %s config %s, did not resolve own usage to %s. Resolving now\n",
-								 sourceProject.name, configName, targetProject.name )
-
-						resolveUsage( targetProject, targetBlock,
-									  usage, usageName, usageFilter,
-									  configCriteria )
-					end
-
+				-- When referring to a project, 'uses' acts like 'links' too.
+				table.insert(targetBlock.resolvedUsesLinks, usageName )
+				usageType 	    = "project"
+				usageScriptPath = sourceProject.script
+			elseif usage ~= nil then
+				resolveUsage( targetProject, targetBlock, usage )
+				usageType       = "usage"
+				usageScriptPath = usage.script
+			elseif sourceProject ~= nil then
+				error( "Project " .. sourceProject.name
+					   .. " used itself but declares no usage")
+			else
+				-- throw an error on Windows and keep going on Linux
+				local isLinux = ( package.config:sub(1,1) == '/' )
+				local messageText = "Use of "
+					  .. "'" .. usageName.. "'"
+					  .. ", is not defined as a usage or project in workspace "
+					  .. "'" .. targetWorkspace.name .. "'" .. " for " .. targetProject.name
+				if isLinux then
+					print( messageText )
+					return
+				else
+					error( messageText )
 				end
 			end
 
-			-- When referring to a project, 'uses' acts like 'links' too.
-
-			if usageFilter == nil or usageFilter == "linkoptions" then
-
-				local linkBlock = targetBlock
-
-				-- If we don't have a usageFilter, make sure this link only
-				-- occurs on linkable targets.
-				-- TODO: Functionally similar to block insertion for usages.
-				-- same requirements/todos/bugs, should dedupe.
-
-				if usageFilter == nil then
-					linkBlock = {}
-
-					-- todo: would be nice not to do this.
-					--  	 needs to be in sync with internal block logic.
-					if targetBlock.filename then
-						linkBlock._basedir = targetBlock.basedir
-					else
-						linkBlock._basedir = targetBlock._basedir
-					end
-
-					local linkCriteria =
-						p.criteria.new( {"kind:not StaticLib"} )
-
-					linkBlock._criteria = {}
-
-					linkBlock._criteria.patterns = table.join(
-						targetBlock._criteria.patterns,
-						linkCriteria.patterns)
-
-					linkBlock._criteria.data =
-						p.criteria._compile(linkBlock._criteria.patterns)
-
-					table.insert( targetProject.blocks, linkBlock )
-				end
-
-				local key = "links"
-				local field = p.field.get(key)
-				linkBlock[key] = p.field.store( field,
-												linkBlock[key],
-												sourceProject.name )
-			end
-
-		elseif usage ~= nil then
-
-			resolveUsage( targetProject, targetBlock,
-						  usage, usageName, usageFilter,
-						  inheritedCriteria )
+			resolvedUses[usageName] = { ["type"] = usageType, ["script"] = usageScriptPath, ["block"] = usage, ["parent"] = targetProject.name }
 		end
-
 	end
 
 
---
+---
 -- Resolve all uses from a target block in a target project
 --
 
-	function resolveAllUsesInBlock( targetProject,
-									targetBlock,
-									inheritedUsageFilter )
+	local function resolveAllUsesInBlock( targetProject, targetBlock )		
 
-		if targetBlock.uses then
-
-			for _, usageKey in ipairs(targetBlock.uses) do
-
-				local usageName = usageKey
-				local usageFilter
-
-				local separatorPos = usageKey:find(':')
-				if separatorPos then
-					usageName   = usageKey:sub(separatorPos + 1)
-					usageFilter = usageKey:sub(0, separatorPos - 1)
+		local pushCount = 0
+		usesToResolve = {}
+		
+		for _, usageKey in ipairs(targetBlock.uses) do
+			if type(usageKey) == "table" then
+				for _, usageName in ipairs(usageKey) do
+					pushCount = pushCount + insertUsage( usesToResolve, usageName, targetProject.name )
 				end
-
-				if compatibleUsage(inheritedUsageFilter, usageFilter) then
-					resolveUse( targetProject, targetBlock, usageName,
-								inheritedUsageFilter or usageFilter )
-				end
-
-			end
-
+			else
+				pushCount = pushCount + insertUsage( usesToResolve, usageKey, targetProject.name )
+			end 
 		end
+
+		for _, usageName in ipairs(usesToResolve) do
+			resolveUse( targetProject, targetBlock, usageName )
+		end
+		if pushCount > 0 then
+			popUsage(pushCount)
+		end
+		
 	end
 
 --
 -- Before baking a project, resolve all the 'uses'
 --
 
+	function bakeProjectUsage( prj )
+
+		-- do not resolve "uses" twice
+		if prj.resolvedUses == nil then
+			-- create table of already resolved uses for this projects
+			prj.resolvedUses = {}
+
+			stashStack()
+
+			local blocks = {}
+			for k, v in pairs(prj.blocks) do
+				blocks[k] = v
+			end
+			pushUsage( prj.name, '"bake"' )
+			for _, block in pairs(blocks) do
+				if block.uses then
+					block.resolvedUsesLinks = {}
+					resolveAllUsesInBlock(prj, block)
+					-- When referring to a project, 'uses' acts like 'links' too.
+					block[keyLinks] = field.store( fieldLinks, block[keyLinks], fixOrder( block.resolvedUsesLinks ) )
+				end
+			end
+			popUsage()		
+
+			unstashStack()	
+		end	
+	end
+	
+--
+--	Put the linked projects in the right order
+--
+
+	function fixOrder( resolvedUsesLinks )
+		if next(resolvedUsesLinks) ~= nil then
+			local fixedResolvedUsesLinks = {}
+			for i = #resolvedUsesLinks, 1, -1 do
+				table.insert( fixedResolvedUsesLinks, resolvedUsesLinks[ i ] )
+			end
+			return fixedResolvedUsesLinks
+		end
+		return resolvedUsesLinks
+	end
+
+--
+-- Register override
+--
+
 	premake.override(p.project, "bake", function(base, self)
 
-		-- Keep the list stable while we iterate and modify it
-
-		local blocks = {}
-		for k, v in pairs(self.blocks) do
-			blocks[k] = v
-		end
-
-		for _, block in pairs(blocks) do
-			resolveAllUsesInBlock(self, block)
-		end
+		bakeProjectUsage(self)
 
 		return base(self)
 
