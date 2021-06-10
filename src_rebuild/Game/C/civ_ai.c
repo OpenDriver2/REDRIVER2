@@ -442,7 +442,7 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 					if (turnAng == 0) // going forward
 					{
 						if (oppDir != oldOppDir) // next road is flipped
-							newLane = ROAD_WIDTH_IN_LANES(&roadInfo) - (cp->ai.c.currentLane + 1);
+							newLane = laneCount - (cp->ai.c.currentLane + 1);
 						else
 							newLane = cp->ai.c.currentLane;
 
@@ -496,21 +496,21 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 							if (ROAD_IS_AI_LANE(&roadInfo, count) && !ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, count))
 							{
 								test42 = (ROAD_LANE_DIR(&roadInfo, count) ^ 1) & 1;
-								newLane = count;
 
 								if (test42 == 0)
 								{
 									if (oppDir != 0)
-										break;
+										newLane = count;
 								}
 								else
 								{
 									if (oppDir == 0)
-										break;
+										newLane = count;
 								}
+								
 							}
 							count--;
-						} while (count >= -1);
+						} while (count >= 0);
 					}
 
 					// validate lane
@@ -3676,8 +3676,8 @@ int CivControl(CAR_DATA* cp)
 
 #if 0
 		{
-			// maxCivCars = 2;
-			// maxCopCars = 0;
+			 //maxCivCars = 2;
+			 //maxCopCars = 0;
 
 			extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
 			extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
