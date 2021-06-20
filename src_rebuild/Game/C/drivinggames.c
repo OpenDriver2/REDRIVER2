@@ -276,7 +276,7 @@ void DrawSmashedCone(SMASHED_CONE *sc, VECTOR *wpos)
 void GetConePos(int cone, VECTOR *pos, int side)
 {
 	TRAILBLAZER_DATA *tbd;
-	int x, z, r;
+	int x, z;
 	int radius;
 
 	tbd = &gTrailblazerData[cone];
@@ -290,11 +290,10 @@ void GetConePos(int cone, VECTOR *pos, int side)
 	}
 	else 
 	{
-		r = tbd->rot & 0xfff;
 		radius = cone * -4 + 600;
 
-		x = radius * rcossin_tbl[r * 2 + 1];
-		z = -radius * rcossin_tbl[r * 2];
+		x = radius * RCOS(tbd->rot);
+		z = -radius * RSIN(tbd->rot);
 
 		if (side == 0) 
 		{
@@ -390,15 +389,14 @@ void HandleDrivingGames(void)
 						{
 							int sn, cs;
 							int dx, dz;
-							int r, radius;
+							int radius;
 
 							tbd = &gTrailblazerData[cone];
-
-							r = tbd->rot & 0xfff;
+							
 							radius = (600 - (gTrailblazerConeIndex * 400 + i) / 100) * 4096;
 
-							sn = rcossin_tbl[r * 2];
-							cs = rcossin_tbl[r * 2 + 1];
+							sn = RSIN(tbd->rot);
+							cs = RCOS(tbd->rot);
 
 							dx = player[id].pos[0] - tbd->x;
 							dz = player[id].pos[2] - tbd->z;

@@ -259,8 +259,8 @@ void LeadUpdateState(CAR_DATA* cp)
 
 			CheckCurrentRoad(cp);
 
-			dx = (cp->ai.l.targetX - x) * rcossin_tbl[(cp->hd.direction & 0xfff) * 2];
-			dz = (cp->ai.l.targetZ - z) * rcossin_tbl[(cp->hd.direction & 0xfff) * 2 + 1];
+			dx = (cp->ai.l.targetX - x) * RSIN(cp->hd.direction);
+			dz = (cp->ai.l.targetZ - z) * RCOS(cp->hd.direction);
 
 			dist = FIXEDH(dx + dz);
 
@@ -444,8 +444,8 @@ u_int LeadPadResponse(CAR_DATA* cp)
 			volatile int deltaVel;
 			volatile int steerDelta;
 			
-			dx = -rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2 + 1] * (cp->hd.where.t[0] - cp->ai.l.targetX);
-			dz = rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2] * (cp->hd.where.t[2] - cp->ai.l.targetZ);
+			dx = -RCOS(cp->ai.l.targetDir) * (cp->hd.where.t[0] - cp->ai.l.targetX);
+			dz =  RSIN(cp->ai.l.targetDir) * (cp->hd.where.t[2] - cp->ai.l.targetZ);
 
 			deltaPos = FIXEDH(dx + dz);
 
@@ -455,8 +455,8 @@ u_int LeadPadResponse(CAR_DATA* cp)
 				deltaPos = maxDist;
 
 			deltaVel = FIXEDH(
-                -rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2 + 1] * FIXEDH(cp->st.n.linearVelocity[0])
-                + rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2] * FIXEDH(cp->st.n.linearVelocity[2]));
+                - RCOS(cp->ai.l.targetDir) * FIXEDH(cp->st.n.linearVelocity[0])
+                + RSIN(cp->ai.l.targetDir) * FIXEDH(cp->st.n.linearVelocity[2]));
 
 			steerDelta = FIXEDH(
                     pathParams[0] * deltaVel
@@ -649,8 +649,9 @@ void FakeMotion(CAR_DATA* cp)
 				nextJunction = (straight->ConnectIdx[2]);
 		}
 
-		c = rcossin_tbl[(angle & 0xfff) * 2];
-		s = rcossin_tbl[(angle & 0xfff) * 2 + 1];
+		// WARNING: variables are flipped!
+		c = RSIN(angle);
+		s = RCOS(angle);
 
 		d = FIXEDH(c * dx + s * dz);
 		
@@ -706,8 +707,8 @@ void FakeMotion(CAR_DATA* cp)
 
 				cp->ai.l.targetDir = (dir + 1024) & 0xfff;
 				
-				cp->hd.where.t[0] = FIXEDH(rcossin_tbl[(dir & 0xfff) * 2] * radius) + curve->Midx;
-				cp->hd.where.t[2] = FIXEDH(rcossin_tbl[(dir & 0xfff) * 2 + 1] * radius) + curve->Midz;
+				cp->hd.where.t[0] = FIXEDH(RSIN(dir)* radius) + curve->Midx;
+				cp->hd.where.t[2] = FIXEDH(RCOS(dir) * radius) + curve->Midz;
 				return;
 			}
 
@@ -723,8 +724,8 @@ void FakeMotion(CAR_DATA* cp)
 
 				cp->ai.l.targetDir = (dir - 1024) & 0xfff;
 				
-				cp->hd.where.t[0] = FIXEDH(rcossin_tbl[(dir & 0xfff) * 2] * radius) + curve->Midx;
-				cp->hd.where.t[2] = FIXEDH(rcossin_tbl[(dir & 0xfff) * 2 + 1] * radius) + curve->Midz;
+				cp->hd.where.t[0] = FIXEDH(RSIN(dir) * radius) + curve->Midx;
+				cp->hd.where.t[2] = FIXEDH(RCOS(dir) * radius) + curve->Midz;
 
 				return;
 			}
@@ -767,7 +768,7 @@ void PosToIndex(int* normal, int* tangent, int intention, CAR_DATA* cp)
 		{
 			int dist;
 			
-			dist = FIXEDH(*tangent * rcossin_tbl[(*normal & 0xfff) * 2]);
+			dist = FIXEDH(*tangent * RSIN(*normal));
 				
 			if (dist > 125)
 			{
@@ -1017,8 +1018,8 @@ void BlockToMap(MAP_DATA* data)
 
 			tangent = ratan2(dx, dz);
 
-			s = rcossin_tbl[((tangent + 1024u) & 0xfff) * 2];
-			c = rcossin_tbl[((tangent + 1024u) & 0xfff) * 2 + 1];
+			s = RSIN(tangent + 1024);
+			c = RCOS(tangent + 1024);
 
 			tangent = DIFF_ANGLES(data->cp->ai.l.base_Angle, tangent) * //(((tangent - data->cp->ai.l.base_Angle) + 2048U & 0xfff) - 2048) *
                 data->cp->ai.l.base_Dir * ((curve->inside * 45056) / 28672);
@@ -1099,8 +1100,8 @@ void BlockToMap(MAP_DATA* data)
 
 			angle = DIFF_ANGLES(0, ratan2(dx, dz)); //(ratan2(dx, dz) + 2048U & 0xfff) - 2048;
 
-			s = rcossin_tbl[(angle & 0xfff) * 2];
-			c = rcossin_tbl[(angle & 0xfff) * 2 + 1];
+			s = RSIN(angle);
+			c = RCOS(angle);
 
 			someVar = FIXEDH(ABS(data->size->vx * s) + ABS(data->size->vz * c));
 
@@ -1187,10 +1188,10 @@ void BlockToMap(MAP_DATA* data)
 					dx = corners[left][1] - corners[right][1];
 					dy = corners[left][0] - corners[right][0];
 
-					theta = (ratan2(dy, dx) + 3072u & 0xfff) - 2048;
+					theta = (ratan2(dy, dx) + 3072 & 0xfff) - 2048;	// there should be DIFF_ANGLES but idk
 
-					vx = rcossin_tbl[(theta & 0xfff) * 2] * corners[left][0];
-					vz = rcossin_tbl[(theta & 0xfff) * 2 + 1] * corners[left][1];
+					vx = RSIN(theta) * corners[left][0];
+					vz = RCOS(theta) * corners[left][1];
 
 					left = DIFF_ANGLES(data->cp->hd.direction, corners[left][2]); // corners[left][2] - data->cp->hd.direction;
 					right = DIFF_ANGLES(data->cp->hd.direction, corners[right][2]); // corners[right][2] - data->cp->hd.direction;
@@ -1458,8 +1459,8 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	
 	laneAvoid = -1;
 	
-	road_s = rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2];
-	road_c = rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2 + 1];
+	road_s = RSIN(cp->ai.l.targetDir);
+	road_c = RCOS(cp->ai.l.targetDir);
 
 	ClearCopUsage();
 	
@@ -1525,13 +1526,13 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 						{
 							int cs, sn;
 
-							theta = (tempCO.yang + collide->yang) * 64 & 0xfff;
+							theta = (tempCO.yang + collide->yang) * 64;
 
 							xsize = collide->xsize / 2;
 							zsize = collide->zsize / 2;
 
-							cs = rcossin_tbl[theta * 2 + 1];
-							sn = rcossin_tbl[theta * 2];
+							cs = RCOS(theta);
+							sn = RSIN(theta);
 
 							size.vx = FIXEDH(ABS(zsize * sn) + ABS(xsize * cs));
 							size.vy = collide->ysize;
@@ -1565,13 +1566,13 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 							cd[0].length[1] = collide->xsize / 2;
 
 							// calc axes of box
-							int dtheta = cd[0].theta & 0xfff;
+							int dtheta = cd[0].theta;
 
-							cd[0].axis[0].vx = rcossin_tbl[dtheta * 2];
-							cd[0].axis[0].vz = rcossin_tbl[dtheta * 2 + 1];
+							cd[0].axis[0].vx = RSIN(dtheta);
+							cd[0].axis[0].vz = RCOS(dtheta);
 
-							cd[0].axis[1].vz = -rcossin_tbl[dtheta * 2];
-							cd[0].axis[1].vx = rcossin_tbl[dtheta * 2 + 1];
+							cd[0].axis[1].vz = -RSIN(dtheta);
+							cd[0].axis[1].vx = RCOS(dtheta);
 
 							extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
 							extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
@@ -2194,9 +2195,9 @@ void CheckCurrentRoad(CAR_DATA* cp)
 			else
 				nextJunction = straight->ConnectIdx[3];
 		}
-
-		s = rcossin_tbl[(angle & 0xfff) * 2];
-		c = rcossin_tbl[(angle & 0xfff) * 2 + 1];
+		
+		s = RSIN(angle);
+		c = RCOS(angle);
 		
 		d = FIXEDH(s * dx + c * dz);
 
@@ -2383,8 +2384,8 @@ void CheckCurrentRoad(CAR_DATA* cp)
 
 			straight = GET_STRAIGHT(currentRoad);
 
-			sn = rcossin_tbl[(heading & 0xfff) * 2];
-			cs = rcossin_tbl[(heading & 0xfff) * 2 + 1];
+			sn = RSIN(heading);
+			cs = RCOS(heading);
 			
 			offx = straight->Midx - cp->hd.where.t[0];
 			offz = straight->Midz - cp->hd.where.t[2];
@@ -2421,10 +2422,10 @@ void CheckCurrentRoad(CAR_DATA* cp)
 			angle = ratan2(dx, dz);
 
 			// check directions
-			if (angle - heading & 0x800)
+			if (angle - heading & 2048)
 			{
-				basex = FIXEDH(rcossin_tbl[(curve->start & 0xfff) * 2] * radius);
-				basez = FIXEDH(rcossin_tbl[(curve->start & 0xfff) * 2 + 1] * radius);
+				basex = FIXEDH(RSIN(curve->start) * radius);
+				basez = FIXEDH(RCOS(curve->start) * radius);
 
 				cp->ai.l.base_Normal = cp->ai.l.d = hypot(dx, dz);
 				cp->ai.l.base_Dir = 1;
@@ -2433,8 +2434,8 @@ void CheckCurrentRoad(CAR_DATA* cp)
 			}
 			else
 			{
-				basex = FIXEDH(rcossin_tbl[(curve->end & 0xfff) * 2] * radius);
-				basez = FIXEDH(rcossin_tbl[(curve->end & 0xfff) * 2 + 1] * radius);
+				basex = FIXEDH(RSIN(curve->end) * radius);
+				basez = FIXEDH(RCOS(curve->end) * radius);
 
 				cp->ai.l.base_Normal = cp->ai.l.d = hypot(dx, dz);
 				cp->ai.l.base_Dir = -1;
@@ -2446,9 +2447,9 @@ void CheckCurrentRoad(CAR_DATA* cp)
 			offx = basex - cp->hd.where.t[0];
 			offz = basez - cp->hd.where.t[2];
 			
-			dist = -FIXEDH(offx * rcossin_tbl[(heading & 0xfff) * 2] + offz * rcossin_tbl[(heading & 0xfff) * 2 + 1]);
-			dx = FIXEDH(rcossin_tbl[(heading & 0xfff) * 2] * dist);
-			dz = FIXEDH(rcossin_tbl[(heading & 0xfff) * 2 + 1] * dist);
+			dist = -FIXEDH(offx * RSIN(heading) + offz * RCOS(heading));
+			dx = FIXEDH(RSIN(heading) * dist);
+			dz = FIXEDH(RCOS(heading) * dist);
 			
 			basePosition.vx = basex + dx;
 			basePosition.vy = cp->hd.where.t[1];
@@ -2538,15 +2539,17 @@ void SetTarget(CAR_DATA* cp, int curRoad, int heading, int* nextJunction)
 
 	if (cp->ai.l.offRoad == 1)
 	{
-		cp->ai.l.targetDir = cp->ai.l.roadPosition;
-
+		int dir = cp->ai.l.roadPosition;
+		
 		// get the road
-		dx = FIXEDH(rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2 + 1] * cp->ai.l.roadForward);
-		dz = FIXEDH(rcossin_tbl[(cp->ai.l.targetDir & 0xfff) * 2] * cp->ai.l.roadForward);
+		dx = FIXEDH(RCOS(dir) * cp->ai.l.roadForward);
+		dz = FIXEDH(RSIN(dir) * cp->ai.l.roadForward);
 
 		cp->ai.l.targetX = cp->hd.where.t[0] + dx;
 		cp->ai.l.targetZ = cp->hd.where.t[2] + dz;
 
+		cp->ai.l.targetDir = dir;
+		
 		return;
 	}
 
@@ -2577,17 +2580,18 @@ void SetTarget(CAR_DATA* cp, int curRoad, int heading, int* nextJunction)
 				*nextJunction = straight->ConnectIdx[3];
 		}
 
-		angle = cp->ai.l.targetDir + 1024U & 0xfff;
-		d = cp->ai.l.targetDir & 0xfff;
-		
 		dx = straight->Midx - cp->hd.where.t[0];
 		dz = straight->Midz - cp->hd.where.t[2];
 
-		rx = FIXEDH(rcossin_tbl[d * 2] * cp->ai.l.roadForward);
-		rz = FIXEDH(rcossin_tbl[d * 2 + 1] * cp->ai.l.roadForward);
+		angle = cp->ai.l.targetDir;
+		
+		rx = FIXEDH(RSIN(angle) * cp->ai.l.roadForward);
+		rz = FIXEDH(RCOS(angle) * cp->ai.l.roadForward);
 
-		ux = rcossin_tbl[angle * 2];
-		uz = rcossin_tbl[angle * 2 + 1];
+		angle = cp->ai.l.targetDir + 1024;
+
+		ux = RSIN(angle);
+		uz = RCOS(angle);
 
 		// l.roadPosition gives the lane offset
 		// [A] it's obviously bugged somewhere as car always tends to be on left lanes
@@ -2640,8 +2644,8 @@ void SetTarget(CAR_DATA* cp, int curRoad, int heading, int* nextJunction)
 				*nextJunction = curve->ConnectIdx[3];
 		}
 
-		cp->ai.l.targetX = curve->Midx + FIXEDH(radius * rcossin_tbl[(angle & 0xfff) * 2]);
-		cp->ai.l.targetZ = curve->Midz + FIXEDH(radius * rcossin_tbl[(angle & 0xfff) * 2 + 1]);
+		cp->ai.l.targetX = curve->Midx + FIXEDH(radius * RSIN(angle));
+		cp->ai.l.targetZ = curve->Midz + FIXEDH(radius * RCOS(angle));
 	}
 }
 

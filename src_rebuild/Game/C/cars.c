@@ -607,8 +607,8 @@ void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 
 	// rotate wheel verts
 
-	FW1z = FIXEDH(rcossin_tbl[(FrontWheelRotation[car_id] & 0xfff) * 2] * sizeScale);
-	FW2z = FIXEDH(rcossin_tbl[(FrontWheelRotation[car_id] & 0xfff) * 2 + 1] * sizeScale);
+	FW1z = FIXEDH(RSIN(FrontWheelRotation[car_id]) * sizeScale);
+	FW2z = FIXEDH(RCOS(FrontWheelRotation[car_id]) * sizeScale);
 
 	VertPtr = (SVECTOR*)WheelModelFront->vertices;
 
@@ -651,8 +651,8 @@ void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	VertPtr[17].vy = -wheelSize;
 	VertPtr[16].vy = -wheelSize;
 
-	BW1z = FIXEDH(rcossin_tbl[(BackWheelRotation[car_id] & 0xfff) * 2] * sizeScale);
-	BW2z = FIXEDH(rcossin_tbl[(BackWheelRotation[car_id] & 0xfff) * 2 + 1] * sizeScale);
+	BW1z = FIXEDH(RSIN(BackWheelRotation[car_id]) * sizeScale);
+	BW2z = FIXEDH(RCOS(BackWheelRotation[car_id]) * sizeScale);
 
 	VertPtr = (SVECTOR *)WheelModelBack->vertices;
 	
@@ -695,8 +695,8 @@ void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	VertPtr[17].vy = -wheelSize;
 	VertPtr[16].vy = -wheelSize;
 
-	SteerMatrix.m[0][0] = rcossin_tbl[(cp->wheel_angle & 0xfff) * 2 + 1];
-	SteerMatrix.m[0][2] = rcossin_tbl[(cp->wheel_angle & 0xfff) * 2];
+	SteerMatrix.m[0][0] = RCOS(cp->wheel_angle);
+	SteerMatrix.m[0][2] = RSIN(cp->wheel_angle);
 	SteerMatrix.m[1][1] = ONE;
 	SteerMatrix.m[2][1] = 0;
 	SteerMatrix.m[1][2] = 0;

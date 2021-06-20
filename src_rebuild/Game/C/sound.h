@@ -1,11 +1,35 @@
 #ifndef SOUND_H
 #define SOUND_H
 
+struct CHANNEL_DATA
+{
+	SpuVoiceAttr attr;
+
+	u_char loop;
+	u_char locked;
+	u_short time;
+
+	int samplerate;
+	char player;
+	int srcvolume;
+	int volumeScale;
+
+	u_short srcpitch;
+	u_short dopplerScale;
+
+	int cameradist;
+	int lastcameradist;
+
+	VECTOR* srcposition;
+	VECTOR position;
+	LONGVECTOR3* srcvelocity;
+};
+
+extern CHANNEL_DATA channels[16];
+
 extern int gMasterVolume;
 extern int gMusicVolume;
 extern int gSoundMode;
-
-extern CHANNEL_DATA channels[16];
 
 extern int Song_ID;
 extern int VABID;

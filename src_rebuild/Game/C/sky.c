@@ -294,20 +294,14 @@ void DisplaySun(DVECTORF* pos, CVECTOR* col, int flare_col)
 void DisplaySun(DVECTOR* pos, CVECTOR* col, int flare_col)
 #endif
 {
-	short cs;
-	short sn;
+	short sn, cs;
 	int sz;
 
 	POLY_FT4* polys;
 	POLY_FT3* null;
 
-	int u1;
-	int v2;
-	int u0;
-	int v0;
-
-	short width;
-	short height;
+	int u0, u1, v0, v2;
+	short width, height;
 
 	u0 = sun_texture.coords.u0;
 	u1 = sun_texture.coords.u1;
@@ -362,8 +356,8 @@ void DisplaySun(DVECTOR* pos, CVECTOR* col, int flare_col)
 	addPrim(current->ot + 0x1079, polys);
 	current->primptr += sizeof(POLY_FT4);
 
-	cs = rcossin_tbl[(camera_angle.vy & 0x1ffe) + 1];
-	sn = rcossin_tbl[camera_angle.vy & 0x1ffe];
+	cs = RCOS(camera_angle.vy);  //rcossin_tbl[(camera_angle.vy & 0x1ffe) + 1];
+	sn = RSIN(camera_angle.vy);  //rcossin_tbl[camera_angle.vy & 0x1ffe];
 
 	sz = -(((flare_texture.coords.u1 - (flare_texture.coords.u0 - 1)) / 2) * 3) / 4;
 
