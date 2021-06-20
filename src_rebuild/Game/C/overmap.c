@@ -317,8 +317,8 @@ void DrawPlayerDot(VECTOR *pos, short rot, u_char r, u_char g, u_char b, int fla
 		vec.vz += map_z_offset;
 	}
 
-	sn = rcossin_tbl[(rot & 0xfffU) * 2];
-	cs = rcossin_tbl[(rot & 0xfffU) * 2 + 1];
+	sn = RSIN(rot);
+	cs = RCOS(rot);
 
 	opos[2].vx = vec.vx;
 	opos[2].vz = vec.vz;
@@ -615,10 +615,8 @@ void DrawCompass(void)
 void DrawBigCompass(VECTOR *root, int angle)
 {
 	int i;
-	u_int ang2;
 	LINE_G2 *lineg2;
-	int ang;
-	int ang3;
+	int ang, ang2, sn, cs;
 	VECTOR *pPosition;
 	VECTOR position[5];
 
@@ -626,24 +624,34 @@ void DrawBigCompass(VECTOR *root, int angle)
 
 	position[2].vx = root->vx + map_x_offset;
 	position[2].vy = root->vz + map_z_offset;
-	position[1].vx = position[2].vx + (rcossin_tbl[ang * 2] * 0x19 >> 0xc);
-	position[0].vx = position[2].vx + (rcossin_tbl[ang * 2] * 0xf >> 0xb);
+
+	sn = RSIN(ang);
+	cs = RCOS(ang);
+
+	position[1].vx = position[2].vx + (sn * 0x19 >> 0xc);
+	position[0].vx = position[2].vx + (sn * 0xf >> 0xb);
+
+	position[1].vy = position[2].vy + (cs * 0x19 >> 0xc);
+	position[0].vz = position[2].vy + (cs * 0xf >> 0xb);
 
 	ang2 = ang - 200 & 0xfff;
-	ang3 = ang + 200 & 0xfff;
+	sn = RSIN(ang2);
+	cs = RCOS(ang2);
 
-	position[1].vy = position[2].vy + (rcossin_tbl[ang * 2 + 1] * 0x19 >> 0xc);
-	position[0].vz = position[2].vy + (rcossin_tbl[ang * 2 + 1] * 0xf >> 0xb);
-	position[3].vx = position[2].vx + (rcossin_tbl[ang2 * 2] * 5 >> 10);
-	position[3].vy = position[2].vy + (rcossin_tbl[ang2 * 2 + 1] * 5 >> 10);
-	position[4].vx = position[2].vx + (rcossin_tbl[ang3 * 2] * 5 >> 10);
-	position[4].vy = position[2].vy + (rcossin_tbl[ang3 * 2 + 1] * 5 >> 10);
+	position[3].vx = position[2].vx + (sn * 5 >> 10);
+	position[3].vy = position[2].vy + (cs * 5 >> 10);
 
-	i = 0;
+	ang2 = ang + 200 & 0xfff;
+	sn = RSIN(ang2);
+	cs = RCOS(ang2);
+
+	position[4].vx = position[2].vx + (sn * 5 >> 10);
+	position[4].vy = position[2].vy + (cs * 5 >> 10);
+
 	pPosition = position + 2;
-	do {
-
-		lineg2 = (LINE_G2 *)current->primptr;
+	for (i = 0; i < 3; i++)
+	{
+		lineg2 = (LINE_G2*)current->primptr;
 
 		setLineG2(lineg2);
 		setSemiTrans(lineg2, 1);
@@ -666,9 +674,7 @@ void DrawBigCompass(VECTOR *root, int angle)
 
 		pPosition++;
 		//current->primptr += sizeof(LINE_G2);
-
-		i++;
-	} while (i < 3);
+	}
 
 	DrawN(position, 1);
 }
@@ -764,8 +770,8 @@ void DrawSightCone(COP_SIGHT_DATA *pCopSightData, VECTOR *pPosition, int directi
 		dir = angle + direction & 0xfff;
 
 		angle += 512;
-		pVertex->vx = vertex[0].vx + FIXEDH(rcossin_tbl[dir * 2] * temp);
-		pVertex->vz = vertex[0].vz + FIXEDH(rcossin_tbl[dir * 2 + 1] * temp);
+		pVertex->vx = vertex[0].vx + FIXEDH(RSIN(dir) * temp);
+		pVertex->vz = vertex[0].vz + FIXEDH(RCOS(dir) * temp);
 
 		pVertex++;
 
@@ -837,12 +843,12 @@ u_int Long2DDistance(VECTOR *pPoint1, VECTOR *pPoint2)
 
 	if ((theta & 0x7ff) - 512U <= 1024)
 	{
-		tempTheta = rcossin_tbl[(theta & 0xfff) * 2];
+		tempTheta = RSIN(theta);
 		result = delta.vz;
 	}
 	else 
 	{
-		tempTheta = rcossin_tbl[(theta & 0xfff) * 2 + 1];
+		tempTheta = RCOS(theta);
 		result = delta.vx;
 	}
 
@@ -1803,8 +1809,8 @@ void DrawCopIndicators(void)
 	int p, q;
 	CAR_DATA *cp;
 
-	cc = rcossin_tbl[(player[0].dir & 0xfffU) * 2 + 1];
-	cs = rcossin_tbl[(player[0].dir & 0xfffU) * 2];
+	cc = RCOS(player[0].dir);
+	cs = RSIN(player[0].dir);
 
 	cp = car_data;
 	do {

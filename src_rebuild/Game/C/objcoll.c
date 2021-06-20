@@ -74,11 +74,11 @@ char CellEmpty(VECTOR *pPosition, int radius)
 					zs = collide->zsize * 0x800 + radius * 0x1000;
 					xs = collide->xsize * 0x800 + radius * 0x1000;
 
-					theta = (tempCO.yang + collide->yang) * 64 & 0xfff;
+					theta = (tempCO.yang + collide->yang) * 64;
 					ypos = pPosition->vy + (tempCO.pos.vy + collide->ypos) + 80;
 
-					cs = rcossin_tbl[theta * 2 + 1];
-					sn = rcossin_tbl[theta * 2];
+					cs = RCOS(theta);
+					sn = RSIN(theta);
 					*/
 
 					// [A] NEW
@@ -88,12 +88,12 @@ char CellEmpty(VECTOR *pPosition, int radius)
 					MATRIX2* mat;
 
 					yang = -tempCO.yang & 0x3f;
-					theta = (tempCO.yang + collide->yang) * 64 & 0xfff;
+					theta = (tempCO.yang + collide->yang) * 64;
 
 					mat = &matrixtable[yang];
 
-					cs = rcossin_tbl[theta * 2 + 1];
-					sn = rcossin_tbl[theta * 2];
+					cs = RCOS(theta);
+					sn = RSIN(theta);
 
 					xxd = FIXEDH(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]);
 					zzd = FIXEDH(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]);
@@ -132,11 +132,11 @@ char CellEmpty(VECTOR *pPosition, int radius)
 						// calc axes of box
 						int dtheta = cd[0].theta & 0xfff;
 
-						cd[0].axis[0].vx = rcossin_tbl[dtheta * 2];
-						cd[0].axis[0].vz = rcossin_tbl[dtheta * 2 + 1];
+						cd[0].axis[0].vx = RSIN(dtheta);
+						cd[0].axis[0].vz = RCOS(dtheta);
 
-						cd[0].axis[1].vz = -rcossin_tbl[dtheta * 2];
-						cd[0].axis[1].vx = rcossin_tbl[dtheta * 2 + 1];
+						cd[0].axis[1].vz = -RSIN(dtheta);
+						cd[0].axis[1].vx = RCOS(dtheta);
 
 						extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
 						extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
@@ -396,12 +396,12 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 					while (box_loop < num_cb)
 					{
 						yang = -tempCO.yang & 0x3f;
-						theta = (tempCO.yang + collide->yang) * 64 & 0xfff;
+						theta = (tempCO.yang + collide->yang) * 64;
 
 						mat = &matrixtable[yang];
 
-						cs = rcossin_tbl[theta * 2 + 1];
-						sn = rcossin_tbl[theta * 2];
+						cs = RCOS(theta);
+						sn = RSIN(theta);
 
 						dx = va.vx - (tempCO.pos.vx + FIXEDH(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
 						dz = va.vz - (tempCO.pos.vz + FIXEDH(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
@@ -442,11 +442,11 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 							// calc axes of box
 							int dtheta = cd[0].theta & 0xfff;
 
-							cd[0].axis[0].vx = rcossin_tbl[dtheta * 2];
-							cd[0].axis[0].vz = rcossin_tbl[dtheta * 2 + 1];
+							cd[0].axis[0].vx = RSIN(dtheta);
+							cd[0].axis[0].vz = RCOS(dtheta);
 
-							cd[0].axis[1].vz = -rcossin_tbl[dtheta * 2];
-							cd[0].axis[1].vx = rcossin_tbl[dtheta * 2 + 1];
+							cd[0].axis[1].vz = -RSIN(dtheta); 
+							cd[0].axis[1].vx = RCOS(dtheta);
 
 							extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
 							extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
@@ -752,10 +752,8 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 								if (gCameraDistance < minDist)
 									gCameraDistance = minDist;
 
-								yang = cp->hd.direction & 0xfff;
-
-								cp->hd.where.t[0] = car_data[0].hd.where.t[0] + FIXEDH((gCameraDistance * rcossin_tbl[yang * 2]) / 2);
-								cp->hd.where.t[2] = car_data[0].hd.where.t[2] + FIXEDH((gCameraDistance * rcossin_tbl[yang * 2 + 1]) / 2);
+								cp->hd.where.t[0] = car_data[0].hd.where.t[0] + FIXEDH((gCameraDistance * RSIN(cp->hd.direction)) / 2);
+								cp->hd.where.t[2] = car_data[0].hd.where.t[2] + FIXEDH((gCameraDistance * RCOS(cp->hd.direction)) / 2);
 								
 								coll_test_count--;
 							}

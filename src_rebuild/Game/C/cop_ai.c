@@ -149,9 +149,8 @@ void WibbleDownTheRoad(VECTOR *from, int distance, VECTOR *to)
 	pos.vz = from->vz;
 	pos.pad = from->pad;
 
-	j = 0;
-
-	do {
+	for (j = 0; j < 4; j++)
+	{
 		ReplayLog_Fnarr_He_Said_Log(pos.vx);
 		ReplayLog_Fnarr_He_Said_Log(pos.vy);
 		ReplayLog_Fnarr_He_Said_Log(pos.vz);
@@ -166,8 +165,8 @@ void WibbleDownTheRoad(VECTOR *from, int distance, VECTOR *to)
 		}
 
 		dir.vy = 0;
-		dir.vx = FIXEDH((distance >> 2) * rcossin_tbl[(val & 0xfff) * 2]);
-		dir.vz = FIXEDH((distance >> 2) * rcossin_tbl[(val & 0xfff) * 2 + 1]);
+		dir.vx = FIXEDH((distance >> 2) * RSIN(val));
+		dir.vz = FIXEDH((distance >> 2) * RCOS(val));
 
 		thl[j] = val;
 
@@ -194,9 +193,7 @@ void WibbleDownTheRoad(VECTOR *from, int distance, VECTOR *to)
 			Debug_AddLine(p2, pos, bbcv);
 		}
 #endif
-
-		j++;
-	} while (j < 4);
+	}
 
 	to->vx = pos.vx;
 	to->vy = pos.vy;

@@ -34,8 +34,8 @@ int bcollided2d(CDATA2D *body, int* boxOverlap)
 	// calc axes of each box
 	for (i = 0; i < 2; i++)
 	{
-		as = rcossin_tbl[(body[i].theta & 0xfff) * 2];
-		ac = rcossin_tbl[(body[i].theta & 0xfff) * 2 + 1];
+		as = RSIN(body[i].theta);
+		ac = RCOS(body[i].theta);
 
 		body[i].axis[0].vx = as;
 		body[i].axis[0].vz = ac;
@@ -44,6 +44,7 @@ int bcollided2d(CDATA2D *body, int* boxOverlap)
 		body[i].axis[1].vx = ac;
 	}
 
+	// hmmm, why?
 	as = rcossin_tbl[(dtheta & 0x7ff) * 2];
 	ac = rcossin_tbl[(dtheta + 1024 & 0x7ff) * 2];
 
@@ -110,30 +111,24 @@ int bcollided2d(CDATA2D *body, int* boxOverlap)
 // [D] [T]
 void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 {
-	bool carBarrierCollision;
-	int lower;
-	int upper;
-	int k;
-	int sign;
-	int sign0;
-	int sign1;
-	int smallest;
-	int besti;
-	int bestk;
+	int carBarrierCollision;
+	int lower, upper;
+	int i, k, besti, bestk;
+	int sign, sign0, sign1, smallest;
+
 	CDATA2D* cd;
-	int i;
 
 	besti = 0;
 	bestk = 0;
 	sign = 0;
-	carBarrierCollision = false;
+	carBarrierCollision = 0;
 
 	smallest = body[0].limit[0] + 1;
 	
 	if (!body[0].isCameraOrTanner && !body[1].isCameraOrTanner &&
 		(body[1].length[1] >= body[1].length[0] * 4 || body[1].length[0] >= body[1].length[1] * 4))
 	{
-		carBarrierCollision = true;
+		carBarrierCollision = 1;
 	}
 
 	i = 1;
@@ -222,10 +217,8 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 {
 	int hit;
-	int q;
-	int time;
-	int step;
-	int i;
+	int i, q;
+	int time, step;
 	int neverfree;
 	CDATA2D original[2];
 
@@ -493,12 +486,8 @@ void DamageCar(CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVel
 {
 	int impact;
 	int player_id;
-	int value;
-	int nose;
-	int door;
-	int region;
-	int dz;
-	int dx;
+	int nose, door, region, value;
+	int dx, dz;
 	int lbody;
 
 	player_id = GetPlayerId(cp);
@@ -969,6 +958,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 
 					cp->hd.aacc[1] += FIXEDH(lever[2] * reaction[0]) - FIXEDH(lever[0] * reaction[2]);
 
+					// angular impulse calculation and modifiers
 					if (cp->controlType != CONTROL_TYPE_LEAD_AI)
 					{
 						temp = FIXEDH(lever[1] * reaction[2]);

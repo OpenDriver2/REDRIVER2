@@ -472,7 +472,7 @@ int IsMovingCamera(PLAYBACKCAMERA* lastcam, PLAYBACKCAMERA* nextcam, int camerac
 	cameracnt -= lastcam->FrameCnt;
 	f = nextcam->FrameCnt - lastcam->FrameCnt;
 	s = (cameracnt * 2048) / f;
-	t = (rcossin_tbl[(s * 3 & 0xfff) * 2 + 1] + rcossin_tbl[(s & 0xfff) * 2 + 1] * -9 >> 4) + 0x800;
+	t = (RCOS(s*3) - RCOS(s) * 9 >> 4) + 2048;
 
 	
 	xdist = FixHalfRound((nextcam->position.vx - lastcam->position.vx) * 64 * t, 18);
@@ -1249,8 +1249,8 @@ void ControlReplay(void)
 				x = -d;
 			}
 
-			player[0].cameraPos.vx = (player[0].cameraPos.vx + FIXED(z * rcossin_tbl[(dir & 0xfff) * 2])) - FIXED(x * rcossin_tbl[(dir & 0xfff) * 2 + 1]);
-			player[0].cameraPos.vz = (player[0].cameraPos.vz - FIXED(z * rcossin_tbl[(dir & 0xfff) * 2 + 1])) - FIXED(x * rcossin_tbl[(dir & 0xfff) * 2]);
+			player[0].cameraPos.vx = (player[0].cameraPos.vx + FIXED(z * RSIN(dir))) - FIXED(x * RCOS(dir));
+			player[0].cameraPos.vz = (player[0].cameraPos.vz - FIXED(z * RCOS(dir))) - FIXED(x * RSIN(dir));
 
 			tmpPos.vx = player[0].cameraPos.vx;
 			tmpPos.vy = -player[0].cameraPos.vy;

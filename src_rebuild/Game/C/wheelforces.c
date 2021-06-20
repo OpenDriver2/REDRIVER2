@@ -222,12 +222,12 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 		oldSpeed = 1424 - oldSpeed;
 
 	dir = cp->hd.direction;
-	cdx = rcossin_tbl[(dir & 0xfff) * 2];
-	cdz = rcossin_tbl[(dir & 0xfff) * 2 + 1];
+	cdx = RSIN(dir);
+	cdz = RCOS(dir);
 
 	dir += cp->wheel_angle;
-	sdx = rcossin_tbl[(dir & 0xfff) * 2];
-	sdz = rcossin_tbl[(dir & 0xfff) * 2 + 1];
+	sdx = RSIN(dir);
+	sdz = RCOS(dir);
 
 	player_id = GetPlayerId(cp);
 	car_cos = &car_cosmetics[cp->ap.model];
@@ -353,8 +353,8 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 			{
 				dir = ratan2(pointVel[0] >> 6, pointVel[2] >> 6);
 
-				lfx = rcossin_tbl[(dir & 0xfff) * 2];
-				lfz = rcossin_tbl[(dir & 0xfff) * 2 + 1];
+				lfx = RSIN(dir);
+				lfz = RCOS(dir);
 
 				if (ABS(pointVel[0]) + ABS(pointVel[2]) < 8000)
 				{

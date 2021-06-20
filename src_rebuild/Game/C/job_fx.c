@@ -85,10 +85,9 @@ void HandleExplosion(void)
 	if (pauseflag != 0)
 		return;
 
-	i = 0;
 	exp = explosion;
 
-	while (i < MAX_EXPLOSION_OBJECTS)
+	for (i = 0; i < MAX_EXPLOSION_OBJECTS; i++)
 	{
 		if (exp->time != -1 && exp->type != BANG_USED) 
 		{
@@ -102,14 +101,11 @@ void HandleExplosion(void)
 			} while (cp < &car_data[MAX_CARS + 1]); // + TANNER_COLLIDER_CARID
 		}
 
-		i++;
 		exp++;
 	}
 
-	
-	i = 0;
 	exp = explosion;
-	while (i < MAX_EXPLOSION_OBJECTS)
+	for (i = 0; i < MAX_EXPLOSION_OBJECTS; i++)
 	{
 		if (exp->time != -1)
 		{
@@ -133,7 +129,6 @@ void HandleExplosion(void)
 		}
 
 		exp++;
-		i++;
 	}
 }
 
@@ -151,72 +146,66 @@ void initExplosion(void)
 	d1 = 0;
 	d2 = 128;
 
-	i = 0;
-	do {
+	for (i = 0; i < 18; i++)
+	{
 		vert[0].vy = 5;
 		vert[1].vy = -265;
 
-		vert[0].vx = FIXEDH(rcossin_tbl[(d1 & 0xf) * 512 + 1] * 512);
-		vert[0].vz = FIXEDH(rcossin_tbl[(d1 & 0xf) * 512] * 512);
+		vert[0].vx = FIXEDH(RCOS((d1 & 15) * 256) * 512);
+		vert[0].vz = FIXEDH(RSIN((d1 & 15) * 256) * 512);
 
-		vert[1].vx = FIXEDH(rcossin_tbl[(d2 & 0xfff) * 2 + 1] * 490);
-		vert[1].vz = FIXEDH(rcossin_tbl[(d2 & 0xfff) * 2] * 490);
+		vert[1].vx = FIXEDH(RCOS(d2) * 490);
+		vert[1].vz = FIXEDH(RSIN(d2) * 490);
 
 		vert += 2;
 	
 		d1 += 2;
 		d2 += 512;
-		
-		i++;
-	} while (i < 18);
+	}
 
 	vert = globemesh + 18;
 	
 	d1 = 0x1280;
 	d2 = 0x1300;
 
-	i = 0;
-	do {
+	for (i = 0; i < 18; i+=2)
+	{
 		vert[0].vy = -265;
 		vert[1].vy = -505;
 
-		vert[0].vx = FIXEDH(rcossin_tbl[(d1 & 0xfff) * 2 + 1] * 490);
-		vert[0].vz = FIXEDH(rcossin_tbl[(d1 & 0xfff) * 2] * 490);
-
-		vert[1].vx = FIXEDH(rcossin_tbl[(d2 & 0xfff) * 2 + 1] * 330);
-		vert[1].vz = FIXEDH(rcossin_tbl[(d2 & 0xfff) * 2] * 330);
+		vert[0].vx = FIXEDH(RCOS(d1) * 490);
+		vert[0].vz = FIXEDH(RSIN(d1) * 490);
+									 
+		vert[1].vx = FIXEDH(RCOS(d2) * 330);
+		vert[1].vz = FIXEDH(RSIN(d2) * 330);
 
 		vert += 2;
 
 		d1 += 512;
 		d2 += 512;
-		
-		i += 2;
-	} while (i < 18);
+	}
 
 	vert = globemesh + 36;
 
 	d1 = 0x2500;
 	d2 = 9600;
 
-	i = 0;
-	do {
+	for (i = 0; i < 18; i+=2)
+	{
 		vert[0].vy = -505;
 		vert[1].vy = -617;
 
-		vert[0].vx = FIXEDH(rcossin_tbl[(d1 & 0xfff) * 2 + 1] * 330);
-		vert[0].vz = FIXEDH(rcossin_tbl[(d1 & 0xfff) * 2] * 330);
+		vert[0].vx = FIXEDH(RCOS(d1) * 330);
+		vert[0].vz = FIXEDH(RSIN(d1) * 330);
 
-		vert[1].vx = FIXEDH(rcossin_tbl[(d2 & 0xfff) * 2 + 1] * 100);
-		vert[1].vz = FIXEDH(rcossin_tbl[(d2 & 0xfff) * 2] * 100);
+		vert[1].vx = FIXEDH(RCOS(d2) * 100);
+		vert[1].vz = FIXEDH(RSIN(d1) * 100);
 
 		vert += 2;
 		
 		d1 += 512;
 		d2 += 512;
-
-		i += 2;
-	} while (i < 18);
+	}
 }
 
 
@@ -259,13 +248,13 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 	sf1 = FIXEDH(time * (5000 - time) * 4) + 12;
 	sf2 = FIXEDH(time * (10000 - time) * 2) + 12;
 
-	i = 0;
-	do {
-		sf = CameraCnt * (64 - i*90) & 0xfff;
-		
+	for (i = 0; i < 2; i++)
+	{
+		sf = CameraCnt * (64 - i * 90);
+
 		SS.m[1][1] = FIXED(sf1 * hscale);
-		SS.m[0][0] = FIXEDH(FIXED(sf1 * rscale) * rcossin_tbl[sf * 2 + 1]);
-		SS.m[2][0] = FIXEDH(FIXED(sf1 * rscale) * rcossin_tbl[sf * 2]);
+		SS.m[0][0] = FIXEDH(FIXED(sf1 * rscale) * RCOS(sf));
+		SS.m[2][0] = FIXEDH(FIXED(sf1 * rscale) * RSIN(sf));
 		SS.m[0][2] = -SS.m[2][0];
 		SS.m[2][2] = SS.m[0][0];
 
@@ -274,16 +263,16 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 		gte_SetRotMatrix(&workmatrix);
 
 		src = globemesh;
-		j = 0;
 
-		do {
-			poly = (POLY_FT4 *)current->primptr;
+		for (j = 0; j < 12; j++)
+		{
+			poly = (POLY_FT4*)current->primptr;
 
 			gte_ldv3(&src[0], &src[1], &src[2]);
 			gte_rtpt();
 
-			*(u_int *)&poly[0].r0 = rgb;
-			*(u_int *)&poly[1].r0 = rgb;
+			*(u_int*)&poly[0].r0 = rgb;
+			*(u_int*)&poly[1].r0 = rgb;
 
 			setPolyFT4(&poly[0]);
 			setSemiTrans(&poly[0], 1);
@@ -302,11 +291,87 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 				gte_ldv3(&src[3], &src[4], &src[5]);
 				gte_rtpt();
 
+				*(u_int*)&poly[0].u0 = u0;
+				*(u_int*)&poly[0].u1 = u1;
+				*(u_int*)&poly[0].u2 = u2;
+				*(u_int*)&poly[0].u3 = u3;
+
+				*(u_int*)&poly[1].u0 = u0;
+				*(u_int*)&poly[1].u1 = u1;
+				*(u_int*)&poly[1].u2 = u2;
+				*(u_int*)&poly[1].u3 = u3;
+
+				setPolyFT4(poly);
+				setSemiTrans(poly, 1);
+
+				setPolyFT4(&poly[1]);
+				setSemiTrans(&poly[1], 1);
+
+				gte_stsxy3(&poly[1].x1, &poly[1].x2, &poly[1].x3);
+
+				gte_stsxy0(&poly[0].x3);
+
+				addPrim(current->ot + (z >> 3), &poly[0]);
+				addPrim(current->ot + (z >> 3), &poly[1]);
+
+				current->primptr += sizeof(POLY_FT4) * 2;
+			}
+
+			if ((j & 3) == 3)
+				src += 6;
+			else
+				src += 4;
+		}
+	}
+
+	transparency = 255 - (time >> 4);
+
+	rgb = transparency >> 1;
+	rgb = (rgb + (transparency * transparency >> 10) >> 1 << 8 | 
+			rgb + ((255 - transparency) * (transparency >> 2) + transparency * rgb >> 8) >> 1) << 8 | 
+			rgb | 0x2e000000;
+
+	for (i = 0; i < 2; i++)
+	{
+		sf = CameraCnt * (i * -90 + 64);
+	
+		SS.m[1][1] = FIXED(sf2 * hscale);
+		SS.m[0][0] = FIXEDH(FIXED(sf2 * rscale) * RCOS(sf));
+		SS.m[2][0] = FIXEDH(FIXED(sf2 * rscale) * RSIN(sf));
+		SS.m[0][2] = -SS.m[2][0];
+		SS.m[2][2] = SS.m[0][0];
+
+		MulMatrix0(&inv_camera_matrix, &SS, &workmatrix);
+		gte_SetRotMatrix(&workmatrix);
+
+		src = globemesh;
+
+		for (j = 0; j < 8; j++)
+		{
+			poly = (POLY_FT4 *)current->primptr;
+
+			gte_ldv3(&src[0], &src[1], &src[2]);
+
+			gte_rtpt();
+
+			*(u_int *)&poly[1].r0 = rgb;
+			*(u_int *)&poly[0].r0 = rgb;
+
+			gte_stsxy3(&poly[0].x0, &poly[0].x1, &poly[0].x2);
+
+			gte_stsxy2(&poly[1].x0);
+
+			gte_stsz(&z);
+
+			if (z > 32)
+			{
+				gte_ldv3(&src[3], &src[4], &src[5]);
+				gte_rtpt();
+
 				*(u_int *)&poly[0].u0 = u0;
 				*(u_int *)&poly[0].u1 = u1;
 				*(u_int *)&poly[0].u2 = u2;
 				*(u_int *)&poly[0].u3 = u3;
-				
 				*(u_int *)&poly[1].u0 = u0;
 				*(u_int *)&poly[1].u1 = u1;
 				*(u_int *)&poly[1].u2 = u2;
@@ -332,90 +397,8 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 				src += 6;
 			else
 				src += 4;
-
-			j++;
-		} while (j < 12);
-
-		i++;
-	} while (i < 2);
-
-	transparency = 255 - (time >> 4);
-
-	rgb = transparency >> 1;
-	rgb = (rgb + (transparency * transparency >> 10) >> 1 << 8 | 
-			rgb + ((255 - transparency) * (transparency >> 2) + transparency * rgb >> 8) >> 1) << 8 | 
-			rgb | 0x2e000000;
-
-	i = 0;
-	do {
-		sf = CameraCnt * (i * -90 + 64) & 0xfff;
-		SS.m[1][1] = FIXED(sf2 * hscale);
-		SS.m[0][0] = FIXEDH(FIXED(sf2 * rscale) * rcossin_tbl[sf * 2 + 1]);
-		SS.m[2][0] = FIXEDH(FIXED(sf2 * rscale) * rcossin_tbl[sf * 2]);
-		SS.m[0][2] = -SS.m[2][0];
-		SS.m[2][2] = SS.m[0][0];
-
-		MulMatrix0(&inv_camera_matrix, &SS, &workmatrix);
-		gte_SetRotMatrix(&workmatrix);
-
-		src = globemesh;
-		j = 0;
-		do {
-			poly = (POLY_FT4 *)current->primptr;
-
-			gte_ldv3(&src[0], &src[1], &src[2]);
-
-			gte_rtpt();
-
-			*(u_int *)&poly[1].r0 = rgb;
-			*(u_int *)&poly[0].r0 = rgb;
-
-			gte_stsxy3(&poly[0].x0, &poly[0].x1, &poly[0].x2);
-
-			gte_stsxy2(&poly[1].x0);
-
-			gte_stsz(&z);
-
-			if (z > 32)
-			{
-				gte_ldv3(&src[3], &src[4], &src[5]);
-				gte_rtpt();
-
-				*(u_int *)&poly[0].u0 = u0;
-				*(u_int *)&poly[0].u1 = u1;
-				*(u_int *)&poly[0].u2 = u2;
-				*(u_int *)&poly[0].u3 = u3;
-				*(u_int *)&poly[1].u0 = u0;
-				*(u_int *)&poly[1].u1 = u1;
-				*(u_int *)&poly[1].u2 = u2;
-				*(u_int *)&poly[1].u3 = u3;
-
-				setPolyFT4(poly);
-				setSemiTrans(poly, 1);
-
-				setPolyFT4(&poly[1]);
-				setSemiTrans(&poly[1], 1);
-
-				gte_stsxy3(&poly[1].x1, &poly[1].x2, &poly[1].x3);
-
-				gte_stsxy0(&poly[0].x3);
-
-				addPrim(current->ot + (z >> 3), &poly[0]);
-				addPrim(current->ot + (z >> 3), &poly[1]);
-
-				current->primptr += sizeof(POLY_FT4) * 2;
-			}
-
-			if (j & 3 == 3)
-				src += 6;
-			else
-				src += 4;
-			
-			j++;
-		} while (j < 8);
-
-		i++;
-	} while (i < 2);
+		}
+	}
 }
 
 
@@ -423,13 +406,11 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 void DrawAllExplosions(void)
 {
 	int i;
-	i = 0;
-	while (i < MAX_EXPLOSION_OBJECTS)
+
+	for (i = 0; i < MAX_EXPLOSION_OBJECTS; i++)
 	{
 		if (explosion[i].time != -1)
 			DrawExplosion(explosion[i].time, explosion[i].pos, explosion[i].hscale, explosion[i].rscale);
-
-		i++;
 	}
 }
 
