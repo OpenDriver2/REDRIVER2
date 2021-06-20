@@ -104,20 +104,23 @@ void DrawThrownBombs(void)
 // [D] [T]
 void BombThePlayerToHellAndBack(int car)
 {
+	CAR_DATA* cp;
 	BOMB *bomb;
 
 	if (car == -1)
 		return;
 
-	car_data[car].ap.damage[0] = 0xfff;
-	car_data[car].ap.damage[1] = 0xfff;
-	car_data[car].ap.damage[2] = 0xfff;
-	car_data[car].ap.damage[3] = 0xfff;
-	car_data[car].ap.damage[4] = 0xfff;
-	car_data[car].ap.damage[5] = 0xfff;
+	cp = &car_data[car];
+	
+	cp->ap.damage[0] = 0xfff;
+	cp->ap.damage[1] = 0xfff;
+	cp->ap.damage[2] = 0xfff;
+	cp->ap.damage[3] = 0xfff;
+	cp->ap.damage[4] = 0xfff;
+	cp->ap.damage[5] = 0xfff;
 
-	car_data[car].ap.needsDenting = 1;
-	car_data[car].totalDamage = MaxPlayerDamage[0];
+	cp->ap.needsDenting = 1;
+	cp->totalDamage = MaxPlayerDamage[0];
 
 	DentCar(&car_data[car]);
 
@@ -134,9 +137,9 @@ void BombThePlayerToHellAndBack(int car)
 	bomb->flags = 1;
 	bomb->active = 1;
 
-	bomb->position.vx = car_data[car].hd.where.t[0];
-	bomb->position.vy = car_data[car].hd.where.t[1];
-	bomb->position.vz = car_data[car].hd.where.t[2];
+	bomb->position.vx = cp->hd.where.t[0];
+	bomb->position.vy = cp->hd.where.t[1];
+	bomb->position.vz = cp->hd.where.t[2];
 
 	bomb->velocity.vx = 0;
 	bomb->velocity.vy = 0;
@@ -148,9 +151,9 @@ void BombThePlayerToHellAndBack(int car)
 	bomb->flags = 1;
 	bomb->active = 1;
 
-	bomb->position.vx = car_data[car].hd.where.t[0] + 170;
-	bomb->position.vy = car_data[car].hd.where.t[1];
-	bomb->position.vz = car_data[car].hd.where.t[2] + 73;
+	bomb->position.vx = cp->hd.where.t[0] + 170;
+	bomb->position.vy = cp->hd.where.t[1];
+	bomb->position.vz = cp->hd.where.t[2] + 73;
 
 	bomb->velocity.vx = 0;
 	bomb->velocity.vy = 0;
@@ -161,9 +164,9 @@ void BombThePlayerToHellAndBack(int car)
 
 	bomb->flags = 1;
 	bomb->active = 1;
-	bomb->position.vx = car_data[car].hd.where.t[0] - 109;
-	bomb->position.vy = car_data[car].hd.where.t[1];
-	bomb->position.vz = car_data[car].hd.where.t[2] - 147;
+	bomb->position.vx = cp->hd.where.t[0] - 109;
+	bomb->position.vy = cp->hd.where.t[1];
+	bomb->position.vz = cp->hd.where.t[2] - 147;
 
 	bomb->velocity.vx = 0;
 	bomb->velocity.vy = 0;
@@ -440,8 +443,7 @@ void HandleThrownBombs(void)
 
 	bomb = ThrownBombs;
 
-	i = 0;
-	while (i < MAX_THROWN_BOMBS)
+	for (i = 0; i < MAX_THROWN_BOMBS; i++)
 	{
 		if (bomb->flags & 1)
 		{
@@ -494,6 +496,5 @@ void HandleThrownBombs(void)
 			}
 		}
 		bomb++;
-		i++;
 	}
 }

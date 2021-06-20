@@ -134,8 +134,8 @@ int GetLaneByPositionOnRoad(DRIVER2_ROAD_INFO* roadInfo, VECTOR* pos)
 		dx = pos->vx - roadInfo->straight->Midx;
 		dz = pos->vz - roadInfo->straight->Midz;
 
-		lane = ROAD_LANES_COUNT(roadInfo) - (FIXEDH(dx * rcossin_tbl[(roadInfo->straight->angle & 0xfff) * 2 + 1] -
-													dz * rcossin_tbl[(roadInfo->straight->angle & 0xfff) * 2]) + 512 >> 9);
+		lane = ROAD_LANES_COUNT(roadInfo) - (FIXEDH(dx * RCOS(roadInfo->straight->angle) -
+													dz * RSIN(roadInfo->straight->angle)) + 512 >> 9);
 
 		if (lane < 0)
 			lane = 0;
@@ -280,12 +280,11 @@ int sdHeightOnPlane(VECTOR *pos, sdPlane *plane)
 // [D] [T]
 short* sdGetBSP(sdNode *node, XYPAIR *pos)
 {
-	int ang, dot;
+	int dot;
 
 	while (node->value < 0) // & 0x80000000U)
 	{
-		ang = (node->n.angle & 0xfff) * 2;
-		dot = pos->y * rcossin_tbl[ang + 1] - pos->x * rcossin_tbl[ang];
+		dot = pos->y * RCOS(node->n.angle) - pos->x * RSIN(node->n.angle);
 
 		if (dot < node->n.dist * 4096)
 			node++;
@@ -557,9 +556,9 @@ int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, sdPlane **plane)
 	else if ((*plane)->surface == 4)
 	{
 		if (gInGameCutsceneActive && gCurrentMissionNumber == 23 && gInGameCutsceneID == 0)
-			out->vy += rcossin_tbl[(pos->vx + pos->vz) * 4 & 0x1fff] >> 9;
+			out->vy += RSIN((pos->vx + pos->vz) * 2) >> 9;			// rcossin_tbl[(pos->vx + pos->vz) * 4 & 0x1fff] >> 9;
 		else
-			out->vy += (rcossin_tbl[(pos->vx + pos->vz) * 4 & 0x1fff] >> 8) / 3;
+			out->vy += (RSIN((pos->vx + pos->vz) * 2) >> 8) / 3;	// (rcossin_tbl[(pos->vx + pos->vz) * 4 & 0x1fff] >> 8) / 3;
 
 		return 2048;
 	}

@@ -140,8 +140,8 @@ void DrawDebugOverlays()
 					dz = carPos->vz - roadInfo.straight->Midz;
 					
 					segLen = roadInfo.straight->length;
-					theta = (roadInfo.straight->angle - ratan2(dx, dz) & 0xfffU);
-					distAlongSegment = (segLen / 2) + FIXEDH(rcossin_tbl[theta * 2 + 1] * SquareRoot0(dx * dx + dz * dz));
+					theta = roadInfo.straight->angle - ratan2(dx, dz);
+					distAlongSegment = (segLen / 2) + FIXEDH(RCOS(theta) * SquareRoot0(dx * dx + dz * dz));
 				}
 				else
 				{

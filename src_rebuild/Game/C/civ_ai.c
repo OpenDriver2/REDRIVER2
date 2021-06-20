@@ -828,7 +828,8 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 						dx = (oldNode->x - roadInfo.straight->Midx);
 						dz = (oldNode->z - roadInfo.straight->Midz);
 
-						tmpNewLane[roadCnt] = ROAD_LANES_COUNT(&roadInfo) - (FIXEDH(dx * rcossin_tbl[(roadInfo.straight->angle & 0xfff) * 2 + 1] - dz * rcossin_tbl[(roadInfo.straight->angle & 0xfff) * 2]) + 512 >> 9);
+						tmpNewLane[roadCnt] = ROAD_LANES_COUNT(&roadInfo)
+											- (FIXEDH(dx * RCOS(roadInfo.straight->angle) - dz * RSIN(roadInfo.straight->angle)) + 512 >> 9);
 
 					}
 					else
@@ -981,10 +982,10 @@ void InitNodeList(CAR_DATA* cp, EXTRA_CIV_DATA* extraData)
 		dx = cp->hd.where.t[0] - straight->Midx;
 		dz = cp->hd.where.t[2] - straight->Midz;
 
-		theta = (straight->angle - ratan2(dx, dz) & 0xfffU);
-		cr->distAlongSegment = (straight->length / 2) + FIXEDH(rcossin_tbl[theta * 2 + 1] * SquareRoot0(dx * dx + dz * dz));
+		theta = straight->angle - ratan2(dx, dz);
+		cr->distAlongSegment = (straight->length / 2) + FIXEDH(RCOS(theta) * SquareRoot0(dx * dx + dz * dz));
 
-		laneDist = ROAD_LANES_COUNT(straight) * 512 + FIXEDH(-dx * rcossin_tbl[(straight->angle & 0xfff) * 2 + 1] + dz * rcossin_tbl[(straight->angle & 0xfff) * 2]);
+		laneDist = ROAD_LANES_COUNT(straight) * 512 + FIXEDH(-dx * RCOS(straight->angle) + dz * RSIN(straight->angle));
 		cp->ai.c.currentLane = laneDist / 512;
 
 		// calc all dirs
@@ -1059,11 +1060,11 @@ int GetNodePos(DRIVER2_STRAIGHT* straight, DRIVER2_JUNCTION* junction, DRIVER2_C
 
 			sideShift = (ROAD_LANES_COUNT(straight) * 512 - (laneNo * 512 + 256)) + test42;
 
-			*x = straight->Midx + FIXEDH(distFromCentre * rcossin_tbl[(angle & 0xfffU) * 2]) +
-				FIXEDH(sideShift * rcossin_tbl[(angle & 0xfffU) * 2 + 1]);
+			*x = straight->Midx + FIXEDH(distFromCentre * RSIN(angle)) +
+								  FIXEDH(sideShift * RCOS(angle));
 
-			*z = straight->Midz + FIXEDH(distFromCentre * rcossin_tbl[(angle & 0xfffU) * 2 + 1]) -
-				FIXEDH(sideShift * rcossin_tbl[(angle & 0xfffU) * 2]);
+			*z = straight->Midz + FIXEDH(distFromCentre * RCOS(angle)) -
+								  FIXEDH(sideShift * RSIN(angle));
 		}
 		else if (cp)
 		{
@@ -1082,8 +1083,8 @@ int GetNodePos(DRIVER2_STRAIGHT* straight, DRIVER2_JUNCTION* junction, DRIVER2_C
 
 		radius = curve->inside * 1024 + laneNo * 512 + 256 + test42;
 
-		*x = curve->Midx + FIXEDH(radius * rcossin_tbl[(angle & 0xfffU) * 2]);
-		*z = curve->Midz + FIXEDH(radius * rcossin_tbl[(angle & 0xfffU) * 2 + 1]);
+		*x = curve->Midx + FIXEDH(radius * RSIN(angle));
+		*z = curve->Midz + FIXEDH(radius * RCOS(angle));
 	}
 	else if (junction)
 	{
@@ -1217,8 +1218,8 @@ int CheckChangeLanes(DRIVER2_STRAIGHT* straight, DRIVER2_CURVE* curve, int distA
 				else
 					theta = cp->hd.direction - 1024;
 
-				cd[0].x.vx = cp->hd.oBox.location.vx + FIXEDH(rcossin_tbl[(theta & 0xfff) * 2] * 512);
-				cd[0].x.vz = cp->hd.oBox.location.vz + FIXEDH(rcossin_tbl[(theta & 0xfff) * 2 + 1] * 512);
+				cd[0].x.vx = cp->hd.oBox.location.vx + FIXEDH(RSIN(theta) * 512);
+				cd[0].x.vz = cp->hd.oBox.location.vz + FIXEDH(RCOS(theta) * 512);
 				cd[0].length[0] = cp->ap.carCos->colBox.vz + 93;
 				cd[0].length[1] = cp->ap.carCos->colBox.vx;
 				cd[0].theta = cp->hd.direction;
@@ -1483,13 +1484,13 @@ int CreateNewNode(CAR_DATA * cp)
 						segLength = (SquareRoot0(dx * dx + dz * dz) - (cp->hd.wheel_speed / 170));
 						cornerAngle = DIFF_ANGLES(start->dir, ratan2(dx, dz)); //((ratan2(dx, dz) - start->dir) + 2048U & 0xfff) - 2048;
 
-						tmp = FIXEDH(segLength * rcossin_tbl[(cornerAngle & 0xfffU) * 2 + 1]);
+						tmp = FIXEDH(segLength * RCOS(cornerAngle));
 
 						retNode = newNode;
 						if (tmp > 0)
 						{
-							newNode->x = start->x + FIXEDH(tmp * rcossin_tbl[(start->dir & 0xfff) * 2]);
-							newNode->z = start->z + FIXEDH(tmp * rcossin_tbl[(start->dir & 0xfff) * 2 + 1]);
+							newNode->x = start->x + FIXEDH(tmp * RSIN(start->dir));
+							newNode->z = start->z + FIXEDH(tmp * RCOS(start->dir));
 
 							newNode->pathType = 1;
 							newNode->dir = start->dir;
@@ -1497,14 +1498,14 @@ int CreateNewNode(CAR_DATA * cp)
 							retNode = GET_NEXT_NODE(cp, newNode);
 						}
 
-						tmp = FIXEDH(segLength * rcossin_tbl[(cornerAngle & 0xfffU) * 2]);
+						tmp = FIXEDH(segLength * RSIN(cornerAngle));
 
 						newNode = retNode;
 
 						if (tmp < 0)
 						{
-							retNode->x = tempNode.x + FIXEDH(tmp * rcossin_tbl[(tempNode.dir & 0xfff) * 2]);
-							retNode->z = tempNode.z + FIXEDH(tmp * rcossin_tbl[(tempNode.dir & 0xfff) * 2 + 1]);
+							retNode->x = tempNode.x + FIXEDH(tmp * RSIN(tempNode.dir));
+							retNode->z = tempNode.z + FIXEDH(tmp * RCOS(tempNode.dir));
 
 							retNode->pathType = 1;
 							retNode->dir = tempNode.dir;
@@ -1808,8 +1809,8 @@ int CreateCivCarWotDrivesABitThenStops(int direction, LONGVECTOR4* startPos, LON
 	pNewCar->ai.c.maxSpeed = EVENT_CAR_SPEED;
 
 	pNewCar->st.n.linearVelocity[1] = 0;
-	pNewCar->st.n.linearVelocity[0] = EVENT_CAR_SPEED * rcossin_tbl[(direction & 0xfffU) * 2];
-	pNewCar->st.n.linearVelocity[2] = EVENT_CAR_SPEED * rcossin_tbl[(direction & 0xfffU) * 2 + 1];
+	pNewCar->st.n.linearVelocity[0] = EVENT_CAR_SPEED * RSIN(direction);
+	pNewCar->st.n.linearVelocity[2] = EVENT_CAR_SPEED * RCOS(direction);
 
 	pNewCar->ai.c.velRatio = (EVENT_CAR_SPEED * ONE) / (DistanceTriggerCarMoves - pNewCar->ap.carCos->colBox.vz * 3);
 	pNewCar->ai.c.targetRoute[0].x = (*startPos)[0];
@@ -1822,16 +1823,16 @@ int CreateCivCarWotDrivesABitThenStops(int direction, LONGVECTOR4* startPos, LON
 	stopNode->dir = direction;
 	stopNode->distAlongSegment = 0;
 
-	stopNode->x = (*startPos)[0] + FIXEDH(DistanceTriggerCarMoves * rcossin_tbl[(direction & 0xfffU) * 2]);
-	stopNode->z = (*startPos)[2] + FIXEDH(DistanceTriggerCarMoves * rcossin_tbl[(direction & 0xfffU) * 2 + 1]);
+	stopNode->x = (*startPos)[0] + FIXEDH(DistanceTriggerCarMoves * RSIN(direction));
+	stopNode->z = (*startPos)[2] + FIXEDH(DistanceTriggerCarMoves * RCOS(direction));
 
 	spareNode = &pNewCar->ai.c.targetRoute[2];
 	spareNode->pathType = 1;
 	spareNode->dir = direction;
 	spareNode->distAlongSegment = 0;
 
-	spareNode->x = (*startPos)[0] + FIXEDH(DistanceTriggerCarMoves * rcossin_tbl[(direction & 0xfffU) * 2] * 3);
-	spareNode->z = (*startPos)[2] + FIXEDH(DistanceTriggerCarMoves * rcossin_tbl[(direction & 0xfffU) * 2 + 1] * 3);
+	spareNode->x = (*startPos)[0] + FIXEDH(DistanceTriggerCarMoves * RSIN(direction) * 3);
+	spareNode->z = (*startPos)[2] + FIXEDH(DistanceTriggerCarMoves * RCOS(direction) * 3);
 
 	numCivCars++;
 
@@ -1908,16 +1909,16 @@ int CreateStationaryCivCar(int direction, long orientX, long orientZ, LONGVECTOR
 
 			InitCar(newCar, direction, startPos, 2, model, 0, (char*)&civDat);
 			
-			dx = rcossin_tbl[((orientZ / 2) & 0xfff) * 2];
-			dz = rcossin_tbl[((orientZ / 2) & 0xfff) * 2 + 1];
+			dx = RSIN(orientZ / 2);
+			dz = RCOS(orientZ / 2);
 
 			tmpQ[0] = FIXEDH(newCar->st.n.orientation[1] * dx + newCar->st.n.orientation[0] * dz);
 			tmpQ[1] = FIXEDH(newCar->st.n.orientation[1] * dz - newCar->st.n.orientation[0] * dx);
 			tmpQ[2] = FIXEDH(newCar->st.n.orientation[3] * dx + newCar->st.n.orientation[2] * dz);
 			tmpQ[3] = FIXEDH(newCar->st.n.orientation[3] * dz - newCar->st.n.orientation[2] * dx);
 
-			dx = rcossin_tbl[((orientX / 2) & 0xfff) * 2];
-			dz = rcossin_tbl[((orientX / 2) & 0xfff) * 2 + 1];
+			dx = RSIN(orientX / 2);
+			dz = RCOS(orientX / 2);
 
 			newCar->st.n.orientation[0] = FIXEDH(tmpQ[3] * dx + tmpQ[0] * dz);
 			newCar->st.n.orientation[1] = FIXEDH(tmpQ[2] * dx + tmpQ[1] * dz);
@@ -1939,6 +1940,9 @@ VECTOR randomLoc;
 int dx = 0; // offset 0xAAB40
 int dy = 0; // offset 0xAAB44
 int dz = 0; // offset 0xAAB48
+
+#define PINGIN_DIST_WANTED_MULT			(10)
+#define PINGIN_DIST_MULT		(8)
 
 // [D] [T] [A] - some register is not properly decompiled
 int PingInCivCar(int minPingInDist)
@@ -2046,17 +2050,17 @@ int PingInCivCar(int minPingInDist)
 				return 0;
 		}
 
-		if (requestCopCar == 0)
+		if (requestCopCar != 0)
 		{
-			angle = (cookieCount * ONE) / 44 & 0xfff;
-			dx = rcossin_tbl[(angle & 0xfff) * 2] << 3;
-			dz = rcossin_tbl[(angle & 0xfff) * 2 + 1] << 3;
+			angle = (cookieCount * ONE) / 56;
+			dx = RSIN(angle) * PINGIN_DIST_WANTED_MULT;
+			dz = RCOS(angle) * PINGIN_DIST_WANTED_MULT;
 		}
 		else
 		{
-			angle = (cookieCount * ONE) / 56 & 0xfff;
-			dx = rcossin_tbl[(angle & 0xfff) * 2] * 10;
-			dz = rcossin_tbl[(angle & 0xfff) * 2 + 1] * 10;
+			angle = (cookieCount * ONE) / 44;
+			dx = RSIN(angle) * PINGIN_DIST_MULT;
+			dz = RCOS(angle) * PINGIN_DIST_MULT;
 		}
 
 		randomLoc.vx = baseLoc.vx + FIXEDH(dx) * 2048;
@@ -2109,17 +2113,17 @@ int PingInCivCar(int minPingInDist)
 				break;
 			}
 
-			if (requestCopCar == 0)
+			if (requestCopCar != 0)
 			{
-				angle = (cookieCount * ONE) / 44 & 0xfff;
-				dx = rcossin_tbl[(angle & 0xfff) * 2] << 3;
-				dz = rcossin_tbl[(angle & 0xfff) * 2 + 1] << 3;
+				angle = (cookieCount * ONE) / 56;
+				dx = RSIN(angle) * PINGIN_DIST_WANTED_MULT;
+				dz = RCOS(angle) * PINGIN_DIST_WANTED_MULT;
 			}
 			else
 			{
-				angle = (cookieCount * ONE) / 56 & 0xfff;
-				dx = rcossin_tbl[(angle & 0xfff) * 2] * 10;
-				dz = rcossin_tbl[(angle & 0xfff) * 2 + 1] * 10;
+				angle = (cookieCount * ONE) / 44;
+				dx = RSIN(angle) * PINGIN_DIST_MULT;
+				dz = RCOS(angle) * PINGIN_DIST_MULT;
 			}
 
 			// [A] make limo ping in closer and in right direction
@@ -2321,9 +2325,9 @@ int PingInCivCar(int minPingInDist)
 		dx = randomLoc.vx - roadInfo.straight->Midx;
 		dz = randomLoc.vz - roadInfo.straight->Midz;
 
-		theta = (roadInfo.straight->angle - ratan2(dx, dz) & 0xfffU);
+		theta = roadInfo.straight->angle - ratan2(dx, dz);
 
-		civDat.distAlongSegment = (roadInfo.straight->length / 2) + FIXEDH(rcossin_tbl[theta * 2 + 1] * SquareRoot0(dx * dx + dz * dz));
+		civDat.distAlongSegment = (roadInfo.straight->length / 2) + FIXEDH(RCOS(theta) * SquareRoot0(dx * dx + dz * dz));
 
 		if (requestCopCar == 0)
 		{
@@ -2684,7 +2688,7 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 			else
 				checkObstDist = 512;
 
-			carDir = cp->hd.direction & 0xfff;
+			carDir = cp->hd.direction;
 			distToObstacle = 0x7fffff;
 
 			lcp = &car_data[MAX_CARS-1];
@@ -2698,8 +2702,8 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 					dx = lcp->hd.where.t[0] - cp->hd.where.t[0];
 					dz = lcp->hd.where.t[2] - cp->hd.where.t[2];
 
-					tangent = FIXEDH(dx * rcossin_tbl[carDir * 2] + dz * rcossin_tbl[carDir * 2 + 1]);
-					normal = FIXEDH(dx * rcossin_tbl[carDir * 2 + 1] - dz * rcossin_tbl[carDir * 2]);
+					tangent = FIXEDH(dx * RSIN(carDir) + dz * RCOS(carDir));
+					normal  = FIXEDH(dx * RCOS(carDir) - dz * RSIN(carDir));
 
 					if (tangent > 0)
 					{
@@ -3396,51 +3400,53 @@ void CreateRoadblock(void)
 
 	angle = 0;
 
-	// scan angle
+	// scan for roads
 	do {
-		int dv;
-		if (requestCopCar == 0)
-			dv = rcossin_tbl[(dir + angle & 0xfffU) * 2] << 3;
+		int dx, dz;
+		
+		if (requestCopCar != 0)
+		{
+			dx = RSIN(dir + angle) * PINGIN_DIST_WANTED_MULT;
+			dz = RCOS(dir + angle) * PINGIN_DIST_WANTED_MULT;
+		}
 		else
-			dv = rcossin_tbl[(dir + angle & 0xfffU) * 2] * 10;
+		{
+			dx = RSIN(dir + angle) * PINGIN_DIST_MULT;
+			dz = RCOS(dir + angle) * PINGIN_DIST_MULT;
+		}
 
-		roadblockLoc.vx = baseLoc.vx + FIXEDH(dv) * 2048;
-
-		if (requestCopCar == 0)
-			dv = rcossin_tbl[(dir + angle & 0xfffU) * 2 + 1] << 3;
-		else
-			dv = rcossin_tbl[(dir + angle & 0xfffU) * 2 + 1] * 10;
-
-		roadblockLoc.vz = baseLoc.vz + FIXEDH(dv) * 2048;
+		roadblockLoc.vx = baseLoc.vx + FIXEDH(dx) * 2048;
+		roadblockLoc.vz = baseLoc.vz + FIXEDH(dz) * 2048;
 
 		roadSeg = RoadInCell(&roadblockLoc);
 
 		if (IS_STRAIGHT_SURFACE(roadSeg) || IS_CURVED_SURFACE(roadSeg))
 			break;
 
-		if (requestCopCar == 0)
-			dv = rcossin_tbl[(dir - angle & 0xfffU) * 2] << 3;
+		if (requestCopCar != 0)
+		{
+			dx = RSIN(dir - angle) * PINGIN_DIST_WANTED_MULT;
+			dz = RCOS(dir - angle) * PINGIN_DIST_WANTED_MULT;
+		}
 		else
-			dv = rcossin_tbl[(dir - angle & 0xfffU) * 2] * 10;
+		{
+			dx = RSIN(dir - angle) * PINGIN_DIST_MULT;
+			dz = RCOS(dir - angle) * PINGIN_DIST_MULT;
+		}
 
-		roadblockLoc.vx = baseLoc.vx + FIXEDH(dv) * 2048;
-
-		if (requestCopCar == 0)
-			dv = rcossin_tbl[(dir - angle & 0xfffU) * 2 + 1] << 3;
-		else
-			dv = rcossin_tbl[(dir - angle & 0xfffU) * 2 + 1] * 10;
-
-		roadblockLoc.vz = baseLoc.vz + FIXEDH(dv) * 2048;
+		roadblockLoc.vx = baseLoc.vx + FIXEDH(dx) * 2048;
+		roadblockLoc.vz = baseLoc.vz + FIXEDH(dz) * 2048;
 
 		roadSeg = RoadInCell(&roadblockLoc);
 
 		if (IS_STRAIGHT_SURFACE(roadSeg) || IS_CURVED_SURFACE(roadSeg))
 			break;
 
-		if (requestCopCar == 0)
-			angle = angle + 93;
+		// FIXME: there must be some computed constant
+		if (requestCopCar != 0)
+			angle += 73;
 		else
-			angle = angle + 73;
+			angle += 93;
 
 	} while (angle < 2048);
 
@@ -3457,7 +3463,7 @@ void CreateRoadblock(void)
 		dz = roadblockLoc.vz - str->Midz;
 
 		segmentLen = str->length;
-		distAlongSegment = (str->length / 2) + FIXEDH(rcossin_tbl[(str->angle - ratan2(dx, dz) & 0xfffU) * 2 + 1] * SquareRoot0(dx * dx + dz * dz));
+		distAlongSegment = (str->length / 2) + FIXEDH(RCOS(str->angle - ratan2(dx, dz)) * SquareRoot0(dx * dx + dz * dz));
 
 		if (segmentLen < lbody * 6)
 			return;
@@ -3518,8 +3524,8 @@ void CreateRoadblock(void)
 	{
 		laneNo = (delta >> 9);
 		
-		currentPos.vx = startPos.vx + FIXEDH(delta * rcossin_tbl[(dir2NextRow & 0xfff) * 2]);
-		currentPos.vz = startPos.vz + FIXEDH(delta * rcossin_tbl[(dir2NextRow & 0xfff) * 2 + 1]);
+		currentPos.vx = startPos.vx + FIXEDH(delta * RSIN(dir2NextRow));
+		currentPos.vz = startPos.vz + FIXEDH(delta * RCOS(dir2NextRow));
 
 		if((str && ROAD_IS_AI_LANE(str, laneNo) || crv && ROAD_IS_AI_LANE(crv, laneNo)) && 
 			CellEmpty(&currentPos, lbody))
@@ -3527,7 +3533,10 @@ void CreateRoadblock(void)
 			newSlot = CreateStationaryCivCar(dir2NextRow + (Random2(0) * 0x10001 >> (laneNo) & 0x3ffU) - 512, 0, 0, (LONGVECTOR4 *)&currentPos, externalCopModel, 0, 2);
 
 			if (newSlot == -1)
+			{
+				noMoreCars = 1;
 				break;
+			}
 
 			newCar = &car_data[newSlot];
 
@@ -3579,9 +3588,9 @@ void CreateRoadblock(void)
 		else
 			faceDir = dir2NextRow;
 
-		theta = dir2NextRow + deltaAngle & 0xfff;
-		px = startPos.vx + FIXEDH(rcossin_tbl[theta * 2] * 1500);
-		pz = startPos.vz + FIXEDH(rcossin_tbl[theta * 2 + 1] * 1500);
+		theta = dir2NextRow + deltaAngle;
+		px = startPos.vx + FIXEDH(RSIN(theta) * 1500);
+		pz = startPos.vz + FIXEDH(RCOS(theta) * 1500);
 	
 		numSpareCars = (maxCivCars - numCivCars) + 2;
 		numSpots = numLanes / 2 - 1;
@@ -3596,8 +3605,8 @@ void CreateRoadblock(void)
 		{
 			delta = ((numSpots * (count * 2 + 1)) / (numCarsToAdd * 2)) * 1024 + 768;
 
-			currentPos.vx = px + FIXEDH(delta * rcossin_tbl[(dir2NextRow & 0xfff) * 2]);
-			currentPos.vz = pz + FIXEDH(delta * rcossin_tbl[(dir2NextRow & 0xfff) * 2 + 1]);
+			currentPos.vx = px + FIXEDH(delta * RSIN(dir2NextRow));
+			currentPos.vz = pz + FIXEDH(delta * RCOS(dir2NextRow));
 
 			test42 = delta;
 
@@ -3710,11 +3719,11 @@ int CivControl(CAR_DATA* cp)
 				test42 = 0 * 0x80;
 				sideShift = ((straight->NumLanes & 0xf) * 0x200 - (laneNo * 0x200 + 0x100)) + test42;
 
-				int straightX1 = straight->Midx + FIXED(distFromCentreA * rcossin_tbl[(angle & 0xfffU) * 2]) + FIXED(sideShift * rcossin_tbl[(angle & 0xfffU) * 2 + 1]);
-				int straightZ1 = (straight->Midz + FIXED(distFromCentreA * rcossin_tbl[(angle & 0xfffU) * 2 + 1])) - FIXED(sideShift * rcossin_tbl[(angle & 0xfffU) * 2]);
+				int straightX1 = straight->Midx + FIXED(distFromCentreA * RSIN(angle)) + FIXED(sideShift * RCOS(angle));
+				int straightZ1 = (straight->Midz + FIXED(distFromCentreA * RCOS(angle))) - FIXED(sideShift * RSIN(angle));
 
-				int straightX2 = straight->Midx + FIXED(distFromCentreB * rcossin_tbl[(angle & 0xfffU) * 2]) + FIXED(sideShift * rcossin_tbl[(angle & 0xfffU) * 2 + 1]);
-				int straightZ2 = (straight->Midz + FIXED(distFromCentreB * rcossin_tbl[(angle & 0xfffU) * 2 + 1])) - FIXED(sideShift * rcossin_tbl[(angle & 0xfffU) * 2]);
+				int straightX2 = straight->Midx + FIXED(distFromCentreB * RSIN(angle)) + FIXED(sideShift * RCOS(angle));
+				int straightZ2 = (straight->Midz + FIXED(distFromCentreB * RCOS(angle))) - FIXED(sideShift * RSIN(angle));
 
 				VECTOR roadA = { straightX1, cp->hd.where.t[1], straightZ1 };
 				VECTOR roadB = { straightX2, cp->hd.where.t[1], straightZ2 };

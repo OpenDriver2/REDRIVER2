@@ -1909,36 +1909,6 @@ struct TYRE_TRACK
 };
 
 //---------------------------------------------------------------------------------------
-// TODO: SOUND.H
-
-struct CHANNEL_DATA
-{
-	SpuVoiceAttr attr;
-	u_char loop;
-	u_char locked;
-	u_short time;
-	int samplerate;
-	char player;
-	int srcvolume;
-	int volumeScale;
-	u_short srcpitch;
-	u_short dopplerScale;
-	int cameradist;
-	int lastcameradist;
-	VECTOR* srcposition;
-	VECTOR position;
-	LONGVECTOR3* srcvelocity;
-};
-
-struct SAMPLE_DATA
-{
-	u_int address;
-	u_int length;
-	u_int loop;
-	u_int samplerate;
-};
-
-//---------------------------------------------------------------------------------------
 // TODO: SYSTEM.H
 
 struct DRAW_MODE
