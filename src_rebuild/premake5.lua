@@ -41,11 +41,11 @@ workspace "REDRIVER2"
 	
 		buildoptions { 
 			--"-s USE_PTHREADS=1", 
-			"-s PTHREAD_POOL_SIZE=8", 
-			"-s ABORTING_MALLOC=0", 
-			"-s FETCH=1", 
+			--"-s PTHREAD_POOL_SIZE=8", 
+			--"-s ABORTING_MALLOC=0", 
+			--"-s FETCH=1", 
 			--"-s PROXY_TO_PTHREAD=1", 
-			"-s WASM=1", 
+			--"-s WASM=1", 
 			"-s TOTAL_MEMORY=1073741824",
 			"-s USE_SDL=2",
 			"-s FULL_ES2=1",
@@ -64,11 +64,11 @@ workspace "REDRIVER2"
 		}
 		linkoptions  { 
 			--"-s USE_PTHREADS=1", 
-			"-s PTHREAD_POOL_SIZE=8", 
-			"-s ABORTING_MALLOC=0", 
-			"-s FETCH=1", 
+			--"-s PTHREAD_POOL_SIZE=8", 
+			--"-s ABORTING_MALLOC=0", 
+			--"-s FETCH=1", 
 			--"-s PROXY_TO_PTHREAD=1", 
-			"-s WASM=1", 
+			--"-s WASM=1", 
 			"-s TOTAL_MEMORY=1073741824",
 			"-s USE_SDL=2",
 			"-s FULL_ES2=1",
@@ -79,6 +79,8 @@ workspace "REDRIVER2"
 			("--shell-file " .. WEBSHELL_PATH .. "/shell.html"),
 			("--preload-file " .. WEBDEMO_DIR)
 		}
+		
+		targetextension ".bc"
 		
 		filter { "kind:*App" }
 			targetextension ".html"
@@ -137,7 +139,7 @@ workspace "REDRIVER2"
             "NDEBUG",
         }
         
-if os.target() == "windows" then
+if os.target() == "windows" or os.target() == "emscripten" then
 	include "premake_libjpeg.lua"
 end
 
@@ -170,7 +172,7 @@ project "REDRIVER2"
         "Game/**.c"
     }
 
-    filter "system:Windows or linux"
+    filter {"system:Windows or linux or platforms:emscripten"}
         --dependson { "PsyX" }
         links { "jpeg" }
 				
@@ -181,6 +183,12 @@ project "REDRIVER2"
 			"redriver2_psxpc.cpp",
 			"DebugOverlay.cpp",
 		}
+		
+	filter "platforms:emscripten"
+	    includedirs { 
+			OPENAL_DIR.."/include",
+			JPEG_DIR.."/",
+        }
 
     filter "system:Windows"
 		entrypoint "mainCRTStartup"
