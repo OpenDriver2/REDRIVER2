@@ -790,7 +790,7 @@ long SpuSetReverb(long on_off)
 
 	if (!g_spuInit)
 	{
-		return;
+		return old_state;
 	}
 
 	// switch if needed
@@ -864,7 +864,7 @@ unsigned long SpuSetReverbVoice(long on_off, unsigned long voice_bit)
 
 	if (!g_spuInit)
 	{
-		return;
+		return 0;
 	}
 	
 	if(!g_ALEffectsSupported)

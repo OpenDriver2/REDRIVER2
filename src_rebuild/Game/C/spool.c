@@ -1394,16 +1394,18 @@ void GotRegion(void)
 // [D] [T]
 void UpdateSpool(void)
 {
-#if USE_PC_FILESYSTEM && defined(SIMPLE_SPOOL)	
+#if USE_PC_FILESYSTEM && defined(SIMPLE_SPOOL)
 	if(strlen(g_CurrentLevelFileName) > 0)
 	{
 		FILE* fp = fopen(g_CurrentLevelFileName, "rb");
 
 		if (!fp)
 		{
+#if !defined(__EMSCRIPTEN__)
 			char errPrint[1024];
 			sprintf(errPrint, "Cannot open '%s'\n", g_CurrentLevelFileName);
 			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
+#endif
 			return;
 		}
 

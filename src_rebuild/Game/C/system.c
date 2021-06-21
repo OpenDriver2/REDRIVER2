@@ -447,7 +447,7 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 	}
 	
 	return loadsize;
-#elif USE_PC_FILESYSTEM
+#elif USE_PC_FILESYSTEM && !defined(__EMSCRIPTEN__)
 	char errPrint[1024];
 	sprintf(errPrint, "Cannot open '%s'\n", namebuffer);
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
@@ -582,7 +582,7 @@ void loadsectorsPC(char* filename, char* addr, int sector, int nsectors)
 #if USE_CD_FILESYSTEM
 	// try using CD
 	loadsectors(addr, sector, nsectors);
-#else
+#elif !defined(__EMSCRIPTEN__)
 	char errPrint[512];
 	sprintf(errPrint, "loadsectorsPC: failed to open '%s'\n", namebuffer);
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
@@ -960,7 +960,7 @@ void SetCityType(CITYTYPE type)
 
 		data += 2;
 	}
-#elif USE_PC_FILESYSTEM
+#elif USE_PC_FILESYSTEM && !defined(__EMSCRIPTEN__)
 	
 	char errPrint[1024];
 	sprintf(errPrint, "SetCityType: cannot open level '%s'\n", filename);
