@@ -1371,15 +1371,9 @@ void GR_Clear(int x, int y, int w, int h, unsigned char r, unsigned char g, unsi
 #endif
 }
 
-#define NOFILE 0
-
-#if !defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
-
 void GR_SaveVRAM(const char* outputFileName, int x, int y, int width, int height, int bReadFromFrameBuffer)
 {
-#if NOFILE
-	return;
-#endif
+#if !defined(__EMSCRIPTEN__) && !defined(__ANDROID__)
 
 #if defined(USE_OPENGL)
 
@@ -1411,8 +1405,8 @@ void GR_SaveVRAM(const char* outputFileName, int x, int y, int width, int height
 	fclose(fp);
 
 #undef FLIP_Y
-}
 #endif
+}
 
 void GR_CopyRGBAFramebufferToVRAM(u_int* src, int x, int y, int w, int h, int update_vram, int flip_y)
 {
