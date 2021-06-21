@@ -1731,7 +1731,7 @@ void SsSetSerialVol(short s_num, short voll, short volr)
 
 //-------------------------------------------
 
-#ifndef PSX
+#if !defined(PSX) && !defined(__EMSCRIPTEN__)
 #include <SDL_messagebox.h>
 void PrintCommandLineArguments()
 {
@@ -1891,7 +1891,7 @@ int redriver2_main(int argc, char** argv)
 		ScreenNames[0] = NTSCScreenNames[0];
 #endif
 
-#ifndef PSX
+#if !defined(PSX) && !defined(__EMSCRIPTEN__)
 	// verify installation
 	if (!FileExists("DATA\\FEFONT.BNK") || !FileExists("GFX\\FONT2.FNT"))
 	{
@@ -2105,8 +2105,10 @@ int redriver2_main(int argc, char** argv)
 #endif
 		else
 		{
+#if !defined(PSX) && !defined(__EMSCRIPTEN__)
 			if (!commandLinePropsShown)
 				PrintCommandLineArguments();
+#endif
 			commandLinePropsShown = 1;
 		}
 	}
