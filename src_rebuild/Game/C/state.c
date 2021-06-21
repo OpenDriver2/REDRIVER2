@@ -40,7 +40,7 @@ void emStateFunc()
 void DoStateLoop()
 {
 #ifdef __EMSCRIPTEN__
-	emscripten_set_main_loop(emStateFunc, 120, 1);
+	emscripten_set_main_loop(emStateFunc, 0, 1);
 #else
 	do
 	{
