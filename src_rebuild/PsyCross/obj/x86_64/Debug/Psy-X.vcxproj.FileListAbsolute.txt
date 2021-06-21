@@ -1,2 +1,0 @@
-H:\Projects\OpenDriver2\REDRIVER2_repo\src_rebuild\PsyX\bin\Debug\Psy-X.pdb
-H:\Projects\OpenDriver2\REDRIVER2_repo\src_rebuild\PsyX\obj\x86_64\Debug\Psy-X.pdb
