@@ -19,7 +19,10 @@
 #include "../utils/audio_source/snd_wav_cache.h"
 
 #include "AL/al.h"
+
+#ifndef __EMSCRIPTEN__
 #include "AL/alext.h"
+#endif // __EMSCRIPTEN__
 
 const char* XANameFormat = "%sXA\\XABNK0%d.XA[%d].wav";
 ALuint g_XASource = AL_NONE;
@@ -232,7 +235,9 @@ void PrepareXA(void)
 	{
 		alGenSources(1, &g_XASource);
 		alSourcei(g_XASource, AL_LOOPING, 0);
+#ifndef __EMSCRIPTEN__
 		alSourcei(g_XASource, AL_SOURCE_RESAMPLER_SOFT, 2);	// Use cubic resampler
+#endif // __EMSCRIPTEN__
 		alSourcei(g_XASource, AL_SOURCE_RELATIVE, AL_TRUE);
 
 		if (g_XAWave)

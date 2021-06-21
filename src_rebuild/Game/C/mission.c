@@ -417,7 +417,7 @@ void LoadMission(int missionnum)
 
 	if (header == 0) 
 	{
-#ifndef PSX
+#if !defined(PSX) && !defined(__EMSCRIPTEN__)
 		char errPrint[1024];
 		sprintf(errPrint, "%d is not valid mission\n", missionnum);
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
@@ -450,7 +450,7 @@ void LoadMission(int missionnum)
 	// check if mission header itself valid
 	if (MissionHeader->id != MISSION_IDENT)
 	{
-#ifndef PSX
+#if !defined(PSX) && !defined(__EMSCRIPTEN__)
 		char errPrint[1024];
 		sprintf(errPrint, "Invalid mission %d identifier\n", missionnum);
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
