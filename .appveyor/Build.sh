@@ -8,6 +8,8 @@ cd "$APPVEYOR_BUILD_FOLDER/src_rebuild"
 
 ./premake5 gmake2
 
+cd project_gmake2_linux
+
 for config in debug_x86 release_x86 release_dev_x86
 do
     make config=$config -j$(nproc)

@@ -10,6 +10,8 @@ set SDL2_DIR=%windows_sdl2_dir%
 
 premake5 vs2019
 
+cd project_vs2019_windows
+
 set config=Debug:Release:Release_dev
 for %%c in (%config::= %) do (
     msbuild .\REDRIVER2.sln /p:Configuration="%%c" /p:Platform=Win32 /m ^
