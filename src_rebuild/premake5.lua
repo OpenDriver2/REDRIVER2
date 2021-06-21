@@ -32,8 +32,9 @@ end
 ------------------------------------------
 	
 workspace "REDRIVER2"
+    location "project_%{_ACTION}_%{os.target()}"
     configurations { "Debug", "Release", "Release_dev" }
-
+	
     defines { VERSION } 
 	
 	if os.target() == "emscripten" then
