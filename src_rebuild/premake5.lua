@@ -19,8 +19,8 @@ SDL2_DIR = os.getenv("SDL2_DIR") or "dependencies/SDL2"
 OPENAL_DIR = os.getenv("OPENAL_DIR") or "dependencies/openal-soft"
 JPEG_DIR = os.getenv("JPEG_DIR") or "dependencies/jpeg"
 
-WEBDEMO_DIR = os.getenv("WEBDEMO_DIR") or "../../content/web_demo@/"	-- FIXME: make it better
-WEBSHELL_PATH = "../.emscripten"
+WEBDEMO_DIR = os.getenv("WEBDEMO_DIR") or "../../../content/web_demo@/"	-- FIXME: make it better
+WEBSHELL_PATH = "../../.emscripten"
 
 GAME_REGION = os.getenv("GAME_REGION") or "NTSC_VERSION" -- or PAL_VERSION
 GAME_VERSION = os.getenv("APPVEYOR_BUILD_VERSION") or nil
@@ -80,8 +80,6 @@ workspace "REDRIVER2"
 			("--shell-file " .. WEBSHELL_PATH .. "/shell.html"),
 			("--preload-file " .. WEBDEMO_DIR)
 		}
-		
-		targetextension ".bc"
 		
 		filter { "kind:*App" }
 			targetextension ".html"

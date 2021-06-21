@@ -515,6 +515,31 @@ void PrintMessageToOutput(SpewType_t spewtype, char const* pMsgFormat, va_list a
 
 #ifdef WIN32
 	Spew_ConDebugSpew(spewtype, pTempBuffer);
+#elif defined(__EMSCRIPTEN__)
+	if (spewtype == SPEW_INFO)
+	{
+		EM_ASM({
+			console.info(UTF8ToString($0));
+		}, pTempBuffer);
+	}
+	else if (spewtype == SPEW_WARNING)
+	{
+		EM_ASM({
+			console.warn(UTF8ToString($0));
+		}, pTempBuffer);
+	}
+	else if (spewtype == SPEW_ERROR)
+	{
+		EM_ASM({
+			console.error(UTF8ToString($0));
+		}, pTempBuffer);
+	}
+	else
+	{
+		EM_ASM({
+			console.log(UTF8ToString($0));
+		}, pTempBuffer);
+	}
 #else
 	printf(pTempBuffer);
 #endif
