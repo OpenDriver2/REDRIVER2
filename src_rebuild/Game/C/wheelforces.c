@@ -53,7 +53,6 @@ void StepCars(void)
 // [D] [T]
 void GetFrictionScalesDriver1(CAR_DATA* cp, CAR_LOCALS* cl, int* frontFS, int* rearFS)
 {
-	unsigned char bVar1;
 	int autoBrake;
 	int q;
 	_HANDLING_TYPE* hp;

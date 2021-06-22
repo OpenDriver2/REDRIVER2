@@ -988,12 +988,12 @@ void CheckCarToCarCollisions(void)
 	CAR_DATA* cp;
 	SVECTOR* colBox;
 
-	cp = car_data;
 
 	if (ghost_mode == 1)
 		return;
 
 	bb = bbox;
+	cp = car_data;
 	loop1 = 0;
 
 	// build boxes
