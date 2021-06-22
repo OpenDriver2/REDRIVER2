@@ -41,16 +41,10 @@ workspace "REDRIVER2"
 		platforms { "emscripten" }
 	
 		buildoptions { 
-			--"-s USE_PTHREADS=1", 
-			--"-s PTHREAD_POOL_SIZE=8", 
-			--"-s ABORTING_MALLOC=0", 
-			--"-s FETCH=1", 
-			--"-s PROXY_TO_PTHREAD=1", 
-			--"-s WASM=1", 
 			"-s TOTAL_MEMORY=1073741824",
 			"-s USE_SDL=2",
 			"-s FULL_ES2=1",
-			"-s USE_WEBGL2=1",
+			--"-s USE_WEBGL2=1",
 			"-s ASYNCIFY=1",
 			"-s ALLOW_MEMORY_GROWTH=1",
 			"-s GL_TESTING=1",
@@ -64,16 +58,10 @@ workspace "REDRIVER2"
 			"-Wno-format",
 		}
 		linkoptions  { 
-			--"-s USE_PTHREADS=1", 
-			--"-s PTHREAD_POOL_SIZE=8", 
-			--"-s ABORTING_MALLOC=0", 
-			--"-s FETCH=1", 
-			--"-s PROXY_TO_PTHREAD=1", 
-			--"-s WASM=1", 
 			"-s TOTAL_MEMORY=1073741824",
 			"-s USE_SDL=2",
 			"-s FULL_ES2=1",
-			"-s USE_WEBGL2=1",
+			--"-s USE_WEBGL2=1",
 			"-s ASYNCIFY=1",
 			"-s ALLOW_MEMORY_GROWTH=1",
 			"-s GL_TESTING=1",
