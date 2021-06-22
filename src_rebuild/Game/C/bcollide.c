@@ -234,9 +234,9 @@ int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 	do {
 		for (q = 0; q < 2; q++)
 		{
-			cd[q].vel.vx /= 2;
-			cd[q].vel.vz /= 2;
-			cd[q].avel /= 2;
+			cd[q].vel.vx >>= 1;
+			cd[q].vel.vz >>= 1;
+			cd[q].avel >>= 1;
 
 			if (hit)
 			{
@@ -265,7 +265,7 @@ int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 		hit = bcollided2d(cd);
 
 		if (i != 0)
-			step /= 2;
+			step >>= 1;
 
 		i--;
 	} while (i >= 0);
@@ -536,7 +536,7 @@ void DamageCar(CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVel
 			if (cp->ai.l.takeDamage == 0)
 				value = 0;
 			else 
-				value = value / 2;
+				value >>= 1;
 		}
 
 		ApplyDamage(cp, region, value, 0);
@@ -603,9 +603,9 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 	if (cop->type == 1246 && gCurrentMissionNumber == 35)
 		buildingHeightY = building->height / 5;
 	else
-		buildingHeightY = building->height / 2;
+		buildingHeightY = building->height >> 1;
 
-	if (boxDiffY <= buildingHeightY + (cp->hd.oBox.length[1] / 2) && (cop->pos.vx != 0xFD46FEC0) && (model->shape_flags & SHAPE_FLAG_NOCOLLIDE) == 0)
+	if (boxDiffY <= buildingHeightY + (cp->hd.oBox.length[1] >> 1) && (cop->pos.vx != 0xFD46FEC0) && (model->shape_flags & SHAPE_FLAG_NOCOLLIDE) == 0)
 	{
 		tempwhere.vx = cp->hd.where.t[0];
 		tempwhere.vz = cp->hd.where.t[2];
