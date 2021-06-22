@@ -1180,12 +1180,12 @@ void GR_Perspective3D(const float fov, const float width, const float height, co
 	float persp[16] = {
 		w, 0, 0, 0,
 		0, h, 0, 0,
-		0, 0, (zFar + zNear) / (zFar - zNear), -(2 * zFar * zNear) / (zFar - zNear),
-		0, 0, 1, 0
+		0, 0, (zFar + zNear) / (zFar - zNear), 1,
+		0, 0, -(2 * zFar * zNear) / (zFar - zNear), 0
 	};
 
 #if defined(USE_OPENGL)
-	glUniformMatrix4fv(u_projection3DLoc, 1, GL_TRUE, persp);
+	glUniformMatrix4fv(u_projection3DLoc, 1, GL_FALSE, persp);
 #endif
 }
 

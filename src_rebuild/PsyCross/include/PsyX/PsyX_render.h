@@ -12,7 +12,7 @@
 #   define OGLES_VERSION (3)
 #elif defined(__EMSCRIPTEN__)
 #   define RENDERER_OGLES
-#   define OGLES_VERSION (3)
+#   define OGLES_VERSION (2)
 #elif defined(__ANDROID__)
 #   define RENDERER_OGLES
 #   define OGLES_VERSION (3)
