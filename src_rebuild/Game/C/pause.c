@@ -688,30 +688,8 @@ void SaveReplay(int direction)
 #ifdef CUTSCENE_RECORDER
 	if(_CutRec_IsOn())
 	{
-		FILE* temp;
-		int cnt;
-		cnt = 2;
-
-		// put files to folder
-		sprintf(filename, "CUT%d", gCutsceneAsReplay);
-		_mkdir(filename);
-
-		while(cnt < 14)
+		if (CutRec_SaveChase())
 		{
-			sprintf(filename, "CUT%d/CUT%d_%d.D2RP", gCutsceneAsReplay, gCutsceneAsReplay, cnt);
-
-			if ((temp = fopen(filename, "rb")) != NULL)
-			{
-				fclose(temp);
-				cnt++;
-			}
-			else
-				break;
-		}
-
-		if (CutRec_SaveReplayToFile(filename))
-		{
-			printInfo("Chase replay '%s' saved\n", filename);
 			gDisplayedMessage.header = G_LTXT(GTXT_SaveReplay);
 			gDisplayedMessage.text = G_LTXT(GTXT_OK);
 			gDisplayedMessage.show = 25;
