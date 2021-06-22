@@ -23,7 +23,7 @@ extern void		CutRec_HandleCarRequest();
 extern int		CutRec_InitPlayers();
 extern int		CutRec_InitMission(char* filename);
 extern int		CutRec_RecordPad(CAR_DATA* cp, uint* t0, char* t1, char* t2);
-extern int		CutRec_SaveReplayToFile(char* filename);
+extern int		CutRec_SaveChase();
 
 #ifdef CUTSCENE_RECORDER
 

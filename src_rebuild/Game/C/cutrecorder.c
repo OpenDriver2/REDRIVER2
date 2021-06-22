@@ -30,13 +30,16 @@ typedef struct AutoTestStats
 	int numHitCars;
 	int numHitWalls;
 	int stuck;
+	int saved;
 };
 
-AutoTestStats gAutoTestStats[15];
+PING_PACKET NewPingBuffer[MAX_REPLAY_PINGS];
+AutoTestStats gAutoTestStats[16];				// 16th is dummy
 
 int gCutsceneChaseAutoTest = 0;
 int gChaseStuckTimer = 0;
 
+int gCutsceneAsReplay_ReChaseLoaded = 0;
 int gCutsceneAsReplay = 0;
 int gCutsceneAsReplay_PlayerId = 0;
 int gCutsceneAsReplay_PlayerChanged = 0;
@@ -57,6 +60,7 @@ void CutRec_Reset()
 		gAutoTestStats[gCutsceneChaseAutoTest].numHitCars = 0;
 		gAutoTestStats[gCutsceneChaseAutoTest].numHitWalls = 0;
 		gAutoTestStats[gCutsceneChaseAutoTest].stuck = 0;
+		gAutoTestStats[gCutsceneChaseAutoTest].saved = 0;
 		gChaseStuckTimer = 0;
 		
 		return;
@@ -86,8 +90,48 @@ void CutRec_NextChase(int dir)
 	sprintf(gCurrentChasePauseText, "Chase ID: %d", gChaseNumber);
 }
 
+int CutRec_GotoChase(int number)
+{
+	if (number < 2)
+		return 0;
+
+	if (number > 15)
+		return 0;
+	
+	gCutsceneChaseAutoTest = number;
+	
+	// load next replay and restart
+	if (LoadCutsceneAsReplay(gCutsceneChaseAutoTest))
+	{
+		State_GameComplete(NULL);
+
+		gDrawPauseMenus = 0;
+		gLoadedReplay = 1;
+		CurrentGameMode = GAMEMODE_REPLAY;
+
+		SetState(STATE_GAMELAUNCH);
+		
+		return 1;
+	}
+	return 0;
+}
+
 void CutRec_Step()
 {
+	// goto previous chase
+	if (Pads[0].dirnew & CAR_PAD_LEFT)
+	{
+		CutRec_GotoChase(gCutsceneChaseAutoTest - 1);
+		return;
+	}
+
+	// goto next chase
+	if (Pads[0].dirnew & CAR_PAD_RIGHT)
+	{
+		CutRec_GotoChase(gCutsceneChaseAutoTest + 1);
+		return;
+	}
+	
 	if (!pauseflag)
 	{
 		if(gCutsceneChaseAutoTest != 0)
@@ -115,18 +159,7 @@ void CutRec_Step()
 		gCutsceneChaseAutoTest++;
 
 		// load next replay and restart
-		if (gCutsceneChaseAutoTest < 15 &&
-			LoadCutsceneAsReplay(gCutsceneChaseAutoTest))
-		{
-			State_GameComplete(NULL);
-
-			gDrawPauseMenus = 0;
-			gLoadedReplay = 1;
-			CurrentGameMode = GAMEMODE_REPLAY;
-
-			SetState(STATE_GAMELAUNCH);
-		}
-		else
+		if (!CutRec_GotoChase(gCutsceneChaseAutoTest))
 		{
 			printInfo("------- AUTOTEST RESULTS -------\n");
 			for(int i = 0; i < 15; i++)
@@ -147,15 +180,31 @@ void CutRec_Draw()
 
 	if(gCutsceneChaseAutoTest)
 	{
-		sprintf(text, "Chase: %d - frame %d of %d", gCutsceneChaseAutoTest, CameraCnt, ReplayParameterPtr->RecordingEnd);
-		PrintString(text, 5, 220);
+		sprintf(text, "Auto-test - chase %d %s", gCutsceneChaseAutoTest, gAutoTestStats[gCutsceneChaseAutoTest].saved ? "-SAVED-" : "");
+		PrintString(text, 5, 10);
+		
+		if(gCutsceneAsReplay_ReChaseLoaded)
+		{
+			SetTextColour(32, 128, 32);
+			PrintString("Re-recorded", 5, 20);
+		}
+		else
+		{
+			SetTextColour(128, 80, 32);
+			PrintString("Reflections", 5, 20);
+		}
+
+		SetTextColour(128, 128, 128);
+		
+		sprintf(text, "Frame %d of %d", CameraCnt, ReplayParameterPtr->RecordingEnd);
+		PrintString(text, 5, 215);
 	}
 
 	if (gAutoTestStats[gCutsceneChaseAutoTest].numHitCars > 0)
 		SetTextColour(128, 0, 0);
 
 	sprintf(text, "Hit cars: %d", gAutoTestStats[gCutsceneChaseAutoTest].numHitCars);
-	PrintString(text, 5, 200);
+	PrintString(text, 5, 205);
 
 	if(gAutoTestStats[gCutsceneChaseAutoTest].stuck)
 	{
@@ -215,13 +264,23 @@ int LoadCutsceneAsReplay(int subindex)
 	CUTSCENE_HEADER header;
 	char filename[64];
 
-	//sprintf(filename, "REPLAYS\\ReChases\\CUT%d_N.R", gCutsceneAsReplay);
-	//if(!FileExists(filename))
+	// Try loading existing ReChase
+	sprintf(filename, "REPLAYS\\ReChases\\CUT%d_N.R", gCutsceneAsReplay);
+
+	if(!FileExists(filename))
 	{
+		gCutsceneAsReplay_ReChaseLoaded = 0;
+		printWarning("--- NO re-recorded chases available! ---\n");
+		
 		if (gCutsceneAsReplay < 21)
 			sprintf(filename, "REPLAYS\\CUT%d.R", gCutsceneAsReplay);
 		else
 			sprintf(filename, "REPLAYS\\A\\CUT%d.R", gCutsceneAsReplay);
+	}
+	else
+	{
+		gCutsceneAsReplay_ReChaseLoaded = 1;
+		printInfo("--- Re-recorded chases loaded ---\n");
 	}
 
 	if (FileExists(filename))
@@ -341,6 +400,7 @@ void InitCutsceneRecorder(char* configFilename)
 // [A] Stores ping info into replay buffer
 int CutRec_StorePingInfo(int cookieCount, int carId)
 {
+	PING_PACKET* buffer;
 	PING_PACKET* packet;
 
 	if (gCutsceneAsReplay == 0)
@@ -349,16 +409,16 @@ int CutRec_StorePingInfo(int cookieCount, int carId)
 	if (CurrentGameMode == GAMEMODE_REPLAY || gInGameChaseActive != 0)
 		return 0;
 
-	if (PingBuffer != NULL && PingBufferPos < MAX_REPLAY_PINGS-1)
+	if (PingBufferPos < MAX_REPLAY_PINGS-1)
 	{
-		packet = &PingBuffer[PingBufferPos++];
+		packet = &NewPingBuffer[PingBufferPos++];
 		packet->frame = CameraCnt - frameStart;
 		packet->carId = carId;
 
 		packet->cookieCount = cookieCount;
 
 		// always finalize last ping
-		packet = &PingBuffer[PingBufferPos];
+		packet = &NewPingBuffer[PingBufferPos];
 		packet->frame = 0xffff;
 		packet->carId = -1;
 		packet->cookieCount = -1;
@@ -390,6 +450,7 @@ void CutRec_CheckInvalidatePing(int carId, int howHard)
 		{
 			printWarning("Removing ping at %d\n", PingBuffer[pos].frame);
 			PingBuffer[pos].carId = -1;
+			NewPingBuffer[pos].carId = -1;
 
 			PingOutCar(&car_data[carId]);
 			break;
@@ -450,7 +511,9 @@ int CutRec_LoadCutsceneAsReplayFromBuffer(char* buffer)
 
 	header = (REPLAY_SAVE_HEADER*)pt;
 
-	if (header->magic != DRIVER2_REPLAY_MAGIC)
+	if (header->magic != DRIVER2_REPLAY_MAGIC &&
+		header->magic != REDRIVER2_CHASE_MAGIC ||	// [A]
+		header->NumReplayStreams == 0)
 		return 0;
 
 	ReplayStart = replayptr = (char*)_replay_buffer;
@@ -493,12 +556,14 @@ int CutRec_LoadCutsceneAsReplayFromBuffer(char* buffer)
 
 		pt += size;
 
+		destStream->padCount = size / sizeof(PADRECORD);
 		destStream->length = sheader->Length;
 
 		if (sheader->Length > maxLength)
 			maxLength = sheader->Length;
 	}
 
+#if 0
 	ReplayParameterPtr = (REPLAY_PARAMETER_BLOCK*)replayptr;
 	memset((u_char*)ReplayParameterPtr, 0, sizeof(REPLAY_PARAMETER_BLOCK));
 	ReplayParameterPtr->RecordingEnd = maxLength;
@@ -522,7 +587,45 @@ int CutRec_LoadCutsceneAsReplayFromBuffer(char* buffer)
 		memcpy((u_char*)&MissionStartData, (u_char*)pt, sizeof(MISSION_DATA));
 		gHaveStoredData = 1;
 	}
+#else
+	// [A] REDRIVER2 chase replays skip cameras
+	if (header->magic == REDRIVER2_CHASE_MAGIC)
+	{
+		ReplayParameterPtr = (REPLAY_PARAMETER_BLOCK*)replayptr;
+		memset((u_char*)ReplayParameterPtr, 0, sizeof(REPLAY_PARAMETER_BLOCK));
+		ReplayParameterPtr->RecordingEnd = maxLength;
 
+		PlayerWayRecordPtr = (SXYPAIR*)(ReplayParameterPtr + 1);
+		PlaybackCamera = (PLAYBACKCAMERA*)(PlayerWayRecordPtr + MAX_REPLAY_WAYPOINTS);
+	}
+	else
+	{
+		ReplayParameterPtr = (REPLAY_PARAMETER_BLOCK*)replayptr;
+		memset((u_char*)ReplayParameterPtr, 0, sizeof(REPLAY_PARAMETER_BLOCK));
+		ReplayParameterPtr->RecordingEnd = maxLength;
+
+		PlayerWayRecordPtr = (SXYPAIR*)(ReplayParameterPtr + 1);
+		memset(PlayerWayRecordPtr, 0, sizeof(SXYPAIR) * MAX_REPLAY_WAYPOINTS);
+
+		PlaybackCamera = (PLAYBACKCAMERA*)(PlayerWayRecordPtr + MAX_REPLAY_WAYPOINTS);
+		memcpy((u_char*)PlaybackCamera, (u_char*)pt, sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS);
+		pt += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
+	}
+
+	PingBufferPos = 0;
+	PingBuffer = (PING_PACKET*)(PlaybackCamera + MAX_REPLAY_CAMERAS);
+	memcpy((u_char*)PingBuffer, (u_char*)pt, sizeof(PING_PACKET) * MAX_REPLAY_PINGS);
+	memcpy((u_char*)NewPingBuffer, (u_char*)pt, sizeof(PING_PACKET) * MAX_REPLAY_PINGS);
+	pt += sizeof(PING_PACKET) * MAX_REPLAY_PINGS;
+	
+	replayptr = (char*)(PingBuffer + MAX_REPLAY_PINGS);
+
+	if (header->HaveStoredData == 0x91827364)	// -0x6e7d8c9c
+	{
+		memcpy((u_char*)&MissionStartData, (u_char*)pt, sizeof(MISSION_DATA));
+		gHaveStoredData = 1;
+	}
+#endif
 	return 1;
 }
 
@@ -556,7 +659,7 @@ int CutRec_SaveReplayToBuffer(char* buffer)
 	header->wantedCar[1] = wantedCar[1];
 
 	memcpy((u_char*)&header->SavedData, (u_char*)&MissionEndData, sizeof(MISSION_DATA));
-
+	
 	// write each stream data
 	for (int i = 0; i < NumReplayStreams; i++)
 	{
@@ -581,7 +684,7 @@ int CutRec_SaveReplayToBuffer(char* buffer)
 	memcpy((u_char*)pt, (u_char*)PlaybackCamera, sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS);
 	pt += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
 
-	memcpy((u_char*)pt, (u_char*)PingBuffer, sizeof(PING_PACKET) * MAX_REPLAY_PINGS);
+	memcpy((u_char*)pt, (u_char*)NewPingBuffer, sizeof(PING_PACKET) * MAX_REPLAY_PINGS);
 	pt += sizeof(PING_PACKET) * MAX_REPLAY_PINGS;
 
 	// [A] is that ever valid?
@@ -604,6 +707,48 @@ int CutRec_SaveReplayToFile(char* filename)
 	{
 		fwrite((char*)_other_buffer, 1, size, fp);
 		fclose(fp);
+		return 1;
+	}
+
+	return 0;
+}
+
+int CutRec_SaveChase()
+{
+	char filename[64];
+	FILE* temp;
+	int cnt;
+	cnt = 2;
+
+	// put files to folder
+	sprintf(filename, "CUT%d", gCutsceneAsReplay);
+	_mkdir(filename);
+
+	// find suitable filename
+	while (cnt < 14)
+	{
+		sprintf(filename, "CUT%d/CUT%d_%d.D2RP", gCutsceneAsReplay, gCutsceneAsReplay, cnt);
+
+		if ((temp = fopen(filename, "rb")) != NULL)
+		{
+			fclose(temp);
+			cnt++;
+		}
+		else
+			break;
+	}
+
+	if (cnt > 14)
+		return 0;
+
+
+	if(CutRec_SaveReplayToFile(filename))
+	{
+		printInfo("Chase replay '%s' saved\n", filename);
+
+		if (gCutsceneChaseAutoTest != 0)
+			gAutoTestStats[gCutsceneChaseAutoTest].saved = 1;
+		
 		return 1;
 	}
 
