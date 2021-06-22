@@ -21,13 +21,13 @@ StateFn gStates[] = {
 	State_FMVPlay,
 };
 
-GameStates gCurrentState = STATE_NONE;
+StateFn gCurrentState = NULL;
 void* gCurrentStateParam = NULL;
 
 #ifdef __EMSCRIPTEN__
 void emStateFunc()
 {
-	StateFn stateFn = gStates[gCurrentState];
+	StateFn stateFn = gCurrentState;
 
 	if (!stateFn)
 		return;
@@ -44,7 +44,7 @@ void DoStateLoop()
 #else
 	do
 	{
-		StateFn stateFn = gStates[gCurrentState];
+		StateFn stateFn = gCurrentState;
 
 		if (!stateFn)
 			break;
@@ -56,6 +56,6 @@ void DoStateLoop()
 
 void SetState(GameStates newState, void* param)
 {
-	gCurrentState = newState;
+	gCurrentState = gStates[newState];
 	gCurrentStateParam = param;
 }
