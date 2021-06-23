@@ -44,6 +44,7 @@ void InitCarPhysics(CAR_DATA* cp, LONGVECTOR4* startpos, int direction)
 	int ty;
 	int odz;
 	int dz;
+	int sn, cs;
 
 	dz = car_cosmetics[cp->ap.model].wheelDisp[0].vz + car_cosmetics[cp->ap.model].wheelDisp[1].vz;
 	ty = dz / 5;
@@ -53,10 +54,13 @@ void InitCarPhysics(CAR_DATA* cp, LONGVECTOR4* startpos, int direction)
 
 	cp->hd.autoBrake = 0;
 
-	cp->st.n.orientation[0] = FIXEDH(-rcossin_tbl[(direction & 0xffeU) + 1] * ty);
-	cp->st.n.orientation[1] = rcossin_tbl[direction & 0xffeU];
-	cp->st.n.orientation[2] = FIXEDH(rcossin_tbl[direction & 0xffeU] * ty);
-	cp->st.n.orientation[3] = rcossin_tbl[(direction & 0xffeU) + 1];
+	sn = RSIN(direction / 2);
+	cs = RCOS(direction / 2);
+
+	cp->st.n.orientation[0] = FIXEDH(-cs * ty);
+	cp->st.n.orientation[1] = sn;
+	cp->st.n.orientation[2] = FIXEDH(sn * ty);
+	cp->st.n.orientation[3] = cs;
 
 	cp->st.n.fposition[0] = (*startpos)[0] << 4;
 	cp->st.n.fposition[1] = (*startpos)[1] << 4;
@@ -95,7 +99,7 @@ void InitCarPhysics(CAR_DATA* cp, LONGVECTOR4* startpos, int direction)
 void TempBuildHandlingMatrix(CAR_DATA* cp, int init)
 {
 	int dz;
-	int ang;
+	int sn, cs;
 
 	dz = (car_cosmetics[cp->ap.model].wheelDisp[0].vz + car_cosmetics[cp->ap.model].wheelDisp[1].vz) / 5;
 
@@ -106,12 +110,13 @@ void TempBuildHandlingMatrix(CAR_DATA* cp, int init)
 		cp->st.n.fposition[2] = cp->hd.where.t[2] << 4;
 	}
 
-	ang = cp->hd.direction & 0xffe;
+	sn = RSIN(cp->hd.direction / 2);
+	cs = RCOS(cp->hd.direction / 2);
 
-	cp->st.n.orientation[0] = FIXEDH(-rcossin_tbl[ang + 1] * dz);
-	cp->st.n.orientation[1] = rcossin_tbl[ang];
-	cp->st.n.orientation[2] = FIXEDH(rcossin_tbl[ang] * dz);
-	cp->st.n.orientation[3] = rcossin_tbl[ang + 1];
+	cp->st.n.orientation[0] = FIXEDH(-cs * dz);
+	cp->st.n.orientation[1] = sn;
+	cp->st.n.orientation[2] = FIXEDH(sn * dz);
+	cp->st.n.orientation[3] = cs;
 
 	RebuildCarMatrix(&cp->st, cp);
 }
@@ -983,12 +988,12 @@ void CheckCarToCarCollisions(void)
 	CAR_DATA* cp;
 	SVECTOR* colBox;
 
-	cp = car_data;
 
 	if (ghost_mode == 1)
 		return;
 
 	bb = bbox;
+	cp = car_data;
 	loop1 = 0;
 
 	// build boxes

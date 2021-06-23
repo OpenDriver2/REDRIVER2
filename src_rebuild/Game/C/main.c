@@ -814,6 +814,12 @@ void State_GameInit(void* param)
 
 	// switch to STATE_GAMELOOP
 	SetState(STATE_GAMELOOP);
+
+#ifndef PSX
+	// set to 30 FPS VSync
+	// PsyX_SetSwapInterval(2);
+	// PsyX_EnableSwapInterval(1);
+#endif
 }
 
 extern short paddp;
@@ -1376,9 +1382,6 @@ void StepGame(void)
 
 	HandleExplosion();
 
-	if (FastForward == 0 && gSkipInGameCutscene == 0)
-		ColourCycle();
-
 	combointensity = NightAmbient | NightAmbient << 8 | NightAmbient << 0x10;
 
 	if (NoPlayerControl && AttractMode == 0)
@@ -1413,20 +1416,12 @@ void StepGame(void)
 	old_camera_change = camera_change;
 
 	// do camera changes
-	if (!pauseflag && NoPlayerControl)
-	{
-		if (gInGameCutsceneActive != 0)
-			camera_change = CutsceneCameraChange(CameraCnt);
-		else
-			camera_change = CheckCameraChange(CameraCnt);
-	}
+	if (gInGameCutsceneActive != 0)
+		camera_change = CutsceneCameraChange(CameraCnt);
+	else if (pauseflag == 0 && NoPlayerControl != 0)
+		camera_change = CheckCameraChange(CameraCnt);
 	else
-	{
-		if (gInGameCutsceneActive != 0)
-			camera_change = CutsceneCameraChange(CameraCnt);
-		else
-			camera_change = 0;
-	}
+		camera_change = 0;
 
 	// step physics engine
 	if (pauseflag)
@@ -1449,6 +1444,10 @@ void StepGame(void)
 	else
 	{
 		StepSim();
+		UpdatePlayerInformation();
+
+		if (FastForward == 0)
+			ColourCycle();
 
 		if (gDieWithFade != 0)
 			gDieWithFade++;
@@ -1472,8 +1471,6 @@ void StepGame(void)
 
 	if (AttractMode && (paddp || ReplayParameterPtr->RecordingEnd <= CameraCnt))
 		EndGame(GAMEMODE_QUIT);
-
-	UpdatePlayerInformation();
 }
 
 // [D] [T]
@@ -1563,19 +1560,24 @@ void State_GameLoop(void* param)
 {
 	int cnt;
 
-#ifdef PSX
+	if (gSkipInGameCutscene)
+	{
+		StepGame();
+		ClearCurrentDrawBuffers();
+		return;
+	}
 
 	if (!FilterFrameTime())
 		return;
 
+	UpdatePadData();
+	CheckForPause();
+
+#ifdef PSX
 	static int lastTime32Hz = 0;
 
 	int curTime = clock_realTime.time32Hz;
 	int numFrames = curTime - lastTime32Hz;
-
-	UpdatePadData();
-	
-	CheckForPause();
 
 	// moved from StepGame
 	if (FrameCnt == 5)
@@ -1604,21 +1606,6 @@ void State_GameLoop(void* param)
 
 	DrawGame();
 #else
-
-	if (gSkipInGameCutscene)
-	{
-		StepGame();
-		ClearCurrentDrawBuffers();
-		return;
-	}
-	
-	if (!FilterFrameTime())
-		return;
-
-	UpdatePadData();
-	
-	CheckForPause();
-
 	// moved from StepGame
 	if (FrameCnt == 5)
 		SetDispMask(1);
@@ -1691,7 +1678,6 @@ void DrawGame(void)
 void EndGame(GAMEMODE mode)
 {
 	WantedGameMode = mode;
-	//pauseflag = 0;
 	game_over = 1;
 }
 
@@ -1702,11 +1688,11 @@ void EnablePause(PAUSEMODE mode)
 	if (quick_replay == 0 && NoPlayerControl && mode == PAUSEMODE_GAMEOVER)
 		return;
 
-	if (pauseflag)
-		return;
-
-	WantPause = 1;
-	PauseMode = mode;
+	if (!pauseflag)
+	{
+		WantPause = 1;
+		PauseMode = mode;
+	}
 }
 
 // [D] [T] This is really a Psy-Q function
@@ -1745,7 +1731,7 @@ void SsSetSerialVol(short s_num, short voll, short volr)
 
 //-------------------------------------------
 
-#ifndef PSX
+#if !defined(PSX) && !defined(__EMSCRIPTEN__)
 #include <SDL_messagebox.h>
 void PrintCommandLineArguments()
 {
@@ -1905,7 +1891,7 @@ int redriver2_main(int argc, char** argv)
 		ScreenNames[0] = NTSCScreenNames[0];
 #endif
 
-#ifndef PSX
+#if !defined(PSX) && !defined(__EMSCRIPTEN__)
 	// verify installation
 	if (!FileExists("DATA\\FEFONT.BNK") || !FileExists("GFX\\FONT2.FNT"))
 	{
@@ -1925,6 +1911,10 @@ int redriver2_main(int argc, char** argv)
 	// TODO: divide game by the states, place main loop here.
 	
 	if (argc <= 1)
+#elif !defined(PSX)
+	
+	InitStringMng();
+	
 #endif
 	{
 		//PlayFMV(99);	// [A] don't show publisher logo
@@ -2119,8 +2109,10 @@ int redriver2_main(int argc, char** argv)
 #endif
 		else
 		{
+#if !defined(PSX) && !defined(__EMSCRIPTEN__)
 			if (!commandLinePropsShown)
 				PrintCommandLineArguments();
+#endif
 			commandLinePropsShown = 1;
 		}
 	}

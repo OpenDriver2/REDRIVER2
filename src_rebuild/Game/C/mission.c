@@ -189,8 +189,8 @@ const int TAIL_GETTINGFAR = 12900;
 const int TAIL_TOOCLOSE = 4000;
 const int TAIL_TOOFAR = 15900;
 
-#ifdef DEBUG_OPTIONS
-#define MR_DebugPrint //printInfo
+#ifdef _DEBUG
+#define MR_DebugPrint // printInfo
 #define MR_DebugWarn printWarning
 #else
 #define MR_DebugPrint
@@ -365,6 +365,11 @@ void SetupResidentModels()
 			{
 				MissionHeader->residentModels[takenSlots++] = wantedCar[i];
 			}
+			else
+			{
+				// this can make things ugly
+				takenSlots = foundRM+1;
+			}
 
 			// force palette
 			if (singlePal)
@@ -412,7 +417,7 @@ void LoadMission(int missionnum)
 
 	if (header == 0) 
 	{
-#ifndef PSX
+#if !defined(PSX) && !defined(__EMSCRIPTEN__)
 		char errPrint[1024];
 		sprintf(errPrint, "%d is not valid mission\n", missionnum);
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
@@ -445,7 +450,7 @@ void LoadMission(int missionnum)
 	// check if mission header itself valid
 	if (MissionHeader->id != MISSION_IDENT)
 	{
-#ifndef PSX
+#if !defined(PSX) && !defined(__EMSCRIPTEN__)
 		char errPrint[1024];
 		sprintf(errPrint, "Invalid mission %d identifier\n", missionnum);
 		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);

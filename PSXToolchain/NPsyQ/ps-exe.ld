@@ -160,7 +160,8 @@ SECTIONS {
         *(.a0table)
         *(.data .data.* .gnu.linkonce.d.*)
         *(.data1)
-		*(.sdata .sdata.* .gnu.linkonce.s.*)
+        *(.sdata .sdata.* .gnu.linkonce.s.*)
+        *(.sdata2 .sdata2.* .gnu.linkonce.s2.*)
         *(.got.plt)
         *(.got)
         /* pad file to be a multiple of 2048 bytes.  Needed for loading from CD-ROM. */

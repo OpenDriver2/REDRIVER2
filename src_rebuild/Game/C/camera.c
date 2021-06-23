@@ -244,9 +244,9 @@ void ModifyCamera(void)
 
 				CalcCameraBasePos(lp);
 
-				angle = baseDir + 2048 & 0xfff;
-				lp->cameraPos.vx = basePos[0] + FIXEDH(rcossin_tbl[angle * 2] * (length - 60));
-				lp->cameraPos.vz = basePos[2] + FIXEDH(rcossin_tbl[angle * 2 + 1] * (length - 60));
+				angle = baseDir + 2048;
+				lp->cameraPos.vx = basePos[0] + FIXEDH(RSIN(angle) * (length - 60));
+				lp->cameraPos.vz = basePos[2] + FIXEDH(RCOS(angle) * (length - 60));
 			}
 		}
 	}
@@ -463,25 +463,25 @@ void PlaceCameraFollowCar(PLAYER *lp)
 
 	camera_angle.vx = 25;
 
-	camAngle = lp->cameraAngle - (lp->headPos >> 16) & 0xfff;
+	camAngle = lp->cameraAngle - (lp->headPos >> 16);
 
 	if (pauseflag == 0 || EditMode == 2)
 	{
 		// [A] handle REDRIVER2 dedicated look back button
 		if ((paddCamera & CAMERA_PAD_LOOK_BACK) == CAMERA_PAD_LOOK_BACK || (paddCamera & CAMERA_PAD_LOOK_BACK_DED))
 		{
-			camAngle = baseDir & 0xfff; // look back
+			camAngle = baseDir; // look back
 		}
 		else
 		{
-			angleDelta = (((baseDir + gCameraAngle) - lp->cameraAngle) + 2048U & 0xfff) - 2048;
+			angleDelta = DIFF_ANGLES(lp->cameraAngle, baseDir + gCameraAngle); // (((baseDir + gCameraAngle) - lp->cameraAngle) + 2048U & 0xfff) - 2048;
 
 			lp->cameraAngle += (angleDelta >> 3) & 0xfff;
 		}
 	}
 
-	lp->cameraPos.vx = basePos[0] + FIXEDH(rcossin_tbl[camAngle * 2] * lp->cameraDist);
-	lp->cameraPos.vz = basePos[2] + FIXEDH(rcossin_tbl[camAngle * 2 + 1] * lp->cameraDist);
+	lp->cameraPos.vx = basePos[0] + FIXEDH(RSIN(camAngle) * lp->cameraDist);
+	lp->cameraPos.vz = basePos[2] + FIXEDH(RCOS(camAngle) * lp->cameraDist);
 
 	lp->cameraPos.vy = basePos[1];
 	camPosVy = MapHeight(&lp->cameraPos);
@@ -511,10 +511,10 @@ void PlaceCameraFollowCar(PLAYER *lp)
 	if (lp->cameraCarId >= 0) 
 		jcam->ap.carCos = car_data[lp->cameraCarId].ap.carCos;
 
-	jcam->hd.direction = camAngle;
+	jcam->hd.direction = camAngle & 0xfff;
 	
-	sdist = maxCameraDist * rcossin_tbl[camAngle * 2] + 0x800;
-	cdist = maxCameraDist * rcossin_tbl[camAngle * 2 + 1] + 0x800;
+	sdist = maxCameraDist * RSIN(camAngle) + 2048;
+	cdist = maxCameraDist * RCOS(camAngle) + 2048;
 
 	jcam->hd.oBox.location.vx = jcam->hd.where.t[0] = basePos[0] + (sdist >> 13);
 	jcam->hd.oBox.location.vy = jcam->hd.where.t[1] = -lp->cameraPos.vy;
@@ -528,8 +528,8 @@ void PlaceCameraFollowCar(PLAYER *lp)
 		lp->cameraDist = gCameraDistance;
 
 	lp->cameraPos.vy = -jcam->hd.where.t[1];
-	lp->cameraPos.vx = basePos[0] + FIXEDH(lp->cameraDist * rcossin_tbl[(jcam->hd.direction & 0xfff) * 2]);
-	lp->cameraPos.vz = basePos[2] + FIXEDH(lp->cameraDist * rcossin_tbl[(jcam->hd.direction & 0xfff) * 2 + 1]);
+	lp->cameraPos.vx = basePos[0] + FIXEDH(lp->cameraDist * RSIN(jcam->hd.direction));
+	lp->cameraPos.vz = basePos[2] + FIXEDH(lp->cameraDist * RCOS(jcam->hd.direction));
 
 	if (lp->cameraCarId < 0)
 		camera_angle.vy = -(jcam->hd.direction + 2048);
@@ -631,11 +631,11 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 		viewer_position.vy += lp->pPed->head_pos - 25;
 		//viewer_position.vz += 45;
 
-		angle = -baseDir & 0xfff;
+		angle = -baseDir;
 
-		lp->cameraPos.vx = basePos[0] + FIXEDH(rcossin_tbl[angle * 2] * viewer_position.vz);
+		lp->cameraPos.vx = basePos[0] + FIXEDH(RSIN(angle) * viewer_position.vz);
 		lp->cameraPos.vy = viewer_position.vy - basePos[1];
-		lp->cameraPos.vz = basePos[2] - FIXEDH(rcossin_tbl[angle * 2 + 1] * viewer_position.vz);
+		lp->cameraPos.vz = basePos[2] - FIXEDH(RCOS(angle) * viewer_position.vz);
 	}
 
 	SetGeomScreen(scr_z = gCameraDefaultScrZ);

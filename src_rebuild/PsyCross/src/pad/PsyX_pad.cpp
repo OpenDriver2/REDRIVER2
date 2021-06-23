@@ -230,50 +230,52 @@ void PsyX_Pad_InternalPadUpdates()
 
 			PsyX_Pad_UpdateGameControllerInput(controller->gc, pad);
 
-			if (i == 0)	// Update keyboard for PAD 1
+			ushort test = *(u_short*)pad->buttons;
+
+			// In order to switch From/To analog user has to use left gamepad stick
+
+			// Select + Start pressed + left stick Down
+			if (pad->analog[3] == 255)
+			{
+				if ((test & 0x1) == 0 && (test & 0x8) == 0)
+				{
+					// switch to analog state
+					if (pad->id == 0x41)
+					{
+						eprintf("Port %d ANALOG: ON\n", i + 1);
+						pad->id = 0x73;
+					}
+				}
+			}
+
+			// Select + Start pressed + left stick Up
+			if (pad->analog[3] == 0)
+			{
+				if ((test & 0x1) == 0 && (test & 0x8) == 0)
+				{
+					// switch to analog state
+					if (pad->id == 0x73)
+					{
+						eprintf("Port %d ANALOG: OFF\n", i + 1);
+						pad->id = 0x41;
+					}
+				}
+			}
+
+			// Update keyboard for PAD
+			if ((g_activeKeyboardControllers & (1 << i)) && kbInputs != 0xffff)
 			{
 				pad->status = 0;	// PadStateStable?
 
-				// switch to analog state
-				if ((pad->analog[0] == 255 ||
-					pad->analog[1] == 255 ||
-					pad->analog[2] == 255 ||
-					pad->analog[3] == 255) &&
-					pad->id == 0x41)
+				if (pad->id != 0x41)
 				{
-					eprintf("Switched controller type to ANALOG\n");
-					pad->id = 0x73;
+					if(pad->id != 0x73)
+						eprintf("Port %d ANALOG: OFF\n", i + 1);
+
+					pad->id = 0x41; // force disable analog
 				}
 
-				if (g_activeKeyboardControllers & 0x1)
-				{
-					// switch state
-					if (kbInputs != 0xFFFF && pad->id == 0x73)
-					{
-						eprintf("Switched controller type to SIMPLE\n");
-						pad->id = 0x41;
-						pad->analog[0] = 127;	// TODO: mouse?
-						pad->analog[1] = 127;
-						pad->analog[2] = 127;
-						pad->analog[3] = 127;
-					}
-
-					*(u_short*)pad->buttons &= kbInputs;
-				}
-			}
-			else if (i == 1)	// Update keyboard for PAD 2
-			{
-				if (g_activeKeyboardControllers & 0x2)
-				{
-					pad->status = 0;	// PadStateStable?
-					pad->id = 0x41;
-					pad->analog[0] = 127;
-					pad->analog[1] = 127;
-					pad->analog[2] = 127;
-					pad->analog[3] = 127;
-
-					*(u_short*)pad->buttons &= kbInputs;
-				}
+				*(u_short*)pad->buttons &= kbInputs;
 			}
 		}
 	}

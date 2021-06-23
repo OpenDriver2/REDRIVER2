@@ -1616,7 +1616,7 @@ int damage_object(CELL_OBJECT *cop, VECTOR *velocity)
 	if (dam->velocity.vy < -67)
 		dam->velocity.vy = -67;
 
-	cop->pos.vx = 0xFD46FEC0;
+	cop->pos.vx = OBJECT_SMASHED_MARK;
 
 	return 0;
 }
@@ -1706,20 +1706,14 @@ void ShowFlare(VECTOR* v1, CVECTOR* col, short size, int rotation)
 void AddTrafficLight(CELL_OBJECT *cop, int x, int y, int z, int flag, int yang)
 {
 	int tempfade;
-	int r;
-	int lDiffAnglesX;
-	int lDiffAnglesY;
-	int AbsX;
-	int AbsY;
-	CVECTOR a;
-	CVECTOR c;
-	VECTOR v1;
-	VECTOR v2;
+	int lDiffAnglesX, lDiffAnglesY;
+	int AbsX, AbsY;
+	CVECTOR a, c;
+	VECTOR v1, v2;
 
-	r = yang & 0xfff;
 	v1.vy = (cop->pos.vy - camera_position.vy) + y;
-	v1.vx = (cop->pos.vx - camera_position.vx) + FIXEDH(rcossin_tbl[r * 2 + 1] * x + rcossin_tbl[r * 2] * z);
-	v1.vz = (cop->pos.vz - camera_position.vz) + FIXEDH(rcossin_tbl[r * 2 + 1] * z - rcossin_tbl[r * 2] * x);
+	v1.vx = (cop->pos.vx - camera_position.vx) + FIXEDH(RCOS(yang) * x + RSIN(yang) * z);
+	v1.vz = (cop->pos.vz - camera_position.vz) + FIXEDH(RCOS(yang) * z - RSIN(yang) * x);
 
 	a.cd = 0;
 	
@@ -1742,10 +1736,10 @@ void AddTrafficLight(CELL_OBJECT *cop, int x, int y, int z, int flag, int yang)
 		a.b = 25;
 	}
 
-	lDiffAnglesX = ((camera_angle.vx + 2048) & 0xfff) - 2048;
+	lDiffAnglesX = DIFF_ANGLES(0, camera_angle.vx);// (camera_angle.vx + 2048) & 0xfff) - 2048;
 	AbsX = ABS(lDiffAnglesX);
 
-	lDiffAnglesY = ((-camera_angle.vy & 0xfffU) - yang + 2048 & 0xfff) - 2048;
+	lDiffAnglesY = DIFF_ANGLES(yang, -camera_angle.vy & 4095); //((-camera_angle.vy & 0xfffU) - yang + 2048 & 0xfff) - 2048;
 	AbsY = ABS(lDiffAnglesY);
 
 	c.r = a.r >> 3;
@@ -2104,8 +2098,8 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 			width = ABS(poly->x0 - poly->x3);
 
 #ifdef PSX
-			dx = rcossin_tbl[angle * 2 + 1] * width * 3;
-			dy = rcossin_tbl[angle * 2] * width * 3;
+			dx = RCOS(angle) * width * 3;
+			dy = RSIN(angle) * width * 3;
 			
 			if (col->cd & 0x40)
 			{
@@ -2130,12 +2124,13 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 			trail->x3 = old_x - dx;
 			trail->y3 = old_y - dy;
 #else
-			dx = rcossin_tbl[angle * 2 + 1];
-			dy = rcossin_tbl[angle * 2];
+			// [A] slightly bigger light trail
+			dx = RCOS(angle);
+			dy = RSIN(angle);
 			
 			if (col->cd & 0x40)
 			{
-				dx = dx / 40000.0f; // [A] slightly bigger light trail
+				dx = dx / 40000.0f;
 				dy = dy / 40000.0f;
 			}
 			else
@@ -2541,9 +2536,9 @@ void GetSmokeDrift(VECTOR *Wind)
 		SinTabIndex2 = SinTabIndex2 + 5 & 0xfff;
 		SinTabIndex3 = SinTabIndex3 + 7 & 0xfff;
 
-		SinX = rcossin_tbl[SinTabIndex1 * 2] + rcossin_tbl[SinTabIndex2 * 2];
-		CosX = rcossin_tbl[(SinTabIndex1 + 1024 & 0xfff) * 2] + rcossin_tbl[(SinTabIndex2 + 1024 & 0xfff) * 2];
-		WindMagnitude = rcossin_tbl[SinTabIndex3 * 2] >> 0xb;
+		SinX = isin(SinTabIndex1) + isin(SinTabIndex2);
+		CosX = icos(SinTabIndex1) + icos(SinTabIndex2);
+		WindMagnitude = isin(SinTabIndex3) >> 0xb;
 	}
 
 	Wind->vy = 0;
@@ -3245,11 +3240,11 @@ void HandleDebris(void)
 					lf->sin_index1 &= 0xfff;
 					lf->sin_index2 &= 0xfff;
 
-					sn1 = rcossin_tbl[lf->sin_index1 * 2];
-					sn2 = rcossin_tbl[lf->sin_index2 * 2];
+					sn1 = RSIN(lf->sin_index1);
+					sn2 = RSIN(lf->sin_index2);
 
-					cs1 = rcossin_tbl[lf->sin_index1 * 2 + 1];
-					cs2 = rcossin_tbl[lf->sin_index2 * 2 + 1];
+					cs1 = RCOS(lf->sin_index1);
+					cs2 = RCOS(lf->sin_index2);
 
 					// then we compute completely new direction
 					lf->direction.vy = ((sn1 + sn2) >> 0xb) + 4;
@@ -3361,21 +3356,23 @@ void HandleDebris(void)
 	{
 		main_cop_light_pos++;
 		main_cop_light_pos &= 7;
-	}
 
-	if (variable_weather)
-	{
-		static int weather_level = 0;
+		  variable_weather = 1;
 
-		weather_level = rcossin_tbl[(CameraCnt & 0xfffU) * 2] + (int)*(short *)((int)rcossin_tbl + (CameraCnt & 0x3ffcU));
-		
-		if (weather_level < 1)
-			gRainCount = -weather_level >> 8;
-		else
-			gRainCount = weather_level >> 8;
+		if (variable_weather != 0)
+		{
+			static int weather_level = 0;
 
-		if (gRainCount > MAX_RAIN_DROPS)
-			gRainCount = MAX_RAIN_DROPS;
+			weather_level = RSIN(CameraCnt) + RSIN(CameraCnt / 4);
+
+			if (weather_level < 1)
+				gRainCount = -weather_level >> 8;
+			else
+				gRainCount = weather_level >> 8;
+
+			if (gRainCount > MAX_RAIN_DROPS)
+				gRainCount = MAX_RAIN_DROPS;
+		}
 	}
 }
 
@@ -3488,18 +3485,19 @@ void DisplaySplashes(void)
 	CamGnd.vz = camera_position.vz;
 	CamGnd.vy = -camera_position.vy - MapHeight(&CamGnd);
 
-	ang = FrAng - camera_angle.vy & 0xfff;
+	ang = FrAng - camera_angle.vy;
 
-	Gnd1.vx = rcossin_tbl[ang * 2] + camera_position.vx;
-	Gnd1.vz = rcossin_tbl[ang * 2 + 1] + camera_position.vz;
+	Gnd1.vx = RSIN(ang) + camera_position.vx;
+	Gnd1.vz = RCOS(ang) + camera_position.vz;
 
 	Gnd1.vx = Gnd1.vx - CamGnd.vx;
 	Gnd1.vy = -camera_position.vy - MapHeight(&Gnd1) - CamGnd.vy;
 	Gnd1.vz = Gnd1.vz - CamGnd.vz;
 
-	ang = -FrAng - camera_angle.vy & 0xfff;
-	Gnd2.vx = rcossin_tbl[ang * 2] + camera_position.vx;
-	Gnd2.vz = rcossin_tbl[ang * 2 + 1] + camera_position.vz;
+	ang = -FrAng - camera_angle.vy;
+
+	Gnd2.vx = RSIN(ang) + camera_position.vx;
+	Gnd2.vz = RCOS(ang) + camera_position.vz;
 
 	Gnd2.vx = Gnd2.vx - CamGnd.vx;
 	Gnd2.vy = (-camera_position.vy - MapHeight(&Gnd2)) - CamGnd.vy;

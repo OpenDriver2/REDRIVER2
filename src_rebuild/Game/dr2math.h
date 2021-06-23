@@ -27,10 +27,14 @@ extern short rcossin_tbl[8192];
 #define	FIXEDH(a)		FixHalfRound(a, ONE_BITS)		// Fixed Half Round number
 #define	FIXED(a)		((a) >> ONE_BITS)				// Fixed number (unsigned)
 
-#define RSIN(a)			rcossin_tbl[(a & 0xFFFU) * 2]
-#define RCOS(a)			rcossin_tbl[(a & 0xFFFU) * 2 + 1]
+#define RSIN(a)			(rcossin_tbl[((a) & 4095) * 2])
+#define RCOS(a)			(rcossin_tbl[((a) & 4095) * 2 + 1])
 
-#define DIFF_ANGLES( _ang1, _ang2 ) (((((_ang2) - (_ang1)) + 2048) & 4095) - 2048)
+#define isin(a)			(rcossin_tbl[( ( a ) & 4095) * 2])
+#define icos(a)			(rcossin_tbl[((( a )+1024) & 4095) * 2])
+
+#define DIFF_ANGLES( _ang1, _ang2 ) \
+	(((((_ang2) - (_ang1)) + 2048) & 4095) - 2048)
 
 // Remap a value in the range [A,B] to [C,D].
 #define RemapVal( val, A, B, C, D) \

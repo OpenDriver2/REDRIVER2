@@ -361,12 +361,8 @@ void PlaceRoadBlockCops(void)
 		cp++;
 	} while (cp < &car_data[MAX_CARS]);
 
-	if (!numCops)
-		return;
-
-	i = 0;
-
-	do {
+	for (i = 0; i < numCops; i++)
+	{
 		pCar = pCopCars[i];
 
 		sn = rsin(pCar->hd.direction);
@@ -382,9 +378,9 @@ void PlaceRoadBlockCops(void)
 		if (FIXED(cs * 0x1000) * disp[0] - FIXED(sn * 0x1000) * disp[2] + 0x800 < 0)
 			wbody = -wbody;
 
-		dir = pCar->hd.direction + 0x800U & 0xfff;
-		cs = rcossin_tbl[dir * 2 + 1];
-		sn = rcossin_tbl[dir * 2];
+		dir = pCar->hd.direction + 2048;
+		cs = RCOS(dir);
+		sn = RSIN(dir);
 
 		disp[0] = pCar->hd.where.t[0] - (FIXED(wbody * cs) - FIXED(lbody * sn));
 		disp[1] = -pCar->hd.where.t[1];
@@ -399,9 +395,7 @@ void PlaceRoadBlockCops(void)
 
 		if (CreatePedAtLocation(&disp, 13) != 0)
 			numCopPeds++;
-
-		i++;
-	} while (i < numCops);
+	}
 }
 
 // [D] [T]
@@ -613,14 +607,14 @@ void AnimatePed(PEDESTRIAN* pPed)
 	if (pPed->speed < 0)
 	{
 		dir = pPed->dir.vy;
-		pPed->position.vx -= FIXED(pPed->speed * rcossin_tbl[(dir & 0xfff) * 2]);
-		pPed->position.vz -= FIXED(pPed->speed * rcossin_tbl[(-dir & 0xfffU) * 2 + 1]);
+		pPed->position.vx -= FIXED(pPed->speed * RSIN(dir));
+		pPed->position.vz -= FIXED(pPed->speed * RCOS(-dir));
 	}
 	else
 	{
-		dir = pPed->dir.vy - 0x800U & 0xfff;
-		pPed->position.vx += FIXED(pPed->speed * rcossin_tbl[dir * 2]);
-		pPed->position.vz += FIXED(pPed->speed * rcossin_tbl[dir * 2 + 1]);
+		dir = pPed->dir.vy - 2048;
+		pPed->position.vx += FIXED(pPed->speed * RSIN(dir));
+		pPed->position.vz += FIXED(pPed->speed * RCOS(dir));
 	}
 
 	if (pPed->type != PED_ACTION_SIT &&
@@ -1117,15 +1111,15 @@ void SetupGetOutCar(PEDESTRIAN* pPed, CAR_DATA* pCar, int side)
 	else
 		xOfs = 400;
 
-	carDir = pCar->hd.direction + 0x800U & 0xfff;
+	carDir = pCar->hd.direction + 2048;
 
 	if (NoPlayerControl == 0)
 	{
 		player[playerId].cameraView = 5;
 
-		player[playerId].cameraPos.vx = pCar->hd.where.t[0] - (FIXED(xOfs * rcossin_tbl[carDir * 2 + 1]) - FIXED(rcossin_tbl[carDir * 2] * 800));
+		player[playerId].cameraPos.vx = pCar->hd.where.t[0] - (FIXED(xOfs * RCOS(carDir)) - FIXED(RSIN(carDir) * 800));
 		player[playerId].cameraPos.vy = -200 - pCar->hd.where.t[1];
-		player[playerId].cameraPos.vz = pCar->hd.where.t[2] + (FIXED(xOfs * rcossin_tbl[carDir * 2]) + FIXED(rcossin_tbl[carDir * 2 + 1] * 800));
+		player[playerId].cameraPos.vz = pCar->hd.where.t[2] + (FIXED(xOfs * RSIN(carDir)) + FIXED(RCOS(carDir) * 800));
 	}
 
 	pPed->frame1 = 0;
@@ -1165,14 +1159,14 @@ void SetupGetInCar(PEDESTRIAN* pPed)
 	else
 		xOfs = 400;
 
-	carDir = carToGetIn->hd.direction + 0x800U & 0xfff;
+	carDir = carToGetIn->hd.direction + 2048;
 
 	if (NoPlayerControl == 0 && gInGameCutsceneActive == 0)
 	{
 		player[playerId].cameraView = 5;
-		player[playerId].cameraPos.vx = carToGetIn->hd.where.t[0] - (FIXED(xOfs * rcossin_tbl[carDir * 2 + 1]) - FIXED(rcossin_tbl[carDir * 2] * 800));
+		player[playerId].cameraPos.vx = carToGetIn->hd.where.t[0] - (FIXED(xOfs * RCOS(carDir)) - FIXED(RSIN(carDir) * 800));
 		player[playerId].cameraPos.vy = -200 - carToGetIn->hd.where.t[1];
-		player[playerId].cameraPos.vz = carToGetIn->hd.where.t[2] + (FIXED(xOfs * rcossin_tbl[carDir * 2]) + FIXED(rcossin_tbl[carDir * 2 + 1] * 800));
+		player[playerId].cameraPos.vz = carToGetIn->hd.where.t[2] + (FIXED(xOfs * RSIN(carDir)) + FIXED(RCOS(carDir) * 800));
 	}
 
 	if ((carToGetIn->controlFlags & CONTROL_FLAG_WAS_PARKED) == 0)
@@ -1428,8 +1422,8 @@ void PingInPedestrians(void)
 		pingInDist = Random2(0) % 128 + 1536;
 
 		randomLoc.vy = baseLoc.vy;
-		randomLoc.vx = baseLoc.vx + pingInDist * FIXEDH(rcossin_tbl[(pinginPedAngle & 0xfffU) * 2] * 8);
-		randomLoc.vz = baseLoc.vz + pingInDist * FIXEDH(rcossin_tbl[(pinginPedAngle & 0xfffU) * 2 + 1] * 8);
+		randomLoc.vx = baseLoc.vx + pingInDist * FIXEDH(RSIN(pinginPedAngle) * 8);
+		randomLoc.vz = baseLoc.vz + pingInDist * FIXEDH(RCOS(pinginPedAngle) * 8);
 
 		randomLoc.vy = -MapHeight(&randomLoc);
 
@@ -1537,7 +1531,7 @@ void TannerCollision(PEDESTRIAN* pPed)
 	pcdTanner->id = TANNER_COLLIDER_CARID;
 	pcdTanner->controlType = 6;
 
-	pcdTanner->hd.direction = pPed->dir.vy - 0x800U & 0xfff;
+	pcdTanner->hd.direction = pPed->dir.vy - 2048 & 4095;
 
 	pcdTanner->hd.oBox.location.vx = pPed->position.vx;
 	pcdTanner->hd.where.t[0] = pPed->position.vx;
@@ -1616,11 +1610,11 @@ int FindPointOfCollision(CAR_DATA* pCar, PEDESTRIAN* pPed)
 #endif
 
 
-	dx = FIXED((collisionResult.hit.vx - cd[1].x.vx) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2 + 1]) -
-		FIXED((collisionResult.hit.vz - cd[1].x.vz) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2]);
+	dx = FIXED((collisionResult.hit.vx - cd[1].x.vx) * RCOS(cd[1].theta)) -
+		 FIXED((collisionResult.hit.vz - cd[1].x.vz) * RSIN(cd[1].theta));
 
-	dz = FIXED((collisionResult.hit.vx - cd[1].x.vx) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2]) +
-		FIXED((collisionResult.hit.vz - cd[1].x.vz) * rcossin_tbl[(cd[1].theta & 0xfffU) * 2 + 1]);
+	dz = FIXED((collisionResult.hit.vx - cd[1].x.vx) * RSIN(cd[1].theta)) +
+		 FIXED((collisionResult.hit.vz - cd[1].x.vz) * RCOS(cd[1].theta));
 
 	minX = car_cos->colBox.vx + 96;
 	maxX = car_cos->colBox.vx - 96;
@@ -1656,6 +1650,7 @@ int TannerCarCollisionCheck(VECTOR* pPos, int dir, int bQuick)
 
 	cd[0].length[0] = 60;
 	cd[0].length[1] = 60;
+
 	cd[0].x.vx = pPos->vx;
 	cd[0].x.vz = pPos->vz;
 	cd[0].theta = dir;
@@ -1782,12 +1777,13 @@ void SetupCivJump(PEDESTRIAN* pPed, CAR_DATA* cp)
 		pPed->frame1 = 0;
 		pPed->speed = 30;
 
+		// if player horns make scare box bigger and give player felony
 		if (cp == &car_data[player[0].playerCarId])
 		{
 			if (player[0].horn.on != 0)
-				scale = 0x800;
+				scale = 2048;
 			else
-				scale = 0x1000;
+				scale = 4096;
 
 			NoteFelony(&felonyData, 1, scale);
 		}
@@ -1807,14 +1803,18 @@ void SetupCivJump(PEDESTRIAN* pPed, CAR_DATA* cp)
 		}
 		else
 		{
+			int d;
+			
 			dx = player[0].pPed->position.vx - pPed->position.vx;
 			dz = player[0].pPed->position.vz - pPed->position.vz;
 
-			dir[0] = player[0].pPed->speed * rcossin_tbl[(player[0].pPed->dir.vy - 0x800U & 0xfff) * 2 + 1];
-			dir[2] = player[0].pPed->speed * rcossin_tbl[(player[0].pPed->dir.vy - 0x800U & 0xfff) * 2];
+			d = player[0].pPed->dir.vy - 2048;
+
+			dir[0] = player[0].pPed->speed * RCOS(d);
+			dir[2] = player[0].pPed->speed * RSIN(d);
 			
 			// [A] fuck....
-			if (FIXED(-dir[0]) * dx + FIXED(dir[2]) * dz + 0x800 < 0)
+			if (FIXED(-dir[0]) * dx + FIXED(dir[2]) * dz + 2048 < 0)
 				angle = -1024;
 			else
 				angle = 1024;
@@ -1887,7 +1887,7 @@ void CivPedWalk(PEDESTRIAN* pPed)
 	int dir;
 	int turn;
 
-	if ((pPed->flags & 0x10U) == 0)
+	if ((pPed->flags & 0x10) == 0)
 		SetupCivPedWalk(pPed);
 
 	if (pPed->finished_turn == 9)
@@ -1895,20 +1895,26 @@ void CivPedWalk(PEDESTRIAN* pPed)
 	else
 		dir = pPed->dir.vy + 1850;
 
-	if ((pPed->flags & 2U) == 0)
+	if ((pPed->flags & 2U) != 0)
 	{
-		if (IsPavement(pPed->position.vx + (rcossin_tbl[(dir & 0xfff) * 2] >> 5),
+		pPed->speed = 0;
+		pPed->dir.vy += pPed->head_rot;
+	}
+	else
+	{
+		if (IsPavement(
+			pPed->position.vx + (RSIN(dir) >> 5),
 			pPed->position.vy,
-			pPed->position.vz + (rcossin_tbl[(dir & 0xfff) * 2 + 1] >> 5), pPed) == 0)
+			pPed->position.vz + (RCOS(dir) >> 5), pPed) == 0)
 		{
 			if (pPed->finished_turn == 9)
 			{
-				dir = pPed->dir.vy + 0xa00U & 0xfff;
+				dir = pPed->dir.vy + 2560;
 
 				if (IsPavement(
-					pPed->position.vx + FIXED(rcossin_tbl[dir * 2] * 0x80),
+					pPed->position.vx + FIXED(RSIN(dir) * 128),
 					pPed->position.vy,
-					pPed->position.vz + FIXED(rcossin_tbl[dir * 2 + 1] * 0x80), NULL) == 0)
+					pPed->position.vz + FIXED(RCOS(dir) * 128), NULL) == 0)
 
 					pPed->flags &= ~0x2000;
 				else
@@ -1927,10 +1933,10 @@ void CivPedWalk(PEDESTRIAN* pPed)
 			}
 			else
 			{
-				dir = pPed->dir.vy + 0x800U & 0xfff;
+				dir = pPed->dir.vy + 2048;
 
-				pPed->velocity.vx = FIXED(pPed->speed * rcossin_tbl[dir * 2]);
-				pPed->velocity.vz = FIXED(pPed->speed * rcossin_tbl[dir * 2 + 1]);
+				pPed->velocity.vx = FIXED(pPed->speed * RSIN(dir));
+				pPed->velocity.vz = FIXED(pPed->speed * RCOS(dir));
 			}
 			pPed->finished_turn = 0;
 		}
@@ -1940,21 +1946,16 @@ void CivPedWalk(PEDESTRIAN* pPed)
 
 			if (pPed->finished_turn++ > 8)
 			{
-				pPed->dir.vy += 0x200U & 0xfc00;
+				pPed->dir.vy = pPed->dir.vy + 512 & 0xfc00;
 
-				dir = pPed->dir.vy + 0x800U & 0xfff;
+				dir = pPed->dir.vy + 2048 & 0xfff;
 
-				pPed->velocity.vx = FIXED(pPed->speed * rcossin_tbl[dir * 2]);
-				pPed->velocity.vz = FIXED(pPed->speed * rcossin_tbl[dir * 2 + 1]);
+				pPed->velocity.vx = FIXED(pPed->speed * RSIN(dir));
+				pPed->velocity.vz = FIXED(pPed->speed * RCOS(dir));
 
 				pPed->finished_turn = 9;
 			}
 		}
-	}
-	else
-	{
-		pPed->speed = 0;
-		pPed->dir.vy += pPed->head_rot;
 	}
 
 	AnimatePed(pPed);
@@ -2127,15 +2128,15 @@ void SetPedestrianTurn(PEDESTRIAN* pedestrian, int turn)
 
 	pedestrian->dir.vy = dir;
 
-	dir = dir + 0x800 & 0xfff;
+	dir += 2048;
 
 	pedestrian->position.vz -= pedestrian->velocity.vz;
 	pedestrian->position.vx -= pedestrian->velocity.vx;
 
 	speed = pedestrian->speed;
 	
-	pedestrian->velocity.vx = FIXEDH(speed * rcossin_tbl[dir * 2]);
-	pedestrian->velocity.vz = FIXEDH(speed * rcossin_tbl[dir * 2 + 1]);
+	pedestrian->velocity.vx = FIXEDH(speed * RSIN(dir));
+	pedestrian->velocity.vz = FIXEDH(speed * RCOS(dir));
 }
 
 // [D] [T]
@@ -2358,10 +2359,10 @@ void BuildCarCollisionBox(void)
 
 	if (player[0].playerType == 2)
 	{
-		dir = player[0].pPed->dir.vy - 0x800U & 0xfff;
+		dir = player[0].pPed->dir.vy - 2048;
 
-		vx = FIXED(player[0].pPed->speed * rcossin_tbl[dir * 2] * 4);
-		vz = FIXED(player[0].pPed->speed * rcossin_tbl[dir * 2 + 1] * 4);
+		vx = FIXED(player[0].pPed->speed * RSIN(dir) * 4);
+		vz = FIXED(player[0].pPed->speed * RCOS(dir) * 4);
 		
 		tanner_collision_box.min_x = player[0].pPed->position.vx + vx - 148;
 		tanner_collision_box.max_x = player[0].pPed->position.vx + vx + 148;
@@ -2601,11 +2602,11 @@ void ProcessTannerPad(PEDESTRIAN* pPed, u_int pad, char PadSteer, char use_analo
 	vec.vy = -pPed->position.vy;
 	vec.vz = pPed->position.vz;
 
-	direction = pPed->dir.vy - 0x800U & 0xfff;
+	direction = pPed->dir.vy - 2048;
 
-	tVec.vx = vec.vx + (rcossin_tbl[direction * 2] * 5 >> 9);
+	tVec.vx = vec.vx + (RSIN(direction) * 5 >> 9);
 	tVec.vy = vec.vy;
-	tVec.vz = vec.vz + (rcossin_tbl[direction * 2 + 1] * 5 >> 9);
+	tVec.vz = vec.vz + (RCOS(direction) * 5 >> 9);
 
 	bStopTanner = 0;
 
@@ -2820,8 +2821,8 @@ int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVEC
 	dir = d - 2048;
 
 	v.vy = y;
-	v.vx = x - FIXED(wbody * rcossin_tbl[(d & 0xfffU) * 2 + 1]);
-	v.vz = z + FIXED(wbody * rcossin_tbl[(d & 0xfffU) * 2]);
+	v.vx = x - FIXED(wbody * RCOS(d));
+	v.vz = z + FIXED(wbody * RSIN(d));
 
 	side = 0;
 
@@ -2834,8 +2835,8 @@ int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVEC
 
 			v.vy = y;
 
-			v.vx = x - FIXED(-wbody * rcossin_tbl[(d & 0xfffU) * 2 + 1]);
-			v.vz = z + FIXED(-wbody * rcossin_tbl[(d & 0xfffU) * 2]);
+			v.vx = x - FIXED(-wbody * RCOS(d));
+			v.vz = z + FIXED(-wbody * RSIN(d));
 
 			if (QuickBuildingCollisionCheck(&v, dir, 10, 10, 10))
 				return 0;

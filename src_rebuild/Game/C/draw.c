@@ -418,20 +418,20 @@ void InitFrustrumMatrix(void)
 	a = -camera_angle.vy;
 
 	frustrum_matrix.m[0][1] = 0;
-	frustrum_matrix.m[0][0] = rcossin_tbl[(a & 0xfffU) * 2];
-	frustrum_matrix.m[0][2] = rcossin_tbl[(a & 0xfffU) * 2 + 1];
+	frustrum_matrix.m[0][0] = RSIN(a);
+	frustrum_matrix.m[0][2] = RCOS(a);
 
 	a = (FrAng - 1024) - camera_angle.vy;
 
 	frustrum_matrix.m[1][1] = 0;
-	frustrum_matrix.m[1][0] = rcossin_tbl[(a & 0xfff) * 2];
-	frustrum_matrix.m[1][2] = rcossin_tbl[(a & 0xfff) * 2 + 1];
+	frustrum_matrix.m[1][0] = RSIN(a);
+	frustrum_matrix.m[1][2] = RCOS(a);
 
 	a = -(FrAng - 1024) - camera_angle.vy;
 
 	frustrum_matrix.m[2][1] = 0;
-	frustrum_matrix.m[2][0] = rcossin_tbl[(a & 0xfff) * 2];
-	frustrum_matrix.m[2][2] = rcossin_tbl[(a & 0xfff) * 2 + 1];
+	frustrum_matrix.m[2][0] = RSIN(a);
+	frustrum_matrix.m[2][2] = RCOS(a);
 	frustrum_matrix.t[0] = -80;
 }
 
@@ -1309,7 +1309,7 @@ void DrawMapPSX(int* comp_val)
 	int hloop;
 	int vloop;
 
-#ifdef PSX
+#if 0 //def PSX
 	CELL_ITERATOR& ci = *(CELL_ITERATOR*)(u_char*)getScratchAddr(0);
 	MATRIX& mRotStore = *(MATRIX*)((u_char*)getScratchAddr(0) + sizeof(CELL_ITERATOR));
 	DrawMapData& drawData = *(DrawMapData*)((u_char*)getScratchAddr(0) + sizeof(CELL_ITERATOR) + sizeof(MATRIX));
@@ -1336,25 +1336,28 @@ void DrawMapPSX(int* comp_val)
 	drawData.rightPlane = -6144;
 	drawData.leftPlane = 6144;
 
-	drawData.farClipLimit = 80000;
-
 	// setup planes
-	drawData.rightAng = camera_angle.vy - FrAng & 0xfff;
-	drawData.leftAng = camera_angle.vy + FrAng & 0xfff;
-	drawData.backAng = camera_angle.vy + 0x400U & 0xfff;
+	drawData.rightAng = camera_angle.vy - FrAng;
+	drawData.leftAng = camera_angle.vy + FrAng;
+	drawData.backAng = camera_angle.vy + 1024;
 
-	drawData.rightcos = rcossin_tbl[drawData.rightAng * 2 + 1];
-	drawData.rightsin = rcossin_tbl[drawData.rightAng * 2];
+	drawData.rightcos = RCOS(drawData.rightAng);
+	drawData.rightsin = RSIN(drawData.rightAng);
 
-	drawData.leftcos = rcossin_tbl[drawData.leftAng * 2 + 1];
-	drawData.leftsin = rcossin_tbl[drawData.leftAng * 2];
-	drawData.backcos = rcossin_tbl[drawData.backAng * 2 + 1];
-	drawData.backsin = rcossin_tbl[drawData.backAng * 2];
+	drawData.leftcos = RCOS(drawData.leftAng);
+	drawData.leftsin = RSIN(drawData.leftAng);
 
+	drawData.backcos = RCOS(drawData.backAng);
+	drawData.backsin = RSIN(drawData.backAng);
+
+#ifdef PSX
 	if (NumPlayers == 2)
-	{
 		drawData.farClipLimit = farClip2Player;
-	}
+	else
+		drawData.farClipLimit = 60000;
+#else
+	drawData.farClipLimit = 125000;
+#endif
 
 	drawData.tiles_found = 0;
 	drawData.sprites_found = 0;

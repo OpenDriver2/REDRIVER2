@@ -183,6 +183,13 @@ void InitCyclingPals(void)
 {
 	int i;
 
+	// only enabled at Night
+	if (gTimeOfDay != 3)
+	{
+		num_cycle_obj = 0;
+		return;
+	}
+	
 	num_cycle_obj = Num_LevCycleObjs[GameLevel];
 	CYCLE_OBJECT* cyc = Lev_CycleObjPtrs[GameLevel];
 
@@ -205,81 +212,75 @@ void ColourCycle(void)
 	int i;
 	RECT16 vram;
 
+	if (!num_cycle_obj)
+		return;
+
 	if (LoadingArea != 0)
 	{
 		cycle_phase = 0;
 		return;
 	}
 
-	if (pauseflag != 0 || gTimeOfDay != 3)
-		return;
-
 	vram.w = 16;
 	vram.h = 1;
 	cyc = Lev_CycleObjPtrs[GameLevel];
-
-	if (num_cycle_obj != 0)
+		
+	for (i = 0; i < num_cycle_obj; i++)
 	{
-		i = 0;
+		bufaddr = (u_short*)cyclecluts[i].p;
 
-		while (i < num_cycle_obj)
+		if (tpageloaded[cycle_tex[i].texture_page] != 0)
 		{
-			bufaddr = (unsigned short*)cyclecluts[i].p;
-
-			if (tpageloaded[cycle_tex[i].texture_page] != 0)
+			if (cycle_phase == 0)
 			{
-				if (cycle_phase == 0)
-				{
-					// initialize
-					temp = texture_cluts[cycle_tex[i].texture_page][cycle_tex[i].texture_number];
+				// initialize
+				temp = texture_cluts[cycle_tex[i].texture_page][cycle_tex[i].texture_number];
 
-					cyc->vx = vram.x = (temp & 0x3f) << 4;
-					cyc->vy = vram.y = (temp >> 6);
+				cyc->vx = vram.x = (temp & 0x3f) << 4;
+				cyc->vy = vram.y = (temp >> 6);
 
-					StoreImage(&vram, (u_long*)bufaddr);
-				}
-				else
-				{
-					if ((cycle_timer & cyc->speed1) == 0)
-					{
-						if (cyc->start1 != -1)
-						{
-							temp = bufaddr[cyc->start1];
-							memmove((u_char*)(bufaddr + cyc->start1), (u_char*)(bufaddr + cyc->start1 + 1), (cyc->stop1 - cyc->start1) << 1);
-
-							bufaddr[cyc->stop1] = temp;
-						}
-					}
-
-					if ((cycle_timer & cyc->speed2) == 0)
-					{
-						if (cyc->start2 != -1)
-						{
-							temp = bufaddr[cyc->start2];
-							memmove((u_char*)(bufaddr + cyc->start2), (u_char*)(bufaddr + cyc->start2 + 1), (cyc->stop2 - cyc->start2) << 1);
-
-							bufaddr[cyc->stop2] = temp;
-						}
-					}
-
-					vram.x = cyc->vx;
-					vram.y = cyc->vy;
-
-					SetDrawLoad(&cyclecluts[i], &vram);
-
-					addPrim(current->ot, &cyclecluts[i]);
-				}
+				StoreImage(&vram, (u_long*)bufaddr);
 			}
+			else
+			{
+				if ((cycle_timer & cyc->speed1) == 0)
+				{
+					if (cyc->start1 != -1)
+					{
+						temp = bufaddr[cyc->start1];
+						memmove((u_char*)(bufaddr + cyc->start1), (u_char*)(bufaddr + cyc->start1 + 1), (cyc->stop1 - cyc->start1) << 1);
 
-			cyc++;
-			i++;
+						bufaddr[cyc->stop1] = temp;
+					}
+				}
+
+				if ((cycle_timer & cyc->speed2) == 0)
+				{
+					if (cyc->start2 != -1)
+					{
+						temp = bufaddr[cyc->start2];
+						memmove((u_char*)(bufaddr + cyc->start2), (u_char*)(bufaddr + cyc->start2 + 1), (cyc->stop2 - cyc->start2) << 1);
+
+						bufaddr[cyc->stop2] = temp;
+					}
+				}
+
+				vram.x = cyc->vx;
+				vram.y = cyc->vy;
+
+				SetDrawLoad(&cyclecluts[i], &vram);
+
+				addPrim(current->ot, &cyclecluts[i]);
+			}
 		}
 
-		if (cycle_phase != 0)
-			cycle_timer++;
-
-		cycle_phase = cycle_phase ^ 1;
+		cyc++;
 	}
+
+	if (cycle_phase != 0)
+		cycle_timer++;
+
+	cycle_phase ^= 1;
 }
 
 

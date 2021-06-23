@@ -282,33 +282,7 @@ int Loadfile(char* name, char* addr)
 #endif
 
 #if USE_CD_FILESYSTEM
-	sprintf(namebuffer, "\\%s%s;1", gDataFolder, name);
-
-	do {
-		// FIXME: this is very slow
-		nread = CdReadFile(namebuffer, (u_long*)addr, 0);
-
-		if (nread != 0)
-		{
-			if (CdReadSync(0, res) == 0)
-				return nread;
-		}
-
-		if (CdDiskReady(0) != CdlComplete)
-			DoCDRetry();
-
-	} while (true);
-
-	return 0;
-#elif USE_PC_FILESYSTEM
-
-	// if PC filesystem exclusively is used - throw the message
-	
-	char errPrint[1024];
-	sprintf(errPrint, "Cannot open '%s'\n", namebuffer);
-	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
-	
-	return 0;
+	return LoadfileSeg(name, addr, 0, -1);
 #endif
 }
 
@@ -378,7 +352,7 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 		fseek(fptr, 0, SEEK_END);
 		fileSize = ftell(fptr);
 
-		if (loadsize > fileSize)
+		if (loadsize == -1 || loadsize > fileSize)
 			loadsize = fileSize;
 
 		fseek(fptr, offset, SEEK_SET);
@@ -413,6 +387,9 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 			DoCDRetry();
 		}
 	}
+
+	if (loadsize == -1)
+		loadsize = currentfileinfo.size - offset;
 
 	remainingOffset = offset & 0x7ff;
 	remainingBytes = loadsize;
@@ -470,7 +447,7 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 	}
 	
 	return loadsize;
-#elif USE_PC_FILESYSTEM
+#elif USE_PC_FILESYSTEM && !defined(__EMSCRIPTEN__)
 	char errPrint[1024];
 	sprintf(errPrint, "Cannot open '%s'\n", namebuffer);
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
@@ -605,7 +582,7 @@ void loadsectorsPC(char* filename, char* addr, int sector, int nsectors)
 #if USE_CD_FILESYSTEM
 	// try using CD
 	loadsectors(addr, sector, nsectors);
-#else
+#elif !defined(__EMSCRIPTEN__)
 	char errPrint[512];
 	sprintf(errPrint, "loadsectorsPC: failed to open '%s'\n", namebuffer);
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
@@ -719,7 +696,7 @@ void UpdatePadData(void)
 
 #ifndef PSX
 	extern void SwitchMappings(int menu);
-	SwitchMappings(pauseflag || CurrentGameMode == GAMEMODE_DIRECTOR);
+	SwitchMappings(pauseflag || CurrentGameMode == GAMEMODE_DIRECTOR);	// FIXME: maybe gDrawPauseMenus instead of pauseflag?
 #endif
 }
 
@@ -983,7 +960,7 @@ void SetCityType(CITYTYPE type)
 
 		data += 2;
 	}
-#elif USE_PC_FILESYSTEM
+#elif USE_PC_FILESYSTEM && !defined(__EMSCRIPTEN__)
 	
 	char errPrint[1024];
 	sprintf(errPrint, "SetCityType: cannot open level '%s'\n", filename);

@@ -1,21 +1,7 @@
 -- premake5.lua
 
-require "premake_modules/psx"
-
--- you can redefine dependencies
-SDL2_DIR = os.getenv("SDL2_DIR") or "dependencies/SDL2"
-OPENAL_DIR = os.getenv("OPENAL_DIR") or "dependencies/openal-soft"
-JPEG_DIR = os.getenv("JPEG_DIR") or "dependencies/jpeg"
-
-PSYQ_DIR = os.getenv("PSYQ_DIR") or "PSY-Q"
-
-GAME_REGION = os.getenv("GAME_REGION") or "NTSC_VERSION" -- or PAL_VERSION
-
-GAME_VERSION = os.getenv("APPVEYOR_BUILD_VERSION") or nil
-
-if not (GAME_REGION == "NTSC_VERSION" or GAME_REGION == "PAL_VERSION") then
-    error("'GAME_REGION' should be 'NTSC_VERSION' or 'PAL_VERSION'")
-end
+require "premake_modules/usage"
+require "premake_modules/emscripten"
 
 ------------------------------------------
 
@@ -24,13 +10,77 @@ newoption {
    description = "adds specific define for compiling on Raspberry Pi"
 }
 
+table.insert(premake.option.get("os").allowed, { "emscripten", "Emscripten" })
+
+------------------------------------------
+
+-- you can redefine dependencies
+SDL2_DIR = os.getenv("SDL2_DIR") or "dependencies/SDL2"
+OPENAL_DIR = os.getenv("OPENAL_DIR") or "dependencies/openal-soft"
+JPEG_DIR = os.getenv("JPEG_DIR") or "dependencies/jpeg"
+
+WEBDEMO_DIR = os.getenv("WEBDEMO_DIR") or "../../../content/web_demo@/"	-- FIXME: make it better
+WEBSHELL_PATH = "../../.emscripten"
+
+GAME_REGION = os.getenv("GAME_REGION") or "NTSC_VERSION" -- or PAL_VERSION
+GAME_VERSION = os.getenv("APPVEYOR_BUILD_VERSION") or nil
+
+if not (GAME_REGION == "NTSC_VERSION" or GAME_REGION == "PAL_VERSION") then
+    error("'GAME_REGION' should be 'NTSC_VERSION' or 'PAL_VERSION'")
+end
+
 ------------------------------------------
 	
 workspace "REDRIVER2"
+    location "project_%{_ACTION}_%{os.target()}"
     configurations { "Debug", "Release", "Release_dev" }
-	platforms { "x86" } --, "x86_64" }
-
+	
     defines { VERSION } 
+	
+	if os.target() == "emscripten" then
+		platforms { "emscripten" }
+	
+		buildoptions { 
+			"-s TOTAL_MEMORY=1073741824",
+			"-s USE_SDL=2",
+			"-s FULL_ES2=1",
+			--"-s USE_WEBGL2=1",
+			"-s ASYNCIFY=1",
+			"-s ALLOW_MEMORY_GROWTH=1",
+			"-s GL_TESTING=1",
+			"-Wno-c++11-narrowing",
+			"-Wno-constant-conversion",
+			"-Wno-writable-strings",
+			"-Wno-unused-value",
+			"-Wno-switch",
+			"-Wno-shift-op-parentheses",
+			"-Wno-parentheses",
+			"-Wno-format",
+		}
+		linkoptions  { 
+			"-s TOTAL_MEMORY=1073741824",
+			"-s USE_SDL=2",
+			"-s FULL_ES2=1",
+			--"-s USE_WEBGL2=1",
+			"-s ASYNCIFY=1",
+			"-s ALLOW_MEMORY_GROWTH=1",
+			"-s GL_TESTING=1",
+			("--shell-file " .. WEBSHELL_PATH .. "/shell.html"),
+			("--preload-file " .. WEBDEMO_DIR)
+		}
+		
+		filter { "kind:*App" }
+			targetextension ".html"
+			
+		postbuildcommands {
+			"{COPY} " .. WEBSHELL_PATH .. "/style.css %{cfg.buildtarget.directory}"
+		}
+
+	else
+		platforms { "x86" } --, "x86_64" }
+	end
+	
+	startproject "REDRIVER2"
 	
 	configuration "raspberry-pi"
 		defines { "__RPI__" }
@@ -76,15 +126,12 @@ workspace "REDRIVER2"
             "NDEBUG",
         }
         
-	if os.target() == "windows" then
-		dofile("premake_libjpeg.lua")
-	end
-	
-	if os.target() ~= "psx" then
-		dofile("PsyX/premake5.lua")
-	end
-	
--- TODO: overlays
+if os.target() == "windows" or os.target() == "emscripten" then
+	include "premake_libjpeg.lua"
+end
+
+-- Psy-Cross layer
+include "PsyCross/premake5.lua"
 
 -- game iteslf
 project "REDRIVER2"
@@ -96,6 +143,10 @@ project "REDRIVER2"
     includedirs { 
         "Game", 
     }
+	
+	uses { 
+		"PsyCross",
+	}
 
     defines { GAME_REGION }
 	
@@ -107,28 +158,11 @@ project "REDRIVER2"
         "Game/**.h",
         "Game/**.c"
     }
-	
-	-- exclude sources which belong to overlays
-	if os.target() == "psx" then
-		excludes {
-			"Game/MemCard/**.c",
-			"Game/MemCard/**.h",
-			"Game/Frontend/**.c",
-			"Game/Frontend/**.h",
-			"Game/C/leadai.c",
-			"Game/C/pathfind.c",
-		}
-    end
 
-    filter "system:Windows or linux"
-        dependson { "PsyX" }
-        links { "Psy-X", "jpeg" }
-		
-		includedirs { 
-			"PsyX/include",
-			"PsyX/include/psx"
-		}
-		
+    filter {"system:Windows or linux or platforms:emscripten"}
+        --dependson { "PsyX" }
+        links { "jpeg" }
+				
 		files {
 			"utils/**.h",
 			"utils/**.cpp",
@@ -136,6 +170,12 @@ project "REDRIVER2"
 			"redriver2_psxpc.cpp",
 			"DebugOverlay.cpp",
 		}
+		
+	filter "platforms:emscripten"
+	    includedirs { 
+			OPENAL_DIR.."/include",
+			JPEG_DIR.."/",
+        }
 
     filter "system:Windows"
 		entrypoint "mainCRTStartup"
@@ -166,22 +206,6 @@ project "REDRIVER2"
             "openal",
             "SDL2",
             "dl",
-        }
-		
-	filter "system:psx"
-		defines { "PSX" }
-		includedirs {
-            PSYQ_DIR.."/include"
-        }
-		links {
-			PSYQ_DIR.."/lib/LIBETC",
-			PSYQ_DIR.."/lib/LIBPAD",
-			PSYQ_DIR.."/lib/LIBGTE",
-			PSYQ_DIR.."/lib/LIBMCRD",
-			PSYQ_DIR.."/lib/LIBCD",
-			PSYQ_DIR.."/lib/LIBSN",
-			PSYQ_DIR.."/lib/LIBSPU",
-			PSYQ_DIR.."/lib/LIBAPI"
         }
 
     filter "configurations:Debug"

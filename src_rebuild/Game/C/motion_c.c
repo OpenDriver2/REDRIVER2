@@ -538,7 +538,7 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	{
 		// make ped thinner from side view
 		u_int ang;
-		ang = rcossin_tbl[((pDrawingPed->dir.vy + camera_angle.vy) * 4 & 0xfffU) + 1] >> 6;
+		ang = RCOS((pDrawingPed->dir.vy + camera_angle.vy) * 2) >> 6;
 
 		z2 += ang;
 	}
@@ -567,10 +567,10 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	x = v1[0] - v2[0];
 	y = v1[1] - v2[1];
 
-	angle = ratan2(y, x);
+	angle = -ratan2(y, x);
 	
-	cs = FIXEDH(z2 * rcossin_tbl[(-angle & 0xfffU) * 2] * (width & 0x3f) * 2);
-	sn = FIXEDH(z2 * rcossin_tbl[(-angle & 0xfffU) * 2 + 1] * (width & 0x3f) * 2);
+	cs = FIXEDH(z2 * RSIN(angle) * (width & 0x3f) * 2);
+	sn = FIXEDH(z2 * RCOS(angle) * (width & 0x3f) * 2);
 
 	tmp = MainPed[bone].cAdj & 0xf;
 
@@ -623,10 +623,10 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 			// compute normalization lengths
 			len = 1.0 / sqrtf(float(x*x) + float(y*y) + 1.0);
 
-			angle = ratan2(y, x);
+			angle = -ratan2(y, x);
 
-			sn = rcossin_tbl[(-angle & 0xfffU) * 2] * width;
-			cs = rcossin_tbl[(-angle & 0xfffU) * 2 + 1] * width;
+			sn = RSIN(angle) * width;
+			cs = RCOS(angle) * width;
 
 			tmp = MainPed[bone].cAdj & 0xf;
 
@@ -1815,11 +1815,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 	SVECTOR ca;
 
 	VECTOR myVector;
-	int z0;
-	int z1;
-	int z2;
-	int z3;
-	
+	int z0, z1, z2, z3;
 	int i;
 	int cn, sn;
 	int vx, vz;
@@ -1830,6 +1826,9 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 	if (gDemoLevel)
 		return;
 #endif
+
+	if (NumPlayers > 1)
+		return;
 
 	memset((u_char*)&d, 0, sizeof(VECTOR));
 

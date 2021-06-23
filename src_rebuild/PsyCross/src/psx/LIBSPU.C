@@ -264,9 +264,8 @@ void PsyX_SPU_ShutdownSound()
 	{
 		alDeleteEffects(1, &g_nAlReverbEffect);
 		g_ALEffectsSupported = AL_NONE;
+		alDeleteAuxiliaryEffectSlots(1, g_ALEffectSlots);
 	}
-
-	alDeleteAuxiliaryEffectSlots(1, g_ALEffectSlots);
 
 	alcDestroyContext(g_ALCcontext);
 	alcCloseDevice(g_ALCdevice);
@@ -500,7 +499,9 @@ void SpuInit(void)
 void SpuQuit(void)
 {
 	g_spuInit = 0;
+#ifndef __EMSCRIPTEN__
 	PsyX_SPU_ShutdownSound();
+#endif // SpuQuit
 }
 
 void UpdateVoiceSample(SPUVoice* voice)
@@ -790,7 +791,7 @@ long SpuSetReverb(long on_off)
 
 	if (!g_spuInit)
 	{
-		return;
+		return old_state;
 	}
 
 	// switch if needed
@@ -864,7 +865,7 @@ unsigned long SpuSetReverbVoice(long on_off, unsigned long voice_bit)
 
 	if (!g_spuInit)
 	{
-		return;
+		return 0;
 	}
 	
 	if(!g_ALEffectsSupported)

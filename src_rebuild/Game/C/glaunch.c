@@ -277,8 +277,8 @@ void State_InitFrontEnd(void* param)
 {
 	if ((int)param == 2)
 	{
-		InitFrontendDisplay();
 		InitFrontend();
+		InitFrontendDisplay();
 	}
 	else
 	{
@@ -666,6 +666,12 @@ void State_GameComplete(void* param)
 		DrawSync(0);
 		SetDispMask(1);
 	}
+
+#ifndef PSX
+	// set to 60 FPS VSync
+	// PsyX_SetSwapInterval(1);
+	// PsyX_EnableSwapInterval(1);
+#endif
 }
 
 // [D] [T]

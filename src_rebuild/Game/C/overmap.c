@@ -10,7 +10,6 @@
 #include "debris.h"
 #include "map.h"
 #include "convert.h"
-#include "draw.h"
 #include "pres.h"
 #include "cop_ai.h"
 #include "camera.h"
@@ -26,25 +25,7 @@ OVERMAP overlaidmaps[4] =
 	{ 159, 207, 416, 576, 252, 68, 2048 }
 };
 
-SXYPAIR MapSegmentPos[16] =
-{
-	{ 0, 0 },
-	{ 8, 0 },
-	{ 16, 0 },
-	{ 24, 0 },
-	{ 0, 32 },
-	{ 8, 32 },
-	{ 16, 32 },
-	{ 24, 32 },
-	{ 0, 64 },
-	{ 8, 64 },
-	{ 16, 64 },
-	{ 24, 64 },
-	{ 0, 96 },
-	{ 8, 96 },
-	{ 16, 96 },
-	{ 24, 96 }
-};
+SXYPAIR MapSegmentPos[16];
 
 XYPAIR NVertex[4] = { 
 	{ -2, 3 }, 
@@ -62,15 +43,10 @@ XYPAIR north[4] = {
 
 static short big_north[] =
 {
-	2048,
-	2048,
-	2048,
-	2048
+	2048, 2048, 2048, 2048
 };
 
 VECTOR player_position = { 0, 0, 0, 0 };
-
-
 MATRIX map_matrix;
 
 char* MapBitMaps;
@@ -341,8 +317,8 @@ void DrawPlayerDot(VECTOR *pos, short rot, u_char r, u_char g, u_char b, int fla
 		vec.vz += map_z_offset;
 	}
 
-	sn = rcossin_tbl[(rot & 0xfffU) * 2];
-	cs = rcossin_tbl[(rot & 0xfffU) * 2 + 1];
+	sn = RSIN(rot);
+	cs = RCOS(rot);
 
 	opos[2].vx = vec.vx;
 	opos[2].vz = vec.vz;
@@ -399,9 +375,10 @@ void ProcessOverlayLump(char *lump_ptr, int lump_size)
 	MapRect.x = (MapTPage & 15) << 6;
 	MapRect.y = (MapTPage & 16) << 4;
 
+	// place map segments inside rectangle
 	for (i = 0; i < 16; i++)
 	{
-		MapSegmentPos[i].x = ((i & 3) * 32 + info.coords.u0) / 4;
+		MapSegmentPos[i].x = info.coords.u0 + (i & 3) * 32;
 		MapSegmentPos[i].y = info.coords.v0 + (i / 4) * 32;
 	}
 
@@ -421,19 +398,17 @@ void ProcessOverlayLump(char *lump_ptr, int lump_size)
 // [D] [T]
 void LoadMapTile(int tpage, int x, int y)
 {
-	int temp; // $a0
-	int count; // $a2
-	int idx; // $a3
+	int idx, temp, count;
 	RECT16 MapSegment;
 
 	MapSegment.w = 8;
 	MapSegment.h = 32;
 	
-	MapSegment.x = MapRect.x + MapSegmentPos[tpage].x;
+	MapSegment.x = MapRect.x + (MapSegmentPos[tpage].x >> 2);
 	MapSegment.y = MapRect.y + MapSegmentPos[tpage].y;
 
 	idx = x + y * tilehnum;
-	temp = x << 5;
+	temp = x * 32;
 
 	if (idx > -1 && idx < overlaidmaps[GameLevel].toptile &&
 		temp > -1 && (temp < overlaidmaps[GameLevel].width))
@@ -640,10 +615,8 @@ void DrawCompass(void)
 void DrawBigCompass(VECTOR *root, int angle)
 {
 	int i;
-	u_int ang2;
 	LINE_G2 *lineg2;
-	int ang;
-	int ang3;
+	int ang, ang2, sn, cs;
 	VECTOR *pPosition;
 	VECTOR position[5];
 
@@ -651,24 +624,34 @@ void DrawBigCompass(VECTOR *root, int angle)
 
 	position[2].vx = root->vx + map_x_offset;
 	position[2].vy = root->vz + map_z_offset;
-	position[1].vx = position[2].vx + (rcossin_tbl[ang * 2] * 0x19 >> 0xc);
-	position[0].vx = position[2].vx + (rcossin_tbl[ang * 2] * 0xf >> 0xb);
+
+	sn = RSIN(ang);
+	cs = RCOS(ang);
+
+	position[1].vx = position[2].vx + (sn * 0x19 >> 0xc);
+	position[0].vx = position[2].vx + (sn * 0xf >> 0xb);
+
+	position[1].vy = position[2].vy + (cs * 0x19 >> 0xc);
+	position[0].vz = position[2].vy + (cs * 0xf >> 0xb);
 
 	ang2 = ang - 200 & 0xfff;
-	ang3 = ang + 200 & 0xfff;
+	sn = RSIN(ang2);
+	cs = RCOS(ang2);
 
-	position[1].vy = position[2].vy + (rcossin_tbl[ang * 2 + 1] * 0x19 >> 0xc);
-	position[0].vz = position[2].vy + (rcossin_tbl[ang * 2 + 1] * 0xf >> 0xb);
-	position[3].vx = position[2].vx + (rcossin_tbl[ang2 * 2] * 5 >> 10);
-	position[3].vy = position[2].vy + (rcossin_tbl[ang2 * 2 + 1] * 5 >> 10);
-	position[4].vx = position[2].vx + (rcossin_tbl[ang3 * 2] * 5 >> 10);
-	position[4].vy = position[2].vy + (rcossin_tbl[ang3 * 2 + 1] * 5 >> 10);
+	position[3].vx = position[2].vx + (sn * 5 >> 10);
+	position[3].vy = position[2].vy + (cs * 5 >> 10);
 
-	i = 0;
+	ang2 = ang + 200 & 0xfff;
+	sn = RSIN(ang2);
+	cs = RCOS(ang2);
+
+	position[4].vx = position[2].vx + (sn * 5 >> 10);
+	position[4].vy = position[2].vy + (cs * 5 >> 10);
+
 	pPosition = position + 2;
-	do {
-
-		lineg2 = (LINE_G2 *)current->primptr;
+	for (i = 0; i < 3; i++)
+	{
+		lineg2 = (LINE_G2*)current->primptr;
 
 		setLineG2(lineg2);
 		setSemiTrans(lineg2, 1);
@@ -691,9 +674,7 @@ void DrawBigCompass(VECTOR *root, int angle)
 
 		pPosition++;
 		//current->primptr += sizeof(LINE_G2);
-
-		i++;
-	} while (i < 3);
+	}
 
 	DrawN(position, 1);
 }
@@ -789,8 +770,8 @@ void DrawSightCone(COP_SIGHT_DATA *pCopSightData, VECTOR *pPosition, int directi
 		dir = angle + direction & 0xfff;
 
 		angle += 512;
-		pVertex->vx = vertex[0].vx + FIXEDH(rcossin_tbl[dir * 2] * temp);
-		pVertex->vz = vertex[0].vz + FIXEDH(rcossin_tbl[dir * 2 + 1] * temp);
+		pVertex->vx = vertex[0].vx + FIXEDH(RSIN(dir) * temp);
+		pVertex->vz = vertex[0].vz + FIXEDH(RCOS(dir) * temp);
 
 		pVertex++;
 
@@ -862,12 +843,12 @@ u_int Long2DDistance(VECTOR *pPoint1, VECTOR *pPoint2)
 
 	if ((theta & 0x7ff) - 512U <= 1024)
 	{
-		tempTheta = rcossin_tbl[(theta & 0xfff) * 2];
+		tempTheta = RSIN(theta);
 		result = delta.vz;
 	}
 	else 
 	{
-		tempTheta = rcossin_tbl[(theta & 0xfff) * 2 + 1];
+		tempTheta = RCOS(theta);
 		result = delta.vx;
 	}
 
@@ -895,7 +876,7 @@ void InitMultiplayerMap(void)
 	{
 		Loadfile(filename, MapBitMaps);
 
-		rect.x = MapRect.x + MapSegmentPos[0].x;
+		rect.x = MapRect.x + MapSegmentPos[0].x / 4;
 		rect.y = MapRect.y + MapSegmentPos[0].y;
 		rect.w = 16;
 		rect.h = 64;
@@ -912,6 +893,11 @@ void InitOverheadMap(void)
 	int d;
 	int c;
 	int tpage;
+
+	if (NumPlayers > 1)
+		gMapYOffset = 96;
+	else
+		gMapYOffset = 181;
 
 	if (gMultiplayerLevels) 
 	{
@@ -1003,9 +989,6 @@ void DrawMultiplayerMap(void)
 	else
 		yPos = 96;
 
-	if (MissionHeader->region == 0)
-		return;
-
 	DrawMultiplayerTargets();
 
 	pl = player;
@@ -1050,7 +1033,7 @@ void DrawMultiplayerMap(void)
 	poly->y2 = yPos + 64;
 	poly->y3 = yPos + 64;
 
-	px = MapSegmentPos[0].x * 4;
+	px = MapSegmentPos[0].x;
 	py = MapSegmentPos[0].y;
 
 	poly->u0 = px;
@@ -1098,12 +1081,9 @@ void DrawOverheadMap(void)
 	VECTOR vec;
 	long flag;
 	int i, j;
-	int width; 
-	int height;
-	int x_mod;
-	int y_mod;
-	int MeshWidth;
-	int MeshHeight;
+	int tw, th;
+	int x_mod, y_mod;
+	int MeshWidth, MeshHeight;
 	int map_minX, map_maxX;
 	int map_minY, map_maxY;
 
@@ -1122,25 +1102,25 @@ void DrawOverheadMap(void)
 		0
 	};
 
+	if (MissionHeader->region != 0)
+	{
+		DrawMultiplayerMap();
+		return;
+	}
+	
+	if (NumPlayers > 1)
+		return;
+
 	map_minX = gMapXOffset;
-	map_maxX = gMapXOffset + MAP_SIZE_W;
 	map_minY = gMapYOffset;
-	map_maxY = gMapYOffset + MAP_SIZE_H;
+	map_maxX = map_minX + MAP_SIZE_W;
+	map_maxY = map_minY + MAP_SIZE_H;
 
 	VECTOR translate = {
 		map_minX + MAP_SIZE_W/2,
 		0,
 		map_minY + MAP_SIZE_H/2
 	};
-
-	if (gMultiplayerLevels)
-	{
-		DrawMultiplayerMap();
-		return;
-	}
-
-	if (NumPlayers > 1)
-		return;
 
 	SetMapPos();	
 	draw_box(map_minY, MAP_SIZE_H);
@@ -1359,16 +1339,17 @@ void DrawOverheadMap(void)
 	{
 		for (j = 0; j < MeshWidth; j++)
 		{
-			int tile;
+			int tile, px, py;
+			
 			tile = maptile[j][i];
-			width = MapTex[j].w - 1;
-			height = MapTex[i].h - 1;
+			tw = MapTex[j].w - 1;
+			th = MapTex[i].h - 1;
 #ifndef PSX
 			// make map fully detailed when filtering is not available
 			if (!g_bilinearFiltering)
 			{
-				width += 1;
-				height += 1;
+				tw += 1;
+				th += 1;
 			}
 #endif
 
@@ -1397,17 +1378,20 @@ void DrawOverheadMap(void)
 			spt->x3 = MapMeshO[j+1][i+1].vx;
 			spt->y3 = MapMeshO[j+1][i+1].vz;
 
-			spt->u0 = MIN(255, MapTex[j].u + MapSegmentPos[tile].x * 4);
-			spt->v0 = MIN(255, MapTex[i].v + MapSegmentPos[tile].y);
+			px = MapSegmentPos[tile].x;
+			py = MapSegmentPos[tile].y;
 
-			spt->u1 = MIN(255, MapTex[j].u + MapSegmentPos[tile].x * 4 + width);
-			spt->v1 = MIN(255, MapTex[i].v + MapSegmentPos[tile].y);
+			spt->u0 = MIN(255, MapTex[j].u + px);
+			spt->v0 = MIN(255, MapTex[i].v + py);
 
-			spt->u2 = MIN(255, MapTex[j].u + MapSegmentPos[tile].x * 4);
-			spt->v2 = MIN(255, MapTex[i].v + MapSegmentPos[tile].y + height);
+			spt->u1 = MIN(255, MapTex[j].u + px + tw);
+			spt->v1 = MIN(255, MapTex[i].v + py);
 
-			spt->u3 = MIN(255, MapTex[j].u + MapSegmentPos[tile].x * 4 + width);
-			spt->v3 = MIN(255, MapTex[i].v + MapSegmentPos[tile].y + height);
+			spt->u2 = MIN(255, MapTex[j].u + px);
+			spt->v2 = MIN(255, MapTex[i].v + py + th);
+
+			spt->u3 = MIN(255, MapTex[j].u + px + tw);
+			spt->v3 = MIN(255, MapTex[i].v + py + th);
 
 			addPrim(current->ot + 1, spt);
 
@@ -1458,8 +1442,7 @@ void DrawOverheadMap(void)
 	drarea = (DR_AREA*)current->primptr;
 
 	SetDrawArea(drarea, &clipped_size);
-
-	addPrim(current->ot+1, drarea);
+	addPrim(current->ot + 1, drarea);
 	current->primptr += sizeof(DR_AREA);
 }
 
@@ -1499,6 +1482,7 @@ void DrawFullscreenMap(void)
 	long flag;
 	int width, height;
 	int ntiles, count;
+	int tw, th;
 
 	// toggle rotated map
 	if (Pads[0].dirnew & 0x20) 
@@ -1513,7 +1497,19 @@ void DrawFullscreenMap(void)
 
 	SetFullscreenMapMatrix();
 
-#ifdef PSX
+	tw = tile_size - 1;
+	th = tile_size - 1;
+
+#ifndef PSX
+	/* It will look funny when enabled
+	// make map fully detailed when filtering is not available
+	if (!g_bilinearFiltering)
+	{
+		tw += 1;
+		th += 1;
+	}
+	*/
+#else
 	polys = (TILE*)current->primptr;
 
 	setTile(polys);
@@ -1715,21 +1711,21 @@ void DrawFullscreenMap(void)
 			back->x3 = meshO[3].vx;
 			back->y3 = meshO[3].vz;
 
-			px = MapSegmentPos[ntiles & 15].x * 4;
+			px = MapSegmentPos[ntiles & 15].x;
 			py = MapSegmentPos[ntiles & 15].y;
 
 			back->u0 = px;
 			back->v0 = py;
-			
-			back->u1 = px + 31;
-			back->v1 = py;
-			
-			back->u2 = px;
-			back->v2 = py + 31;
-			
-			back->u3 = px + 31;
-			back->v3 = py + 31;
 
+			back->u1 = MIN(255, px + tw);
+			back->v1 = MIN(255, py);
+
+			back->u2 = px;
+			back->v2 = MIN(255, py + th);
+
+			back->u3 = MIN(255, px + tw);
+			back->v3 = MIN(255, py + th);
+			
 			back->clut = MapClut;
 			back->tpage = MapTPage;
 #ifdef PSX
@@ -1737,15 +1733,6 @@ void DrawFullscreenMap(void)
 			DrawSync(0);
 			ntiles++;
 #else
-			// make map fully detailed when filtering is not available
-			if (!g_bilinearFiltering)
-			{
-				back->u1 += 1;
-				back->v2 += 1;
-				back->u3 += 1;
-				back->v3 += 1;
-			}
-
 			current->primptr += sizeof(POLY_FT4);
 
 			if (!prevback)
@@ -1823,8 +1810,8 @@ void DrawCopIndicators(void)
 	int p, q;
 	CAR_DATA *cp;
 
-	cc = rcossin_tbl[(player[0].dir & 0xfffU) * 2 + 1];
-	cs = rcossin_tbl[(player[0].dir & 0xfffU) * 2];
+	cc = RCOS(player[0].dir);
+	cs = RSIN(player[0].dir);
 
 	cp = car_data;
 	do {

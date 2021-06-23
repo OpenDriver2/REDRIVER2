@@ -1687,14 +1687,14 @@ void StepFromToEvent(EVENT* ev)
 		if (md > 1024)
 			md = ev->data[0] ^ df;
 		else
-			md = ((ev->data[0] - 1) * rcossin_tbl[(md & 0xfff) * 2]) / 4096 + 1 ^ df;
+			md = ((ev->data[0] - 1) * RSIN(md)) / 4096 + 1 ^ df;
 	}
 	else
 	{
 		if (md > 2048)
 			md = ev->data[0] ^ df;
 		else
-			md = ((ev->data[0] - 1) * rcossin_tbl[(md >> 1 & 0xfff) * 2]) / 4096 + 1U ^ df;
+			md = ((ev->data[0] - 1) * RSIN(md >> 1)) / 4096 + 1U ^ df;
 	}
 
 	*curr += (md - df);
@@ -1811,7 +1811,7 @@ void StepPathEvent(EVENT* ev)
 
 		if ((d1 < 6000 && d1 < 8048) && (ev->flags & 0x400))
 		{
-			speed = ev->data[0] + (speed - ev->data[0]) * rcossin_tbl[(((d1 - 2048) * 1024) / 8048 & 0xfffU) * 2] / 4096;
+			speed = ev->data[0] + (speed - ev->data[0]) * RSIN(((d1 - 2048) * 1024) / 8048) / 4096;
 		}
 
 		*curr += speed * dir;
@@ -2031,13 +2031,13 @@ void StepPathEvent(EVENT* ev)
 		{
 			if ((ev->flags & 0x7000U) == 0x3000)
 			{
-				speed = ev->data[0] + (speed - ev->data[0]) * rcossin_tbl[(((d1 - 2048) * 1024) / 8048 & 0xfffU) * 2] / 4096;
+				speed = ev->data[0] + (speed - ev->data[0]) * RSIN(((d1 - 2048) * 1024) / 8048) / 4096;
 			}
 		}
 		else
 		{
 			// acceleration or slowdown
-			speed = 5 + (speed - 5) * rcossin_tbl[((d1 << 10) / 6000 & 0xfffU) * 2] / 4096;
+			speed = 5 + (speed - 5) * RSIN((d1 << 10) / 6000) / 4096;
 		}
 	}
 
@@ -2097,7 +2097,7 @@ int GetBridgeRotation(int timer)
 	else if (timer > 1000)
 		timer = 1000;
 
-	return (4096 - rcossin_tbl[((timer * 2048) / 1000 & 0xfffU) * 2 + 1]) * 800 / 8192;
+	return (4096 - RCOS((timer * 2048) / 1000)) * 800 / 8192;
 }
 
 // [D] [T]
@@ -2162,15 +2162,15 @@ void StepHelicopter(EVENT* ev)
 			vel.z = ev->position.vz - HelicopterData.lastZ;
 		}
 
-		rot = ev->rotation & 0xfff;
+		rot = ev->rotation;
 
-		vz = vel.z * rcossin_tbl[rot * 2 + 1] + vel.x * rcossin_tbl[rot * 2];
-		vx = vel.x * rcossin_tbl[rot * 2 + 1] - vel.z * rcossin_tbl[rot * 2];
+		vz = vel.z * RCOS(rot) + vel.x * RSIN(rot);
+		vx = vel.x * RCOS(rot) - vel.z * RSIN(rot);
 
 		pitch = HelicopterData.pitch;
 
 		if (ABS(vz) <= 900000)
-			pitch = -HelicopterData.pitch - (rcossin_tbl[((vz * 1024) / 900000 & 0xfffU) * 2] >> 3);
+			pitch = -HelicopterData.pitch - (RSIN((vz * 1024) / 900000) >> 3);
 		else if (vz < 1)
 			pitch = 512 - pitch;
 		else
@@ -2179,7 +2179,7 @@ void StepHelicopter(EVENT* ev)
 		roll = HelicopterData.roll;
 
 		if (ABS(vx) <= 150000)
-			roll = (rcossin_tbl[((vx * 1024) / 150000 & 0xfff) * 2] >> 3) - roll;
+			roll = (RSIN((vx * 1024) / 150000) >> 3) - roll;
 		else if (vx < 1)
 			roll = -512 - roll;
 		else
@@ -2209,10 +2209,10 @@ void StepHelicopter(EVENT* ev)
 			HelicopterData.dr += (sign ^ 5) - sign;
 		}
 
-		HelicopterData.pitch = (HelicopterData.pitch + HelicopterData.dp + 2048U & 0xfff) - 2048;
-		HelicopterData.roll = (HelicopterData.roll + HelicopterData.dr + 2048U & 0xfff) - 2048;
+		HelicopterData.pitch = DIFF_ANGLES(-HelicopterData.dp, HelicopterData.pitch);// (HelicopterData.pitch + HelicopterData.dp + 2048U & 0xfff) - 2048;
+		HelicopterData.roll = DIFF_ANGLES(-HelicopterData.dr, HelicopterData.roll); //(HelicopterData.roll + HelicopterData.dr + 2048U & 0xfff) - 2048;
 
-		rot = (ratan2(vel.x, vel.z) - ev->rotation + 2048U & 0xfff) - 2048;
+		rot = DIFF_ANGLES(ev->rotation, ratan2(vel.x, vel.z)); //(ratan2(vel.x, vel.z) - ev->rotation + 2048U & 0xfff) - 2048;
 
 		if (ABS(rot) > 512)
 		{
@@ -2223,7 +2223,7 @@ void StepHelicopter(EVENT* ev)
 		}
 		else
 		{
-			direction = rcossin_tbl[(rot & 0x7ff) * 4] >> 2;
+			direction = RSIN(rot * 2) >> 2;
 		}
 
 		ev->rotation += FIXEDH(FIXEDH(direction * direction) * direction);
@@ -2345,6 +2345,8 @@ void StepEvents(void)
 
 			if (ev->flags & 0x800)
 			{
+				// [A] what the fuck this code is doing? Makes boat float harder after explosion?
+				
 				int tmSqr;
 
 				ev->data[1] = rcossin_tbl[(CameraCnt & 0x7f) * 64] >> 9 & 0xfff;
@@ -2440,7 +2442,7 @@ void StepEvents(void)
 					rotAngle = ABS(door->rotation - door->initialRotation) * 2048 / ABS(door->finalRotation - door->initialRotation);
 
 					sign = (*target - door->rotation) >> 0x1f;
-					door->rotation += (door->minSpeed + (rcossin_tbl[(rotAngle & 0xfffU) * 2] * (door->maxSpeed - door->minSpeed) >> 0xc) ^ sign) - sign;
+					door->rotation += (door->minSpeed + (RSIN(rotAngle) * (door->maxSpeed - door->minSpeed) >> 0xc) ^ sign) - sign;
 
 					// check if complete
 					if (((*target - door->rotation) ^ sign) - sign < 0)
@@ -2590,7 +2592,7 @@ void DrawFerrisWheel(MATRIX* matrix, VECTOR* pos)
 {
 	MODEL* model;
 	int loop;
-	int cx, sx, angle;
+	int sn, cs, angle;
 	int rotation;
 	VECTOR offset;
 	VECTOR carPos;
@@ -2627,14 +2629,14 @@ void DrawFerrisWheel(MATRIX* matrix, VECTOR* pos)
 
 	for (loop = 0; loop < 5; loop++)
 	{
-		angle = chicagoDoor[2].rotation + rotation & 0xfff;
+		angle = chicagoDoor[2].rotation + rotation;
 
-		cx = rcossin_tbl[angle * 2];
-		sx = rcossin_tbl[angle * 2 + 1];
+		sn = RSIN(angle);
+		cs = RCOS(angle);
 
-		offset.vx = FIXEDH(spoke[0].vx * cx + spoke[1].vx * sx);
-		offset.vy = FIXEDH(spoke[0].vy * cx + spoke[1].vy * sx);
-		offset.vz = FIXEDH(spoke[0].vz * cx + spoke[1].vz * sx);
+		offset.vx = FIXEDH(spoke[0].vx * sn + spoke[1].vx * cs);
+		offset.vy = FIXEDH(spoke[0].vy * sn + spoke[1].vy * cs);
+		offset.vz = FIXEDH(spoke[0].vz * sn + spoke[1].vz * cs);
 
 		carPos.vx = pos->vx + offset.vx;
 		carPos.vy = pos->vy + offset.vy;
@@ -2881,7 +2883,7 @@ void DrawEvents(int camera)
 
 										pos.vx = pos.vx - boatOffset.vx;
 										pos.vz = pos.vz - boatOffset.vz;
-										pos.vy = (pos.vy - boatOffset.vy) + FIXEDH((int)ev->node * rcossin_tbl[(*ev->data & 0xfffU) * 2]);
+										pos.vy = (pos.vy - boatOffset.vy) + FIXEDH((int)ev->node * RSIN(*ev->data));
 									}
 									else if (type == 0x400)
 									{
@@ -3122,9 +3124,9 @@ sdPlane* EventSurface(VECTOR* pos, sdPlane* plane)
 		else
 			end = ev->data[-1];
 
-		d = ev->rotation & 0xfff;
-		sin = rcossin_tbl[d * 2];
-		cos = rcossin_tbl[d * 2 + 1];
+		d = ev->rotation;
+		sin = RSIN(d);
+		cos = RCOS(d);
 
 		d1 = (end - ev->data[0]) * cos;
 		d2 = dist - ev->data[0];
@@ -3185,20 +3187,20 @@ sdPlane* EventSurface(VECTOR* pos, sdPlane* plane)
 				height = 200;
 
 
-			d = ev->data[1] & 0xfff;
+			d = ev->data[1];
 
-			sin = rcossin_tbl[d * 2];
-			cos = rcossin_tbl[d * 2 + 1];
+			sin = RSIN(d);
+			cos = RCOS(d);
 
 			offset = dist * -4096 + cos * -3328;
 
 			if (GameLevel == 3 && offset > 0)
 			{
 				int sin2;
-				d = 160 - ev->data[1] & 0xfff;
+				d = 160 - ev->data[1];
 
-				cos = rcossin_tbl[d * 2 + 1];
-				sin2 = rcossin_tbl[d * 2];
+				cos = RCOS(d);
+				sin2 = RSIN(d);
 
 				if (offset > cos * 2048)
 				{

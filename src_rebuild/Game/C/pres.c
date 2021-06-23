@@ -147,25 +147,20 @@ void LoadFont(char *buffer)
 
 	fontclutid = GetClut(fontclutpos.x,fontclutpos.y);
 
-	i = 0;
 	clut = (ushort*)file;
-	do {
+
+	for (i = 0; i < 16; i++)
 		*clut++ &= 0x7fff;
-		i++;
-	} while(i < 16);
 
 	clut[1] |= 0x8000;
 	clut[2] |= 0x8000;
 
-	dest.x = 960;
-	dest.y = 466;
-	dest.w = 64;
-	dest.h = 46;
+	setRECT(&dest, 960, 466, 64, 46);
 
-	fonttpage = GetTPage(0,0,960,466);
+	fonttpage = GetTPage(0,0, dest.x, dest.y);
 
-	LoadImage(&fontclutpos, (u_long *)file);
-	LoadImage(&dest, (u_long *)(file + 32));
+	LoadImage(&fontclutpos, (u_long *)file);	// upload clut
+	LoadImage(&dest, (u_long *)(file + 32));	// upload font image
 
 	DrawSync(0);
 }

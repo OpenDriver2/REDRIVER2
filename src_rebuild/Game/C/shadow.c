@@ -214,10 +214,10 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int padid)
 	if (tracksAndSmoke)
 	{
 		int dir;
-		dir = ratan2(oldtp->vz - newtp->vz, oldtp->vx - newtp->vx);
+		dir = -ratan2(oldtp->vz - newtp->vz, oldtp->vx - newtp->vx);
 
-		x = FixHalfRound(rcossin_tbl[(-dir & 0xfffU) * 2] * 35, 13);
-		z = FixHalfRound(rcossin_tbl[(-dir & 0xfffU) * 2 + 1] * 35, 13);
+		x = FixHalfRound(RSIN(dir) * 35, 13);
+		z = FixHalfRound(RCOS(dir) * 35, 13);
 		
 		New1.vy = oldtp->vy + 10;
 		New3.vy = newtp->vy + 10;

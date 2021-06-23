@@ -102,21 +102,18 @@ void DrawMission(void)
 			PrintScaledString(192, string, 32 - (g321GoDelay & 0x1f));
 		}
 	}
-	else 
+	else if (!pauseflag)
 	{
-		if (!pauseflag)
+		if (Mission.message_timer[0] != 0)
 		{
-			if (Mission.message_timer[0] != 0) 
-			{
-				if (NumPlayers == 1) 
-					DrawMessage(96, Mission.message_string[0]);
-				else 
-					DrawMessage(64, Mission.message_string[0]);
-			}
-
-			if (Mission.message_timer[1] != 0)
-				DrawMessage(192, Mission.message_string[1]);
+			if (NumPlayers == 1)
+				DrawMessage(96, Mission.message_string[0]);
+			else
+				DrawMessage(64, Mission.message_string[0]);
 		}
+
+		if (Mission.message_timer[1] != 0)
+			DrawMessage(192, Mission.message_string[1]);
 	}
 
 	if (Mission.active && !NoPlayerControl)

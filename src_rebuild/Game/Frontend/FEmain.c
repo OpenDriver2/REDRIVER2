@@ -728,21 +728,69 @@ void DisplayOnScreenText(void)
 	}
 }
 
+void DrawButton(PSXBUTTON* pBtn, int i)
+{
+	int status = pBtn->action >> 8;
+
+	int draw = (status != BTN_HIDDEN);
+
+#ifndef PSX
+	if (pBtn == pCurrButton)
+	{
+		SPRT* hghltSprt;
+		POLY_FT4* hghltDummy;
+		RECT16 rect;
+
+		rect.x = pCurrButton->s_x;
+		rect.y = pCurrButton->s_y;
+
+		hghltSprt = (SPRT*)current->primptr;
+		current->primptr += sizeof(SPRT);
+		*hghltSprt = HighlightSprt;
+
+		hghltDummy = (POLY_FT4*)current->primptr;
+		current->primptr += sizeof(POLY_FT4);
+		*hghltDummy = HighlightDummy;
+
+		setXY0(hghltSprt, rect.x, rect.y);
+
+		addPrim(current->ot + 6, hghltSprt);
+		addPrim(current->ot + 6, hghltDummy);
+
+		draw = 1;
+	}
+#endif
+
+	if (draw)
+	{
+		if (status == BTN_DISABLED)
+		{
+			FEPrintString(pBtn->Name, pBtn->x * 2 + pBtn->w, pBtn->y, 4, 32, 32, 32);
+		}
+		else
+		{
+			if (iScreenSelect == SCREEN_MISSION && (i == 0 || i == 5) ||
+				iScreenSelect == SCREEN_CAR && (i == 0 || i == 2) ||
+				iScreenSelect == SCREEN_CUTSCENE && (i == 0 || i == 2) ||
+				iScreenSelect == SCREEN_TIMEOFDAY && i == 2)				// [A]
+			{
+				FEPrintString(pBtn->Name, pBtn->x * 2 + pBtn->w, pBtn->y, 4, 124, 108, 40);
+			}
+			else
+			{
+				FEPrintString(pBtn->Name, pBtn->x * 2 + pBtn->w, pBtn->y, 4, 128, 128, 128);
+			}
+		}
+	}
+}
+
 // [D] [T]
 void DrawScreen(PSXSCREEN *pScr)
 {
 	char version_info[32];
 	int numBtnsToDraw;
 	int i;
-#ifndef PSX
-	if (bRedrawFrontend)
-	{
-		// flush the old screen
-		//EndFrame();
 
-		bRedrawFrontend = 0;
-	}
-#endif
 	for (i = 0; i < 6; i++)
 		addPrim(current->ot + 11, &BackgroundPolys[i]);
 
@@ -760,114 +808,10 @@ void DrawScreen(PSXSCREEN *pScr)
 			numBtnsToDraw = pScr->numButtons;
 		}
 
-#ifndef PSX
-		NewSelection(0);
-		if (!bQuitToSystem)
-#endif
-		{
-			for (i = 0; i < numBtnsToDraw; i++)
-			{
-				PSXBUTTON* button = &pScr->buttons[i];
-				int status = button->action >> 8;
-
 #ifdef PSX
-				if (status != 5)
-				{
-					if (button == pCurrButton)
-					{
-						if (status == 3)
-						{
-							FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 32, 32, 32);
-						}
-						else
-						{
-							if (iScreenSelect == SCREEN_MISSION && (i == 0 || i == 5) ||
-								iScreenSelect == SCREEN_CAR && (i == 0 || i == 2) ||
-								iScreenSelect == SCREEN_CUTSCENE && (i == 0 || i == 2))
-							{
-								FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 124, 108, 40);
-							}
-							else
-							{
-								FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 128, 128, 128);
-							}
-						}
-					}
-					else
-					{
-						if (status == 3)
-						{
-							FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 32, 32, 32);
-						}
-						else
-						{
-							if (iScreenSelect == SCREEN_MISSION && (i == 0 || i == 5) ||
-								iScreenSelect == SCREEN_CAR && (i == 0 || i == 2) ||
-								iScreenSelect == SCREEN_CUTSCENE && (i == 0 || i == 2))
-							{
-								FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 124, 108, 40);
-							}
-							else
-							{
-								FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 128, 128, 128);
-							}
-						}
-					}
-				}
+		for (i = 0; i < numBtnsToDraw; i++)
+			DrawButton(&pScr->buttons[i], i);
 #else
-				int draw = (status != 5);
-
-				if (button == pCurrButton)
-				{
-					SPRT* hghltSprt;
-					POLY_FT4* hghltDummy;
-					RECT16 rect;
-
-					rect.x = pCurrButton->s_x;
-					rect.y = pCurrButton->s_y;
-
-					hghltSprt = (SPRT*)current->primptr;
-					current->primptr += sizeof(SPRT);
-					*hghltSprt = HighlightSprt;
-
-					hghltDummy = (POLY_FT4*)current->primptr;
-					current->primptr += sizeof(POLY_FT4);
-					*hghltDummy = HighlightDummy;
-
-					setXY0(hghltSprt, rect.x, rect.y);
-
-					addPrim(current->ot + 6, hghltSprt);
-					addPrim(current->ot + 6, hghltDummy);
-
-					draw = 1;
-				}
-
-				if (draw)
-				{
-					if (status == 3)
-					{
-						FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 32, 32, 32);
-					}
-					else
-					{
-						if (iScreenSelect == SCREEN_MISSION && (i == 0 || i == 5) ||
-							iScreenSelect == SCREEN_CAR && (i == 0 || i == 2) ||
-							iScreenSelect == SCREEN_CUTSCENE && (i == 0 || i == 2) ||
-							iScreenSelect == SCREEN_TIMEOFDAY && i == 2)				// [A]
-						{
-							FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 124, 108, 40);
-						}
-						else
-						{
-							FEPrintString(button->Name, button->x * 2 + button->w, button->y, 4, 128, 128, 128);
-						}
-					}
-				}
-#endif
-			}
-		}
-
-#ifndef PSX
 		if(bQuitToSystem)
 		{
 			int len;
@@ -885,8 +829,16 @@ void DrawScreen(PSXSCREEN *pScr)
 			len = FEStringWidth(G_LTXT(GTXT_NO));
 			FEPrintString(G_LTXT(GTXT_NO), 320 + quitLen / 4 - len/2, 288, 0, 128, 128, bQuitToSystemSel ? 128 : 0);
 		}
+		else
+		{
+			NewSelection(0);
+			
+			for (i = 0; i < numBtnsToDraw; i++)
+				DrawButton(&pScr->buttons[i], i);
+		}
 #endif
 
+		// debug version text
 #if defined(_DEBUG) || defined(DEBUG_OPTIONS)
 		FEPrintString(version_info, 40, 16, 0, 128, 128, 0);
 		FEPrintString("--- " GAME_VERSION " ---", 320, 16, 0, 128, 128, 0);
@@ -918,13 +870,16 @@ void DrawScreen(PSXSCREEN *pScr)
 #endif
 		}
 	}
+
 #ifdef PSX
 	else 
 	{
 		EndFrame();
 	}
 #else
+
 	EndFrame();
+
 #endif
 }
 
@@ -1055,7 +1010,7 @@ void LoadBackgroundFile(char* name)
 		FEDrawCDicon();
 	}
 
-	LoadfileSeg(name, (char*)_other_buffer, iTpage * 0x8000, 0x800);
+	LoadfileSeg(name, (char*)_other_buffer, iTpage * 0x8000, 512);
 	FEDrawCDicon();
 
 	rect.h = 1;
@@ -1135,8 +1090,12 @@ void LoadFrontendScreens(int full)
 
 	for (int i = 0; i < 2; i++)
 	{
+		// [A] optimized. Before it was to wasteful to load 16 sectors
+		int loadSize = i == 0 ? 0x8000 : (36 * 128);
+		rect.h = i == 0 ? 256 : 36;
+		
 		ShowLoading();
-		LoadfileSeg("DATA\\GFX.RAW", (char*)_other_buffer, 0x30000 + (i * 0x8000), 0x8000);
+		LoadfileSeg("DATA\\GFX.RAW", (char*)_other_buffer, 0x30000 + (i * 0x8000), loadSize);
 
 		rect.x = 640 + (i * 64);
 		rect.y = 256;
@@ -1145,13 +1104,14 @@ void LoadFrontendScreens(int full)
 		DrawSync(0);
 	}
 
+	// Load clut
 	ShowLoading();
-	LoadfileSeg("DATA\\GFX.RAW", (char*)_other_buffer, 0x58000, 0x8000);
+	LoadfileSeg("DATA\\GFX.RAW", (char*)_other_buffer, 0x58000, /*0x8000*/ 512);
 
 	rect.x = 960;
 	rect.y = 256;
+	rect.h = 4;
 
-	// load font
 	LoadImage(&rect, (u_long*)_other_buffer);
 	DrawSync(0);
 
@@ -1206,6 +1166,7 @@ void ReInitScreens(int returnToMain)
 	SwitchMappings(1);
 #endif // !PSX
 
+	bCdIconSetup = 0;
 	InitCdIcon();
 
 	if (bReturnToMain)
@@ -1292,6 +1253,10 @@ void NewSelection(short dir)
 
 	pCurrButton = pNewB;
 
+	// show who has control
+	if (NumPlayers == 2 && currPlayer != 1)
+		FEPrintStringSized(G_LTXT(GTXT_Player2), 400, 260, 3072, 0, 128, 128, 128);
+
 #ifdef PSX
 	rect.x = pCurrButton->s_x;
 	rect.y = pCurrButton->s_y;
@@ -1306,23 +1271,8 @@ void NewSelection(short dir)
 	addPrim(current->ot + 6, &HighlightSprt);
 	addPrim(current->ot + 6, &HighlightDummy);
 
-	if ((pNewB->action >> 8) == 3) {
-		FEPrintString(pNewB->Name, pNewB->x * 2 + pNewB->w, pNewB->y, 4, 32, 32, 32);
-	}
-	else {
-		if ((iScreenSelect == SCREEN_MISSION && ((pNewB == &pCurrScreen->buttons[0]) || (pNewB == &pCurrScreen->buttons[5]))) ||
-			((iScreenSelect == SCREEN_CAR && ((pNewB == &pCurrScreen->buttons[0]) || (pNewB == &pCurrScreen->buttons[2])))) ||
-			((iScreenSelect == SCREEN_CUTSCENE && ((pNewB == &pCurrScreen->buttons[0]) || (pNewB == &pCurrScreen->buttons[2])))))
-		{
-			FEPrintString(pNewB->Name, pNewB->x * 2 + pNewB->w, pNewB->y, 4, 124, 108, 40);
-		}
-		else {
-			FEPrintString(pNewB->Name, pNewB->x * 2 + pNewB->w, pNewB->y, 4, 128, 128, 128);
-		}
-	}
-#endif
+	DrawButton(pNewB, pNewB - pCurrScreen->buttons);
 
-#ifdef PSX
 	EndFrame();
 #endif
 }
@@ -1679,7 +1629,11 @@ void State_FrontEnd(void* param)
 #else
 	if (bRedrawFrontend)
 	{
+		DrawSync(0);
+		EndFrame();
+
 		DrawScreen(pCurrScreen);
+
 		EndFrame();
 
 		NewSelection(0);
@@ -1949,7 +1903,7 @@ int CentreScreen(int bSetup)
 
 		if (feNewPad & 0x1000)
 		{
-			if (current->disp.screen.y > screen_limits[0].miny)
+			if (current->disp.screen.y >= screen_limits[video_mode].miny)
 			{
 				current->disp.screen.y--;
 				last->disp.screen.y--;
@@ -1958,7 +1912,7 @@ int CentreScreen(int bSetup)
 		}
 		else if (feNewPad & 0x4000)
 		{
-			if (current->disp.screen.y < screen_limits[0].maxy)
+			if (current->disp.screen.y <= screen_limits[video_mode].maxy)
 			{
 				current->disp.screen.y++;
 				last->disp.screen.y++;
@@ -1967,7 +1921,7 @@ int CentreScreen(int bSetup)
 		}
 		else if (feNewPad & 0x8000)
 		{
-			if (current->disp.screen.x > screen_limits[0].minx) 
+			if (current->disp.screen.x >= screen_limits[video_mode].minx)
 			{
 				current->disp.screen.x--;
 				last->disp.screen.x--;
@@ -1976,7 +1930,7 @@ int CentreScreen(int bSetup)
 		}
 		else if (feNewPad & 0x2000)
 		{
-			if (current->disp.screen.x < screen_limits[0].maxx)
+			if (current->disp.screen.x <= screen_limits[video_mode].maxx)
 			{
 				current->disp.screen.x++;
 				last->disp.screen.x++;
@@ -2054,12 +2008,7 @@ int CarSelectScreen(int bSetup)
 
 #ifdef PSX
 		if (currPlayer != 1) 
-		{
-			if (NumPlayers == 2)
-				FEPrintStringSized(G_LTXT(GTXT_Player2), 400, 260, 0xc00, 0, 128, 128, 128);
-
 			return 0;
-		}
 #endif
 
 		LoadBackgroundFile("DATA\\CARS\\CARBACK.RAW");
@@ -2099,14 +2048,6 @@ int CarSelectScreen(int bSetup)
 
 		return 1;
 	}
-
-#ifndef PSX
-	if (currPlayer != 1)
-	{
-		if (NumPlayers == 2)
-			FEPrintStringSized(G_LTXT(GTXT_Player2), 400, 260, 0xc00, 0, 128, 128, 128);
-	}
-#endif
 
 	if (feNewPad & 0x10)
 	{
@@ -3851,11 +3792,11 @@ int TimeOfDaySelectScreen(int bSetup)
 			{
 				btn.y += 32;
 				btn.s_y += 32;
-				btn.action = 270;
+				btn.action = FE_MAKEVAR(BTN_NEXT_SCREEN, 14);
 			}
 			else
 			{
-				btn.x -= 50;
+				btn.x -= 80;
 				btn.l = btn.r = i + 1;
 			}
 		}

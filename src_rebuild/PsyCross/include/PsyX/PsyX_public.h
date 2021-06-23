@@ -118,6 +118,9 @@ extern void PsyX_WaitForTimestep(int count);
 /* Changes swap interval state */
 extern void PsyX_EnableSwapInterval(int enable);
 
+/* Changes swap interval interval interval */
+extern void PsyX_SetSwapInterval(int interval);
+
 #if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
 }
 #endif
