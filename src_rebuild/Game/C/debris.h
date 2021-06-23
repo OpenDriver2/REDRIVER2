@@ -15,6 +15,8 @@ struct SMASHABLE_OBJECT
 #define SMOKE_BROWN		3
 #define SMOKE_FIRE		4
 
+#define OBJECT_SMASHED_MARK		0xFD46FEC0
+
 extern TEXTURE_DETAILS smoke_texture;
 extern TEXTURE_DETAILS debris_texture;
 extern TEXTURE_DETAILS litter_texture;
