@@ -3792,11 +3792,11 @@ int TimeOfDaySelectScreen(int bSetup)
 			{
 				btn.y += 32;
 				btn.s_y += 32;
-				btn.action = 270;
+				btn.action = FE_MAKEVAR(BTN_NEXT_SCREEN, 14);
 			}
 			else
 			{
-				btn.x -= 50;
+				btn.x -= 80;
 				btn.l = btn.r = i + 1;
 			}
 		}
