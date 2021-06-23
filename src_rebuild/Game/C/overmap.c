@@ -1102,13 +1102,14 @@ void DrawOverheadMap(void)
 		0
 	};
 
-	if (NumPlayers > 1)
+	if (MissionHeader->region != 0)
 	{
-		if(MissionHeader->region != 0)
-			DrawMultiplayerMap();
-
+		DrawMultiplayerMap();
 		return;
 	}
+	
+	if (NumPlayers > 1)
+		return;
 
 	map_minX = gMapXOffset;
 	map_minY = gMapYOffset;
