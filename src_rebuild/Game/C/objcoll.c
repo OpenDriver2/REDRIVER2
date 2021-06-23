@@ -705,10 +705,18 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 					bbox.pos.vy = cop->pos.vy + collide->ypos;
 					bbox.pos.vz = cop->pos.vz + FIXEDH(collide->xpos * matrixtable[yang].m[0][2] + collide->zpos * matrixtable[yang].m[2][2]);
 
-					//bbox.pos.pad = (model->flags2 & MODEL_FLAG_BARRIER) > 0;
+					// [A] purposely make chair box smaller for Tanner
+					if (cp->controlType == CONTROL_TYPE_TANNERCOLLIDER && (model->flags2 & MODEL_FLAG_CHAIR))
+					{
+						bbox.xsize = (collide->zsize >> 1) - 20;
+						bbox.zsize = (collide->xsize >> 1) - 20;
+					}
+					else
+					{
+						bbox.xsize = collide->zsize >> 1;
+						bbox.zsize = collide->xsize >> 1;
+					}
 
-					bbox.xsize = collide->zsize / 2;
-					bbox.zsize = collide->xsize / 2;
 
 					bbox.height = collide->ysize;
 					bbox.theta = (cop->yang + collide->yang) * 64 & 0xfff;
