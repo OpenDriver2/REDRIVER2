@@ -1616,7 +1616,7 @@ int damage_object(CELL_OBJECT *cop, VECTOR *velocity)
 	if (dam->velocity.vy < -67)
 		dam->velocity.vy = -67;
 
-	cop->pos.vx = 0xFD46FEC0;
+	cop->pos.vx = OBJECT_SMASHED_MARK;
 
 	return 0;
 }

@@ -605,7 +605,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 	else
 		buildingHeightY = building->height >> 1;
 
-	if (boxDiffY <= buildingHeightY + (cp->hd.oBox.length[1] >> 1) && (cop->pos.vx != 0xFD46FEC0) && (model->shape_flags & SHAPE_FLAG_NOCOLLIDE) == 0)
+	if (boxDiffY <= buildingHeightY + (cp->hd.oBox.length[1] >> 1) && (cop->pos.vx != OBJECT_SMASHED_MARK) && (model->shape_flags & SHAPE_FLAG_NOCOLLIDE) == 0)
 	{
 		tempwhere.vx = cp->hd.where.t[0];
 		tempwhere.vz = cp->hd.where.t[2];
