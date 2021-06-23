@@ -1531,7 +1531,7 @@ void TannerCollision(PEDESTRIAN* pPed)
 	pcdTanner->id = TANNER_COLLIDER_CARID;
 	pcdTanner->controlType = 6;
 
-	pcdTanner->hd.direction = pPed->dir.vy - 0x800U & 0xfff;
+	pcdTanner->hd.direction = pPed->dir.vy - 2048 & 4095;
 
 	pcdTanner->hd.oBox.location.vx = pPed->position.vx;
 	pcdTanner->hd.where.t[0] = pPed->position.vx;
@@ -1650,6 +1650,7 @@ int TannerCarCollisionCheck(VECTOR* pPos, int dir, int bQuick)
 
 	cd[0].length[0] = 60;
 	cd[0].length[1] = 60;
+
 	cd[0].x.vx = pPos->vx;
 	cd[0].x.vz = pPos->vz;
 	cd[0].theta = dir;
