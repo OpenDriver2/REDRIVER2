@@ -6,6 +6,8 @@ extern EventGlobal events;
 extern CELL_OBJECT *EventCop;
 extern int event_models_active;
 
+extern int carsOnBoat;
+
 extern void InitEvents(); // 0x0004BBD4
 extern void SetUpEvents(int full); // 0x00046258
 extern VECTOR* TriggerEvent(int i);
