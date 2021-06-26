@@ -1246,6 +1246,7 @@ int Swap2Cars(int curslot, int newslot)
 	int pnodeNewId;
 	int ctrlNodeCurId;
 	int pnodeCurId;
+	int tmp;
 
 	CAR_DATA cd;
 
@@ -1303,6 +1304,16 @@ int Swap2Cars(int curslot, int newslot)
 	memcpy((u_char*)&cd, (u_char*)&car_data[newslot], sizeof(CAR_DATA));
 	memcpy((u_char*)&car_data[newslot], (u_char*)&car_data[curslot], sizeof(CAR_DATA));
 	memcpy((u_char*)&car_data[curslot], (u_char*)&cd, sizeof(CAR_DATA));
+
+	// [A] event - swap cars on boat
+	tmp = carsOnBoat & (1 << newslot);
+	carsOnBoat &= ~(1 << newslot);
+
+	if (carsOnBoat & (1 << curslot))
+		carsOnBoat |= (1 << newslot);
+
+	if(tmp)
+		carsOnBoat |= (1 << curslot);
 
 	// swap ids
 	car_data[newslot].id = newslot;
