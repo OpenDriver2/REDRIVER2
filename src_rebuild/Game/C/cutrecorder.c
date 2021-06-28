@@ -118,53 +118,53 @@ int CutRec_GotoChase(int number)
 
 void CutRec_Step()
 {
-	// goto previous chase
-	if (Pads[0].dirnew & CAR_PAD_LEFT)
+	if (gCutsceneChaseAutoTest != 0)
 	{
-		CutRec_GotoChase(gCutsceneChaseAutoTest - 1);
-		return;
-	}
+		// goto previous chase
+		if (Pads[0].dirnew & CAR_PAD_LEFT)
+		{
+			CutRec_GotoChase(gCutsceneChaseAutoTest - 1);
+			return;
+		}
 
-	// goto next chase
-	if (Pads[0].dirnew & CAR_PAD_RIGHT)
-	{
-		CutRec_GotoChase(gCutsceneChaseAutoTest + 1);
-		return;
-	}
-	
-	if (!pauseflag)
-	{
-		if(gCutsceneChaseAutoTest != 0)
+		// goto next chase
+		if (Pads[0].dirnew & CAR_PAD_RIGHT)
+		{
+			CutRec_GotoChase(gCutsceneChaseAutoTest + 1);
+			return;
+		}
+
+		if (!pauseflag)
 		{
 			int carId = player[gCutsceneAsReplay_PlayerId].playerCarId;
-			
+
 			if (car_data[carId].hd.speed < 5)
 				gChaseStuckTimer++;
 			else
 				gChaseStuckTimer = 0;
 
-			if(gChaseStuckTimer > 45)
+			if (gChaseStuckTimer > 45)
 			{
 				gAutoTestStats[gCutsceneChaseAutoTest].stuck = 1;
 				gChaseStuckTimer = 0;
 			}
+
+			return;
 		}
-		
-		return;
-	}
 
-	if(gCutsceneChaseAutoTest != 0 && gCutsceneChaseAutoTest < 15 &&
-		NoPlayerControl && ReplayParameterPtr->RecordingEnd - 2 < CameraCnt || gDieWithFade)
-	{
-		gCutsceneChaseAutoTest++;
-
-		// load next replay and restart
-		if (!CutRec_GotoChase(gCutsceneChaseAutoTest))
+		if (gCutsceneChaseAutoTest < 15 &&
+			(NoPlayerControl && ReplayParameterPtr->RecordingEnd - 2 < CameraCnt || gDieWithFade))
 		{
-			printInfo("------- AUTOTEST RESULTS -------\n");
-			for(int i = 0; i < 15; i++)
-				printInfo("  chase %d - hit cars: %d, stuck: %d\n", i, gAutoTestStats[i].numHitCars, gAutoTestStats[i].stuck);
-			printInfo("------- ---------------- -------\n");
+			gCutsceneChaseAutoTest++;
+
+			// load next replay and restart
+			if (!CutRec_GotoChase(gCutsceneChaseAutoTest))
+			{
+				printInfo("------- AUTOTEST RESULTS -------\n");
+				for (int i = 0; i < 15; i++)
+					printInfo("  chase %d - hit cars: %d, stuck: %d\n", i, gAutoTestStats[i].numHitCars, gAutoTestStats[i].stuck);
+				printInfo("------- ---------------- -------\n");
+			}
 		}
 	}
 }
