@@ -11,34 +11,24 @@
 // [D] [T]
 void StorePlayerPosition(SAVED_PLAYER_POS *data)
 {
+	PLAYER* pl;
 	CAR_DATA* cp;
 	ushort type;
 	int slot;
 
-	// store previous player car?
-	slot = Mission.PhantomCarId != -1 ? Mission.PhantomCarId : player[0].playerCarId;
+	pl = &player[0];
 
-	cp = &car_data[slot];
-
-	if (player[0].playerType == 1)
-		type = ((MissionHeader->residentModels[cp->ap.model] & 0xfff) << 4) | 1 | cp->ap.palette << 8;
-	else
-		type = 0;
-
-	data->type = type;
-	data->direction = cp->hd.direction;
-	data->vx = cp->hd.where.t[0];
-	data->vy = cp->hd.where.t[1];
-	data->vz = cp->hd.where.t[2];
-
-	if (slot < 0)
-		data->felony = pedestrianFelony;
-	else
-		data->felony = cp->felonyRating;
-
-	if (player[0].playerType == 1)
+	if (pl->playerType == 1)
 	{
+		// store previous player car?
+		slot = Mission.PhantomCarId != -1 ? Mission.PhantomCarId : pl->playerCarId;
+
+		cp = &car_data[slot];
+
+		type = ((MissionHeader->residentModels[cp->ap.model] & 0xfff) << 4) | 1 | cp->ap.palette << 8;
+
 		data->totaldamage = cp->totalDamage;
+		data->felony = cp->felonyRating;
 	
 		data->damage[0] = cp->ap.damage[0];
 		data->damage[1] = cp->ap.damage[1];
@@ -49,7 +39,10 @@ void StorePlayerPosition(SAVED_PLAYER_POS *data)
 	}
 	else
 	{
+		type = 0;
+		
 		data->totaldamage = 0;
+		data->felony = pedestrianFelony;
 	
 		data->damage[0] = 0;
 		data->damage[1] = 0;
@@ -58,6 +51,12 @@ void StorePlayerPosition(SAVED_PLAYER_POS *data)
 		data->damage[4] = 0;
 		data->damage[5] = 0;
 	}
+
+	data->type = type;
+	data->direction = pl->dir;
+	data->vx = pl->pos[0];
+	data->vy = pl->pos[1];
+	data->vz = pl->pos[2];
 }
 
 
