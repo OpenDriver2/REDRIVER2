@@ -426,6 +426,8 @@ void InitFelonySystem(void)
 	InitFelonyData(&felonyData);
 }
 
+// enable when debugging whacky StoreCarPosition
+// #define LEADAI_EASY
 
 // [D] [T]
 void CarHitByPlayer(CAR_DATA *victim, int howHard)
@@ -433,6 +435,11 @@ void CarHitByPlayer(CAR_DATA *victim, int howHard)
 	char type;
 
 	_CutRec_CheckInvalidatePing(victim->id, howHard);
+
+#ifdef LEADAI_EASY
+	if (victim->controlType == CONTROL_TYPE_LEAD_AI)
+		victim->totalDamage = 0xffff;
+#endif
 
 	if (howHard > 0 && victim->controlType != CONTROL_TYPE_PURSUER_AI) 
 	{
