@@ -817,8 +817,8 @@ void State_GameInit(void* param)
 
 #ifndef PSX
 	// set to 30 FPS VSync
-	// PsyX_SetSwapInterval(2);
-	// PsyX_EnableSwapInterval(1);
+	PsyX_SetSwapInterval(2);
+	PsyX_EnableSwapInterval(1);
 #endif
 }
 
