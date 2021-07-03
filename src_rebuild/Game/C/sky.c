@@ -122,23 +122,18 @@ short skytpage[28];
 // [D] [T]
 void LoadSky(void)
 {
+	char name[16];
+
 	int skyNum;
 	RECT16 rect;
-	char name[16];
+	
 	int offset;
 
 	int flipped;
 	int single;
 
-	int v;
-	int u;
-	int y;
-	int x;
-	int ry;
-	int i;
-
-	int tp_x;
-	int clut_x;
+	int u,v,x,y,ry;
+	int tp_x, clut_x, i;
 
 	i = 0;
 	y = 0;
@@ -284,10 +279,7 @@ void LoadSky(void)
 	sprintf(name, "DATA\\SKY%d.RAW", skyNum);
 	LoadfileSeg(name, (char*)_primTab1, offset, 0x10000);
 
-	rect.x = 320;
-	rect.y = 0;
-	rect.w = 128;
-	rect.h = 256;
+	setRECT(&rect, 320, 0, 128, 256);
 
 	LoadImage(&rect, (u_long*)_primTab1);
 
@@ -829,7 +821,7 @@ void calc_sky_brightness(void)
 #ifdef USE_PGXP
 DVECTORF scratchPad_skyVertices[35];	// 1f800044
 #else
-DVECTOR scratchPad_skyVertices[35];	// 1f800044
+DVECTOR* scratchPad_skyVertices = (DVECTOR*)getScratchAddr(0x11);	// 1f800044
 #endif
 
 short scratchPad_zbuff[256];
