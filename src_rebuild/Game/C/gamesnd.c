@@ -1289,7 +1289,7 @@ void DoDopplerSFX(void)
 		else
 			playerFelony = &car_data[player[0].playerCarId].felonyRating;
 
-		if (*playerFelony > FELONY_MIN_VALUE)
+		if (*playerFelony > FELONY_PURSUIT_MIN_VALUE)
 			DoPoliceLoudhailer(num_noisy_cars, indexlist, car_dist);
 	}
 
@@ -1537,7 +1537,7 @@ void JerichoSpeak(void)
 	else
 		playerFelony = &car_data[player[0].playerCarId].felonyRating;
 
-	if (*playerFelony > FELONY_MIN_VALUE && rnd == rnd / 5 * 5)
+	if (*playerFelony > FELONY_PURSUIT_MIN_VALUE && rnd == rnd / 5 * 5)
 	{
 		if (j_said > 60)
 		{
