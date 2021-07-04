@@ -892,7 +892,7 @@ void StepSim(void)
 		playerFelony = &car_data[player[0].playerCarId].felonyRating;
 
 	// control cop roadblocks
-	if (*playerFelony < 0x527 || numRoadblockCars != 0)
+	if (*playerFelony <= FELONY_ROADBLOCK_MIN_VALUE || numRoadblockCars != 0)
 	{
 		if (roadblockCount != 0)
 		{

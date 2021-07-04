@@ -1,9 +1,10 @@
 #ifndef FELONY_H
 #define FELONY_H
 
-#define FELONY_MIN_VALUE		(658)
-#define FELONY_MAX_VALUE		(4096)
+#define FELONY_PURSUIT_MIN_VALUE	(658)
+#define FELONY_ROADBLOCK_MIN_VALUE	(1318)
 
+#define FELONY_MAX_VALUE			(4096)
 
 extern int CopsCanSeePlayer;
 extern short pedestrianFelony;

@@ -1133,7 +1133,7 @@ void DrawOverheadMap(void)
 		else 
 			playerFelony = &car_data[player[0].playerCarId].felonyRating;
 
-		if (*playerFelony > FELONY_MIN_VALUE)
+		if (*playerFelony > FELONY_PURSUIT_MIN_VALUE)
 			FlashOverheadMap(ptab[CameraCnt & 0xf], 0, ptab[CameraCnt + 8U & 0xf]);
 	}
 	else 
@@ -1147,7 +1147,7 @@ void DrawOverheadMap(void)
 				else
 					playerFelony = &car_data[player[0].playerCarId].felonyRating;
 
-				if (*playerFelony > FELONY_MIN_VALUE)
+				if (*playerFelony > FELONY_PURSUIT_MIN_VALUE)
 					flashtimer = 48;
 			}
 		}
