@@ -696,7 +696,7 @@ void animate_garage_door(void)
 		else
 			felony = &car_data[playerCarId].felonyRating;
 
-		if (*felony > FELONY_MIN_VALUE)
+		if (*felony > FELONY_PURSUIT_MIN_VALUE)
 		{
 			CurrentGarage.cop->pos = CurrentGarage.old_pos;
 			CurrentGarage.cop = NULL;
