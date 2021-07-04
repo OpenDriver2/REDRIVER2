@@ -112,7 +112,9 @@ int setupYet = 0;
 
 int gDrawDistance = 441;
 
+#ifndef PSX
 _pct& plotContext = *(_pct*)((u_char*)getScratchAddr(0) + 1024 - sizeof(_pct));	// orig offset: 0x1f800020
+#endif
 
 // [D] [T] [A]
 void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
@@ -655,6 +657,7 @@ void PlotBuildingModel(MODEL* model, int rot, _pct* pc)
 	POLY_FT4* prims;
 	SVECTOR* srcVerts;
 	int combo;
+
 	srcVerts = (SVECTOR*)model->vertices;
 	polys = (PL_POLYFT4*)model->poly_block;
 
@@ -712,10 +715,8 @@ void PlotBuildingModel(MODEL* model, int rot, _pct* pc)
 
 		if (opz > 0)
 		{
-			gte_stsz3(&pc->scribble[0], &pc->scribble[1], &pc->scribble[2]);
-
-			pc->tpage = (*pc->ptexture_pages)[polys->texture_set] << 0x10;
-			pc->clut = (*pc->ptexture_cluts)[polys->texture_set][polys->texture_id] << 0x10;
+			pc->tpage = (*pc->ptexture_pages)[polys->texture_set];
+			pc->clut = (*pc->ptexture_cluts)[polys->texture_set][polys->texture_id];
 
 			ushort uv0, uv1, uv2, uv3;
 
@@ -741,8 +742,8 @@ void PlotBuildingModel(MODEL* model, int rot, _pct* pc)
 
 			gte_stsxy(&prims->x3);
 
-			prims->tpage = pc->tpage >> 0x10;
-			prims->clut = pc->clut >> 0x10;
+			prims->tpage = pc->tpage;
+			prims->clut = pc->clut;
 
 			*(ushort*)&prims->u0 = uv0;
 			*(ushort*)&prims->u1 = uv1;

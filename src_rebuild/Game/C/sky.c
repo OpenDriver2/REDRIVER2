@@ -821,7 +821,7 @@ void calc_sky_brightness(void)
 #ifdef USE_PGXP
 DVECTORF scratchPad_skyVertices[35];	// 1f800044
 #else
-DVECTOR* scratchPad_skyVertices = (DVECTOR*)getScratchAddr(0x11);	// 1f800044
+#define scratchPad_skyVertices ((DVECTOR*)getScratchAddr(0x11))	// 1f800044
 #endif
 
 short scratchPad_zbuff[256];
