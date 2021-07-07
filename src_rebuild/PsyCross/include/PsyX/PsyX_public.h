@@ -4,30 +4,18 @@
 #define CONTROLLER_MAP_FLAG_AXIS		0x4000
 #define CONTROLLER_MAP_FLAG_INVERSE		0x8000
 
-typedef struct 
+typedef struct
 {
 	int id;
 
-	int kc_square;
-	int kc_circle;
-	int kc_triangle;
-	int kc_cross;
+	int kc_square, kc_circle, kc_triangle, kc_cross;
 
-	int kc_l1;
-	int kc_l2;
-	int kc_l3;
+	int kc_l1, kc_l2, kc_l3;
+	int kc_r1, kc_r2, kc_r3;
 
-	int kc_r1;
-	int kc_r2;
-	int kc_r3;
+	int kc_start, kc_select;
 
-	int kc_start;
-	int kc_select;
-
-	int kc_dpad_left;
-	int kc_dpad_right;
-	int kc_dpad_up;
-	int kc_dpad_down;
+	int kc_dpad_left, kc_dpad_right, kc_dpad_up, kc_dpad_down;
 } PsyXKeyboardMapping;
 
 typedef struct
@@ -35,32 +23,17 @@ typedef struct
 	int id;
 
 	// you can bind axis by adding CONTROLLER_MAP_AXIS_FLAG
-	int gc_square;
-	int gc_circle;
-	int gc_triangle;
-	int gc_cross;
+	int gc_square, gc_circle, gc_triangle, gc_cross;
 
-	int gc_l1;
-	int gc_l2;
-	int gc_l3;
+	int gc_l1, gc_l2, gc_l3;
+	int gc_r1, gc_r2, gc_r3;
 
-	int gc_r1;
-	int gc_r2;
-	int gc_r3;
+	int gc_start, gc_select;
 
-	int gc_start;
-	int gc_select;
+	int gc_dpad_left, gc_dpad_right, gc_dpad_up, gc_dpad_down;
 
-	int gc_dpad_left;
-	int gc_dpad_right;
-	int gc_dpad_up;
-	int gc_dpad_down;
-
-	int gc_axis_left_x;
-	int gc_axis_left_y;
-
-	int gc_axis_right_x;
-	int gc_axis_right_y;
+	int gc_axis_left_x, gc_axis_left_y;
+	int gc_axis_right_x, gc_axis_right_y;
 } PsyXControllerMapping;
 
 typedef void(*GameDebugKeysHandlerFunc)(int nKey, char down);
