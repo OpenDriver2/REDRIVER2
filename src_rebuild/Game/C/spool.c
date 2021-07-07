@@ -903,6 +903,15 @@ void ProcessSpoolInfoLump(char *lump_ptr, int lump_size)
 
 	int spoolinfo_size = getIntAdv(ptr);
 	RegionSpoolInfo = ptr;
+
+	// [A] bug fix for VEGAS. This doesn't happen in OpenDriverEngine since region loading is better
+	if (GameLevel == 2)
+	{
+		Spool* spoolptr;
+		spoolptr = (Spool*)(RegionSpoolInfo + spoolinfo_offsets[624]);
+
+		spoolptr->super_region = 4;
+	}
 }
 
 // [D] [T]
