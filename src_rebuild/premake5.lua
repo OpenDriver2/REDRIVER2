@@ -76,7 +76,8 @@ workspace "REDRIVER2"
 			targetextension ".html"
 			
 		postbuildcommands {
-			"{COPY} " .. WEBSHELL_PATH .. "/style.css %{cfg.buildtarget.directory}"
+			"{COPY} " .. WEBSHELL_PATH .. "/style.css %{cfg.buildtarget.directory}",
+			"{COPY} " .. WEBSHELL_PATH .. "/lsfs.js %{cfg.buildtarget.directory}"
 		}
 
 	else
