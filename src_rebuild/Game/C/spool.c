@@ -520,6 +520,9 @@ void SendTPage(void)
 void SpoolSYNC(void)
 {
 	do {
+#ifdef __EMSCRIPTEN__
+		emscripten_sleep(0);
+#endif // __EMSCRIPTEN__
 	} while (spoolactive != 0);
 }
 
