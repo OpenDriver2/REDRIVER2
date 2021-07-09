@@ -1827,6 +1827,11 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 		return;
 #endif
 
+#ifdef __EMSCRIPTEN__
+	// since any WebGL isn't able to make it drawn...
+	return;
+#endif
+
 	if (NumPlayers > 1)
 		return;
 
