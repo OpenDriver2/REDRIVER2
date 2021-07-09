@@ -197,6 +197,9 @@ extern "C" {
 /* Initializes CD filesystem using ISO 9660 compliant file */
 extern void PsyX_CDFS_Init(const char* imageFileName, int track /*= 0*/, int sectorSize /*= 0*/);
 
+/* Initializes CD filesystem using ISO 9660 compliant stream */
+extern void PsyX_CDFS_Init_Mem(const u_long* data, int size, int track /*= 0*/, int sectorSize /*= 0*/);
+
 void	StSetRing(u_long *ring_addr,u_long ring_size);
 void	StClearRing(void);
 void	StUnSetRing(void);
