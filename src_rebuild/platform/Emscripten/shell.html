@@ -97,9 +97,11 @@
 			<div class="emscripten">
 				<p></p>
 				<p>See&nbsp;<a target="_blank" href="https://github.com/OpenDriver2/REDRIVER2/wiki/Controls">REDRIVER2 wiki</a>&nbsp;for controls</p>
-				<input type="file" id="browseFile" style="display:none" accept=".iso,.bin,.ccd" onchange="readCDImage(event)" />
-				<input type="button" value="Run demo" onclick="runDemo()" />
-				<input type="button" value="Browse CD image" onclick="document.getElementById('browseFile').click();" /> (.ISO, .BIN, .CCD)&nbsp;
+				<div id="startup_panel">
+					<input type="file" id="browseFile" style="display:none" accept=".iso,.bin,.ccd" onchange="readCDImage(event)" />
+					<input type="button" value="Run demo" onclick="runDemo()" />
+					<input type="button" value="Browse CD image" onclick="document.getElementById('browseFile').click();" /> (.ISO, .BIN, .CCD)&nbsp;
+				</div>
 			</div>
 		</div>
 
@@ -115,6 +117,7 @@
             postRun: [],
             print: (function () {
                 var element = document.getElementById('output');
+				
                 if (element) element.value = ''; // clear browser cache
                 return function (text) {
                     if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
@@ -136,7 +139,7 @@
             },
             canvas: (function () {
                 var canvas = document.getElementById('canvas');
-
+				canvas.style.display = "none";
                 // As a default initial behavior, pop up an alert when webgl context is lost. To make your
                 // application robust, you may want to override this behavior before shipping!
                 // See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
@@ -178,7 +181,7 @@
 		// don't immediately run the game
 		Module['noInitialRun'] = true
 		
-		// for save data
+		// for save config/data
 		Module.preRun.push(function() {
 		    ENV.HOME = "/userstorage";
 			
@@ -204,12 +207,24 @@
 				Module.ccall('WebLoadCDImage', 'null', ['number', 'number'], [data, size]);
 				
 				callMain();
+				
+				var element = document.getElementById('startup_panel');
+				element.style.display = "none"; 
+				
+				var canvas = document.getElementById('canvas');
+				canvas.style.display = null;
 			};
 			reader.readAsArrayBuffer(event.target.files[0]);
 		}
 		
 		function runDemo() {
 			callMain(["-ini", "demo_config.ini"]);
+			
+			var element = document.getElementById('startup_panel');
+			element.style.display = "none"; 
+			
+			var canvas = document.getElementById('canvas');
+			canvas.style.display = null;
 		}
     </script>
 	<script src="lsfs.js"></script> 
