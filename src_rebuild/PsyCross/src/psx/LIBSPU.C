@@ -665,6 +665,14 @@ void SpuSetVoiceAttr(SpuVoiceAttr *arg)
 		// update pitch
 		if (arg->mask & SPU_VOICE_PITCH)
 		{
+			ALint state;
+			alGetSourcei(alSource, AL_SOURCE_STATE, &state);
+
+			if (arg->pitch == 0 && state == AL_PLAYING)
+				alSourcePause(alSource);
+			else if (voice->attr.pitch == 0 && state == AL_PAUSED)
+				alSourcePlay(alSource);
+
 			voice->attr.pitch = arg->pitch;
 
 			pitch = (float)(voice->attr.pitch) / 4096.0f;
