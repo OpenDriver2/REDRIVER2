@@ -98,6 +98,9 @@
 			<div class="emscripten">
 				<p></p>
 				<p>See&nbsp;<a target="_blank" href="https://github.com/OpenDriver2/REDRIVER2/wiki/Controls">REDRIVER2 wiki</a>&nbsp;for controls</p>
+				<input type="file" id="browseFile" style="display:none" accept=".iso,.bin,.ccd" onchange="readCDImage(event)" />
+				<input type="button" value="Run demo" onclick="runDemo()" />
+				<input type="button" value="Browse CD image" onclick="document.getElementById('browseFile').click();" /> (.ISO, .BIN, .CCD)&nbsp;
 			</div>
 		</div>
 
@@ -171,6 +174,9 @@
             }
         };
         Module.setStatus('Downloading...');
+		
+		Module['noInitialRun'] = true
+		
         window.onerror = function () {
             Module.setStatus('Exception thrown, see JavaScript console');
             spinnerElement.style.display = 'none';
@@ -178,6 +184,23 @@
                 if (text) Module.printErr('[post-exception status] ' + text);
             };
         };
+		
+		function readCDImage(event) {
+			var reader = new FileReader();
+			reader.onload = function(){
+				var size = reader.result.byteLength;
+				var data = Module._malloc(size);
+				Module.writeArrayToMemory(new Uint8Array(reader.result), data);
+				Module.ccall('WebLoadCDImage', 'null', ['number', 'number'], [data, size]);
+				
+				callMain();
+			};
+			reader.readAsArrayBuffer(event.target.files[0]);
+		}
+		
+		function runDemo() {
+			callMain(["-ini", "demo_config.ini"]);
+		}
     </script>
     {{{ SCRIPT }}}
 </body>

@@ -20,7 +20,8 @@ OPENAL_DIR = os.getenv("OPENAL_DIR") or "dependencies/openal-soft"
 JPEG_DIR = os.getenv("JPEG_DIR") or "dependencies/jpeg"
 
 WEBDEMO_DIR = os.getenv("WEBDEMO_DIR") or "../../../content/web_demo@/"	-- FIXME: make it better
-WEBSHELL_PATH = "../../.emscripten"
+RED2_DIR = os.getenv("RED2_DIR") or "../../data@/"
+WEBSHELL_PATH = "../platform/Emscripten"	-- must be relative to makefile path (SADLY)
 
 GAME_REGION = os.getenv("GAME_REGION") or "NTSC_VERSION" -- or PAL_VERSION
 GAME_VERSION = os.getenv("APPVEYOR_BUILD_VERSION") or nil
@@ -66,7 +67,9 @@ workspace "REDRIVER2"
 			"-s ALLOW_MEMORY_GROWTH=1",
 			"-s GL_TESTING=1",
 			("--shell-file " .. WEBSHELL_PATH .. "/shell.html"),
-			("--preload-file " .. WEBDEMO_DIR)
+			("--preload-file " .. WEBDEMO_DIR),
+			("--preload-file " .. RED2_DIR),
+			"-s 'EXPORTED_RUNTIME_METHODS=[\"ccall\", \"writeArrayToMemory\"]'"
 		}
 		
 		filter { "kind:*App" }
@@ -176,14 +179,26 @@ project "REDRIVER2"
 			OPENAL_DIR.."/include",
 			JPEG_DIR.."/",
         }
+		files { 
+            "platform/Emscripten/*.cpp",
+			"platform/Emscripten/*.h",
+			"platform/Emscripten/*.css",
+			"platform/Emscripten/*.html", 
+        }
 
     filter "system:Windows"
 		entrypoint "mainCRTStartup"
 		
+		files { -- TEMP
+            "platform/Emscripten/*.cpp",
+			"platform/Emscripten/*.h",
+			"platform/Emscripten/*.css",
+			"platform/Emscripten/*.html", 
+        }
         files { 
-            "Windows/resource.h", 
-            "Windows/Resource.rc", 
-            "Windows/main.ico" 
+            "platform/Windows/resource.h", 
+            "platform/Windows/Resource.rc", 
+            "platform/Windows/main.ico" 
         }
 
         includedirs { 
