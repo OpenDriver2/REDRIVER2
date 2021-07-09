@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css?family=Oswald&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
     <style>
         .emscripten {
             padding-right: 0;
@@ -173,9 +172,20 @@
                 Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies - left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
             }
         };
+		
         Module.setStatus('Downloading...');
 		
+		// don't immediately run the game
 		Module['noInitialRun'] = true
+		
+		// for save data
+		Module.preRun.push(function() {
+		    ENV.HOME = "/userstorage";
+			
+			// create LSFS and mount 'data' local storage item into '/data' directory
+		    FS.mkdir('/userstorage'); // for old versions use: FS.createFolder(FS.root, 'data', true, true);
+		    FS.mount(LSFS(), { key: 'userstorage' }, '/userstorage');
+		})
 		
         window.onerror = function () {
             Module.setStatus('Exception thrown, see JavaScript console');
@@ -202,6 +212,7 @@
 			callMain(["-ini", "demo_config.ini"]);
 		}
     </script>
+	<script src="lsfs.js"></script> 
     {{{ SCRIPT }}}
 </body>
 </html>
