@@ -182,20 +182,17 @@ project "REDRIVER2"
         }
 		files { 
             "platform/Emscripten/*.cpp",
-			"platform/Emscripten/*.h",
-			"platform/Emscripten/*.css",
-			"platform/Emscripten/*.html", 
         }
 
     filter "system:Windows"
 		entrypoint "mainCRTStartup"
 		
 		files { -- TEMP
-            "platform/Emscripten/*.cpp",
 			"platform/Emscripten/*.h",
 			"platform/Emscripten/*.css",
 			"platform/Emscripten/*.html", 
         }
+		
         files { 
             "platform/Windows/resource.h", 
             "platform/Windows/Resource.rc", 
