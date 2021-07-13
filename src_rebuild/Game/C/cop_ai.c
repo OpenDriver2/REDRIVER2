@@ -216,7 +216,7 @@ void UpdateCopSightData(void)
 	else
 		playerFelony = &car_data[player[0].playerCarId].felonyRating;
 
-	if (*playerFelony > FELONY_MIN_VALUE)
+	if (*playerFelony > FELONY_PURSUIT_MIN_VALUE)
 	{
 		copSightData.surroundViewDistance = 5440;
 		copSightData.frontViewDistance = 16320;
@@ -858,7 +858,7 @@ void ControlCopDetection(void)
 	}
 
 	// [A] if Tanner is outside car, cops can arrest him if they are too close
-	if(player[0].playerType == 2 && minDistanceToPlayer < 2048 && !player[0].dying && pedestrianFelony > FELONY_MIN_VALUE)
+	if(player[0].playerType == 2 && minDistanceToPlayer < 2048 && !player[0].dying && pedestrianFelony > FELONY_PURSUIT_MIN_VALUE)
 	{
 		player[0].dying = 1;
 		
@@ -963,7 +963,7 @@ void PassiveCopTasks(CAR_DATA *cp)
 	else 
 		playerFelony = &car_data[player[0].playerCarId].felonyRating;
 
-	if (*playerFelony <= FELONY_MIN_VALUE)
+	if (*playerFelony <= FELONY_PURSUIT_MIN_VALUE)
 		return;
 
 	// [A] make an ambush on player in Destroy the yard
@@ -1136,7 +1136,9 @@ void ControlCops(void)
 		// play the phrases about direction
 		if (first_offence == 0 && CopsCanSeePlayer && numActiveCops != 0)
 		{
-			if (*playerFelony > 658 && TimeSinceLastSpeech > 720 && targetVehicle->hd.speed > 20)
+			if (*playerFelony > FELONY_PURSUIT_MIN_VALUE && 
+				TimeSinceLastSpeech > 720 && 
+				targetVehicle->hd.speed > 20)
 			{
 				int rnd;
 				heading = GetCarDirectionOfTravel(targetVehicle);
@@ -1182,7 +1184,7 @@ void ControlCops(void)
 		if (CopsCanSeePlayer && OutOfSightCount < 256 ||	// [A] was player_position_known. Resolves speech in some missions
 			player_position_known > 1 && GameType == GAME_GETAWAY)
 		{
-			if (*playerFelony > FELONY_MIN_VALUE)
+			if (*playerFelony > FELONY_PURSUIT_MIN_VALUE)
 				copsWereInPursuit = 1;
 		}
 

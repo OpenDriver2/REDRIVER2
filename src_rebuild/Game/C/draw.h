@@ -14,8 +14,6 @@ extern MATRIX face_camera;
 extern MATRIX2 matrixtable[64];
 extern MATRIX2 CompoundMatrix[64];
 
-extern _pct& plotContext;
-
 #ifdef PSX
 
 #define MAX_DRAWN_BUILDINGS		192
@@ -26,6 +24,8 @@ extern _pct& plotContext;
 #define DRAW_LOD_DIST_HIGH		4000
 #define DRAW_LOD_DIST_LOW		7000
 
+#define plotContext (*(_pct*)((u_char*)getScratchAddr(0) + 1024 - sizeof(_pct)))
+
 #else
 
 #define MAX_DRAWN_BUILDINGS		384
@@ -35,6 +35,8 @@ extern _pct& plotContext;
 
 #define DRAW_LOD_DIST_HIGH		7000
 #define DRAW_LOD_DIST_LOW		10000
+
+extern _pct& plotContext;
 
 #endif
 

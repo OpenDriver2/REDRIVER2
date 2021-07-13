@@ -70,7 +70,7 @@ int TannerStuckInCar(int doSpeedCheck, int player_id)
 			playerFelony = &cp->felonyRating;
 		}
 
-		if ((*playerFelony <= FELONY_MIN_VALUE || player_position_known < 1) &&
+		if ((*playerFelony <= FELONY_PURSUIT_MIN_VALUE || player_position_known < 1) &&
 			cp &&
 			(cp->hd.wheel[1].surface & 7) != 1 &&
 			(cp->hd.wheel[3].surface & 7) != 1)

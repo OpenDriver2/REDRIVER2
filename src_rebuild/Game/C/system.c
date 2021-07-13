@@ -553,6 +553,9 @@ void loadsectors(char* addr, int sector, int nsectors)
 
 	// ... but wait synchronously
 	do {
+#ifdef __EMSCRIPTEN__
+		emscripten_sleep(0);
+#endif // __EMSCRIPTEN__
 	} while (load_complete == 0);
 
 	ShowLoading();

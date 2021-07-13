@@ -743,7 +743,7 @@ void DisplayOverlays(void)
 			else
 				felony = &car_data[player[0].playerCarId].felonyRating;
 
-			if (*felony > FELONY_MIN_VALUE)
+			if (*felony > FELONY_PURSUIT_MIN_VALUE)
 				DrawCopIndicators();
 		}
 	}

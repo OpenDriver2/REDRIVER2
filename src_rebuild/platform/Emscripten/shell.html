@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css?family=Oswald&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-
     <style>
         .emscripten {
             padding-right: 0;
@@ -98,6 +97,11 @@
 			<div class="emscripten">
 				<p></p>
 				<p>See&nbsp;<a target="_blank" href="https://github.com/OpenDriver2/REDRIVER2/wiki/Controls">REDRIVER2 wiki</a>&nbsp;for controls</p>
+				<div id="startup_panel">
+					<input type="file" id="browseFile" style="display:none" accept=".iso,.bin,.ccd" onchange="readCDImage(event)" />
+					<input type="button" value="Run demo" onclick="runDemo()" />
+					<input type="button" value="Browse CD image" onclick="document.getElementById('browseFile').click();" /> (.ISO, .BIN, .CCD)&nbsp;
+				</div>
 			</div>
 		</div>
 
@@ -113,6 +117,7 @@
             postRun: [],
             print: (function () {
                 var element = document.getElementById('output');
+				
                 if (element) element.value = ''; // clear browser cache
                 return function (text) {
                     if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
@@ -134,7 +139,7 @@
             },
             canvas: (function () {
                 var canvas = document.getElementById('canvas');
-
+				canvas.style.display = "none";
                 // As a default initial behavior, pop up an alert when webgl context is lost. To make your
                 // application robust, you may want to override this behavior before shipping!
                 // See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
@@ -170,7 +175,21 @@
                 Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies - left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
             }
         };
+		
         Module.setStatus('Downloading...');
+		
+		// don't immediately run the game
+		Module['noInitialRun'] = true
+		
+		// for save config/data
+		Module.preRun.push(function() {
+		    ENV.HOME = "/userstorage";
+			
+			// create LSFS and mount 'data' local storage item into '/data' directory
+		    FS.mkdir('/userstorage'); // for old versions use: FS.createFolder(FS.root, 'data', true, true);
+		    FS.mount(LSFS(), { key: 'userstorage' }, '/userstorage');
+		})
+		
         window.onerror = function () {
             Module.setStatus('Exception thrown, see JavaScript console');
             spinnerElement.style.display = 'none';
@@ -178,7 +197,37 @@
                 if (text) Module.printErr('[post-exception status] ' + text);
             };
         };
+		
+		function readCDImage(event) {
+			var reader = new FileReader();
+			reader.onload = function(){
+				var size = reader.result.byteLength;
+				var data = Module._malloc(size);
+				Module.writeArrayToMemory(new Uint8Array(reader.result), data);
+				Module.ccall('WebLoadCDImage', 'null', ['number', 'number'], [data, size]);
+				
+				callMain();
+				
+				var element = document.getElementById('startup_panel');
+				element.style.display = "none"; 
+				
+				var canvas = document.getElementById('canvas');
+				canvas.style.display = null;
+			};
+			reader.readAsArrayBuffer(event.target.files[0]);
+		}
+		
+		function runDemo() {
+			callMain(["-ini", "demo_config.ini"]);
+			
+			var element = document.getElementById('startup_panel');
+			element.style.display = "none"; 
+			
+			var canvas = document.getElementById('canvas');
+			canvas.style.display = null;
+		}
     </script>
+	<script src="lsfs.js"></script> 
     {{{ SCRIPT }}}
 </body>
 </html>

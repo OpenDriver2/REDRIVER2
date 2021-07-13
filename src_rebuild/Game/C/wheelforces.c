@@ -358,7 +358,7 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 				if (ABS(pointVel[0]) + ABS(pointVel[2]) < 8000)
 				{
 					surfaceNormal[0] = 0;
-					surfaceNormal[1] = 0x1000;
+					surfaceNormal[1] = ONE;
 					surfaceNormal[2] = 0;
 				}
 			}
@@ -422,11 +422,11 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 			else
 			{
 				// front wheels
-				sidevel = frontFS * slidevel + 0x800 >> 0xc;
+				sidevel = frontFS * slidevel + 2048 >> 12;
 				
 				if (wheel->locked)
 				{
-					sidevel = (frontFS * slidevel + 0x800 >> 0xd) + sidevel >> 1;
+					sidevel = (frontFS * slidevel + 2048 >> 13) + sidevel >> 1;
 					
 					forcefac = FixHalfRound(FIXEDH(-sidevel * lfx) * sdz - FIXEDH(-sidevel * lfz) * sdx, 11);
 					

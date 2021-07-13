@@ -91,6 +91,13 @@ FLAREREC flare_info[8] =
 	}
 };
 
+int tunnelDir[3][2] =
+{
+	{2000, 3064},
+	{2048, 0},
+	{2048, 4095}
+};
+
 VECTOR tunnelPos[3][2] =
 {
 	{
@@ -115,23 +122,18 @@ short skytpage[28];
 // [D] [T]
 void LoadSky(void)
 {
+	char name[16];
+
 	int skyNum;
 	RECT16 rect;
-	char name[16];
+	
 	int offset;
 
 	int flipped;
 	int single;
 
-	int v;
-	int u;
-	int y;
-	int x;
-	int ry;
-	int i;
-
-	int tp_x;
-	int clut_x;
+	int u,v,x,y,ry;
+	int tp_x, clut_x, i;
 
 	i = 0;
 	y = 0;
@@ -277,10 +279,7 @@ void LoadSky(void)
 	sprintf(name, "DATA\\SKY%d.RAW", skyNum);
 	LoadfileSeg(name, (char*)_primTab1, offset, 0x10000);
 
-	rect.x = 320;
-	rect.y = 0;
-	rect.w = 128;
-	rect.h = 256;
+	setRECT(&rect, 320, 0, 128, 256);
 
 	LoadImage(&rect, (u_long*)_primTab1);
 
@@ -690,41 +689,33 @@ int skyFade;
 
 RGB16 skycolor = { 128,128,128 };
 
-int tunnelDir[3][2] =
-{
-	{2000, 3064},
-	{2048, 0},
-	{2048, 4095}
-};
-
 // [D] [T]
 void TunnelSkyFade(void)
 {
-	int dZ;
-	int diffZ;
-	int dX;
-	int diffX;
-	int l2;
-	int len;
+	int dX, dZ, diffZ, diffX;
+	int len, l2;
 	VECTOR* v2;
 	VECTOR* v1;
 	int tun;
 
-	if (GameLevel != 3)
+	if (gTunnelNum == -1)
+		return;
+
+	if (GameLevel != 3 && gTunnelNum < 3)
 		tun = gTunnelNum;
 	else
 		tun = 2;
 
-	if (gTunnelNum == -1)
-		return;
-
 	v1 = NULL;
 	v2 = NULL;
 
-	if (((tunnelDir[tun][0] - camera_angle.vy) + 0x800U & 0xfff) - 801 < 2495)
+	// HMM?
+	// DIFF_ANGLES(camera_angle.vy, tunnelDir[tun][0]) + 1247 < 2495;
+
+	if (DIFF_ANGLES(camera_angle.vy, tunnelDir[tun][0]) + 1247 < 2495) // (((tunnelDir[tun][0] - camera_angle.vy) + 2048 & 4095) - 801 < 2495)
 		v1 = &tunnelPos[tun][0];
 
-	if (((tunnelDir[tun][1] - camera_angle.vy) + 0x800U & 0xfff) - 801 < 2495)
+	if (DIFF_ANGLES(camera_angle.vy, tunnelDir[tun][1]) + 1247 < 2495) // (((tunnelDir[tun][1] - camera_angle.vy) + 2048 & 4095) - 801 < 2495)
 		v2 = &tunnelPos[tun][1];
 
 	if(v1 && v2)
@@ -830,7 +821,7 @@ void calc_sky_brightness(void)
 #ifdef USE_PGXP
 DVECTORF scratchPad_skyVertices[35];	// 1f800044
 #else
-DVECTOR scratchPad_skyVertices[35];	// 1f800044
+#define scratchPad_skyVertices ((DVECTOR*)getScratchAddr(0x11))	// 1f800044
 #endif
 
 short scratchPad_zbuff[256];

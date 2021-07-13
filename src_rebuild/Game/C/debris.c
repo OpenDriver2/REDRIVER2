@@ -1023,7 +1023,7 @@ void AddGroundDebris(void)
 
 				seed = rand();
 
-				Position.vy = -cop->pos.vy - 45;
+				Position.vy = cop->pos.vy - 45;
 				Position.vx = cop->pos.vx + ((seed & 0x3ff) - 512);
 				Position.vz = cop->pos.vz + ((rand() & 0x3ff) - 512);
 

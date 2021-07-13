@@ -539,7 +539,7 @@ int main(int argc, char** argv)
 		}
 	}
 
-	config = ini_load("config.ini");
+	config = ini_load(configFilename);
 
 	// best distance
 	gDrawDistance = 600;

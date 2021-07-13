@@ -97,19 +97,7 @@ void LoadCurrentProfile(int init)
 	}
 
 	SetTextColour(128, 128, 64);
-	ShowSavingWaitMessage(G_LTXT(GTXT_LoadingConfiguration), 0);
-	/*
-	{
-		RECT16 rect;
-		rect.x = 0;
-		rect.y = 0;
-		rect.w = 320;
-		rect.h = 512;
 
-		ClearImage(&rect, 0, 0, 0);
-		DrawSync(0);
-	}
-	*/
 	error = 1;
 
 #ifndef PSX
@@ -134,6 +122,7 @@ void LoadCurrentProfile(int init)
 
 		if (fileSize <= CalcConfigDataSize())
 		{
+			ShowSavingWaitMessage(G_LTXT(GTXT_LoadingConfiguration), 0);
 			LoadConfigData((char*)_other_buffer);
 			error = 0;
 		}
@@ -151,10 +140,6 @@ void LoadCurrentProfile(int init)
 	{
 		SetTextColour(128, 0, 0);
 		ShowSavingWaitMessage(G_LTXT(GTXT_LoadingError), 0);
-	}
-	else
-	{
-		ShowSavingWaitMessage(G_LTXT(GTXT_OK), 0);
 	}
 
 	SetMasterVolume(gMasterVolume);
@@ -196,10 +181,6 @@ void SaveCurrentProfile()
 		SetTextColour(128, 0, 0);
 		ShowSavingWaitMessage(G_LTXT(GTXT_SavingError), 0);
 	}
-	else
-	{
-		ShowSavingWaitMessage(G_LTXT(GTXT_OK), 0);
-	}
 #else
 	// TODO: PSX memory card code
 #endif
@@ -217,7 +198,6 @@ int LoadCurrentGame()
 	strcat(filePath, "/progress.dat");
 
 	SetTextColour(128, 128, 64);
-	ShowSavingWaitMessage(G_LTXT(GTXT_LoadingProgress), 0);
 
 	// load config
 	FILE* fp = fopen(filePath, "rb");
@@ -233,9 +213,15 @@ int LoadCurrentGame()
 
 		if (fileSize <= CalcGameDataSize())
 		{
+			ShowSavingWaitMessage(G_LTXT(GTXT_LoadingProgress), 0);
+
 			LoadGameData((char*)_other_buffer);
 			return 1;
 		}
+	}
+	else
+	{
+		ShowSavingWaitMessage(G_LTXT(GTXT_NoSavedData), 0);
 	}
 #else
 	// TODO: PSX memory card code

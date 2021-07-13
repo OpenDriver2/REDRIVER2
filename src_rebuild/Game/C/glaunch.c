@@ -669,8 +669,8 @@ void State_GameComplete(void* param)
 
 #ifndef PSX
 	// set to 60 FPS VSync
-	// PsyX_SetSwapInterval(1);
-	// PsyX_EnableSwapInterval(1);
+	PsyX_SetSwapInterval(1);
+	PsyX_EnableSwapInterval(1);
 #endif
 }
 

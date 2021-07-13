@@ -660,6 +660,10 @@ char* WaitForTextEntry(char* textBufPtr, int maxLength)
 		}
 
 		DrawGame();
+
+#ifdef __EMSCRIPTEN__
+		emscripten_sleep(0);
+#endif
 	} while (true);
 
 #if !USE_PAD_INPUT

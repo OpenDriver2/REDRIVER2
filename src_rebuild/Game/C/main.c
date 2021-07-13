@@ -817,8 +817,8 @@ void State_GameInit(void* param)
 
 #ifndef PSX
 	// set to 30 FPS VSync
-	// PsyX_SetSwapInterval(2);
-	// PsyX_EnableSwapInterval(1);
+	PsyX_SetSwapInterval(2);
+	PsyX_EnableSwapInterval(1);
 #endif
 }
 
@@ -892,7 +892,7 @@ void StepSim(void)
 		playerFelony = &car_data[player[0].playerCarId].felonyRating;
 
 	// control cop roadblocks
-	if (*playerFelony < 0x527 || numRoadblockCars != 0)
+	if (*playerFelony <= FELONY_ROADBLOCK_MIN_VALUE || numRoadblockCars != 0)
 	{
 		if (roadblockCount != 0)
 		{
