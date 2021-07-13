@@ -200,11 +200,19 @@ void CutRec_Draw()
 		PrintString(text, 5, 215);
 	}
 
-	if (gAutoTestStats[gCutsceneChaseAutoTest].numHitCars > 0)
+	if(PingBufferPos >= MAX_REPLAY_PINGS-1)
 		SetTextColour(128, 0, 0);
 
-	sprintf(text, "Hit cars: %d", gAutoTestStats[gCutsceneChaseAutoTest].numHitCars);
+	sprintf(text, "Pings: %d", PingBufferPos);
 	PrintString(text, 5, 205);
+
+	SetTextColour(128, 128, 128);
+
+	if (gAutoTestStats[gCutsceneChaseAutoTest].numHitCars > 0)
+		SetTextColour(128, 0, 0);		
+
+	sprintf(text, "Hit cars: %d", gAutoTestStats[gCutsceneChaseAutoTest].numHitCars);
+	PrintString(text, 120, 205);
 
 	if(gAutoTestStats[gCutsceneChaseAutoTest].stuck)
 	{
