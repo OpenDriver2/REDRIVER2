@@ -918,7 +918,7 @@ void StepSim(void)
 	// control civcars pingin/pingout
 	if (requestStationaryCivCar != 1 && requestRoadblock == 0)
 	{
-		if (gInGameChaseActive)
+		if (gInGameChaseActive || _CutRec_IsPlaying())
 		{
 			// it will use ping buffer
 			// checks are done internally
