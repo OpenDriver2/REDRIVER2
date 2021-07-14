@@ -364,7 +364,7 @@ char GetPingInfo(char *cookieCount)
 // [A] returns 1 if can use ping buffer
 int IsPingInfoAvailable()
 {
-	if (!_CutRec_IsAutoTestOn() && (gUseStoredPings == 0 || gInGameChaseActive == 0))// && gLoadedReplay == 0)
+	if (!_CutRec_IsPlaying() && (gUseStoredPings == 0 || gInGameChaseActive == 0))// && gLoadedReplay == 0)
 		return 0;
 	
 	return PingBuffer != NULL && PingBufferPos < MAX_REPLAY_PINGS;

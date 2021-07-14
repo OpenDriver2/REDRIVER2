@@ -5,6 +5,7 @@
 #ifdef CUTSCENE_RECORDER
 
 #include "driver2.h"
+#include "cutrecorder.h"
 
 #include "main.h"
 #include "pad.h"
@@ -118,7 +119,7 @@ int CutRec_GotoChase(int number)
 
 void CutRec_Step()
 {
-	if (gCutsceneChaseAutoTest != 0)
+	if (gCutsceneChaseAutoTest != 0 && CutRec_IsPlaying())
 	{
 		// goto previous chase
 		if (Pads[0].dirnew & CAR_PAD_LEFT)
@@ -411,10 +412,7 @@ int CutRec_StorePingInfo(int cookieCount, int carId)
 	PING_PACKET* buffer;
 	PING_PACKET* packet;
 
-	if (gCutsceneAsReplay == 0)
-		return 0;
-
-	if (CurrentGameMode == GAMEMODE_REPLAY || gInGameChaseActive != 0)
+	if (!CutRec_IsRecording())
 		return 0;
 
 	if (PingBufferPos < MAX_REPLAY_PINGS-1)
@@ -425,11 +423,15 @@ int CutRec_StorePingInfo(int cookieCount, int carId)
 
 		packet->cookieCount = cookieCount;
 
+		PingBuffer[PingBufferPos - 1] = *packet;
+
 		// always finalize last ping
 		packet = &NewPingBuffer[PingBufferPos];
 		packet->frame = 0xffff;
 		packet->carId = -1;
 		packet->cookieCount = -1;
+
+		
 
 		return 1;
 	}
@@ -786,6 +788,22 @@ int CutRec_RecordPad(CAR_DATA* cp, uint* t0, char* t1, char* t2)
 	cjpRecord(-*cp->ai.padid, t0, t1, t2);
 
 	return 1;
+}
+
+int	CutRec_IsRecording()
+{
+	if (gCutsceneAsReplay == 0)
+		return 0;
+
+	return CurrentGameMode != GAMEMODE_REPLAY;
+}
+
+int	CutRec_IsPlaying()
+{
+	if (gCutsceneAsReplay == 0)
+		return 0;
+
+	return CurrentGameMode == GAMEMODE_REPLAY;
 }
 
 #endif // CUTSCENE_RECORDER
