@@ -13,6 +13,8 @@
 #include "glaunch.h"
 #include "system.h"
 
+#define GRAVITY_FORCE		(-7456)			// D1 has -10922
+
 struct CAR_LOCALS
 {
 	LONGVECTOR4 vel;
@@ -520,9 +522,9 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 void StepOneCar(CAR_DATA* cp)
 {
 	static int frictionLimit[6] = {
-		0x3ED000, 0x178E000,
-		0x3ED000, 0x13A1000,
-		0x75C6000,0x13A1000
+		1005 * ONE, 6030 * ONE,
+		1005 * ONE, 5025 * ONE,
+		1884 * ONE, 5025 * ONE
 	};
 
 	volatile int impulse;
@@ -532,14 +534,9 @@ void StepOneCar(CAR_DATA* cp)
 	int a, b, speed;
 	int count, i;
 	CAR_LOCALS _cl;
-	LONGVECTOR4 deepestNormal;
-	LONGVECTOR4 deepestLever;
-	LONGVECTOR4 deepestPoint;
-	LONGVECTOR4 pointPos;
-	LONGVECTOR4 surfacePoint;
-	LONGVECTOR4 surfaceNormal;
-	LONGVECTOR4 lever;
-	LONGVECTOR4 reaction;
+	LONGVECTOR4 deepestNormal, deepestLever, deepestPoint;
+	LONGVECTOR4 pointPos, surfacePoint, surfaceNormal;
+	LONGVECTOR4 lever, reaction;
 	VECTOR direction;
 	sdPlane* SurfacePtr;
 
@@ -559,7 +556,7 @@ void StepOneCar(CAR_DATA* cp)
 	}
 
 	cp->hd.acc[0] = 0;
-	cp->hd.acc[1] = -7456; // apply gravity
+	cp->hd.acc[1] = GRAVITY_FORCE; // apply gravity
 	cp->hd.acc[2] = 0;
 
 	// calculate car speed
