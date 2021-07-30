@@ -153,9 +153,12 @@ project "REDRIVER2"
 	}
 
     defines { GAME_REGION }
+	defines { "BUILD_CONFIGURATION_STRING=\"%{cfg.buildcfg}\"" }
 	
 	if GAME_VERSION ~= nil then
+		local resVersion = string.gsub(GAME_VERSION, "%.", ",")
 		defines{ "GAME_VERSION_N=\""..GAME_VERSION.."\"" }
+		defines{ "GAME_VERSION_RES="..resVersion.."" }
 	end
 
     files {
