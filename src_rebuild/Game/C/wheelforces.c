@@ -174,11 +174,11 @@ void ConvertTorqueToAngularAcceleration(CAR_DATA* cp, CAR_LOCALS* cl)
 	twistY = car_cosmetics[cp->ap.model].twistRateY;
 	twistZ = car_cosmetics[cp->ap.model].twistRateZ;
 
-	zd = FIXEDH(cp->hd.where.m[0][2] * cp->hd.aacc[0] + cp->hd.where.m[1][2] * cp->hd.aacc[1] + cp->hd.where.m[2][2] * cp->hd.aacc[2]);
+	zd = (twistZ - twistY) * FIXEDH(cp->hd.where.m[0][2] * cp->hd.aacc[0] + cp->hd.where.m[1][2] * cp->hd.aacc[1] + cp->hd.where.m[2][2] * cp->hd.aacc[2]);
 
 	for (i = 0; i < 3; i++)
 	{
-		cp->hd.aacc[i] = cp->hd.aacc[i] * twistY + FIXEDH(cp->hd.where.m[i][2] * (twistZ - twistY) * zd - cl->avel[i] * 128);
+		cp->hd.aacc[i] = cp->hd.aacc[i] * twistY + FIXEDH(cp->hd.where.m[i][2] * zd - cl->avel[i] * 128);
 
 		if (cl->extraangulardamping == 1)
 			cp->hd.aacc[i] -= cl->avel[i] / 8;
