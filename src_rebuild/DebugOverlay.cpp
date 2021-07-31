@@ -186,12 +186,18 @@ void DrawDebugOverlays()
 				);
 
 				PrintString(tempBuf, 10, 195);
+
+				sprintf(tempBuf, "c %d %d %d %d",
+					(int)(*roadInfo.ConnectIdx)[0], (int)(*roadInfo.ConnectIdx)[1], (int)(*roadInfo.ConnectIdx)[2], (int)(*roadInfo.ConnectIdx)[3]);
+
+				PrintString(tempBuf, 10, 205);
 			}
 			else if(IS_JUNCTION_SURFACE(roadInfo.surfId))
 			{
 				DRIVER2_JUNCTION* junc = GET_JUNCTION(roadInfo.surfId);
 				
-				sprintf(tempBuf, "JUN %d flg %d",roadInfo.surfId, junc->flags);
+				sprintf(tempBuf, "JUN %d flg %d - c %d %d %d %d",roadInfo.surfId, junc->flags, 
+					(int)(*roadInfo.ConnectIdx)[0], (int)(*roadInfo.ConnectIdx)[1], (int)(*roadInfo.ConnectIdx)[2], (int)(*roadInfo.ConnectIdx)[3]);
 				
 				PrintString(tempBuf, 10, 180);
 			}

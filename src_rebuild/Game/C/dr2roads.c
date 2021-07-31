@@ -94,6 +94,7 @@ int GetSurfaceRoadInfo(DRIVER2_ROAD_INFO* outRoadInfo, int surfId)
 {
 	DRIVER2_CURVE* curve;
 	DRIVER2_STRAIGHT* straight;
+	DRIVER2_JUNCTION* junction;
 
 	ClearMem((char*)outRoadInfo, sizeof(DRIVER2_ROAD_INFO));
 	outRoadInfo->surfId = surfId;
@@ -115,6 +116,11 @@ int GetSurfaceRoadInfo(DRIVER2_ROAD_INFO* outRoadInfo, int surfId)
 		outRoadInfo->LaneDirs = straight->LaneDirs;
 		outRoadInfo->AILanes = straight->AILanes;
 		return 1;
+	}
+	else if (IS_JUNCTION_SURFACE(surfId))
+	{
+		junction = GET_JUNCTION(surfId);
+		outRoadInfo->ConnectIdx = &junction->ExitIdx;
 	}
 
 	return 0;
@@ -166,7 +172,7 @@ void ProcessStraightsDriver2Lump(char *lump_file, int lump_size)
 	Getlong((char *)&NumDriver2Straights, lump_file);
 	Driver2StraightsPtr = (DRIVER2_STRAIGHT *)(lump_file + 4);
 
-	// [A] patch chicago roads
+	// [A] patch Chicago & Vegas roads
 	if (GameLevel == 0 && gDisableChicagoBridges)
 	{
 		DRIVER2_STRAIGHT* str;
@@ -195,6 +201,14 @@ void ProcessStraightsDriver2Lump(char *lump_file, int lump_size)
 				i++;
 			}
 		}
+	}
+	else if (GameLevel == 2)
+	{
+		int i;
+		DRIVER2_STRAIGHT* str;
+
+		Driver2StraightsPtr[348].ConnectIdx[2] = 8244;
+		Driver2StraightsPtr[348].ConnectIdx[3] = 351;
 	}
 }
 
@@ -232,6 +246,13 @@ void ProcessJunctionsDriver2Lump(char *lump_file, int lump_size, int fix)
 			p++;
 			old++;
 		}
+	}
+
+	// [A] patch Vegas roads
+	if (GameLevel == 2)
+	{
+		Driver2JunctionsPtr[8244 & 0x1fff].ExitIdx[1] = 348;
+		Driver2JunctionsPtr[8244 & 0x1fff].ExitIdx[3] = 347;
 	}
 }
 
