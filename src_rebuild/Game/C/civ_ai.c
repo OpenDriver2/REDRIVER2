@@ -535,7 +535,7 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 			exitCnt++;
 		} while (exitCnt < 3);
 
-		if (leftLane != rightLane && numExits != 1)
+		if (leftLane != rightLane && numExits != 1 && ROAD_LANES_COUNT(&currentRoadInfo) > 1)
 		{
 			if (cp->ai.c.currentLane == leftLane)
 			{
