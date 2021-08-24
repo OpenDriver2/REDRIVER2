@@ -20,6 +20,7 @@ typedef struct
 	int					hapticEffect;
 
 	u_char*				padData;
+	bool				switchingAnalog;
 } PsyXController;
 
 PsyXController			g_controllers[MAX_CONTROLLERS];
@@ -98,6 +99,7 @@ void PsyX_Pad_OpenController(Sint32 deviceId, int slot)
 	}
 
 	controller->gc = SDL_GameControllerOpen(deviceId);
+	controller->switchingAnalog = false;
 
 	if (controller->gc)
 	{
@@ -234,10 +236,12 @@ void PsyX_Pad_InternalPadUpdates()
 
 			// In order to switch From/To analog user has to use left gamepad stick
 
-			// Select + Start pressed + left stick Down
-			if (pad->analog[3] == 255)
+			// Select + Start pressed
+			if ((test & 0x1) == 0 && (test & 0x8) == 0)
 			{
-				if ((test & 0x1) == 0 && (test & 0x8) == 0)
+				*(u_short*)pad->buttons = 0xffff;
+
+				if (!controller->switchingAnalog)
 				{
 					// switch to analog state
 					if (pad->id == 0x41)
@@ -245,21 +249,17 @@ void PsyX_Pad_InternalPadUpdates()
 						eprintf("Port %d ANALOG: ON\n", i + 1);
 						pad->id = 0x73;
 					}
-				}
-			}
-
-			// Select + Start pressed + left stick Up
-			if (pad->analog[3] == 0)
-			{
-				if ((test & 0x1) == 0 && (test & 0x8) == 0)
-				{
-					// switch to analog state
-					if (pad->id == 0x73)
+					else
 					{
 						eprintf("Port %d ANALOG: OFF\n", i + 1);
 						pad->id = 0x41;
 					}
 				}
+				controller->switchingAnalog = true;
+			}
+			else
+			{
+				controller->switchingAnalog = false;
 			}
 
 			// Update keyboard for PAD
