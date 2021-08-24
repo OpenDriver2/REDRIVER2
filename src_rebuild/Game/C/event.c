@@ -79,7 +79,8 @@ int VegasMonorailData[] = {
 };
 
 int HavanaFerryData[12] = {
-	40, 0, 0, 425555, -452, 20000, 25, 0, 0, 315750, 130740, 135960
+	40, 0, 64, 425555, -452, 20000,		// Ferry 1
+	25, 0, 64, 315750, 130740, 135960	// Ferry 2
 };
 
 int RioFerryData[6] = {
@@ -444,10 +445,10 @@ static int cameraEventsActive = 0;
 static CameraDelay cameraDelay;
 static Detonator detonator;
 static int eventHaze = 0;
-static int carsOnBoat = 0;
 static int doneFirstHavanaCameraHack = 0;
 static SVECTOR boatOffset;
 static FixedEvent* fixedEvent = NULL;
+int carsOnBoat = 0;
 
 MultiCar multiCar;
 
@@ -1089,6 +1090,10 @@ void SetUpEvents(int full)
 		evt->timer = -1;
 		evt->node = HavanaFerryData + 4;
 		evt->data = HavanaFerryData;
+
+		// [A] reset Ferry angles
+		evt->data[1] = RSIN(CameraCnt * 32) >> 9;
+		evt->data[2] = RCOS(CameraCnt * 16) + 4096 >> 7;
 
 		VisibilityLists(VIS_ADD, 0);
 		MakeEventTrackable(evt);
@@ -2306,7 +2311,7 @@ void StepEvents(void)
 
 	while (ev)
 	{
-		carsOnBoat = onBoatLastFrame;
+		//carsOnBoat = onBoatLastFrame;
 
 		if (ev->flags & 2)
 		{
@@ -2330,7 +2335,7 @@ void StepEvents(void)
 
 				// make Tanner on boat also
 				if (player[0].playerType == 2 && OnBoat((VECTOR*)player[0].pos, ev, &dist))
-					carsOnBoat |= 0x300000;
+					carsOnBoat |= (1 << TANNER_COLLIDER_CARID) | 0x200000;// 0x300000;
 
 				BoatOffset(&boatOffset, ev);
 
@@ -2345,19 +2350,16 @@ void StepEvents(void)
 
 			if (ev->flags & 0x800)
 			{
-				// [A] what the fuck this code is doing? Makes boat float harder after explosion?
-				
-				int tmSqr;
-
-				ev->data[1] = rcossin_tbl[(CameraCnt & 0x7f) * 64] >> 9 & 0xfff;
-				ev->data[2] = rcossin_tbl[(CameraCnt & 0xff) * 32 + 1] + 4096 >> 7;
-
-				tmSqr = detonator.timer * detonator.timer;
+				ev->data[1] = RSIN(CameraCnt * 32) >> 9;
+				ev->data[2] = RCOS(CameraCnt * 16) + 4096 >> 7;
 
 				if (detonator.timer - 1U < 159) // HMM?
 				{
-					ev->data[1] -= rcossin_tbl[(detonator.timer & 0x3fU) * 128] * tmSqr >> 0x12;
-					ev->data[2] -= rcossin_tbl[(detonator.timer & 0x3fU) * 128] * tmSqr >> 0x10;
+					int tmSqr;
+					tmSqr = detonator.timer * detonator.timer;
+
+					ev->data[1] -= RSIN(detonator.timer * 64) * tmSqr >> 18; //rcossin_tbl[(detonator.timer & 0x3fU) * 128] * tmSqr >> 0x12;
+					ev->data[2] -= RSIN(detonator.timer * 64) * tmSqr >> 16; //rcossin_tbl[(detonator.timer & 0x3fU) * 128] * tmSqr >> 0x10;
 				}
 
 				if (foam.rotate & 0xffff7fffU) // HMMMMMM?
@@ -2399,7 +2401,7 @@ void StepEvents(void)
 						if (i == TANNER_COLLIDER_CARID)
 						{
 							SetTannerPosition(pos);
-							carsOnBoat &= ~0x100000;
+							carsOnBoat &= ~(1 << TANNER_COLLIDER_CARID);
 						}
 						else if ((onBoatLastFrame & bit) == 0)
 						{
@@ -2407,8 +2409,9 @@ void StepEvents(void)
 							vel->vz -= speed.z * 4096;
 						}
 
-						car_data[i].st.n.fposition[0] = car_data[i].hd.where.t[0] << 4;
-						car_data[i].st.n.fposition[2] = car_data[i].hd.where.t[2] << 4;
+						// [A] this causes drifting, StepOneCar already does better job at updating this
+						// car_data[i].st.n.fposition[0] = pos->vx << 4;
+						// car_data[i].st.n.fposition[2] = pos->vz << 4;
 					}
 					else if (vel && (onBoatLastFrame & bit))
 					{
@@ -3432,6 +3435,11 @@ VECTOR* TriggerEvent(int i)
 				
 					event->node = &HavanaFerryData[10];
 					event->data = &HavanaFerryData[6];
+
+					// [A] reset Ferry angles
+					event->data[1] = RSIN(CameraCnt * 32) >> 9;
+					event->data[2] = RCOS(CameraCnt * 16) + 4096 >> 7;
+				
 					break;
 				case 2:
 					TriggerDoor(&havanaFixed[0], &stage[i], 1);

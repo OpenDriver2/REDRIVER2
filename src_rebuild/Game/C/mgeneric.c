@@ -11,34 +11,23 @@
 // [D] [T]
 void StorePlayerPosition(SAVED_PLAYER_POS *data)
 {
+	PLAYER* pl;
 	CAR_DATA* cp;
-	ushort type;
 	int slot;
 
-	// store previous player car?
-	slot = Mission.PhantomCarId != -1 ? Mission.PhantomCarId : player[0].playerCarId;
+	pl = &player[0];
 
-	cp = &car_data[slot];
-
-	if (player[0].playerType == 1)
-		type = ((MissionHeader->residentModels[cp->ap.model] & 0xfff) << 4) | 1 | cp->ap.palette << 8;
-	else
-		type = 0;
-
-	data->type = type;
-	data->direction = cp->hd.direction;
-	data->vx = cp->hd.where.t[0];
-	data->vy = cp->hd.where.t[1];
-	data->vz = cp->hd.where.t[2];
-
-	if (slot < 0)
-		data->felony = pedestrianFelony;
-	else
-		data->felony = cp->felonyRating;
-
-	if (player[0].playerType == 1)
+	if (pl->playerType == 1 || Mission.PhantomCarId != -1)
 	{
+		// store previous player car?
+		slot = Mission.PhantomCarId != -1 ? Mission.PhantomCarId : pl->playerCarId;
+
+		cp = &car_data[slot];
+
+		data->type = ((MissionHeader->residentModels[cp->ap.model] & 0xfff) << 4) | 1 | cp->ap.palette << 8;
+
 		data->totaldamage = cp->totalDamage;
+		data->felony = cp->felonyRating;
 	
 		data->damage[0] = cp->ap.damage[0];
 		data->damage[1] = cp->ap.damage[1];
@@ -46,10 +35,18 @@ void StorePlayerPosition(SAVED_PLAYER_POS *data)
 		data->damage[3] = cp->ap.damage[3];
 		data->damage[4] = cp->ap.damage[4];
 		data->damage[5] = cp->ap.damage[5];
+
+		data->direction = cp->hd.direction;
+		data->vx = cp->hd.where.t[0];
+		data->vy = cp->hd.where.t[1];
+		data->vz = cp->hd.where.t[2];
 	}
 	else
 	{
+		data->type = 0;
+
 		data->totaldamage = 0;
+		data->felony = pedestrianFelony;
 	
 		data->damage[0] = 0;
 		data->damage[1] = 0;
@@ -57,6 +54,11 @@ void StorePlayerPosition(SAVED_PLAYER_POS *data)
 		data->damage[3] = 0;
 		data->damage[4] = 0;
 		data->damage[5] = 0;
+
+		data->direction = pl->dir;
+		data->vx = pl->pos[0];
+		data->vy = pl->pos[1];
+		data->vz = pl->pos[2];
 	}
 }
 
@@ -186,20 +188,24 @@ void RestoreCarPosition(SAVED_CAR_POS *data)
 	}
 	else 
 	{
-		stream->SourceType.type = 1;
-		stream->SourceType.model = data->model;
-		stream->SourceType.palette = data->palette;
-		stream->SourceType.position.vy = data->vy;
-		stream->SourceType.position.vx = data->vx;
-		stream->SourceType.position.vz = data->vz;
-		stream->SourceType.rotation = data->direction & 0xfff;
-		stream->SourceType.totaldamage = data->totaldamage;
-		stream->SourceType.damage[0] = data->damage[0];
-		stream->SourceType.damage[1] = data->damage[1];
-		stream->SourceType.damage[2] = data->damage[2];
-		stream->SourceType.damage[3] = data->damage[3];
-		stream->SourceType.damage[4] = data->damage[4];
-		stream->SourceType.damage[5] = data->damage[5];
+		playerStart = &stream->SourceType;
+
+		playerStart->controlType = CONTROL_TYPE_CUTSCENE;
+
+		playerStart->type = 1;
+		playerStart->model = data->model;
+		playerStart->palette = data->palette;
+		playerStart->position.vy = data->vy;
+		playerStart->position.vx = data->vx;
+		playerStart->position.vz = data->vz;
+		playerStart->rotation = data->direction & 0xfff;
+		playerStart->totaldamage = data->totaldamage;
+		playerStart->damage[0] = data->damage[0];
+		playerStart->damage[1] = data->damage[1];
+		playerStart->damage[2] = data->damage[2];
+		playerStart->damage[3] = data->damage[3];
+		playerStart->damage[4] = data->damage[4];
+		playerStart->damage[5] = data->damage[5];
 	}
 	numPlayersToCreate++;
 }

@@ -154,7 +154,7 @@ void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale)
 
 	pFelonyData->reoccurrenceDelay[type].current = pFelonyData->reoccurrenceDelay[type].maximum;
 
-	if (*felony <= FELONY_MIN_VALUE)
+	if (*felony <= FELONY_PURSUIT_MIN_VALUE)
 		additionalFelonyPoints = pFelonyData->value[type].placid;
 	else
 		additionalFelonyPoints = pFelonyData->value[type].angry * pFelonyData->pursuitFelonyScale >> 0xc;
@@ -217,9 +217,9 @@ void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale)
 		}
 	}
 
-	if (felonyTooLowForRoadblocks < 0x527) 
+	if (felonyTooLowForRoadblocks <= FELONY_ROADBLOCK_MIN_VALUE)
 	{
-		if (*felony > 0x526)
+		if (*felony > FELONY_ROADBLOCK_MIN_VALUE)
 		{
 			roadblockCount = roadblockDelayDiff[gCopDifficultyLevel] + (Random2(0) & 0xff);
 		}
@@ -238,7 +238,7 @@ void AdjustFelony(FELONY_DATA *pFelonyData)
 	else
 		felony = &car_data[player[0].playerCarId].felonyRating;
 
-	if (*felony != 0 && *felony <= FELONY_MIN_VALUE)
+	if (*felony != 0 && *felony <= FELONY_PURSUIT_MIN_VALUE)
 	{
 		if (FelonyDecreaseTimer++ == FelonyDecreaseTime)
 		{
@@ -249,7 +249,7 @@ void AdjustFelony(FELONY_DATA *pFelonyData)
 	}
 	else if (CopsCanSeePlayer) 
 	{
-		if (*felony > FELONY_MIN_VALUE && FelonyIncreaseTimer++ == FelonyIncreaseTime)
+		if (*felony > FELONY_PURSUIT_MIN_VALUE && FelonyIncreaseTimer++ == FelonyIncreaseTime)
 		{
 			(*felony)++;
 
@@ -426,6 +426,8 @@ void InitFelonySystem(void)
 	InitFelonyData(&felonyData);
 }
 
+// enable when debugging whacky StoreCarPosition
+// #define LEADAI_EASY
 
 // [D] [T]
 void CarHitByPlayer(CAR_DATA *victim, int howHard)
@@ -433,6 +435,11 @@ void CarHitByPlayer(CAR_DATA *victim, int howHard)
 	char type;
 
 	_CutRec_CheckInvalidatePing(victim->id, howHard);
+
+#ifdef LEADAI_EASY
+	if (victim->controlType == CONTROL_TYPE_LEAD_AI)
+		victim->totalDamage = 0xffff;
+#endif
 
 	if (howHard > 0 && victim->controlType != CONTROL_TYPE_PURSUER_AI) 
 	{

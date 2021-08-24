@@ -18,6 +18,7 @@
 #include "C/loadview.h"
 #include "C/overlay.h"
 #include "C/players.h"
+#include "C/time.h"
 
 #include "utils/ini.h"
 
@@ -26,6 +27,7 @@
 #include <SDL_messagebox.h>
 
 #include "PsyX/PsyX_globals.h"
+
 
 int(*GPU_printf)(const char *fmt, ...);
 
@@ -539,7 +541,7 @@ int main(int argc, char** argv)
 		}
 	}
 
-	config = ini_load("config.ini");
+	config = ini_load(configFilename);
 
 	// best distance
 	gDrawDistance = 600;
@@ -635,6 +637,10 @@ int main(int argc, char** argv)
 #endif
 
 	PsyX_Initialise("REDRIVER2", windowWidth, windowHeight, fullScreen);
+
+	char version_info[32];
+	GetTimeStamp(version_info);
+	PsyX_Log_Info("%s %s (%s)\n", GAME_VERSION, version_info, BUILD_CONFIGURATION_STRING);
 
 	// configure Psy-X CD image reader
 	if (cdImageFileName)

@@ -1013,7 +1013,7 @@ void DrawSprite(PEDESTRIAN* pDrawingPed, BONE* pBone, VECTOR* vJPos)
 	int z, z1, z2;
 
 #ifdef PSX
-	SVECTOR* data = (SVECTOR*)(getScratchAddr(0) + 0x200);
+	SVECTOR* data = (SVECTOR*)((u_char*)getScratchAddr(0) + 0x200);
 #else
 	SVECTOR scratchVectors[64];
 	SVECTOR* data = scratchVectors;
@@ -1050,7 +1050,7 @@ void newShowTanner(PEDESTRIAN* pDrawingPed)
 	int draw;
 
 #ifdef PSX
-	VECTOR* spad = (VECTOR*)(getScratchAddr(0) + 0x100);
+	VECTOR* spad = (VECTOR*)((u_char*)getScratchAddr(0) + 0x100);
 #else
 	VECTOR spad[64];
 #endif
@@ -1825,6 +1825,11 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 #ifndef PSX
 	if (gDemoLevel)
 		return;
+#endif
+
+#ifdef __EMSCRIPTEN__
+	// since any WebGL isn't able to make it drawn...
+	return;
 #endif
 
 	if (NumPlayers > 1)

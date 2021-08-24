@@ -94,15 +94,19 @@ void DrawDebugOverlays()
 		PrintString(tempBuf, 10, 20);
 
 		extern volatile int spoolactive;
-		sprintf(tempBuf, "Spooling: %d spec: %d, active: %d", doSpooling, allowSpecSpooling, spoolactive);
-		PrintString(tempBuf, 10, 30);
-
 		extern int numActiveCops;
 		extern int numCopCars;
 		extern int numCivCars;
 		extern int numParkedCars;
 		extern int maxCopCars;
 		extern int maxCivCars;
+		extern int current_region;
+		extern int LoadedArea;
+
+		Spool* spoolptr = (Spool*)(RegionSpoolInfo + spoolinfo_offsets[current_region]);
+
+		sprintf(tempBuf, "Spooling: %d spec: %d, active: %d, Reg: %d, Ar: %d, Cn: %d %d", doSpooling, allowSpecSpooling, spoolactive, current_region, LoadedArea, spoolptr->connected_areas[0] & 0x3f, spoolptr->connected_areas[1] & 0x3f);
+		PrintString(tempBuf, 10, 30);
 
 		sprintf(tempBuf, "Civs: %d - %d parked - max %d", numCivCars, numParkedCars, maxCivCars);
 		PrintString(tempBuf, 10, 40);
@@ -182,12 +186,18 @@ void DrawDebugOverlays()
 				);
 
 				PrintString(tempBuf, 10, 195);
+
+				sprintf(tempBuf, "c %d %d %d %d",
+					(int)(*roadInfo.ConnectIdx)[0], (int)(*roadInfo.ConnectIdx)[1], (int)(*roadInfo.ConnectIdx)[2], (int)(*roadInfo.ConnectIdx)[3]);
+
+				PrintString(tempBuf, 10, 205);
 			}
 			else if(IS_JUNCTION_SURFACE(roadInfo.surfId))
 			{
 				DRIVER2_JUNCTION* junc = GET_JUNCTION(roadInfo.surfId);
 				
-				sprintf(tempBuf, "JUN %d flg %d",roadInfo.surfId, junc->flags);
+				sprintf(tempBuf, "JUN %d flg %d - c %d %d %d %d",roadInfo.surfId, junc->flags, 
+					(int)(*roadInfo.ConnectIdx)[0], (int)(*roadInfo.ConnectIdx)[1], (int)(*roadInfo.ConnectIdx)[2], (int)(*roadInfo.ConnectIdx)[3]);
 				
 				PrintString(tempBuf, 10, 180);
 			}

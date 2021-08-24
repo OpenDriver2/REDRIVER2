@@ -12,6 +12,9 @@ extern char gCurrentChasePauseText[64];
 extern void		InitChaseAutoTest(char* configFilename);
 extern void		InitCutsceneRecorder(char* configFilename);
 
+extern int		CutRec_IsRecording();
+extern int		CutRec_IsPlaying();
+
 extern void		CutRec_Reset();
 extern void		CutRec_Step();
 extern void		CutRec_Draw();
@@ -29,6 +32,8 @@ extern int		CutRec_SaveChase();
 
 #define _CutRec_IsAutoTestOn()				(gCutsceneChaseAutoTest != 0)
 #define _CutRec_IsOn()						(gCutsceneAsReplay != 0)
+#define _CutRec_IsRecording()				CutRec_IsRecording()
+#define _CutRec_IsPlaying()					CutRec_IsPlaying()
 #define _CutRec_Step()						CutRec_Step()
 #define _CutRec_Draw()						CutRec_Draw()
 #define _CutRec_Reset()						CutRec_Reset()
@@ -45,6 +50,8 @@ extern int		CutRec_SaveChase();
 
 #define _CutRec_IsAutoTestOn()				(0)
 #define _CutRec_IsOn()						(0)
+#define _CutRec_IsRecording()				(0)
+#define _CutRec_IsPlaying()					(0)
 #define _CutRec_Step()						(0)
 #define _CutRec_Draw()						(0)
 #define _CutRec_Reset()						(0)

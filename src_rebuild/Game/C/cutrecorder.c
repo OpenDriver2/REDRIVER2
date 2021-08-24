@@ -5,6 +5,7 @@
 #ifdef CUTSCENE_RECORDER
 
 #include "driver2.h"
+#include "cutrecorder.h"
 
 #include "main.h"
 #include "pad.h"
@@ -118,53 +119,53 @@ int CutRec_GotoChase(int number)
 
 void CutRec_Step()
 {
-	// goto previous chase
-	if (Pads[0].dirnew & CAR_PAD_LEFT)
+	if (gCutsceneChaseAutoTest != 0 && CutRec_IsPlaying())
 	{
-		CutRec_GotoChase(gCutsceneChaseAutoTest - 1);
-		return;
-	}
+		// goto previous chase
+		if (Pads[0].dirnew & CAR_PAD_LEFT)
+		{
+			CutRec_GotoChase(gCutsceneChaseAutoTest - 1);
+			return;
+		}
 
-	// goto next chase
-	if (Pads[0].dirnew & CAR_PAD_RIGHT)
-	{
-		CutRec_GotoChase(gCutsceneChaseAutoTest + 1);
-		return;
-	}
-	
-	if (!pauseflag)
-	{
-		if(gCutsceneChaseAutoTest != 0)
+		// goto next chase
+		if (Pads[0].dirnew & CAR_PAD_RIGHT)
+		{
+			CutRec_GotoChase(gCutsceneChaseAutoTest + 1);
+			return;
+		}
+
+		if (!pauseflag)
 		{
 			int carId = player[gCutsceneAsReplay_PlayerId].playerCarId;
-			
+
 			if (car_data[carId].hd.speed < 5)
 				gChaseStuckTimer++;
 			else
 				gChaseStuckTimer = 0;
 
-			if(gChaseStuckTimer > 45)
+			if (gChaseStuckTimer > 45)
 			{
 				gAutoTestStats[gCutsceneChaseAutoTest].stuck = 1;
 				gChaseStuckTimer = 0;
 			}
+
+			return;
 		}
-		
-		return;
-	}
 
-	if(gCutsceneChaseAutoTest != 0 && gCutsceneChaseAutoTest < 15 &&
-		NoPlayerControl && ReplayParameterPtr->RecordingEnd - 2 < CameraCnt || gDieWithFade)
-	{
-		gCutsceneChaseAutoTest++;
-
-		// load next replay and restart
-		if (!CutRec_GotoChase(gCutsceneChaseAutoTest))
+		if (gCutsceneChaseAutoTest < 15 &&
+			(NoPlayerControl && ReplayParameterPtr->RecordingEnd - 2 < CameraCnt || gDieWithFade))
 		{
-			printInfo("------- AUTOTEST RESULTS -------\n");
-			for(int i = 0; i < 15; i++)
-				printInfo("  chase %d - hit cars: %d, stuck: %d\n", i, gAutoTestStats[i].numHitCars, gAutoTestStats[i].stuck);
-			printInfo("------- ---------------- -------\n");
+			gCutsceneChaseAutoTest++;
+
+			// load next replay and restart
+			if (!CutRec_GotoChase(gCutsceneChaseAutoTest))
+			{
+				printInfo("------- AUTOTEST RESULTS -------\n");
+				for (int i = 0; i < 15; i++)
+					printInfo("  chase %d - hit cars: %d, stuck: %d\n", i, gAutoTestStats[i].numHitCars, gAutoTestStats[i].stuck);
+				printInfo("------- ---------------- -------\n");
+			}
 		}
 	}
 }
@@ -200,11 +201,19 @@ void CutRec_Draw()
 		PrintString(text, 5, 215);
 	}
 
-	if (gAutoTestStats[gCutsceneChaseAutoTest].numHitCars > 0)
+	if(PingBufferPos >= MAX_REPLAY_PINGS-1)
 		SetTextColour(128, 0, 0);
 
-	sprintf(text, "Hit cars: %d", gAutoTestStats[gCutsceneChaseAutoTest].numHitCars);
+	sprintf(text, "Pings: %d", PingBufferPos);
 	PrintString(text, 5, 205);
+
+	SetTextColour(128, 128, 128);
+
+	if (gAutoTestStats[gCutsceneChaseAutoTest].numHitCars > 0)
+		SetTextColour(128, 0, 0);		
+
+	sprintf(text, "Hit cars: %d", gAutoTestStats[gCutsceneChaseAutoTest].numHitCars);
+	PrintString(text, 120, 205);
 
 	if(gAutoTestStats[gCutsceneChaseAutoTest].stuck)
 	{
@@ -403,10 +412,7 @@ int CutRec_StorePingInfo(int cookieCount, int carId)
 	PING_PACKET* buffer;
 	PING_PACKET* packet;
 
-	if (gCutsceneAsReplay == 0)
-		return 0;
-
-	if (CurrentGameMode == GAMEMODE_REPLAY || gInGameChaseActive != 0)
+	if (!CutRec_IsRecording())
 		return 0;
 
 	if (PingBufferPos < MAX_REPLAY_PINGS-1)
@@ -417,11 +423,15 @@ int CutRec_StorePingInfo(int cookieCount, int carId)
 
 		packet->cookieCount = cookieCount;
 
+		PingBuffer[PingBufferPos - 1] = *packet;
+
 		// always finalize last ping
 		packet = &NewPingBuffer[PingBufferPos];
 		packet->frame = 0xffff;
 		packet->carId = -1;
 		packet->cookieCount = -1;
+
+		
 
 		return 1;
 	}
@@ -778,6 +788,22 @@ int CutRec_RecordPad(CAR_DATA* cp, uint* t0, char* t1, char* t2)
 	cjpRecord(-*cp->ai.padid, t0, t1, t2);
 
 	return 1;
+}
+
+int	CutRec_IsRecording()
+{
+	if (gCutsceneAsReplay == 0)
+		return 0;
+
+	return CurrentGameMode != GAMEMODE_REPLAY;
+}
+
+int	CutRec_IsPlaying()
+{
+	if (gCutsceneAsReplay == 0)
+		return 0;
+
+	return CurrentGameMode == GAMEMODE_REPLAY;
 }
 
 #endif // CUTSCENE_RECORDER

@@ -1497,7 +1497,7 @@ void GR_SetOffscreenState(const RECT16* offscreenRect, int enable)
 #ifdef USE_PGXP
 		GR_Ortho2D(-0.5f, 0.5f, 0.5f, -0.5f, -1.0f, 1.0f);
 #else
-		GR_Ortho2D(0, offscreenRect.w, offscreenRect.h, 0, -1.0f, 1.0f);
+		GR_Ortho2D(0, offscreenRect->w, offscreenRect->h, 0, -1.0f, 1.0f);
 #endif
 	}
 	else

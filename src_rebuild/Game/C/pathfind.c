@@ -33,8 +33,8 @@ struct XZDIR
 };
 
 ushort distanceCache[16384];
-char omap[128][16];				// obstacle map
-int dunyet[32][2];				// scanned cell map
+char omap[128][16];				// obstacle map 128x128 (bit field)
+int dunyet[32][2];				// scanned cell map (32x32, multi-level bitfield)
 int pathIterations;
 
 int pathFrames;
@@ -47,7 +47,7 @@ int distanceReturnedLog[8];
 int distLogIndex;
 int lastDistanceFound;
 
-tNode heap[201];
+tNode heap[201];		// 198 + 3 extra?
 u_int numHeapEntries = 0;
 
 XZDIR ends[6][2] = {
@@ -103,15 +103,15 @@ XZDIR dirs[6] = {
 };
 
 // cx, cz in range of 0..128
-#define OMAP_V(cx, cz)						omap[((cx) & 0x7f)][((cz) & 0x7f) >> 3]
+#define OMAP_V(cx, cz)						omap[((cx) & 127)][((cz) & 127) >> 3]
 #define OMAP_GETVALUE(cx, cz)				(OMAP_V(cx,cz) >> ((cz) & 7) & 1)
 
 // cx, cz in range of 0...128
 // FIXME: really bad
-#define DONEMAP_V(cx, cz)					dunyet[(cx & 0x1fU)][(cz & 1)]
-#define DONEMAP_GETVALUE(cx, cz, x, i)		(3 << (cz & 0x1e) & ((((cx & 0x3fU) >> 5 | cz & 2) ^ i) << (cz & 0x1e) ^ x))
+#define DONEMAP_V(cx, cz)					dunyet[((cx) & 31)][((cz) & 1)]
+#define DONEMAP_GETVALUE(cx, cz, x, i)		(3 << ((cz) & 30) & (((((cx) & 63) >> 5 | (cz) & 2) ^ (i)) << ((cz) & 30) ^ (x)))
 
-#define DISTMAP_V(px, py, pz)				distanceCache[(px >> 2 & 0x3f80U | pz >> 9 & 0x7fU) ^ (py & 1) * 0x2040 ^ (py & 2) << 0xc]
+#define DISTMAP_V(px, py, pz)				distanceCache[((px) >> 2 & 16256 | (pz) >> 9 & 127) ^ ((py) & 1) * 8256 ^ ((py) & 2) << 12]
 
 // [A] sets obstacle map bit
 inline void OMapSet(int cellX, int cellZ, int val)
@@ -230,7 +230,12 @@ void popNode(tNode* __return_storage_ptr__)
 		while (true) 
 		{
 			child = here * 2;
-
+			
+			// [A] not sure yet but skipping this check causes memory overflow
+			// it doesn't makes much sense to increase heap size either as it works the same.
+			if (child + 1 >= 201)
+				break;
+			
 			d = heap[child].dist;
 
 			if (child >= numHeapEntries - 2 || d > heap[child + 1].dist)

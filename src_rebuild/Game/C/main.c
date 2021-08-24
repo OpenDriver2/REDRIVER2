@@ -706,8 +706,8 @@ void State_GameInit(void* param)
 
 	if (gWeather == 1)
 		wetness = 7000;
-	else if (gWeather == 2)
-		wetness = 3000;
+	//else if (gWeather == 2)	// [A] addition that I have disabled
+	//	wetness = 3000;
 	else
 		wetness = 0;
 
@@ -817,8 +817,8 @@ void State_GameInit(void* param)
 
 #ifndef PSX
 	// set to 30 FPS VSync
-	// PsyX_SetSwapInterval(2);
-	// PsyX_EnableSwapInterval(1);
+	PsyX_SetSwapInterval(2);
+	PsyX_EnableSwapInterval(1);
 #endif
 }
 
@@ -892,7 +892,7 @@ void StepSim(void)
 		playerFelony = &car_data[player[0].playerCarId].felonyRating;
 
 	// control cop roadblocks
-	if (*playerFelony < 0x527 || numRoadblockCars != 0)
+	if (*playerFelony <= FELONY_ROADBLOCK_MIN_VALUE || numRoadblockCars != 0)
 	{
 		if (roadblockCount != 0)
 		{
@@ -918,7 +918,7 @@ void StepSim(void)
 	// control civcars pingin/pingout
 	if (requestStationaryCivCar != 1 && requestRoadblock == 0)
 	{
-		if (gInGameChaseActive)
+		if (gInGameChaseActive || _CutRec_IsPlaying())
 		{
 			// it will use ping buffer
 			// checks are done internally

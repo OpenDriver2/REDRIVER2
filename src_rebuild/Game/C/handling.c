@@ -519,7 +519,7 @@ void GlobalTimeStep(void)
 									// wake up cops if they've ben touched
 									// [A] check player felony.
 									// If player touch them without felony player will be charged with felony (hit cop car)
-									if (numCopCars < 4 && numActiveCops < maxCopCars && GameType != GAME_GETAWAY && *felony >= FELONY_MIN_VALUE)
+									if (numCopCars < 4 && numActiveCops < maxCopCars && GameType != GAME_GETAWAY && *felony >= FELONY_PURSUIT_MIN_VALUE)
 									{
 										if (cp->controlType == CONTROL_TYPE_PLAYER && IS_ROADBLOCK_CAR(c1))
 										{
@@ -971,15 +971,11 @@ void InitialiseCarHandling(void)
 // [D] [T]
 void CheckCarToCarCollisions(void)
 {
-	int fz;
-	int fx;
-	int sz;
-	int sx;
+	int fx, fz;
+	int sx, sz;
 
 	int loop1, loop2;
-	int lbod;
-	int wbod;
-	int hbod;
+	int lbod, wbod, hbod;
 	int xx, zz;
 
 	BOUND_BOX* bb;
@@ -987,7 +983,6 @@ void CheckCarToCarCollisions(void)
 	BOUND_BOX* bb1;
 	CAR_DATA* cp;
 	SVECTOR* colBox;
-
 
 	if (ghost_mode == 1)
 		return;

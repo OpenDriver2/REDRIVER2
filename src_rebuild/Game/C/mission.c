@@ -1246,6 +1246,7 @@ int Swap2Cars(int curslot, int newslot)
 	int pnodeNewId;
 	int ctrlNodeCurId;
 	int pnodeCurId;
+	int tmp;
 
 	CAR_DATA cd;
 
@@ -1303,6 +1304,16 @@ int Swap2Cars(int curslot, int newslot)
 	memcpy((u_char*)&cd, (u_char*)&car_data[newslot], sizeof(CAR_DATA));
 	memcpy((u_char*)&car_data[newslot], (u_char*)&car_data[curslot], sizeof(CAR_DATA));
 	memcpy((u_char*)&car_data[curslot], (u_char*)&cd, sizeof(CAR_DATA));
+
+	// [A] event - swap cars on boat
+	tmp = carsOnBoat & (1 << newslot);
+	carsOnBoat &= ~(1 << newslot);
+
+	if (carsOnBoat & (1 << curslot))
+		carsOnBoat |= (1 << newslot);
+
+	if(tmp)
+		carsOnBoat |= (1 << curslot);
 
 	// swap ids
 	car_data[newslot].id = newslot;
@@ -2467,8 +2478,6 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						// check if player entered the car
 						if (player[0].playerCarId == slot)
 						{
-							cp->inform = NULL;
-
 							// signal to mission about stolen car so Find the Clue/Steal the keys can progress
 							if (!failIfDamaged)
 							{
@@ -2679,6 +2688,7 @@ int MRCreateCar(MS_TARGET *target)
 	target->s.car.posZ = car_data[curslot].hd.where.t[2];
 
 	target->s.car.slot = curslot;
+
 	target->s.target_flags |= TARGET_FLAG_CAR_PINGED_IN;
 	
 	car_data[curslot].inform = &target->s.target_flags;
@@ -3114,9 +3124,11 @@ void MakePhantomCarEqualPlayerCar(void)
 void SetCarToBeStolen(MS_TARGET *target, int player)
 {
 	if (target->s.car.flags & CARTARGET_FLAG_SET_PLAYERCAR)
+	{
 		MakePhantomCarEqualPlayerCar();
+		target->s.target_flags |= TARGET_FLAG_CAR_SAVED;
+	}
 
-	target->s.target_flags |= TARGET_FLAG_CAR_SAVED;
 	target->s.car.type = 1;
 	target->s.car.flags = CARTARGET_FLAG_STEAL_TARGET;
 	target->s.car.maxDistance = 0;

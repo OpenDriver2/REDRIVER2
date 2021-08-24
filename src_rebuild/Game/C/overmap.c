@@ -19,10 +19,10 @@
 
 OVERMAP overlaidmaps[4] =
 {
-	{ 197, 318, 384, 672, 252, 153, 2145 },
-	{ 229, 85, 544, 352, 187, 136, 2048 },
-	{ 68, 457, 288, 672, 189, 187, 1911 },
-	{ 159, 207, 416, 576, 252, 68, 2048 }
+	{ 197, 318, 384, 672, 252, 0x99, 2145 },
+	{ 229, 85, 544, 352, 187, 0x88, 2048 },
+	{ 68, 457, 288, 672, 189, 0xBB, 1911 },
+	{ 159, 207, 416, 576, 252, 0x44, 2048 }
 };
 
 SXYPAIR MapSegmentPos[16];
@@ -1133,7 +1133,7 @@ void DrawOverheadMap(void)
 		else 
 			playerFelony = &car_data[player[0].playerCarId].felonyRating;
 
-		if (*playerFelony > FELONY_MIN_VALUE)
+		if (*playerFelony > FELONY_PURSUIT_MIN_VALUE)
 			FlashOverheadMap(ptab[CameraCnt & 0xf], 0, ptab[CameraCnt + 8U & 0xf]);
 	}
 	else 
@@ -1147,7 +1147,7 @@ void DrawOverheadMap(void)
 				else
 					playerFelony = &car_data[player[0].playerCarId].felonyRating;
 
-				if (*playerFelony > FELONY_MIN_VALUE)
+				if (*playerFelony > FELONY_PURSUIT_MIN_VALUE)
 					flashtimer = 48;
 			}
 		}

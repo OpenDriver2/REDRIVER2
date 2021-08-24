@@ -13,6 +13,8 @@
 #include "glaunch.h"
 #include "system.h"
 
+#define GRAVITY_FORCE		(-7456)			// D1 has -10922
+
 struct CAR_LOCALS
 {
 	LONGVECTOR4 vel;
@@ -172,11 +174,11 @@ void ConvertTorqueToAngularAcceleration(CAR_DATA* cp, CAR_LOCALS* cl)
 	twistY = car_cosmetics[cp->ap.model].twistRateY;
 	twistZ = car_cosmetics[cp->ap.model].twistRateZ;
 
-	zd = FIXEDH(cp->hd.where.m[0][2] * cp->hd.aacc[0] + cp->hd.where.m[1][2] * cp->hd.aacc[1] + cp->hd.where.m[2][2] * cp->hd.aacc[2]);
+	zd = (twistZ - twistY) * FIXEDH(cp->hd.where.m[0][2] * cp->hd.aacc[0] + cp->hd.where.m[1][2] * cp->hd.aacc[1] + cp->hd.where.m[2][2] * cp->hd.aacc[2]);
 
 	for (i = 0; i < 3; i++)
 	{
-		cp->hd.aacc[i] = cp->hd.aacc[i] * twistY + FIXEDH(cp->hd.where.m[i][2] * (twistZ - twistY) * zd - cl->avel[i] * 128);
+		cp->hd.aacc[i] = cp->hd.aacc[i] * twistY + FIXEDH(cp->hd.where.m[i][2] * zd - cl->avel[i] * 128);
 
 		if (cl->extraangulardamping == 1)
 			cp->hd.aacc[i] -= cl->avel[i] / 8;
@@ -358,7 +360,7 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 				if (ABS(pointVel[0]) + ABS(pointVel[2]) < 8000)
 				{
 					surfaceNormal[0] = 0;
-					surfaceNormal[1] = 0x1000;
+					surfaceNormal[1] = ONE;
 					surfaceNormal[2] = 0;
 				}
 			}
@@ -422,11 +424,11 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 			else
 			{
 				// front wheels
-				sidevel = frontFS * slidevel + 0x800 >> 0xc;
+				sidevel = frontFS * slidevel + 2048 >> 12;
 				
 				if (wheel->locked)
 				{
-					sidevel = (frontFS * slidevel + 0x800 >> 0xd) + sidevel >> 1;
+					sidevel = (frontFS * slidevel + 2048 >> 13) + sidevel >> 1;
 					
 					forcefac = FixHalfRound(FIXEDH(-sidevel * lfx) * sdz - FIXEDH(-sidevel * lfz) * sdx, 11);
 					
@@ -520,9 +522,9 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 void StepOneCar(CAR_DATA* cp)
 {
 	static int frictionLimit[6] = {
-		0x3ED000, 0x178E000,
-		0x3ED000, 0x13A1000,
-		0x75C6000,0x13A1000
+		1005 * ONE, 6030 * ONE,
+		1005 * ONE, 5025 * ONE,
+		1884 * ONE, 5025 * ONE
 	};
 
 	volatile int impulse;
@@ -532,14 +534,9 @@ void StepOneCar(CAR_DATA* cp)
 	int a, b, speed;
 	int count, i;
 	CAR_LOCALS _cl;
-	LONGVECTOR4 deepestNormal;
-	LONGVECTOR4 deepestLever;
-	LONGVECTOR4 deepestPoint;
-	LONGVECTOR4 pointPos;
-	LONGVECTOR4 surfacePoint;
-	LONGVECTOR4 surfaceNormal;
-	LONGVECTOR4 lever;
-	LONGVECTOR4 reaction;
+	LONGVECTOR4 deepestNormal, deepestLever, deepestPoint;
+	LONGVECTOR4 pointPos, surfacePoint, surfaceNormal;
+	LONGVECTOR4 lever, reaction;
 	VECTOR direction;
 	sdPlane* SurfacePtr;
 
@@ -559,7 +556,7 @@ void StepOneCar(CAR_DATA* cp)
 	}
 
 	cp->hd.acc[0] = 0;
-	cp->hd.acc[1] = -7456; // apply gravity
+	cp->hd.acc[1] = GRAVITY_FORCE; // apply gravity
 	cp->hd.acc[2] = 0;
 
 	// calculate car speed
