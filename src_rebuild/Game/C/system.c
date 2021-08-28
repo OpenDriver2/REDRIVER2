@@ -807,6 +807,7 @@ void SetupDrawBufferData(int num_players)
 		}
 	}
 
+#ifdef PSX
 	aspect.m[0][0] = 4096;
 	aspect.m[0][1] = 0;
 	aspect.m[0][2] = 0;
@@ -818,6 +819,10 @@ void SetupDrawBufferData(int num_players)
 	aspect.m[2][0] = 0;
 	aspect.m[2][1] = 0;
 	aspect.m[2][2] = 4096;
+#else
+	aspect = identity;
+	aspect.m[1][1] = 4300;
+#endif
 }
 
 // [D] [T]
