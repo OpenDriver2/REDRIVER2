@@ -444,10 +444,15 @@ void PlaceCameraFollowCar(PLAYER *lp)
 
 		if(car_cos)
 		{
+			int addDist;
+
 			carheight = car_cos->colBox.vy * -3 + 85;
 
+			// [A] default just adds 248, but it's too close for big vehicles
+			addDist = MAX(248, car_cos->colBox.vy * 3);
+
 			if (gCameraMaxDistance == 0)
-				maxCameraDist = car_cos->colBox.vz * 2 + car_cos->colBox.vy + 248;
+				maxCameraDist = car_cos->colBox.vz * 2 + car_cos->colBox.vy + addDist;
 			else
 				maxCameraDist = gCameraMaxDistance;
 
