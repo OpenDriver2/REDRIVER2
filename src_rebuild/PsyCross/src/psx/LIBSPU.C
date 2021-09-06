@@ -393,7 +393,7 @@ unsigned long SpuWrite(unsigned char* addr, unsigned long size)
 	//if (0x7EFF0 < size)
 	//	size = 0x7EFF0;
 
-	int wptr_ofs = s_SpuMemory.writeptr - s_SpuMemory.samplemem;
+	volatile int wptr_ofs = s_SpuMemory.writeptr - s_SpuMemory.samplemem;
 
 	if (wptr_ofs+size > SPU_REALMEMSIZE)
 	{

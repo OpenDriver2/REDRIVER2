@@ -459,12 +459,11 @@ void LoadLevelSFX(int missionNum)
 
 		i = 0;
 
-		do {
+		for (i = 0; i < 3; i++)
+		{
 			if (MissionHeader->residentModels[i] == MissionHeader->residentModels[3])
 				cop_model = i;
-
-			i++;
-		} while (i < 3);
+		}
 	}
 	else
 	{
