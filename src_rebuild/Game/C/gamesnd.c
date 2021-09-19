@@ -85,7 +85,7 @@ static othercarsound siren_noise[MAX_SIREN_NOISES];
 static othercarsound car_noise[MAX_CAR_NOISES];
 static int loudhail_time = 0;
 
-static int copmusic = 0;
+int copmusic = 0;
 int current_music_id;
 
 static char header_pt[sizeof(XMHEADER)];

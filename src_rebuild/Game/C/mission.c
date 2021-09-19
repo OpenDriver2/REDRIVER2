@@ -1694,6 +1694,32 @@ int MRCommand(MR_THREAD *thread, u_int cmd)
 		SetMissionComplete();
 		return 1;
 	}
+	else if (cmd == 0x1000045)		// DisableChaseMusic
+	{
+		val1 = MRPop(thread);			// Boolean
+
+		MR_DebugWarn("MR %d command: DisableChaseMusic(%d)\n", thread - MissionThreads, val1);
+		
+		copmusic = val1;
+	}
+	else if (cmd == 0x1000046)		// SetCopsSpeech
+	{
+		val1 = MRPop(thread);			// Boolean
+
+		MR_DebugWarn("MR %d command: SetCopsSpeech(%d)\n", thread - MissionThreads, val1);
+
+		gDoCopSpeech = val1;
+	}
+	else if (cmd == 0x1000044)		// PlayOnlyChaseMusic
+	{
+		val1 = MRPop(thread);			// Boolean
+
+		MR_DebugWarn("MR %d command: PlayOnlyChaseMusic(%d)\n", thread - MissionThreads, val1);
+
+		FunkUpDaBGMTunez(val1);
+		
+		return 1;
+	}
 
 	return 1;
 }

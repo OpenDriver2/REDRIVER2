@@ -59,6 +59,8 @@ enum SoundBankIds
 };
 
 extern int gDriver1Music;
+extern int copmusic;
+extern int gDoCopSpeech;
 
 extern int TimeSinceLastSpeech;
 
