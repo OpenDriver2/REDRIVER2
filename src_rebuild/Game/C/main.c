@@ -647,11 +647,10 @@ void State_GameInit(void* param)
 		plStart = PlayerStartInfo[i];
 		padid = -i;
 
+		gStartOnFoot = (plStart->type == 2);
+
 		if (i < NumPlayers)
-		{
-			gStartOnFoot = (plStart->type == 2);
 			padid = i;
-		}
 
 		InitPlayer(&player[i], &car_data[i], plStart->controlType, plStart->rotation, (LONGVECTOR4 *)&plStart->position, plStart->model, plStart->palette, &padid);
 
