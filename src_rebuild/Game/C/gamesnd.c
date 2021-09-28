@@ -457,8 +457,6 @@ void LoadLevelSFX(int missionNum)
 	{
 		gDoCopSpeech = 0;
 
-		i = 0;
-
 		for (i = 0; i < 3; i++)
 		{
 			if (MissionHeader->residentModels[i] == MissionHeader->residentModels[3])
@@ -531,10 +529,7 @@ void StartGameSounds(void)
 	TimeSinceLastSpeech = 0;
 
 	lcp = player;
-
-	i = 0;
-
-	while (i < NumPlayers)
+	for (i = 0; i < NumPlayers; i++)
 	{
 		if (lcp->playerType == 1)
 		{
@@ -547,7 +542,6 @@ void StartGameSounds(void)
 		lcp->revsvol = -10000;
 		lcp->idlevol = -8000;
 		lcp++;
-		i++;
 	}
 
 	if (NumPlayers == 1)
@@ -893,22 +887,20 @@ void InitDopplerSFX(void)
 {
 	int i;
 
-	i = 0;
-	do {
+	for (i = 0; i < MAX_SIREN_NOISES; i++)
+	{
 		siren_noise[i].chan = -1;
 		siren_noise[i].car = 20;
 		siren_noise[i].in_use = 0;
-		i++;
-	} while (i < MAX_SIREN_NOISES);
+	}
 
-	i = 0;
-	do {
+	for (i = 0; i < MAX_CAR_NOISES; i++)
+	{
 		car_noise[i].chan = -1;
 		car_noise[i].chan = -1;
 		car_noise[i].car = 20;
 		car_noise[i].in_use = 0;
-		i++;
-	} while (i < MAX_CAR_NOISES);
+	}
 
 	if (GameType == GAME_GETAWAY)
 		loudhail_time = 245;
@@ -969,11 +961,9 @@ void DoDopplerSFX(void)
 	}
 
 	// sort cars by distance distance
-	i = 0;
-	while (i < num_noisy_cars - 1)
+	for (i = 0; i < num_noisy_cars - 1; i++)
 	{
-		j = i + 1;
-		while (j < num_noisy_cars)
+		for (j = i + 1; j < num_noisy_cars; j++)
 		{
 			int tmpi;
 			tmpi = indexlist[i];
@@ -983,11 +973,7 @@ void DoDopplerSFX(void)
 				indexlist[i] = indexlist[j];
 				indexlist[j] = tmpi;
 			}
-
-			j++;
 		}
-
-		i++;
 	}
 
 	car_flags = 0;
@@ -1322,9 +1308,7 @@ void DoPoliceLoudhailer(int cars, ushort* indexlist, u_int* dist)
 	else
 		time = 275;
 
-	i = 0;
-
-	while (i < cars)
+	for (i = 0; i < cars; i++)
 	{
 		CAR_DATA* car_ptr;
 
@@ -1345,8 +1329,6 @@ void DoPoliceLoudhailer(int cars, ushort* indexlist, u_int* dist)
 			loudhail_time = 0;
 			break;
 		}
-
-		i++;
 	}
 
 	if (loudhail_time <= time)

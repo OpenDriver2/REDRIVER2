@@ -876,7 +876,7 @@ int _eCdSpoolerFunc()
 
 		if (sector == -1)
 		{
-			eprintinfo("CD: 'CdlPause'\n", sector);
+			eprintinfo("CD: 'CdlPause'\n");
 
 			g_cdSpoolerSeekCmd = 0;
 			g_cdReadDoneFlag = 1;
