@@ -42,6 +42,7 @@ int gChaseStuckTimer = 0;
 
 int gCutsceneAsReplay_ReChaseLoaded = 0;
 int gCutsceneAsReplay = 0;
+int gCutsceneAsReplay_NumReplayStreams = 0;
 int gCutsceneAsReplay_PlayerId = 0;
 int gCutsceneAsReplay_PlayerChanged = 0;
 int gCutsceneAsReplay_ReserveSlots = 2;
@@ -251,10 +252,10 @@ void CutRec_NextPlayer(int dir)
 	else if (dir < 0)
 		gCutsceneAsReplay_PlayerId--;
 
-	if (gCutsceneAsReplay_PlayerId >= NumReplayStreams)
-		gCutsceneAsReplay_PlayerId -= NumReplayStreams;
+	if (gCutsceneAsReplay_PlayerId >= gCutsceneAsReplay_NumReplayStreams)
+		gCutsceneAsReplay_PlayerId -= gCutsceneAsReplay_NumReplayStreams;
 	else if (gCutsceneAsReplay_PlayerId < 0)
-		gCutsceneAsReplay_PlayerId += NumReplayStreams;
+		gCutsceneAsReplay_PlayerId += gCutsceneAsReplay_NumReplayStreams;
 
 	if (old_player != gCutsceneAsReplay_PlayerId)
 		gCutsceneAsReplay_PlayerChanged = 1;
@@ -364,6 +365,8 @@ void InitCutsceneRecorder(char* configFilename)
 			return;
 		}
 
+		gCutsceneAsReplay_NumReplayStreams = NumReplayStreams;
+
 		gLoadedReplay = 1;
 		CurrentGameMode = GAMEMODE_REPLAY;
 	}
@@ -375,10 +378,10 @@ void InitCutsceneRecorder(char* configFilename)
 
 		InitPadRecording();
 
-		ini_sget(config, "settings", "streams", "%d", &NumReplayStreams);
+		ini_sget(config, "settings", "streams", "%d", &gCutsceneAsReplay_NumReplayStreams);
 
 		// initialize all streams
-		for (i = 0; i < NumReplayStreams; i++)
+		for (i = 0; i < gCutsceneAsReplay_NumReplayStreams; i++)
 		{
 			stream = &ReplayStreams[i].SourceType;
 			sprintf(curStreamName, "stream%d", i);
@@ -470,15 +473,24 @@ void CutRec_CheckInvalidatePing(int carId, int howHard)
 
 int CutRec_InitPlayers()
 {
+	STREAM_SOURCE* temp;
 	if (gCutsceneAsReplay == 0)
 		return 0;
 
-	for (int i = 0; i < NumReplayStreams; i++)
+	for (int i = 0; i < gCutsceneAsReplay_NumReplayStreams; i++)
 	{
 		PlayerStartInfo[i] = &ReplayStreams[i].SourceType;
+		PlayerStartInfo[i]->controlType = CONTROL_TYPE_CUTSCENE;
 	}
 
-	numPlayersToCreate = NumReplayStreams;
+	temp = PlayerStartInfo[0];
+	PlayerStartInfo[0] = PlayerStartInfo[gCutsceneAsReplay_PlayerId];
+	PlayerStartInfo[gCutsceneAsReplay_PlayerId] = temp;
+	
+	PlayerStartInfo[0]->controlType = CONTROL_TYPE_PLAYER;
+
+	NumReplayStreams = gCutsceneAsReplay_NumReplayStreams;
+	numPlayersToCreate = gCutsceneAsReplay_NumReplayStreams;
 
 	return 1;
 }
@@ -767,7 +779,7 @@ int CutRec_SaveChase()
 
 int CutRec_RecordPad(CAR_DATA* cp, uint* t0, char* t1, char* t2)
 {
-	if (gCutsceneAsReplay == 0 || NoPlayerControl || cp->id != gCutsceneAsReplay_PlayerId)
+	if (gCutsceneAsReplay == 0 || NoPlayerControl || (char)cp->ai.padid != gCutsceneAsReplay_PlayerId)
 		return 0;
 
 	*t0 = Pads[0].mapped;	// [A] padid might be wrong
