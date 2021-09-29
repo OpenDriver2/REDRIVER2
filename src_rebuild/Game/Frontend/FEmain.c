@@ -933,7 +933,7 @@ void SetupExtraPoly(char *fileName, int offset, int offset2)
 	rect.w = 64;
 	rect.h = 219;
 	
-	LoadImage(&rect, (u_long *)(_frontend_buffer + offset2 + offset * 0x8000));
+	LoadImage(&rect, (u_long *)(_frontend_buffer + offset2 + offset * PAD_LEFT));
 	
 	DrawSync(0);
 	VSync(0);
@@ -999,7 +999,7 @@ void LoadBackgroundFile(char* name)
 	{
 		FEDrawCDicon();
 
-		LoadfileSeg(name, (char*)_other_buffer, i * 0x8000, 0x8000);
+		LoadfileSeg(name, (char*)_other_buffer, i * PAD_LEFT, PAD_LEFT);
 		FEDrawCDicon();
 
 		rect.y = (i / 6);
@@ -1010,7 +1010,7 @@ void LoadBackgroundFile(char* name)
 		FEDrawCDicon();
 	}
 
-	LoadfileSeg(name, (char*)_other_buffer, iTpage * 0x8000, 512);
+	LoadfileSeg(name, (char*)_other_buffer, iTpage * PAD_LEFT, 512);
 	FEDrawCDicon();
 
 	rect.h = 1;
@@ -1091,11 +1091,11 @@ void LoadFrontendScreens(int full)
 	for (int i = 0; i < 2; i++)
 	{
 		// [A] optimized. Before it was to wasteful to load 16 sectors
-		int loadSize = i == 0 ? 0x8000 : (36 * 128);
+		int loadSize = i == 0 ? PAD_LEFT : (36 * 128);
 		rect.h = i == 0 ? 256 : 36;
 		
 		ShowLoading();
-		LoadfileSeg("DATA\\GFX.RAW", (char*)_other_buffer, 0x30000 + (i * 0x8000), loadSize);
+		LoadfileSeg("DATA\\GFX.RAW", (char*)_other_buffer, 0x30000 + (i * PAD_LEFT), loadSize);
 
 		rect.x = 640 + (i * 64);
 		rect.y = 256;
@@ -1106,7 +1106,7 @@ void LoadFrontendScreens(int full)
 
 	// Load clut
 	ShowLoading();
-	LoadfileSeg("DATA\\GFX.RAW", (char*)_other_buffer, 0x58000, /*0x8000*/ 512);
+	LoadfileSeg("DATA\\GFX.RAW", (char*)_other_buffer, 0x58000, /*PAD_LEFT*/ 512);
 
 	rect.x = 960;
 	rect.y = 256;
@@ -1227,19 +1227,19 @@ void NewSelection(short dir)
 		addPrim(current->ot + 9, &In);
 #endif
 
-		if ((dir & 0x1000) != 0)
+		if ((dir & PAD_UP) != 0)
 		{
 			btn = pCurrButton->u;
 		}
-		else if ((dir & 0x4000) != 0)
+		else if ((dir & PAD_DOWN) != 0)
 		{
 			btn = pCurrButton->d;
 		}
-		else if ((dir & 0x8000) != 0)
+		else if ((dir & PAD_LEFT) != 0)
 		{
 			btn = pCurrButton->l;
 		}
-		else if ((dir & 0x2000) != 0)
+		else if ((dir & PAD_RIGHT) != 0)
 		{
 			btn = pCurrButton->r;
 		}
@@ -1293,7 +1293,7 @@ int HandleKeyPress(void)
 		}
 	}
 
-	if (feNewPad & 0x40)
+	if (feNewPad & PAD_CROSS)
 	{	
 		int action = pCurrButton->action >> 8;
 
@@ -1347,7 +1347,7 @@ int HandleKeyPress(void)
 			}
 		}
 	}
-	else if (feNewPad & 0x10)
+	else if (feNewPad & PAD_TRIANGLE)
 	{
 		if (ScreenDepth > 0)
 		{
@@ -1370,7 +1370,7 @@ int HandleKeyPress(void)
 	else
 	{
 		// any d-pad buttons pressed?
-		if ((feNewPad & (0x8000 | 0x4000 | 0x2000 | 0x1000)) != 0)
+		if ((feNewPad & (PAD_LEFT | PAD_DOWN | PAD_RIGHT | PAD_UP)) != 0)
 		{
 			NewSelection(feNewPad);
 		}
@@ -1416,7 +1416,7 @@ void PadChecks(void)
 
 #ifndef PSX
 	// [A] quit to system
-	if(feNewPad & 0x10)
+	if(feNewPad & PAD_TRIANGLE)
 	{
 		if(ScreenDepth == 0)
 		{
@@ -1427,7 +1427,7 @@ void PadChecks(void)
 
 	if(bQuitToSystem)
 	{
-		if (feNewPad & 0x40)
+		if (feNewPad & PAD_CROSS)
 		{
 			if(bQuitToSystemSel == 1)
 				bQuitToSystem = 2;
@@ -1436,7 +1436,7 @@ void PadChecks(void)
 
 			FESound(2);
 		}
-		else if ((feNewPad & 0x8000) || (feNewPad & 0x2000))
+		else if ((feNewPad & PAD_LEFT) || (feNewPad & PAD_RIGHT))
 		{
 			bQuitToSystemSel += 1;
 			bQuitToSystemSel &= 1;
@@ -1488,7 +1488,7 @@ void PadChecks(void)
 	{
 		bReturnToMain = 1;
 		bRedrawFrontend = 1;
-		feNewPad = 0x10;
+		feNewPad = PAD_TRIANGLE;
 
 		if (pCurrScreen->userFunctionNum != 0) 
 		{
@@ -1607,7 +1607,7 @@ void State_FrontEnd(void* param)
 	{
 		if (Pads[1].type < 2)
 		{
-			feNewPad = ((feNewPad & 0x10) != 0) ? 0x10 : 0;
+			feNewPad = ((feNewPad & PAD_TRIANGLE) != 0) ? PAD_TRIANGLE : 0;
 		}
 		else 
 		{
@@ -1883,14 +1883,14 @@ int CentreScreen(int bSetup)
 	FEPrintStringSized(text, 25, 75, 0xC00, 0, 128, 0, 0);
 #endif
 
-	if (feNewPad & 0x40)
+	if (feNewPad & PAD_CROSS)
 	{
 		draw_mode_pal.framex = current->disp.screen.x / 2;
 		draw_mode_pal.framey = current->disp.screen.y;
 		draw_mode_ntsc.framex = current->disp.screen.x / 2;
 		draw_mode_ntsc.framey = current->disp.screen.y;
 	}
-	else if (feNewPad & 0x10)
+	else if (feNewPad & PAD_TRIANGLE)
 	{
 		current->disp.screen.x = draw_mode.framex * 2;
 		current->disp.screen.y = draw_mode.framey;
@@ -1901,7 +1901,7 @@ int CentreScreen(int bSetup)
 	{
 		bool done = false;
 
-		if (feNewPad & 0x1000)
+		if (feNewPad & PAD_UP)
 		{
 			if (current->disp.screen.y >= screen_limits[video_mode].miny)
 			{
@@ -1910,7 +1910,7 @@ int CentreScreen(int bSetup)
 				done = true;
 			}
 		}
-		else if (feNewPad & 0x4000)
+		else if (feNewPad & PAD_DOWN)
 		{
 			if (current->disp.screen.y <= screen_limits[video_mode].maxy)
 			{
@@ -1919,7 +1919,7 @@ int CentreScreen(int bSetup)
 				done = true;
 			}
 		}
-		else if (feNewPad & 0x8000)
+		else if (feNewPad & PAD_LEFT)
 		{
 			if (current->disp.screen.x >= screen_limits[video_mode].minx)
 			{
@@ -1928,7 +1928,7 @@ int CentreScreen(int bSetup)
 				done = true;
 			}
 		}
-		else if (feNewPad & 0x2000)
+		else if (feNewPad & PAD_RIGHT)
 		{
 			if (current->disp.screen.x <= screen_limits[video_mode].maxx)
 			{
@@ -2049,7 +2049,7 @@ int CarSelectScreen(int bSetup)
 		return 1;
 	}
 
-	if (feNewPad & 0x10)
+	if (feNewPad & PAD_TRIANGLE)
 	{
 		FESound(0);
 		bDoneAllready = 1;
@@ -2068,7 +2068,7 @@ int CarSelectScreen(int bSetup)
 			bDrawExtra = 1;
 
 			RECT16 rect = extraRect;
-			LoadImage(&rect, (u_long*)(_frontend_buffer + currCity * 0x8000));
+			LoadImage(&rect, (u_long*)(_frontend_buffer + currCity * PAD_LEFT));
 			DrawSync(0);
 		}
 #endif
@@ -2076,7 +2076,7 @@ int CarSelectScreen(int bSetup)
 		iScreenSelect = SCREEN_NONE;
 	}
 
-	else if (feNewPad & 0x40)
+	else if (feNewPad & PAD_CROSS)
 	{
 		if (currSelIndex == 0)
 		{
@@ -2124,7 +2124,7 @@ int CarSelectScreen(int bSetup)
 		}
 		
 		rect = extraRect;
-		LoadImage(&rect, (u_long *)(_frontend_buffer + carSelection * 0x8000));
+		LoadImage(&rect, (u_long *)(_frontend_buffer + carSelection * PAD_LEFT));
 		DrawSync(0);
 
 #ifdef PSX
@@ -2136,11 +2136,11 @@ int CarSelectScreen(int bSetup)
 		EndFrame();
 #endif
 	}
-	else if (feNewPad & 0x1000)
+	else if (feNewPad & PAD_UP)
 	{
 		currSelIndex = pCurrButton->u - 1;
 	}
-	else if (feNewPad & 0x4000)
+	else if (feNewPad & PAD_DOWN)
 	{
 		currSelIndex = pCurrButton->d - 1;
 	}
@@ -2157,15 +2157,15 @@ int CopDiffLevelScreen(int bSetup)
 		return 1;
 	}
 
-	if (feNewPad & 0x40)
+	if (feNewPad & PAD_CROSS)
 	{
 		gCopDifficultyLevel = currSelIndex;
 	}
-	else if (feNewPad & 0x1000)
+	else if (feNewPad & PAD_UP)
 	{
 		currSelIndex = pCurrButton->u - 1;
 	}
-	else if (feNewPad & 0x4000)
+	else if (feNewPad & PAD_DOWN)
 	{
 		currSelIndex = pCurrButton->d - 1;
 	}
@@ -2183,15 +2183,15 @@ int VibroOnOffScreen(int bSetup)
 		return 1;
 	}
 
-	if (feNewPad & 0x40)
+	if (feNewPad & PAD_CROSS)
 	{
 		gVibration = (currSelIndex ^ 1);
 	}
-	else if (feNewPad & 0x1000)
+	else if (feNewPad & PAD_UP)
 	{
 		currSelIndex = pCurrButton->u - 1;
 	}
-	else if (feNewPad & 0x4000)
+	else if (feNewPad & PAD_DOWN)
 	{
 		currSelIndex = pCurrButton->d - 1;
 	}
@@ -2376,7 +2376,7 @@ int MissionSelectScreen(int bSetup)
 		return 1;
 	}
 
-	if (feNewPad & 0x40)
+	if (feNewPad & PAD_CROSS)
 	{
 		i = currMission;
 
@@ -2413,16 +2413,16 @@ int MissionSelectScreen(int bSetup)
 
 		return 1;
 	}
-	else if (feNewPad & 0x10)
+	else if (feNewPad & PAD_TRIANGLE)
 	{
 		missionSetup = 0;
 		iScreenSelect = SCREEN_NONE;
 	}
-	else if (feNewPad & 0x1000)
+	else if (feNewPad & PAD_UP)
 	{
 		currSelIndex = pCurrButton->u - 1;
 	}
-	else if (feNewPad & 0x4000)
+	else if (feNewPad & PAD_DOWN)
 	{
 		currSelIndex = pCurrButton->d - 1;
 	}
@@ -2489,7 +2489,7 @@ int MissionCityScreen(int bSetup)
 		return 0;
 	}
 
-	if (feNewPad & 0x10)
+	if (feNewPad & PAD_TRIANGLE)
 	{
 		// BUGFIX: unload city image
 		loaded[0] = -1;
@@ -2501,11 +2501,11 @@ int MissionCityScreen(int bSetup)
 	}
 	else
 	{
-		if (feNewPad & 0x1000)
+		if (feNewPad & PAD_UP)
 		{
 			currCity = pCurrButton->u - 1;
 		}
-		else if (feNewPad & 0x4000)
+		else if (feNewPad & PAD_DOWN)
 		{
 			currCity = pCurrButton->d - 1;
 		}
@@ -2516,7 +2516,7 @@ int MissionCityScreen(int bSetup)
 		}
 
 		rect = extraRect;
-		LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
+		LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * PAD_LEFT));
 		DrawSync(0);
 
 #ifdef PSX
@@ -2561,7 +2561,7 @@ int CutSceneSelectScreen(int bSetup)
 		if (loaded[2] == GameLevel)
 		{
 			bDrawExtra = 1;
-			LoadImage(&rect, (u_long*)(_frontend_buffer + 0x20000 + cutSelection * 0x8000));
+			LoadImage(&rect, (u_long*)(_frontend_buffer + 0x20000 + cutSelection * PAD_LEFT));
 			DrawSync(0);
 		}
 		else
@@ -2578,12 +2578,12 @@ int CutSceneSelectScreen(int bSetup)
 		return 1;
 	}
 
-	if (feNewPad & 0x10) 
+	if (feNewPad & PAD_TRIANGLE) 
 	{
 		bDrawExtra = 0;
 		iScreenSelect = SCREEN_NONE;
 	}
-	else if (feNewPad & 0x40)
+	else if (feNewPad & PAD_CROSS)
 	{
 		if (currSelIndex == 0)
 		{
@@ -2627,7 +2627,7 @@ int CutSceneSelectScreen(int bSetup)
 		}
 
 		rect = extraRect;
-		LoadImage(&rect, (u_long*)(_frontend_buffer + 0x20000 + cutSelection * 0x8000));
+		LoadImage(&rect, (u_long*)(_frontend_buffer + 0x20000 + cutSelection * PAD_LEFT));
 		DrawSync(0);
 		DisplayOnScreenText();
 
@@ -2642,11 +2642,11 @@ int CutSceneSelectScreen(int bSetup)
 
 		return 0;
 	}
-	else if (feNewPad & 0x1000)
+	else if (feNewPad & PAD_UP)
 	{
 		currSelIndex = pCurrButton->u - 1;
 	}
-	else if (feNewPad & 0x4000)
+	else if (feNewPad & PAD_DOWN)
 	{
 		currSelIndex = pCurrButton->d - 1;
 	}
@@ -2738,7 +2738,7 @@ int CutSceneCitySelectScreen(int bSetup)
 			if (currCity == 4) 
 				LoadImage(&rect, (u_long *)_frontend_buffer);
 			else 
-				LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
+				LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * PAD_LEFT));
 
 			DrawSync(0);
 		}
@@ -2746,7 +2746,7 @@ int CutSceneCitySelectScreen(int bSetup)
 		return 0;
 	}
 
-	if (feNewPad & 0x40)
+	if (feNewPad & PAD_CROSS)
 	{
 		lastCity = -1;
 		lastCutCity = GameLevel;
@@ -2772,7 +2772,7 @@ int CutSceneCitySelectScreen(int bSetup)
 
 		return 0;
 	}
-	else if (feNewPad & 0x10)
+	else if (feNewPad & PAD_TRIANGLE)
 	{
 		FESound(0);
 		bDoneAllready = 1;
@@ -2782,11 +2782,11 @@ int CutSceneCitySelectScreen(int bSetup)
 
 		return 0;
 	}
-	else if (feNewPad & 0x1000)
+	else if (feNewPad & PAD_UP)
 	{
 		currCity = pCurrButton->u - 1;
 	}
-	else if (feNewPad & 0x4000)
+	else if (feNewPad & PAD_DOWN)
 	{
 		currCity = pCurrButton->d - 1;
 	}
@@ -2796,7 +2796,7 @@ int CutSceneCitySelectScreen(int bSetup)
 	rect = extraRect;
 
 	if (GameLevel != 4)
-		LoadImage(&rect, (u_long *)(_frontend_buffer + GameLevel * 0x8000));
+		LoadImage(&rect, (u_long *)(_frontend_buffer + GameLevel * PAD_LEFT));
 	else
 		LoadImage(&rect, (u_long *)_frontend_buffer);
 
@@ -2860,7 +2860,7 @@ int SetVolumeScreen(int bSetup)
 
 	currSelIndex = (pCurrButton->u & 3);
 
-	if (feNewPad & 0x10)
+	if (feNewPad & PAD_TRIANGLE)
 	{
 		FESound(0);
 		bDoneAllready = 1;
@@ -2875,7 +2875,7 @@ int SetVolumeScreen(int bSetup)
 
 		return 0;
 	}
-	else if (feNewPad & 0x40)
+	else if (feNewPad & PAD_CROSS)
 	{
 		if (currSelIndex == 2)
 			LoadBackgroundFile("DATA\\GFX.RAW");
@@ -2886,7 +2886,7 @@ int SetVolumeScreen(int bSetup)
 	{
 		int dir = -1; // -1: no action, 0: limit reached, 1: OK
 
-		if (fePad & 0x8000)
+		if (fePad & PAD_LEFT)
 		{
 			switch (currSelIndex)
 			{
@@ -2922,7 +2922,7 @@ int SetVolumeScreen(int bSetup)
 				break;
 			}
 		}
-		else if (fePad & 0x2000)
+		else if (fePad & PAD_RIGHT)
 		{
 			switch (currSelIndex)
 			{
@@ -3080,7 +3080,7 @@ int ScoreScreen(int bSetup)
 		return 0;
 	}
 
-	if (feNewPad & 0x40)
+	if (feNewPad & PAD_CROSS)
 	{
 		if (currSelIndex == 0)
 		{
@@ -3128,12 +3128,12 @@ int ScoreScreen(int bSetup)
 		bRedrawFrontend = 1;
 #endif
 	}
-	else if (feNewPad & 0x10)
+	else if (feNewPad & PAD_TRIANGLE)
 	{
 		iScreenSelect = SCREEN_NONE;
 		return 0;
 	}
-	else if ((feNewPad & 0x1000) || (feNewPad & 0x4000))
+	else if ((feNewPad & PAD_UP) || (feNewPad & PAD_DOWN))
 	{
 		currSelIndex ^= 1;
 	}
@@ -3193,7 +3193,7 @@ int CityCutOffScreen(int bSetup)
 			bDrawExtra = 1;
 
 			RECT16 rect = extraRect;
-			LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
+			LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * PAD_LEFT));
 			DrawSync(0);
 		}
 #endif
@@ -3214,7 +3214,7 @@ int CityCutOffScreen(int bSetup)
 		return 0;
 	}*/
 
-	if (feNewPad & 0x10)
+	if (feNewPad & PAD_TRIANGLE)
 	{
 		lastCity = -1;
 
@@ -3227,11 +3227,11 @@ int CityCutOffScreen(int bSetup)
 
 		return 0;
 	}
-	else if (feNewPad & 0x1000)
+	else if (feNewPad & PAD_UP)
 	{
 		currCity = pCurrButton->u - 1;
 	}
-	else if (feNewPad & 0x4000)
+	else if (feNewPad & PAD_DOWN)
 	{
 		currCity = pCurrButton->d - 1;
 	}
@@ -3242,7 +3242,7 @@ int CityCutOffScreen(int bSetup)
 	}
 
 	RECT16 rect = extraRect;
-	LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
+	LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * PAD_LEFT));
 	DrawSync(0);
 #endif
 	return 0;
@@ -3267,14 +3267,14 @@ int ControllerScreen(int bSetup)
 	}
 	else
 	{
-		if (feNewPad & 0x40) 
+		if (feNewPad & PAD_CROSS) 
 		{
 			currSelIndex = currSelIndex ^ 1;
 			LoadBackgroundFile(contNames[currSelIndex]);
 
 			bRedrawFrontend = 1;
 		}
-		else if (feNewPad & 0x10)
+		else if (feNewPad & PAD_TRIANGLE)
 		{
 			iScreenSelect = SCREEN_SCORES;
 			LoadBackgroundFile("DATA\\GFX.RAW");
@@ -3725,7 +3725,7 @@ int UserReplaySelectScreen(int bSetup)
 
 	if (gFEReplayCount)
 	{
-		if (feNewPad & 0x40)
+		if (feNewPad & PAD_CROSS)
 		{
 			char filename[64];
 			int selectedReplay = pCurrButton->var;
@@ -3810,7 +3810,7 @@ int TimeOfDaySelectScreen(int bSetup)
 	FEPrintString(GET_GAME_TXT(TimeOfDayNames[wantedTimeOfDay]), 590, ypos[0], 4, 128, 128, 128);
 	FEPrintString(GET_GAME_TXT(WeatherNames[wantedWeather]), 590, ypos[1], 4, 128, 128, 128);
 
-	if (feNewPad & 0x10)
+	if (feNewPad & PAD_TRIANGLE)
 	{
 		// reset back
 		wantedWeather = -1;
@@ -3821,11 +3821,11 @@ int TimeOfDaySelectScreen(int bSetup)
 
 	dir = 0;
 
-	if (feNewPad & 0x8000)
+	if (feNewPad & PAD_LEFT)
 	{
 		dir = -1;
 	}
-	else if (feNewPad & 0x2000)
+	else if (feNewPad & PAD_RIGHT)
 	{
 		dir = 1;
 	}
@@ -3861,7 +3861,7 @@ int DemoScreen(int bSetup)
 	if (bSetup)
 		return 0;
 	
-	if (feNewPad & 0x40)
+	if (feNewPad & PAD_CROSS)
 	{
 		pScreenStack[ScreenDepth] = pCurrScreen;
 		pButtonStack[ScreenDepth] = pCurrButton;
@@ -3880,7 +3880,7 @@ int DemoScreen(int bSetup)
 
 	if(mainScreenLoaded)
 	{
-		if (feNewPad & 0x20)
+		if (feNewPad & PAD_CIRCLE)
 		{
 			LoadBackgroundFile(contNames[0]);
 			FESound(2);
