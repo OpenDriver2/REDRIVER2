@@ -6,6 +6,7 @@
 #define BG_SPLICE_SIZE (BG_WIDTH * BG_HEIGHT)
 #define CLUT_OFFSET 0x58000
 #define TPAGE_SIZE 0x200
+#define REST_OFFSET 0x30000
 
 extern int gInFrontend;
 extern int bRedrawFrontend;

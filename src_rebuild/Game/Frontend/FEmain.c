@@ -1095,7 +1095,7 @@ void LoadFrontendScreens(int full)
 		rect.h = i == 0 ? 256 : 36;
 		
 		ShowLoading();
-		LoadfileSeg("DATA\\GFX.RAW", (char*)_other_buffer, 0x30000 + (i * BG_SPLICE_SIZE), loadSize);
+		LoadfileSeg("DATA\\GFX.RAW", (char*)_other_buffer, REST_OFFSET + (i * BG_SPLICE_SIZE), loadSize);
 
 		rect.x = 640 + (i * 64);
 		rect.y = 256;
