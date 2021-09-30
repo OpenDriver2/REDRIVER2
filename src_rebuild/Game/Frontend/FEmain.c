@@ -933,7 +933,7 @@ void SetupExtraPoly(char *fileName, int offset, int offset2)
 	rect.w = 64;
 	rect.h = 219;
 	
-	LoadImage(&rect, (u_long *)(_frontend_buffer + offset2 + offset * 0x8000));
+	LoadImage(&rect, (u_long *)(_frontend_buffer + offset2 + offset * BG_SPLICE_SIZE));
 	
 	DrawSync(0);
 	VSync(0);
@@ -999,7 +999,7 @@ void LoadBackgroundFile(char* name)
 	{
 		FEDrawCDicon();
 
-		LoadfileSeg(name, (char*)_other_buffer, i * 0x8000, 0x8000);
+		LoadfileSeg(name, (char*)_other_buffer, i * BG_SPLICE_SIZE, BG_SPLICE_SIZE);
 		FEDrawCDicon();
 
 		rect.y = (i / 6);
@@ -1010,7 +1010,7 @@ void LoadBackgroundFile(char* name)
 		FEDrawCDicon();
 	}
 
-	LoadfileSeg(name, (char*)_other_buffer, iTpage * 0x8000, 512);
+	LoadfileSeg(name, (char*)_other_buffer, iTpage * BG_SPLICE_SIZE, 512);
 	FEDrawCDicon();
 
 	rect.h = 1;
@@ -1091,11 +1091,11 @@ void LoadFrontendScreens(int full)
 	for (int i = 0; i < 2; i++)
 	{
 		// [A] optimized. Before it was to wasteful to load 16 sectors
-		int loadSize = i == 0 ? 0x8000 : (36 * 128);
+		int loadSize = i == 0 ? BG_SPLICE_SIZE : (36 * 128);
 		rect.h = i == 0 ? 256 : 36;
 		
 		ShowLoading();
-		LoadfileSeg("DATA\\GFX.RAW", (char*)_other_buffer, 0x30000 + (i * 0x8000), loadSize);
+		LoadfileSeg("DATA\\GFX.RAW", (char*)_other_buffer, 0x30000 + (i * BG_SPLICE_SIZE), loadSize);
 
 		rect.x = 640 + (i * 64);
 		rect.y = 256;
@@ -2068,7 +2068,7 @@ int CarSelectScreen(int bSetup)
 			bDrawExtra = 1;
 
 			RECT16 rect = extraRect;
-			LoadImage(&rect, (u_long*)(_frontend_buffer + currCity * 0x8000));
+			LoadImage(&rect, (u_long*)(_frontend_buffer + currCity * BG_SPLICE_SIZE));
 			DrawSync(0);
 		}
 #endif
@@ -2124,7 +2124,7 @@ int CarSelectScreen(int bSetup)
 		}
 		
 		rect = extraRect;
-		LoadImage(&rect, (u_long *)(_frontend_buffer + carSelection * 0x8000));
+		LoadImage(&rect, (u_long *)(_frontend_buffer + carSelection * BG_SPLICE_SIZE));
 		DrawSync(0);
 
 #ifdef PSX
@@ -2516,7 +2516,7 @@ int MissionCityScreen(int bSetup)
 		}
 
 		rect = extraRect;
-		LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
+		LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * BG_SPLICE_SIZE));
 		DrawSync(0);
 
 #ifdef PSX
@@ -2561,7 +2561,7 @@ int CutSceneSelectScreen(int bSetup)
 		if (loaded[2] == GameLevel)
 		{
 			bDrawExtra = 1;
-			LoadImage(&rect, (u_long*)(_frontend_buffer + 0x20000 + cutSelection * 0x8000));
+			LoadImage(&rect, (u_long*)(_frontend_buffer + 0x20000 + cutSelection * BG_SPLICE_SIZE));
 			DrawSync(0);
 		}
 		else
@@ -2627,7 +2627,7 @@ int CutSceneSelectScreen(int bSetup)
 		}
 
 		rect = extraRect;
-		LoadImage(&rect, (u_long*)(_frontend_buffer + 0x20000 + cutSelection * 0x8000));
+		LoadImage(&rect, (u_long*)(_frontend_buffer + 0x20000 + cutSelection * BG_SPLICE_SIZE));
 		DrawSync(0);
 		DisplayOnScreenText();
 
@@ -2738,7 +2738,7 @@ int CutSceneCitySelectScreen(int bSetup)
 			if (currCity == 4) 
 				LoadImage(&rect, (u_long *)_frontend_buffer);
 			else 
-				LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
+				LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * BG_SPLICE_SIZE));
 
 			DrawSync(0);
 		}
@@ -2796,7 +2796,7 @@ int CutSceneCitySelectScreen(int bSetup)
 	rect = extraRect;
 
 	if (GameLevel != 4)
-		LoadImage(&rect, (u_long *)(_frontend_buffer + GameLevel * 0x8000));
+		LoadImage(&rect, (u_long *)(_frontend_buffer + GameLevel * BG_SPLICE_SIZE));
 	else
 		LoadImage(&rect, (u_long *)_frontend_buffer);
 
@@ -3193,7 +3193,7 @@ int CityCutOffScreen(int bSetup)
 			bDrawExtra = 1;
 
 			RECT16 rect = extraRect;
-			LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
+			LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * BG_SPLICE_SIZE));
 			DrawSync(0);
 		}
 #endif
@@ -3242,7 +3242,7 @@ int CityCutOffScreen(int bSetup)
 	}
 
 	RECT16 rect = extraRect;
-	LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
+	LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * BG_SPLICE_SIZE));
 	DrawSync(0);
 #endif
 	return 0;

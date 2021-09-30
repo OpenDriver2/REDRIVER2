@@ -1,6 +1,10 @@
 #ifndef FEMAIN_H
 #define FEMAIN_H
 
+#define BG_WIDTH 64
+#define BG_HEIGHT 256
+#define BG_SPLICE_SIZE (BG_WIDTH * BG_HEIGHT)
+
 extern int gInFrontend;
 extern int bRedrawFrontend;
 
