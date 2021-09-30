@@ -4,6 +4,7 @@
 #define BG_WIDTH 64
 #define BG_HEIGHT 256
 #define BG_SPLICE_SIZE (BG_WIDTH * BG_HEIGHT)
+#define CLUT_OFFSET 0x58000
 
 extern int gInFrontend;
 extern int bRedrawFrontend;

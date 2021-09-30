@@ -1106,7 +1106,7 @@ void LoadFrontendScreens(int full)
 
 	// Load clut
 	ShowLoading();
-	LoadfileSeg("DATA\\GFX.RAW", (char*)_other_buffer, 0x58000, /*PAD_LEFT*/ 512);
+	LoadfileSeg("DATA\\GFX.RAW", (char*)_other_buffer, CLUT_OFFSET, /*PAD_LEFT*/ 512);
 
 	rect.x = 960;
 	rect.y = 256;
