@@ -1010,7 +1010,7 @@ void LoadBackgroundFile(char* name)
 		FEDrawCDicon();
 	}
 
-	LoadfileSeg(name, (char*)_other_buffer, iTpage * BG_SPLICE_SIZE, 512);
+	LoadfileSeg(name, (char*)_other_buffer, iTpage * BG_SPLICE_SIZE, TPAGE_SIZE);
 	FEDrawCDicon();
 
 	rect.h = 1;
