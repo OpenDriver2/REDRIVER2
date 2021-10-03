@@ -16,8 +16,6 @@ typedef struct
 {
 	Sint32				deviceId;	// linked device Id
 	SDL_GameController* gc;
-	SDL_Haptic*			haptic;
-	int					hapticEffect;
 
 	u_char*				padData;
 	bool				switchingAnalog;
@@ -106,21 +104,6 @@ void PsyX_Pad_OpenController(Sint32 deviceId, int slot)
 		// assign device id automatically
 		if (controller->deviceId == -1)
 			controller->deviceId = deviceId;
-
-		SDL_Joystick* joy = SDL_GameControllerGetJoystick(controller->gc);
-
-		// try open haptics
-		if (SDL_JoystickIsHaptic(joy))
-			controller->haptic = SDL_HapticOpenFromJoystick(joy);
-		else // try open using device ID
-			controller->haptic = SDL_HapticOpen(controller->deviceId);
-
-		controller->hapticEffect = -1;
-	
-		if (!controller->haptic)
-		{
-			eprintwarn("No haptic for '%s'\n", SDL_GameControllerNameForIndex(deviceId));
-		}
 	}
 }
 
@@ -129,14 +112,9 @@ void PsyX_Pad_CloseController(int slot)
 {
 	PsyXController* controller = &g_controllers[slot];
 
-	SDL_HapticDestroyEffect(controller->haptic, controller->hapticEffect);
-	SDL_HapticClose(controller->haptic);
 	SDL_GameControllerClose(controller->gc);
 
-	//controller->deviceId = -1;
 	controller->gc = NULL;
-	controller->haptic = NULL;
-	controller->hapticEffect = -1;
 }
 
 // Called from LIBPAD
@@ -460,40 +438,18 @@ void PsyX_Pad_Vibrate(int mtap, int slot, unsigned char* table, int len)
 {
 	PsyXController* controller = &g_controllers[slot];
 
-	if (!controller->haptic)
-		return;
-
 	if (len == 0)
 		return;
 
-	SDL_HapticEffect eff;
-	eff.type = SDL_HAPTIC_LEFTRIGHT;
+	Uint16 freq_high	= table[0] * 255;
+	Uint16 freq_low		= len > 1 ? table[1] * 255 : 0;
 
-	eff.leftright.small_magnitude = table[0] * 255;
+	// apply minimal shake
+	if(freq_low != 0 && freq_low < 4096)
+		freq_low = 4096;
 
-	if (len > 1)
-		eff.leftright.large_magnitude = table[1] * 255;
-	else
-		eff.leftright.large_magnitude = 0;
+	if (freq_high != 0 && freq_high < 4096)
+		freq_high = 4096;
 
-	eff.leftright.length = 400;
-
-	if (SDL_HapticEffectSupported(controller->haptic, &eff) != SDL_TRUE)
-		return;
-
-	if (controller->hapticEffect == -1)
-	{
-		controller->hapticEffect = SDL_HapticNewEffect(controller->haptic, &eff);
-		if (controller->hapticEffect == -1)
-		{
-			eprintwarn("Warning: Unable to create haptic effect! %s\n", SDL_GetError());
-		}
-	}
-	else
-		SDL_HapticUpdateEffect(controller->haptic, controller->hapticEffect, &eff);
-
-	if (SDL_HapticRunEffect(controller->haptic, controller->hapticEffect, 1) != 0)
-	{
-		eprintwarn("Warning: Unable to run haptic effect! %s\n", SDL_GetError());
-	}
+	SDL_GameControllerRumble(controller->gc, freq_low, freq_high, 200);
 }
