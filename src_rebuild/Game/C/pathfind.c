@@ -514,8 +514,11 @@ void setDistance(tNode* n, ushort dist)
 {
 	n->dist = dist | 1;	// valid bit for this frame
 
-	distanceCache[(n->vx >> 2 & 0x3f80U | n->vz >> 9 & 0x7fU) ^ (n->vy & 1U) * 0x2040 ^ (n->vy & 2U) << 0xc] = dist | 1;
+	DISTMAP_V(n->vx, n->vy, n->vz) = dist | 1;
 }
+
+// [A]
+void SetNodeDistanceWithParents(tNode* startNode, ushort dist);
 
 // [D] [T]
 void iterate(void)
@@ -626,29 +629,7 @@ void iterate(void)
 			}
 		}
 
-		dist &= 0xffff;
-
-		// store distance and get to the next lesser node
-		if (numHeapEntries != 198)
-		{
-			setDistance(&pathNodes[dir + 1], dist);
-				
-			i = numHeapEntries + 1;
-
-			pnode = i;
-			parent = i >> 1;
-
-			while (parent != 0 && dist < heap[parent].dist)
-			{
-				heap[i] = heap[parent];
-
-				pnode = parent;
-				parent >>= 1;
-			}
-
-			heap[pnode] = pathNodes[dir + 1];
-			numHeapEntries++;
-		}
+		SetNodeDistanceWithParents(&pathNodes[dir + 1], dist);
 	}
 }
 
@@ -683,13 +664,10 @@ extern int sdLevel; // D2ROADS
 // [D] [T]
 int getInterpolatedDistance(VECTOR* pos)
 {
-	int res;
-	int x;
-	int dist;
-	int min;
+	int x, res;
+	int dist, min;
 	int a,b,c;
-	int fx;
-	int fz;
+	int fx, fz;
 	tNode n;
 	VECTOR sp;
 
@@ -700,8 +678,8 @@ int getInterpolatedDistance(VECTOR* pos)
 
 	if (OMAP_GETVALUE(n.vx >> 8, n.vz >> 8) != 0)
 	{
-		res = MapHeight((VECTOR*)&n);
-		n.vy = res ^ (res ^ sdLevel) & 3;
+		n.vy = MapHeight((VECTOR*)&n);
+		n.vy = n.vy ^ (n.vy ^ sdLevel) & 3;
 	}
 	else
 	{
@@ -714,7 +692,7 @@ int getInterpolatedDistance(VECTOR* pos)
 	sp.vx = n.vx + 256;
 	sp.vz = n.vz + 512;
 
-	n.dist = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (n.vy & 1U) * 0x2040 ^ (n.vy & 2U) << 0xc];
+	n.dist = DISTMAP_V(n.vx, n.vy, n.vz);
 	a = n.dist;
 
 	n.vx = sp.vx;
@@ -722,15 +700,15 @@ int getInterpolatedDistance(VECTOR* pos)
 
 	if (OMAP_GETVALUE(sp.vx >> 8, sp.vz >> 8) != 0)
 	{
-		res = MapHeight((VECTOR*)&n);
-		n.vy = res ^ (res ^ sdLevel) & 3;
+		n.vy = MapHeight((VECTOR*)&n);
+		n.vy = n.vy ^ (n.vy ^ sdLevel) & 3;
 	}
 	else
 	{
 		n.vy = 0;
 	}
 
-	n.dist = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (n.vy & 1U) * 0x2040 ^ (n.vy & 2U) << 0xc];
+	n.dist = DISTMAP_V(n.vx, n.vy, n.vz);
 	b = n.dist;
 	
 	if (a < b)
@@ -745,15 +723,15 @@ int getInterpolatedDistance(VECTOR* pos)
 		
 		if (OMAP_GETVALUE(n.vx >> 8, n.vz >> 8) != 0)
 		{
-			res = MapHeight((VECTOR*)&n);
-			res = res ^ (res ^ sdLevel) & 3;
+			n.vy = MapHeight((VECTOR*)&n);
+			n.vy = n.vy ^ (n.vy ^ sdLevel) & 3;
 		}
 		else
 		{
-			res = 0;
+			n.vy = 0;
 		}
 	
-		dist = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (res & 1) * 0x2040 ^ (res & 2) << 0xc];
+		dist = DISTMAP_V(n.vx, n.vy, n.vz);
 		
 		if (min < dist)
 			c = min;
@@ -788,15 +766,15 @@ int getInterpolatedDistance(VECTOR* pos)
 
 		if (OMAP_GETVALUE(n.vx >> 8, n.vz >> 8) != 0)
 		{
-			res = MapHeight((VECTOR*)&n);
-			res = res ^ (res ^ sdLevel) & 3;
+			n.vy = MapHeight((VECTOR*)&n);
+			n.vy = n.vy ^ (n.vy ^ sdLevel) & 3;
 		}
 		else
 		{
-			res = 0;
+			n.vy = 0;
 		}
 
-		dist = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (res & 1) * 0x2040 ^ (res & 2) << 0xc];
+		dist = DISTMAP_V(n.vx, n.vy, n.vz);
 		
 		if (min < dist)
 			c = min;
@@ -876,17 +854,58 @@ void addCivs(void)
 	} while (cp < &car_data[MAX_CARS - 1]);
 }
 
+// [A]
+void SetNodeDistanceWithParents(tNode* startNode, ushort dist)
+{
+	int i;
+	u_int pnode, parent;
+
+	if (numHeapEntries == 198)
+		return;
+
+	setDistance(startNode, dist);
+
+	i = numHeapEntries + 1;
+
+	pnode = i;
+	parent = i >> 1;
+
+	while (parent != 0 && dist < heap[parent].dist)
+	{
+		heap[i] = heap[parent];
+
+		pnode = parent;
+		parent >>= 1;
+	}
+
+	heap[pnode] = *startNode;
+	numHeapEntries++;
+}
+
+// [A]
+void ComputeDistanceFromSearchTarget(tNode* startNode)
+{
+	u_short dist;
+	int i, dx, dz;
+
+	if (numHeapEntries == 198)
+		return;
+
+	dx = startNode->vx - searchTarget.vx;
+	dz = startNode->vz - searchTarget.vz;
+
+	dist = SquareRoot0(	dx * dx + dz * dz ) >> 1;
+
+	SetNodeDistanceWithParents(startNode, dist);
+}
+
 // [D] [T]
 void UpdateCopMap(void)
 {
-	int d;
-	int dist;
+	int i, d;
 	int dx, dy, dz;
-	int i, maxret;
-	int res;
+	int maxret, res;
 	tNode startNode;
-	u_int pnode;
-	u_int parent;
 
 	BloodyHell();
 
@@ -941,7 +960,7 @@ void UpdateCopMap(void)
 			searchTarget.vy = cp->hd.where.t[1] + FIXEDH(cp->st.n.linearVelocity[1]) * 4;
 			searchTarget.vz = cp->hd.where.t[2] + FIXEDH(cp->st.n.linearVelocity[2]) * 8;
 		}
-		else if (searchTarget.vy == -0x304f)
+		else if (searchTarget.vy == -12367)
 		{
 			searchTarget.vx = player[0].pos[0];
 			searchTarget.vy = player[0].pos[1];
@@ -984,168 +1003,30 @@ void UpdateCopMap(void)
 
 		if (dz < dx + dz / 2)
 		{
-			dx = startNode.vx - searchTarget.vx;
-			dz = startNode.vz - searchTarget.vz;
-			
-			dist = SquareRoot0(dx * dx + (dz) * (dz));
-			dist = dist / 2 & 0xffff;
-
-			if (numHeapEntries != 198)
-			{
-				setDistance(&startNode, dist);
-
-				i = numHeapEntries + 1;
-
-				pnode = i;
-				parent = i >> 1;
-
-				while (parent != 0 && dist < heap[parent].dist)
-				{
-					heap[i] = heap[parent];
-
-					pnode = parent;
-					parent >>= 1;
-				}
-
-				heap[pnode] = startNode;
-				numHeapEntries++;
-			}
+			ComputeDistanceFromSearchTarget(&startNode);
 
 			startNode.vx += 256;
 			startNode.vz += 512;
 			
-			dist = SquareRoot0((startNode.vx - searchTarget.vx) * (startNode.vx - searchTarget.vx) + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
-			dist = dist / 2 & 0xffff;
-
-			if (numHeapEntries != 198)
-			{
-				setDistance(&startNode, dist);
-
-				i = numHeapEntries + 1;
-
-				pnode = i;
-				parent = i >> 1;
-
-				while (parent != 0 && dist < heap[parent].dist)
-				{
-					heap[i] = heap[parent];
-
-					pnode = parent;
-					parent >>= 1;
-				}
-
-				heap[pnode] = startNode;
-				numHeapEntries++;
-			}
+			ComputeDistanceFromSearchTarget(&startNode);
 
 			startNode.vx += 256;
 			startNode.vz -= 512;
-			
-			dist = SquareRoot0((startNode.vx - searchTarget.vx) * (startNode.vx - searchTarget.vx) + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
-			dist = dist / 2 & 0xffff;
 
-			if (numHeapEntries != 198)
-			{
-				setDistance(&startNode, dist);
-
-				i = numHeapEntries + 1;
-
-				pnode = i;
-				parent = i >> 1;
-
-				while (parent != 0 && dist < heap[parent].dist)
-				{
-					heap[i] = heap[parent];
-
-					pnode = parent;
-					parent >>= 1;
-				}
-
-				heap[pnode] = startNode;
-				numHeapEntries++;
-			}
+			ComputeDistanceFromSearchTarget(&startNode);
 		}
 		else
 		{
-			dx = startNode.vx - searchTarget.vx;
-			dz = startNode.vz - searchTarget.vz;
-			
-			dist = SquareRoot0(dx * dx + dz * dz);
-			dist = dist / 2 & 0xffff;
-			
-			if (numHeapEntries != 198)
-			{
-				setDistance(&startNode, dist);
-
-				i = numHeapEntries + 1;
-
-				pnode = i;
-				parent = i >> 1;
-
-				while (parent != 0 && dist < heap[parent].dist)
-				{
-					heap[i] = heap[parent];
-
-					pnode = parent;
-					parent >>= 1;
-				}
-
-				heap[pnode] = startNode;
-				numHeapEntries++;
-			}
+			ComputeDistanceFromSearchTarget(&startNode);
 
 			startNode.vx += 256;
 			startNode.vz += 512;
 	
-			dist = SquareRoot0((startNode.vx - searchTarget.vx) * (startNode.vx - searchTarget.vx) + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
-			dist = dist / 2 & 0xffff;
-
-			if (numHeapEntries != 198)
-			{
-				setDistance(&startNode, dist);
-
-				i = numHeapEntries + 1;
-
-				pnode = i;
-				parent = i >> 1;
-
-				while (parent != 0 && dist < heap[parent].dist)
-				{
-					heap[i] = heap[parent];
-
-					pnode = parent;
-					parent >>= 1;
-				}
-
-				heap[pnode] = startNode;
-				numHeapEntries++;
-			}
+			ComputeDistanceFromSearchTarget(&startNode);
 			
 			startNode.vx -= 512;
 			
-			dist = SquareRoot0((startNode.vx - searchTarget.vx) * (startNode.vx - searchTarget.vx) + (startNode.vz - searchTarget.vz) * (startNode.vz - searchTarget.vz));
-			dist = dist / 2 & 0xffff;
-
-			if (numHeapEntries != 198)
-			{
-				setDistance(&startNode, dist);
-
-				i = numHeapEntries + 1;
-
-				pnode = i;
-				parent = i >> 1;
-
-				while (parent != 0 && dist < heap[parent].dist)
-				{
-					heap[i] = heap[parent];
-
-					pnode = parent;
-					parent >>= 1;
-				}
-
-				heap[pnode] = startNode;
-				numHeapEntries++;
-			}
+			ComputeDistanceFromSearchTarget(&startNode);
 		}
 	}
 
