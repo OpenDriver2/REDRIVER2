@@ -83,15 +83,15 @@ SRCS = \
   $(SOURCES)/C/wheelforces.c\
   $(SOURCES)/C/xaplay.c\
   $(SOURCES)/C/xmplay.c
-  
+
 # overlay sources
 SRCS += \
   $(SOURCES)/Frontend/FEmain.c\
   $(SOURCES)/C/pathfind.c\
   $(SOURCES)/C/leadai.c
-  
-SRCS += $(PSYQ_DIR)/common/crt0/crt0.s 
-INCL = $(SOURCES) $(PSYQ_DIR)/include $(NPSYQ_DIR)/include
+
+SRCS += $(PSYQ_DIR)/common/crt0/crt0.s
+INCL = $(SOURCES) $(PSYQ_DIR)/include $(PSYQ_DIR)/include/sys $(NPSYQ_DIR)/include
 
 DEFS = PSX NTSC_VERSION RELOC DEBUG_OPTIONS
 
