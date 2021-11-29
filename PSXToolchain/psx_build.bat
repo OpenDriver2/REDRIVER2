@@ -1,4 +1,4 @@
-set REDRIVER_FOLDER=%cd%/..
+set REDRIVER_FOLDER=%cd%\..
 
 rem Make a symlink
 mklink /J %REDRIVER_FOLDER%\PSXToolchain\GameSRC %REDRIVER_FOLDER%\src_rebuild
