@@ -9,7 +9,7 @@ curl "$linux_premake_url" -Lo premake5.tar.gz
 tar xvf premake5.tar.gz
 
 sudo apt-get update -qq -y
-sudo apt-get install --no-install-recommends -y g++-7-multilib gcc-7-multilib
+sudo apt-get install --no-install-recommends -y g++-multilib gcc-multilib
 sudo apt-get install -qq aptitude -y
 
 # fix Ubuntu's broken mess of packages using aptitude
