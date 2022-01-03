@@ -14,8 +14,7 @@
 #include "felony.h"
 #include "shadow.h"
 
-PEDESTRIAN *pPlayerPed = NULL;
-PLAYER player[8];
+PLAYER player[MAX_PLAYERS];
 
 // [D] [T]
 void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction, LONGVECTOR4* startPos, int externModel, int palette, char *padid)
@@ -62,7 +61,10 @@ void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction
 	}
 	else 
 	{
+		LPPEDESTRIAN pPlayerPed;
 		ActivatePlayerPedestrian(NULL, padid, direction, startPos, (PED_MODEL_TYPES)playerType);
+
+		pPlayerPed = locPlayer->pPed;
 
 		locPlayer->playerType = 2;
 		locPlayer->spoolXZ = (VECTOR *)&pPlayerPed->position;
@@ -113,6 +115,9 @@ void ChangeCarPlayerToPed(int playerID)
 
 	if (gInGameCutsceneActive == 0 && gInGameChaseActive == 0)
 	{
+		LPPEDESTRIAN pPlayerPed;
+		pPlayerPed = locPlayer->pPed;
+
 		locPlayer->worldCentreCarId = -1;
 		locPlayer->spoolXZ = (VECTOR *)&pPlayerPed->position;
 	}

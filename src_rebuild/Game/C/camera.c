@@ -365,6 +365,10 @@ int CameraCollisionCheck(void)
 // [D] [T]
 void TurnHead(PLAYER *lp)
 {
+	LPPEDESTRIAN pPlayerPed;
+	
+	pPlayerPed = lp->pPed;
+
 	// [A] handle REDRIVER2 dedicated look back button
 	if ((paddCamera & CAMERA_PAD_LOOK_BACK) == CAMERA_PAD_LOOK_BACK || (paddCamera & CAMERA_PAD_LOOK_BACK_DED))
 	{

@@ -205,7 +205,6 @@ void InitPedestrians(void)
 	maxSeated = seated_count;
 	numTannerPeds = 0;
 	pinginPedAngle = 0;
-	pPlayerPed = NULL;
 	seated_count = 0;
 	ping_in_pedestrians = 1;
 	numCopPeds = 0;
@@ -1213,7 +1212,6 @@ void PedGetInCar(PEDESTRIAN* pPed)
 		ChangePedPlayerToCar(playerID, carToGetIn);
 		DestroyPedestrian(pPed);
 
-		pPlayerPed = NULL;
 		numTannerPeds--;
 	}
 }
@@ -2886,8 +2884,6 @@ int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVEC
 	pedptr->dir.vx = 0;
 	pedptr->dir.vy = dir;
 	pedptr->head_rot = 0;
-
-	pPlayerPed = pedptr;
 	lp->headTimer = 0;
 	pedptr->pedType = playerType;
 	SetupPedestrian(pedptr);
