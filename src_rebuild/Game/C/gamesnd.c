@@ -250,7 +250,7 @@ int MapCarIndexToBank(int index)
 }
 
 static char cop_model = 0;
-int gDoCopSpeech = 1;
+int gDoCopSpeech = 1;		// [A]
 
 // [D] [T]
 void LoadLevelSFX(int missionNum)

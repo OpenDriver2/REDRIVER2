@@ -17,6 +17,7 @@
 #include "pres.h"
 #include "sound.h"
 #include "system.h"
+#include "pad.h"
 
 struct REPLAY_ICON
 {
@@ -1053,27 +1054,27 @@ void ControlReplay(void)
 	}
 
 	// register pads
-	if ((padd & 0x8000) && debounce == 0)
+	if ((padd & MPAD_D_LEFT) && debounce == 0)
 	{
 		move = 2;
 		debounce = 1;
 	}
-	if ((padd & 0x2000) && debounce == 0)
+	if ((padd & MPAD_D_RIGHT) && debounce == 0)
 	{
 		move = 1;
 		debounce = 1;
 	}
-	if ((padd & 0x1000) && debounce == 0)
+	if ((padd & MPAD_D_UP) && debounce == 0)
 	{
 		move = 3;
 		debounce = 1;
 	}
-	if ((padd & 0x4000) && debounce == 0)
+	if ((padd & MPAD_D_DOWN) && debounce == 0)
 	{
 		move = 4;
 		debounce = 1;
 	}
-	if ((padd & 0x40) && debounce == 0)
+	if ((padd & MPAD_CROSS) && debounce == 0)
 	{
 		if (DirectorMenuActive == 0)
 			pauseflag = 1;
@@ -1085,14 +1086,14 @@ void ControlReplay(void)
 		debounce = 1;
 	}
 
-	if ((padd & 0x100) && debounce == 0)
+	if ((padd & MPAD_SELECT) && debounce == 0) // [A]
 	{
 		// Retro: Press Select to toggle overlays
 		gDoOverlays ^= 1;
 		debounce = 1;
 	}
-	
-	if ((padd & 0x8000) == 0 && (padd & 0x7140) == 0)
+
+	if ((padd & (MPAD_D_LEFT | MPAD_CROSS | MPAD_SELECT | MPAD_D_DOWN | MPAD_D_RIGHT | MPAD_D_UP)) == 0)
 	{
 		debounce = 0;
 	}
@@ -1103,7 +1104,7 @@ void ControlReplay(void)
 		move = 0;
 		speed = 1;
 	
-		if (padd & 8)
+		if (padd & MPAD_R1)
 			speed = 8;
 
 		// control camera position and rotation
@@ -1111,12 +1112,12 @@ void ControlReplay(void)
 		if (EditMode == 1)
 		{
 			// edit start time
-			if ((padd & 0x2000U) != 0 && LastChange->FrameCnt < CameraCnt)
+			if ((padd & MPAD_D_RIGHT) != 0 && LastChange->FrameCnt < CameraCnt)
 			{
 				LastChange->FrameCnt++;
 			}
 
-			if ((padd & 0x8000U) != 0 && PlaybackCamera[LastChange->prev].FrameCnt < LastChange->FrameCnt)
+			if ((padd & MPAD_D_LEFT) != 0 && PlaybackCamera[LastChange->prev].FrameCnt < LastChange->FrameCnt)
 			{
 				LastChange->FrameCnt--;
 			}
@@ -1124,30 +1125,30 @@ void ControlReplay(void)
 		else if (EditMode == 2)
 		{
 			// Chase camera angle
-			if ((padd & 0x1000) != 0 && gCameraDistance > 500)
+			if ((padd & MPAD_D_UP) != 0 && gCameraDistance > 500)
 			{
 				gCameraDistance -= speed * 16;		// [A] restore
 				gCameraMaxDistance -= speed * 16;
 				player[0].cameraDist = gCameraDistance;
 			}
 
-			if ((padd & 0x4000) != 0 && gCameraDistance < 2750)
+			if ((padd & MPAD_D_DOWN) != 0 && gCameraDistance < 2750)
 			{
 				gCameraDistance += speed * 16;		// [A] restore
 				gCameraMaxDistance += speed * 16;
 				player[0].cameraDist = gCameraDistance;
 			}
 
-			if ((padd & 0x8000) != 0)
+			if ((padd & MPAD_D_LEFT) != 0)
 				gCameraAngle = gCameraAngle + speed * 16;
 
-			if ((padd & 0x2000) != 0)
+			if ((padd & MPAD_D_RIGHT) != 0)
 				gCameraAngle = gCameraAngle - speed * 16;
 
-			if ((padd & 4) && gCameraOffset.vy > -840)
+			if ((padd & MPAD_L1) && gCameraOffset.vy > -840)
 				gCameraOffset.vy -= speed * 16;
 
-			if ((padd & 1) && gCameraOffset.vy < 50)
+			if ((padd & MPAD_L2) && gCameraOffset.vy < 50)
 				gCameraOffset.vy += speed * 16;
 
 			// OBSOLETE DRIVER 1 CODE
@@ -1217,28 +1218,28 @@ void ControlReplay(void)
 			else
 				dir = ratan2(dz, dx);
 
-			if (padd & 2)
+			if (padd & MPAD_R2) // [A] use R2 as a modifier hor camera Y offset
 			{
-				if ((padd & 0x1000U) && gCameraOffset.vy > -150)
+				if ((padd & MPAD_D_UP) && gCameraOffset.vy > -150)
 					gCameraOffset.vy -= speed * 16;
 
-				if ((padd & 0x4000) && gCameraOffset.vy < 150)
+				if ((padd & MPAD_D_DOWN) && gCameraOffset.vy < 150)
 					gCameraOffset.vy += speed * 16;
 			}
 			else
 			{
-				if ((padd & 0x1000) != 0 && (tracking_car == 0 || d > 500))
+				if ((padd & MPAD_D_UP) != 0 && (tracking_car == 0 || d > 500))
 					x = speed * -16;
 
-				if ((padd & 0x4000) != 0)
+				if ((padd & MPAD_D_DOWN) != 0)
 					x = speed * 16;
 			}
 
 
-			if ((padd & 0x8000) != 0 && (tracking_car == 0 || d > 500))
+			if ((padd & MPAD_D_LEFT) != 0 && (tracking_car == 0 || d > 500))
 				z = speed * -16;
 
-			if ((padd & 0x2000) != 0)
+			if ((padd & MPAD_D_RIGHT) != 0)
 				z = speed * 16;
 
 			if (tracking_car == 0)
@@ -1271,10 +1272,10 @@ void ControlReplay(void)
 				player[0].cameraPos.vz = old_camera.vz;
 			}
 			
-			if (padd & 4)
+			if (padd & MPAD_L1)
 				player[0].cameraPos.vy -= speed * 16;
 
-			if (padd & 1)
+			if (padd & MPAD_L2)
 				player[0].cameraPos.vy += speed * 16;	
 
 			height = -MapHeight(&tmpPos);
@@ -1303,7 +1304,7 @@ void ControlReplay(void)
 		{
 			// Tripod camera angle
 			
-			if(padd & 0x1000)
+			if(padd & MPAD_D_UP)
 			{
 				camera_angle.vx += speed * 4;
 
@@ -1311,7 +1312,7 @@ void ControlReplay(void)
 					camera_angle.vx = 300;
 			}
 
-			if (padd & 0x4000)
+			if (padd & MPAD_D_DOWN)
 			{
 				camera_angle.vx -= speed * 4;
 
@@ -1319,10 +1320,10 @@ void ControlReplay(void)
 					camera_angle.vx = 3900;
 			}
 
-			if (padd & 0x8000)
+			if (padd & MPAD_D_LEFT)
 				camera_angle.vy += speed * 4;
 
-			if (padd & 0x2000)
+			if (padd & MPAD_D_RIGHT)
 				camera_angle.vy -= speed * 4;
 
 			camera_angle.vx = camera_angle.vx & 0xfff;
@@ -1331,7 +1332,7 @@ void ControlReplay(void)
 		}
 		else if (EditMode == 5)
 		{
-			if(padd & 0x1000)
+			if(padd & MPAD_D_UP)
 			{
 				scr_z += speed * 4;
 
@@ -1339,7 +1340,7 @@ void ControlReplay(void)
 					scr_z = 1000;
 			}
 
-			if (padd & 0x4000)
+			if (padd & MPAD_D_DOWN)
 			{
 				scr_z -= speed * 4;
 				
@@ -1558,7 +1559,7 @@ void ControlReplay(void)
 						break;
 					}
 
-					if ((padd & 0x40U) == 0)
+					if ((padd & MPAD_CROSS) == 0)
 					{
 						first_time = 0;
 						CursorY = 0;

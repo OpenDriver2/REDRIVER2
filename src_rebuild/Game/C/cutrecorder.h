@@ -40,7 +40,7 @@ extern int		CutRec_SaveChase();
 #define _CutRec_StorePingInfo(a,b)			CutRec_StorePingInfo(a,b)
 #define _CutRec_CheckInvalidatePing(a,b)	CutRec_CheckInvalidatePing(a, b)
 #define _CutRec_NextChase(a)				CutRec_NextChase(a)
-#define _CutRec_ReserveSlots()				CutRec_ReserveSlots
+#define _CutRec_ReserveSlots()				CutRec_ReserveSlots()
 #define _CutRec_HandleCarRequest()			CutRec_HandleCarRequest()
 #define _CutRec_InitPlayers()				CutRec_InitPlayers()
 #define _CutRec_InitMission(a)				CutRec_InitMission(a)
