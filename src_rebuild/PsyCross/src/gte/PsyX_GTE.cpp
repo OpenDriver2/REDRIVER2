@@ -280,9 +280,12 @@ PGXPVector3D g_FP_SXYZ0; // direct access PGXP without table lookup
 PGXPVector3D g_FP_SXYZ1;
 PGXPVector3D g_FP_SXYZ2;
 
-PGXPVData g_pgxpCache[65535];
-int g_pgxpVertexIndex = 0;
+PGXPVData g_pgxpCache[1 << sizeof(ushort)*8];
+ushort g_pgxpVertexIndex = 0;
+
 int g_pgxpTransformed = 0;
+
+// "render" states
 float g_pgxpZOffset = 0.0f;
 float g_pgxpZScale = 1.0f;
 
@@ -330,10 +333,10 @@ int PGXP_GetCacheData(PGXPVData* out, uint lookup, ushort indexhint)
 	}
 
 	// index hint allows us to start from specific index
-	int start = max(0, indexhint - 8);
-	int end = g_pgxpVertexIndex;// min(start + 256, g_pgxpVertexIndex);
+	ushort start = max(0, indexhint - 8);
+	ushort end = g_pgxpVertexIndex;
 
-	for (int i = start; i < end; i++)
+	for (ushort i = start; i < end; i++)
 	{
 		if (g_pgxpCache[i].lookup == lookup)
 		{

@@ -42,8 +42,6 @@ extern PGXPVector3D g_FP_SXYZ0; // direct access PGXP without table lookup
 extern PGXPVector3D g_FP_SXYZ1;
 extern PGXPVector3D g_FP_SXYZ2;
 
-extern int g_pgxpVertexIndex;
-
 /* clears PGXP vertex buffer */
 void	PGXP_ClearCache();
 
