@@ -1433,7 +1433,7 @@ void DrawCiv(PEDESTRIAN* pPed)
 	int boneId;
 	int frame;
 	int i, j;
-	u_int phase;
+	int phase;
 	SVECTOR pos;
 	VECTOR pos1;
 	SVECTOR rot;
@@ -1563,7 +1563,7 @@ void DrawCiv(PEDESTRIAN* pPed)
 	ppos.vy = pPed->position.vy;
 	ppos.vz = pPed->position.vz;
 
-	phase = (pPed->frame1 & 0xf) * 2;
+	phase = (pPed->frame1 & 15) * 2;
 
 	cv.b = 40;
 	cv.g = 40;

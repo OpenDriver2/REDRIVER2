@@ -74,7 +74,7 @@ void InitControllers(void)
 
 		for (j = 0; j < 16; j++)
 		{
-			pad->mappings.button_lookup[j] = 1 << (j & 0x1f);
+			pad->mappings.button_lookup[j] = 1 << j;
 		}
 
 		pad->mappings.swap_analog = 0;
@@ -186,36 +186,36 @@ void MapPad(int pad, PADRAW *pData)
 	Pads[pad].diranalog[2] = pData->analog[2] - 128;
 	Pads[pad].diranalog[3] = pData->analog[3] - 128;
 
-	if (Pads[pad].active) 
+	if (!Pads[pad].active)
+		return;
+
+	mapped = 0;
+
+	for (i = 0; i < 16; i++)
 	{
-		mapped = 0;
-
-		for (i = 0; i < 16; i++)
+		if (((buttons >> i) & 1) != 0)
 		{
-			if (((buttons >> i) & 1) != 0)
-			{
-				mapped |= Pads[pad].mappings.button_lookup[i];
-			}
+			mapped |= Pads[pad].mappings.button_lookup[i];
 		}
+	}
 
-		Pads[pad].mapnew = mapped & ~Pads[pad].mapped;
-		Pads[pad].mapped = mapped;
+	Pads[pad].mapnew = mapped & ~Pads[pad].mapped;
+	Pads[pad].mapped = mapped;
 		
 
-		if (Pads[pad].mappings.swap_analog == 0)
-		{
-			Pads[pad].mapanalog[1] = Pads[pad].diranalog[1];
-			Pads[pad].mapanalog[2] = Pads[pad].diranalog[2];
-			Pads[pad].mapanalog[3] = Pads[pad].diranalog[3];
-			Pads[pad].mapanalog[0] = Pads[pad].diranalog[0];
-		}
-		else 
-		{
-			Pads[pad].mapanalog[1] = Pads[pad].diranalog[3];
-			Pads[pad].mapanalog[2] = Pads[pad].diranalog[0];
-			Pads[pad].mapanalog[3] = Pads[pad].diranalog[1];
-			Pads[pad].mapanalog[0] = Pads[pad].diranalog[2];
-		}
+	if (Pads[pad].mappings.swap_analog == 0)
+	{
+		Pads[pad].mapanalog[1] = Pads[pad].diranalog[1];
+		Pads[pad].mapanalog[2] = Pads[pad].diranalog[2];
+		Pads[pad].mapanalog[3] = Pads[pad].diranalog[3];
+		Pads[pad].mapanalog[0] = Pads[pad].diranalog[0];
+	}
+	else 
+	{
+		Pads[pad].mapanalog[1] = Pads[pad].diranalog[3];
+		Pads[pad].mapanalog[2] = Pads[pad].diranalog[0];
+		Pads[pad].mapanalog[3] = Pads[pad].diranalog[1];
+		Pads[pad].mapanalog[0] = Pads[pad].diranalog[2];
 	}
 }
 
