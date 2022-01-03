@@ -548,6 +548,8 @@ int main(int argc, char** argv)
 
 	int windowWidth = 800;
 	int windowHeight = 600;
+	int screenWidth = 800;
+	int screenHeight = 600;
 	int fullScreen = 0;
 	int enableFreecamera = 0;
 
@@ -573,6 +575,8 @@ int main(int argc, char** argv)
 		// configure Psy-X renderer
 		ini_sget(config, "render", "windowWidth", "%d", &windowWidth);
 		ini_sget(config, "render", "windowHeight", "%d", &windowHeight);
+		ini_sget(config, "render", "screenWidth", "%d", &screenWidth);
+		ini_sget(config, "render", "screenHeight", "%d", &screenHeight);
 		ini_sget(config, "render", "fullscreen", "%d", &fullScreen);
 		ini_sget(config, "render", "pgxpTextureMapping", "%d", &g_pgxpTextureCorrection);
 		ini_sget(config, "render", "pgxpZbuffer", "%d", &g_pgxpZBuffer);
@@ -636,7 +640,7 @@ int main(int argc, char** argv)
 
 #endif
 
-	PsyX_Initialise("REDRIVER2", windowWidth, windowHeight, fullScreen);
+	PsyX_Initialise("REDRIVER2", fullScreen ? screenWidth : windowWidth, fullScreen ? screenHeight : windowHeight, fullScreen);
 
 	char version_info[32];
 	GetTimeStamp(version_info);
