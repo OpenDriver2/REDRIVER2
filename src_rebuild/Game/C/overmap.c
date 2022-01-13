@@ -995,8 +995,7 @@ void DrawMultiplayerMap(void)
 	r = 255;
 	g = 0;
 
-	i = 0;
-	do {
+	for (i = 0; i < NumPlayers; i++) {
 		target.vx = pl->pos[0];
 		target.vz = pl->pos[2];
 
@@ -1013,9 +1012,7 @@ void DrawMultiplayerMap(void)
 
 		r++;
 		g--;
-
-		i++;
-	} while (i < NumPlayers);
+	}
 
 	draw_box(yPos, 64);
 
