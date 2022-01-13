@@ -486,8 +486,6 @@ int CutRec_InitPlayers()
 	temp = PlayerStartInfo[0];
 	PlayerStartInfo[0] = PlayerStartInfo[gCutsceneAsReplay_PlayerId];
 	PlayerStartInfo[gCutsceneAsReplay_PlayerId] = temp;
-	
-	PlayerStartInfo[0]->controlType = CONTROL_TYPE_PLAYER;
 
 	NumReplayStreams = gCutsceneAsReplay_NumReplayStreams;
 	numPlayersToCreate = gCutsceneAsReplay_NumReplayStreams;
@@ -779,7 +777,7 @@ int CutRec_SaveChase()
 
 int CutRec_RecordPad(CAR_DATA* cp, uint* t0, char* t1, char* t2)
 {
-	if (gCutsceneAsReplay == 0 || NoPlayerControl || (char)cp->ai.padid != gCutsceneAsReplay_PlayerId)
+	if (gCutsceneAsReplay == 0 || NoPlayerControl || (-*cp->ai.padid) != gCutsceneAsReplay_PlayerId)
 		return 0;
 
 	*t0 = Pads[0].mapped;	// [A] padid might be wrong
