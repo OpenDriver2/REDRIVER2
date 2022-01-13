@@ -831,6 +831,7 @@ void PsyX_Sys_DoDebugKeys(int nKey, char down)
 	if (gameDebugKeys)
 		gameDebugKeys(nKey, down);
 
+#ifdef _DEBUG
 	if (nKey == SDL_SCANCODE_BACKSPACE)
 	{
 		if (down)
@@ -838,6 +839,7 @@ void PsyX_Sys_DoDebugKeys(int nKey, char down)
 		else
 			g_skipSwapInterval = 0;
 	}
+#endif
 
 	if (!down)
 	{
