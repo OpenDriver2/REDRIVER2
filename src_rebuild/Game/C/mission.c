@@ -1170,8 +1170,7 @@ void SetMissionMessage(char *message, int priority, int seconds)
 	if (message == MissionStrings - 1 || message == NULL || NumPlayers == 0)
 		return;
 
-	i = 0;
-	while (i < NumPlayers)
+	for (i = 0; i < NumPlayers; i++)
 	{
 		if (Mission.message_timer[i] == 0 || Mission.message_priority[i] <= priority)
 		{
@@ -1187,8 +1186,6 @@ void SetMissionMessage(char *message, int priority, int seconds)
 				Mission.message_timer[i] = seconds * 30;
 			}
 		}
-
-		i++;
 	}
 }
 

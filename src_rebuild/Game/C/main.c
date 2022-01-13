@@ -1492,12 +1492,12 @@ void CheckForPause(void)
 		{
 			if (NumPlayers == 1)
 			{
-				if (paddp == 0x800 && bMissionTitleFade == 0) // [A] && gInGameCutsceneActive == 0)		// allow pausing during cutscene
+				if (paddp == MPAD_START && bMissionTitleFade == 0) // [A] && gInGameCutsceneActive == 0)		// allow pausing during cutscene
 				{
 					EnablePause(PAUSEMODE_PAUSE);
 				}
 			}
-			else if (paddp == 0x800)
+			else if (paddp == MPAD_START)
 			{
 				EnablePause(PAUSEMODE_PAUSEP1);
 			}
