@@ -111,7 +111,6 @@ void PsyX_Pad_OpenController(Sint32 deviceId, int slot)
 void PsyX_Pad_CloseController(int slot)
 {
 	PsyXController* controller = &g_controllers[slot];
-
 	SDL_GameControllerClose(controller->gc);
 
 	controller->gc = NULL;
