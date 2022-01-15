@@ -775,7 +775,7 @@ int CutRec_SaveChase()
 	return 0;
 }
 
-int CutRec_RecordPad(CAR_DATA* cp, uint* t0, char* t1, char* t2)
+int CutRec_RecordCarPad(CAR_DATA* cp, uint* t0, char* t1, char* t2)
 {
 	if (gCutsceneAsReplay == 0 || NoPlayerControl || (-*cp->ai.padid) != gCutsceneAsReplay_PlayerId)
 		return 0;
@@ -796,6 +796,27 @@ int CutRec_RecordPad(CAR_DATA* cp, uint* t0, char* t1, char* t2)
 	}
 
 	cjpRecord(-*cp->ai.padid, t0, t1, t2);
+
+	return 1;
+}
+
+int CutRec_RecordPad(PLAYER* pl, uint* t0, char* t1, char* t2)
+{
+	if (gCutsceneAsReplay == 0 || NoPlayerControl || (-pl->padid) != gCutsceneAsReplay_PlayerId)
+		return 0;
+
+	*t0 = Pads[0].mapped;
+	*t1 = Pads[0].mapanalog[2];
+	*t2 = Pads[0].type & 4;
+
+	// [A] handle REDRIVER2 dedicated car entry button
+	if (*t0 & TANNER_PAD_ACTION_DED)
+	{
+		*t0 &= ~TANNER_PAD_ACTION_DED;
+		*t0 |= TANNER_PAD_ACTION;
+	}
+
+	cjpRecord(-pl->padid, t0, t1, t2);
 
 	return 1;
 }
