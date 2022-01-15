@@ -991,11 +991,13 @@ void DrawMultiplayerMap(void)
 
 	DrawMultiplayerTargets();
 
-	pl = player;
 	r = 255;
 	g = 0;
 
-	for (i = 0; i < NumPlayers; i++) {
+	for (i = 0; i < NumPlayers; i++) 
+	{
+		pl = &player[i];
+
 		target.vx = pl->pos[0];
 		target.vz = pl->pos[2];
 
@@ -1007,8 +1009,6 @@ void DrawMultiplayerMap(void)
 		target.vz += yPos;
 
 		DrawPlayerDot(&target, -pl->dir, r, g, 0, 0x8);
-
-		pl++;
 
 		r++;
 		g--;

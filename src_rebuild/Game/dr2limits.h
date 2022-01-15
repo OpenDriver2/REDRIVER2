@@ -4,6 +4,8 @@
 // DRIVER 2 game engine limits
 // please populate this file only with engine limits during refactoring
 
+#define MAX_PLAYERS				8			// used for replay streams mostly
+
 #define MAX_MODEL_SLOTS			1536		// DO NOT CHANGE. No effect in upping it - limited by cell types
 #define MAX_CARS				20
 
@@ -37,6 +39,7 @@
 
 // replay definitions.
 // DO NOT EDIT, breaks compatibility!
+#define MAX_REPLAY_STREAMS		MAX_PLAYERS
 #define MAX_REPLAY_CAMERAS		60
 #define MAX_REPLAY_WAYPOINTS	150
 #define MAX_REPLAY_PINGS		400
