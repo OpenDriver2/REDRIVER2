@@ -181,8 +181,6 @@ CELL_OBJECT* UnpackCellObject(PACKED_CELL_OBJECT* ppco, XZPAIR* near)
 // [D] [T]
 void QuickUnpackCellObject(PACKED_CELL_OBJECT* ppco, XZPAIR* near, CELL_OBJECT* pco)
 {
-	cell_object_index = cell_object_index + 1 & 0x3ff;
-
 	pco->pos.vx = near->x + (((ppco->pos.vx - near->x) << 0x10) >> 0x10);
 	pco->pos.vz = near->z + (((ppco->pos.vz - near->z) << 0x10) >> 0x10);
 
