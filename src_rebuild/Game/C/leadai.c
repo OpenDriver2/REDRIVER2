@@ -33,6 +33,12 @@ static int pathParams[5] = {
 int road_s = 0;
 int road_c = 0;
 
+void CheckCurrentRoad(CAR_DATA* cp);
+void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention);
+void FakeMotion(CAR_DATA* cp);
+void SelectExit(CAR_DATA* cp, DRIVER2_JUNCTION* junction);
+void SetTarget(CAR_DATA* cp, int curRoad, int heading, int* nextJunction);
+
 // [D] [T]
 int leadRand(void)
 {
@@ -1383,8 +1389,8 @@ int IsOnMap(int x, int z, VECTOR* basePos, int intention, CAR_DATA* cp)
 			dx = x - curve->Midx;
 			dz = z - curve->Midz;
 
-			tangent = DIFF_ANGLES(cp->ai.l.base_Angle, ratan2(dx, dz)); // (((ratan2(dx, dz) - cp->ai.l.base_Angle) + 2048U & 0xfff) - 2048) * 
-				cp->ai.l.base_Dir * ((curve->inside * 45056) / 28672);
+			tangent = DIFF_ANGLES(cp->ai.l.base_Angle, ratan2(dx, dz)) // (((ratan2(dx, dz) - cp->ai.l.base_Angle) + 2048U & 0xfff) - 2048) * 
+				* cp->ai.l.base_Dir * ((curve->inside * 45056) / 28672);
 
 			normal = (cp->ai.l.base_Normal - hypot(dx, dz)) * cp->ai.l.base_Dir;
 
