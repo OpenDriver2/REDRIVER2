@@ -1305,19 +1305,15 @@ void StepGame(void)
 	if ((padd & 0x2000U) && (padd & 0x8000U))
 		padd &= ~0xA000;
 
-	i = NumPlayers;
 	controller_bits = padd;
 
-	pl = player;
-	while (i >= 0)
+	for (i = 0; i < NumPlayers; i++)
 	{
+		pl = &player[i];
 		if (pl->horn.time == 0 || pl->horn.on == 0)
 			pl->horn.time = 0;
 		else
 			pl->horn.time--;
-
-		i--;
-		pl++;
 	}
 
 	ModifyCamera();

@@ -246,17 +246,18 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 // [D] [T]
 void UpdatePlayers(void)
 {
-	int carId;
-	PEDESTRIAN *ped;
-	PLAYER *locPlayer;
+	int i, carId;
+	PEDESTRIAN* ped;
+	PLAYER* locPlayer;
 	CAR_DATA* cp;
 
-	if(CopsAllowed == 0)
+	if (CopsAllowed == 0)
 		pedestrianFelony = 0;
 
-	locPlayer = player;
+	for (i = 0; i < MAX_PLAYERS; i++)
+	{
+		locPlayer = &player[i];
 
-	do {
 		if (gInGameCutsceneActive == 0)
 			locPlayer->playerType = (locPlayer->pPed != NULL) ? 2 : 1;
 
@@ -264,31 +265,29 @@ void UpdatePlayers(void)
 		{
 			carId = locPlayer->playerCarId;
 
-			if(locPlayer->worldCentreCarId >= 0)
-				locPlayer->spoolXZ = (VECTOR *)car_data[locPlayer->worldCentreCarId].hd.where.t;
+			if (locPlayer->worldCentreCarId >= 0)
+				locPlayer->spoolXZ = (VECTOR*)car_data[locPlayer->worldCentreCarId].hd.where.t;
 
 			if (carId >= 0)
 			{
 				cp = &car_data[carId];
-				
+
 				locPlayer->pos[0] = cp->hd.where.t[0];
 				locPlayer->pos[1] = cp->hd.where.t[1];
 				locPlayer->pos[2] = cp->hd.where.t[2];
 				locPlayer->dir = cp->hd.direction;
 			}
 		}
-		else if (locPlayer->playerType == 2) 
+		else if (locPlayer->playerType == 2)
 		{
 			ped = locPlayer->pPed;
-			
+
 			locPlayer->pos[0] = ped->position.vx;
 			locPlayer->pos[1] = -ped->position.vy;
 			locPlayer->pos[2] = ped->position.vz;
-			locPlayer->dir = ped->dir.vy + -0x800;
+			locPlayer->dir = ped->dir.vy - 2048;
 		}
-
-		locPlayer++;
-	} while (locPlayer <= &player[7]);
+	}
 }
 
 // [D] [T]

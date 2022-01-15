@@ -1,8 +1,6 @@
 #ifndef PLAYERS_H
 #define PLAYERS_H
 
-#define MAX_PLAYERS 8
-
 extern PLAYER player[MAX_PLAYERS];
 
 extern void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction, LONGVECTOR4* startPos, int externModel, int palette, char *padid); // 0x000739D8
