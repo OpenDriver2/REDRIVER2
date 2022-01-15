@@ -25,7 +25,8 @@ extern void		CutRec_ReserveSlots();
 extern void		CutRec_HandleCarRequest();
 extern int		CutRec_InitPlayers();
 extern int		CutRec_InitMission(char* filename);
-extern int		CutRec_RecordPad(CAR_DATA* cp, uint* t0, char* t1, char* t2);
+extern int		CutRec_RecordCarPad(CAR_DATA* cp, uint* t0, char* t1, char* t2);
+extern int		CutRec_RecordPad(PLAYER* pl, uint* t0, char* t1, char* t2);
 extern int		CutRec_SaveChase();
 
 #ifdef CUTSCENE_RECORDER
@@ -44,6 +45,7 @@ extern int		CutRec_SaveChase();
 #define _CutRec_HandleCarRequest()			CutRec_HandleCarRequest()
 #define _CutRec_InitPlayers()				CutRec_InitPlayers()
 #define _CutRec_InitMission(a)				CutRec_InitMission(a)
+#define _CutRec_RecordCarPad(a, b, c, d)	CutRec_RecordCarPad(a, b, c, d)
 #define _CutRec_RecordPad(a, b, c, d)		CutRec_RecordPad(a, b, c, d)
 
 #else
@@ -62,6 +64,7 @@ extern int		CutRec_SaveChase();
 #define _CutRec_HandleCarRequest()			(0)
 #define _CutRec_InitPlayers()				(0)
 #define _CutRec_InitMission(a)				(0)
+#define _CutRec_RecordCarPad(a, b, c, d)	(0)
 #define _CutRec_RecordPad(a, b, c, d)		(0)
 
 #endif

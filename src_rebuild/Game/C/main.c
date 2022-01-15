@@ -1061,7 +1061,7 @@ void StepSim(void)
 
 				break;
 			case CONTROL_TYPE_CUTSCENE:
-				if (!_CutRec_RecordPad(cp, &t0, &t1, &t2))
+				if (!_CutRec_RecordCarPad(cp, &t0, &t1, &t2))
 					cjpPlay(-*cp->ai.padid, &t0, &t1, &t2);
 			
 				ProcessCarPad(cp, t0, t1, t2);
@@ -1081,64 +1081,62 @@ void StepSim(void)
 
 		stream = pl->padid;
 
-		if (stream < 0)
+		if (stream < 0) // Is cutscene stream?
 		{
-			if (cjpPlay(-stream, &t0, &t1, &t2) != 0)
+			if (!_CutRec_RecordPad(pl, &t0, &t1, &t2) && cjpPlay(-stream, &t0, &t1, &t2) != 0)
 				ProcessTannerPad(pl->pPed, t0, t1, t2);
+
+			continue;
+		}
+
+		if (Pads[stream].type == 4)
+		{
+			padAcc = Pads[stream].mapanalog[3];
+
+			// walk back
+			if (padAcc < -64)
+			{
+				if(padAcc < -100)
+					Pads[stream].mapped |= 0x1000;
+				else
+					Pads[stream].mapped |= 0x1008;
+			}
+			else if (padAcc > 32)
+			{
+				stream = pl->padid;
+				Pads[stream].mapped |= 0x4000;
+			}
+		}
+
+		t0 = Pads[stream].mapped;
+		t1 = Pads[stream].mapanalog[2];
+		t2 = Pads[stream].type & 4;
+
+		// [A] handle REDRIVER2 dedicated car entry button
+		if (t0 & TANNER_PAD_ACTION_DED)
+		{
+			t0 &= ~TANNER_PAD_ACTION_DED;
+			t0 |= TANNER_PAD_ACTION;
+		}
+
+		if (NoPlayerControl == 0)
+		{
+			if (gStopPadReads)
+			{
+				t2 = 0;
+				t1 = 0;
+				t0 = 0;
+			}
+
+			cjpRecord(stream, &t0, &t1, &t2);
 		}
 		else
 		{
-			if (Pads[stream].type == 4)
-			{
-				padAcc = Pads[stream].mapanalog[3];
-
-				// walk back
-				if (padAcc < -64)
-				{
-					if(padAcc < -100)
-						Pads[stream].mapped |= 0x1000;
-					else
-						Pads[stream].mapped |= 0x1008;
-				}
-				else if (padAcc > 32)
-				{
-					stream = pl->padid;
-					Pads[stream].mapped |= 0x4000;
-				}
-			}
-
-			stream = pl->padid;
-
-			t0 = Pads[stream].mapped;
-			t1 = Pads[stream].mapanalog[2];
-			t2 = Pads[stream].type & 4;
-
-			// [A] handle REDRIVER2 dedicated car entry button
-			if (t0 & TANNER_PAD_ACTION_DED)
-			{
-				t0 &= ~TANNER_PAD_ACTION_DED;
-				t0 |= TANNER_PAD_ACTION;
-			}
-
-			if (NoPlayerControl == 0)
-			{
-				if (gStopPadReads)
-				{
-					t2 = 0;
-					t1 = 0;
-					t0 = 0;
-				}
-
-				cjpRecord(stream, &t0, &t1, &t2);
-			}
-			else
-			{
-				if (cjpPlay(stream, &t0, &t1, &t2) == 0)
-					continue;
-			}
-
-			ProcessTannerPad(pl->pPed, t0, t1, t2);
+			if (cjpPlay(stream, &t0, &t1, &t2) == 0)
+				continue;
 		}
+
+		ProcessTannerPad(pl->pPed, t0, t1, t2);
 	}
 
 	if (requestStationaryCivCar == 1 && (numCivCars < maxCivCars || (PingOutCar(&car_data[furthestCivID]), numCivCars < maxCivCars)))
