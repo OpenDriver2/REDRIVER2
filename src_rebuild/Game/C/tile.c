@@ -24,7 +24,7 @@ void Tile1x1(MODEL *model)
 	polys = (PL_POLYFT4*)model->poly_block;
 
 	// grass should be under pavements and other things
-	if ((model->shape_flags & SHAPE_FLAG_WATER) || (model->flags2 & 0x4000))
+	if ((model->shape_flags & SHAPE_FLAG_WATER) || (model->flags2 & MODEL_FLAG_GRASS))
 		ofse = 229;
 	else
 		ofse = 133;
@@ -107,11 +107,11 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 	{
 		if (gTimeOfDay < 3)
 		{
-			plotContext.colour = combointensity & 0xffffffU | 0x2c000000;
+			plotContext.colour = combointensity & 0xffffffU | 0x2C000000;
 		}
 		else if (gTimeOfDay == 3) 
 		{
-			plotContext.colour = ((combointensity >> 16 & 0xFF) / 3) << 16 | ((combointensity >> 8 & 0xFF) / 3) << 8 | (combointensity & 0xFF) / 3 | 0x2c000000U;
+			plotContext.colour = ((combointensity >> 16 & 255) / 3) << 16 | ((combointensity >> 8 & 255) / 3) << 8 | (combointensity & 255) / 3 | 0x2C000000U;
 		}
 	}
 
@@ -121,7 +121,7 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 	{
 		u_int col;
 		col = plotContext.colour >> 2 & 0x3f;
-		plotContext.colour = col * 0x30000 | col * 0x300 | col * 3 | 0x2c000000;
+		plotContext.colour = col * 0x30000 | col * 0x300 | col * 3 | 0x2C000000;
 	}
 
 	tile_amount--;
@@ -416,7 +416,7 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 	tileTypes = *(u_int *)(model + 1) >> 2;
 
 	// grass should be under pavements and other things
-	if((model->shape_flags & SHAPE_FLAG_WATER) || (model->flags2 & 0x4000))
+	if((model->shape_flags & SHAPE_FLAG_WATER) || (model->flags2 & MODEL_FLAG_GRASS))
 		ofse = 229;
 	else
 		ofse = 133;
