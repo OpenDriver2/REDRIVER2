@@ -788,7 +788,7 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 
 	if (bDoingShadow != 0)
 	{
-		addPrim(current->ot + 0x107f, prims);
+		addPrim(current->ot + OTSIZE - 1, prims);
 
 #ifdef PGXP
 		prims->pgxp_index = 0xffff;
@@ -1842,7 +1842,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 	dr_env = (DR_ENV*)current->primptr;
 	SetDrawEnv(dr_env, &drEnv);
 
-	addPrim(current->ot + 0x107f, dr_env);
+	addPrim(current->ot + OTSIZE - 1, dr_env);
 	current->primptr += sizeof(DR_ENV);
 
 	Tangle = ratan2(-pLightPos->vx, pLightPos->vz);
@@ -1935,7 +1935,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 
 		// clear to black and draw Tanner sprites
 		newShowTanner(pDrawingPed);
-		addPrim(current->ot + 0x107f, &tileTannerClear[current->id]);
+		addPrim(current->ot + OTSIZE - 1, &tileTannerClear[current->id]);
 
 		// restore vectors
 		camera_position = cp;
@@ -1955,7 +1955,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 	dr_env = (DR_ENV*)current->primptr;
 	SetDrawEnv(dr_env, &drEnv);
 
-	addPrim(current->ot + 0x107f, dr_env);
+	addPrim(current->ot + OTSIZE - 1, dr_env);
 	current->primptr += sizeof(DR_ENV);
 }
 

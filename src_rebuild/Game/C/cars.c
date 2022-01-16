@@ -46,7 +46,6 @@ MODEL* gDamWheelModelPtr;
 CAR_DATA* active_car_list[MAX_CARS];
 BOUND_BOX bbox[MAX_CARS];
 u_char lightsOnDelay[MAX_CARS];
-u_short civ_clut[8][32][6];
 short FrontWheelRotation[MAX_CARS]; // offset 0x0
 short BackWheelRotation[MAX_CARS]; // offset 0x30
 
@@ -62,6 +61,10 @@ CAR_MODEL NewLowCarModel[MAX_CAR_MODELS];
 MODEL* gCarLowModelPtr[MAX_CAR_MODELS];
 MODEL* gCarDamModelPtr[MAX_CAR_MODELS];
 MODEL* gCarCleanModelPtr[MAX_CAR_MODELS];
+
+// pedestrian palette at 0 and next are cars
+// model_id, texture_number, palette
+u_short civ_clut[8][32][6];
 
 int whichCP = 0;
 int baseSpecCP = 0;
