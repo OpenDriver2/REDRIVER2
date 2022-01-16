@@ -866,7 +866,7 @@ void PlotSkyPoly(POLYFT4* polys, int skytexnum, unsigned char r, unsigned char g
 		poly->clut = skyclut[skytexnum];
 		poly->tpage = skytpage[skytexnum];
 
-		addPrim(current->ot + 0x107f, poly);
+		addPrim(current->ot + OTSIZE - 1, poly);
 
 #if defined(USE_PGXP) && defined(USE_EXTENDED_PRIM_POINTERS)
 		poly->pgxp_index = outpoints[src->v0].pgxp_index;
