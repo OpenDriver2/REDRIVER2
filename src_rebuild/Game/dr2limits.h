@@ -4,7 +4,11 @@
 // DRIVER 2 game engine limits
 // please populate this file only with engine limits during refactoring
 
+#ifndef PSX
+#define MAX_PLAYERS				16			// used for replay streams mostly
+#else
 #define MAX_PLAYERS				8			// used for replay streams mostly
+#endif
 
 #define MAX_MODEL_SLOTS			1536		// DO NOT CHANGE. No effect in upping it - limited by cell types
 #define MAX_CARS				20
