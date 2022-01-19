@@ -32,6 +32,15 @@
 #define MAX_DENTING_LOD_UVS		134
 #endif
 
+// Tyre track visuals
+#ifndef PSX
+#define MAX_TYRE_TRACK_WHEELS	4
+#define MAX_TYRE_TRACK_PLAYERS	4
+#else
+#define MAX_TYRE_TRACK_WHEELS	2
+#define MAX_TYRE_TRACK_PLAYERS	2
+#endif
+
 // Mission limits
 // DO NOT EDIT, breaks compatibility!
 #define MAX_MISSION_THREADS		16

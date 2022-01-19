@@ -20,26 +20,23 @@ int gShadowTextureNum;
 UV shadowuv;
 POLYFT4 shadowpoly;
 
-VECTOR tyre_new_positions[4];
-VECTOR tyre_save_positions[4];
+VECTOR tyre_new_positions[MAX_TYRE_TRACK_PLAYERS][MAX_TYRE_TRACK_WHEELS];
+VECTOR tyre_save_positions[MAX_TYRE_TRACK_PLAYERS][MAX_TYRE_TRACK_WHEELS];
 
-int tyre_track_offset[4];
-int num_tyre_tracks[4];
+int tyre_track_offset[MAX_TYRE_TRACK_PLAYERS][MAX_TYRE_TRACK_WHEELS];
+int num_tyre_tracks[MAX_TYRE_TRACK_PLAYERS][MAX_TYRE_TRACK_WHEELS];
 
-TYRE_TRACK track_buffer[4][64];
-int smoke_count[4];
+TYRE_TRACK track_buffer[MAX_TYRE_TRACK_PLAYERS][MAX_TYRE_TRACK_WHEELS][64];
+int smoke_count[MAX_TYRE_TRACK_PLAYERS][MAX_TYRE_TRACK_WHEELS];
 
 // [D] [T]
 void InitTyreTracks(void)
 {
 	int i;
-
-	i = 0;
-	while (i < 4)
+	for (i = 0; i < 4; i++)
 	{
-		num_tyre_tracks[i] = 0;
-		tyre_track_offset[i] = 0;
-		i++;
+		ClearMem((char*)num_tyre_tracks[i], sizeof(num_tyre_tracks[0]));
+		ClearMem((char*)tyre_track_offset[i], sizeof(tyre_track_offset[0]));
 	}
 }
 
@@ -57,8 +54,7 @@ void ResetTyreTracks(CAR_DATA* cp, int player_id)
 // [D] [T]
 void GetTyreTrackPositions(CAR_DATA *cp, int player_id)
 {
-	int track;
-	u_int loop;
+	int loop, track, steps;
 	CAR_COSMETICS *car_cos;
 	VECTOR WheelPos;
 	VECTOR CarPos;
@@ -70,9 +66,10 @@ void GetTyreTrackPositions(CAR_DATA *cp, int player_id)
 	car_cos = cp->ap.carCos;
 	SetRotMatrix(&cp->hd.drawCarMat);
 
-	loop = 0;
+	steps = 4 / MAX_TYRE_TRACK_WHEELS;
 
-	do {
+	for (loop = 0; loop < 4; loop += steps)
+	{
 		if (loop & 2) 
 			WheelPos.vx = car_cos->wheelDisp[loop].vx + 17;
 		else
@@ -87,52 +84,39 @@ void GetTyreTrackPositions(CAR_DATA *cp, int player_id)
 		WheelPos.vy = CarPos.vy;
 		WheelPos.vz += CarPos.vz;
 
-		track = player_id * 2 + (loop / 2);
+		track = loop / steps;
 
-		tyre_new_positions[track].vx = WheelPos.vx;
-		tyre_new_positions[track].vz = WheelPos.vz;
-		tyre_new_positions[track].vy = MapHeight(&WheelPos);
-
-		loop += 2;
-	} while (loop < 4);
+		tyre_new_positions[player_id][track].vx = WheelPos.vx;
+		tyre_new_positions[player_id][track].vz = WheelPos.vz;
+		tyre_new_positions[player_id][track].vy = MapHeight(&WheelPos);
+	}
 }
 
 
 // [D] [T]
 void SetTyreTrackOldPositions(int player_id)
 {
-	int idx = player_id * 2;
-
-	tyre_save_positions[idx].vx = tyre_new_positions[idx].vx;
-	tyre_save_positions[idx].vy = tyre_new_positions[idx].vy;
-	tyre_save_positions[idx].vz = tyre_new_positions[idx].vz;
-
-	tyre_save_positions[idx + 1].vx = tyre_new_positions[idx + 1].vx;
-	tyre_save_positions[idx + 1].vy = tyre_new_positions[idx + 1].vy;
-	tyre_save_positions[idx + 1].vz = tyre_new_positions[idx + 1].vz;
+	tyre_save_positions[player_id][0] = tyre_new_positions[player_id][0];
+	tyre_save_positions[player_id][1] = tyre_new_positions[player_id][1];
+	tyre_save_positions[player_id][2] = tyre_new_positions[player_id][2];
+	tyre_save_positions[player_id][3] = tyre_new_positions[player_id][3];
 }
 
 // [D] [T]
-void AddTyreTrack(int wheel, int tracksAndSmoke, int padid)
+void AddTyreTrack(int wheel, int tracksAndSmoke, int player_id, int continuous_track)
 {
 	static int Cont[4] = { 0, 0, 0, 0 };
 
-	short x;
-	short z;
+	short x, z;
 	sdPlane *SurfaceDataPtr;
 	char trackSurface;
 	TYRE_TRACK *tt_p;
 	VECTOR *newtp;
 	VECTOR *oldtp;
-	VECTOR New1;
-	VECTOR New2;
-	VECTOR New3;
-	VECTOR New4;
-	VECTOR SmokeDrift;
-	VECTOR SmokePosition;
-	VECTOR grass_vector;
+	VECTOR New1, New2, New3, New4;
+	VECTOR SmokeDrift, SmokePosition, grass_vector;
 
-	newtp = &tyre_new_positions[wheel];
+	newtp = &tyre_new_positions[player_id][wheel];
 
 	// [A] disabled due to MP and SP bugs
 	/*
@@ -142,22 +126,11 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int padid)
 	if (newtp->vz - camera_position.vz + 20480 > 40960)
 		return;*/
 
-	if (tracksAndSmoke == 0) 
+	if (tracksAndSmoke != 0) 
 	{
-		SurfaceDataPtr = sdGetCell(newtp);
-		trackSurface = 1;
+		oldtp = &tyre_save_positions[player_id][wheel];
 
-		if (SurfaceDataPtr->surface == 6)
-			return;
-
-		if (SurfaceDataPtr->surface == 4)
-			trackSurface = 2;
-	}
-	else
-	{
-		oldtp = &tyre_save_positions[wheel];
-
-		tt_p = track_buffer[wheel] + (tyre_track_offset[wheel] + num_tyre_tracks[wheel] & 0x3f);
+		tt_p = track_buffer[player_id][wheel] + (tyre_track_offset[player_id][wheel] + num_tyre_tracks[player_id][wheel] & 0x3f);
 
 		SurfaceDataPtr = sdGetCell(newtp);
 
@@ -170,7 +143,7 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int padid)
 			if (SurfaceDataPtr->surface == 4)
 			{
 				tt_p->surface = 2;
-				player[padid].onGrass = 1;
+				player[player_id].onGrass = 1;
 			}
 			else
 			{
@@ -184,13 +157,24 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int padid)
 
 		trackSurface = tt_p->surface;
 	}
+	else
+	{
+		SurfaceDataPtr = sdGetCell(newtp);
+		trackSurface = 1;
+
+		if (SurfaceDataPtr->surface == 6)
+			return;
+
+		if (SurfaceDataPtr->surface == 4)
+			trackSurface = 2;
+	}
 	
 	SmokePosition.vx = newtp->vx;
 	SmokePosition.vz = newtp->vz;
 	SmokePosition.vy = -50 - newtp->vy;
 
 	// make smoke
-	if ((smoke_count[wheel]++ & 3) == 1) 
+	if ((smoke_count[player_id][wheel]++ & 3) == 1)
 	{
 		GetSmokeDrift(&SmokeDrift);
 
@@ -234,14 +218,14 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int padid)
 		New4.vx = New4.vx - x;
 		New4.vz = New4.vz - z;
 
-		if (num_tyre_tracks[wheel] == 64)
+		if (num_tyre_tracks[player_id][wheel] == 64)
 		{
-			tyre_track_offset[wheel]++;
-			tyre_track_offset[wheel] &= 63;
+			tyre_track_offset[player_id][wheel]++;
+			tyre_track_offset[player_id][wheel] &= 63;
 		}
 		else 
 		{
-			num_tyre_tracks[wheel]++;
+			num_tyre_tracks[player_id][wheel]++;
 		}
 
 		if (Cont[wheel] == 1 && continuous_track == 1)
@@ -275,9 +259,8 @@ void DrawTyreTracks(void)
 	char last_duff;
 	POLY_FT4 *poly;
 	TYRE_TRACK *tt_p;
-	int index;
-	int loop;
-	int wheel_loop;
+	int index, loop;
+	int player_id, wheel_loop;
 	POLY_FT4 *lasttyre;
 	SVECTOR ps[4];
 	int z;
@@ -285,124 +268,125 @@ void DrawTyreTracks(void)
 	gte_SetRotMatrix(&inv_camera_matrix);
 	gte_SetTransVector(&dummy);
 
-	wheel_loop = 0;
-
-	do {
-		lasttyre = NULL;
-		last_duff = 1;
-		index = tyre_track_offset[wheel_loop];
-
-		for (loop = 0; loop < num_tyre_tracks[wheel_loop]; loop++) 
+	for (player_id = 0; player_id < MAX_TYRE_TRACK_PLAYERS; player_id++)
+	{
+		for (wheel_loop = 0; wheel_loop < MAX_TYRE_TRACK_WHEELS; wheel_loop++)
 		{
-			tt_p = track_buffer[wheel_loop] + index;
+			lasttyre = NULL;
+			last_duff = 1;
+			index = tyre_track_offset[player_id][wheel_loop];
 
-			index++;
-
-			if (index == 64) 
-				index = 0;
-
-			if (tt_p->type == 2)
-				continue;
-			
-			ps[0].vx = tt_p->p1.vx - camera_position.vx;
-			ps[0].vy = -camera_position.vy - tt_p->p1.vy;
-			ps[0].vz = tt_p->p1.vz - camera_position.vz;
-
-			ps[1].vx = tt_p->p2.vx - camera_position.vx;
-			ps[1].vy = -camera_position.vy - tt_p->p2.vy;
-			ps[1].vz = tt_p->p2.vz - camera_position.vz;
-
-			ps[2].vx = tt_p->p3.vx - camera_position.vx;
-			ps[2].vy = -camera_position.vy - tt_p->p3.vy;
-			ps[2].vz = tt_p->p3.vz - camera_position.vz;
-
-			ps[3].vx = tt_p->p4.vx - camera_position.vx;
-			ps[3].vy = -camera_position.vy - tt_p->p4.vy;
-			ps[3].vz = tt_p->p4.vz - camera_position.vz;
-
-			poly = (POLY_FT4 *)current->primptr;
-
-			z = 0;
-
-			if (lasttyre != NULL && tt_p->type != 0 && !last_duff)
+			for (loop = 0; loop < num_tyre_tracks[player_id][wheel_loop]; loop++)
 			{
-				last_duff = 1;
+				tt_p = track_buffer[player_id][wheel_loop] + index;
 
-				if (ps[2].vx + 9000 <= 18000 && ps[2].vz + 9000 <= 18000)
+				index++;
+
+				if (index == 64)
+					index = 0;
+
+				if (tt_p->type == 2)
+					continue;
+
+				ps[0].vx = tt_p->p1.vx - camera_position.vx;
+				ps[0].vy = -camera_position.vy - tt_p->p1.vy;
+				ps[0].vz = tt_p->p1.vz - camera_position.vz;
+
+				ps[1].vx = tt_p->p2.vx - camera_position.vx;
+				ps[1].vy = -camera_position.vy - tt_p->p2.vy;
+				ps[1].vz = tt_p->p2.vz - camera_position.vz;
+
+				ps[2].vx = tt_p->p3.vx - camera_position.vx;
+				ps[2].vy = -camera_position.vy - tt_p->p3.vy;
+				ps[2].vz = tt_p->p3.vz - camera_position.vz;
+
+				ps[3].vx = tt_p->p4.vx - camera_position.vx;
+				ps[3].vy = -camera_position.vy - tt_p->p4.vy;
+				ps[3].vz = tt_p->p4.vz - camera_position.vz;
+
+				poly = (POLY_FT4*)current->primptr;
+
+				z = 0;
+
+				if (lasttyre != NULL && tt_p->type != 0 && !last_duff)
 				{
-					gte_ldv0(&ps[2]);
-					gte_rtps();
+					last_duff = 1;
 
-					gte_stsxy(&poly->x2);
+					if (ps[2].vx + 9000 <= 18000 && ps[2].vz + 9000 <= 18000)
+					{
+						gte_ldv0(&ps[2]);
+						gte_rtps();
 
-					gte_stsz(&z);
+						gte_stsxy(&poly->x2);
 
-					gte_ldv0(&ps[3]);
-					gte_rtps();
+						gte_stsz(&z);
 
-					*(u_int *)&poly->x0 = *(u_int *)&lasttyre->x2;
-					*(u_int *)&poly->x1 = *(u_int *)&lasttyre->x3;
+						gte_ldv0(&ps[3]);
+						gte_rtps();
 
-					gte_stsxy(&poly->x3);
-				}
-			}
-			else
-			{
-				last_duff = 1;
+						*(u_int*)&poly->x0 = *(u_int*)&lasttyre->x2;
+						*(u_int*)&poly->x1 = *(u_int*)&lasttyre->x3;
 
-				if (ps[0].vx + 0x5000 <= 0xa000 && ps[0].vz + 0x5000 <= 0xa000)
-				{
-					gte_ldv3(&ps[0], &ps[1], &ps[2]);
-					gte_rtpt();
-
-					gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
-
-					gte_stsz(&z);
-
-					gte_ldv0(&ps[3]);
-					gte_rtps();
-
-					gte_stsxy(&poly->x3);
+						gte_stsxy(&poly->x3);
+					}
 				}
 				else
 				{
-					tt_p->type = 2;
+					last_duff = 1;
+
+					if (ps[0].vx + 0x5000 <= 0xa000 && ps[0].vz + 0x5000 <= 0xa000)
+					{
+						gte_ldv3(&ps[0], &ps[1], &ps[2]);
+						gte_rtpt();
+
+						gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
+
+						gte_stsz(&z);
+
+						gte_ldv0(&ps[3]);
+						gte_rtps();
+
+						gte_stsxy(&poly->x3);
+					}
+					else
+					{
+						tt_p->type = 2;
+					}
 				}
-			}
 
-			if (z > 50)
-			{
-				setPolyFT4(poly);
-				setSemiTrans(poly, 1);
-
-				if (tt_p->surface == 1)
+				if (z > 50)
 				{
-					poly->r0 = poly->g0 = poly->b0 = 26;
+					setPolyFT4(poly);
+					setSemiTrans(poly, 1);
+
+					if (tt_p->surface == 1)
+					{
+						poly->r0 = poly->g0 = poly->b0 = 26;
+					}
+					else
+					{
+						poly->r0 = 17;
+						poly->g0 = poly->b0 = 35;
+					}
+
+					*(ushort*)&poly->u0 = *(ushort*)&gTyreTexture.coords.u0;
+					*(ushort*)&poly->u1 = *(ushort*)&gTyreTexture.coords.u1;
+					*(ushort*)&poly->u2 = *(ushort*)&gTyreTexture.coords.u2;
+					*(ushort*)&poly->u3 = *(ushort*)&gTyreTexture.coords.u3;
+
+					poly->tpage = gTyreTexture.tpageid | 0x40;
+					poly->clut = gTyreTexture.clutid;
+
+					addPrim(current->ot + (z >> 3), poly);
+					current->primptr += sizeof(POLY_FT4);
+
+					lasttyre = poly;
+					last_duff = 0;
 				}
-				else
-				{
-					poly->r0 = 17;
-					poly->g0 = poly->b0 = 35;
-				}
-
-				*(ushort *)&poly->u0 = *(ushort *)&gTyreTexture.coords.u0;
-				*(ushort *)&poly->u1 = *(ushort *)&gTyreTexture.coords.u1;
-				*(ushort *)&poly->u2 = *(ushort *)&gTyreTexture.coords.u2;
-				*(ushort *)&poly->u3 = *(ushort *)&gTyreTexture.coords.u3;
-
-				poly->tpage = gTyreTexture.tpageid | 0x40;
-				poly->clut = gTyreTexture.clutid;
-
-				addPrim(current->ot + (z >> 3), poly);
-				current->primptr += sizeof(POLY_FT4);
-
-				lasttyre = poly;
-				last_duff = 0;
 			}
 		}
+	}
 
-		wheel_loop++;
-	} while (wheel_loop < 4);
 }
 
 // [D] [T] [A] now better shadow code

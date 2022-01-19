@@ -12,7 +12,7 @@ extern void ResetTyreTracks(CAR_DATA* cp, int player_id);
 
 extern void GetTyreTrackPositions(CAR_DATA *cp, int player_id); // 0x00075408
 extern void SetTyreTrackOldPositions(int player_id); // 0x00077558
-extern void AddTyreTrack(int wheel, int tracksAndSmoke, int padid); // 0x00075540
+extern void AddTyreTrack(int wheel, int tracksAndSmoke, int player_id, int continuous_track); // 0x00075540
 extern void DrawTyreTracks(); // 0x000759E0
 
 
