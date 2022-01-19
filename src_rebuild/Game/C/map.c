@@ -406,7 +406,7 @@ void ControlMap(void)
 	region_to_unpack = region_x + region_z * regions_across;
 
 	if (current_region == -1)
-		UnpackRegion(region_to_unpack, region_x & 1U | (region_z & 1U) * 2);		// is that ever valid for 'target_barrel_region'?
+		UnpackRegion(region_to_unpack, region_x & 1U | (region_z & 1U) * 2);
 
 	current_region = region_to_unpack;
 	

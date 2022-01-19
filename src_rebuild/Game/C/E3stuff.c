@@ -524,8 +524,6 @@ void SetPleaseWait(char *buffer)
 		ResetCityType();
 
 #else
-	ResetCityType();
-
 	PsyX_EndScene();
 #endif // PSX
 	

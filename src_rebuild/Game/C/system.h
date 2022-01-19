@@ -136,11 +136,7 @@ extern int LoadfileSeg(char *name, char *addr, int offset, int loadsize); // 0x0
 
 extern void ReportMode(int on); // 0x0007F8B8
 
-#ifdef PSX
 extern void loadsectors(char *addr, int sector, int nsectors); // 0x0007F904
-#else
-extern void loadsectorsPC(char* filename, char *addr, int sector, int nsectors);
-#endif // PSX
 
 extern void EnableDisplay(); // 0x0007F984
 extern void DisableDisplay(); // 0x0007F9F0

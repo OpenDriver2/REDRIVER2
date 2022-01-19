@@ -406,12 +406,7 @@ void LoadGameLevel(void)
 	sector = citylumps[GameLevel][CITYLUMP_DATA1].x / CDSECTOR_SIZE;
 	nsectors = citylumps[GameLevel][CITYLUMP_DATA1].y / CDSECTOR_SIZE;
 
-#ifdef PSX 
 	loadsectors((char*)_primTab1, sector, nsectors);
-#else
-	extern char g_CurrentLevelFileName[64];
-	loadsectorsPC(g_CurrentLevelFileName, (char*)_primTab1, sector, nsectors);
-#endif // PSX
 
 	sector += nsectors;
 
@@ -428,12 +423,8 @@ void LoadGameLevel(void)
 	malloc_lump = D_MALLOC(nsectors * CDSECTOR_SIZE);
 	D_MALLOC_END();
 
-#ifdef PSX
 	loadsectors(malloc_lump, sector, nsectors);
-#else
-	extern char g_CurrentLevelFileName[64];
-	loadsectorsPC(g_CurrentLevelFileName, malloc_lump, sector, nsectors);
-#endif // PSX
+
 	sector += nsectors;
 	
 	// CITYLUMP_DATA2 - in-memory lump
