@@ -28,6 +28,8 @@ environment:
 
 
 install:
+  - git submodule init
+  - git submodule update
   - cmd: '%APPVEYOR_BUILD_FOLDER%\.appveyor\Install.bat'
   - sh: '${APPVEYOR_BUILD_FOLDER}/.appveyor/Install.sh'
 
