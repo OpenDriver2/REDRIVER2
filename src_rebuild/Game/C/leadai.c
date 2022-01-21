@@ -136,7 +136,6 @@ void LeadUpdateState(CAR_DATA* cp)
 	volatile int dx, dz;
 	volatile int x, z;
 
-	volatile int dif;
 	volatile int avel;
 	volatile int end;
 
@@ -204,10 +203,8 @@ void LeadUpdateState(CAR_DATA* cp)
 		}
 	}
 
-	dif = cp->hd.direction - cp->ai.l.targetDir;
 	avel = FIXEDH(cp->st.n.angularVelocity[1]);
-
-	end = (dif + 2048U & 0xfff) - 2048;
+	end = DIFF_ANGLES(cp->ai.l.targetDir, cp->hd.direction);// (cp->hd.direction - cp->ai.l.targetDir) + 2048U & 0xfff) - 2048;
 
 	switch (cp->ai.l.dstate)
 	{
@@ -359,15 +356,12 @@ u_int LeadPadResponse(CAR_DATA* cp)
 {
 	u_int t0;
 
-	volatile int dif;
 	volatile int deltaTh;
 	volatile int avel;
 	
 	t0 = 0;
 
-	dif = cp->hd.direction - cp->ai.l.targetDir;
-
-	deltaTh = (dif + 2048U & 0xfff) - 2048;
+	deltaTh = DIFF_ANGLES(cp->ai.l.targetDir, cp->hd.direction); // ((cp->hd.direction - cp->ai.l.targetDir) + 2048U & 0xfff) - 2048;
 	avel = FIXEDH(cp->st.n.angularVelocity[1]);
 
 #if defined(COLLISION_DEBUG) && !defined(PSX)
@@ -493,14 +487,11 @@ u_int LeadPadResponse(CAR_DATA* cp)
 		}
 		case 4:
 		{
-			volatile int diff;
 			volatile int deltaPos;
 			
 			t0 = CAR_PAD_WHEELSPIN;
 
-			diff = cp->ai.l.roadPosition - cp->hd.direction;
-
-			deltaPos = (diff + 2048U & 0xfff) - 2048;
+			deltaPos = DIFF_ANGLES(cp->hd.direction, cp->ai.l.roadPosition);// ((cp->ai.l.roadPosition - cp->hd.direction) + 2048U & 0xfff) - 2048;
 
 			if (cp->ai.l.roadForward < 0)
 				t0 = CAR_PAD_BRAKE;
@@ -708,7 +699,8 @@ void FakeMotion(CAR_DATA* cp)
 		// move car in desired direction
 		if (cp->ai.l.direction == 1)
 		{
-			if (((curve->end - angle & 0xfff) + 2048 & 0xfff) - 2048 > -1) 
+			
+			if (DIFF_ANGLES(angle, curve->end) >= 0) // ((curve->end - angle & 0xfff) + 2048 & 0xfff) - 2048 > -1) 
 			{
 				dir = angle + 0x13193 / radius;
 
@@ -725,7 +717,7 @@ void FakeMotion(CAR_DATA* cp)
 		}
 		else
 		{
-			if (((angle - curve->start & 0xfff) + 2048 & 0xfff) - 2048 > -1)
+			if (DIFF_ANGLES(curve->start, angle) >= 0) //if (((angle - curve->start & 0xfff) + 2048 & 0xfff) - 2048 > -1)
 			{
 				dir = angle - 0x13193 / radius;
 
@@ -769,7 +761,7 @@ void PosToIndex(int* normal, int* tangent, int intention, CAR_DATA* cp)
 
 	if (intention - 4U < 3)
 	{ 
-		*normal = (*normal + 2048U & 0xfff) - 2048;
+		*normal = DIFF_ANGLES(0, *normal); //(*normal + 2048U & 0xfff) - 2048;
 
 		if (intention == 6 && ABS(*normal) < 240)
 		{
@@ -1028,7 +1020,7 @@ void BlockToMap(MAP_DATA* data)
 			s = rcossin_tbl[((tangent + 1024u) & 0xfff) * 2];
 			c = rcossin_tbl[((tangent + 1024u) & 0xfff) * 2 + 1];
 
-			tangent = (((tangent - data->cp->ai.l.base_Angle) + 2048U & 0xfff) - 2048) *
+			tangent = DIFF_ANGLES(data->cp->ai.l.base_Angle, tangent) * //(((tangent - data->cp->ai.l.base_Angle) + 2048U & 0xfff) - 2048) *
                 data->cp->ai.l.base_Dir * ((curve->inside * 45056) / 28672);
 
 			someVar = FIXEDH(ABS(data->size->vx * s) + ABS(data->size->vz * c));
@@ -1105,7 +1097,7 @@ void BlockToMap(MAP_DATA* data)
 			if (dy > v)
 				return;
 
-			angle = (ratan2(dx, dz) + 2048U & 0xfff) - 2048;
+			angle = DIFF_ANGLES(0, ratan2(dx, dz)); //(ratan2(dx, dz) + 2048U & 0xfff) - 2048;
 
 			s = rcossin_tbl[(angle & 0xfff) * 2];
 			c = rcossin_tbl[(angle & 0xfff) * 2 + 1];
@@ -1144,10 +1136,10 @@ void BlockToMap(MAP_DATA* data)
 				{
 					y = corners[i][2];
 
-					if ((int)(((corners[left][2] - y) + 2048U & 0xfff) - 2048) > 0)
+					if (DIFF_ANGLES(y, corners[left][2]) > 0) // ((int)(((corners[left][2] - y) + 2048U & 0xfff) - 2048) > 0)
 						left = i;
 
-					if ((int)(((y - corners[right][2]) + 2048U & 0xfff) - 2048) > 0)
+					if (DIFF_ANGLES(corners[right][2], y) > 0) // ((int)(((y - corners[right][2]) + 2048U & 0xfff) - 2048) > 0)
 						right = i;
 
 					quad2 = y + 2048 >> 10;
@@ -1158,11 +1150,11 @@ void BlockToMap(MAP_DATA* data)
 
 				if (overlap)
 				{
-					int temp;
-					temp = angle - data->cp->hd.direction;
+					//int temp;
+					//temp = angle - data->cp->hd.direction;
 
-					left = temp - 512;
-					right = temp + 512;
+					left = DIFF_ANGLES(data->cp->hd.direction - 512, angle); // temp - 512;
+					right = DIFF_ANGLES(data->cp->hd.direction + 512, angle); // temp + 512;
 
 					rdist = 0;
 				}
@@ -1182,8 +1174,8 @@ void BlockToMap(MAP_DATA* data)
 						}
 					}
 
-					left = corners[left][2] - data->cp->hd.direction;
-					right = corners[right][2] - data->cp->hd.direction;
+					left = DIFF_ANGLES(data->cp->hd.direction, corners[left][2]); // corners[left][2] - data->cp->hd.direction;
+					right = DIFF_ANGLES(data->cp->hd.direction, corners[right][2]); // corners[right][2] - data->cp->hd.direction;
 
 					rdist = tangent;
 				}
@@ -1200,18 +1192,18 @@ void BlockToMap(MAP_DATA* data)
 					vx = rcossin_tbl[(theta & 0xfff) * 2] * corners[left][0];
 					vz = rcossin_tbl[(theta & 0xfff) * 2 + 1] * corners[left][1];
 
-					left = corners[left][2] - data->cp->hd.direction;
-					right = corners[right][2] - data->cp->hd.direction;
+					left = DIFF_ANGLES(data->cp->hd.direction, corners[left][2]); // corners[left][2] - data->cp->hd.direction;
+					right = DIFF_ANGLES(data->cp->hd.direction, corners[right][2]); // corners[right][2] - data->cp->hd.direction;
 
 					rdist = ABS(FIXEDH(vx + vz));
 				}
 
-				left = (left + 2048U & 0xfff) - 2048;
-				right = (right + 2048U & 0xfff) - 2048;
+				// left = (left + 2048U & 0xfff) - 2048;
+				// right = (right + 2048U & 0xfff) - 2048;
 			}
 			else
 			{
-				normal = ((angle - data->cp->hd.direction) + 2048 & 0xfff) - 2048;
+				normal = DIFF_ANGLES(data->cp->hd.direction, angle); // ((angle - data->cp->hd.direction) + 2048 & 0xfff) - 2048;
 
 				offx = ratan2(FIXEDH(ABS(data->size->vx * c) + ABS(data->size->vz * s)) + carWidth, tangent);
 
@@ -1390,7 +1382,9 @@ int IsOnMap(int x, int z, VECTOR* basePos, int intention, CAR_DATA* cp)
 			dx = x - curve->Midx;
 			dz = z - curve->Midz;
 
-			tangent = (((ratan2(dx, dz) - cp->ai.l.base_Angle) + 2048U & 0xfff) - 2048) * cp->ai.l.base_Dir * ((curve->inside * 45056) / 28672);
+			tangent = DIFF_ANGLES(cp->ai.l.base_Angle, ratan2(dx, dz)); // (((ratan2(dx, dz) - cp->ai.l.base_Angle) + 2048U & 0xfff) - 2048) * 
+				cp->ai.l.base_Dir * ((curve->inside * 45056) / 28672);
+
 			normal = (cp->ai.l.base_Normal - hypot(dx, dz)) * cp->ai.l.base_Dir;
 
 			PosToIndex(&normal, &tangent, intention, cp);
@@ -1400,7 +1394,7 @@ int IsOnMap(int x, int z, VECTOR* basePos, int intention, CAR_DATA* cp)
 		case 5:
 		{
 			tangent = hypot(dx, dz);
-			normal = ((ratan2(dx, dz) - cp->hd.direction) + 2048U & 0xfff) - 2048;
+			normal = DIFF_ANGLES(cp->hd.direction, ratan2(dx, dz)); // ((ratan2(dx, dz) - cp->hd.direction) + 2048U & 0xfff) - 2048;
 
 			PosToIndex(&normal, &tangent, intention, cp);
 
@@ -2098,6 +2092,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 		else
 			sindex *= 2048;
 
+		// This is something DIFF_ANGLES but rather different...
 		sindex = ((sindex / 21 + 2048U & 0xfff) + cp->hd.direction & 0xfff) - 2048;
 	}
 	else
@@ -2375,7 +2370,7 @@ void CheckCurrentRoad(CAR_DATA* cp)
 			}
 		}
 
-		diff = (heading - cp->hd.direction + 2048 & 0xfff) - 2048;
+		diff = DIFF_ANGLES(cp->hd.direction, heading); //(heading - cp->hd.direction + 2048 & 0xfff) - 2048;
 
 		if (IS_STRAIGHT_SURFACE(currentRoad))
 		{

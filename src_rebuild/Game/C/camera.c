@@ -474,7 +474,7 @@ void PlaceCameraFollowCar(PLAYER *lp)
 		}
 		else
 		{
-			angleDelta = (((baseDir + gCameraAngle) - lp->cameraAngle) + 2048U & 0xfff) - 2048;
+			angleDelta = DIFF_ANGLES(lp->cameraAngle, baseDir + gCameraAngle); // (((baseDir + gCameraAngle) - lp->cameraAngle) + 2048U & 0xfff) - 2048;
 
 			lp->cameraAngle += (angleDelta >> 3) & 0xfff;
 		}

@@ -2209,10 +2209,10 @@ void StepHelicopter(EVENT* ev)
 			HelicopterData.dr += (sign ^ 5) - sign;
 		}
 
-		HelicopterData.pitch = (HelicopterData.pitch + HelicopterData.dp + 2048U & 0xfff) - 2048;
-		HelicopterData.roll = (HelicopterData.roll + HelicopterData.dr + 2048U & 0xfff) - 2048;
+		HelicopterData.pitch = DIFF_ANGLES(-HelicopterData.dp, HelicopterData.pitch);// (HelicopterData.pitch + HelicopterData.dp + 2048U & 0xfff) - 2048;
+		HelicopterData.roll = DIFF_ANGLES(-HelicopterData.dr, HelicopterData.roll); //(HelicopterData.roll + HelicopterData.dr + 2048U & 0xfff) - 2048;
 
-		rot = (ratan2(vel.x, vel.z) - ev->rotation + 2048U & 0xfff) - 2048;
+		rot = DIFF_ANGLES(ev->rotation, ratan2(vel.x, vel.z)); //(ratan2(vel.x, vel.z) - ev->rotation + 2048U & 0xfff) - 2048;
 
 		if (ABS(rot) > 512)
 		{
