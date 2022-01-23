@@ -789,10 +789,6 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 	if (bDoingShadow != 0)
 	{
 		addPrim(current->ot + OTSIZE - 1, prims);
-
-#ifdef PGXP
-		prims->pgxp_index = 0xffff;
-#endif
 	}
 	else
 	{

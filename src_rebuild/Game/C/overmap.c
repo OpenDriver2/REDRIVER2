@@ -1343,7 +1343,7 @@ void DrawOverheadMap(void)
 			th = MapTex[i].h - 1;
 #ifndef PSX
 			// make map fully detailed when filtering is not available
-			if (!g_bilinearFiltering)
+			if (!g_cfg_bilinearFiltering)
 			{
 				tw += 1;
 				th += 1;
@@ -1500,7 +1500,7 @@ void DrawFullscreenMap(void)
 #ifndef PSX
 	/* It will look funny when enabled
 	// make map fully detailed when filtering is not available
-	if (!g_bilinearFiltering)
+	if (!g_cfg_bilinearFiltering)
 	{
 		tw += 1;
 		th += 1;

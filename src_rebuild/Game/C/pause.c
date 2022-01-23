@@ -497,7 +497,7 @@ char* WaitForTextEntry(char* textBufPtr, int maxLength)
 
 #if !USE_PAD_INPUT
 	// PsyX input handler
-	gameOnTextInput = ScoreNameInputHandler;
+	g_cfg_gameOnTextInput = ScoreNameInputHandler;
 	gCurrentTextChar = 0;
 #endif
 
@@ -667,7 +667,7 @@ char* WaitForTextEntry(char* textBufPtr, int maxLength)
 	} while (true);
 
 #if !USE_PAD_INPUT
-	gameOnTextInput = NULL;
+	g_cfg_gameOnTextInput = NULL;
 #endif
 
 	return username;
