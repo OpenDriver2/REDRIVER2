@@ -330,11 +330,12 @@ void setupLightingMatrices(void)
 
 	if (gTimeOfDay == 3)
 	{
-		gte_ldbkdir(0x400, 0x400, 0x400);
-		return;
+		gte_SetBackColor(64, 64, 64);
 	}
-
-	gte_ldbkdir(0x8c0, 0x8c0, 0x8c0);
+	else
+	{
+		gte_SetBackColor(140, 140, 140);
+	}
 }
 
 // [D] [T]
@@ -877,8 +878,7 @@ void buildNewCars(void)
 // [D] [T]
 void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 {
-	u_char ptype;
-	u_char clut;
+	u_char ptype, clut;
 	u_char *polyList;
 	CAR_POLY *cp;
 
@@ -911,10 +911,9 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 			else if (pass == 2)
 				car->pB3 = carPolyBuffer + whichCP;
 
-			i = 0;
 			newNumPolys = whichCP;
 
-			while (newNumPolys < 2000 && i < model->num_polys)
+			for (i = 0; newNumPolys < 2000 && i < model->num_polys; i++)
 			{
 				ptype = *polyList;
 
@@ -939,7 +938,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 							cp->vindices = M_INT_4R(polyList[4], polyList[5], polyList[6], 0); 
 							cp->originalindex = i;
 
-							cp = carPolyBuffer + newNumPolys + 1;
+							cp++;
 
 							cp->vindices = M_INT_4R(polyList[4], polyList[6], polyList[7], 0);
 							cp->originalindex = i;
@@ -972,7 +971,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 							cp->uv3_uv2 = *(ushort*)&pft4->uv2;
 							cp->originalindex = i;
 
-							cp = carPolyBuffer + newNumPolys + 1;
+							cp++;
 						
 							cp->vindices = M_INT_4R(pft4->v0, pft4->v2, pft4->v3, 0);
 							cp->clut_uv0 = M_INT_2(texture_cluts[polyList[1]][polyList[2]], *(ushort*)&pft4->uv0);
@@ -1016,7 +1015,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 							cp->uv3_uv2 = *(ushort*)&pgt4->uv2;
 							cp->originalindex = i;
 
-							cp = carPolyBuffer + newNumPolys + 1;
+							cp++;
 
 							cp->vindices = M_INT_4R(pgt4->v0, pgt4->v2, pgt4->v3, 0);
 							cp->nindices = M_INT_4R(pgt4->n0, pgt4->n2, pgt4->n3, 0);
@@ -1030,7 +1029,6 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 				}
 
 				polyList += PolySizes[ptype & 0x1f];
-				i++;
 			}
 
 			if (pass == 1) 
@@ -1050,13 +1048,10 @@ void MangleWheelModels(void)
 {
 	UV_INFO tmpUV2;
 	u_char tmpUV;
-	int i;
-	u_int v0;
-	u_int v1;
-	u_int v2;
+	u_int v0, v1, v2;
 	POLYFT4*src;
 	MODEL *m;
-	int j;
+	int i, j;
 
 	for (i = 0; i < 3; i++)
 	{

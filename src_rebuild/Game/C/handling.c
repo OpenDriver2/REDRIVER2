@@ -840,22 +840,22 @@ void initOBox(CAR_DATA* cp)
 
 	gte_stlvnl(&cp->hd.oBox.location);
 
-	VECTOR svx = { length, 0 ,0 };
-	VECTOR svy = { 0, car_cos->colBox.vy ,0 };
-	VECTOR svz = { 0, 0 ,car_cos->colBox.vz };
+	SVECTOR svx = { length, 0 ,0 };
+	SVECTOR svy = { 0, car_cos->colBox.vy ,0 };
+	SVECTOR svz = { 0, 0 ,car_cos->colBox.vz };
 
-	gte_ldlvl(&svx);
+	gte_ldsv(&svx);
 
 	gte_rtir();
 	cp->hd.oBox.length[1] = car_cos->colBox.vy;
 	gte_stsv(&cp->hd.oBox.radii[0]);
 
-	gte_ldlvl(&svy);
+	gte_ldsv(&svy);
 	gte_rtir();
 	cp->hd.oBox.length[2] = car_cos->colBox.vz;
 	gte_stsv(&cp->hd.oBox.radii[1]);
 
-	gte_ldlvl(&svz);
+	gte_ldsv(&svz);
 	gte_rtir();
 	gte_stsv(&cp->hd.oBox.radii[2]);
 }
