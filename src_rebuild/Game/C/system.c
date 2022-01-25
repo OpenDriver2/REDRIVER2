@@ -964,7 +964,16 @@ void SetCityType(CITYTYPE type)
 
 	while (CdSearchFile(&cdfile, filename) == NULL)
 	{
+#ifdef USE_PC_FILESYSTEM
+#ifndef __EMSCRIPTEN__
+		char errPrint[512];
+		sprintf(errPrint, "SetCityType: failed to open '%s'\n", filename);
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
+		exit(0);
+#endif // !__EMSCRIPTEN__
+#else
 		DoCDRetry();
+#endif // USE_PC_FILESYSTEM
 	}
 
 	sector = CdPosToInt((CdlLOC*)&cdfile);
