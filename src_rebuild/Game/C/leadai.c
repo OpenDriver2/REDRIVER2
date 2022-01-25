@@ -33,6 +33,18 @@ static int pathParams[5] = {
 int road_s = 0;
 int road_c = 0;
 
+struct MAP_DATA
+{
+	CAR_DATA* cp;
+	VECTOR* base;
+	VECTOR* pos;
+	VECTOR* vel;
+	VECTOR* size;
+	int intention;
+	int* map;
+	int* local;
+};
+
 void CheckCurrentRoad(CAR_DATA* cp);
 void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention);
 void FakeMotion(CAR_DATA* cp);
@@ -1640,8 +1652,8 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 
 						BlockToMap(&data);
 
-						num_cb = num_cb + -1;
-						collide = collide + 1;
+						num_cb--;
+						collide++;
 					}
 				}
 				ppco = GetNextPackedCop(&ci);

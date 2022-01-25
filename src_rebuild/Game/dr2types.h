@@ -1817,21 +1817,6 @@ struct MISSION_STEP
 };
 
 //---------------------------------------------------------------------------------------
-// TODO: LEADAI.H
-
-struct MAP_DATA
-{
-	CAR_DATA* cp;
-	VECTOR* base;
-	VECTOR* pos;
-	VECTOR* vel;
-	VECTOR* size;
-	int intention;
-	int* map;
-	int* local;
-};
-
-//---------------------------------------------------------------------------------------
 // TODO: PAUSE.H
 
 enum EXIT_VALUE
