@@ -18,6 +18,14 @@
 
 #include "Frontend/FEmain.h"
 
+struct MISSION_STEP
+{
+	u_char flags : 3;
+	u_char recap : 5;
+	u_char data : 7;
+	u_char disc : 1;
+};
+
 MISSION_STEP MissionLadder[68] =
 {
   { 1, 0, 1, 0 },

@@ -17,6 +17,20 @@
 #include "pad.h"
 #include "ASM/rnc_2.h"
 
+struct MAPTEX
+{
+	short u, w, v, h;
+};
+
+struct OVERMAP
+{
+	int x_offset, y_offset;
+	int width, height;
+	u_char toptile;
+	u_char dummy;
+	int scale;
+};
+
 OVERMAP overlaidmaps[4] =
 {
 	{ 197, 318, 384, 672, 252, 0x99, 2145 },

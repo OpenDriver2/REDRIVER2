@@ -43,6 +43,29 @@ struct MENU_MESSAGE
 	int show;
 } gDisplayedMessage = { NULL, NULL, 0 };
 
+typedef void(*pauseFunc)(int dir);
+
+struct MENU_ITEM;
+struct MENU_HEADER;
+
+struct MENU_ITEM
+{
+	char* Text;
+	u_char Type;
+	u_char Justify;
+	pauseFunc func;
+	EXIT_VALUE ExitValue;
+	MENU_HEADER* SubMenu;
+};
+
+struct MENU_HEADER
+{
+	char* Title;
+	XYWH Bound;
+	u_char NumItems;
+	MENU_ITEM* MenuItems;
+};
+
 static MENU_ITEM* ActiveItem[PAUSE_MENU_LEVELS];
 static MENU_HEADER* VisibleMenus[PAUSE_MENU_LEVELS];
 static MENU_HEADER* ActiveMenu;

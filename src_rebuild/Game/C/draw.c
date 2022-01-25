@@ -116,6 +116,11 @@ int gDrawDistance = 441;
 _pct& plotContext = *(_pct*)((u_char*)getScratchAddr(0) + 1024 - sizeof(_pct));	// orig offset: 0x1f800020
 #endif
 
+struct MVERTEX5x5
+{
+	MVERTEX verts[5][5];
+};
+
 // [D] [T] [A]
 void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
 {

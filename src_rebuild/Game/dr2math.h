@@ -3,6 +3,13 @@
 
 #include <abs.h>
 
+struct MATRIX2
+{
+	short m[3][3];
+	short computed;
+	char null[12];
+};
+
 #if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
 extern "C" {
 #endif

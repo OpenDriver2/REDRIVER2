@@ -247,7 +247,7 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 void UpdatePlayers(void)
 {
 	int i, carId;
-	PEDESTRIAN* ped;
+	LPPEDESTRIAN ped;
 	PLAYER* locPlayer;
 	CAR_DATA* cp;
 

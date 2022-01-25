@@ -24,6 +24,51 @@
 #include "debris.h"
 #include "felony.h"
 
+typedef struct __othercarsound
+{
+	int car;
+	int chan;
+	char in_use;
+	char stopped;
+	char idle;
+} othercarsound;
+
+typedef struct __bitfield64
+{
+	int h;
+	int l;
+} bitfield64;
+
+typedef struct __envsound
+{
+	u_char type;
+	u_char flags;
+	VECTOR pos;
+	VECTOR pos2;
+	int bank;
+	int sample;
+	int vol;
+} envsound;
+
+typedef struct __envsoundtags
+{
+	int frame_cnt;
+	int func_cnt;
+	int num_envsnds;
+	int envsnd_cnt;
+} envsoundtags;
+
+typedef struct __envsoundinfo
+{
+	VECTOR eff_pos[4];
+	VECTOR cam_pos;
+	float g[4];
+	int thisS[4];
+	int playing_sound[4];
+	int chan[4];
+	u_int flags;
+} envsoundinfo;
+
 typedef void(*envsoundfunc)(envsound* ep /*$s1*/, envsoundinfo* E /*$a1*/, int pl /*$a2*/);
 
 void IdentifyZone(envsound* ep, envsoundinfo* E, int pl);

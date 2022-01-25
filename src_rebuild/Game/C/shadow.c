@@ -14,6 +14,18 @@
 #include "mission.h"
 #include "tile.h"
 
+struct TYRE_TRACK
+{
+	u_char type;
+	u_char shade;
+	u_char shade_type;
+	u_char surface;
+	SVECTOR_NOPAD p1;
+	SVECTOR_NOPAD p2;
+	SVECTOR_NOPAD p3;
+	SVECTOR_NOPAD p4;
+};
+
 int gShadowTexturePage;
 int gShadowTextureNum;
 

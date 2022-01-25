@@ -1,6 +1,18 @@
 #ifndef CUTSCENE_H
 #define CUTSCENE_H
 
+struct CUTSCENE_INFO
+{
+	u_short offset;
+	u_short size;
+};
+
+struct CUTSCENE_HEADER
+{
+	int maxsize;
+	CUTSCENE_INFO data[15];
+};
+
 #ifndef PSX
 #define MAX_USER_REPLAYS 16
 
@@ -9,9 +21,7 @@ extern int gNumUserChases;
 
 extern void InitUserReplays(const char* str);
 
-#endif
-
-extern CUTSCENE_BUFFER CutsceneBuffer;
+#endif // PSX
 
 extern int NumCutsceneStreams;
 extern int gSkipInGameCutscene;

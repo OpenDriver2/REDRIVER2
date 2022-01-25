@@ -23,6 +23,102 @@
 #include "ASM/rndrasm.h"
 #include "cutrecorder.h"
 
+struct FixedEvent // same as EVENT but different fields
+{
+	VECTOR position;
+	short rotation;
+	short active;
+	u_short initialRotation;
+	u_short finalRotation;
+	u_short minSpeed;
+	u_short maxSpeed;
+	short flags;
+	short radius;
+	int model;
+	EVENT* next;
+	char* modelName;
+};
+
+struct MissionTrain
+{
+	EVENT* engine;
+	int* node;
+	int cornerSpeed;
+	int initialStraightSpeed;
+	int finalStraightSpeed;
+	int start;
+	int startDir;
+};
+
+struct Foam
+{
+	MODEL* model;
+	int rotate;
+};
+
+struct EventCarriage
+{
+	short rotation;
+	short vel;
+};
+
+struct MultiCar
+{
+	EVENT* event;
+	int count;
+};
+
+struct Helicopter
+{
+	int speed;
+	short pitch;
+	short dp;
+	short roll;
+	short dr;
+	int lastX;
+	int lastZ;
+	TEXTURE_DETAILS rotorTexture;
+	short rotorrot;
+	short rotorvel;
+	int cleanModel;
+	int deadModel;
+};
+
+struct Detonator
+{
+	int timer;
+	int count;
+};
+
+struct CameraDelay
+{
+	int delay;
+	int type;
+};
+
+enum VisType
+{
+	VIS_INIT = 0,
+	VIS_SORT = 1,
+	VIS_ADD = 2,
+	VIS_NEXT = 3,
+};
+
+struct EventCamera
+{
+	VECTOR position;
+	short yAng;
+	MATRIX matrix;
+	int rotate;
+};
+
+enum Station
+{
+	EVENT_NO_STATION = 0,
+	EVENT_APPROACHING = 1,
+	EVENT_LEAVING = 2,
+};
+
 #define PATH_NODE_WRAP		0x80000000	// go back to first node without interpolation
 #define PATH_NODE_CYCLE		0x80000001	// cycle nodes with interpolation
 #define PATH_NODE_STATION	0x80000002	// stop point
@@ -457,6 +553,8 @@ EVENT* firstMissionEvent;
 EVENT* event;
 
 static EventCamera eventCamera;
+
+void MakeEventTrackable(EVENT* ev);
 
 // [D] [T]
 int GetVisValue(int index, int zDir)

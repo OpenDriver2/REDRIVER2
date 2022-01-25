@@ -1,11 +1,13 @@
 #include "driver2.h"
 #include "C/system.h"
+#include "C/pres.h"
 #include "platform.h"
 
 #ifndef PSX
 #include <stdio.h>
 #include <malloc.h>
 #endif
+
 
 int gUserLanguage = 0;
 

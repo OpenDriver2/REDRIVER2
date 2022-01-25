@@ -24,6 +24,45 @@
 #include "camera.h"
 #include "dr2roads.h"
 
+struct SPOOLQ
+{
+	u_char type;
+	u_char data;
+	u_short nsectors;
+	u_int sector;
+	char* addr;
+	void (*func)();
+#ifdef _DEBUG
+	const char* requestby;
+	int requestbyline;
+#endif
+};
+
+struct SPL_REGIONINFO
+{
+	u_short region_to_unpack;
+	u_short target_barrel_region;
+	int nsectors;
+	char* cell_addr;
+	char* roadm_addr;
+};
+
+struct AreaDataStr
+{
+	u_short gfx_offset;
+	u_short model_offset;
+	u_short music_offset;
+	u_short ambient_offset;
+	u_char model_size;
+	u_char pad;
+	u_char num_tpages;
+	u_char ambient_size;
+	u_char music_size;
+	u_char music_samples_size;
+	u_char music_id;
+	u_char ambient_id;
+};
+
 int date_date = 0xA11;
 int date_time = 0x27220B;
 

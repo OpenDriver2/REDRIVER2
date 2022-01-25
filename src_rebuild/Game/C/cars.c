@@ -20,6 +20,20 @@
 #include "glaunch.h"
 #include "ASM/rndrasm.h"
 
+struct plotCarGlobals
+{
+	u_char* primptr;
+	OTTYPE* ot;
+	u_int intensity;
+	u_short* pciv_clut;
+	u_int ShineyTPageASL16;
+	u_int ShineyClutASL16;
+	u_char* damageLevel;
+	u_char* shineyTable;
+	int ghost;
+};
+
+
 #ifndef PSX
 #define CAR_LOD_SWITCH_DISTANCE switch_detail_distance
 #else

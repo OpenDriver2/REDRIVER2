@@ -5,6 +5,12 @@
 
 extern TEXTURE_DETAILS digit_texture;
 
+struct FONT_DIGIT
+{
+	char xOffset;
+	char width;
+};
+
 FONT_DIGIT fontDigit[] = {
 	{ 2, 14 },
 	{ 17, 14},

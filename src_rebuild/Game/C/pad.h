@@ -61,6 +61,46 @@ enum ECarPads
 	CAR_PAD_LEAVECAR		= (MPAD_D_UP | MPAD_TRIANGLE),
 };
 
+struct DUPLICATION
+{
+	char* buffer;
+	int size;
+};
+
+typedef struct MAPPING
+{
+	u_short button_lookup[16];
+	u_short swap_analog;
+	u_short reserved1;
+} *LPMAPPING;
+
+typedef struct PAD
+{
+	u_char active;
+	u_char type;
+	u_char dualshock;
+	u_char reserved1;
+	u_short direct;
+	u_short dirnew;
+	char diranalog[4];
+	u_short mapped;
+	u_short mapnew;
+	char mapanalog[4];
+	MAPPING mappings;
+	u_char alarmShakeCounter;
+	u_char asd;
+	u_char sdf;
+	u_char dfg;
+	u_char delay;
+	u_char port;
+	u_char state;
+	u_char dsactive;
+	u_char* shakeptr;
+	u_char motors[2];
+	u_char shake_type;
+	u_char vibrate;
+} *LPPAD;
+
 extern int pad_connected;
 extern int numPadsConnected;
 extern int gVibration;

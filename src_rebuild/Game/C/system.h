@@ -1,6 +1,32 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
+struct DRAW_MODE
+{
+	short x1, y1;
+	short x2, y2;
+	short width, height;
+	short framex, framey;
+};
+
+enum CDTYPE
+{
+	CDTYPE_NODISC = 0,
+	CDTYPE_SHELLOPEN = 1,
+	CDTYPE_DISCERROR = 2,
+	CDTYPE_WRONGDISC = 3,
+	CDTYPE_CORRECTDISC = 4,
+};
+
+enum CITYTYPE
+{
+	CITYTYPE_DAY = 0,
+	CITYTYPE_NIGHT = 1,
+	CITYTYPE_MULTI_DAY = 2,
+	CITYTYPE_MULTI_NIGHT = 3,
+};
+
+
 extern volatile char* _overlay_buffer;		// 0x1C0000
 extern volatile char* _frontend_buffer;		// 0xFB400
 extern volatile char* _other_buffer;		// 0xF3000

@@ -32,6 +32,13 @@ struct GARAGE_DOOR
 	char yang;
 };
 
+struct CYCLE_OBJECT
+{
+	char* name;
+	short vx, vy;
+	short start1, stop1, speed1;
+	short start2, stop2, speed2;
+};
 
 CYCLE_OBJECT Lev0[2] =
 {

@@ -62,6 +62,18 @@ struct COLLISION_PACKET
 	short xsize, ysize, zsize;
 };
 
+struct SHADOWHDR
+{
+	u_int num_common_verts;
+	u_short num_verts_total;
+	u_short num_polys_total;
+	u_short vert_offsets[4];
+	u_short nverts[4];
+	u_short npolys[4];
+	u_int(*poly_block[4]);
+	SVECTOR* vertices;
+};
+
 struct RGB // almost same as CVECTOR
 {
 	u_char r;

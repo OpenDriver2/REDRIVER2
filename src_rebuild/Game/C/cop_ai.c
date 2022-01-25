@@ -19,6 +19,14 @@
 #include "pedest.h"
 #include "pres.h"
 
+enum AIZone
+{
+	zoneFrnt = 0,
+	zoneBack = 1,
+	zoneLeft = 2,
+	zoneRght = 3,
+};
+
 struct iVectNT
 {
 	int n;

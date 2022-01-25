@@ -17,6 +17,37 @@
 #include <stdlib.h>		// getenv
 #endif // PSX
 
+struct GAME_SAVE_HEADER
+{
+	u_int magic;
+	u_char gMissionLadderPos;
+	u_char pad1;
+	u_char pad2;
+	u_char pad3;
+	MISSION_DATA SavedData;
+	int reserved[8];
+};
+
+struct CONFIG_SAVE_HEADER
+{
+	u_int magic;
+	int gMasterVolume;
+	int gMusicVolume;
+	int gSoundMode;
+	int gVibration;
+	int gCopDifficultyLevel;
+	int gFurthestMission;
+	MAPPING PadMapping[2];
+	SCORE_TABLES ScoreTables;
+	int PALAdjustX;
+	int PALAdjustY;
+	int NTSCAdjustX;
+	int NTSCAdjustY;
+	int gSubtitles;
+	ACTIVE_CHEATS AvailableCheats;
+	int reserved[6];
+};
+
 // [A]
 void ShowSavingWaitMessage(char *message, int height)
 {
