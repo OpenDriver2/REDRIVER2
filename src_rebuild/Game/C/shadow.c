@@ -137,10 +137,10 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int player_id, int continuous_t
 		// check surface type
 		if (SurfaceDataPtr != NULL) 
 		{
-			if (SurfaceDataPtr->surface == 6) 
+			if (SurfaceDataPtr->surface == SURF_WATER)
 				return;
 
-			if (SurfaceDataPtr->surface == 4)
+			if (SurfaceDataPtr->surface == SURF_GRASS)
 			{
 				tt_p->surface = 2;
 				player[player_id].onGrass = 1;
@@ -162,10 +162,10 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int player_id, int continuous_t
 		SurfaceDataPtr = sdGetCell(newtp);
 		trackSurface = 1;
 
-		if (SurfaceDataPtr->surface == 6)
+		if (SurfaceDataPtr->surface == SURF_WATER)
 			return;
 
-		if (SurfaceDataPtr->surface == 4)
+		if (SurfaceDataPtr->surface == SURF_GRASS)
 			trackSurface = 2;
 	}
 	

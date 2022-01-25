@@ -1511,7 +1511,7 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 	for (cnt = 0; cnt < 4; cnt++)
 	{
 		if (cp->hd.wheel[cnt].susCompression != 0)
-			wheels_on_ground = 1;
+			wheels_on_ground |= 1 << cnt;
 	}
 
 	skidsound = 0;
@@ -1523,7 +1523,7 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 		rear_vel = ABS(cp->hd.rear_vel);
 		front_vel = ABS(cp->hd.front_vel);
 
-		if (rear_vel > 15000 || cp->wheelspin)
+		if ((wheels_on_ground & 5) && (rear_vel > 15000 || cp->wheelspin))
 		{
 			lay_down_tracks |= 1;
 
@@ -1536,7 +1536,7 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 				skidsound = 13000;
 		}
 		
-		if (front_vel > 15000)
+		if ((wheels_on_ground & 10) && front_vel > 15000)
 		{
 			lay_down_tracks |= 2;
 		}
@@ -1667,18 +1667,21 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 	// make tyre tracks
 	GetTyreTrackPositions(cp, player_id);
 
+#define ADD_WHEEL_TYRE_TRACK(wheelNum, trackIdx) \
+		if (wheels_on_ground & (1 << wheelNum)) { \
+			AddTyreTrack(trackIdx, tracks_and_smoke, player_id, last_track_state[player_id][trackIdx] != -1); \
+			last_track_state[player_id][trackIdx] = 1; \
+		} else \
+			last_track_state[player_id][trackIdx] = -1;
+
 	if (lay_down_tracks & 1) // rear
 	{
 #if MAX_TYRE_TRACK_WHEELS == 4
-		AddTyreTrack(0, tracks_and_smoke, player_id, last_track_state[player_id][0] != -1);
-		AddTyreTrack(2, tracks_and_smoke, player_id, last_track_state[player_id][2] != -1);
-		last_track_state[player_id][0] = 1;
-		last_track_state[player_id][2] = 1;
+		ADD_WHEEL_TYRE_TRACK(0, 0)
+		ADD_WHEEL_TYRE_TRACK(2, 2)
 #else
-		AddTyreTrack(0, tracks_and_smoke, player_id, last_track_state[player_id][0] != -1);
-		AddTyreTrack(1, tracks_and_smoke, player_id, last_track_state[player_id][1] != -1);
-		last_track_state[player_id][0] = 1;
-		last_track_state[player_id][1] = 1;
+		ADD_WHEEL_TYRE_TRACK(0, 0)
+		ADD_WHEEL_TYRE_TRACK(2, 1)
 #endif
 	}
 	else
@@ -1695,17 +1698,17 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 #if MAX_TYRE_TRACK_WHEELS == 4
 	if (lay_down_tracks & 2) // front
 	{
-		AddTyreTrack(1, tracks_and_smoke, player_id, last_track_state[player_id][1] != -1);
-		AddTyreTrack(3, tracks_and_smoke, player_id, last_track_state[player_id][3] != -1);
-		last_track_state[player_id][1] = 1;
-		last_track_state[player_id][3] = 1;
+		ADD_WHEEL_TYRE_TRACK(1, 1)
+		ADD_WHEEL_TYRE_TRACK(3, 3)
 	}
 	else
 	{
 		last_track_state[player_id][1] = -1;
 		last_track_state[player_id][3] = -1;
 	}
-#endif 
+#endif
+
+#undef ADD_WHEEL_TYRE_TRACK
 
 	SetTyreTrackOldPositions(player_id);
 }

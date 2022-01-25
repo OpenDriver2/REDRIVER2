@@ -253,7 +253,7 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 		friction_coef = (newCompression * (32400 - wetness) >> 15) + 500;
 
 		if (SurfacePtr != NULL)
-			wheel->onGrass = SurfacePtr->surface == 4;
+			wheel->onGrass = SurfacePtr->surface == SURF_GRASS;
 		else
 			wheel->onGrass = 0;
 
@@ -261,10 +261,10 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 		{
 			switch (SurfacePtr->surface)
 			{
-				case 4:
-				case 6:
-				case 9:
-				case 11:
+				case SURF_GRASS:
+				case SURF_WATER:
+				case SURF_DEEPWATER:
+				case SURF_SAND:
 					wheel->surface = 0x80;
 					break;
 				default:
@@ -277,14 +277,14 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 
 			switch (SurfacePtr->surface)
 			{
-				case 8:
+				case SURF_ALLEY:
 					wheel->surface |= 0x2;
 					break;
-				case 6:
-				case 9:
+				case SURF_WATER:
+				case SURF_DEEPWATER:
 					wheel->surface |= 0x1;
 					break;
-				case 11:
+				case SURF_SAND:
 					wheel->surface |= 0x3;
 					break;
 			}
@@ -697,7 +697,7 @@ void StepOneCar(CAR_DATA* cp)
 				Setup_Debris((VECTOR*)&deepestPoint, &direction, 10, 0);
 			}
 
-			if (SurfacePtr && (SurfacePtr->surface != 9) && (SurfacePtr->surface != 6))
+			if (SurfacePtr && (SurfacePtr->surface != SURF_DEEPWATER) && (SurfacePtr->surface != SURF_WATER))
 			{
 				CollisionSound(GetPlayerId(cp), cp, (impulse / 6 + (impulse >> 0x1f) >> 3) - (impulse >> 0x1f), 0);
 			}

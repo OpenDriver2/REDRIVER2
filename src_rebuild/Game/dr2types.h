@@ -152,12 +152,20 @@ struct DRIVER2_JUNCTION
 	u_int flags;
 };
 
+enum SurfaceType
+{
+	SURF_CONCRETE	= 0,	// concrete/paved tiles
+	SURF_GRASS		= 4,
+	SURF_WATER		= 6,
+	SURF_ALLEY		= 8,
+	SURF_DEEPWATER	= 9,
+	SURF_SAND		= 11,
+};
+
 typedef struct _sdPlane
 {
-	short surface;
-	short a;
-	short b;
-	short c;
+	short surface;		// also one of SurfaceTypes
+	short a, b, c;
 	int d;
 } sdPlane;
 
