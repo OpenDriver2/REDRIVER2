@@ -535,6 +535,10 @@ void sector_ready(u_char intr, u_char* result)
 int loadsectorsPC(char* addr, int sector, int nsectors)
 {
 	char namebuffer[64];
+
+	if (g_CurrentLevelFileName[0] == 0)
+		return 0;
+
 	strcpy(namebuffer, g_CurrentLevelFileName);
 	FS_FixPathSlashes(namebuffer);
 
