@@ -667,10 +667,13 @@ void AnimatePed(LPPEDESTRIAN pPed)
 	if ((pPed->pedType == TANNER_MODEL || (ActiveCheats.cheat12 && pPed->pedType == OTHER_MODEL)) && pPed->type < PED_ACTION_BACK)
 	{
 		int surfId;
-		surfId = PedSurfaceType((VECTOR*)&pPed->position);
+		surfId = PedSurfaceType(&vec);
 
 		// play footstep sounds
-		if (surfId != 4 && surfId != 6 && surfId != 11 && surfId != 9)
+		if (surfId != SURF_GRASS && 
+			surfId != SURF_WATER && 
+			surfId != SURF_SAND && 
+			surfId != SURF_DEEPWATER)
 		{
 			if (pPed->frame1 == 3)
 				Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 0, pPed->position.vx, -pPed->position.vy, pPed->position.vz, -5000, 0x1000);
