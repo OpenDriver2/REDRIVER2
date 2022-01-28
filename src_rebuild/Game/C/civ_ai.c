@@ -152,7 +152,6 @@ int InitCar(CAR_DATA* cp, int direction, LONGVECTOR4* startPos, unsigned char co
 		case CONTROL_TYPE_LEAD_AI:
 			// free roamer lead car
 			InitLead(cp);
-			leadCarId = cp->id;
 			cp->hndType = 5;
 			break;
 	}

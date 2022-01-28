@@ -831,7 +831,6 @@ int num_active_cars = 0;
 u_int lead_pad = 0;
 
 int numInactiveCars = 0;
-int leadCarId = 0;
 
 VECTOR leadcar_pos;
 
@@ -1208,7 +1207,7 @@ void StepSim(void)
 
 	stupid_logic[1] = player[1].playerCarId;
 	stupid_logic[2] = gThePlayerCar;
-	stupid_logic[3] = leadCarId;
+	stupid_logic[3] = player[0].targetCarId; // [A]
 
 	for (i = 0; i < 3; i++)
 	{
