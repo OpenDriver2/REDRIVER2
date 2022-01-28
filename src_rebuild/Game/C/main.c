@@ -1218,7 +1218,7 @@ void StepSim(void)
 		}
 	}
 
-	for (car = 0, i = 0; car < 4 && i < 2; car++)
+	for (car = 0, i = 0; car < 4; car++)
 	{
 		if (stupid_logic[car] != -1 && SilenceThisCar(car) == 0)
 		{
