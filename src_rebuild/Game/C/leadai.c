@@ -45,6 +45,19 @@ struct MAP_DATA
 	int* local;
 };
 
+enum LeadDriveState
+{
+	LeadDrive_Handbrake = 0,
+	LeadDrive_DropPedals = 1,
+	LeadDrive_CorrectOversteer = 2,
+	LeadDrive_NormalDrive = 3,
+	LeadDrive_Unstuck = 4,
+	LeadDrive_Panic = 5,
+	LeadDrive_EmergencyBrake = 6,
+	LeadDrive_Wheelspin = 7,
+	LeadDrive_FakeMotion = 8,
+};
+
 void CheckCurrentRoad(CAR_DATA* cp);
 void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention);
 void FakeMotion(CAR_DATA* cp);
@@ -68,7 +81,7 @@ void InitLead(CAR_DATA* cp)
 	cp->hndType = 5;
 	cp->controlType = CONTROL_TYPE_LEAD_AI;
 	cp->ai.l.roadPosition = 512;
-	cp->ai.l.dstate = 3;
+	cp->ai.l.dstate = LeadDrive_NormalDrive;
 	cp->ai.l.recoverTime = 40;
 	cp->ai.l.nextExit = 2;
 	cp->ai.l.roadForward = 5120;
@@ -169,11 +182,11 @@ void LeadUpdateState(CAR_DATA* cp)
 		|| ABS(z - player[0].pos[2]) > 15900)
 	{
 		// request that we spool him in
-		cp->ai.l.dstate = 8;
+		cp->ai.l.dstate = LeadDrive_FakeMotion;
 		return;
 	}
 
-	if (cp->ai.l.dstate == 8)
+	if (cp->ai.l.dstate == LeadDrive_FakeMotion)
 	{
 		// don't spool him in until everything is loaded
 		if (spoolactive)
@@ -186,23 +199,23 @@ void LeadUpdateState(CAR_DATA* cp)
 		InitCarPhysics(cp, (LONGVECTOR4*)&tmpStart, cp->ai.l.targetDir);
 
 		// start him up
-		cp->ai.l.dstate = 3;
+		cp->ai.l.dstate = LeadDrive_NormalDrive;
 
 		ResetTyreTracks(cp, GetPlayerId(cp));
 	}
 
 	if (ABS(cp->ai.l.panicCount) > 0)
-		cp->ai.l.dstate = 5;
+		cp->ai.l.dstate = LeadDrive_Panic;
 
-	if (cp->ai.l.dstate == 6)
-		cp->ai.l.dstate = 3;
+	if (cp->ai.l.dstate == LeadDrive_EmergencyBrake)
+		cp->ai.l.dstate = LeadDrive_NormalDrive;
 
 	if (cp->hd.speed < 10)
 		++cp->ai.l.stuckCount;
 	else
 		cp->ai.l.stuckCount = 0;
 
-	if (cp->ai.l.dstate == 4)
+	if (cp->ai.l.dstate == LeadDrive_Unstuck)
 	{
 		if (cp->ai.l.stuckCount > 20)
 		{
@@ -217,7 +230,7 @@ void LeadUpdateState(CAR_DATA* cp)
 		{
 			cp->ai.l.stuckCount = 0;
 			cp->ai.l.recoverTime = 0;
-			cp->ai.l.dstate = 4;
+			cp->ai.l.dstate = LeadDrive_Unstuck;
 		}
 	}
 
@@ -226,22 +239,22 @@ void LeadUpdateState(CAR_DATA* cp)
 
 	switch (cp->ai.l.dstate)
 	{
-		case 0:
+		case LeadDrive_Handbrake:
 		{
 			CheckCurrentRoad(cp);
 
 			if (cp->hd.speed < 20)
-				cp->ai.l.dstate = 3;
+				cp->ai.l.dstate = LeadDrive_NormalDrive;
 
 			if (ABS(end) < LeadValues.hEnd)
 			{
 				if (ABS(avel) > 150)
-					cp->ai.l.dstate = 1;
+					cp->ai.l.dstate = LeadDrive_DropPedals;
 			}
 
 			break;
 		}
-		case 1:
+		case LeadDrive_DropPedals:
 		{
 			CheckCurrentRoad(cp);
 
@@ -249,26 +262,26 @@ void LeadUpdateState(CAR_DATA* cp)
 			{
 				if (ABS(avel) < 24)
 				{
-					cp->ai.l.dstate = 3;
+					cp->ai.l.dstate = LeadDrive_NormalDrive;
 				}
 				else
 				{
-					cp->ai.l.dstate = 2;
+					cp->ai.l.dstate = LeadDrive_CorrectOversteer;
 				}
 			}
 
 			break;
 		}
-		case 2:
+		case LeadDrive_CorrectOversteer:
 		{
 			CheckCurrentRoad(cp);
 
 			if (ABS(avel) < 24)
-				cp->ai.l.dstate = 3;
+				cp->ai.l.dstate = LeadDrive_NormalDrive;
 
 			break;
 		}
-		case 3:
+		case LeadDrive_NormalDrive:
 		{
 			volatile int dist;
 		
@@ -291,9 +304,9 @@ void LeadUpdateState(CAR_DATA* cp)
 						int hDist = LeadValues.hDist + (cp->hd.speed - 100) * LeadValues.hDistMul;
 
 						if (dist < hDist)
-							cp->ai.l.dstate = 3;	// [A] was 6
+							cp->ai.l.dstate = LeadDrive_NormalDrive;	// [A] was LeadDrive_OversteerBrake
 						else
-							cp->ai.l.dstate = 0;
+							cp->ai.l.dstate = LeadDrive_Handbrake;
 
 						break;
 					}
@@ -303,7 +316,7 @@ void LeadUpdateState(CAR_DATA* cp)
 
 						if (dist < tDist)
 						{
-							cp->ai.l.dstate = 0;
+							cp->ai.l.dstate = LeadDrive_Handbrake;
 							break;
 						}
 					}
@@ -320,14 +333,14 @@ void LeadUpdateState(CAR_DATA* cp)
 					lDist = LeadValues.tDist + cp->hd.speed * LeadValues.tDistMul;
 
 				if (dist < lDist && cp->ai.l.roadForward > 0)
-					cp->ai.l.dstate = 7;
+					cp->ai.l.dstate = LeadDrive_Wheelspin;
 				else
-					cp->ai.l.dstate = 6;
+					cp->ai.l.dstate = LeadDrive_EmergencyBrake;
 			}
 
 			break;
 		}
-		case 4:
+		case LeadDrive_Unstuck:
 		{
 			pos.vx = cp->hd.where.t[0];
 			pos.vy = cp->hd.where.t[1];
@@ -339,30 +352,30 @@ void LeadUpdateState(CAR_DATA* cp)
 
 			if (cp->ai.l.roadForward == 0)
 			{
-				cp->ai.l.dstate = 3;
+				cp->ai.l.dstate = LeadDrive_NormalDrive;
 				cp->ai.l.stuckCount = 0;
 			}
 
 			break;
 		}
-		case 5:
+		case LeadDrive_Panic:
 		{
 			CheckCurrentRoad(cp);
 
 			if (cp->ai.l.panicCount == 0)
 			{
 				if (ABS(end) < 200)
-					cp->ai.l.dstate = 2;
+					cp->ai.l.dstate = LeadDrive_CorrectOversteer;
 			}
 
 			break;
 		}
-		case 7:
+		case LeadDrive_Wheelspin:
 		{
 			CheckCurrentRoad(cp);
 
 			if (ABS(end) < cp->hd.speed + LeadValues.tEnd)
-				cp->ai.l.dstate = 2;
+				cp->ai.l.dstate = LeadDrive_CorrectOversteer;
 
 			break;
 		}
@@ -434,7 +447,7 @@ u_int LeadPadResponse(CAR_DATA* cp)
 
 	switch (cp->ai.l.dstate)
 	{
-		case 0:
+		case LeadDrive_Handbrake:
 		{
 			int deltaAVel;
 			
@@ -454,7 +467,7 @@ u_int LeadPadResponse(CAR_DATA* cp)
 
 			break;
 		}
-		case 3:
+		case LeadDrive_NormalDrive:
 		{
 			volatile int dx, dz;
 			volatile int deltaPos;
@@ -492,18 +505,15 @@ u_int LeadPadResponse(CAR_DATA* cp)
 			if (ABS(steerDelta) > 64)
 				t0 |= CAR_PAD_FASTSTEER;
 		
-			if (steerDelta + 31U <= 62) 
+			if (steerDelta + 31U <= 62 && ABS(avel) <= 5)
 			{
-				if (ABS(avel) <= 5)
-				{
-					if (t0 & CAR_PAD_ACCEL)
-						t0 |= CAR_PAD_WHEELSPIN;
-				}
+				if (t0 & CAR_PAD_ACCEL)
+					t0 |= CAR_PAD_WHEELSPIN;
 			}
 
 			break;
 		}
-		case 4:
+		case LeadDrive_Unstuck:
 		{
 			volatile int deltaPos;
 			
@@ -526,7 +536,7 @@ u_int LeadPadResponse(CAR_DATA* cp)
 
 			break;
 		}
-		case 5:
+		case LeadDrive_Panic:
 		{
 			volatile int deltaAVel;
 			
@@ -578,7 +588,7 @@ u_int LeadPadResponse(CAR_DATA* cp)
 
 			break;
 		}
-		case 6:
+		case LeadDrive_EmergencyBrake:
 		{
 			t0 = (avel < 0) ? CAR_PAD_RIGHT : CAR_PAD_LEFT;
 			//t0 |= ((deltaTh < 0) ? CAR_PAD_RIGHT : CAR_PAD_LEFT);
@@ -590,7 +600,7 @@ u_int LeadPadResponse(CAR_DATA* cp)
 
 			break;
 		}
-		case 7:
+		case LeadDrive_Wheelspin:
 		{
 			if (ABS(avel) > LeadValues.tAvelLimit)
 			{
@@ -601,7 +611,7 @@ u_int LeadPadResponse(CAR_DATA* cp)
 			t0 |= CAR_PAD_WHEELSPIN;
 			break;
 		}
-		case 8:
+		case LeadDrive_FakeMotion:
 		{
 			FakeMotion(cp);
 			break;
@@ -957,7 +967,7 @@ void BlockToMap(MAP_DATA* data)
 
 			someVar = FIXEDH(ABS(data->size->vx * road_s) + ABS(data->size->vz * road_c));
 
-			if (data->intention == 0 || data->cp->ai.l.dstate == 3)
+			if (data->intention == 0 || data->cp->ai.l.dstate == LeadDrive_NormalDrive)
 			{
 				v = (data->cp->hd.speed + 100) * 10;
 
@@ -1705,7 +1715,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	}
 
 	// update panic
-	if (cp->ai.l.dstate != 4)
+	if (cp->ai.l.dstate != LeadDrive_Unstuck)
 	{
 		int left, right;
 		int spd;
@@ -2226,7 +2236,7 @@ void CheckCurrentRoad(CAR_DATA* cp)
 		else
 			fixedThresh = LeadValues.tDist + cp->hd.speed * LeadValues.tDistMul;
 
-		if (toGo < fixedThresh && cp->ai.l.offRoad == 0 && cp->ai.l.dstate != 5)
+		if (toGo < fixedThresh && cp->ai.l.offRoad == 0 && cp->ai.l.dstate != LeadDrive_Panic)
 		{
 			checkNext = 1;
 			cp->ai.l.direction = 0;
@@ -2761,7 +2771,7 @@ u_int FreeRoamer(CAR_DATA* cp)
 	
 	DamageBar.position = cp->totalDamage;
 
-	if (cp->ai.l.dstate != 8)
+	if (cp->ai.l.dstate != LeadDrive_FakeMotion)
 	{
 		// flipped? Or sinking in water?
 		if (cp->hd.where.m[1][1] < 100 || (cp->hd.wheel[1].surface & 7) == 1 && (cp->hd.wheel[3].surface & 7) == 1)
