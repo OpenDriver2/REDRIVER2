@@ -653,15 +653,15 @@ void SwapDrawBuffers(void)
 	PutDrawEnv(&current->draw);
 	DrawOTag((u_long*)(current->ot + OTSIZE-1));
 
-	if ((FrameCnt & 1U) == 0)
-	{
-		current = &MPBuff[0][1];
-		last = &MPBuff[0][0];
-	}
-	else
+	if ((FrameCnt & 1) != 0)
 	{
 		current = &MPBuff[0][0];
 		last = &MPBuff[0][1];
+	}
+	else
+	{
+		current = &MPBuff[0][1];
+		last = &MPBuff[0][0];
 	}
 
 	ClearCurrentDrawBuffers();
@@ -718,21 +718,31 @@ void UpdatePadData(void)
 #endif
 }
 
+#define SCREEN_FB	512
+#define SCREEN_FB_H	256
+
+#ifdef PAL_VERSION
+#define SCREEN_H	256
+#else
+#define SCREEN_H	240
+#endif`
+
 // [D] [T]
 void SetupDrawBuffers(void)
 {
 	int i;
 	RECT16 rect;
 
-	SetDefDispEnv(&MPBuff[0][0].disp, 0, 256, 320, 256);
-	SetDefDispEnv(&MPBuff[0][1].disp, 0, 0, 320, 256);
+	// PAL: 256
+	// NTSC: 240
 
-	MPBuff[0][0].disp.screen.h = 256;
-	MPBuff[0][1].disp.screen.h = 256;
+	SetDefDispEnv(&MPBuff[0][0].disp, 0, 256, 320, SCREEN_H);
+	SetDefDispEnv(&MPBuff[0][1].disp, 0, 0, 320, SCREEN_H);
+
+	MPBuff[0][0].disp.screen.h = SCREEN_H;
+	MPBuff[0][1].disp.screen.h = SCREEN_H;
 	MPBuff[0][0].disp.screen.x = draw_mode.framex;
 	MPBuff[0][1].disp.screen.x = draw_mode.framex;
-	MPBuff[0][0].disp.screen.y = draw_mode.framey;
-	MPBuff[0][1].disp.screen.y = draw_mode.framey;
 
 	if (NoPlayerControl == 0)
 		SetupDrawBufferData(NumPlayers);
@@ -760,17 +770,14 @@ void SetupDrawBuffers(void)
 // [D] [T]
 void SetupDrawBufferData(int num_players)
 {
-	int i;
-	int j;
-	int x[2];
-	int y[2];
-	int width, height;
+	int i, j;
+	int x[2], y[2];
+	int height;
 	int toggle;
 
 	if (num_players == 1)
 	{
-		width = 320;
-		height = 256;
+		height = SCREEN_H; // 240 on NTSC
 		x[0] = 0;
 		y[0] = 0;
 		x[1] = 0;
@@ -778,19 +785,18 @@ void SetupDrawBufferData(int num_players)
 	}
 	else if (num_players == 2)
 	{
-		width = 320;
-		height = 127;
+		height = (SCREEN_H / 2 - 1); // 127; // 119 on NTSC
 		x[0] = 0;
 		y[0] = 0;
 		x[1] = 0;
-		y[1] = 128;
+		y[1] = SCREEN_H / 2;	  // 120 on NTSC
 	}
 	else
 	{
 		D_CHECK_ERROR(true, "Erm... too many players selected. FATAL!");
 	}
 
-	SetGeomOffset(width / 2, height / 2);
+	SetGeomOffset(320 / 2, height / 2);
 
 	toggle = 0;
 
@@ -800,51 +806,50 @@ void SetupDrawBufferData(int num_players)
 		{
 			u_long* otpt;
 			u_char* primpt;
-			u_char* PRIMpt;
 
 			if (toggle)
 			{
 				otpt = (u_long*)_OT2;
-				primpt = PRIMpt = (u_char*)_primTab2;
+				primpt = (u_char*)_primTab2; // _primTab1 + 0x1E000
 			}
 			else
 			{
 				otpt = (u_long*)_OT1;
-				primpt = PRIMpt = (u_char*)_primTab1;
+				primpt = (u_char*)_primTab1;
 			}
 
 			toggle ^= 1;
-			InitaliseDrawEnv(MPBuff[j], x[j], y[j], width, height);
+			InitaliseDrawEnv(MPBuff[j], x[j], y[j], 320, height);
 	
-			MPBuff[j][i].primtab = (char*)primpt;
-			MPBuff[j][i].primptr = (char*)PRIMpt;
-			MPBuff[j][i].ot = (OTTYPE*)otpt;
+			MPBuff[i][j].primtab = (char*)primpt;
+			MPBuff[i][j].primptr = (char*)primpt;
+			MPBuff[i][j].ot = (OTTYPE*)otpt;
 		}
 	}
 
-#ifdef PSX
-	aspect.m[0][0] = 4096;
-	aspect.m[0][1] = 0;
-	aspect.m[0][2] = 0;
-
-	aspect.m[1][0] = 0;
-	aspect.m[1][1] = 4710;
-	aspect.m[1][2] = 0;
-
-	aspect.m[2][0] = 0;
-	aspect.m[2][1] = 0;
-	aspect.m[2][2] = 4096;
-#else
-	aspect = identity;
+#ifdef PAL_VERSION
+	InitMatrix(aspect);
 	aspect.m[1][1] = 4300;
+#else
+	InitMatrix(aspect);
+	aspect.m[1][1] = 4096;
 #endif
 }
 
 // [D] [T]
 void InitaliseDrawEnv(DB* pBuff, int x, int y, int w, int h)
 {
-	SetDefDrawEnv(&pBuff[0].draw, x, y + 256, w, h);
-	SetDefDrawEnv(&pBuff[1].draw, x, y, w, h);
+#ifdef PSX
+#define DB1 pBuff[0]
+#define DB2 pBuff[1]
+#else
+// on PsyX we have to prevent flicker
+#define DB1 pBuff[1]
+#define DB2 pBuff[0]
+#endif
+
+	SetDefDrawEnv(&DB1.draw, x, y, w, h);
+	SetDefDrawEnv(&DB2.draw, x, y + 256, w, h);
 
 	pBuff[0].id = 0;
 	pBuff[0].draw.dfe = 1;

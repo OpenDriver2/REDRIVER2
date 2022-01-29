@@ -911,7 +911,7 @@ void InitOverheadMap(void)
 	if (NumPlayers > 1)
 		gMapYOffset = 96;
 	else
-		gMapYOffset = 181;
+		gMapYOffset = draw_mode.height - MAP_SIZE_H - 15; //181;
 
 	if (gMultiplayerLevels) 
 	{

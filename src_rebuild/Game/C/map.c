@@ -230,10 +230,8 @@ int CheckUnpackNewRegions(void)
 	int x, z;
 	int i, j;
 	int sortcount;
-	int leftright_unpack;
-	int topbottom_unpack;
-	int target_region;
-	int region_to_unpack;
+	int leftright_unpack, topbottom_unpack;
+	int target_region, region_to_unpack;
 	int num_regions_to_unpack;
 	int force_load_boundary;
 	AREA_LOAD_INFO regions_to_unpack[3];
@@ -318,11 +316,8 @@ int CheckUnpackNewRegions(void)
 		num_regions_to_unpack = 3;
 	}
 
-	i = 0;
-	sortcount = 0;
-
 	// get next region a space
-	while (i < num_regions_to_unpack)
+	for (i = 0, sortcount = 0; i < num_regions_to_unpack; i++)
 	{
 		x = regions_to_unpack[i].xoffset;
 		z = regions_to_unpack[i].zoffset;
@@ -353,11 +348,9 @@ int CheckUnpackNewRegions(void)
 				sortcount++;
 			}
 		}
-		i++;
 	}
 
-	i = 0;
-	while (i < sortcount)
+	for (i = 0; i < sortcount; i++)
 	{
 		if (sortcount > (i + 1))
 		{
@@ -380,8 +373,6 @@ int CheckUnpackNewRegions(void)
 		}
 
 		UnpackRegion(sortregions[sortorder[i]].vx, sortregions[sortorder[i]].vy);
-
-		i++;
 	}
 
 	return 1;
