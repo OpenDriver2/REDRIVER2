@@ -1,3 +1,5 @@
+echo off
+cls
 set REDRIVER_FOLDER=%cd%\..
 
 rem Make a symlink
