@@ -128,7 +128,7 @@ void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
 
 	m = 4;
 
-#ifdef PSX
+#if 0 //def PSX
 	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)(u_char*)getScratchAddr(0);
 #else
 	MVERTEX5x5 subdiVerts;
@@ -179,7 +179,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 	int numShadows;
 	int count;
 
-#ifdef PSX
+#if 0 //def PSX
 	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)(u_char*)getScratchAddr(0);
 #else
 	MVERTEX5x5 subdiVerts;
@@ -780,7 +780,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 	SVECTOR* srcVerts;
 	int combo;
 
-#ifdef PSX
+#if 0//def PSX
 	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)(u_char*)getScratchAddr(0);
 #else
 	MVERTEX5x5 subdiVerts;
@@ -1041,7 +1041,7 @@ void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 	SVECTOR* srcVerts;
 	int combo;
 
-#ifdef PSX
+#if 0//def PSX
 	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)(u_char*)getScratchAddr(0);
 #else
 	MVERTEX5x5 subdiVerts;

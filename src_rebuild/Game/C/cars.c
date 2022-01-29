@@ -582,7 +582,7 @@ void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	MODEL *WheelModelBack;
 	MODEL *WheelModelFront;
 
-#ifdef PSX
+#if 0 //def PSX
 	MATRIX& FrontMatrix = *(MATRIX*)(u_char*)getScratchAddr(0);
 	MATRIX& SteerMatrix = *(MATRIX*)((u_char*)getScratchAddr(0) + sizeof(MATRIX));
 	VECTOR& WheelPos = *(VECTOR*)((u_char*)getScratchAddr(0) + sizeof(MATRIX) * 2);
@@ -803,7 +803,7 @@ void PlayerCarFX(CAR_DATA *cp)
 // [D] [T]
 void plotNewCarModel(CAR_MODEL* car, int palette)
 {
-#ifdef PSX
+#if 0 //def PSX
 	plotCarGlobals& _pg = *(plotCarGlobals*)(u_char*)getScratchAddr(0);
 #else
 	plotCarGlobals _pg;

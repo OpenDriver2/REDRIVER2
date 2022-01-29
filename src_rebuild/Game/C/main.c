@@ -871,7 +871,7 @@ void StepSim(void)
 		pauseflag = 1;
 	}
 
-	oldsp = SetSp((u_long)((u_char*)getScratchAddr(0) + 0x3e8)); // i don't know what this does
+	//oldsp = SetSp((u_long)((u_char*)getScratchAddr(0) + 0x3e8)); // i don't know what this does
 
 	lead_pad = (u_int)controller_bits;
 
@@ -1148,7 +1148,7 @@ void StepSim(void)
 	DoScenaryCollisions();
 	CheckPlayerMiscFelonies();
 
-	SetSp(oldsp);
+	//SetSp(oldsp);
 
 	CameraCnt++;
 
