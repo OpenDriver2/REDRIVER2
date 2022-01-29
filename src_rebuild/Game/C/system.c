@@ -561,11 +561,11 @@ int loadsectorsPC(char* addr, int sector, int nsectors)
 		return 1;
 	}
 
-#ifndef __EMSCRIPTEN__
+#if USE_PC_FILESYSTEM && !defined(__EMSCRIPTEN__)
 	char errPrint[512];
 	sprintf(errPrint, "loadsectorsPC: failed to open '%s'\n", namebuffer);
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
-#endif // !__EMSCRIPTEN__
+#endif // USE_PC_FILESYSTEM && !PSX
 	return 0;
 }
 
@@ -969,7 +969,7 @@ void SetCityType(CITYTYPE type)
 
 	while (CdSearchFile(&cdfile, filename) == NULL)
 	{
-#ifdef USE_PC_FILESYSTEM
+#if USE_PC_FILESYSTEM
 #ifndef __EMSCRIPTEN__
 		char errPrint[512];
 		sprintf(errPrint, "SetCityType: failed to open '%s'\n", filename);
@@ -1005,12 +1005,10 @@ void SetCityType(CITYTYPE type)
 		data += 2;
 	}
 #elif USE_PC_FILESYSTEM && !defined(__EMSCRIPTEN__)
-	
 	char errPrint[1024];
 	sprintf(errPrint, "SetCityType: cannot open level '%s'\n", filename);
 
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
-	
 #endif // PSX
 }
 
