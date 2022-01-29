@@ -1482,7 +1482,7 @@ void jump_debris(CAR_DATA* cp)
 // [D] [T]
 void CheckCarEffects(CAR_DATA* cp, int player_id)
 {
-	static char last_track_state[MAX_TYRE_TRACK_PLAYERS][MAX_TYRE_TRACK_WHEELS] = { -1 };
+	static char last_track_state[MAX_TYRE_PLAYERS][MAX_TYRE_TRACK_WHEELS] = { -1 };
 	int skidsound, cnt;
 
 	char wheels_on_ground;
@@ -1668,20 +1668,20 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 	GetTyreTrackPositions(cp, player_id);
 
 #define ADD_WHEEL_TYRE_TRACK(wheelNum, trackIdx) \
-		if (wheels_on_ground & (1 << wheelNum)) { \
-			AddTyreTrack(trackIdx, tracks_and_smoke, player_id, last_track_state[player_id][trackIdx] != -1); \
-			last_track_state[player_id][trackIdx] = 1; \
-		} else \
-			last_track_state[player_id][trackIdx] = -1;
+	if (wheels_on_ground & (1 << wheelNum)) { \
+		AddTyreTrack(trackIdx, tracks_and_smoke, player_id, last_track_state[player_id][trackIdx] != -1); \
+		last_track_state[player_id][trackIdx] = 1; \
+	} else \
+		last_track_state[player_id][trackIdx] = -1;
 
 	if (lay_down_tracks & 1) // rear
 	{
 #if MAX_TYRE_TRACK_WHEELS == 4
 		ADD_WHEEL_TYRE_TRACK(0, 0)
-		ADD_WHEEL_TYRE_TRACK(2, 2)
+			ADD_WHEEL_TYRE_TRACK(2, 2)
 #else
 		ADD_WHEEL_TYRE_TRACK(0, 0)
-		ADD_WHEEL_TYRE_TRACK(2, 1)
+			ADD_WHEEL_TYRE_TRACK(2, 1)
 #endif
 	}
 	else
@@ -1699,7 +1699,7 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 	if (lay_down_tracks & 2) // front
 	{
 		ADD_WHEEL_TYRE_TRACK(1, 1)
-		ADD_WHEEL_TYRE_TRACK(3, 3)
+			ADD_WHEEL_TYRE_TRACK(3, 3)
 	}
 	else
 	{

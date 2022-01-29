@@ -32,20 +32,20 @@ int gShadowTextureNum;
 UV shadowuv;
 POLYFT4 shadowpoly;
 
-VECTOR tyre_new_positions[MAX_TYRE_TRACK_PLAYERS][MAX_TYRE_TRACK_WHEELS];
-VECTOR tyre_save_positions[MAX_TYRE_TRACK_PLAYERS][MAX_TYRE_TRACK_WHEELS];
+VECTOR tyre_new_positions[MAX_TYRE_PLAYERS][MAX_TYRE_TRACK_WHEELS];
+VECTOR tyre_save_positions[MAX_TYRE_PLAYERS][MAX_TYRE_TRACK_WHEELS];
+int smoke_count[MAX_TYRE_PLAYERS][MAX_TYRE_TRACK_WHEELS];
 
 int tyre_track_offset[MAX_TYRE_TRACK_PLAYERS][MAX_TYRE_TRACK_WHEELS];
 int num_tyre_tracks[MAX_TYRE_TRACK_PLAYERS][MAX_TYRE_TRACK_WHEELS];
 
 TYRE_TRACK track_buffer[MAX_TYRE_TRACK_PLAYERS][MAX_TYRE_TRACK_WHEELS][64];
-int smoke_count[MAX_TYRE_TRACK_PLAYERS][MAX_TYRE_TRACK_WHEELS];
 
 // [D] [T]
 void InitTyreTracks(void)
 {
 	int i;
-	for (i = 0; i < 4; i++)
+	for (i = 0; i < MAX_TYRE_TRACK_PLAYERS; i++)
 	{
 		ClearMem((char*)num_tyre_tracks[i], sizeof(num_tyre_tracks[0]));
 		ClearMem((char*)tyre_track_offset[i], sizeof(tyre_track_offset[0]));
@@ -56,7 +56,7 @@ void InitTyreTracks(void)
 void ResetTyreTracks(CAR_DATA* cp, int player_id)
 {
 	// [A] reset tyre tracks
-	if (player_id >= 0 && player_id < 2 && cp->controlType != CONTROL_TYPE_NONE)
+	if (player_id >= 0 && player_id < MAX_TYRE_TRACK_PLAYERS && cp->controlType != CONTROL_TYPE_NONE)
 	{
 		GetTyreTrackPositions(cp, player_id);
 		SetTyreTrackOldPositions(player_id);
@@ -293,9 +293,7 @@ void DrawTyreTracks(void)
 				tt_p = track_buffer[player_id][wheel_loop] + index;
 
 				index++;
-
-				if (index == 64)
-					index = 0;
+				index &= 63;
 
 				if (tt_p->type == 2)
 					continue;

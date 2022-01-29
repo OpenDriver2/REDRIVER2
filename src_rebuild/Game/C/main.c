@@ -1199,15 +1199,27 @@ void StepSim(void)
 
 	static int stupid_logic[4];
 
-	// "Car Bomb"?
-	if (gInGameCutsceneActive != 0 && gCurrentMissionNumber == 23 && gInGameCutsceneID == 0)
-		stupid_logic[0] = 2;
+#if MAX_TYRE_TRACK_PLAYERS > 2
+	if (gInGameCutsceneActive != 0)
+	{
+		for (i = 0; i < 4; i++)
+		{
+			stupid_logic[i] = player[i + NumPlayers].playerCarId;
+		}
+	}
 	else
-		stupid_logic[0] = player[0].playerCarId;
+#endif
+	{
+		// "Car Bomb"?
+		if (gInGameCutsceneActive != 0 && gCurrentMissionNumber == 23 && gInGameCutsceneID == 0)
+			stupid_logic[0] = 2;
+		else
+			stupid_logic[0] = player[0].playerCarId;
 
-	stupid_logic[1] = player[1].playerCarId;
-	stupid_logic[2] = gThePlayerCar;
-	stupid_logic[3] = player[0].targetCarId; // [A]
+		stupid_logic[1] = player[1].playerCarId;
+		stupid_logic[2] = gThePlayerCar;
+		stupid_logic[3] = player[0].targetCarId; // [A]
+	}
 
 	for (i = 0; i < 3; i++)
 	{

@@ -37,6 +37,7 @@
 #endif
 
 // Tyre track visuals
+#define MAX_TYRE_PLAYERS		4
 #ifndef PSX
 #define MAX_TYRE_TRACK_WHEELS	4
 #define MAX_TYRE_TRACK_PLAYERS	4
