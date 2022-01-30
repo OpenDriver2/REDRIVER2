@@ -718,15 +718,6 @@ void UpdatePadData(void)
 #endif
 }
 
-#define SCREEN_FB	512
-#define SCREEN_FB_H	256
-
-#ifdef PAL_VERSION
-#define SCREEN_H	256
-#else
-#define SCREEN_H	240
-#endif`
-
 // [D] [T]
 void SetupDrawBuffers(void)
 {
@@ -810,7 +801,7 @@ void SetupDrawBufferData(int num_players)
 			if (toggle)
 			{
 				otpt = (u_long*)_OT2;
-				primpt = (u_char*)_primTab2; // _primTab1 + 0x1E000
+				primpt = (u_char*)_primTab2; // _primTab1 + PRIMTAB_SIZE
 			}
 			else
 			{

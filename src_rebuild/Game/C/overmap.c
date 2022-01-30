@@ -696,8 +696,12 @@ void DrawBigCompass(VECTOR *root, int angle)
 // [D] [T]
 void CopIndicator(int xpos, int strength)
 {
+	int startH, endH;
 	int str2;
 	POLY_F3 *poly;
+
+	startH = SCREEN_H;
+	endH = SCREEN_H - 30;
 
 	if (strength > 255)
 		strength = 255;
@@ -714,11 +718,11 @@ void CopIndicator(int xpos, int strength)
 	poly->g0 = str2;
 	poly->b0 = str2;
 	poly->x0 = xpos - 12;
-	poly->y0 = 256;
+	poly->y0 = startH;
 	poly->x1 = xpos;
-	poly->y1 = 226;
+	poly->y1 = endH;
 	poly->x2 = xpos + 12;
-	poly->y2 = 256;
+	poly->y2 = startH;
 
 	addPrim(current->ot + 1, poly);
 	current->primptr += sizeof(POLY_F3);
@@ -737,10 +741,10 @@ void CopIndicator(int xpos, int strength)
 	poly->b0 = str2;
 
 	poly->x0 = xpos - 12;
-	poly->y0 = 256;
-	poly->y1 = 226;
+	poly->y0 = startH;
+	poly->y1 = endH;
 	poly->x2 = xpos + 12;
-	poly->y2 = 256;
+	poly->y2 = startH;
 	poly->x1 = xpos;
 
 	addPrim(current->ot + 1, poly);
@@ -904,14 +908,13 @@ void InitMultiplayerMap(void)
 // [D] [T]
 void InitOverheadMap(void)
 {
-	int d;
-	int c;
+	int c, d;
 	int tpage;
 
 	if (NumPlayers > 1)
-		gMapYOffset = 96;
+		gMapYOffset = (SCREEN_H - MAP_SIZE_H) / 2 - 2;// 96;
 	else
-		gMapYOffset = draw_mode.height - MAP_SIZE_H - 15; //181;
+		gMapYOffset = SCREEN_H - MAP_SIZE_H - 15; //181;
 
 	if (gMultiplayerLevels) 
 	{
@@ -991,17 +994,15 @@ void DrawMultiplayerMap(void)
 	int i;
 	u_char g;
 	u_char r;
-	int yPos;
+	int xPos, yPos;
 	VECTOR target;
 	int px, py;
 
 	map_x_offset = 0;
 	map_z_offset = 0;
 
-	if (NumPlayers == 1)
-		yPos = gMapYOffset;
-	else
-		yPos = 96;
+	xPos = gMapXOffset;
+	yPos = gMapYOffset;
 
 	DrawMultiplayerTargets();
 
@@ -1019,7 +1020,7 @@ void DrawMultiplayerMap(void)
 
 		WorldToMultiplayerMap(&target, &target);
 
-		target.vx += gMapXOffset;
+		target.vx += xPos;
 		target.vz += yPos;
 
 		DrawPlayerDot(&target, -pl->dir, r, g, 0, 0x8);
@@ -1035,12 +1036,12 @@ void DrawMultiplayerMap(void)
 	setPolyFT4(poly);
 	setSemiTrans(poly, 1);
 
-	poly->x0 = gMapXOffset;
+	poly->x0 = xPos;
 	poly->y0 = yPos;
-	poly->x1 = gMapXOffset + MAP_SIZE_W;
+	poly->x1 = xPos + MAP_SIZE_W;
 	poly->y1 = yPos;
-	poly->x2 = gMapXOffset;
-	poly->x3 = gMapXOffset + MAP_SIZE_W;
+	poly->x2 = xPos;
+	poly->x3 = xPos + MAP_SIZE_W;
 	poly->y2 = yPos + 64;
 	poly->y3 = yPos + 64;
 

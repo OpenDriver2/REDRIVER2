@@ -112,12 +112,25 @@ struct DB
 	DISPENV disp;
 };
 
-extern DRAW_MODE draw_mode_pal;
-extern DRAW_MODE draw_mode_ntsc;
-
 extern DB MPBuff[2][2];
 extern DB* last;
 extern DB* current;
+
+extern DRAW_MODE draw_mode_pal;
+extern DRAW_MODE draw_mode_ntsc;
+
+#define SCREEN_FB	512
+#define SCREEN_FB_H	256
+
+#ifdef PAL_VERSION
+#define SCREEN_H	256
+#define draw_mode draw_mode_pal
+#define video_mode MODE_PAL
+#else
+#define SCREEN_H	240
+#define draw_mode draw_mode_ntsc
+#define video_mode MODE_NTSC
+#endif // PAL
 
 // ordering table size 
 #ifdef PSX
@@ -139,14 +152,6 @@ extern DB* current;
 
 extern int citystart[8];
 extern XYPAIR citylumps[8][4];
-
-#ifdef PAL_VERSION
-#define draw_mode draw_mode_pal
-#define video_mode MODE_PAL
-#else
-#define draw_mode draw_mode_ntsc
-#define video_mode MODE_NTSC
-#endif // PAL
 
 #define CDSECTOR_SIZE 2048
 

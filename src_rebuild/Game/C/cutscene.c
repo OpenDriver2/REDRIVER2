@@ -284,7 +284,7 @@ void DrawInGameCutscene(void)
 	tile->w = 1200;
 #endif
 
-	tile->y0 = draw_mode.height - BlackBorderHeight;
+	tile->y0 = SCREEN_H - BlackBorderHeight;
 	tile->h = BlackBorderHeight;
 
 	addPrim(current->ot, tile);
