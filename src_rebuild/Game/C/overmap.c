@@ -1811,7 +1811,7 @@ void DrawFullscreenMap(void)
 
 	// print string with special characters representing some images inserted into it
 	sprintf(str, "\x80 %s \x81 %s \x8a %s", G_LTXT(GTXT_Exit), G_LTXT(GTXT_Rotation), G_LTXT(GTXT_Move));
-	PrintStringCentred(str, 226);
+	PrintStringCentred(str, SCREEN_H - 30); // 226
 }
 
 // [D] [T]
