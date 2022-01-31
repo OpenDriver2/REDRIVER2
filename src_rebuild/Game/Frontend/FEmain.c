@@ -1966,17 +1966,10 @@ int CarSelectScreen(int bSetup)
 		// setup secret cars
 		if (NumPlayers == 1)
 		{
-#if defined(DEBUG_OPTIONS) || defined(_DEBUG)
-			CarAvailability[0][9] = 1;
-			CarAvailability[1][9] = 1;
-			CarAvailability[2][9] = 1;
-			CarAvailability[3][9] = 1;
-#else
 			CarAvailability[0][9] = AvailableCheats.cheat5;
 			CarAvailability[1][9] = AvailableCheats.cheat6;
 			CarAvailability[2][9] = AvailableCheats.cheat7;
 			CarAvailability[3][9] = AvailableCheats.cheat8;
-#endif
 		}
 
 		// setup unlockable cars
