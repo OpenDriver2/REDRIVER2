@@ -87,7 +87,7 @@ void InitOverlays(void)
 	{
 		InitPercentageBar(&Player2DamageBar, MaxPlayerDamage[1], playerDamageColour, G_LTXT(GTXT_Damage));
 		Player2DamageBar.xpos = gOverlayXPos;
-		Player2DamageBar.ypos = 140;
+		Player2DamageBar.ypos = SCREEN_H / 2 + 12;
 		Player2DamageBar.active = 1;
 	}
 	else

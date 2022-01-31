@@ -854,7 +854,7 @@ void SetupMenu(MENU_HEADER *menu, int back)
 
 	ActiveMenu->Bound.x = ((304 - len) / 2) - 4;
 	ActiveMenu->Bound.w = len + 24;
-	ActiveMenu->Bound.y = MAX(48, ((numItems + 1) * -15 + 256) / 2);
+	ActiveMenu->Bound.y = MAX(48, (SCREEN_H - (numItems + 1) * 15) / 2);
 	ActiveMenu->Bound.h = (numItems + 1) * 15 + 10;
 
 	ActiveItem[VisibleMenu] = &ActiveMenu->MenuItems[ActiveMenuItem];

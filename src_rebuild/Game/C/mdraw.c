@@ -14,6 +14,7 @@
 #include "dr2roads.h"
 #include "cars.h"
 #include "targets.h"
+#include "system.h"
 
 int gDisplayPosition = 0;
 
@@ -98,8 +99,8 @@ void DrawMission(void)
 		}
 		else 
 		{
-			PrintScaledString(64, string, 32 - (g321GoDelay & 0x1f));
-			PrintScaledString(192, string, 32 - (g321GoDelay & 0x1f));
+			PrintScaledString(SCREEN_H / 4, string, 32 - (g321GoDelay & 0x1f));
+			PrintScaledString(SCREEN_H / 2 + SCREEN_H / 4, string, 32 - (g321GoDelay & 0x1f));
 		}
 	}
 	else if (!pauseflag)
@@ -109,11 +110,11 @@ void DrawMission(void)
 			if (NumPlayers == 1)
 				DrawMessage(96, Mission.message_string[0]);
 			else
-				DrawMessage(64, Mission.message_string[0]);
+				DrawMessage(SCREEN_H / 4, Mission.message_string[0]);
 		}
 
 		if (Mission.message_timer[1] != 0)
-			DrawMessage(192, Mission.message_string[1]);
+			DrawMessage(SCREEN_H / 2 + SCREEN_H / 4, Mission.message_string[1]);
 	}
 
 	if (Mission.active && !NoPlayerControl)
