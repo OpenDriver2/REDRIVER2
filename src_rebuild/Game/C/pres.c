@@ -123,7 +123,7 @@ void PrintStringCentred(char *pString, short y)
 void LoadFont(char *buffer)
 {
 	int i;
-	ushort *clut;
+	ushort *clut, *pclut;
 	int nchars;
 	char *file;
 	RECT16 dest;
@@ -154,9 +154,10 @@ void LoadFont(char *buffer)
 	fontclutid = GetClut(fontclutpos.x,fontclutpos.y);
 
 	clut = (ushort*)file;
+	pclut = clut;
 
 	for (i = 0; i < 16; i++)
-		*clut++ &= 0x7fff;
+		*pclut++ &= ~0x8000;
 
 	clut[1] |= 0x8000;
 	clut[2] |= 0x8000;
@@ -165,7 +166,7 @@ void LoadFont(char *buffer)
 
 	fonttpage = GetTPage(0,0, dest.x, dest.y);
 
-	LoadImage(&fontclutpos, (u_long *)file);	// upload clut
+	LoadImage(&fontclutpos, (u_long *)clut);	// upload clut
 	LoadImage(&dest, (u_long *)(file + 32));	// upload font image
 
 	DrawSync(0);
@@ -192,20 +193,20 @@ void SetCLUT16Flags(ushort clutID, ushort mask, char transparent)
 	int x, y;
 	ushort buffer[16];
 
-	x = (clutID & 0x3f) << 4;
+	x = (clutID & 63) * 16;
 	y = (clutID >> 6);
 
-	StoreClut2((ulong *)buffer,x,y);
+	StoreClut2((ulong *)buffer, x, y);
 
 	pCurrent = buffer;
 	ctr = 1;
 
 	while (pCurrent < &buffer[16]) 
 	{
-		if (mask >> (ctr & 1U) == 0) 
-			*pCurrent &= 0x7fff;
-		else
+		if ((mask >> ctr) & 1 != 0) 
 			*pCurrent |= 0x8000;
+		else
+			*pCurrent &= ~0x8000;
 
 		buffer[transparent] = 0;
 	
@@ -237,28 +238,25 @@ int PrintString(char *string, int x, int y)
 	if (showMap != 0)
 		font = (SPRT *)SetFontTPage(font);
 
-	chr = *string++;
 	width = x;
 
-	while (chr) 
+	while ((chr = *string++) != 0)
 	{
 		if (chr == 32)
 		{
 			width += 4;
+			continue;
 		}
-		else if (chr < 32 || chr > 138 || chr < 128) 
+		
+		if (chr < 32 || chr > 138 || chr < 128) 
 		{
 			if (AsciiTable[chr] == -1)
 				index = AsciiTable[63];	// place a question mark
 			else
 				index = AsciiTable[chr];
 
-			chr = fontinfo[index].width;
-
 			setSprt(font);
-#ifdef PSX
 			setSemiTrans(font, 1);
-#endif
 
 			font->r0 = gFontColour.r;
 			font->g0 = gFontColour.g;
@@ -269,7 +267,7 @@ int PrintString(char *string, int x, int y)
 			font->u0 = fontinfo[index].x;
 			font->v0 = fontinfo[index].y - 46;
 			
-			font->w = chr;
+			font->w = fontinfo[index].width;
 			font->h = fontinfo[index].height;
 			
 			font->clut = fontclutid;
@@ -284,7 +282,7 @@ int PrintString(char *string, int x, int y)
 			}
 
 			font++;
-			width += chr;
+			width += fontinfo[index].width;
 		}
 		else
 		{
@@ -297,8 +295,6 @@ int PrintString(char *string, int x, int y)
 			if (showMap != 0)
 				font = (SPRT *)SetFontTPage(font);
 		}
-
-		chr = *string++;
 	}
 
 	if (showMap == 0)
@@ -321,11 +317,9 @@ short PrintDigit(int x, int y, char *string)
 	char vOff, h;
 
 	width = x;
-	chr = *string++;
-
 	font = (SPRT *)current->primptr;
 
-	while (chr != 0) 
+	while ((chr = *string++) != 0)
 	{
 		if (chr == 58)
 			index = 11;
@@ -353,9 +347,7 @@ short PrintDigit(int x, int y, char *string)
 		}
 
 		setSprt(font);
-#ifdef PSX
 		setSemiTrans(font, 1);
-#endif
 
 		font->r0 = gFontColour.r;
 		font->g0 = gFontColour.g;
@@ -377,17 +369,13 @@ short PrintDigit(int x, int y, char *string)
 		width += fixedWidth;
 
 		font++;
-	
-		chr = *string++;
 	}
 
 	current->primptr = (char*)font;
 
 	POLY_FT3* null = (POLY_FT3*)current->primptr;
 	setPolyFT3(null);
-#ifdef PSX
 	setSemiTrans(null, 1);
-#endif
 
 	null->x0 = -1;
 	null->y0 = -1;
@@ -446,29 +434,28 @@ void PrintStringBoxed(char *string, int ix, int iy)
 			if (c == ' ') 
 			{
 				x += 4;
+				continue;
 			}
-			else 
+
+			index = AsciiTable[c];
+
+			if (index != -1) 
 			{
-				index = AsciiTable[c];
+				OUT_FONTINFO *pFontInfo = &fontinfo[index];
 
-				if (index != -1) 
-				{
-					OUT_FONTINFO *pFontInfo = &fontinfo[index];
+				setSprt(font);
 
-					setSprt(font);
-
-					setRGB0(font, gFontColour.r, gFontColour.g, gFontColour.b);
-					setXY0(font, x, y + pFontInfo->offy);
-					setUV0(font, pFontInfo->x, pFontInfo->y - 46);
-					setWH(font, pFontInfo->width, pFontInfo->height);
+				setRGB0(font, gFontColour.r, gFontColour.g, gFontColour.b);
+				setXY0(font, x, y + pFontInfo->offy);
+				setUV0(font, pFontInfo->x, pFontInfo->y - 46);
+				setWH(font, pFontInfo->width, pFontInfo->height);
 					
-					font->clut = fontclutid;
+				font->clut = fontclutid;
 
-					addPrim(current->ot, font);
-					font++;
+				addPrim(current->ot, font);
+				font++;
 
-					x += pFontInfo->width;
-				}
+				x += pFontInfo->width;
 			}
 		}
 
@@ -478,9 +465,7 @@ void PrintStringBoxed(char *string, int ix, int iy)
 	POLY_FT3* null = (POLY_FT3*)font;
 
 	setPolyFT3(null);
-#ifdef PSX
 	setSemiTrans(null, 1);
-#endif
 
 	null->x0 = -1;
 	null->y0 = -1;
@@ -500,11 +485,10 @@ void PrintStringBoxed(char *string, int ix, int iy)
 void InitButtonTextures(void)
 {
 	int i;
-	i = 0;
-	while (i < 11)
+
+	for (i = 0; i < 11; i++)
 	{
 		GetTextureDetails(button_names[i], &button_textures[i]);
-		i++;
 	}
 }
 
@@ -564,7 +548,6 @@ int PrintScaledString(int y, char *string, int scale)
 			x1 = x + width;
 
 			setPolyFT4(font);
-
 			setRGB0(font, gFontColour.r, gFontColour.g, gFontColour.b);
 
 			font->x0 = x;		// [A] no suitable macro in libgpu
@@ -670,9 +653,7 @@ void* SetFontTPage(void *prim)
 	POLY_FT3* null = (POLY_FT3*)prim;
 
 	setPolyFT3(null);
-#ifdef PSX
 	setSemiTrans(null, 1);
-#endif
 
 	null->x0 = -1;
 	null->y0 = -1;
