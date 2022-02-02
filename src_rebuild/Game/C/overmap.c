@@ -115,8 +115,8 @@ void DrawTargetBlip(VECTOR *pos, u_char r, u_char g, u_char b, int flags)
 	{
 		WorldToMultiplayerMap(pos, &vec);
 
-		vec.vx += gMapXOffset;
-		vec.vz += 96;
+		vec.vx += map_minX;
+		vec.vz += map_minY;
 	}
 	else if (flags & 0x8)
 	{
@@ -300,7 +300,7 @@ void DrawPlayerDot(VECTOR *pos, short rot, u_char r, u_char g, u_char b, int fla
 		WorldToMultiplayerMap(pos, &vec);
 	
 		vec.vx += gMapXOffset;
-		vec.vz += 96;
+		vec.vz += gMapYOffset;
 	}
 	else 
 	{
@@ -912,9 +912,9 @@ void InitOverheadMap(void)
 	int tpage;
 
 	if (NumPlayers > 1)
-		gMapYOffset = (SCREEN_H - MAP_SIZE_H) / 2 - 2;// 96;
+		gMapYOffset = (SCREEN_H - MAP_SIZE_H) / 2 - 2;
 	else
-		gMapYOffset = SCREEN_H - MAP_SIZE_H - 15; //181;
+		gMapYOffset = SCREEN_H - MAP_SIZE_H - 15;
 
 	if (gMultiplayerLevels) 
 	{
