@@ -1761,9 +1761,7 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 			pFontInfo = &feFont.CharInfo[let];
 
 			setSprt(font);
-#ifdef PSX
 			setSemiTrans(font, 1);
-#endif
 
 			setRGB0(font, r, g, b);
 			setXY0(font, x, y);
@@ -1833,9 +1831,7 @@ int FEPrintStringSized(char *string, int x, int y, int scale, int transparent, i
 			h = (pFontInfo->h * scale) / 4096;
 
 			setPolyFT4(font);
-#ifdef PSX
-				setSemiTrans(font, transparent);
-#endif
+			setSemiTrans(font, transparent);
 
 			setRGB0(font, 128, 128, 128);
 			setUVWH(font, pFontInfo->u, pFontInfo->v, pFontInfo->w - 1, pFontInfo->h - 1);
