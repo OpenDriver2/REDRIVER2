@@ -555,19 +555,7 @@ void DrawDrivingGameOverlays(void)
 			break;
 		case GAME_CHECKPOINT:
 
-			if (NumPlayers > 1) 
-			{
-				x = PrintString(G_LTXT(GTXT_Checks), gOverlayXPos, 36);
-				
-				sprintf(string, "%d/5", gPlayerScore.items);
-				PrintString(string, x + 3, 36);
-				
-				x = PrintString(G_LTXT(GTXT_Checks), gOverlayXPos, 150);
-				
-				sprintf(string, "%d/5", gPlayerScore.P2items);
-				PrintString(string, x + 3, 150);
-			}
-			else
+			if (NumPlayers == 1) 
 			{
 				table = &ScoreTables.CheckpointTable[GameLevel][gSubGameNumber][0];
 				x = PrintStringRightAligned(G_LTXT(GTXT_Checks), gOverlayXOppPos + 70, 16);
@@ -577,6 +565,18 @@ void DrawDrivingGameOverlays(void)
 
 				x = PrintString(G_LTXT(GTXT_Best), gOverlayXPos, 36);
 				PrintScoreTableTime(x + 3, 36, table->time);
+			}
+			else
+			{
+				x = PrintString(G_LTXT(GTXT_Checks), gOverlayXPos, 36);
+
+				sprintf(string, "%d/5", gPlayerScore.items);
+				PrintString(string, x + 3, 36);
+
+				x = PrintString(G_LTXT(GTXT_Checks), gOverlayXPos, SCREEN_H / 2 + 22);
+
+				sprintf(string, "%d/5", gPlayerScore.P2items);
+				PrintString(string, x + 3, SCREEN_H / 2 + 22);
 			}
 		
 			break;
@@ -602,10 +602,10 @@ void DrawDrivingGameOverlays(void)
 				sprintf(string, "%d / %d", gPlayerScore.items, 100);
 
 				PrintString(string, x + 3, 36);
-				x = PrintString(G_LTXT(GTXT_Gate), gOverlayXPos, 150);
+				x = PrintString(G_LTXT(GTXT_Gate), gOverlayXPos, SCREEN_H / 2 + 22);
 
 				sprintf(string, "%d / %d", gPlayerScore.P2items, 100);
-				PrintString(string, x + 3, 150);
+				PrintString(string, x + 3, SCREEN_H / 2 + 22);
 			}
 			break;
 		case GAME_TRAILBLAZER:
@@ -635,13 +635,12 @@ void DrawDrivingGameOverlays(void)
 		
 			x = PrintString(G_LTXT(GTXT_Flags), gOverlayXPos, 132);
 			sprintf(string, "%d", gPlayerScore.P2items);
-			PrintString(string, x + 3, 132);
+			PrintString(string, x + 3, SCREEN_H / 2 + 4);
 			break;
 		case GAME_SECRET:
 			y = 36;
 
-			i = 0;
-			do
+			for (i = 0; i < gNumRaceTrackLaps; i++)
 			{
 				sprintf(string, "%s %d:", G_LTXT(GTXT_Lap), i+1);
 				
@@ -649,16 +648,14 @@ void DrawDrivingGameOverlays(void)
 				PrintScoreTableTime(x + 3, y, gLapTimes[0][i]);
 				
 				y += 16;
-				i++;
-			} while (i < gNumRaceTrackLaps);
+			}
 
 		
 			if (NumPlayers > 1)
 			{
-				y = 150;
+				y = SCREEN_H / 2 + 22;
 				
-				i = 0;
-				do
+				for(i = 0; i < gNumRaceTrackLaps; i++)
 				{
 					sprintf(string, "%s %d:", G_LTXT(GTXT_Lap), i+1);
 
@@ -666,8 +663,7 @@ void DrawDrivingGameOverlays(void)
 					PrintScoreTableTime(x + 3, y, gLapTimes[1][i]);
 
 					y += 16;
-					i++;
-				} while (i < gNumRaceTrackLaps);
+				}
 			}
 			break;
 	}
