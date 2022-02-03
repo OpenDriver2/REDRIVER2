@@ -2172,8 +2172,8 @@ int PingInCivCar(int minPingInDist)
 		}
 		else
 		{
-			i = 0;
-			while (i < numLanes)
+			
+			for (i = 0; i < numLanes; i++)
 			{
 				// collect the lanes.
 				allowedToPark = ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, i);
@@ -2186,8 +2186,6 @@ int PingInCivCar(int minPingInDist)
 				// pick only non-parkable driveable lanes if parked cars not requested
 				if (tryPingInParkedCars && allowedToPark || ROAD_IS_AI_LANE(&roadInfo, i) && !allowedToPark)
 					possibleLanes[numPossibleLanes++] = i;
-
-				i++;
 			}
 
 			if (numPossibleLanes == 0)

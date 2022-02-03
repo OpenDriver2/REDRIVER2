@@ -40,13 +40,8 @@ void DrawDebugOverlays()
 		gte_SetRotMatrix(&inv_camera_matrix);
 
 		SVECTOR a, b;
-		a.vx = ld.posA.vx - camera_position.vx;
-		a.vy = ld.posA.vy - camera_position.vy;
-		a.vz = ld.posA.vz - camera_position.vz;
-
-		b.vx = ld.posB.vx - camera_position.vx;
-		b.vy = ld.posB.vy - camera_position.vy;
-		b.vz = ld.posB.vz - camera_position.vz;
+		VecSubtract(&a, &ld.posA, &camera_position);
+		VecSubtract(&b, &ld.posB, &camera_position);
 
 		gte_ldv3(&a, &b, &b);
 

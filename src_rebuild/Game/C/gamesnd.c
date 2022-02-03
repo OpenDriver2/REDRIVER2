@@ -2059,7 +2059,7 @@ void IdentifyZone(envsound* ep, envsoundinfo* E, int pl)
 
 	int tmp[4];
 	float _g[4];
-	__bitfield64 zones;
+	bitfield64 zones;
 	int snd;
 
 	// [A] does it really needed? we don't have that much sounds to be played
@@ -2123,9 +2123,9 @@ void IdentifyZone(envsound* ep, envsoundinfo* E, int pl)
 				if (dist < vol)
 				{
 					if (i < 32)
-						zones.l |= 1 << (i & 0x1f);
+						zones.l |= 1 << (i & 31);
 					else
-						zones.h |= 1 << (i & 0x1f);
+						zones.h |= 1 << (i & 31);
 
 					tmp[j] = i;
 					
@@ -2137,9 +2137,9 @@ void IdentifyZone(envsound* ep, envsoundinfo* E, int pl)
 			else
 			{
 				if (i < 32)
-					zones.l |= 1 << (i & 0x1f);
+					zones.l |= 1 << (i & 31);
 				else
-					zones.h |= 1 << (i & 0x1f);
+					zones.h |= 1 << (i & 31);
 
 				tmp[j] = i;
 				j++;

@@ -47,6 +47,20 @@ extern short rcossin_tbl[8192];
 #define RemapVal( val, A, B, C, D) \
 	(C + (D - C) * (val - A) / (B - A))
 
+#define VecCopy(_v, _xyz) \
+{ \
+	(_v)->vx = (_xyz)->vx; \
+	(_v)->vy = (_xyz)->vy; \
+	(_v)->vz = (_xyz)->vz; \
+}
+
+#define VecNegate(_v) \
+{ \
+	(_v)->vx = -(_v)->vx; \
+	(_v)->vy = -(_v)->vy; \
+	(_v)->vz = -(_v)->vz; \
+}
+
 #define SetVec(_v, _x, _y, _z) \
 { \
 	(_v)->vx = _x; \
