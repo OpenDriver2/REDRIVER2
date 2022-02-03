@@ -34,15 +34,13 @@ int Apply_InvCameraMatrixSetTrans(VECTOR_NOPAD* pos)
 {
 	VECTOR vfc;
 	VECTOR vec;
-	VECTOR local;
+	SVECTOR local;
 	gte_stfc(&vfc);
 
-	local.vx = (pos->vx - vfc.vx) << 0x10 >> 0x10;
-	local.vy = (pos->vy - vfc.vy) << 0x10 >> 0x10;
-	local.vz = (pos->vz - vfc.vz) << 0x10 >> 0x10;
+	VecSubtract(&local, pos, &vfc);
 
 #ifdef PSX
-	gte_ldlvl(&local);
+	gte_ldsv(&local);
 	gte_lcir();
 	gte_stlvl(&vec);
 #else
@@ -67,15 +65,13 @@ int Apply_InvCameraMatrixAndSetMatrix(VECTOR_NOPAD* pos, MATRIX2* mtx)
 {
 	VECTOR vfc;
 	VECTOR vec;
-	VECTOR local;
+	SVECTOR local;
 	gte_stfc(&vfc);
 
-	local.vx = (pos->vx - vfc.vx) << 0x10 >> 0x10;
-	local.vy = (pos->vy - vfc.vy) << 0x10 >> 0x10;
-	local.vz = (pos->vz - vfc.vz) << 0x10 >> 0x10;
+	VecSubtract(&local, pos, &vfc);
 
 #ifdef PSX
-	gte_ldlvl(&local);
+	gte_ldsv(&local);
 	gte_lcir();
 	gte_stlvl(&vec);
 #else
@@ -92,8 +88,6 @@ int Apply_InvCameraMatrixAndSetMatrix(VECTOR_NOPAD* pos, MATRIX2* mtx)
 	gte_SetRotMatrix(mtx);
 	gte_SetTransVector(&vec);
 
-
-
 	if (vec.vx >> 1 < 0)
 		return vec.vz - vec.vx;
 
@@ -103,19 +97,16 @@ int Apply_InvCameraMatrixAndSetMatrix(VECTOR_NOPAD* pos, MATRIX2* mtx)
 // [D] [T]
 int FrustrumCheck16(PACKED_CELL_OBJECT* pcop, int bounding_sphere)
 {
-	VECTOR local;
-	local.vx = (pcop->pos.vx - camera_position.vx) << 0x10 >> 0x11;
-	local.vy = (pcop->pos.vy - camera_position.vy) << 0x10 >> 0x11;
-	local.vz = (pcop->pos.vz - camera_position.vz) << 0x10 >> 0x11;
+	VECTOR result;
+	SVECTOR local;
+	VecSubtract(&local, &pcop->pos, &camera_position);
 
-	gte_ldlvl(&local);
-
+	gte_ldsv(&local);
 	gte_llir();
 
-	VECTOR result;
 	gte_stlvnl(&result);
 
-	int ang = frustrum_matrix.t[0] - (bounding_sphere >> 1);
+	int ang = frustrum_matrix.t[0] - bounding_sphere;
 
 	if (ang <= result.vx && ang <= result.vy && ang <= result.vz)
 		return 0;
@@ -126,19 +117,16 @@ int FrustrumCheck16(PACKED_CELL_OBJECT* pcop, int bounding_sphere)
 // [D] [T]
 int FrustrumCheck(VECTOR* pos, int bounding_sphere)
 {
-	VECTOR local;
-	local.vx = (pos->vx - camera_position.vx) << 0x10 >> 0x11;
-	local.vy = (pos->vy - camera_position.vy) << 0x10 >> 0x11;
-	local.vz = (pos->vz - camera_position.vz) << 0x10 >> 0x11;
+	VECTOR result;
+	SVECTOR local;
+	VecSubtract(&local, pos, &camera_position);
 
-	gte_ldlvl(&local);
-
+	gte_ldsv(&local);
 	gte_llir();
 
-	VECTOR result;
 	gte_stlvnl(&result);
 
-	int ang = frustrum_matrix.t[0] - (bounding_sphere >> 1);
+	int ang = frustrum_matrix.t[0] - bounding_sphere;
 
 	if (ang <= result.vx && ang <= result.vy && ang <= result.vz)
 		return 0;
