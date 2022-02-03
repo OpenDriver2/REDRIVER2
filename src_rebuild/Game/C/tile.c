@@ -11,8 +11,7 @@
 // [D] [T] [A]
 void Tile1x1(MODEL *model)
 {
-	int opz;
-	int Z;
+	int opz, Z;
 	int ofse;
 	PL_POLYFT4* polys;
 	int i;
@@ -34,7 +33,7 @@ void Tile1x1(MODEL *model)
 #endif
 
 	i = model->num_polys;
-	while (i > 0)
+	while (i-- > 0)
 	{
 		// iterate through polygons
 		// with skipping
@@ -81,7 +80,6 @@ void Tile1x1(MODEL *model)
 		}
 
 		polys = (PL_POLYFT4*)((char*)polys + plotContext.polySizes[ptype]);
-		i--;
 	}
 
 #ifdef USE_PGXP
@@ -97,11 +95,9 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 {
 	MODEL* pModel;
 	PACKED_CELL_OBJECT *ppco;
-	int yang, dofse;
+	PACKED_CELL_OBJECT** tilePointers;
+	int previous_matrix, yang, dofse, Z;
 	int model_number;
-	PACKED_CELL_OBJECT **tilePointers;
-	int previous_matrix;
-	int Z;
 
 	if (gTimeOfDay > -1) 
 	{
@@ -124,8 +120,6 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 		plotContext.colour = col * 0x30000 | col * 0x300 | col * 3 | 0x2C000000;
 	}
 
-	tile_amount--;
-
 	plotContext.ot = current->ot;
 	plotContext.current = current;
 	plotContext.primptr = current->primptr;
@@ -137,15 +131,13 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 
 	tilePointers = (PACKED_CELL_OBJECT **)tiles;
 
-	while (tile_amount != -1) 
+	while (tile_amount--)
 	{
-		ppco = *tilePointers;
+		ppco = *tilePointers++;
 		
 		plotContext.f4colourTable[6] = ppco->pos.vx;
 		plotContext.f4colourTable[7] = (ppco->pos.vy << 0x10) >> 0x11;
 		plotContext.f4colourTable[8] = ppco->pos.vz;
-	
-		tilePointers++;
 	
 		yang = ppco->value & 0x3f;
 		model_number = (ppco->value >> 6) | (ppco->pos.vy & 1) << 10;
@@ -156,8 +148,7 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 		}
 		else
 		{
-			Z = Apply_InvCameraMatrixAndSetMatrix((VECTOR_NOPAD *)(plotContext.f4colourTable + 6), &CompoundMatrix[yang]);
-			previous_matrix = yang;
+			Z = Apply_InvCameraMatrixAndSetMatrix((VECTOR_NOPAD *)(plotContext.f4colourTable + 6), &CompoundMatrix[previous_matrix = yang]);
 		}
 
 		if (Z <= DRAW_LOD_DIST_HIGH)
@@ -165,10 +156,12 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 			if (Low2HighDetailTable[model_number] != 0xffff)
 				model_number = Low2HighDetailTable[model_number];
 
+			pModel = modelpointers[model_number];
+
 			if (Z < 2000)
-				TileNxN(modelpointers[model_number], 4, 75);
+				TileNxN(pModel, 4, 75);
 			else 
-				TileNxN(modelpointers[model_number], 2, 35);
+				TileNxN(pModel, 2, 35);
 		}
 		else
 		{
@@ -176,8 +169,6 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 			
 			Tile1x1(pModel);
 		}
-
-		tile_amount--;
 	}
 	current->primptr = plotContext.primptr;
 }
@@ -300,8 +291,7 @@ void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 {
 	POLY_FT4* prim;
-	int z;
-	int opz;
+	int z, opz;
 
 	prim = (POLY_FT4*)pc->primptr;
 
@@ -401,18 +391,15 @@ void SubdivNxM(char *polys, int n, int m, int ofse)
 // [D] [T]
 void TileNxN(MODEL *model, int levels, int Dofse)
 {
-	u_int ttype;
+	u_int ttype, tileTypes;
 	u_char *polys;
-	u_int tileTypes;
 	int i;
 	int ofse;
-
-	ttype = 0;
 
 	polys = (u_char *)model->poly_block;
 	plotContext.verts = (SVECTOR *)model->vertices;
 
-	// tile types comes right after model header it seems
+	// WEIRD: tile types comes right after model header it seems
 	tileTypes = *(u_int *)(model + 1) >> 2;
 
 	// grass should be under pavements and other things
@@ -421,38 +408,39 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 	else
 		ofse = 133;
 
-	i = 0;
+	int _m[5] = {
+		levels, levels, 0, 1, levels
+	};
+	int _ofse[5] = {
+		ofse, ofse, 0, Dofse, 133
+	};
 
-	while (i < model->num_polys)
+	i = model->num_polys;
+	ttype = 0;
+	while (i--)
 	{
-		switch (ttype) 
+#ifdef USE_PGXP
+		switch (ttype)
 		{
-			case 0:
-			case 1:
-#ifdef USE_PGXP
-				PGXP_SetZOffsetScale(0.0f, ofse > 200 ? 1.008f : 0.995f);
-#endif
-				SubdivNxM((char *)polys, levels, levels, ofse);
-				break;
-			case 3:
-#ifdef USE_PGXP
-				PGXP_SetZOffsetScale(0.0f, ofse < 40 ? 1.0f : 0.991f);
-#endif
-				SubdivNxM((char *)polys, levels, 1, Dofse);
-				break;
-			case 4:
-#ifdef USE_PGXP
-				PGXP_SetZOffsetScale(0.0f, 1.0f);
-#endif
-				SubdivNxM((char *)polys, levels, levels, 133);
-				break;
+		case 0:
+		case 1:
+			PGXP_SetZOffsetScale(0.0f, ofse > 200 ? 1.008f : 0.995f);
+			break;
+		case 3:
+			PGXP_SetZOffsetScale(0.0f, ofse < 40 ? 1.0f : 0.991f);
+			break;
+		case 4:
+			PGXP_SetZOffsetScale(0.0f, 1.0f);
+			break;
 		}
+#endif
+
+		SubdivNxM((char*)polys, levels, _m[ttype], _ofse[ttype]);
 
 		ttype = tileTypes & 7;
 		tileTypes >>= 3;
 
 		polys += plotContext.polySizes[*polys];
-		i++;
 	}
 
 #ifdef USE_PGXP
