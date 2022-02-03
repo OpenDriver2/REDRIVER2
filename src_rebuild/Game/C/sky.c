@@ -24,7 +24,7 @@ struct FLAREREC
 	short gapmod;
 };
 
-int sky_y_offset[4] = { 17, 17, 17, 17 };
+int sky_y_offset[4] = { -17, -17, -17, -17 };
 
 unsigned char HorizonLookup[4][4] = {
 	{0, 0, 20, 20},
@@ -824,10 +824,8 @@ DVECTORF scratchPad_skyVertices[35];	// 1f800044
 #define scratchPad_skyVertices ((DVECTOR*)getScratchAddr(0x11))	// 1f800044
 #endif
 
-short scratchPad_zbuff[256];
-
 // [D] [T]
-void PlotSkyPoly(POLYFT4* polys, int skytexnum, unsigned char r, unsigned char g, unsigned char b, int offset)
+void PlotSkyPoly(POLYFT4* polys, int skytexnum, unsigned char r, unsigned char g, unsigned char b)
 {
 	POLYFT4* src;
 	POLY_FT4* poly;
@@ -882,57 +880,30 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 	SVECTOR* verts;
 
 #ifdef USE_PGXP
-	DVECTORF* dv0;
-	DVECTORF* dv1;
-	DVECTORF* dv2;
+	DVECTORF* dv;
 #else
-	DVECTOR* dv0;
-	DVECTOR* dv1;
-	DVECTOR* dv2;
+	DVECTOR* dv;
 #endif
 
-	SVECTOR* v0;
-	SVECTOR* v1;
-	SVECTOR* v2;
-
 	int count;
-
 	unsigned char* polys;
-
-	int green;
-	int red;
-	int blue;
-
+	int red, green, blue;
 	int z;
 
+	z = -1;
 	verts = (SVECTOR*)model->vertices;
-	count = 0;
-
-	dv0 = scratchPad_skyVertices;
-	dv1 = scratchPad_skyVertices + 1;
-	dv2 = scratchPad_skyVertices + 2;
-
-	v0 = verts;
-	v1 = verts + 1;
-	v2 = verts + 2;
+	dv = scratchPad_skyVertices;
+	count = model->num_vertices;
 
 #ifdef USE_PGXP
 	PGXP_SetZOffsetScale(0.0f, 256.0f);
 #endif
 
-	while (count < model->num_vertices)
+	do
 	{
-		SVECTOR sv0 = *v0;
-		SVECTOR sv1 = *v1;
-		SVECTOR sv2 = *v2;
-
-		sv0.vy -= sky_y_offset[GameLevel];
-		sv1.vy -= sky_y_offset[GameLevel];
-		sv2.vy -= sky_y_offset[GameLevel];
-
-		gte_ldv3(&sv0, &sv1, &sv2);
+		gte_ldv3(verts, verts+1, verts+2);
 		gte_rtpt();
-		gte_stsxy3(dv0, dv1, dv2);
+		gte_stsxy3(dv, dv+1, dv+2);
 
 		if(count == 15)
 			gte_stszotz(&z);
@@ -940,19 +911,12 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 #ifdef USE_PGXP
 		// store PGXP index
 		// HACK: -1 is needed here for some reason
-		dv0->pgxp_index = dv1->pgxp_index = dv2->pgxp_index = PGXP_GetIndex() - 1;
+		dv[0].pgxp_index = dv[1].pgxp_index = dv[2].pgxp_index = PGXP_GetIndex() - 1;
 #endif
-
-		dv2 += 3;
-		dv1 += 3;
-		dv0 += 3;
-
-		v2 += 3;
-		v1 += 3;
-		v0 += 3;
-
-		count += 3;
-	}
+		dv += 3;
+		verts += 3;
+		count -= 3;
+	} while (count);
 
 #ifdef USE_PGXP
 	PGXP_SetZOffsetScale(0.0f, 1.0f);
@@ -960,51 +924,59 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 
 	if (z > 0)
 	{
+		int polySize;
+		u_char* horizonTex = &HorizonTextures[horizontaboffset];
 		polys = (unsigned char*)model->poly_block;
+		polySize = PolySizes[*polys];
 
 		red = skycolor.r;
 		green = skycolor.g;
 		blue = skycolor.b;
 		
-		count = 0;
-
-		while (count < model->num_polys)
+		// draw sky
+		count = model->num_polys;
+		do
 		{
-			if (count == 12)
-			{
-				red /= 2;
-				green /= 2;
-				blue /= 2;
-			}
+			PlotSkyPoly((POLYFT4*)polys, *horizonTex++, red, green, blue);
+			polys += polySize;
+		} while (--count > 8);
 
-			PlotSkyPoly((POLYFT4*)polys, HorizonTextures[horizontaboffset + count], red, green, blue, 0);
+		red /= 2;
+		green /= 2;
+		blue /= 2;
 
-			polys += PolySizes[*polys];
-			count++;
-		}
+		// draw it's reflection
+		do
+		{
+			PlotSkyPoly((POLYFT4*)polys, *horizonTex++, red, green, blue);
+			polys += polySize;
+		} while (--count);
 	}
 }
 
 // [D] [T]
 void DrawSkyDome(void)
 {
+	VECTOR skyOfs = dummy;
+	skyOfs.vy = sky_y_offset[GameLevel];
+
 	gte_SetRotMatrix(&inv_camera_matrix);
-	gte_SetTransVector(&dummy);
+	gte_SetTransVector(&skyOfs);
 	
 	calc_sky_brightness();
 
 #ifdef PSX
 	// FIXME: use frustrum angle instead?
-	if (((camera_angle.vy - 1450U) & 0xFFF) > 2250)
+	if (((camera_angle.vy - 1450U) & 4095) > 2250)
 		PlotHorizonMDL(modelpointers[0], HorizonLookup[GameLevel][0]);
 
-	if (((camera_angle.vy - 651U) & 0xFFF) < 1799)
+	if (((camera_angle.vy - 651U) & 4095) < 1799)
 		PlotHorizonMDL(modelpointers[2], HorizonLookup[GameLevel][1]);
 
-	if (((camera_angle.vy - 1701U) & 0xFFF) < 1749)
+	if (((camera_angle.vy - 1701U) & 4095) < 1749)
 		PlotHorizonMDL(modelpointers[3], HorizonLookup[GameLevel][2]);
 
-	if (((camera_angle.vy - 400U) & 0xFFF) > 2300)
+	if (((camera_angle.vy - 400U) & 4095) > 2300)
 		PlotHorizonMDL(modelpointers[1], HorizonLookup[GameLevel][3]);
 #else
 	// draw full sky - no need in frustrum culling
