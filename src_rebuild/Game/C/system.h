@@ -66,7 +66,7 @@ extern void sys_freeall();
 #endif
 
 #else
-#define D_MALLOC(size)		(char*)mallocptr; mallocptr += (size);// (char*)((int)mallocptr + size + 3 & 0xfffffffc);
+#define D_MALLOC(size)		(char*)mallocptr; mallocptr += (((size) + 3) & -4);
 #define D_TEMPALLOC(size)	(char*)mallocptr
 #define D_TEMPFREE()
 #endif
