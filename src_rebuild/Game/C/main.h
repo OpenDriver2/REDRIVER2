@@ -18,7 +18,6 @@ extern int numInactiveCars;
 extern int gLightsOn;
 extern int NightAmbient;
 extern int wetness;
-extern int leadCarId;
 
 extern int scr_z;
 

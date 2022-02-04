@@ -152,12 +152,20 @@ struct DRIVER2_JUNCTION
 	u_int flags;
 };
 
+enum SurfaceType
+{
+	SURF_CONCRETE	= 0,	// concrete/paved tiles
+	SURF_GRASS		= 4,
+	SURF_WATER		= 6,
+	SURF_ALLEY		= 8,
+	SURF_DEEPWATER	= 9,
+	SURF_SAND		= 11,
+};
+
 typedef struct _sdPlane
 {
-	short surface;
-	short a;
-	short b;
-	short c;
+	short surface;		// also one of SurfaceTypes
+	short a, b, c;
 	int d;
 } sdPlane;
 
@@ -250,19 +258,6 @@ struct CAR_MODEL
 	CAR_POLY* pB3;
 	SVECTOR* vlist;
 	SVECTOR* nlist;
-};
-
-struct plotCarGlobals
-{
-	u_char* primptr;
-	OTTYPE* ot;
-	u_int intensity;
-	u_short* pciv_clut;
-	u_int ShineyTPageASL16;
-	u_int ShineyClutASL16;
-	u_char* damageLevel;
-	u_char* shineyTable;
-	int ghost;
 };
 
 // UNUSED
@@ -557,136 +552,6 @@ struct LEAD_PARAMETERS
 };
 
 //---------------------------------------------------------------------------------------
-// TODO: DR2EVENTS.H
-
-typedef struct _EVENT EVENT;
-
-struct _EVENT
-{
-	VECTOR position;
-	short rotation;
-	short timer;
-	int* data;
-	int* node;
-	short flags;
-	short radius;
-	int model;
-	EVENT* next;
-};
-
-struct FixedEvent // same as EVENT but different fields
-{
-	VECTOR position;
-	short rotation;
-	short active;
-	u_short initialRotation;
-	u_short finalRotation;
-	u_short minSpeed;
-	u_short maxSpeed;
-	short flags;
-	short radius;
-	int model;
-	EVENT* next;
-	char* modelName;
-};
-
-struct EventGlobal
-{
-	int camera;
-	int draw;
-	EVENT** track;
-	EVENT* cameraEvent;
-};
-
-enum SpecialCamera
-{
-	SPECIAL_CAMERA_SET = 0,
-	SPECIAL_CAMERA_SET2 = 1,
-	SPECIAL_CAMERA_RESET = 2,
-	SPECIAL_CAMERA_WAIT = 3,
-};
-
-struct MissionTrain
-{
-	EVENT* engine;
-	int* node;
-	int cornerSpeed;
-	int initialStraightSpeed;
-	int finalStraightSpeed;
-	int start;
-	int startDir;
-};
-
-struct Foam
-{
-	MODEL* model;
-	int rotate;
-};
-
-struct EventCarriage
-{
-	short rotation;
-	short vel;
-};
-
-struct MultiCar
-{
-	EVENT* event;
-	int count;
-};
-
-struct Helicopter
-{
-	int speed;
-	short pitch;
-	short dp;
-	short roll;
-	short dr;
-	int lastX;
-	int lastZ;
-	TEXTURE_DETAILS rotorTexture;
-	short rotorrot;
-	short rotorvel;
-	int cleanModel;
-	int deadModel;
-};
-
-struct Detonator
-{
-	int timer;
-	int count;
-};
-
-struct CameraDelay
-{
-	int delay;
-	int type;
-};
-
-enum VisType
-{
-	VIS_INIT = 0,
-	VIS_SORT = 1,
-	VIS_ADD = 2,
-	VIS_NEXT = 3,
-};
-
-struct EventCamera
-{
-	VECTOR position;
-	short yAng;
-	MATRIX matrix;
-	int rotate;
-};
-
-enum Station
-{
-	EVENT_NO_STATION = 0,
-	EVENT_APPROACHING = 1,
-	EVENT_LEAVING = 2,
-};
-
-//---------------------------------------------------------------------------------------
 // TODO: MISSION.H
 
 struct SAVED_PLAYER_POS
@@ -949,12 +814,9 @@ enum MissionTimerFlags
 
 struct MR_TIMER
 {
-	short x;
-	short y;
+	short x, y;
 	u_char flags;
-	u_char min;
-	u_char sec;
-	u_char frac;
+	u_char min, sec, frac;
 	int count;
 };
 
@@ -1065,12 +927,14 @@ enum PED_MODEL_TYPES //: char
 	CIVILIAN = 3,
 };
 
-typedef void(*pedFunc)(struct PEDESTRIAN* pPed);
+typedef struct PEDESTRIAN *LPPEDESTRIAN;
+
+typedef void(*pedFunc)(LPPEDESTRIAN pPed);
 
 typedef struct PEDESTRIAN
 {
-	PEDESTRIAN* pNext;
-	PEDESTRIAN* pPrev;
+	LPPEDESTRIAN pNext;
+	LPPEDESTRIAN pPrev;
 	pedFunc fpRestState;
 	pedFunc fpAgitatedState;
 	char padId;
@@ -1095,23 +959,6 @@ typedef struct PEDESTRIAN
 	char type;
 } *LPPEDESTRIAN;
 
-struct CAR_COLLISION_BOX
-{
-	int min_x;
-	int max_x;
-	int min_z;
-	int max_z;
-};
-
-typedef struct SEATED_PEDESTRIANS
-{
-	int x;
-	int z;
-	short rotation;
-	char index;
-	char pad;
-} *SEATEDPTR;
-
 typedef struct PEDESTRIAN_ROADS
 {
 	short pos;
@@ -1123,61 +970,6 @@ typedef struct PEDESTRIAN_ROADS
 
 //---------------------------------------------------------------------------------------
 // TODO: GAMESND.H
-
-typedef struct __envsound
-{
-	u_char type;
-	u_char flags;
-	VECTOR pos;
-	VECTOR pos2;
-	int bank;
-	int sample;
-	int vol;
-} envsound;
-
-typedef struct __envsoundtags
-{
-	int frame_cnt;
-	int func_cnt;
-	int num_envsnds;
-	int envsnd_cnt;
-} envsoundtags;
-
-typedef struct __envsoundinfo
-{
-	VECTOR eff_pos[4];
-	VECTOR cam_pos;
-	float g[4];
-	int thisS[4];
-	int playing_sound[4];
-	int chan[4];
-	u_int flags;
-} envsoundinfo;
-
-struct SPEECH_QUEUE
-{
-	char allowed;
-	char chan;
-	char is_playing;
-	int count;
-	char reverb;
-	int slot[7];
-};
-
-typedef struct __othercarsound
-{
-	int car;
-	int chan;
-	char in_use;
-	char stopped;
-	char idle;
-} othercarsound;
-
-typedef struct __bitfield64
-{
-	int h;
-	int l;
-} bitfield64;
 
 typedef struct __skidinfo
 {
@@ -1191,75 +983,6 @@ typedef struct __horninfo
 	char time;
 	char request;
 } horninfo;
-
-//---------------------------------------------------------------------------------------
-// TODO: ANIMOBJ.H
-
-struct CYCLE_OBJECT
-{
-	char* name;
-	short vx;
-	short vy;
-	short start1;
-	short stop1;
-	short speed1;
-	short start2;
-	short stop2;
-	short speed2;
-};
-
-//---------------------------------------------------------------------------------------
-// TODO: OVERLAY.H
-
-struct COLOUR_BAND
-{
-	CVECTOR colour;
-	int value;
-	int flags;
-};
-
-typedef struct _PERCENTAGE_BAR
-{
-	char* tag;
-	short xpos;
-	short ypos;
-	short width;
-	short height;
-	u_short position;
-	u_short max;
-	COLOUR_BAND* pColourBand;
-	int flags;
-	int active;
-} PERCENTAGE_BAR, *LPPERCENTAGE_BAR;
-
-//---------------------------------------------------------------------------------------
-// TODO: OVERMAP.H
-
-struct COP_SIGHT_DATA
-{
-	short surroundViewDistance;
-	short frontViewDistance;
-	short frontViewAngle;
-};
-
-struct MAPTEX
-{
-	short u;
-	short w;
-	short v;
-	short h;
-};
-
-struct OVERMAP
-{
-	int x_offset;
-	int y_offset;
-	int width;
-	int height;
-	u_char toptile;
-	u_char dummy;
-	int scale;
-};
 
 //---------------------------------------------------------------------------------------
 // TODO: CHEATS.H
@@ -1392,35 +1115,6 @@ struct PLAYBACKCAMERA
 };
 
 //---------------------------------------------------------------------------------------
-// TODO: CUTSCENE.H
-
-struct CUTSCENE_BUFFER
-{
-	int numResident;
-	u_char residentCutscenes[4];
-	char(*residentPointers[4]);
-
-	char* buffer;
-	char* currentPointer;
-	
-	int bytesFree;
-	int reservedSize;
-	// char buffer[32*1024];				// was 8192, but we have some free mem now even for PSX. Using malloc.
-};
-
-struct CUTSCENE_INFO
-{
-	u_short offset;
-	u_short size;
-};
-
-struct CUTSCENE_HEADER
-{
-	int maxsize;
-	CUTSCENE_INFO data[15];
-};
-
-//---------------------------------------------------------------------------------------
 // TODO: COP_AI.H
 
 struct STOPCOPS
@@ -1442,7 +1136,7 @@ struct ADJACENT_ROAD_INFO
 };
 
 // only "status" is used
-struct ROADBLOCK			// [A] causes undefined behaviour
+struct ROADBLOCK
 {
 	VECTOR position;
 	ADJACENT_ROAD_INFO adjacentRoadInfo;
@@ -1605,17 +1299,6 @@ typedef struct _PLAYER
 //---------------------------------------------------------------------------------------
 // TODO: AI.H
 
-typedef struct _EXTRA_CIV_DATA
-{
-	int surfInd;
-	int distAlongSegment;
-	short angle;
-	u_short ctrlState;
-	int thrustState;
-	u_char palette;
-	u_char controlFlags;
-} EXTRA_CIV_DATA;
-
 struct COP_DATA
 {
 	int autoMaxPowerScaleLimit;
@@ -1627,143 +1310,6 @@ struct COP_DATA
 	int cutOffPowerScale;
 	int cutOffDistance;
 	short trigger[5];
-};
-
-enum AIZone
-{
-	zoneFrnt = 0,
-	zoneBack = 1,
-	zoneLeft = 2,
-	zoneRght = 3,
-};
-
-//---------------------------------------------------------------------------------------
-// TODO: DRAW.H
-
-// Primitive plot context used in scratchpad
-struct _pct
-{
-	struct DB* current;
-	u_short(*ptexture_pages)[128];
-	u_short(*ptexture_cluts)[128][32];
-	int f4colourTable[32];
-	int* polySizes;
-	char* primptr;
-	OTTYPE* ot;
-	u_int clut;
-	u_int tpage;
-	u_int colour;
-	int flags;
-	SVECTOR* verts;
-	u_int lastTexInfo;
-	int scribble[8];
-	int model;
-};
-
-struct MATRIX2
-{
-	short m[3][3];
-	short computed;
-	char null[12];
-};
-
-struct MVERTEX
-{
-	short vx;
-	short vy;
-	short vz;
-	union {
-		short val;
-		struct {
-			u_char u0;
-			u_char v0;
-		}s;
-	}uv;
-};
-
-struct MVERTEX5x5
-{
-	MVERTEX verts[5][5];
-};
-
-struct VERTEX
-{
-	DVECTOR coord;
-	UV_INFO uv_coord;
-	u_char pad[2];
-};
-
-//---------------------------------------------------------------------------------------
-// TODO: SPOOL.H
-
-struct Spool
-{
-	u_short offset;
-	u_char connected_areas[2];
-	u_char pvs_size;
-	u_char cell_data_size[3];
-	u_char super_region;
-	u_char num_connected_areas;
-	u_char roadm_size;
-	u_char roadh_size;
-};
-
-struct SPOOLQ
-{
-	u_char type;
-	u_char data;
-	u_short nsectors;
-	u_int sector;
-	char* addr;
-	void (*func)();
-#ifdef _DEBUG
-	const char* requestby;
-	int requestbyline;
-#endif
-};
-
-struct SPL_REGIONINFO
-{
-	u_short region_to_unpack;
-	u_short target_barrel_region;
-	int nsectors;
-	char* cell_addr;
-	char* roadm_addr;
-};
-
-struct AreaDataStr
-{
-	u_short gfx_offset;
-	u_short model_offset;
-	u_short music_offset;
-	u_short ambient_offset;
-	u_char model_size;
-	u_char pad;
-	u_char num_tpages;
-	u_char ambient_size;
-	u_char music_size;
-	u_char music_samples_size;
-	u_char music_id;
-	u_char ambient_id;
-};
-
-//---------------------------------------------------------------------------------------
-// TODO: FMV.H
-
-struct RENDER_ARG
-{
-	u_char render;
-	u_char credits;
-	u_short recap;
-};
-
-struct RENDER_ARGS
-{
-	u_char nRenders;
-	u_char subtitle;
-	char screenx;
-	char screeny;
-	RENDER_ARG Args[4];
 };
 
 //---------------------------------------------------------------------------------------
@@ -1798,223 +1344,6 @@ enum GAMEMODE
 	GAMEMODE_DIRECTOR = 4,
 	GAMEMODE_NEXTMISSION = 5,
 	GAMEMODE_DEMO = 6,
-};
-
-struct MISSION_STEP
-{
-	u_char flags : 3;
-	u_char recap : 5;
-	u_char data : 7;
-	u_char disc : 1;
-};
-
-//---------------------------------------------------------------------------------------
-// TODO: LEADAI.H
-
-struct MAP_DATA
-{
-	CAR_DATA* cp;
-	VECTOR* base;
-	VECTOR* pos;
-	VECTOR* vel;
-	VECTOR* size;
-	int intention;
-	int* map;
-	int* local;
-};
-
-//---------------------------------------------------------------------------------------
-// TODO: PAUSE.H
-
-enum EXIT_VALUE
-{
-	MENU_QUIT_NONE = 0,
-	MENU_QUIT_CONTINUE = 1,
-	MENU_QUIT_QUIT = 2,
-	MENU_QUIT_RESTART = 3,
-	MENU_QUIT_DIRECTOR = 4,
-	MENU_QUIT_QUICKREPLAY = 5,
-	MENU_QUIT_BACKMENU = 6,
-	MENU_QUIT_NEXTMISSION = 7,
-};
-
-typedef void(*pauseFunc)(int dir);
-
-struct MENU_ITEM;
-struct MENU_HEADER;
-
-struct MENU_ITEM
-{
-	char* Text;
-	u_char Type;
-	u_char Justify;
-	pauseFunc func;
-	EXIT_VALUE ExitValue;
-	MENU_HEADER* SubMenu;
-};
-
-struct MENU_HEADER
-{
-	char* Title;
-	XYWH Bound;
-	u_char NumItems;
-	MENU_ITEM* MenuItems;
-};
-
-//---------------------------------------------------------------------------------------
-// TODO: PRES.H
-
-struct OUT_FONTINFO
-{
-	u_char x;
-	u_char y;
-	char offx;
-	char offy;
-	u_char width;
-	u_char height;
-	u_short pad;
-};
-
-struct FONT_DIGIT
-{
-	char xOffset;
-	char width;
-};
-
-struct SHADOWHDR
-{
-	u_int num_common_verts;
-	u_short num_verts_total;
-	u_short num_polys_total;
-	u_short vert_offsets[4];
-	u_short nverts[4];
-	u_short npolys[4];
-	u_int(*poly_block[4]);
-	SVECTOR* vertices;
-};
-
-//---------------------------------------------------------------------------------------
-// TODO: SHADOW.H
-
-struct TYRE_TRACK
-{
-	u_char type;
-	u_char shade;
-	u_char shade_type;
-	u_char surface;
-	SVECTOR_NOPAD p1;
-	SVECTOR_NOPAD p2;
-	SVECTOR_NOPAD p3;
-	SVECTOR_NOPAD p4;
-};
-
-//---------------------------------------------------------------------------------------
-// TODO: SYSTEM.H
-
-struct DRAW_MODE
-{
-	short x1;
-	short y1;
-	short x2;
-	short y2;
-	short width;
-	short height;
-	short framex;
-	short framey;
-};
-
-enum CDTYPE
-{
-	CDTYPE_NODISC = 0,
-	CDTYPE_SHELLOPEN = 1,
-	CDTYPE_DISCERROR = 2,
-	CDTYPE_WRONGDISC = 3,
-	CDTYPE_CORRECTDISC = 4,
-};
-
-enum CITYTYPE
-{
-	CITYTYPE_DAY = 0,
-	CITYTYPE_NIGHT = 1,
-	CITYTYPE_MULTI_DAY = 2,
-	CITYTYPE_MULTI_NIGHT = 3,
-};
-
-//---------------------------------------------------------------------------------------
-// TODO: PAD.H
-
-struct DUPLICATION
-{
-	char* buffer;
-	int size;
-};
-
-typedef struct MAPPING
-{
-	u_short button_lookup[16];
-	u_short swap_analog;
-	u_short reserved1;
-} *LPMAPPING;
-
-typedef struct PAD
-{
-	u_char active;
-	u_char type;
-	u_char dualshock;
-	u_char reserved1;
-	u_short direct;
-	u_short dirnew;
-	char diranalog[4];
-	u_short mapped;
-	u_short mapnew;
-	char mapanalog[4];
-	MAPPING mappings;
-	u_char alarmShakeCounter;
-	u_char asd;
-	u_char sdf;
-	u_char dfg;
-	u_char delay;
-	u_char port;
-	u_char state;
-	u_char dsactive;
-	u_char* shakeptr;
-	u_char motors[2];
-	u_char shake_type;
-	u_char vibrate;
-} *LPPAD;
-
-//---------------------------------------------------------------------------------------
-// TODO: LOADSAVE.H
-
-struct GAME_SAVE_HEADER
-{
-	u_int magic;
-	u_char gMissionLadderPos;
-	u_char pad1;
-	u_char pad2;
-	u_char pad3;
-	MISSION_DATA SavedData;
-	int reserved[8];
-};
-
-struct CONFIG_SAVE_HEADER
-{
-	u_int magic;
-	int gMasterVolume;
-	int gMusicVolume;
-	int gSoundMode;
-	int gVibration;
-	int gCopDifficultyLevel;
-	int gFurthestMission;
-	MAPPING PadMapping[2];
-	SCORE_TABLES ScoreTables;
-	int PALAdjustX;
-	int PALAdjustY;
-	int NTSCAdjustX;
-	int NTSCAdjustY;
-	int gSubtitles;
-	ACTIVE_CHEATS AvailableCheats;
-	int reserved[6];
 };
 
 #endif // DR2TYPES_H

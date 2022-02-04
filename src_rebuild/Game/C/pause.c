@@ -43,6 +43,29 @@ struct MENU_MESSAGE
 	int show;
 } gDisplayedMessage = { NULL, NULL, 0 };
 
+typedef void(*pauseFunc)(int dir);
+
+struct MENU_ITEM;
+struct MENU_HEADER;
+
+struct MENU_ITEM
+{
+	char* Text;
+	u_char Type;
+	u_char Justify;
+	pauseFunc func;
+	EXIT_VALUE ExitValue;
+	MENU_HEADER* SubMenu;
+};
+
+struct MENU_HEADER
+{
+	char* Title;
+	XYWH Bound;
+	u_char NumItems;
+	MENU_ITEM* MenuItems;
+};
+
 static MENU_ITEM* ActiveItem[PAUSE_MENU_LEVELS];
 static MENU_HEADER* VisibleMenus[PAUSE_MENU_LEVELS];
 static MENU_HEADER* ActiveMenu;
@@ -497,7 +520,7 @@ char* WaitForTextEntry(char* textBufPtr, int maxLength)
 
 #if !USE_PAD_INPUT
 	// PsyX input handler
-	gameOnTextInput = ScoreNameInputHandler;
+	g_cfg_gameOnTextInput = ScoreNameInputHandler;
 	gCurrentTextChar = 0;
 #endif
 
@@ -667,7 +690,7 @@ char* WaitForTextEntry(char* textBufPtr, int maxLength)
 	} while (true);
 
 #if !USE_PAD_INPUT
-	gameOnTextInput = NULL;
+	g_cfg_gameOnTextInput = NULL;
 #endif
 
 	return username;
@@ -831,7 +854,7 @@ void SetupMenu(MENU_HEADER *menu, int back)
 
 	ActiveMenu->Bound.x = ((304 - len) / 2) - 4;
 	ActiveMenu->Bound.w = len + 24;
-	ActiveMenu->Bound.y = MAX(48, ((numItems + 1) * -15 + 256) / 2);
+	ActiveMenu->Bound.y = MAX(48, (SCREEN_H - (numItems + 1) * 15) / 2);
 	ActiveMenu->Bound.h = (numItems + 1) * 15 + 10;
 
 	ActiveItem[VisibleMenu] = &ActiveMenu->MenuItems[ActiveMenuItem];
@@ -1178,7 +1201,7 @@ void ControlMenu(void)
 	// toggle map off
 	if (gShowMap)
 	{
-		if (paddata & 0x50)
+		if (paddata & (MPAD_CROSS | MPAD_TRIANGLE))
 			PauseMap(0);
 
 		return;
@@ -1219,13 +1242,13 @@ void ControlMenu(void)
 
 #ifndef PSX
 	// Pause fix for PC mapping
-	if ((paddata & 0x10) && paddata & (0x1000 | 0x4000))
+	if ((paddata & MPAD_TRIANGLE) && paddata & (MPAD_D_UP | MPAD_D_DOWN))
 	{
 		paddata = 0;
 	}
 #endif
 
-	if (paddata & 0x1000)
+	if (paddata & MPAD_D_UP)
 	{
 		// go up
 		ActiveMenuItem--;
@@ -1235,7 +1258,7 @@ void ControlMenu(void)
 
 		ActiveItem[VisibleMenu] = &ActiveMenu->MenuItems[ActiveMenuItem];
 	}
-	else if (paddata & 0x4000)
+	else if (paddata & MPAD_D_DOWN)
 	{
 		// go down
 		ActiveMenuItem++;
@@ -1245,7 +1268,7 @@ void ControlMenu(void)
 
 		ActiveItem[VisibleMenu] = &ActiveMenu->MenuItems[ActiveMenuItem];
 	}
-	else if (paddata & 0x40)
+	else if (paddata & MPAD_CROSS)
 	{
 		// Enter submenu
 		if (pItem->Type & PAUSE_TYPE_SUBMENU)
@@ -1274,7 +1297,7 @@ void ControlMenu(void)
 		else
 			PauseReturnValue = pItem->ExitValue;
 	}
-	else if ((paddata & 0x10) || (paddata & 0x800)) // Triangle or Start
+	else if ((paddata & MPAD_TRIANGLE) || (paddata & MPAD_START)) // Triangle or Start
 	{
 		// continue game if needed
 
@@ -1282,7 +1305,7 @@ void ControlMenu(void)
 		{
 #ifndef PSX
 			// hack for keyboard swap
-			if(!(paddata & 0x800))
+			if(!(paddata & MPAD_START))
 				return;
 #endif
 			for (i = 0; i < ActiveMenu->NumItems; i++)

@@ -1,6 +1,24 @@
 #ifndef OVERLAY_H
 #define OVERLAY_H
 
+struct COLOUR_BAND
+{
+	CVECTOR colour;
+	int value;
+	int flags;
+};
+
+typedef struct _PERCENTAGE_BAR
+{
+	char* tag;
+	short xpos, ypos;
+	short width, height;
+	u_short position;
+	u_short max;
+	COLOUR_BAND* pColourBand;
+	int flags, active;
+} PERCENTAGE_BAR, * LPPERCENTAGE_BAR;
+
 extern PERCENTAGE_BAR PlayerDamageBar;
 extern PERCENTAGE_BAR Player2DamageBar;
 extern PERCENTAGE_BAR DamageBar;

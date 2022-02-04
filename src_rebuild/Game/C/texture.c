@@ -484,11 +484,7 @@ void LoadPermanentTPages(int *sector)
 	for (i = 0; i < nperms; i++)
 		nsectors += (permlist[i].y + 2047) / CDSECTOR_SIZE;
 
-#ifdef PSX
 	loadsectors(tpagebuffer, *sector, nsectors);
-#else
-	loadsectorsPC(g_CurrentLevelFileName, tpagebuffer, *sector, nsectors);
-#endif // PSX
 
 	*sector += nsectors;
 
@@ -532,12 +528,7 @@ void LoadPermanentTPages(int *sector)
 		for (i = 0; i < nspecpages; i++)
 			nsectors += (speclist[i].y + 2047) / CDSECTOR_SIZE;
 
-#ifdef PSX
 		loadsectors(tpagebuffer, *sector, nsectors);
-#else
-		loadsectorsPC(g_CurrentLevelFileName, tpagebuffer, *sector, nsectors);
-#endif // PSX
-
 
 		*sector += nsectors;
 		

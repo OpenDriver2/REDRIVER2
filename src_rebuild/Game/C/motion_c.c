@@ -464,14 +464,14 @@ void ProcessMotionLump(char* lump_ptr, int lump_size)
 }
 
 // [D] [T]
-void SetupPedMotionData(PEDESTRIAN* pPed)
+void SetupPedMotionData(LPPEDESTRIAN pPed)
 {
 	pPed->motion = MotionCaptureData[pPed->type];
 }
 
 
 // [D] [T]
-void SetupPedestrian(PEDESTRIAN* pedptr)
+void SetupPedestrian(LPPEDESTRIAN pedptr)
 {
 	pedptr->velocity.vy = 10;
 	pedptr->speed = 10;
@@ -487,7 +487,7 @@ int bDoingShadow = 0;
 int gCurrentZ;
 
 // [D] [T] [A]
-void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYPE v2[2], int sz, int sy)
+void DrawBodySprite(LPPEDESTRIAN pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYPE v2[2], int sz, int sy)
 {
 #if 0
 	// debug code
@@ -788,11 +788,7 @@ void DrawBodySprite(PEDESTRIAN* pDrawingPed, int boneId, VERTTYPE v1[2], VERTTYP
 
 	if (bDoingShadow != 0)
 	{
-		addPrim(current->ot + 0x107f, prims);
-
-#ifdef PGXP
-		prims->pgxp_index = 0xffff;
-#endif
+		addPrim(current->ot + OTSIZE - 1, prims);
 	}
 	else
 	{
@@ -894,7 +890,7 @@ int bodyShiftValue = BODY_OFFSET;
 int torsoShiftValue = TORSO_OFFSET;
 
 // [D] [T]
-void SetupTannerSkeleton(PEDESTRIAN* pDrawingPed)
+void SetupTannerSkeleton(LPPEDESTRIAN pDrawingPed)
 {
 	int i;
 	BONE* pBone;
@@ -1007,7 +1003,7 @@ void SetupTannerSkeleton(PEDESTRIAN* pDrawingPed)
 }
 
 // [A] - was inlined in newShowTanner
-void DrawSprite(PEDESTRIAN* pDrawingPed, BONE* pBone, VECTOR* vJPos)
+void DrawSprite(LPPEDESTRIAN pDrawingPed, BONE* pBone, VECTOR* vJPos)
 {
 	VERTTYPE t0[2], t1[2]; // [A] was two longs
 	int z, z1, z2;
@@ -1044,7 +1040,7 @@ void DrawSprite(PEDESTRIAN* pDrawingPed, BONE* pBone, VECTOR* vJPos)
 int bAllreadyRotated = 0;
 
 // [D] [T]
-void newShowTanner(PEDESTRIAN* pDrawingPed)
+void newShowTanner(LPPEDESTRIAN pDrawingPed)
 {
 	int i, j;
 	int draw;
@@ -1257,7 +1253,7 @@ void newShowTanner(PEDESTRIAN* pDrawingPed)
 }
 
 // [D] [T]
-SVECTOR* GetModelVertPtr(PEDESTRIAN* pDrawingPed, int boneId, int modelType)
+SVECTOR* GetModelVertPtr(LPPEDESTRIAN pDrawingPed, int boneId, int modelType)
 {
 	int startVertex;
 
@@ -1297,7 +1293,7 @@ SVECTOR* GetModelVertPtr(PEDESTRIAN* pDrawingPed, int boneId, int modelType)
 }
 
 // [D] [T]
-void newRotateBones(PEDESTRIAN* pDrawingPed, BONE* poBone)
+void newRotateBones(LPPEDESTRIAN pDrawingPed, BONE* poBone)
 {
 	SVECTOR* pVerts;
 	MODEL* pModel;
@@ -1424,7 +1420,7 @@ void newRotateBones(PEDESTRIAN* pDrawingPed, BONE* poBone)
 
 
 // [D] [T]
-void DrawCiv(PEDESTRIAN* pPed)
+void DrawCiv(LPPEDESTRIAN pPed)
 {
 	SVECTOR* vert2;
 	SVECTOR* vert1;
@@ -1433,7 +1429,7 @@ void DrawCiv(PEDESTRIAN* pPed)
 	int boneId;
 	int frame;
 	int i, j;
-	u_int phase;
+	int phase;
 	SVECTOR pos;
 	VECTOR pos1;
 	SVECTOR rot;
@@ -1563,7 +1559,7 @@ void DrawCiv(PEDESTRIAN* pPed)
 	ppos.vy = pPed->position.vy;
 	ppos.vz = pPed->position.vz;
 
-	phase = (pPed->frame1 & 0xf) * 2;
+	phase = (pPed->frame1 & 15) * 2;
 
 	cv.b = 40;
 	cv.g = 40;
@@ -1616,7 +1612,7 @@ void SetSkelModelPointers(int type)
 int iCurrBone = 0;
 
 // [D] [T]
-void DrawTanner(PEDESTRIAN* pPed)
+void DrawTanner(LPPEDESTRIAN pPed)
 {
 	int iVar1;
 	VECTOR v;
@@ -1668,7 +1664,7 @@ void DrawTanner(PEDESTRIAN* pPed)
 }
 
 // [D] [T]
-int DrawCharacter(PEDESTRIAN* pPed)
+int DrawCharacter(LPPEDESTRIAN pPed)
 {
 	int fr;
 	short size;
@@ -1804,7 +1800,7 @@ void InitTannerShadow(void)
 }
 
 // [D] [T]
-void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, CVECTOR* col, short angle)
+void TannerShadow(LPPEDESTRIAN pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, CVECTOR* col, short angle)
 {
 	DR_ENV* dr_env;
 	SVECTOR vert[4];
@@ -1842,7 +1838,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 	dr_env = (DR_ENV*)current->primptr;
 	SetDrawEnv(dr_env, &drEnv);
 
-	addPrim(current->ot + 0x107f, dr_env);
+	addPrim(current->ot + OTSIZE - 1, dr_env);
 	current->primptr += sizeof(DR_ENV);
 
 	Tangle = ratan2(-pLightPos->vx, pLightPos->vz);
@@ -1935,7 +1931,7 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 
 		// clear to black and draw Tanner sprites
 		newShowTanner(pDrawingPed);
-		addPrim(current->ot + 0x107f, &tileTannerClear[current->id]);
+		addPrim(current->ot + OTSIZE - 1, &tileTannerClear[current->id]);
 
 		// restore vectors
 		camera_position = cp;
@@ -1955,12 +1951,12 @@ void TannerShadow(PEDESTRIAN* pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, 
 	dr_env = (DR_ENV*)current->primptr;
 	SetDrawEnv(dr_env, &drEnv);
 
-	addPrim(current->ot + 0x107f, dr_env);
+	addPrim(current->ot + OTSIZE - 1, dr_env);
 	current->primptr += sizeof(DR_ENV);
 }
 
 // [A] - totally custom function but it works pretty much same as original
-void DoCivHead(PEDESTRIAN* pPed, SVECTOR* vert1, SVECTOR* vert2)
+void DoCivHead(LPPEDESTRIAN pPed, SVECTOR* vert1, SVECTOR* vert2)
 {
 	SVECTOR spos;
 	VECTOR pos;

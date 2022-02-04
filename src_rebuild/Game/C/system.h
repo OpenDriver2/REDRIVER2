@@ -1,6 +1,32 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
+struct DRAW_MODE
+{
+	short x1, y1;
+	short x2, y2;
+	short width, height;
+	short framex, framey;
+};
+
+enum CDTYPE
+{
+	CDTYPE_NODISC = 0,
+	CDTYPE_SHELLOPEN = 1,
+	CDTYPE_DISCERROR = 2,
+	CDTYPE_WRONGDISC = 3,
+	CDTYPE_CORRECTDISC = 4,
+};
+
+enum CITYTYPE
+{
+	CITYTYPE_DAY = 0,
+	CITYTYPE_NIGHT = 1,
+	CITYTYPE_MULTI_DAY = 2,
+	CITYTYPE_MULTI_NIGHT = 3,
+};
+
+
 extern volatile char* _overlay_buffer;		// 0x1C0000
 extern volatile char* _frontend_buffer;		// 0xFB400
 extern volatile char* _other_buffer;		// 0xF3000
@@ -40,7 +66,7 @@ extern void sys_freeall();
 #endif
 
 #else
-#define D_MALLOC(size)		(char*)mallocptr; mallocptr += (size);// (char*)((int)mallocptr + size + 3 & 0xfffffffc);
+#define D_MALLOC(size)		(char*)mallocptr; mallocptr += (((size) + 3) & -4);
 #define D_TEMPALLOC(size)	(char*)mallocptr
 #define D_TEMPFREE()
 #endif
@@ -86,12 +112,25 @@ struct DB
 	DISPENV disp;
 };
 
-extern DRAW_MODE draw_mode_pal;
-extern DRAW_MODE draw_mode_ntsc;
-
 extern DB MPBuff[2][2];
 extern DB* last;
 extern DB* current;
+
+extern DRAW_MODE draw_mode_pal;
+extern DRAW_MODE draw_mode_ntsc;
+
+#define SCREEN_FB	512
+#define SCREEN_FB_H	256
+
+#ifdef PAL_VERSION
+#define SCREEN_H	256
+#define draw_mode draw_mode_pal
+#define video_mode MODE_PAL
+#else
+#define SCREEN_H	240
+#define draw_mode draw_mode_ntsc
+#define video_mode MODE_NTSC
+#endif // PAL
 
 // ordering table size 
 #ifdef PSX
@@ -114,14 +153,6 @@ extern DB* current;
 extern int citystart[8];
 extern XYPAIR citylumps[8][4];
 
-#ifdef PAL_VERSION
-#define draw_mode draw_mode_pal
-#define video_mode MODE_PAL
-#else
-#define draw_mode draw_mode_ntsc
-#define video_mode MODE_NTSC
-#endif // PAL
-
 #define CDSECTOR_SIZE 2048
 
 extern void ClearMem(char *mem, int size); // 0x0007F3E8
@@ -136,11 +167,7 @@ extern int LoadfileSeg(char *name, char *addr, int offset, int loadsize); // 0x0
 
 extern void ReportMode(int on); // 0x0007F8B8
 
-#ifdef PSX
 extern void loadsectors(char *addr, int sector, int nsectors); // 0x0007F904
-#else
-extern void loadsectorsPC(char* filename, char *addr, int sector, int nsectors);
-#endif // PSX
 
 extern void EnableDisplay(); // 0x0007F984
 extern void DisableDisplay(); // 0x0007F9F0

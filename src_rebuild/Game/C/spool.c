@@ -24,6 +24,45 @@
 #include "camera.h"
 #include "dr2roads.h"
 
+struct SPOOLQ
+{
+	u_char type;
+	u_char data;
+	u_short nsectors;
+	u_int sector;
+	char* addr;
+	void (*func)();
+#ifdef _DEBUG
+	const char* requestby;
+	int requestbyline;
+#endif
+};
+
+struct SPL_REGIONINFO
+{
+	u_short region_to_unpack;
+	u_short target_barrel_region;
+	int nsectors;
+	char* cell_addr;
+	char* roadm_addr;
+};
+
+struct AreaDataStr
+{
+	u_short gfx_offset;
+	u_short model_offset;
+	u_short music_offset;
+	u_short ambient_offset;
+	u_char model_size;
+	u_char pad;
+	u_char num_tpages;
+	u_char ambient_size;
+	u_char music_size;
+	u_char music_samples_size;
+	u_char music_id;
+	u_char ambient_id;
+};
+
 int date_date = 0xA11;
 int date_time = 0x27220B;
 
@@ -118,10 +157,7 @@ SPOOLQ spooldata[48];
 #if USE_PC_FILESYSTEM
 
 #define SIMPLE_SPOOL
-
 extern int gContentOverride;
-extern char g_CurrentLevelFileName[64];
-
 #endif
 
 #if defined(_DEBUG) || defined(PSX)
@@ -357,7 +393,7 @@ void RequestSpool(int type, int data, int offset, int loadsize, char *address, s
 
 	next->type = type;
 	next->data = data;
-	next->sector = (SpoolLumpOffset / 2048) + offset;
+	next->sector = (SpoolLumpOffset / CDSECTOR_SIZE) + offset;
 	next->nsectors = loadsize;
 	next->addr = address;
 	next->func = func;
@@ -744,7 +780,6 @@ void CheckLoadAreaData(int cellx, int cellz)
 		else if (/*spoolptr->super_region == 0xFF ||*/ nAreas == 0)
 			return;
 
-		// [A] Rev 1.1 patch
 #define BOUNDARY_MIN 15
 #define BOUNDARY_MAX 17
 
@@ -806,14 +841,14 @@ void ClearRegion(int target_region)
 	ushort *cell_ptrs_s;
 	int loop;
 
-	loop = 1024;
 	cell_ptrs_s = cell_ptrs + target_region * 1024;
 	pvsptr = (int *)PVS_Buffers[target_region];
 
-	do {
+	for (loop = 0; loop < 1024; loop++)
+	{
 		*cell_ptrs_s++ = 0xffff;
 		*pvsptr++ = 0;
-	} while (--loop != 0);
+	}
 
 	ClearMem(PVS_Buffers[target_region]-4, pvsSize[target_region]);
 
@@ -1016,7 +1051,7 @@ void ready_cb_textures(unsigned char intr, unsigned char *result)
 	{
 		CdGetSector(target_address, SECTOR_SIZE);
 
-		target_address += 2048;
+		target_address += CDSECTOR_SIZE;
 		sectors_this_chunk--;
 		current_sector++;
 		sectors_to_read--;
@@ -1067,7 +1102,7 @@ void ready_cb_regions(unsigned char intr, unsigned char *result)
 	{
 		CdGetSector(target_address, SECTOR_SIZE);
 
-		target_address += 2048;
+		target_address += CDSECTOR_SIZE;
 		sectors_this_chunk--;
 		current_sector++;
 		sectors_to_read--;
@@ -1182,7 +1217,7 @@ void ready_cb_misc(unsigned char intr, unsigned char *result)
 	{
 		CdGetSector(target_address, SECTOR_SIZE);
 
-		target_address += 2048;
+		target_address += CDSECTOR_SIZE;
 		sectors_to_read--;
 		current_sector++;
 
@@ -1403,149 +1438,159 @@ void GotRegion(void)
 	}
 }
 
-// [D] [T]
-void UpdateSpool(void)
-{
-#if USE_PC_FILESYSTEM && defined(SIMPLE_SPOOL)
-	if(strlen(g_CurrentLevelFileName) > 0)
-	{
-		FILE* fp = fopen(g_CurrentLevelFileName, "rb");
+#if defined(SIMPLE_SPOOL)
+extern char g_CurrentLevelFileName[64];
+extern char* g_CurrentLevelSpoolData;
 
-		if (!fp)
-		{
-#if !defined(__EMSCRIPTEN__)
-			char errPrint[1024];
-			sprintf(errPrint, "Cannot open '%s'\n", g_CurrentLevelFileName);
-			SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
-#endif
-			return;
+int UpdateSpoolPC(void)
+{
+	if (g_CurrentLevelFileName[0] == 0)
+		return 0;
+
+	// read entire spool data
+	if (g_CurrentLevelSpoolData == NULL)
+	{
+		int SpoolLumpSize;
+		SpoolLumpSize = 16 * 1024 * 1024; // allocate 16 MB of RAM for spoolable data
+		g_CurrentLevelSpoolData = (char*)malloc(16 * 1024 * 1024);
+
+		loadsectors(g_CurrentLevelSpoolData, SpoolLumpOffset / CDSECTOR_SIZE, SpoolLumpSize);
+	}
+
+	for (; spoolpos_reading < spoolcounter; spoolpos_reading++)
+	{
+		char* spoolDataPtr;
+		SPOOLQ* current;
+		current = &spooldata[spoolpos_reading];
+
+#define SPL_READ(dest, nsectors) \
+		{ \
+			int readSize = (nsectors)*CDSECTOR_SIZE; \
+			memcpy(dest, spoolDataPtr, readSize); \
+			spoolDataPtr += readSize; \
 		}
 
-		for (; spoolpos_reading < spoolcounter; spoolpos_reading++)
-		{
-			SPOOLQ* current = &spooldata[spoolpos_reading];
-
 #ifdef _DEBUG
-			char* nameType;
-			switch (current->type)
-			{
-			case 0:	// regions
-				nameType = "REGION";
-				break;
-			case 1:	// textures
-				nameType = "TPAGE";
-				break;
-			case 2:	// sbk
-				nameType = "SBK";
-				break;
-			case 3:	// misc
-				nameType = "MISC";
-				break;
-			}
+		char* nameType;
+		switch (current->type)
+		{
+		case 0:	// regions
+			nameType = "REGION";
+			break;
+		case 1:	// textures
+			nameType = "TPAGE";
+			break;
+		case 2:	// sbk
+			nameType = "SBK";
+			break;
+		case 3:	// misc
+			nameType = "MISC";
+			break;
+		}
 
-			SPOOL_WARNING("spool type=%s cb=%d sec=%d cnt=%d id=%d\n", nameType, current->func ? 1 : 0, current->sector, current->nsectors, spoolpos_reading);
+		SPOOL_WARNING("spool type=%s cb=%d sec=%d cnt=%d id=%d\n", nameType, current->func ? 1 : 0, current->sector, current->nsectors, spoolpos_reading);
 #endif // _DEBUG
 
-			// seek to required sector
-			fseek(fp, current->sector * 2048, SEEK_SET);
+		// seek to required sector
+		spoolDataPtr = g_CurrentLevelSpoolData - SpoolLumpOffset + current->sector * CDSECTOR_SIZE;
 
-			switch (current->type)
+		switch (current->type)
+		{
+		case 0:	// regions
+		case 3: // misc
+			SPL_READ(current->addr, current->nsectors);
+
+			if (current->func)
+				current->func();
+
+			break;
+		case 1:	// textures
+
+			// read cluts
+			nTPchunks = 0;
+			SPL_READ(current->addr + CDSECTOR_SIZE * 2 * 4, 1);
+			SendTPage();
+
+			nTPchunks++;
+
+			// read tpage (4 sectors 4 times = 16)
+			for (int i = 0; i < 4; i++)
 			{
-			case 0:	// regions
-				fread(current->addr, 2048, current->nsectors, fp);
-
-				if (current->func)
-					current->func();
-
-				break;
-			case 1:	// textures
-
-				// read cluts
-				nTPchunks = 0;
-				fread(current->addr + 0x4000, 2048, 1, fp);
+				SPL_READ(current->addr + (loadbank_write & 1U) * 256 * 32, 4);
 				SendTPage();
 
 				nTPchunks++;
-
-				// read tpage (4 sectors 4 times = 16)
-				for (int i = 0; i < 4; i++)
-				{
-					fread(current->addr + (loadbank_write & 1U) * 256 * 32, 2048, 4, fp);
-					SendTPage();
-
-					nTPchunks++;
-				}
-
-				break;
-			case 2:	// sbk
-				// nothing to do with this
-				break;
-			case 3:	// misc
-				fread(current->addr, 2048, current->nsectors, fp);
-
-				if (current->func)
-					current->func();
-
-				break;
 			}
+
+			break;
+		default:
+			break;
 		}
 
-		spoolcounter = 0;
-		spoolpos_reading = 0;
-		spoolactive = 0;
-
-		fclose(fp);
-		return;
+#undef SPL_READ
 	}
+
+	spoolcounter = 0;
+	spoolpos_reading = 0;
+	spoolactive = 0;
+
+	return 1;
+}
 #endif
 
+// [D] [T]
+void UpdateSpool(void)
+{
 	CdlLOC pos;
+	SPOOLQ* current;
 
-	SPOOLQ *current = &spooldata[spoolpos_reading];
+#if defined(SIMPLE_SPOOL)
+	if (UpdateSpoolPC())
+		return;
+#endif
 
-	if (!XAPrepared())
+	if (XAPrepared())
+		return;
+
+	current = &spooldata[spoolpos_reading];
+	target_address = current->addr;
+
+	if (current->type == 0) // SPOOLTYPE_REGIONS
 	{
-		target_address = current->addr;
+		sectors_this_chunk = current->nsectors;
+		sectors_to_read = spool_regioninfo[spool_regionpos].nsectors;
 
-		if (current->type == 0) // SPOOLTYPE_REGIONS
-		{
-			sectors_this_chunk = current->nsectors;
-			sectors_to_read = spool_regioninfo[spool_regionpos].nsectors;
-
-			CdDataCallback(data_cb_regions);
-			CdReadyCallback(ready_cb_regions);
-		}
-		else if (current->type == 1) // SPOOLTYPE_TEXTURES
-		{
-			nTPchunks_reading = 0;
-			nTPchunks_writing = 0;
-			sectors_to_read = 17;
-			ntpages = tsetcounter;
-			sectors_this_chunk = 1;
-
-			CdDataCallback(data_cb_textures);
-			CdReadyCallback(ready_cb_textures);
-
-			target_address += 0x4000;
-		}
-		else if (current->type == 3)  // SPOOLTYPE_MISC
-		{
-			sectors_to_read = (current->nsectors);
-
-			CdDataCallback(data_cb_misc);
-			CdReadyCallback(ready_cb_misc);
-		}
-
-		current_sector = current->sector;
-
-		endchunk = 0;
-
-		switch_spooltype = 0;
-
-		// run sector reading
-		CdIntToPos(current_sector, &pos);
-		CdControlF(CdlReadS, (u_char*)&pos);
+		CdDataCallback(data_cb_regions);
+		CdReadyCallback(ready_cb_regions);
 	}
+	else if (current->type == 1) // SPOOLTYPE_TEXTURES
+	{
+		nTPchunks_reading = 0;
+		nTPchunks_writing = 0;
+		sectors_to_read = 17;
+		ntpages = tsetcounter;
+		sectors_this_chunk = 1;
+
+		CdDataCallback(data_cb_textures);
+		CdReadyCallback(ready_cb_textures);
+
+		target_address += 0x4000;
+	}
+	else if (current->type == 3)  // SPOOLTYPE_MISC
+	{
+		sectors_to_read = (current->nsectors);
+
+		CdDataCallback(data_cb_misc);
+		CdReadyCallback(ready_cb_misc);
+	}
+
+	current_sector = current->sector;
+	endchunk = 0;
+	switch_spooltype = 0;
+
+	// run sector reading
+	CdIntToPos(current_sector, &pos);
+	CdControlF(CdlReadS, (u_char*)&pos);
 }
 
 // [D] [T]
@@ -1616,14 +1661,16 @@ int RoadMapRegions[4];
 // [D] [T]
 void UnpackRegion(int region_to_unpack, int target_barrel_region)
 {
-	if (loading_region[target_barrel_region] == -1)
+	if (loading_region[target_barrel_region] != -1)
 	{
-		if (LoadRegionData(region_to_unpack, target_barrel_region))
-			spool_regioncounter++;
-
-		regions_unpacked[target_barrel_region] = region_to_unpack;
-		RoadMapRegions[target_barrel_region] = region_to_unpack;
+		return;
 	}
+
+	if (LoadRegionData(region_to_unpack, target_barrel_region))
+		spool_regioncounter++;
+
+	regions_unpacked[target_barrel_region] = region_to_unpack;
+	RoadMapRegions[target_barrel_region] = region_to_unpack;
 }
 
 
@@ -1710,7 +1757,7 @@ void CleanModelSpooled(void)
 	}
 
 	// memcpy
-	while (loadaddr < (int*)(specLoadBuffer + 2048))
+	while (loadaddr < (int*)(specLoadBuffer + CDSECTOR_SIZE))
 		*modelMemory++ = *loadaddr++;
 
 	mem = (int*)((int)gCarCleanModelPtr[4] + gCarCleanModelPtr[4]->poly_block);	// [A] pls check, might be invalid
@@ -1759,7 +1806,7 @@ void DamagedModelSpooled(void)
 	}
 	
 	// memcpy
-	while (loadaddr < (int*)(specLoadBuffer + 2048))
+	while (loadaddr < (int*)(specLoadBuffer + CDSECTOR_SIZE))
 		*modelMemory++ = *loadaddr++;
 
 	mem = (int*)((int)gCarDamModelPtr[4] + gCarDamModelPtr[4]->poly_block);	// [A] pls check, might be invalid
@@ -1771,7 +1818,7 @@ void DamagedModelSpooled(void)
 		{
 			// [A] vertices
 			LoadCarModelFromFile((char*)gCarDamModelPtr[4], MissionHeader->residentModels[4], CAR_MODEL_DAMAGED);
-	}
+		}
 #endif
 		
 		specBlocksToLoad = 0;
@@ -1806,7 +1853,7 @@ void LowModelSpooled(void)
 	}
 	
 	// memcpy
-	while (loadaddr < (int*)(specLoadBuffer + 2048))
+	while (loadaddr < (int*)(specLoadBuffer + CDSECTOR_SIZE))
 		*modelMemory++ = *loadaddr++;
 
 	mem = (int*)((int)gCarLowModelPtr[4] + gCarLowModelPtr[4]->poly_block);	// [A] pls check, might be invalid
@@ -1850,7 +1897,7 @@ void CleanSpooled(void)
 		int size_2 = ((int *)specmallocptr)[1];
 		int size_3 = ((int *)specmallocptr)[2];
 
-		lastCleanBlock = size_1 + 2048 + 11;
+		lastCleanBlock = size_1 + CDSECTOR_SIZE + 11;
 		lastCleanBlock >>= 11;
 
 		firstDamBlock = size_1 + 12;
@@ -1859,17 +1906,17 @@ void CleanSpooled(void)
 		firstLowBlock = size_1 + size_2 + 12;
 		firstLowBlock >>= 11;
 
-		int lastDamBlock = size_1 + size_2 + 2048 + 11;
+		int lastDamBlock = size_1 + size_2 + CDSECTOR_SIZE + 11;
 		lastDamBlock >>= 11;
 
 		lengthDamBlock = lastDamBlock - firstDamBlock;
-		damOffset = size_1 - (firstDamBlock * 2048 - 12);
+		damOffset = size_1 - (firstDamBlock * CDSECTOR_SIZE - 12);
 
-		int lastLowBlock = size_1 + size_2 + size_3 + 2048 + 11;
+		int lastLowBlock = size_1 + size_2 + size_3 + CDSECTOR_SIZE + 11;
 		lastLowBlock >>= 11;
 
 		lengthLowBlock = lastLowBlock - firstLowBlock;
-		lowOffset = size_1 + size_2 - (firstLowBlock * 2048 - 12);
+		lowOffset = size_1 + size_2 - (firstLowBlock * CDSECTOR_SIZE - 12);
 	}
 
 	model = (MODEL *)(specmallocptr + 12);
@@ -2030,7 +2077,7 @@ void SpecialStartNextBlock(void)
 		specialState++;
 	}
 
-	fileSector = 0x1400 + (citystart[GameLevel] - SpoolLumpOffset / 2048) + (specspooldata[2]-1) * 42;
+	fileSector = 0x1400 + (citystart[GameLevel] - SpoolLumpOffset / CDSECTOR_SIZE) + (specspooldata[2]-1) * 42;
 
 	switch (specialState)
 	{
@@ -2052,12 +2099,12 @@ void SpecialStartNextBlock(void)
 		case 5:
 			spoolFunc = CleanSpooled;
 			fileSector += (41 - specBlocksToLoad);
-			loadaddr = specmallocptr + (7 - specBlocksToLoad) * 2048;
+			loadaddr = specmallocptr + (7 - specBlocksToLoad) * CDSECTOR_SIZE;
 			break;
 		case 6:
 			spoolFunc = LowSpooled;
 			fileSector += ((firstLowBlock + lengthLowBlock) - specBlocksToLoad) + 34;
-			loadaddr = specmallocptr + (lengthLowBlock - specBlocksToLoad) * 2048;
+			loadaddr = specmallocptr + (lengthLowBlock - specBlocksToLoad) * CDSECTOR_SIZE;
 			break;
 		case 7:
 			spoolFunc = CleanModelSpooled;

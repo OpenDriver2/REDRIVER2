@@ -17,6 +17,37 @@
 #include <stdlib.h>		// getenv
 #endif // PSX
 
+struct GAME_SAVE_HEADER
+{
+	u_int magic;
+	u_char gMissionLadderPos;
+	u_char pad1;
+	u_char pad2;
+	u_char pad3;
+	MISSION_DATA SavedData;
+	int reserved[8];
+};
+
+struct CONFIG_SAVE_HEADER
+{
+	u_int magic;
+	int gMasterVolume;
+	int gMusicVolume;
+	int gSoundMode;
+	int gVibration;
+	int gCopDifficultyLevel;
+	int gFurthestMission;
+	MAPPING PadMapping[2];
+	SCORE_TABLES ScoreTables;
+	int PALAdjustX;
+	int PALAdjustY;
+	int NTSCAdjustX;
+	int NTSCAdjustY;
+	int gSubtitles;
+	ACTIVE_CHEATS AvailableCheats;
+	int reserved[6];
+};
+
 // [A]
 void ShowSavingWaitMessage(char *message, int height)
 {
@@ -146,7 +177,7 @@ void LoadCurrentProfile(int init)
 }
 
 // [A] saves config to file
-void SaveCurrentProfile()
+void SaveCurrentProfile(int showMessage)
 {
 #ifndef PSX
 	int dataSize;
@@ -157,8 +188,11 @@ void SaveCurrentProfile()
 
 	strcat(filePath, "/config.dat");
 
-	SetTextColour(128, 128, 64);
-	ShowSavingWaitMessage(G_LTXT(GTXT_SavingConfiguration), 0);
+	if (showMessage)
+	{
+		SetTextColour(128, 128, 64);
+		ShowSavingWaitMessage(G_LTXT(GTXT_SavingConfiguration), 0);
+	}
 
 	dataSize = 0;
 	if (SaveConfigData((char*)_other_buffer))
@@ -176,7 +210,7 @@ void SaveCurrentProfile()
 		error = 0;
 	}
 
-	if (error)
+	if (error && showMessage)
 	{
 		SetTextColour(128, 0, 0);
 		ShowSavingWaitMessage(G_LTXT(GTXT_SavingError), 0);

@@ -3,6 +3,13 @@
 
 #include <abs.h>
 
+struct MATRIX2
+{
+	short m[3][3];
+	short computed;
+	char null[12];
+};
+
 #if defined(_LANGUAGE_C_PLUS_PLUS)||defined(__cplusplus)||defined(c_plusplus)
 extern "C" {
 #endif
@@ -39,6 +46,20 @@ extern short rcossin_tbl[8192];
 // Remap a value in the range [A,B] to [C,D].
 #define RemapVal( val, A, B, C, D) \
 	(C + (D - C) * (val - A) / (B - A))
+
+#define VecCopy(_v, _xyz) \
+{ \
+	(_v)->vx = (_xyz)->vx; \
+	(_v)->vy = (_xyz)->vy; \
+	(_v)->vz = (_xyz)->vz; \
+}
+
+#define VecNegate(_v) \
+{ \
+	(_v)->vx = -(_v)->vx; \
+	(_v)->vy = -(_v)->vy; \
+	(_v)->vz = -(_v)->vz; \
+}
 
 #define SetVec(_v, _x, _y, _z) \
 { \

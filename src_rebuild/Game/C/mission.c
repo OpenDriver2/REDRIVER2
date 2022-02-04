@@ -536,7 +536,7 @@ void LoadMission(int missionnum)
 
 	Mission.timer[0].x = Mission.timer[1].x = 124;
 	Mission.timer[0].y = 16;
-	Mission.timer[1].y = 136;
+	Mission.timer[1].y = SCREEN_H / 2 + 8;
 	
 	if (MissionHeader->timer || (MissionHeader->timerFlags & MISSIONTIMER_FLAG_COUNTER))
 	{
@@ -1170,8 +1170,7 @@ void SetMissionMessage(char *message, int priority, int seconds)
 	if (message == MissionStrings - 1 || message == NULL || NumPlayers == 0)
 		return;
 
-	i = 0;
-	while (i < NumPlayers)
+	for (i = 0; i < NumPlayers; i++)
 	{
 		if (Mission.message_timer[i] == 0 || Mission.message_priority[i] <= priority)
 		{
@@ -1187,8 +1186,6 @@ void SetMissionMessage(char *message, int priority, int seconds)
 				Mission.message_timer[i] = seconds * 30;
 			}
 		}
-
-		i++;
 	}
 }
 
@@ -1663,6 +1660,10 @@ int MRCommand(MR_THREAD *thread, u_int cmd)
 		if ((val1 & 0x20000) != 0) {
 			AvailableCheats.cheat4 = 1;
 		}
+
+#ifndef PSX
+		SaveCurrentProfile(0);
+#endif
 
 		return 1;
 	}

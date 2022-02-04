@@ -23,6 +23,20 @@
 #include "xaplay.h"
 #include "overlay.h"
 
+struct CUTSCENE_BUFFER
+{
+	int numResident;
+	u_char residentCutscenes[4];
+	char(*residentPointers[4]);
+
+	char* buffer;
+	char* currentPointer;
+
+	int bytesFree;
+	int reservedSize;
+	// char buffer[32*1024];				// was 8192, but we have some free mem now even for PSX. Using malloc.
+};
+
 int gSkipInGameCutscene = 0;
 
 int gInGameCutsceneActive = 0;
@@ -270,7 +284,7 @@ void DrawInGameCutscene(void)
 	tile->w = 1200;
 #endif
 
-	tile->y0 = 256 - BlackBorderHeight;
+	tile->y0 = SCREEN_H - BlackBorderHeight;
 	tile->h = BlackBorderHeight;
 
 	addPrim(current->ot, tile);

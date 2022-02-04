@@ -27,23 +27,38 @@
 
 #include "ASM/rndrasm.h"
 
+struct CAR_COLLISION_BOX
+{
+	int min_x, max_x;
+	int min_z, max_z;
+};
+
+typedef struct SEATED_PEDESTRIANS
+{
+	int x;
+	int z;
+	short rotation;
+	char index;
+	char pad;
+} *SEATEDPTR;
+
 MODEL* pmTannerModels[17] = { 0 };
 MODEL* pmJerichoModels[6] = { 0 };
 
-void PedDoNothing(PEDESTRIAN* pPed);
-void PedUserWalker(PEDESTRIAN* pPed);
-void PedUserRunner(PEDESTRIAN* pPed);
-void PedGetInCar(PEDESTRIAN* pPed);
-void PedGetOutCar(PEDESTRIAN* pPed);
-void PedCarryOutAnimation(PEDESTRIAN* pPed);
-void CivPedDoNothing(PEDESTRIAN* pPed);
-void CivPedWalk(PEDESTRIAN* pPed);
-void CivPedSit(PEDESTRIAN* pPed);
-void CivPedJump(PEDESTRIAN* pPed);
-void PedPressButton(PEDESTRIAN* pPed);
-void TannerSitDown(PEDESTRIAN* pPed);
-void CopStand(PEDESTRIAN* pPed);
-void CivGetIn(PEDESTRIAN* pPed);
+void PedDoNothing(LPPEDESTRIAN pPed);
+void PedUserWalker(LPPEDESTRIAN pPed);
+void PedUserRunner(LPPEDESTRIAN pPed);
+void PedGetInCar(LPPEDESTRIAN pPed);
+void PedGetOutCar(LPPEDESTRIAN pPed);
+void PedCarryOutAnimation(LPPEDESTRIAN pPed);
+void CivPedDoNothing(LPPEDESTRIAN pPed);
+void CivPedWalk(LPPEDESTRIAN pPed);
+void CivPedSit(LPPEDESTRIAN pPed);
+void CivPedJump(LPPEDESTRIAN pPed);
+void PedPressButton(LPPEDESTRIAN pPed);
+void TannerSitDown(LPPEDESTRIAN pPed);
+void CopStand(LPPEDESTRIAN pPed);
+void CivGetIn(LPPEDESTRIAN pPed);
 
 pedFunc fpPedPersonalityFunctions[] = {
 	PedDoNothing,
@@ -72,7 +87,7 @@ const int tannerTurnStep = 4;
 
 int bKillTanner = 0;
 
-SEATED_PEDESTRIANS* seated_pedestrian;	// lump
+SEATEDPTR seated_pedestrian;	// lump
 int seated_count;
 int maxSeated;
 static int numTannerPeds = 0;
@@ -81,9 +96,9 @@ int pinginPedAngle = 0;
 
 PEDESTRIAN pedestrians[MAX_PEDESTRIANS];
 
-PEDESTRIAN* pUsedPeds = NULL;	// linked list of pedestrians
-PEDESTRIAN* pFreePeds = NULL;
-PEDESTRIAN* pHold = NULL;
+LPPEDESTRIAN pUsedPeds = NULL;	// linked list of pedestrians
+LPPEDESTRIAN pFreePeds = NULL;
+LPPEDESTRIAN pHold = NULL;
 
 int max_pedestrians;
 int num_pedestrians;
@@ -102,6 +117,11 @@ static int oldCamView;
 int bPower = 0;
 int oldWeather = 0;
 int powerCounter = 0;
+
+extern int CheckForPlayerCar(LPPEDESTRIAN pedestrian, CAR_COLLISION_BOX* collision_box); // 0x000732C0
+extern SEATEDPTR FindSeated(); // 0x00072644
+extern SEATEDPTR FindTannerASeat(LPPEDESTRIAN pPed); // 0x000717AC
+extern void add_seated(SEATEDPTR seatedptr, int seat_index); // 0x000718C8
 
 // [D] [T]
 void InitTanner(void)
@@ -142,7 +162,7 @@ void InitTanner(void)
 // [D] [T]
 void SetTannerPosition(VECTOR* pVec)
 {
-	PEDESTRIAN* pPed;
+	LPPEDESTRIAN pPed;
 
 	pPed = pUsedPeds;
 	while (pPed)
@@ -166,18 +186,18 @@ void SetTannerPosition(VECTOR* pVec)
 void InitPedestrians(void)
 {
 	int loop;
-	SEATED_PEDESTRIANS* seatedptr;
+	SEATEDPTR seatedptr;
 
 	memset((u_char*)pedestrians, 0, sizeof(pedestrians));
 	DestroyPedestrians();
 
-	PEDESTRIAN* lastPed = &pedestrians[0];
+	LPPEDESTRIAN lastPed = &pedestrians[0];
 
 	lastPed->pPrev = NULL;
 
 	for (loop = 1; loop < MAX_PEDESTRIANS; loop++)
 	{
-		PEDESTRIAN* currPed = &pedestrians[loop];
+		LPPEDESTRIAN currPed = &pedestrians[loop];
 
 		lastPed->pNext = currPed;
 		currPed->pPrev = lastPed++;
@@ -205,7 +225,6 @@ void InitPedestrians(void)
 	maxSeated = seated_count;
 	numTannerPeds = 0;
 	pinginPedAngle = 0;
-	pPlayerPed = NULL;
 	seated_count = 0;
 	ping_in_pedestrians = 1;
 	numCopPeds = 0;
@@ -228,8 +247,8 @@ void DestroyPedestrians(void)
 // [D] [T]
 void DestroyCivPedestrians(void)
 {
-	PEDESTRIAN* pPed;
-	PEDESTRIAN* pHPed;
+	LPPEDESTRIAN pPed;
+	LPPEDESTRIAN pHPed;
 
 	pPed = pUsedPeds;
 	while (pPed != NULL)
@@ -248,7 +267,7 @@ void DestroyCivPedestrians(void)
 
 
 // [D] [T]
-void DestroyPedestrian(PEDESTRIAN* pPed)
+void DestroyPedestrian(LPPEDESTRIAN pPed)
 {
 	if (pPed->flags & 8)
 		numCopPeds--; // or road block pedestrians
@@ -307,9 +326,9 @@ int PedSurfaceType(VECTOR* ped_pos)
 }
 
 // [D] [T]
-PEDESTRIAN* CreatePedestrian(void)
+LPPEDESTRIAN CreatePedestrian(void)
 {
-	PEDESTRIAN* pNewPed;
+	LPPEDESTRIAN pNewPed;
 	pNewPed = pFreePeds;
 
 	if (pFreePeds != NULL)
@@ -401,7 +420,7 @@ void PlaceRoadBlockCops(void)
 // [D] [T]
 int CreatePedAtLocation(LONGVECTOR4* pPos, int pedType)
 {
-	PEDESTRIAN* pPed;
+	LPPEDESTRIAN pPed;
 
 	if (num_pedestrians >= MAX_PLACED_PEDS)
 		return 0;
@@ -457,7 +476,7 @@ int CreatePedAtLocation(LONGVECTOR4* pPos, int pedType)
 // [D] [T]
 void DrawAllPedestrians(void)
 {
-	PEDESTRIAN* pPed;
+	LPPEDESTRIAN pPed;
 
 	pPed = pUsedPeds;
 	while (pPed != NULL)
@@ -505,7 +524,7 @@ void DrawAllPedestrians(void)
 // [D] [T]
 int TannerActionHappening(void)
 {
-	PEDESTRIAN* pPed = player[0].pPed;
+	LPPEDESTRIAN pPed = player[0].pPed;
 
 	if (pPed && pPed->type == PED_ACTION_PRESSBUTTON)
 		return pPed->frame1 == 14;
@@ -520,8 +539,8 @@ int bAvoidBomb = -1;
 void ControlPedestrians(void)
 {
 	CAR_DATA* pCar;
-	PEDESTRIAN* pPed;
-	PEDESTRIAN* pPedNext;
+	LPPEDESTRIAN pPed;
+	LPPEDESTRIAN pPedNext;
 
 	pPed = pUsedPeds;
 
@@ -584,7 +603,7 @@ void ControlPedestrians(void)
 
 
 // [D] [T]
-void AnimatePed(PEDESTRIAN* pPed)
+void AnimatePed(LPPEDESTRIAN pPed)
 {
 	int dir;
 	VECTOR vec;
@@ -648,10 +667,13 @@ void AnimatePed(PEDESTRIAN* pPed)
 	if ((pPed->pedType == TANNER_MODEL || (ActiveCheats.cheat12 && pPed->pedType == OTHER_MODEL)) && pPed->type < PED_ACTION_BACK)
 	{
 		int surfId;
-		surfId = PedSurfaceType((VECTOR*)&pPed->position);
+		surfId = PedSurfaceType(&vec);
 
 		// play footstep sounds
-		if (surfId != 4 && surfId != 6 && surfId != 11 && surfId != 9)
+		if (surfId != SURF_GRASS && 
+			surfId != SURF_WATER && 
+			surfId != SURF_SAND && 
+			surfId != SURF_DEEPWATER)
 		{
 			if (pPed->frame1 == 3)
 				Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 0, pPed->position.vx, -pPed->position.vy, pPed->position.vz, -5000, 0x1000);
@@ -674,7 +696,7 @@ void AnimatePed(PEDESTRIAN* pPed)
 
 
 // [D] [T]
-void SetupDoNowt(PEDESTRIAN* pPed)
+void SetupDoNowt(LPPEDESTRIAN pPed)
 {
 	pPed->speed = 0;
 	pPed->dir.vz = 0;
@@ -686,7 +708,7 @@ void SetupDoNowt(PEDESTRIAN* pPed)
 }
 
 // [D] [T]
-void SetupWalker(PEDESTRIAN* pPed)
+void SetupWalker(LPPEDESTRIAN pPed)
 {
 	pPed->type = PED_ACTION_WALK;
 	pPed->speed = 14;
@@ -696,7 +718,7 @@ void SetupWalker(PEDESTRIAN* pPed)
 }
 
 // [D] [T]
-void SetupRunner(PEDESTRIAN* pPed)
+void SetupRunner(LPPEDESTRIAN pPed)
 {
 	pPed->type = PED_ACTION_RUN;
 	pPed->frame1 = 0;
@@ -707,7 +729,7 @@ void SetupRunner(PEDESTRIAN* pPed)
 }
 
 // [D] [T]
-void SetupBack(PEDESTRIAN* pPed)
+void SetupBack(LPPEDESTRIAN pPed)
 {
 	pPed->type = PED_ACTION_WALK;
 	pPed->frame1 = 0;
@@ -720,7 +742,7 @@ void SetupBack(PEDESTRIAN* pPed)
 CAR_DATA* pCivCarToGetIn = NULL;
 
 // [D] [T]
-void CivGetIn(PEDESTRIAN* pPed)		// [A] UNUSED
+void CivGetIn(LPPEDESTRIAN pPed)		// [A] UNUSED
 {
 	u_int padid;
 	DRIVER2_CURVE* curve;
@@ -742,7 +764,7 @@ void CivGetIn(PEDESTRIAN* pPed)		// [A] UNUSED
 }
 
 // [D] [T]
-void CopStand(PEDESTRIAN* pPed)
+void CopStand(LPPEDESTRIAN pPed)
 {
 	VECTOR v;
 	v.vx = pPed->position.vx - player[0].pos[0];
@@ -755,7 +777,7 @@ void CopStand(PEDESTRIAN* pPed)
 int iAllowWatch = 0;
 
 // [D] [T]
-void PedDoNothing(PEDESTRIAN* pPed)
+void PedDoNothing(LPPEDESTRIAN pPed)
 {
 	pPed->speed = 0;
 
@@ -869,7 +891,7 @@ void PedDoNothing(PEDESTRIAN* pPed)
 }
 
 // [D] [T]
-void PedUserRunner(PEDESTRIAN* pPed)
+void PedUserRunner(LPPEDESTRIAN pPed)
 {
 	if ((pPed->flags & 0x10U) == 0)
 	{
@@ -947,7 +969,7 @@ void PedUserRunner(PEDESTRIAN* pPed)
 }
 
 // [D] [T]
-void PedUserWalker(PEDESTRIAN* pPed)
+void PedUserWalker(LPPEDESTRIAN pPed)
 {
 	if ((pPed->flags & 0x10) == 0)
 	{
@@ -987,7 +1009,7 @@ int bFreezeAnimation = 0;
 int allreadydone = 0;
 
 // [D] [T]
-void PedCarryOutAnimation(PEDESTRIAN* pPed)
+void PedCarryOutAnimation(LPPEDESTRIAN pPed)
 {
 	pPed->speed = 0;
 
@@ -1051,7 +1073,7 @@ CAR_DATA* carToGetIn;
 int bReverseYRotation = 0;
 
 // [D] [T]
-void PedGetOutCar(PEDESTRIAN* pPed)
+void PedGetOutCar(LPPEDESTRIAN pPed)
 {
 	int playerId;
 
@@ -1081,7 +1103,7 @@ void PedGetOutCar(PEDESTRIAN* pPed)
 int lastCarCameraView = 0;
 
 // [D] [T]
-void SetupGetOutCar(PEDESTRIAN* pPed, CAR_DATA* pCar, int side)
+void SetupGetOutCar(LPPEDESTRIAN pPed, CAR_DATA* pCar, int side)
 {
 	bool entrySide;
 	int sn, cs;
@@ -1128,7 +1150,7 @@ void SetupGetOutCar(PEDESTRIAN* pPed, CAR_DATA* pCar, int side)
 
 
 // [D] [T]
-void SetupGetInCar(PEDESTRIAN* pPed)
+void SetupGetInCar(LPPEDESTRIAN pPed)
 {
 	int sn, cs;
 	int carDir;
@@ -1191,7 +1213,7 @@ void SetupGetInCar(PEDESTRIAN* pPed)
 }
 
 // [D] [T]
-void PedGetInCar(PEDESTRIAN* pPed)
+void PedGetInCar(LPPEDESTRIAN pPed)
 {
 	int playerID;
 
@@ -1213,13 +1235,12 @@ void PedGetInCar(PEDESTRIAN* pPed)
 		ChangePedPlayerToCar(playerID, carToGetIn);
 		DestroyPedestrian(pPed);
 
-		pPlayerPed = NULL;
 		numTannerPeds--;
 	}
 }
 
 // [D] [T]
-void SetupPressButton(PEDESTRIAN* pPed)
+void SetupPressButton(LPPEDESTRIAN pPed)
 {
 	pPed->type = PED_ACTION_PRESSBUTTON;
 	SetupPedMotionData(pPed);
@@ -1231,7 +1252,7 @@ void SetupPressButton(PEDESTRIAN* pPed)
 }
 
 // [D] [T]
-void PedPressButton(PEDESTRIAN* pPed)
+void PedPressButton(LPPEDESTRIAN pPed)
 {
 	if (pPed->frame1 < 15)
 	{
@@ -1249,7 +1270,7 @@ void PedPressButton(PEDESTRIAN* pPed)
 
 
 // [D] [T]
-void SetupTannerSitDown(PEDESTRIAN* pPed)
+void SetupTannerSitDown(LPPEDESTRIAN pPed)
 {
 	pPed->type = PED_ACTION_SIT;
 	SetupPedMotionData(pPed);
@@ -1261,7 +1282,7 @@ void SetupTannerSitDown(PEDESTRIAN* pPed)
 }
 
 // [D] [T]
-void TannerCameraHandler(PEDESTRIAN* pPed)
+void TannerCameraHandler(LPPEDESTRIAN pPed)
 {
 	int value;
 	int padSteer;
@@ -1310,7 +1331,7 @@ void TannerCameraHandler(PEDESTRIAN* pPed)
 
 
 // [D] [T]
-void TannerSitDown(PEDESTRIAN* pPed)
+void TannerSitDown(LPPEDESTRIAN pPed)
 {
 	if (oldCamView != 2 && player[pPed->padId].cameraView == 2)
 	{
@@ -1364,7 +1385,7 @@ void TannerSitDown(PEDESTRIAN* pPed)
 }
 
 // [D] [T]
-void CivPedDoNothing(PEDESTRIAN* pPed)
+void CivPedDoNothing(LPPEDESTRIAN pPed)
 {
 }
 
@@ -1397,7 +1418,7 @@ void SetupCivPedRouteData(VECTOR* pPos)
 void PingInPedestrians(void)
 {
 	int bFound;
-	PEDESTRIAN* pPed;
+	LPPEDESTRIAN pPed;
 	int rnd;
 	int pingInDist;
 	int i;
@@ -1517,7 +1538,7 @@ void PingInPedestrians(void)
 }
 
 // [D] [T]
-void TannerCollision(PEDESTRIAN* pPed)
+void TannerCollision(LPPEDESTRIAN pPed)
 {
 	CAR_DATA* pcdTanner;
 
@@ -1554,7 +1575,7 @@ void TannerCollision(PEDESTRIAN* pPed)
 }
 
 // [D] [T]
-int FindPointOfCollision(CAR_DATA* pCar, PEDESTRIAN* pPed)
+int FindPointOfCollision(CAR_DATA* pCar, LPPEDESTRIAN pPed)
 {
 	int dx, dz;
 	int minZ;
@@ -1746,7 +1767,7 @@ int TannerCarCollisionCheck(VECTOR* pPos, int dir, int bQuick)
 }
 
 // [D] [T]
-int PingOutPed(PEDESTRIAN* pPed)
+int PingOutPed(LPPEDESTRIAN pPed)
 {
 	int pz;
 	int px;
@@ -1764,7 +1785,7 @@ int PingOutPed(PEDESTRIAN* pPed)
 }
 
 // [D] [T]
-void SetupCivJump(PEDESTRIAN* pPed, CAR_DATA* cp)
+void SetupCivJump(LPPEDESTRIAN pPed, CAR_DATA* cp)
 {
 	int dz;
 	short scale;
@@ -1844,7 +1865,7 @@ void SetupCivJump(PEDESTRIAN* pPed, CAR_DATA* cp)
 }
 
 // [D] [T]
-void CivPedJump(PEDESTRIAN* pPed)
+void CivPedJump(LPPEDESTRIAN pPed)
 {
 	if (pPed->frame1 == 2)
 		pPed->speed *= 2;
@@ -1867,7 +1888,7 @@ void CivPedJump(PEDESTRIAN* pPed)
 }
 
 // [D] [T]
-void SetupCivPedWalk(PEDESTRIAN* pPed)
+void SetupCivPedWalk(LPPEDESTRIAN pPed)
 {
 	pPed->flags |= 0x10;
 
@@ -1882,7 +1903,7 @@ void SetupCivPedWalk(PEDESTRIAN* pPed)
 }
 
 // [D] [T]
-void CivPedWalk(PEDESTRIAN* pPed)
+void CivPedWalk(LPPEDESTRIAN pPed)
 {
 	int dir;
 	int turn;
@@ -1962,7 +1983,7 @@ void CivPedWalk(PEDESTRIAN* pPed)
 }
 
 // [D] [T]
-void CivPedSit(PEDESTRIAN* pPed)
+void CivPedSit(LPPEDESTRIAN pPed)
 {
 	pPed->frame1 = 0;
 }
@@ -1979,7 +2000,7 @@ void HandlePedestrians(void)
 }
 
 // [D] [T]
-void PedestrianActionInit_WalkToTarget(PEDESTRIAN* pPed)
+void PedestrianActionInit_WalkToTarget(LPPEDESTRIAN pPed)
 {
 	int dir;
 	dir = CalcPedestrianDirection(0, (pPed->position).vx, (pPed->position).vz, &pPed->target);
@@ -2002,7 +2023,7 @@ void PedestrianActionInit_WalkToTarget(PEDESTRIAN* pPed)
 }
 
 // [D] [T]
-void CorrectPathPosition(PEDESTRIAN* pedestrian, VECTOR* position)
+void CorrectPathPosition(LPPEDESTRIAN pedestrian, VECTOR* position)
 {
 }
 
@@ -2094,7 +2115,7 @@ int CalcPedestrianDirection(int last_dir, int wx, int wz, VECTOR* target)
 }
 
 // [D] [T]
-int IsPavement(int x, int y, int z, PEDESTRIAN* pPed)
+int IsPavement(int x, int y, int z, LPPEDESTRIAN pPed)
 {
 	int r;
 	VECTOR v;
@@ -2119,7 +2140,7 @@ int IsPavement(int x, int y, int z, PEDESTRIAN* pPed)
 }
 
 // [D] [T]
-void SetPedestrianTurn(PEDESTRIAN* pedestrian, int turn)
+void SetPedestrianTurn(LPPEDESTRIAN pedestrian, int turn)
 {
 	int speed;
 	int dir;
@@ -2140,12 +2161,12 @@ void SetPedestrianTurn(PEDESTRIAN* pedestrian, int turn)
 }
 
 // [D] [T]
-SEATED_PEDESTRIANS* FindSeated(void)
+SEATEDPTR FindSeated(void)
 {
 	int dz;
 	int dx;
 	int count1;
-	SEATED_PEDESTRIANS* seatedptr;
+	SEATEDPTR seatedptr;
 
 	if (!seated_pedestrian)
 		return NULL;
@@ -2186,13 +2207,13 @@ SEATED_PEDESTRIANS* FindSeated(void)
 }
 
 // [D] [T]
-SEATED_PEDESTRIANS* FindTannerASeat(PEDESTRIAN* pPed)
+SEATEDPTR FindTannerASeat(LPPEDESTRIAN pPed)
 {
 	int dx, dz;
 	int distSqr;
 	int bestSqr;
-	SEATED_PEDESTRIANS* seatedptr;
-	SEATED_PEDESTRIANS* theOne;
+	SEATEDPTR seatedptr;
+	SEATEDPTR theOne;
 	
 	theOne = NULL;
 	bestSqr = 4096;
@@ -2238,9 +2259,9 @@ SEATED_PEDESTRIANS* FindTannerASeat(PEDESTRIAN* pPed)
 }
 
 // [D] [T]
-void add_seated(SEATED_PEDESTRIANS* seatedptr, int seat_index)
+void add_seated(SEATEDPTR seatedptr, int seat_index)
 {
-	PEDESTRIAN* pedptr;
+	LPPEDESTRIAN pedptr;
 	int rnd;
 
 	if (num_pedestrians < MAX_SEATED_PEDS)
@@ -2395,7 +2416,7 @@ void BuildCarCollisionBox(void)
 }
 
 // [D] [T]
-CAR_DATA* CheckForCar(PEDESTRIAN* pedestrian)
+CAR_DATA* CheckForCar(LPPEDESTRIAN pedestrian)
 {
 	int count;
 
@@ -2429,7 +2450,7 @@ CAR_DATA* CheckForCar(PEDESTRIAN* pedestrian)
 }
 
 // [D] [T]
-int CheckForPlayerCar(PEDESTRIAN* pedestrian, CAR_COLLISION_BOX* collision_box)
+int CheckForPlayerCar(LPPEDESTRIAN pedestrian, CAR_COLLISION_BOX* collision_box)
 {
 	if (pedestrian->position.vx >= collision_box->min_x && 
 		pedestrian->position.vx <= collision_box->max_x &&
@@ -2445,7 +2466,7 @@ int CheckForPlayerCar(PEDESTRIAN* pedestrian, CAR_COLLISION_BOX* collision_box)
 int basic_car_interest;
 
 // [D] [T]
-void CalculatePedestrianInterest(PEDESTRIAN* pPed)
+void CalculatePedestrianInterest(LPPEDESTRIAN pPed)
 {
 	CAR_DATA* pCar;
 	int carId;
@@ -2499,7 +2520,7 @@ void CalculatePedestrianInterest(PEDESTRIAN* pPed)
 // [D] [T]
 void ProcessChairLump(char* lump_file, int lump_size)
 {
-	seated_pedestrian = (SEATED_PEDESTRIANS*)lump_file;
+	seated_pedestrian = (SEATEDPTR)lump_file;
 }
 
 // [D] [T]
@@ -2564,7 +2585,7 @@ void IHaveThePower(void)
 }
 
 // [D] [T]
-void ProcessTannerPad(PEDESTRIAN* pPed, u_int pad, char PadSteer, char use_analogue)
+void ProcessTannerPad(LPPEDESTRIAN pPed, u_int pad, char PadSteer, char use_analogue)
 {
 	sdPlane* SurfacePtr;
 	int direction;
@@ -2759,7 +2780,7 @@ int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVEC
 	int wbody;
 	int side;
 	int dir;
-	PEDESTRIAN* pedptr;
+	LPPEDESTRIAN pedptr;
 	int playerId;
 	VECTOR* pos;
 	VECTOR v;
@@ -2886,8 +2907,6 @@ int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVEC
 	pedptr->dir.vx = 0;
 	pedptr->dir.vy = dir;
 	pedptr->head_rot = 0;
-
-	pPlayerPed = pedptr;
 	lp->headTimer = 0;
 	pedptr->pedType = playerType;
 	SetupPedestrian(pedptr);
@@ -2962,7 +2981,7 @@ int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVEC
 }
 
 // [D] [T]
-void DeActivatePlayerPedestrian(PEDESTRIAN* pPed)
+void DeActivatePlayerPedestrian(LPPEDESTRIAN pPed)
 {
 	CAR_DATA* cp;
 	int playerId;

@@ -4,7 +4,7 @@
 extern int gOutOfTape;
 extern REPLAY_PARAMETER_BLOCK *ReplayParameterPtr;
 
-extern REPLAY_STREAM ReplayStreams[8];
+extern REPLAY_STREAM ReplayStreams[MAX_REPLAY_STREAMS];
 extern int NumReplayStreams;
 
 extern char *ReplayStart;

@@ -4,7 +4,6 @@
 extern int ghost_mode;
 extern int playerghost;
 extern int playerhitcopsanyway;
-extern char continuous_track;
 
 extern void InitCarPhysics(CAR_DATA *cp, LONGVECTOR4* startpos, int direction); // 0x0005381C
 extern void TempBuildHandlingMatrix(CAR_DATA *cp, int init); // 0x000539E8

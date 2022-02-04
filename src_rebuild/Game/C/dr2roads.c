@@ -11,9 +11,9 @@
 #include "main.h"
 #include "ASM/d2mapasm.h"
 
-sdPlane default_plane = { 0, 0, 0, 0, 2048 };
+sdPlane default_plane = { SURF_CONCRETE, 0, 0, 0, 2048 };
 
-sdPlane sea_plane = { 9, 0, 16384, 0, 2048 }; // a default surface if FindSurfaceD2 fails
+sdPlane sea_plane = { SURF_DEEPWATER, 0, 16384, 0, 2048 }; // a default surface if FindSurfaceD2 fails
 
 sdPlane* GetSeaPlane()
 {

@@ -24,6 +24,51 @@
 #include "debris.h"
 #include "felony.h"
 
+typedef struct __othercarsound
+{
+	int car;
+	int chan;
+	char in_use;
+	char stopped;
+	char idle;
+} othercarsound;
+
+typedef struct __bitfield64
+{
+	int h;
+	int l;
+} bitfield64;
+
+typedef struct __envsound
+{
+	u_char type;
+	u_char flags;
+	VECTOR pos;
+	VECTOR pos2;
+	int bank;
+	int sample;
+	int vol;
+} envsound;
+
+typedef struct __envsoundtags
+{
+	int frame_cnt;
+	int func_cnt;
+	int num_envsnds;
+	int envsnd_cnt;
+} envsoundtags;
+
+typedef struct __envsoundinfo
+{
+	VECTOR eff_pos[4];
+	VECTOR cam_pos;
+	float g[4];
+	int thisS[4];
+	int playing_sound[4];
+	int chan[4];
+	u_int flags;
+} envsoundinfo;
+
 typedef void(*envsoundfunc)(envsound* ep /*$s1*/, envsoundinfo* E /*$a1*/, int pl /*$a2*/);
 
 void IdentifyZone(envsound* ep, envsoundinfo* E, int pl);
@@ -250,7 +295,7 @@ int MapCarIndexToBank(int index)
 }
 
 static char cop_model = 0;
-int gDoCopSpeech = 1;
+int gDoCopSpeech = 1;		// [A]
 
 // [D] [T]
 void LoadLevelSFX(int missionNum)
@@ -457,14 +502,11 @@ void LoadLevelSFX(int missionNum)
 	{
 		gDoCopSpeech = 0;
 
-		i = 0;
-
-		do {
+		for (i = 0; i < 3; i++)
+		{
 			if (MissionHeader->residentModels[i] == MissionHeader->residentModels[3])
 				cop_model = i;
-
-			i++;
-		} while (i < 3);
+		}
 	}
 	else
 	{
@@ -532,10 +574,7 @@ void StartGameSounds(void)
 	TimeSinceLastSpeech = 0;
 
 	lcp = player;
-
-	i = 0;
-
-	while (i < NumPlayers)
+	for (i = 0; i < NumPlayers; i++)
 	{
 		if (lcp->playerType == 1)
 		{
@@ -548,7 +587,6 @@ void StartGameSounds(void)
 		lcp->revsvol = -10000;
 		lcp->idlevol = -8000;
 		lcp++;
-		i++;
 	}
 
 	if (NumPlayers == 1)
@@ -894,22 +932,20 @@ void InitDopplerSFX(void)
 {
 	int i;
 
-	i = 0;
-	do {
+	for (i = 0; i < MAX_SIREN_NOISES; i++)
+	{
 		siren_noise[i].chan = -1;
 		siren_noise[i].car = 20;
 		siren_noise[i].in_use = 0;
-		i++;
-	} while (i < MAX_SIREN_NOISES);
+	}
 
-	i = 0;
-	do {
+	for (i = 0; i < MAX_CAR_NOISES; i++)
+	{
 		car_noise[i].chan = -1;
 		car_noise[i].chan = -1;
 		car_noise[i].car = 20;
 		car_noise[i].in_use = 0;
-		i++;
-	} while (i < MAX_CAR_NOISES);
+	}
 
 	if (GameType == GAME_GETAWAY)
 		loudhail_time = 245;
@@ -970,11 +1006,9 @@ void DoDopplerSFX(void)
 	}
 
 	// sort cars by distance distance
-	i = 0;
-	while (i < num_noisy_cars - 1)
+	for (i = 0; i < num_noisy_cars - 1; i++)
 	{
-		j = i + 1;
-		while (j < num_noisy_cars)
+		for (j = i + 1; j < num_noisy_cars; j++)
 		{
 			int tmpi;
 			tmpi = indexlist[i];
@@ -984,11 +1018,7 @@ void DoDopplerSFX(void)
 				indexlist[i] = indexlist[j];
 				indexlist[j] = tmpi;
 			}
-
-			j++;
 		}
-
-		i++;
 	}
 
 	car_flags = 0;
@@ -1323,9 +1353,7 @@ void DoPoliceLoudhailer(int cars, ushort* indexlist, u_int* dist)
 	else
 		time = 275;
 
-	i = 0;
-
-	while (i < cars)
+	for (i = 0; i < cars; i++)
 	{
 		CAR_DATA* car_ptr;
 
@@ -1346,8 +1374,6 @@ void DoPoliceLoudhailer(int cars, ushort* indexlist, u_int* dist)
 			loudhail_time = 0;
 			break;
 		}
-
-		i++;
 	}
 
 	if (loudhail_time <= time)
@@ -2033,7 +2059,7 @@ void IdentifyZone(envsound* ep, envsoundinfo* E, int pl)
 
 	int tmp[4];
 	float _g[4];
-	__bitfield64 zones;
+	bitfield64 zones;
 	int snd;
 
 	// [A] does it really needed? we don't have that much sounds to be played
@@ -2097,9 +2123,9 @@ void IdentifyZone(envsound* ep, envsoundinfo* E, int pl)
 				if (dist < vol)
 				{
 					if (i < 32)
-						zones.l |= 1 << (i & 0x1f);
+						zones.l |= 1 << (i & 31);
 					else
-						zones.h |= 1 << (i & 0x1f);
+						zones.h |= 1 << (i & 31);
 
 					tmp[j] = i;
 					
@@ -2111,9 +2137,9 @@ void IdentifyZone(envsound* ep, envsoundinfo* E, int pl)
 			else
 			{
 				if (i < 32)
-					zones.l |= 1 << (i & 0x1f);
+					zones.l |= 1 << (i & 31);
 				else
-					zones.h |= 1 << (i & 0x1f);
+					zones.h |= 1 << (i & 31);
 
 				tmp[j] = i;
 				j++;

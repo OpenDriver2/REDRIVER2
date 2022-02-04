@@ -58,6 +58,16 @@ enum SoundBankIds
 	SBK_COP_SIREN_START = 69,
 };
 
+struct SPEECH_QUEUE
+{
+	char allowed;
+	char chan;
+	char is_playing;
+	int count;
+	char reverb;
+	int slot[7];
+};
+
 extern int gDriver1Music;
 
 extern int TimeSinceLastSpeech;

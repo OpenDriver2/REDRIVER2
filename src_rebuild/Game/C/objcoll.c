@@ -336,7 +336,7 @@ char lineClear(VECTOR *v1, VECTOR *v2)
  	int xd; // $a0
  	int zd; // $v1
 
-#ifdef PSX
+#if 0 //def PSX
 	CELL_ITERATOR& ci = *(CELL_ITERATOR*)((u_char*)getScratchAddr(0) + 1024 - sizeof(CELL_ITERATOR));
 #else
 	CELL_ITERATOR ci;

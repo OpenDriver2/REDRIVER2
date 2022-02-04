@@ -152,7 +152,6 @@ int InitCar(CAR_DATA* cp, int direction, LONGVECTOR4* startPos, unsigned char co
 		case CONTROL_TYPE_LEAD_AI:
 			// free roamer lead car
 			InitLead(cp);
-			leadCarId = cp->id;
 			cp->hndType = 5;
 			break;
 	}
@@ -2173,8 +2172,8 @@ int PingInCivCar(int minPingInDist)
 		}
 		else
 		{
-			i = 0;
-			while (i < numLanes)
+			
+			for (i = 0; i < numLanes; i++)
 			{
 				// collect the lanes.
 				allowedToPark = ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, i);
@@ -2187,8 +2186,6 @@ int PingInCivCar(int minPingInDist)
 				// pick only non-parkable driveable lanes if parked cars not requested
 				if (tryPingInParkedCars && allowedToPark || ROAD_IS_AI_LANE(&roadInfo, i) && !allowedToPark)
 					possibleLanes[numPossibleLanes++] = i;
-
-				i++;
 			}
 
 			if (numPossibleLanes == 0)
@@ -3674,8 +3671,7 @@ int CivControl(CAR_DATA* cp)
 		if (cp->ai.c.thrustState != 3)
 			steer = CivSteerAngle(cp);
 
-		// reduce acceleration when steering is applied
-		thrust = CivAccel(cp) - MAX(ABS(steer), 4) * 3;
+		thrust = CivAccel(cp) - MAX(ABS(steer), 4) * 3; // [A] reduce acceleration when steering is applied
 
 		if (thrust < 0 && cp->hd.wheel_speed < 5)
 			thrust = 0;

@@ -135,7 +135,7 @@ if os.target() == "windows" or os.target() == "emscripten" then
 end
 
 -- Psy-Cross layer
-include "PsyCross/premake5.lua"
+include "premake5_psycross.lua"
 
 -- game iteslf
 project "REDRIVER2"

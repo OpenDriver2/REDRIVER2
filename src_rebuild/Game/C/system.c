@@ -170,6 +170,7 @@ XYPAIR citylumps[8][4];
 #ifndef PSX
 int gContentOverride = 1;		// use unpacked filesystem?
 char g_CurrentLevelFileName[64];
+char* g_CurrentLevelSpoolData = NULL;
 #endif // !PSX
 
 // TODO: to game vars
@@ -373,7 +374,7 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 	int remainingOffset;
 	int sector;
 	u_char result[8];
-	char sectorbuffer[2048];
+	char sectorbuffer[CDSECTOR_SIZE];
 	CdlLOC pos;
 
 	sprintf(namebuffer, "\\%s%s;1", gDataFolder, name);
@@ -395,7 +396,7 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 	remainingBytes = loadsize;
 
 	// seek to the sector
-	sector = offset / 2048 + CdPosToInt(&currentfileinfo.pos);
+	sector = offset / CDSECTOR_SIZE + CdPosToInt(&currentfileinfo.pos);
 		
 	// start reading sectors from CD
 	while(remainingBytes > 0)
@@ -405,7 +406,7 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 
 		// if we don't have offset or we have more than 2048 bytes
 		//   - we can read into buffer directly (which is faster)
-		if (remainingBytes >= 2048 && remainingOffset == 0)
+		if (remainingBytes >= CDSECTOR_SIZE && remainingOffset == 0)
 			sectorPtr = addr;
 		else
 			sectorPtr = sectorbuffer;
@@ -428,7 +429,7 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 
 			// copy bytes
 			while (remainingBytes > 0 &&
-				readPtr - sectorbuffer < 2048)	// don't leave boundary
+				readPtr - sectorbuffer < CDSECTOR_SIZE)	// don't leave boundary
 			{
 				*addr++ = *readPtr++;
 				remainingBytes--;
@@ -438,8 +439,8 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 		}
 		else
 		{
-			addr += 2048;
-			remainingBytes -= 2048;
+			addr += CDSECTOR_SIZE;
+			remainingBytes -= CDSECTOR_SIZE;
 		}
 
 		// go to next sector
@@ -499,7 +500,7 @@ void sector_ready(u_char intr, u_char* result)
 		// read sector data
 		CdGetSector(current_address, SECTOR_SIZE);
 
-		current_address += 2048;
+		current_address += CDSECTOR_SIZE;
 		current_sector++;
 		sectors_left--;
 
@@ -528,6 +529,48 @@ void sector_ready(u_char intr, u_char* result)
 	}
 }
 
+#if USE_PC_FILESYSTEM
+
+// It has to be this way
+int loadsectorsPC(char* addr, int sector, int nsectors)
+{
+	char namebuffer[64];
+
+	if (g_CurrentLevelFileName[0] == 0)
+		return 0;
+
+	strcpy(namebuffer, g_CurrentLevelFileName);
+	FS_FixPathSlashes(namebuffer);
+
+	FILE* fp = fopen(namebuffer, "rb");
+
+	if (fp)
+	{
+		// constrain nsectors to the maximum that can be read from the file
+		int maxSectors;
+		fseek(fp, 0, SEEK_END);
+		maxSectors = (ftell(fp) - (sector * CDSECTOR_SIZE)) / CDSECTOR_SIZE;
+		nsectors = MIN(nsectors, maxSectors);
+
+		fseek(fp, sector * CDSECTOR_SIZE, SEEK_SET);
+		fread(addr, CDSECTOR_SIZE, nsectors, fp);
+
+		fclose(fp);
+
+		ShowLoading();
+		return 1;
+	}
+
+#if USE_PC_FILESYSTEM && !defined(__EMSCRIPTEN__)
+	char errPrint[512];
+	sprintf(errPrint, "loadsectorsPC: failed to open '%s'\n", namebuffer);
+	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
+#endif // USE_PC_FILESYSTEM && !PSX
+	return 0;
+}
+
+#endif // USE_PC_FILESYSTEM
+
 // [D] [T]
 void loadsectors(char* addr, int sector, int nsectors)
 {
@@ -536,6 +579,11 @@ void loadsectors(char* addr, int sector, int nsectors)
 	// [A]
 	if (nsectors == 0)
 		return;
+
+#if USE_PC_FILESYSTEM
+	if (loadsectorsPC(addr, sector, nsectors))
+		return;
+#endif
 
 	load_complete = 0;
 	endread = 0;
@@ -560,39 +608,6 @@ void loadsectors(char* addr, int sector, int nsectors)
 
 	ShowLoading();
 }
-
-#if USE_PC_FILESYSTEM
-
-// It has to be this way
-void loadsectorsPC(char* filename, char* addr, int sector, int nsectors)
-{
-	char namebuffer[64];
-	strcpy(namebuffer, filename);
-	FS_FixPathSlashes(namebuffer);
-
-	FILE* fp = fopen(namebuffer, "rb");
-
-	if (fp)
-	{
-		fseek(fp, sector * CDSECTOR_SIZE, SEEK_SET);
-		fread(addr, CDSECTOR_SIZE, nsectors, fp);
-
-		fclose(fp);
-
-		ShowLoading();
-		return;
-	}
-#if USE_CD_FILESYSTEM
-	// try using CD
-	loadsectors(addr, sector, nsectors);
-#elif !defined(__EMSCRIPTEN__)
-	char errPrint[512];
-	sprintf(errPrint, "loadsectorsPC: failed to open '%s'\n", namebuffer);
-	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
-#endif // USE_CD_FILESYSTEM
-}
-
-#endif // USE_PC_FILESYSTEM
 
 // [D] [T]
 void EnableDisplay(void)
@@ -638,15 +653,15 @@ void SwapDrawBuffers(void)
 	PutDrawEnv(&current->draw);
 	DrawOTag((u_long*)(current->ot + OTSIZE-1));
 
-	if ((FrameCnt & 1U) == 0)
-	{
-		current = &MPBuff[0][1];
-		last = &MPBuff[0][0];
-	}
-	else
+	if ((FrameCnt & 1) != 0)
 	{
 		current = &MPBuff[0][0];
 		last = &MPBuff[0][1];
+	}
+	else
+	{
+		current = &MPBuff[0][1];
+		last = &MPBuff[0][0];
 	}
 
 	ClearCurrentDrawBuffers();
@@ -709,15 +724,16 @@ void SetupDrawBuffers(void)
 	int i;
 	RECT16 rect;
 
-	SetDefDispEnv(&MPBuff[0][0].disp, 0, 256, 320, 256);
-	SetDefDispEnv(&MPBuff[0][1].disp, 0, 0, 320, 256);
+	// PAL: 256
+	// NTSC: 240
 
-	MPBuff[0][0].disp.screen.h = 256;
-	MPBuff[0][1].disp.screen.h = 256;
+	SetDefDispEnv(&MPBuff[0][0].disp, 0, 256, 320, SCREEN_H);
+	SetDefDispEnv(&MPBuff[0][1].disp, 0, 0, 320, SCREEN_H);
+
+	MPBuff[0][0].disp.screen.h = SCREEN_H;
+	MPBuff[0][1].disp.screen.h = SCREEN_H;
 	MPBuff[0][0].disp.screen.x = draw_mode.framex;
 	MPBuff[0][1].disp.screen.x = draw_mode.framex;
-	MPBuff[0][0].disp.screen.y = draw_mode.framey;
-	MPBuff[0][1].disp.screen.y = draw_mode.framey;
 
 	if (NoPlayerControl == 0)
 		SetupDrawBufferData(NumPlayers);
@@ -745,17 +761,14 @@ void SetupDrawBuffers(void)
 // [D] [T]
 void SetupDrawBufferData(int num_players)
 {
-	int i;
-	int j;
-	int x[2];
-	int y[2];
-	int width, height;
+	int i, j;
+	int x[2], y[2];
+	int height;
 	int toggle;
 
 	if (num_players == 1)
 	{
-		width = 320;
-		height = 256;
+		height = SCREEN_H; // 240 on NTSC
 		x[0] = 0;
 		y[0] = 0;
 		x[1] = 0;
@@ -763,19 +776,18 @@ void SetupDrawBufferData(int num_players)
 	}
 	else if (num_players == 2)
 	{
-		width = 320;
-		height = 127;
+		height = (SCREEN_H / 2 - 1); // 127; // 119 on NTSC
 		x[0] = 0;
 		y[0] = 0;
 		x[1] = 0;
-		y[1] = 128;
+		y[1] = SCREEN_H / 2;	  // 120 on NTSC
 	}
 	else
 	{
 		D_CHECK_ERROR(true, "Erm... too many players selected. FATAL!");
 	}
 
-	SetGeomOffset(width / 2, height / 2);
+	SetGeomOffset(320 / 2, height / 2);
 
 	toggle = 0;
 
@@ -785,46 +797,50 @@ void SetupDrawBufferData(int num_players)
 		{
 			u_long* otpt;
 			u_char* primpt;
-			u_char* PRIMpt;
 
 			if (toggle)
 			{
 				otpt = (u_long*)_OT2;
-				primpt = PRIMpt = (u_char*)_primTab2;
+				primpt = (u_char*)_primTab2; // _primTab1 + PRIMTAB_SIZE
 			}
 			else
 			{
 				otpt = (u_long*)_OT1;
-				primpt = PRIMpt = (u_char*)_primTab1;
+				primpt = (u_char*)_primTab1;
 			}
 
 			toggle ^= 1;
-			InitaliseDrawEnv(MPBuff[j], x[j], y[j], width, height);
+			InitaliseDrawEnv(MPBuff[j], x[j], y[j], 320, height);
 	
-			MPBuff[j][i].primtab = (char*)primpt;
-			MPBuff[j][i].primptr = (char*)PRIMpt;
-			MPBuff[j][i].ot = (OTTYPE*)otpt;
+			MPBuff[i][j].primtab = (char*)primpt;
+			MPBuff[i][j].primptr = (char*)primpt;
+			MPBuff[i][j].ot = (OTTYPE*)otpt;
 		}
 	}
 
-	aspect.m[0][0] = 4096;
-	aspect.m[0][1] = 0;
-	aspect.m[0][2] = 0;
-
-	aspect.m[1][0] = 0;
-	aspect.m[1][1] = 4710;
-	aspect.m[1][2] = 0;
-
-	aspect.m[2][0] = 0;
-	aspect.m[2][1] = 0;
-	aspect.m[2][2] = 4096;
+#ifdef PAL_VERSION
+	InitMatrix(aspect);
+	aspect.m[1][1] = 4300;
+#else
+	InitMatrix(aspect);
+	aspect.m[1][1] = 4096;
+#endif
 }
 
 // [D] [T]
 void InitaliseDrawEnv(DB* pBuff, int x, int y, int w, int h)
 {
-	SetDefDrawEnv(&pBuff[0].draw, x, y + 256, w, h);
-	SetDefDrawEnv(&pBuff[1].draw, x, y, w, h);
+#ifdef PSX
+#define DB1 pBuff[0]
+#define DB2 pBuff[1]
+#else
+// on PsyX we have to prevent flicker
+#define DB1 pBuff[1]
+#define DB2 pBuff[0]
+#endif
+
+	SetDefDrawEnv(&DB1.draw, x, y, w, h);
+	SetDefDrawEnv(&DB2.draw, x, y + 256, w, h);
 
 	pBuff[0].id = 0;
 	pBuff[0].draw.dfe = 1;
@@ -849,6 +865,11 @@ void ResetCityType(void)
 {
 	lasttype = (CITYTYPE)-1;
 	lastcity = -1;
+
+#ifndef PSX
+	free(g_CurrentLevelSpoolData);
+	g_CurrentLevelSpoolData = NULL;
+#endif // PSX
 }
 
 // [A]
@@ -866,6 +887,8 @@ void SetCityType(CITYTYPE type)
 
 	if (type == lasttype && GameLevel == lastcity)
 		return;
+
+	ResetCityType();
 
 	lastcity = GameLevel;
 	lasttype = type;
@@ -898,11 +921,11 @@ void SetCityType(CITYTYPE type)
 		// store level name as it's required by loadsectorsPC
 		strcpy(g_CurrentLevelFileName, filename);
 
+		// spool position is forced to 0
 		citystart[GameLevel] = 0;
 
 		// skip LUMP type (37) and size, it's already hardcoded
 		fseek(levFp, 8, SEEK_CUR);
-
 		fread(citylumps[GameLevel], 1, sizeof(citylumps[GameLevel]), levFp);
 
 		fclose(levFp);
@@ -937,7 +960,16 @@ void SetCityType(CITYTYPE type)
 
 	while (CdSearchFile(&cdfile, filename) == NULL)
 	{
+#if USE_PC_FILESYSTEM
+#ifndef __EMSCRIPTEN__
+		char errPrint[512];
+		sprintf(errPrint, "SetCityType: failed to open '%s'\n", filename);
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
+		exit(0);
+#endif // !__EMSCRIPTEN__
+#else
 		DoCDRetry();
+#endif // USE_PC_FILESYSTEM
 	}
 
 	sector = CdPosToInt((CdlLOC*)&cdfile);
@@ -958,18 +990,16 @@ void SetCityType(CITYTYPE type)
 	
 	for (i = 0; i < 4; i++)
 	{
-		citylumps[GameLevel][i].x = data[0] + sector * 2048;
+		citylumps[GameLevel][i].x = data[0] + sector * CDSECTOR_SIZE;
 		citylumps[GameLevel][i].y = data[1];
 
 		data += 2;
 	}
 #elif USE_PC_FILESYSTEM && !defined(__EMSCRIPTEN__)
-	
 	char errPrint[1024];
 	sprintf(errPrint, "SetCityType: cannot open level '%s'\n", filename);
 
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "ERROR", errPrint, NULL);
-	
 #endif // PSX
 }
 

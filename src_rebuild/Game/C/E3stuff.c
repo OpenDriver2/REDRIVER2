@@ -387,8 +387,6 @@ void FadeOutHiresScreen(void)
 	PutDispEnv(&disp);
 	PutDrawEnv(&draw);
 
-	//g_wireframeMode = 1;
-
 	DrawSync(0);
 	SetDispMask(1);
 
@@ -524,8 +522,6 @@ void SetPleaseWait(char *buffer)
 		ResetCityType();
 
 #else
-	ResetCityType();
-
 	PsyX_EndScene();
 #endif // PSX
 	

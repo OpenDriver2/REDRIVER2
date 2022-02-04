@@ -16,18 +16,20 @@ environment:
   project_folder: '%APPVEYOR_BUILD_FOLDER%\\src_rebuild'
   dependency_folder: '%APPVEYOR_BUILD_FOLDER%\dependencies'
   # Dependency URLs
-  windows_premake_url: 'https://github.com/premake/premake-core/releases/download/v5.0.0-alpha15/premake-5.0.0-alpha15-windows.zip'
+  windows_premake_url: 'https://github.com/premake/premake-core/releases/download/v5.0.0-beta1/premake-5.0.0-beta1-windows.zip'
   windows_jpeg_url: 'http://www.ijg.org/files/jpegsr9d.zip'
   windows_openal_url: 'https://openal-soft.org/openal-binaries/openal-soft-1.21.1-bin.zip'
-  windows_sdl2_url: 'https://www.libsdl.org/release/SDL2-devel-2.0.14-VC.zip'
-  linux_premake_url: 'https://github.com/premake/premake-core/releases/download/v5.0.0-alpha15/premake-5.0.0-alpha15-linux.tar.gz'
+  windows_sdl2_url: 'https://www.libsdl.org/release/SDL2-devel-2.0.20-VC.zip'
+  linux_premake_url: 'https://github.com/premake/premake-core/releases/download/v5.0.0-beta1/premake-5.0.0-beta1-linux.tar.gz'
   # Dependency Directories
   windows_jpeg_dir: '%dependency_folder%\jpeg-9d'
   windows_openal_dir: '%dependency_folder%\openal-soft-1.21.1-bin'
-  windows_sdl2_dir: '%dependency_folder%\SDL2-2.0.14'
+  windows_sdl2_dir: '%dependency_folder%\SDL2-2.0.20'
 
 
 install:
+  - git submodule init
+  - git submodule update
   - cmd: '%APPVEYOR_BUILD_FOLDER%\.appveyor\Install.bat'
   - sh: '${APPVEYOR_BUILD_FOLDER}/.appveyor/Install.sh'
 

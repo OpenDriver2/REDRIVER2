@@ -840,22 +840,22 @@ void initOBox(CAR_DATA* cp)
 
 	gte_stlvnl(&cp->hd.oBox.location);
 
-	VECTOR svx = { length, 0 ,0 };
-	VECTOR svy = { 0, car_cos->colBox.vy ,0 };
-	VECTOR svz = { 0, 0 ,car_cos->colBox.vz };
+	SVECTOR svx = { length, 0 ,0 };
+	SVECTOR svy = { 0, car_cos->colBox.vy ,0 };
+	SVECTOR svz = { 0, 0 ,car_cos->colBox.vz };
 
-	gte_ldlvl(&svx);
+	gte_ldsv(&svx);
 
 	gte_rtir();
 	cp->hd.oBox.length[1] = car_cos->colBox.vy;
 	gte_stsv(&cp->hd.oBox.radii[0]);
 
-	gte_ldlvl(&svy);
+	gte_ldsv(&svy);
 	gte_rtir();
 	cp->hd.oBox.length[2] = car_cos->colBox.vz;
 	gte_stsv(&cp->hd.oBox.radii[1]);
 
-	gte_ldlvl(&svz);
+	gte_ldsv(&svz);
 	gte_rtir();
 	gte_stsv(&cp->hd.oBox.radii[2]);
 }
@@ -1420,10 +1420,6 @@ void TerminateSkidding(int player_id)
 	}
 }
 
-
-char rear_only = 0;
-char continuous_track = 0;
-int last_track_state = -1;
 char DebrisTimer = 0;
 
 // [D] [T]
@@ -1486,19 +1482,13 @@ void jump_debris(CAR_DATA* cp)
 // [D] [T]
 void CheckCarEffects(CAR_DATA* cp, int player_id)
 {
-	int channel;
+	static char last_track_state[MAX_TYRE_PLAYERS][MAX_TYRE_TRACK_WHEELS] = { -1 };
+	int skidsound, cnt;
 
-	int skidsound;
-	int cnt;
-	int wheels_on_ground;
+	char wheels_on_ground;
 	char lay_down_tracks;
 	char tracks_and_smoke;
-	char desired_skid;
-	char desired_wheel;
-
-	wheels_on_ground = 0;
-	lay_down_tracks = 0;
-	tracks_and_smoke = 0;
+	char channel, desired_skid, desired_wheel;
 
 	if (cp->controlType != CONTROL_TYPE_PLAYER && 
 		cp->controlType != CONTROL_TYPE_LEAD_AI && 
@@ -1514,10 +1504,14 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 	// [A] do hubcaps here
 	HandlePlayerHubcaps(player_id);
 
+	wheels_on_ground = 0;
+	lay_down_tracks = 0;
+	tracks_and_smoke = 0;
+
 	for (cnt = 0; cnt < 4; cnt++)
 	{
 		if (cp->hd.wheel[cnt].susCompression != 0)
-			wheels_on_ground = 1;
+			wheels_on_ground |= 1 << cnt;
 	}
 
 	skidsound = 0;
@@ -1529,10 +1523,9 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 		rear_vel = ABS(cp->hd.rear_vel);
 		front_vel = ABS(cp->hd.front_vel);
 
-		if (rear_vel > 22000 || cp->wheelspin)
+		if ((wheels_on_ground & 5) && (rear_vel > 15000 || cp->wheelspin))
 		{
-			rear_only = 1;
-			lay_down_tracks = true;
+			lay_down_tracks |= 1;
 
 			if (cp->wheelspin == 0)
 				skidsound = (rear_vel - 11100) / 2 + 1;
@@ -1542,13 +1535,13 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 			if (skidsound > 13000)
 				skidsound = 13000;
 		}
-		else if (front_vel > 50000)
+		
+		if ((wheels_on_ground & 10) && front_vel > 15000)
 		{
-			rear_only = 0;
-			lay_down_tracks = true;
+			lay_down_tracks |= 2;
 		}
 
-		tracks_and_smoke = (player_id < 2) && !(cp->hd.wheel[1].surface & 0x8) && !(cp->hd.wheel[3].surface & 0x8);
+		tracks_and_smoke = (player_id < MAX_TYRE_TRACK_PLAYERS) && !(cp->hd.wheel[1].surface & 0x8) && !(cp->hd.wheel[3].surface & 0x8);
 	}
 
 	desired_skid = -1;
@@ -1671,22 +1664,51 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 
 	player[player_id].onGrass = 0;
 
+	// make tyre tracks
 	GetTyreTrackPositions(cp, player_id);
 
-	// make tyre tracks
-	if (lay_down_tracks)
+#define ADD_WHEEL_TYRE_TRACK(wheelNum, trackIdx) \
+	if (wheels_on_ground & (1 << wheelNum)) { \
+		AddTyreTrack(trackIdx, tracks_and_smoke, player_id, last_track_state[player_id][trackIdx] != -1); \
+		last_track_state[player_id][trackIdx] = 1; \
+	} else \
+		last_track_state[player_id][trackIdx] = -1;
+
+	if (lay_down_tracks & 1) // rear
 	{
-		continuous_track = (last_track_state == rear_only);
-
-		AddTyreTrack(player_id * 2, tracks_and_smoke, player_id);
-		AddTyreTrack(player_id * 2 + 1, tracks_and_smoke, player_id);
-
-		last_track_state = rear_only;
+#if MAX_TYRE_TRACK_WHEELS == 4
+		ADD_WHEEL_TYRE_TRACK(0, 0)
+		ADD_WHEEL_TYRE_TRACK(2, 2)
+#else
+		ADD_WHEEL_TYRE_TRACK(0, 0)
+		ADD_WHEEL_TYRE_TRACK(2, 1)
+#endif
 	}
 	else
 	{
-		last_track_state = -1;
+#if MAX_TYRE_TRACK_WHEELS == 4
+		last_track_state[player_id][0] = -1;
+		last_track_state[player_id][2] = -1;
+#else
+		last_track_state[player_id][0] = -1;
+		last_track_state[player_id][1] = -1;
+#endif
 	}
+
+#if MAX_TYRE_TRACK_WHEELS == 4
+	if (lay_down_tracks & 2) // front
+	{
+		ADD_WHEEL_TYRE_TRACK(1, 1)
+		ADD_WHEEL_TYRE_TRACK(3, 3)
+	}
+	else
+	{
+		last_track_state[player_id][1] = -1;
+		last_track_state[player_id][3] = -1;
+	}
+#endif
+
+#undef ADD_WHEEL_TYRE_TRACK
 
 	SetTyreTrackOldPositions(player_id);
 }

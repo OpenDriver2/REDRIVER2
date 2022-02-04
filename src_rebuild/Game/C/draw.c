@@ -116,6 +116,11 @@ int gDrawDistance = 441;
 _pct& plotContext = *(_pct*)((u_char*)getScratchAddr(0) + 1024 - sizeof(_pct));	// orig offset: 0x1f800020
 #endif
 
+struct MVERTEX5x5
+{
+	MVERTEX verts[5][5];
+};
+
 // [D] [T] [A]
 void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
 {
@@ -123,7 +128,7 @@ void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
 
 	m = 4;
 
-#ifdef PSX
+#if 0 //def PSX
 	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)(u_char*)getScratchAddr(0);
 #else
 	MVERTEX5x5 subdiVerts;
@@ -165,16 +170,14 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 {
 	int i;
 	int z;
-	u_int spriteColour;
-	u_int lightdd;
+	u_int spriteColour, lightdd;
 	u_char lightLevel;
 	MODEL* model;
 	PACKED_CELL_OBJECT* pco;
 	PACKED_CELL_OBJECT** list;
 	int numShadows;
-	int count;
 
-#ifdef PSX
+#if 0 //def PSX
 	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)(u_char*)getScratchAddr(0);
 #else
 	MVERTEX5x5 subdiVerts;
@@ -214,8 +217,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 		shadowMatrix.m[i][0] = inv_camera_matrix.m[i][2];
 		shadowMatrix.m[i][1] = -inv_camera_matrix.m[i][0];
 		shadowMatrix.m[i][2] = inv_camera_matrix.m[i][0];
-		i--;
-	} while (i >= 0);
+	} while (i--);
 
 
 	plotContext.primptr = current->primptr;
@@ -230,9 +232,8 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 	plotContext.current = current;
 
 	numShadows = 0;
-	count = numFound - 1;
 
-	while (count != -1)
+	while (numFound--)
 	{
 		pco = *list;
 		list++;
@@ -298,8 +299,6 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 			plotContext.ot += 133;
 		}
 
-		count--;
-
 #ifdef PSX
 #define MAX_TREE_SHADOW_DISTANCE 7000
 #else
@@ -329,9 +328,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 // [D] [T]
 void SetupPlaneColours(u_int ambient)
 {
-	u_int r;
-	u_int g;
-	u_int b;
+	u_int r, g, b;
 
 	if ((gWeather - 1U > 1) && gTimeOfDay != 0 && gTimeOfDay != 2)
 	{
@@ -580,10 +577,7 @@ void DrawAllTheCars(int view)
 // [D] [T]
 u_int normalIndex(SVECTOR* verts, u_int vidx)
 {
-	SVECTOR* v0;
-	SVECTOR* v1;
-	SVECTOR* v2;
-
+	SVECTOR* v0, *v1, *v2;
 	int x, y;
 	int th23;
 
@@ -645,31 +639,32 @@ u_int normalIndex(SVECTOR* verts, u_int vidx)
 	return th23 | 0x80;
 }
 
-void PlotBuildingModel(MODEL* model, int rot, _pct* pc)
+// [A]
+void ConvertPolygonTypes(MODEL* model, _pct* pc)
 {
-	int opz;
-	int Z;
-	PL_POLYFT4* polys;
-	int i;
-	int r;
-	u_char temp;
-	u_char ptype;
-	POLY_FT4* prims;
 	SVECTOR* srcVerts;
-	int combo;
+	PL_POLYFT4* polys;
+	u_char temp, ptype;
+	int i;
+
+	// [A] we are storing the processing flag here
+	if (model->tri_verts & 0x8000)
+	{
+		return;
+	}
+	
+	model->tri_verts |= 0x8000;
 
 	srcVerts = (SVECTOR*)model->vertices;
 	polys = (PL_POLYFT4*)model->poly_block;
-
-	combo = combointensity;
-
 	i = model->num_polys;
-	while (i > 0)
+
+	// pre-process vertices
+	while (i-- > 0)
 	{
-		// iterate through polygons
-		// with skipping
 		ptype = polys->id & 0x1f;
 
+		// convert poly types
 		if ((ptype & 0x1) == 0 && ptype != 8) // is FT3 triangle?
 		{
 			temp = polys->uv2.v;
@@ -685,7 +680,44 @@ void PlotBuildingModel(MODEL* model, int rot, _pct* pc)
 		if (ptype != 11 && ptype != 21 && ptype != 23)
 		{
 			polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
-			i--;
+			continue;
+		}
+
+		// also precalculate normal index
+		if (ptype != 21 && (polys->th & 0x80) == 0)
+		{
+			polys->th = normalIndex(srcVerts, *(u_int*)&polys->v0);
+		}
+		polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
+	}
+}
+
+void PlotBuildingModel(MODEL* model, int rot, _pct* pc)
+{
+	int opz, Z, r;
+	PL_POLYFT4* polys;
+	int i;
+	u_char ptype;
+	POLY_FT4* prims;
+	SVECTOR* srcVerts;
+	int combo;
+
+	srcVerts = (SVECTOR*)model->vertices;
+	polys = (PL_POLYFT4*)model->poly_block;
+
+	combo = combointensity;
+
+	ConvertPolygonTypes(model, pc);
+
+	i = model->num_polys;
+	while (i-- > 0)
+	{
+		ptype = polys->id & 0x1f;
+
+		// skip certain polygons
+		if (ptype != 11 && ptype != 21 && ptype != 23)
+		{
+			polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
 			continue;
 		}
 
@@ -705,25 +737,13 @@ void PlotBuildingModel(MODEL* model, int rot, _pct* pc)
 		}
 		else
 		{
-			temp = polys->th;
-
-			if ((polys->th & 0x80) == 0) // cache normal index if it were not
-				temp = polys->th = normalIndex(srcVerts, *(u_int*)&polys->v0);
-
-			pc->colour = pc->f4colourTable[(r >> 3) * 4 - temp & 31];
+			pc->colour = pc->f4colourTable[(r >> 3) * 4 - polys->th & 31];
 		}
 
 		if (opz > 0)
 		{
 			pc->tpage = (*pc->ptexture_pages)[polys->texture_set];
 			pc->clut = (*pc->ptexture_cluts)[polys->texture_set][polys->texture_id];
-
-			ushort uv0, uv1, uv2, uv3;
-
-			uv0 = *(ushort*)&polys->uv0;
-			uv1 = *(ushort*)&polys->uv1;
-			uv2 = *(ushort*)&polys->uv2;
-			uv3 = *(ushort*)&polys->uv3;
 
 			prims = (POLY_FT4*)pc->primptr;
 
@@ -745,10 +765,10 @@ void PlotBuildingModel(MODEL* model, int rot, _pct* pc)
 			prims->tpage = pc->tpage;
 			prims->clut = pc->clut;
 
-			*(ushort*)&prims->u0 = uv0;
-			*(ushort*)&prims->u1 = uv1;
-			*(ushort*)&prims->u2 = uv3;
-			*(ushort*)&prims->u3 = uv2;
+			*(ushort*)&prims->u0 = *(ushort*)&polys->uv0;
+			*(ushort*)&prims->u1 = *(ushort*)&polys->uv1;
+			*(ushort*)&prims->u2 = *(ushort*)&polys->uv3;
+			*(ushort*)&prims->u3 = *(ushort*)&polys->uv2;
 
 			addPrim(pc->ot + (Z >> 1), prims);
 
@@ -756,26 +776,22 @@ void PlotBuildingModel(MODEL* model, int rot, _pct* pc)
 		}
 
 		polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
-		i--;
 	}
 }
 
 // [D] [T] [A] custom
 void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 {
-	int opz;
+	int opz, Z, r;
 	int diff, minZ, maxZ;
-	int Z;
 	PL_POLYFT4* polys;
 	int i;
-	int r;
-	u_char temp;
 	u_char ptype;
 	POLY_FT4* prims;
 	SVECTOR* srcVerts;
 	int combo;
 
-#ifdef PSX
+#if 0//def PSX
 	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)(u_char*)getScratchAddr(0);
 #else
 	MVERTEX5x5 subdiVerts;
@@ -786,29 +802,18 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 
 	combo = combointensity;
 
+	ConvertPolygonTypes(model, pc);
+
 	i = model->num_polys;
-	while (i > 0)
+	while (i-- > 0)
 	{
 		// iterate through polygons
 		// with skipping
 		ptype = polys->id & 0x1f;
 
-		if ((ptype & 0x1) == 0 && ptype != 8) // is FT3 triangle?
-		{
-			temp = polys->uv2.v;
-			polys->uv3.u = polys->uv2.u;
-			polys->uv3.v = temp;
-
-			polys->v3 = polys->v2;
-
-			polys->id |= 1;
-			ptype |= 1;
-		}
-
 		if (ptype != 11 && ptype != 21 && ptype != 23)
 		{
 			polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
-			i--;
 			continue;
 		}
 
@@ -828,12 +833,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 		}
 		else
 		{
-			temp = polys->th;
-
-			if ((polys->th & 0x80) == 0) // cache normal index if it were not
-				temp = polys->th = normalIndex(srcVerts, *(u_int*)&polys->v0);
-
-			pc->colour = pc->f4colourTable[(r >> 3) * 4 - temp & 31];
+			pc->colour = pc->f4colourTable[(r >> 3) * 4 - polys->th & 31];
 		}
 
 		if (opz > 0)
@@ -937,7 +937,6 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 		}
 
 		polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
-		i--;
 	}
 }
 
@@ -945,15 +944,12 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 // [D] [T]
 int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 {
-	int mat;
-	int zbias;
+	int i, mat, prev_mat;
+	int Z, zbias;
 	int drawlimit;
 	MODEL* model;
 	OTTYPE* ot;
 	CELL_OBJECT* cop;
-	int i;
-	int Z;
-	int prev_mat;
 
 	prev_mat = -1;
 	
@@ -974,9 +970,7 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 
 	ot = plotContext.current->ot + 8;
 
-	i = 0;
-
-	while (i < num_buildings)
+	while (num_buildings--)
 	{
 		cop = (CELL_OBJECT*)*objects;
 		mat = cop->yang;
@@ -987,8 +981,7 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 		}
 		else
 		{
-			Z = Apply_InvCameraMatrixAndSetMatrix(&cop->pos, &CompoundMatrix[mat]);
-			prev_mat = mat;
+			Z = Apply_InvCameraMatrixAndSetMatrix(&cop->pos, &CompoundMatrix[prev_mat = mat]);
 		}
 
 		model = Z > DRAW_LOD_DIST_LOW ? pLodModels[cop->type] : modelpointers[cop->type];
@@ -1009,8 +1002,6 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 
 		if (PRIMTAB_SIZE - drawlimit < 60000)
 			break;
-
-		i++;
 		objects++;
 	}
 
@@ -1036,7 +1027,7 @@ void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 	SVECTOR* srcVerts;
 	int combo;
 
-#ifdef PSX
+#if 0//def PSX
 	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)(u_char*)getScratchAddr(0);
 #else
 	MVERTEX5x5 subdiVerts;
@@ -1382,10 +1373,10 @@ void DrawMapPSX(int* comp_val)
 	else
 		distScale = goFaster & 31;
 
-	i = (gDrawDistance >> distScale) - 1;		// [A]
+	i = (gDrawDistance >> distScale);		// [A]
 
 	// walk through all cells
-	while (i >= 0)
+	do
 	{
 		if (ABS(hloop) + ABS(vloop) < 21)
 		{
@@ -1511,49 +1502,32 @@ void DrawMapPSX(int* comp_val)
 			drawData.leftPlane += drawData.leftcos;
 			drawData.backPlane += drawData.backcos;
 			drawData.rightPlane += drawData.rightcos;
-
-			hloop++;
-
-			if (hloop + vloop == 1)
-				dir = 1;
+			dir = (++hloop + vloop == 1) ? 1 : dir;
 		}
 		else if (dir == 1)
 		{
 			drawData.leftPlane += drawData.leftsin;
 			drawData.backPlane += drawData.backsin;
 			drawData.rightPlane += drawData.rightsin;
-			vloop++;
-
 			//PVS_ptr += pvs_square;
-
-			if (hloop == vloop)
-				dir = 2;
+			dir = (hloop == ++vloop) ? 2 : dir;
 		}
 		else if (dir == 2)
 		{
-			hloop--;
 			drawData.leftPlane -= drawData.leftcos;
 			drawData.backPlane -= drawData.backcos;
 			drawData.rightPlane -= drawData.rightcos;
-
-			if (hloop + vloop == 0)
-				dir = 3;
+			dir = (--hloop + vloop == 0) ? 3 : dir;
 		}
 		else
 		{
 			drawData.leftPlane -= drawData.leftsin;
 			drawData.backPlane -= drawData.backsin;
 			drawData.rightPlane -= drawData.rightsin;
-			vloop--;
-
 			//PVS_ptr -= pvs_square;
-
-			if (hloop == vloop)
-				dir = 0;
+			dir = (hloop == --vloop) ? 0 : dir;
 		}
-
-		i--;
-	}
+	}while (i-- > 0);
 
 #if 0
 	char tempBuf[512];

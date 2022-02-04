@@ -1,128 +1,240 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<!-- MKPSXISO example XML script -->
-
 <iso_project image_name="REDRIVER2.bin" cue_sheet="REDRIVER2.cue">
-
-	<!-- <track>
-		Specifies a track to the ISO project. This example element creates a data
-		track for storing data files and CD-XA/STR streams.
-	
-		Only one data track is allowed and data tracks must only be specified as the
-		first track in the ISO image and cannot	be specified after an audio track.
-		
-		Attributes:
-			type		- Track type (either data or audio).
-			source		- For audio tracks only, specifies the file name of a wav audio
-						  file to use for the audio track.	
-	-->
-
-	<track type = "data" >
-	
-		<identifiers
-			system		= "PLAYSTATION"
-			application	= "PLAYSTATION"
-			volume		= "DRIVER2"
-			volumeset	= "DRIVER2"
-			publisher	= "INFOGRAMES"
-			datapreparer	= "INFOGRAMES"
-		/>
-		
-
-		<license file = "licensea.dat"/>
-		
-
-		<directory_tree>
-		
-			<file name = "SYSTEM.CNF"	type = "data"	source="SYSTEM.CNF"/>
-			<file name = "DRIVER2.EXE"	type = "data"		source="0_CD_DATA\DRIVER2.ps-exe"/>
-			
-			<dir name = "DRIVER2">
-
-				<file name = "FRONTEND.BIN"	type = "data"	source="0_CD_DATA\Overlay.frnt"/>
-				<file name = "LEAD.BIN"		type = "data"	source="0_CD_DATA\Overlay.lead"/>
-				<file name = "PATH.BIN"		type = "data"	source="0_CD_DATA\Overlay.path"/>
-
-				<dir name = "DATA">
-					<file name = "SKY0.RAW"		type = "data"	source="0_CD_DATA\DATA\SKY0.RAW"/>
-					<file name = "SKY1.RAW"		type = "data"	source="0_CD_DATA\DATA\SKY1.RAW"/>
-					<file name = "SKY2.RAW"		type = "data"	source="0_CD_DATA\DATA\SKY2.RAW"/>
-					<file name = "SKY3.RAW"		type = "data"	source="0_CD_DATA\DATA\SKY3.RAW"/>
-					
-					<file name = "SCRS.BIN"		type = "data"	source="0_CD_DATA\DATA\SCRS.BIN"/>
-					<file name = "FEFONT.BNK"	type = "data"	source="0_CD_DATA\DATA\FEFONT.BNK"/>
-					<file name = "GFX.RAW"		type = "data"	source="0_CD_DATA\DATA\GFX.RAW"/>
-					<file name = "CITY.RAW"		type = "data"	source="0_CD_DATA\DATA\CITY.RAW"/>
-					<file name = "CITYBACK.RAW"	type = "data"	source="0_CD_DATA\DATA\CITYBACK.RAW"/>
-					<file name = "VOL.RAW"		type = "data"	source="0_CD_DATA\DATA\VOL.RAW"/>
-					<file name = "CARCONT.RAW"	type = "data"	source="0_CD_DATA\DATA\CARCONT.RAW"/>
-					<file name = "TANCONT.RAW"	type = "data"	source="0_CD_DATA\DATA\TANCONT.RAW"/>
-					
-					<dir name = "CARS">
-						<file name = "CARBACK.RAW"	type = "data"	source="0_CD_DATA\DATA\CARS\CARBACK.RAW"/>
-						<file name = "CCARS.RAW"	type = "data"	source="0_CD_DATA\DATA\CARS\CCARS.RAW"/>
-						<file name = "HCARS.RAW"	type = "data"	source="0_CD_DATA\DATA\CARS\HCARS.RAW"/>
-						<file name = "VCARS.RAW"	type = "data"	source="0_CD_DATA\DATA\CARS\VCARS.RAW"/>
-						<file name = "RCARS.RAW"	type = "data"	source="0_CD_DATA\DATA\CARS\RCARS.RAW"/>
-					</dir>
-					
-					<dir name = "CUTS">
-						<file name = "CUTBACK.RAW"	type = "data"	source="0_CD_DATA\DATA\CUTS\CUTBACK.RAW"/>
-						<file name = "CCUTS.RAW"	type = "data"	source="0_CD_DATA\DATA\CUTS\CCUTS.RAW"/>
-						<file name = "HCUTS.RAW"	type = "data"	source="0_CD_DATA\DATA\CUTS\HCUTS.RAW"/>
-						<file name = "VCUTS.RAW"	type = "data"	source="0_CD_DATA\DATA\CUTS\VCUTS.RAW"/>
-						<file name = "RCUTS.RAW"	type = "data"	source="0_CD_DATA\DATA\CUTS\RCUTS.RAW"/>
-					</dir>
-				</dir>
-				
-				<dir name = "GFX">
-					<file name = "FONT2.FNT"	type = "data"	source="0_CD_DATA\GFX\FONT2.FNT"/>
-					<file name = "SPLASH1N.TIM"	type = "data"	source="0_CD_DATA\GFX\SPLASH1N.TIM"/>
-					<file name = "LOADCHIC.TIM"	type = "data"	source="0_CD_DATA\GFX\LOADCHIC.TIM"/>
-					<file name = "LOADHAVA.TIM"	type = "data"	source="0_CD_DATA\GFX\LOADHAVA.TIM"/>
-					<file name = "LOADVEGA.TIM"	type = "data"	source="0_CD_DATA\GFX\LOADVEGA.TIM"/>
-					<file name = "LOADRIO.TIM"	type = "data"	source="0_CD_DATA\GFX\LOADRIO.TIM"/>
-					
-					<file name = "FELOAD.TIM"	type = "data"	source="0_CD_DATA\GFX\FELOAD.TIM"/>
-				</dir>
-
-				<dir name = "LEVELS">
-					<file name = "CHICAGO.LEV"	type = "data"	source="0_CD_DATA\LEVELS\CHICAGO.LEV"/>
-					<file name = "CHICAGO.LCF"	type = "data"	source="0_CD_DATA\LEVELS\CHICAGO.LCF"/>
-					<file name = "CHICAGO.DEN"	type = "data"	source="0_CD_DATA\LEVELS\CHICAGO.DEN"/>
-					
-					<file name = "HAVANA.LEV"	type = "data"	source="0_CD_DATA\LEVELS\HAVANA.LEV"/>
-					<file name = "HAVANA.LCF"	type = "data"	source="0_CD_DATA\LEVELS\HAVANA.LCF"/>
-					<file name = "HAVANA.DEN"	type = "data"	source="0_CD_DATA\LEVELS\HAVANA.DEN"/>
-					
-					<file name = "VEGAS.LEV"	type = "data"	source="0_CD_DATA\LEVELS\VEGAS.LEV"/>
-					<file name = "VEGAS.LCF"	type = "data"	source="0_CD_DATA\LEVELS\VEGAS.LCF"/>
-					<file name = "VEGAS.DEN"	type = "data"	source="0_CD_DATA\LEVELS\VEGAS.DEN"/>
-					
-					<file name = "RIO.LEV"		type = "data"	source="0_CD_DATA\LEVELS\RIO.LEV"/>
-					<file name = "RIO.DEN"		type = "data"	source="0_CD_DATA\LEVELS\RIO.DEN"/>
-					<file name = "RIO.LCF"		type = "data"	source="0_CD_DATA\LEVELS\RIO.LCF"/>
-				</dir>
-
-				<dir name = "MISSIONS">
-					<file name = "MISSIONS.BLK"	type = "data"	source="0_CD_DATA\MISSIONS\MISSIONS.BLK"/>
-					<file name = "PATH40.0"		type = "data"	source="0_CD_DATA\MISSIONS\PATH40.0"/>
-				</dir>
-
-				<dir name = "SOUND">
-					<file name = "MUSIC.BIN"	type = "data"	source="0_CD_DATA\SOUND\MUSIC.BIN"/>
-					<file name = "VOICES2.BLK"	type = "data"	source="0_CD_DATA\SOUND\VOICES2.BLK"/>
-				</dir>
-
-				<dir name = "REPLAYS">
-					<file name = "ATTRACT.400"	type = "data"	source="0_CD_DATA\REPLAYS\ATTRACT.400"/>
-				</dir>
-			</dir>
-
-
-		
-		</directory_tree>
-		
-	</track>
-	
+    <track type="data">
+        <identifiers system="PLAYSTATION" application="PLAYSTATION" volume="SLUS_01318" publisher="INFOGRAMES" data_preparer="REFLECTIONS" creation_date="0000112123590200+0"/>
+        <license file="license_data.dat"/>
+        <directory_tree gmt_offs="0">
+            <dir name="DRIVER2" source="./0_CD_DATA" gmt_offs="36">
+                <dir name="DATA" source="./0_CD_DATA/DATA" gmt_offs="36">
+                    <dir name="CARS" source="./0_CD_DATA/DATA/CARS" gmt_offs="36"/>
+                    <dir name="CUTS" source="./0_CD_DATA/DATA/CUTS" gmt_offs="36"/>
+                    <dir name="MCTEXT" source="./0_CD_DATA/DATA/MCTEXT" gmt_offs="36"/>
+                </dir>
+                <dir name="GFX" source="./0_CD_DATA/GFX" gmt_offs="36"/>
+                <dir name="LEVELS" source="./0_CD_DATA/LEVELS" gmt_offs="36"/>
+                <dir name="MAPS" source="./0_CD_DATA/MAPS" gmt_offs="36"/>
+                <dir name="MISSIONS" source="./0_CD_DATA/MISSIONS" gmt_offs="36"/>
+                <dir name="MLEVELS" source="./0_CD_DATA/MLEVELS" gmt_offs="36"/>
+                <dir name="MNLEVELS" source="./0_CD_DATA/MNLEVELS" gmt_offs="36"/>
+                <dir name="NLEVELS" source="./0_CD_DATA/NLEVELS" gmt_offs="36"/>
+                <dir name="REPLAYS" source="./0_CD_DATA/REPLAYS" gmt_offs="36">
+                    <dir name="A" source="./0_CD_DATA/REPLAYS/A" gmt_offs="36"/>
+                </dir>
+                <dir name="SOUND" source="./0_CD_DATA/SOUND" gmt_offs="36"/>
+                <dir name="TRAILS" source="./0_CD_DATA/TRAILS" gmt_offs="36"/>
+                <dir name="XA" source="./0_CD_DATA/XA" gmt_offs="36"/>
+            </dir>
+            <file name="SYSTEM.CNF" source="./0_CD_DATA/SYSTEM.CNF" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+            <dir name="DRIVER2">
+                <file name="FRONTEND.BIN" source="./0_CD_DATA/Overlay.frnt" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                <dir name="GFX">
+                    <file name="FELOAD.TIM" source="./0_CD_DATA/GFX/FELOAD.TIM" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="DATA">
+                    <file name="SCRS.BIN" source="./0_CD_DATA/DATA/SCRS.BIN" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="GFX.RAW" source="./0_CD_DATA/DATA/GFX.RAW" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="FEFONT.BNK" source="./0_CD_DATA/DATA/FEFONT.BNK" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="CARCONT.RAW" source="./0_CD_DATA/DATA/CARCONT.RAW" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="TANCONT.RAW" source="./0_CD_DATA/DATA/TANCONT.RAW" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="CITY.RAW" source="./0_CD_DATA/DATA/CITY.RAW" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="CITYBACK.RAW" source="./0_CD_DATA/DATA/CITYBACK.RAW" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="VOL.RAW" source="./0_CD_DATA/DATA/VOL.RAW" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <dir name="CARS">
+                        <file name="CARBACK.RAW" source="./0_CD_DATA/DATA/CARS/CARBACK.RAW" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="CCARS.RAW" source="./0_CD_DATA/DATA/CARS/CCARS.RAW" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="HCARS.RAW" source="./0_CD_DATA/DATA/CARS/HCARS.RAW" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="RCARS.RAW" source="./0_CD_DATA/DATA/CARS/RCARS.RAW" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="VCARS.RAW" source="./0_CD_DATA/DATA/CARS/VCARS.RAW" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    </dir>
+                    <dir name="CUTS">
+                        <file name="CUTBACK.RAW" source="./0_CD_DATA/DATA/CUTS/CUTBACK.RAW" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="CCUTS.RAW" source="./0_CD_DATA/DATA/CUTS/CCUTS.RAW" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="HCUTS.RAW" source="./0_CD_DATA/DATA/CUTS/HCUTS.RAW" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="RCUTS.RAW" source="./0_CD_DATA/DATA/CUTS/RCUTS.RAW" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="VCUTS.RAW" source="./0_CD_DATA/DATA/CUTS/VCUTS.RAW" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    </dir>
+                </dir>
+                <dir name="MISSIONS">
+                    <file name="MISSIONS.BLK" source="./0_CD_DATA/MISSIONS/MISSIONS.BLK" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <file name="PATH.BIN" source="./0_CD_DATA/Overlay.path" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                <file name="LEAD.BIN" source="./0_CD_DATA/Overlay.lead" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                <dir name="MISSIONS">
+                    <file name="PATH40.0" source="./0_CD_DATA/MISSIONS/PATH40.0" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="REPLAYS">
+                    <file name="CUT1.R" source="./0_CD_DATA/REPLAYS/CUT1.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="CUT2.R" source="./0_CD_DATA/REPLAYS/CUT2.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="CUT3.R" source="./0_CD_DATA/REPLAYS/CUT3.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="CUT4.R" source="./0_CD_DATA/REPLAYS/CUT4.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="CUT5.R" source="./0_CD_DATA/REPLAYS/CUT5.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="CUT6.R" source="./0_CD_DATA/REPLAYS/CUT6.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="CUT7.R" source="./0_CD_DATA/REPLAYS/CUT7.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="CUT9.R" source="./0_CD_DATA/REPLAYS/CUT9.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="CUT10.R" source="./0_CD_DATA/REPLAYS/CUT10.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="CUT11.R" source="./0_CD_DATA/REPLAYS/CUT11.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="CUT13.R" source="./0_CD_DATA/REPLAYS/CUT13.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="CUT14.R" source="./0_CD_DATA/REPLAYS/CUT14.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="CUT16.R" source="./0_CD_DATA/REPLAYS/CUT16.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="CUT17.R" source="./0_CD_DATA/REPLAYS/CUT17.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="CUT18.R" source="./0_CD_DATA/REPLAYS/CUT18.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="CUT19.R" source="./0_CD_DATA/REPLAYS/CUT19.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <dir name="A">
+                        <file name="CUT21.R" source="./0_CD_DATA/REPLAYS/A/CUT21.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="CUT22.R" source="./0_CD_DATA/REPLAYS/A/CUT22.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="CUT23.R" source="./0_CD_DATA/REPLAYS/A/CUT23.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="CUT25.R" source="./0_CD_DATA/REPLAYS/A/CUT25.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="CUT26.R" source="./0_CD_DATA/REPLAYS/A/CUT26.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="CUT27.R" source="./0_CD_DATA/REPLAYS/A/CUT27.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="CUT29.R" source="./0_CD_DATA/REPLAYS/A/CUT29.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="CUT31.R" source="./0_CD_DATA/REPLAYS/A/CUT31.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="CUT33.R" source="./0_CD_DATA/REPLAYS/A/CUT33.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="CUT34.R" source="./0_CD_DATA/REPLAYS/A/CUT34.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="CUT38.R" source="./0_CD_DATA/REPLAYS/A/CUT38.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="CUT70.R" source="./0_CD_DATA/REPLAYS/A/CUT70.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="CUT78.R" source="./0_CD_DATA/REPLAYS/A/CUT78.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="CUT86.R" source="./0_CD_DATA/REPLAYS/A/CUT86.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="CUT94.R" source="./0_CD_DATA/REPLAYS/A/CUT94.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="CUT28.R" source="./0_CD_DATA/REPLAYS/A/CUT28.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="CUT30.R" source="./0_CD_DATA/REPLAYS/A/CUT30.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="CUT32.R" source="./0_CD_DATA/REPLAYS/A/CUT32.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="CUT35.R" source="./0_CD_DATA/REPLAYS/A/CUT35.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="CUT37.R" source="./0_CD_DATA/REPLAYS/A/CUT37.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                        <file name="CUT39.R" source="./0_CD_DATA/REPLAYS/A/CUT39.R" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    </dir>
+                    <file name="ATTRACT.400" source="./0_CD_DATA/REPLAYS/ATTRACT.400" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="ATTRACT.401" source="./0_CD_DATA/REPLAYS/ATTRACT.401" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="ATTRACT.402" source="./0_CD_DATA/REPLAYS/ATTRACT.402" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="ATTRACT.403" source="./0_CD_DATA/REPLAYS/ATTRACT.403" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="GFX">
+                    <file name="LOADCHIC.TIM" source="./0_CD_DATA/GFX/LOADCHIC.TIM" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="LOADHAVA.TIM" source="./0_CD_DATA/GFX/LOADHAVA.TIM" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="LOADRIO.TIM" source="./0_CD_DATA/GFX/LOADRIO.TIM" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="LOADVEGA.TIM" source="./0_CD_DATA/GFX/LOADVEGA.TIM" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="SOUND">
+                    <file name="VOICES2.BLK" source="./0_CD_DATA/SOUND/VOICES2.BLK" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="MUSIC.BIN" source="./0_CD_DATA/SOUND/MUSIC.BIN" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="LEVELS">
+                    <file name="CHICAGO.LEV" source="./0_CD_DATA/LEVELS/CHICAGO.LEV" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="CHICAGO.LCF" source="./0_CD_DATA/LEVELS/CHICAGO.LCF" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="CHICAGO.DEN" source="./0_CD_DATA/LEVELS/CHICAGO.DEN" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="NLEVELS">
+                    <file name="CHICAGO.LEV" source="./0_CD_DATA/NLEVELS/CHICAGO.LEV" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="LEVELS">
+                    <file name="HAVANA.LEV" source="./0_CD_DATA/LEVELS/HAVANA.LEV" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="HAVANA.LCF" source="./0_CD_DATA/LEVELS/HAVANA.LCF" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="HAVANA.DEN" source="./0_CD_DATA/LEVELS/HAVANA.DEN" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="NLEVELS">
+                    <file name="HAVANA.LEV" source="./0_CD_DATA/NLEVELS/HAVANA.LEV" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="LEVELS">
+                    <file name="VEGAS.LEV" source="./0_CD_DATA/LEVELS/VEGAS.LEV" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="VEGAS.LCF" source="./0_CD_DATA/LEVELS/VEGAS.LCF" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="VEGAS.DEN" source="./0_CD_DATA/LEVELS/VEGAS.DEN" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="NLEVELS">
+                    <file name="VEGAS.LEV" source="./0_CD_DATA/NLEVELS/VEGAS.LEV" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="LEVELS">
+                    <file name="RIO.LEV" source="./0_CD_DATA/LEVELS/RIO.LEV" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="RIO.LCF" source="./0_CD_DATA/LEVELS/RIO.LCF" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="RIO.DEN" source="./0_CD_DATA/LEVELS/RIO.DEN" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="NLEVELS">
+                    <file name="RIO.LEV" source="./0_CD_DATA/NLEVELS/RIO.LEV" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="MLEVELS">
+                    <file name="CHICAGO.LEV" source="./0_CD_DATA/MLEVELS/CHICAGO.LEV" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="MAPS">
+                    <file name="REG104.0" source="./0_CD_DATA/MAPS/REG104.0" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="REG165.0" source="./0_CD_DATA/MAPS/REG165.0" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="REG198.0" source="./0_CD_DATA/MAPS/REG198.0" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="MNLEVELS">
+                    <file name="CHICAGO.LEV" source="./0_CD_DATA/MNLEVELS/CHICAGO.LEV" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="MLEVELS">
+                    <file name="HAVANA.LEV" source="./0_CD_DATA/MLEVELS/HAVANA.LEV" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="MAPS">
+                    <file name="REG55.1" source="./0_CD_DATA/MAPS/REG55.1" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="REG108.1" source="./0_CD_DATA/MAPS/REG108.1" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="MNLEVELS">
+                    <file name="HAVANA.LEV" source="./0_CD_DATA/MNLEVELS/HAVANA.LEV" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="MLEVELS">
+                    <file name="VEGAS.LEV" source="./0_CD_DATA/MLEVELS/VEGAS.LEV" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="MAPS">
+                    <file name="REG845.2" source="./0_CD_DATA/MAPS/REG845.2" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="REG882.2" source="./0_CD_DATA/MAPS/REG882.2" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="REG942.2" source="./0_CD_DATA/MAPS/REG942.2" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="REG977.2" source="./0_CD_DATA/MAPS/REG977.2" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="MNLEVELS">
+                    <file name="VEGAS.LEV" source="./0_CD_DATA/MNLEVELS/VEGAS.LEV" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="MLEVELS">
+                    <file name="RIO.LEV" source="./0_CD_DATA/MLEVELS/RIO.LEV" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="MAPS">
+                    <file name="REG58.3" source="./0_CD_DATA/MAPS/REG58.3" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="REG135.3" source="./0_CD_DATA/MAPS/REG135.3" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="REG156.3" source="./0_CD_DATA/MAPS/REG156.3" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="REG203.3" source="./0_CD_DATA/MAPS/REG203.3" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="MNLEVELS">
+                    <file name="RIO.LEV" source="./0_CD_DATA/MNLEVELS/RIO.LEV" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="DATA">
+                    <file name="SKY0.RAW" source="./0_CD_DATA/DATA/SKY0.RAW" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="SKY1.RAW" source="./0_CD_DATA/DATA/SKY1.RAW" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="SKY2.RAW" source="./0_CD_DATA/DATA/SKY2.RAW" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="SKY3.RAW" source="./0_CD_DATA/DATA/SKY3.RAW" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="GFX">
+                    <file name="FONT2.FNT" source="./0_CD_DATA/GFX/FONT2.FNT" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="TRAILS">
+                    <file name="TRAIL.134" source="./0_CD_DATA/TRAILS/TRAIL.134" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="TRAIL.135" source="./0_CD_DATA/TRAILS/TRAIL.135" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="TRAIL.142" source="./0_CD_DATA/TRAILS/TRAIL.142" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="TRAIL.143" source="./0_CD_DATA/TRAILS/TRAIL.143" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="TRAIL.150" source="./0_CD_DATA/TRAILS/TRAIL.150" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="TRAIL.151" source="./0_CD_DATA/TRAILS/TRAIL.151" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="TRAIL.158" source="./0_CD_DATA/TRAILS/TRAIL.158" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="TRAIL.159" source="./0_CD_DATA/TRAILS/TRAIL.159" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="TRAIL.260" source="./0_CD_DATA/TRAILS/TRAIL.260" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="TRAIL.261" source="./0_CD_DATA/TRAILS/TRAIL.261" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="TRAIL.268" source="./0_CD_DATA/TRAILS/TRAIL.268" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="TRAIL.269" source="./0_CD_DATA/TRAILS/TRAIL.269" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="TRAIL.276" source="./0_CD_DATA/TRAILS/TRAIL.276" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="TRAIL.277" source="./0_CD_DATA/TRAILS/TRAIL.277" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="TRAIL.284" source="./0_CD_DATA/TRAILS/TRAIL.284" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="TRAIL.285" source="./0_CD_DATA/TRAILS/TRAIL.285" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+                <dir name="XA">
+                    <file name="XABNK01.XA" source="./0_CD_DATA/XA/XABNK01.XA" type="mixed" gmt_offs="36" xa_attrib="56" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="XABNK02.XA" source="./0_CD_DATA/XA/XABNK02.XA" type="mixed" gmt_offs="36" xa_attrib="56" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="XABNK03.XA" source="./0_CD_DATA/XA/XABNK03.XA" type="mixed" gmt_offs="36" xa_attrib="56" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="XABNK04.XA" source="./0_CD_DATA/XA/XABNK04.XA" type="mixed" gmt_offs="36" xa_attrib="56" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+            </dir>
+            <file name="DRIVER2.EXE" source="./0_CD_DATA/DRIVER2.ps-exe" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+            <dir name="DRIVER2">
+                <dir name="GFX">
+                    <file name="SPLASH2.TIM" source="./0_CD_DATA/GFX/SPLASH2.TIM" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="SPLASH3.TIM" source="./0_CD_DATA/GFX/SPLASH3.TIM" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                    <file name="SPLASH1N.TIM" source="./0_CD_DATA/GFX/SPLASH1N.TIM" type="data" gmt_offs="36" xa_perm="1365" xa_gid="0" xa_uid="0"/>
+                </dir>
+            </dir>
+        </directory_tree>
+    </track>
 </iso_project>

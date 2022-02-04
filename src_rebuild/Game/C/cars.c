@@ -20,6 +20,20 @@
 #include "glaunch.h"
 #include "ASM/rndrasm.h"
 
+struct plotCarGlobals
+{
+	u_char* primptr;
+	OTTYPE* ot;
+	u_int intensity;
+	u_short* pciv_clut;
+	u_int ShineyTPageASL16;
+	u_int ShineyClutASL16;
+	u_char* damageLevel;
+	u_char* shineyTable;
+	int ghost;
+};
+
+
 #ifndef PSX
 #define CAR_LOD_SWITCH_DISTANCE switch_detail_distance
 #else
@@ -46,7 +60,6 @@ MODEL* gDamWheelModelPtr;
 CAR_DATA* active_car_list[MAX_CARS];
 BOUND_BOX bbox[MAX_CARS];
 u_char lightsOnDelay[MAX_CARS];
-u_short civ_clut[8][32][6];
 short FrontWheelRotation[MAX_CARS]; // offset 0x0
 short BackWheelRotation[MAX_CARS]; // offset 0x30
 
@@ -62,6 +75,10 @@ CAR_MODEL NewLowCarModel[MAX_CAR_MODELS];
 MODEL* gCarLowModelPtr[MAX_CAR_MODELS];
 MODEL* gCarDamModelPtr[MAX_CAR_MODELS];
 MODEL* gCarCleanModelPtr[MAX_CAR_MODELS];
+
+// pedestrian palette at 0 and next are cars
+// model_id, texture_number, palette
+u_short civ_clut[8][32][6];
 
 int whichCP = 0;
 int baseSpecCP = 0;
@@ -327,11 +344,12 @@ void setupLightingMatrices(void)
 
 	if (gTimeOfDay == 3)
 	{
-		gte_ldbkdir(0x400, 0x400, 0x400);
-		return;
+		gte_SetBackColor(64, 64, 64);
 	}
-
-	gte_ldbkdir(0x8c0, 0x8c0, 0x8c0);
+	else
+	{
+		gte_SetBackColor(140, 140, 140);
+	}
 }
 
 // [D] [T]
@@ -564,7 +582,7 @@ void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	MODEL *WheelModelBack;
 	MODEL *WheelModelFront;
 
-#ifdef PSX
+#if 0 //def PSX
 	MATRIX& FrontMatrix = *(MATRIX*)(u_char*)getScratchAddr(0);
 	MATRIX& SteerMatrix = *(MATRIX*)((u_char*)getScratchAddr(0) + sizeof(MATRIX));
 	VECTOR& WheelPos = *(VECTOR*)((u_char*)getScratchAddr(0) + sizeof(MATRIX) * 2);
@@ -785,7 +803,7 @@ void PlayerCarFX(CAR_DATA *cp)
 // [D] [T]
 void plotNewCarModel(CAR_MODEL* car, int palette)
 {
-#ifdef PSX
+#if 0 //def PSX
 	plotCarGlobals& _pg = *(plotCarGlobals*)(u_char*)getScratchAddr(0);
 #else
 	plotCarGlobals _pg;
@@ -874,8 +892,7 @@ void buildNewCars(void)
 // [D] [T]
 void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 {
-	u_char ptype;
-	u_char clut;
+	u_char ptype, clut;
 	u_char *polyList;
 	CAR_POLY *cp;
 
@@ -908,10 +925,9 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 			else if (pass == 2)
 				car->pB3 = carPolyBuffer + whichCP;
 
-			i = 0;
 			newNumPolys = whichCP;
 
-			while (newNumPolys < 2000 && i < model->num_polys)
+			for (i = 0; newNumPolys < 2000 && i < model->num_polys; i++)
 			{
 				ptype = *polyList;
 
@@ -936,7 +952,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 							cp->vindices = M_INT_4R(polyList[4], polyList[5], polyList[6], 0); 
 							cp->originalindex = i;
 
-							cp = carPolyBuffer + newNumPolys + 1;
+							cp++;
 
 							cp->vindices = M_INT_4R(polyList[4], polyList[6], polyList[7], 0);
 							cp->originalindex = i;
@@ -969,7 +985,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 							cp->uv3_uv2 = *(ushort*)&pft4->uv2;
 							cp->originalindex = i;
 
-							cp = carPolyBuffer + newNumPolys + 1;
+							cp++;
 						
 							cp->vindices = M_INT_4R(pft4->v0, pft4->v2, pft4->v3, 0);
 							cp->clut_uv0 = M_INT_2(texture_cluts[polyList[1]][polyList[2]], *(ushort*)&pft4->uv0);
@@ -1013,7 +1029,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 							cp->uv3_uv2 = *(ushort*)&pgt4->uv2;
 							cp->originalindex = i;
 
-							cp = carPolyBuffer + newNumPolys + 1;
+							cp++;
 
 							cp->vindices = M_INT_4R(pgt4->v0, pgt4->v2, pgt4->v3, 0);
 							cp->nindices = M_INT_4R(pgt4->n0, pgt4->n2, pgt4->n3, 0);
@@ -1027,7 +1043,6 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 				}
 
 				polyList += PolySizes[ptype & 0x1f];
-				i++;
 			}
 
 			if (pass == 1) 
@@ -1047,13 +1062,10 @@ void MangleWheelModels(void)
 {
 	UV_INFO tmpUV2;
 	u_char tmpUV;
-	int i;
-	u_int v0;
-	u_int v1;
-	u_int v2;
+	u_int v0, v1, v2;
 	POLYFT4*src;
 	MODEL *m;
-	int j;
+	int i, j;
 
 	for (i = 0; i < 3; i++)
 	{

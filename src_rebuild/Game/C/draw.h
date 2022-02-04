@@ -1,6 +1,26 @@
 #ifndef DRAW_H
 #define DRAW_H
 
+// Primitive plot context used in scratchpad
+struct _pct
+{
+	struct DB* current;
+	u_short(*ptexture_pages)[128];
+	u_short(*ptexture_cluts)[128][32];
+	int f4colourTable[32];
+	int* polySizes;
+	char* primptr;
+	OTTYPE* ot;
+	u_int clut;
+	u_int tpage;
+	u_int colour;
+	int flags;
+	SVECTOR* verts;
+	u_int lastTexInfo;
+	int scribble[8];
+	int model;
+};
+
 extern SVECTOR day_vectors[4];
 extern SVECTOR night_vectors[4];
 extern SVECTOR day_colours[4];

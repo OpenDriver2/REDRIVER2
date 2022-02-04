@@ -1,6 +1,13 @@
 #ifndef COP_AI_H
 #define COP_AI_H
 
+struct COP_SIGHT_DATA
+{
+	short surroundViewDistance;
+	short frontViewDistance;
+	short frontViewAngle;
+};
+
 extern COP_DATA gCopData;
 extern COP_SIGHT_DATA copSightData;
 extern VECTOR roadblockLoc;

@@ -17,6 +17,20 @@
 #include "pad.h"
 #include "ASM/rnc_2.h"
 
+struct MAPTEX
+{
+	short u, w, v, h;
+};
+
+struct OVERMAP
+{
+	int x_offset, y_offset;
+	int width, height;
+	u_char toptile;
+	u_char dummy;
+	int scale;
+};
+
 OVERMAP overlaidmaps[4] =
 {
 	{ 197, 318, 384, 672, 252, 0x99, 2145 },
@@ -101,8 +115,8 @@ void DrawTargetBlip(VECTOR *pos, u_char r, u_char g, u_char b, int flags)
 	{
 		WorldToMultiplayerMap(pos, &vec);
 
-		vec.vx += gMapXOffset;
-		vec.vz += 96;
+		vec.vx += map_minX;
+		vec.vz += map_minY;
 	}
 	else if (flags & 0x8)
 	{
@@ -286,7 +300,7 @@ void DrawPlayerDot(VECTOR *pos, short rot, u_char r, u_char g, u_char b, int fla
 		WorldToMultiplayerMap(pos, &vec);
 	
 		vec.vx += gMapXOffset;
-		vec.vz += 96;
+		vec.vz += gMapYOffset;
 	}
 	else 
 	{
@@ -682,8 +696,12 @@ void DrawBigCompass(VECTOR *root, int angle)
 // [D] [T]
 void CopIndicator(int xpos, int strength)
 {
+	int startH, endH;
 	int str2;
 	POLY_F3 *poly;
+
+	startH = SCREEN_H;
+	endH = SCREEN_H - 30;
 
 	if (strength > 255)
 		strength = 255;
@@ -700,11 +718,11 @@ void CopIndicator(int xpos, int strength)
 	poly->g0 = str2;
 	poly->b0 = str2;
 	poly->x0 = xpos - 12;
-	poly->y0 = 256;
+	poly->y0 = startH;
 	poly->x1 = xpos;
-	poly->y1 = 226;
+	poly->y1 = endH;
 	poly->x2 = xpos + 12;
-	poly->y2 = 256;
+	poly->y2 = startH;
 
 	addPrim(current->ot + 1, poly);
 	current->primptr += sizeof(POLY_F3);
@@ -723,10 +741,10 @@ void CopIndicator(int xpos, int strength)
 	poly->b0 = str2;
 
 	poly->x0 = xpos - 12;
-	poly->y0 = 256;
-	poly->y1 = 226;
+	poly->y0 = startH;
+	poly->y1 = endH;
 	poly->x2 = xpos + 12;
-	poly->y2 = 256;
+	poly->y2 = startH;
 	poly->x1 = xpos;
 
 	addPrim(current->ot + 1, poly);
@@ -890,14 +908,13 @@ void InitMultiplayerMap(void)
 // [D] [T]
 void InitOverheadMap(void)
 {
-	int d;
-	int c;
+	int c, d;
 	int tpage;
 
 	if (NumPlayers > 1)
-		gMapYOffset = 96;
+		gMapYOffset = (SCREEN_H - MAP_SIZE_H) / 2 - 2;
 	else
-		gMapYOffset = 181;
+		gMapYOffset = SCREEN_H - MAP_SIZE_H - 15;
 
 	if (gMultiplayerLevels) 
 	{
@@ -977,26 +994,25 @@ void DrawMultiplayerMap(void)
 	int i;
 	u_char g;
 	u_char r;
-	int yPos;
+	int xPos, yPos;
 	VECTOR target;
 	int px, py;
 
 	map_x_offset = 0;
 	map_z_offset = 0;
 
-	if (NumPlayers == 1)
-		yPos = gMapYOffset;
-	else
-		yPos = 96;
+	xPos = gMapXOffset;
+	yPos = gMapYOffset;
 
 	DrawMultiplayerTargets();
 
-	pl = player;
 	r = 255;
 	g = 0;
 
-	i = 0;
-	do {
+	for (i = 0; i < NumPlayers; i++) 
+	{
+		pl = &player[i];
+
 		target.vx = pl->pos[0];
 		target.vz = pl->pos[2];
 
@@ -1004,18 +1020,14 @@ void DrawMultiplayerMap(void)
 
 		WorldToMultiplayerMap(&target, &target);
 
-		target.vx += gMapXOffset;
+		target.vx += xPos;
 		target.vz += yPos;
 
 		DrawPlayerDot(&target, -pl->dir, r, g, 0, 0x8);
 
-		pl++;
-
 		r++;
 		g--;
-
-		i++;
-	} while (i < NumPlayers);
+	}
 
 	draw_box(yPos, 64);
 
@@ -1024,12 +1036,12 @@ void DrawMultiplayerMap(void)
 	setPolyFT4(poly);
 	setSemiTrans(poly, 1);
 
-	poly->x0 = gMapXOffset;
+	poly->x0 = xPos;
 	poly->y0 = yPos;
-	poly->x1 = gMapXOffset + MAP_SIZE_W;
+	poly->x1 = xPos + MAP_SIZE_W;
 	poly->y1 = yPos;
-	poly->x2 = gMapXOffset;
-	poly->x3 = gMapXOffset + MAP_SIZE_W;
+	poly->x2 = xPos;
+	poly->x3 = xPos + MAP_SIZE_W;
 	poly->y2 = yPos + 64;
 	poly->y3 = yPos + 64;
 
@@ -1346,7 +1358,7 @@ void DrawOverheadMap(void)
 			th = MapTex[i].h - 1;
 #ifndef PSX
 			// make map fully detailed when filtering is not available
-			if (!g_bilinearFiltering)
+			if (!g_cfg_bilinearFiltering)
 			{
 				tw += 1;
 				th += 1;
@@ -1503,7 +1515,7 @@ void DrawFullscreenMap(void)
 #ifndef PSX
 	/* It will look funny when enabled
 	// make map fully detailed when filtering is not available
-	if (!g_bilinearFiltering)
+	if (!g_cfg_bilinearFiltering)
 	{
 		tw += 1;
 		th += 1;
@@ -1799,7 +1811,7 @@ void DrawFullscreenMap(void)
 
 	// print string with special characters representing some images inserted into it
 	sprintf(str, "\x80 %s \x81 %s \x8a %s", G_LTXT(GTXT_Exit), G_LTXT(GTXT_Rotation), G_LTXT(GTXT_Move));
-	PrintStringCentred(str, 226);
+	PrintStringCentred(str, SCREEN_H - 30); // 226
 }
 
 // [D] [T]

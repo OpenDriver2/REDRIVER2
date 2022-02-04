@@ -1,6 +1,18 @@
 #ifndef SPOOL_H
 #define SPOOL_H
 
+struct Spool
+{
+	u_short offset;
+	u_char connected_areas[2];
+	u_char pvs_size;
+	u_char cell_data_size[3];
+	u_char super_region;
+	u_char num_connected_areas;
+	u_char roadm_size;
+	u_char roadh_size;
+};
+
 extern int cell_objects_add[5];
 extern int cell_slots_add[5];
 

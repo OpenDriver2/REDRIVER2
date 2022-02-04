@@ -4,7 +4,7 @@
 extern char gCurrentReplayFilename[64];
 
 extern void LoadCurrentProfile(int init);
-extern void SaveCurrentProfile();
+extern void SaveCurrentProfile(int showMessage);
 
 extern int LoadCurrentGame();
 extern void SaveCurrentGame();

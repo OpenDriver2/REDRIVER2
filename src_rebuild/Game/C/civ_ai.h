@@ -1,6 +1,17 @@
 #ifndef CIV_AI_H
 #define CIV_AI_H
 
+typedef struct _EXTRA_CIV_DATA
+{
+	int surfInd;
+	int distAlongSegment;
+	short angle;
+	u_short ctrlState;
+	int thrustState;
+	u_char palette;
+	u_char controlFlags;
+} EXTRA_CIV_DATA;
+
 extern const u_char speedLimits[3];
 extern unsigned char reservedSlots[MAX_CARS];
 extern int frameStart;

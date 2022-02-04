@@ -1,6 +1,17 @@
 #ifndef PRES_H
 #define PRES_H
 
+struct OUT_FONTINFO
+{
+	u_char x;
+	u_char y;
+	char offx;
+	char offy;
+	u_char width;
+	u_char height;
+	u_short pad;
+};
+
 extern short fonttpage;
 
 extern void InitButtonTextures(); // 0x00074E54

@@ -19,6 +19,14 @@
 #include "pedest.h"
 #include "pres.h"
 
+enum AIZone
+{
+	zoneFrnt = 0,
+	zoneBack = 1,
+	zoneLeft = 2,
+	zoneRght = 3,
+};
+
 struct iVectNT
 {
 	int n;
@@ -846,7 +854,7 @@ void ControlCopDetection(void)
 					}
 
 					// [A] also check player elevation from cops (block cops vision from bridges, tunnels etc)
-					if (spotted && ABS(cp->hd.where.t[1] - vec.vy) < 1500) 
+					if (spotted && ABS(cp->hd.where.t[1] - vec.vy) < 1000) 
 					{
 						CopsCanSeePlayer = 1;
 						break;

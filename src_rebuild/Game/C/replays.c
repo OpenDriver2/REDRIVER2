@@ -21,7 +21,7 @@ int gOutOfTape = 0;
 
 REPLAY_PARAMETER_BLOCK *ReplayParameterPtr = NULL;
 
-REPLAY_STREAM ReplayStreams[8];
+REPLAY_STREAM ReplayStreams[MAX_REPLAY_STREAMS];
 int NumReplayStreams = 1;
 
 char *ReplayStart;

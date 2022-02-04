@@ -394,7 +394,7 @@ void InitializeMissionSound(void)
 		{
 			es_mobile[0] = AddEnvSnd(3, 0x20, SOUND_BANK_MISSION, GetMissionSound(14), 0, -10000, 0, 0, 0);
 		}
-		else if (gCurrentMissionNumber == 0x14)
+		else if (gCurrentMissionNumber == 20)
 		{
 			jericho_in_back = 1;
 		}

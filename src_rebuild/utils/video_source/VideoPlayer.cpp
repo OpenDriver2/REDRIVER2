@@ -10,6 +10,7 @@
 #include "C/system.h"
 #include "C/E3stuff.h"
 #include "C/fmv_font.h"
+#include "C/fmvplay.h"
 
 #include <AL/al.h>
 #include <jpeglib.h>

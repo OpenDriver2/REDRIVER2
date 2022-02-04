@@ -4,6 +4,12 @@
 // DRIVER 2 game engine limits
 // please populate this file only with engine limits during refactoring
 
+#ifndef PSX
+#define MAX_PLAYERS				16			// used for replay streams mostly
+#else
+#define MAX_PLAYERS				8			// used for replay streams mostly
+#endif
+
 #define MAX_MODEL_SLOTS			1536		// DO NOT CHANGE. No effect in upping it - limited by cell types
 #define MAX_CARS				20
 
@@ -30,6 +36,16 @@
 #define MAX_DENTING_LOD_UVS		134
 #endif
 
+// Tyre track visuals
+#define MAX_TYRE_PLAYERS		4
+#ifndef PSX
+#define MAX_TYRE_TRACK_WHEELS	4
+#define MAX_TYRE_TRACK_PLAYERS	4
+#else
+#define MAX_TYRE_TRACK_WHEELS	2
+#define MAX_TYRE_TRACK_PLAYERS	2
+#endif
+
 // Mission limits
 // DO NOT EDIT, breaks compatibility!
 #define MAX_MISSION_THREADS		16
@@ -37,6 +53,7 @@
 
 // replay definitions.
 // DO NOT EDIT, breaks compatibility!
+#define MAX_REPLAY_STREAMS		MAX_PLAYERS
 #define MAX_REPLAY_CAMERAS		60
 #define MAX_REPLAY_WAYPOINTS	150
 #define MAX_REPLAY_PINGS		400

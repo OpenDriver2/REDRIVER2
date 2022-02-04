@@ -406,12 +406,7 @@ void LoadGameLevel(void)
 	sector = citylumps[GameLevel][CITYLUMP_DATA1].x / CDSECTOR_SIZE;
 	nsectors = citylumps[GameLevel][CITYLUMP_DATA1].y / CDSECTOR_SIZE;
 
-#ifdef PSX 
 	loadsectors((char*)_primTab1, sector, nsectors);
-#else
-	extern char g_CurrentLevelFileName[64];
-	loadsectorsPC(g_CurrentLevelFileName, (char*)_primTab1, sector, nsectors);
-#endif // PSX
 
 	sector += nsectors;
 
@@ -428,12 +423,8 @@ void LoadGameLevel(void)
 	malloc_lump = D_MALLOC(nsectors * CDSECTOR_SIZE);
 	D_MALLOC_END();
 
-#ifdef PSX
 	loadsectors(malloc_lump, sector, nsectors);
-#else
-	extern char g_CurrentLevelFileName[64];
-	loadsectorsPC(g_CurrentLevelFileName, malloc_lump, sector, nsectors);
-#endif // PSX
+
 	sector += nsectors;
 	
 	// CITYLUMP_DATA2 - in-memory lump
@@ -647,11 +638,10 @@ void State_GameInit(void* param)
 		plStart = PlayerStartInfo[i];
 		padid = -i;
 
+		gStartOnFoot = (plStart->type == 2);
+
 		if (i < NumPlayers)
-		{
-			gStartOnFoot = (plStart->type == 2);
 			padid = i;
-		}
 
 		InitPlayer(&player[i], &car_data[i], plStart->controlType, plStart->rotation, (LONGVECTOR4 *)&plStart->position, plStart->model, plStart->palette, &padid);
 
@@ -841,7 +831,6 @@ int num_active_cars = 0;
 u_int lead_pad = 0;
 
 int numInactiveCars = 0;
-int leadCarId = 0;
 
 VECTOR leadcar_pos;
 
@@ -882,7 +871,7 @@ void StepSim(void)
 		pauseflag = 1;
 	}
 
-	oldsp = SetSp((u_long)((u_char*)getScratchAddr(0) + 0x3e8)); // i don't know what this does
+	//oldsp = SetSp((u_long)((u_char*)getScratchAddr(0) + 0x3e8)); // i don't know what this does
 
 	lead_pad = (u_int)controller_bits;
 
@@ -1062,7 +1051,7 @@ void StepSim(void)
 
 				break;
 			case CONTROL_TYPE_CUTSCENE:
-				if (!_CutRec_RecordPad(cp, &t0, &t1, &t2))
+				if (!_CutRec_RecordCarPad(cp, &t0, &t1, &t2))
 					cjpPlay(-*cp->ai.padid, &t0, &t1, &t2);
 			
 				ProcessCarPad(cp, t0, t1, t2);
@@ -1073,7 +1062,7 @@ void StepSim(void)
 	}
 
 	// Update players
-	for (i = 0; i < 8; i++)
+	for (i = 0; i < MAX_PLAYERS; i++)
 	{
 		pl = &player[i];
 
@@ -1082,64 +1071,62 @@ void StepSim(void)
 
 		stream = pl->padid;
 
-		if (stream < 0)
+		if (stream < 0) // Is cutscene stream?
 		{
-			if (cjpPlay(-stream, &t0, &t1, &t2) != 0)
+			if (!_CutRec_RecordPad(pl, &t0, &t1, &t2) && cjpPlay(-stream, &t0, &t1, &t2) != 0)
 				ProcessTannerPad(pl->pPed, t0, t1, t2);
+
+			continue;
+		}
+
+		if (Pads[stream].type == 4)
+		{
+			padAcc = Pads[stream].mapanalog[3];
+
+			// walk back
+			if (padAcc < -64)
+			{
+				if(padAcc < -100)
+					Pads[stream].mapped |= 0x1000;
+				else
+					Pads[stream].mapped |= 0x1008;
+			}
+			else if (padAcc > 32)
+			{
+				stream = pl->padid;
+				Pads[stream].mapped |= 0x4000;
+			}
+		}
+
+		t0 = Pads[stream].mapped;
+		t1 = Pads[stream].mapanalog[2];
+		t2 = Pads[stream].type & 4;
+
+		// [A] handle REDRIVER2 dedicated car entry button
+		if (t0 & TANNER_PAD_ACTION_DED)
+		{
+			t0 &= ~TANNER_PAD_ACTION_DED;
+			t0 |= TANNER_PAD_ACTION;
+		}
+
+		if (NoPlayerControl == 0)
+		{
+			if (gStopPadReads)
+			{
+				t2 = 0;
+				t1 = 0;
+				t0 = 0;
+			}
+
+			cjpRecord(stream, &t0, &t1, &t2);
 		}
 		else
 		{
-			if (Pads[stream].type == 4)
-			{
-				padAcc = Pads[stream].mapanalog[3];
-
-				// walk back
-				if (padAcc < -64)
-				{
-					if(padAcc < -100)
-						Pads[stream].mapped |= 0x1000;
-					else
-						Pads[stream].mapped |= 0x1008;
-				}
-				else if (padAcc > 32)
-				{
-					stream = pl->padid;
-					Pads[stream].mapped |= 0x4000;
-				}
-			}
-
-			stream = pl->padid;
-
-			t0 = Pads[stream].mapped;
-			t1 = Pads[stream].mapanalog[2];
-			t2 = Pads[stream].type & 4;
-
-			// [A] handle REDRIVER2 dedicated car entry button
-			if (t0 & TANNER_PAD_ACTION_DED)
-			{
-				t0 &= ~TANNER_PAD_ACTION_DED;
-				t0 |= TANNER_PAD_ACTION;
-			}
-
-			if (NoPlayerControl == 0)
-			{
-				if (gStopPadReads)
-				{
-					t2 = 0;
-					t1 = 0;
-					t0 = 0;
-				}
-
-				cjpRecord(stream, &t0, &t1, &t2);
-			}
-			else
-			{
-				if (cjpPlay(stream, &t0, &t1, &t2) == 0)
-					continue;
-			}
-
-			ProcessTannerPad(pl->pPed, t0, t1, t2);
+			if (cjpPlay(stream, &t0, &t1, &t2) == 0)
+				continue;
 		}
+
+		ProcessTannerPad(pl->pPed, t0, t1, t2);
 	}
 
 	if (requestStationaryCivCar == 1 && (numCivCars < maxCivCars || (PingOutCar(&car_data[furthestCivID]), numCivCars < maxCivCars)))
@@ -1161,7 +1148,7 @@ void StepSim(void)
 	DoScenaryCollisions();
 	CheckPlayerMiscFelonies();
 
-	SetSp(oldsp);
+	//SetSp(oldsp);
 
 	CameraCnt++;
 
@@ -1212,15 +1199,27 @@ void StepSim(void)
 
 	static int stupid_logic[4];
 
-	// "Car Bomb"?
-	if (gInGameCutsceneActive != 0 && gCurrentMissionNumber == 23 && gInGameCutsceneID == 0)
-		stupid_logic[0] = 2;
+#if MAX_TYRE_TRACK_PLAYERS > 2
+	if (gInGameCutsceneActive != 0)
+	{
+		for (i = 0; i < 4; i++)
+		{
+			stupid_logic[i] = player[i + NumPlayers].playerCarId;
+		}
+	}
 	else
-		stupid_logic[0] = player[0].playerCarId;
+#endif
+	{
+		// "Car Bomb"?
+		if (gInGameCutsceneActive != 0 && gCurrentMissionNumber == 23 && gInGameCutsceneID == 0)
+			stupid_logic[0] = 2;
+		else
+			stupid_logic[0] = player[0].playerCarId;
 
-	stupid_logic[1] = player[1].playerCarId;
-	stupid_logic[2] = gThePlayerCar;
-	stupid_logic[3] = leadCarId;
+		stupid_logic[1] = player[1].playerCarId;
+		stupid_logic[2] = gThePlayerCar;
+		stupid_logic[3] = player[0].targetCarId; // [A]
+	}
 
 	for (i = 0; i < 3; i++)
 	{
@@ -1231,7 +1230,7 @@ void StepSim(void)
 		}
 	}
 
-	for (car = 0, i = 0; car < 4 && i < 2; car++)
+	for (car = 0, i = 0; car < 4; car++)
 	{
 		if (stupid_logic[car] != -1 && SilenceThisCar(car) == 0)
 		{
@@ -1306,19 +1305,15 @@ void StepGame(void)
 	if ((padd & 0x2000U) && (padd & 0x8000U))
 		padd &= ~0xA000;
 
-	i = NumPlayers;
 	controller_bits = padd;
 
-	pl = player;
-	while (i >= 0)
+	for (i = 0; i < NumPlayers; i++)
 	{
+		pl = &player[i];
 		if (pl->horn.time == 0 || pl->horn.on == 0)
 			pl->horn.time = 0;
 		else
 			pl->horn.time--;
-
-		i--;
-		pl++;
 	}
 
 	ModifyCamera();
@@ -1493,12 +1488,12 @@ void CheckForPause(void)
 		{
 			if (NumPlayers == 1)
 			{
-				if (paddp == 0x800 && bMissionTitleFade == 0) // [A] && gInGameCutsceneActive == 0)		// allow pausing during cutscene
+				if (paddp == MPAD_START && bMissionTitleFade == 0) // [A] && gInGameCutsceneActive == 0)		// allow pausing during cutscene
 				{
 					EnablePause(PAUSEMODE_PAUSE);
 				}
 			}
-			else if (paddp == 0x800)
+			else if (paddp == MPAD_START)
 			{
 				EnablePause(PAUSEMODE_PAUSEP1);
 			}
@@ -2121,7 +2116,7 @@ int redriver2_main(int argc, char** argv)
 	DoStateLoop();
 
 #ifndef PSX
-	SaveCurrentProfile();
+	SaveCurrentProfile(1);
 #endif
 
 	return 1;
@@ -2323,7 +2318,7 @@ void RenderGame2(int view)
 			colour = 32 - colour;
 
 		SetTextColour((colour & 0x1f) << 3, 0, 0);
-		PrintString(G_LTXT(GTXT_DEMO), 32, 15);
+		PrintString(G_LTXT(GTXT_DEMO), gOverlayXPos, 15);
 	}
 
 	for (i = 0; i < 2; i++)

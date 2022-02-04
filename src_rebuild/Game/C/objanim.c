@@ -32,6 +32,13 @@ struct GARAGE_DOOR
 	char yang;
 };
 
+struct CYCLE_OBJECT
+{
+	char* name;
+	short vx, vy;
+	short start1, stop1, speed1;
+	short start2, stop2, speed2;
+};
 
 CYCLE_OBJECT Lev0[2] =
 {
@@ -410,21 +417,6 @@ void DrawAllAnimatingObjects(CELL_OBJECT** objects, int num_animated)
 
 		// [A] optimized
 		animate_object(cop, aop[model->normals].internal_id);
-		
-#if 0
-		type = model->instance_number == -1 ? type : model->instance_number;
-		for (j = 0; j < num_anim_objects; j++)
-		{
-			if (type == aop->model_num)
-			{
-				animate_object(cop, aop->internal_id);
-				aop -= j;
-				break;
-			}
-
-			aop++;
-		}
-#endif
 	}
 }
 
