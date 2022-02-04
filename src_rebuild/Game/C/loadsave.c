@@ -177,7 +177,7 @@ void LoadCurrentProfile(int init)
 }
 
 // [A] saves config to file
-void SaveCurrentProfile()
+void SaveCurrentProfile(int showMessage)
 {
 #ifndef PSX
 	int dataSize;
@@ -188,8 +188,11 @@ void SaveCurrentProfile()
 
 	strcat(filePath, "/config.dat");
 
-	SetTextColour(128, 128, 64);
-	ShowSavingWaitMessage(G_LTXT(GTXT_SavingConfiguration), 0);
+	if (showMessage)
+	{
+		SetTextColour(128, 128, 64);
+		ShowSavingWaitMessage(G_LTXT(GTXT_SavingConfiguration), 0);
+	}
 
 	dataSize = 0;
 	if (SaveConfigData((char*)_other_buffer))
@@ -207,7 +210,7 @@ void SaveCurrentProfile()
 		error = 0;
 	}
 
-	if (error)
+	if (error && showMessage)
 	{
 		SetTextColour(128, 0, 0);
 		ShowSavingWaitMessage(G_LTXT(GTXT_SavingError), 0);

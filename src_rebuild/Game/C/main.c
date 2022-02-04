@@ -2116,7 +2116,7 @@ int redriver2_main(int argc, char** argv)
 	DoStateLoop();
 
 #ifndef PSX
-	SaveCurrentProfile();
+	SaveCurrentProfile(1);
 #endif
 
 	return 1;

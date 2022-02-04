@@ -530,7 +530,7 @@ void SetVariable(int var)
 			if (value == 0) 
 			{
 				// [A] save configuration
-				SaveCurrentProfile();
+				SaveCurrentProfile(1);
 			}
 			else 
 			{

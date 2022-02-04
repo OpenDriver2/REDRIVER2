@@ -1661,6 +1661,10 @@ int MRCommand(MR_THREAD *thread, u_int cmd)
 			AvailableCheats.cheat4 = 1;
 		}
 
+#ifndef PSX
+		SaveCurrentProfile(0);
+#endif
+
 		return 1;
 	}
 	else if (cmd == 0x1000090)			// SetRaining
