@@ -675,6 +675,27 @@ void DisplayOverlays(void)
 {
 	short* felony;
 
+#ifndef PSX
+	if (gWidescreenOverlayAlign)
+	{
+		// align to PSX-mapped screen coordinates
+		RECT16 emuViewport;
+		PsyX_GetPSXWidescreenMappedViewport(&emuViewport);
+
+		// recalc pos
+		gOverlayXPos = 16 + emuViewport.x;
+		gOverlayXOppPos = emuViewport.w - 16 - PERCENTAGE_BAR_WIDTH;
+		gMapXOffset = emuViewport.w - 16 - MAP_SIZE_W;
+
+		// set up
+		PlayerDamageBar.xpos = gOverlayXPos;
+		Player2DamageBar.xpos = gOverlayXPos;
+		FelonyBar.xpos = gOverlayXPos;
+		DamageBar.xpos = gOverlayXOppPos;
+		ProxyBar.xpos = gOverlayXPos;
+	}
+#endif
+
 	if (NoPlayerControl || gInGameCutsceneActive || gInGameCutsceneDelay)
 		return;
 
@@ -694,27 +715,6 @@ void DisplayOverlays(void)
 
 		if (!gDoOverlays)
 			return;
-
-#ifndef PSX
-		if (gWidescreenOverlayAlign)
-		{
-			// align to PSX-mapped screen coordinates
-			RECT16 emuViewport;
-			PsyX_GetPSXWidescreenMappedViewport(&emuViewport);
-
-			// recalc pos
-			gOverlayXPos = 16 + emuViewport.x;
-			gOverlayXOppPos = emuViewport.w - 16 - PERCENTAGE_BAR_WIDTH;
-			gMapXOffset = emuViewport.w - 16 - MAP_SIZE_W;
-
-			// set up
-			PlayerDamageBar.xpos = gOverlayXPos;
-			Player2DamageBar.xpos = gOverlayXPos;
-			FelonyBar.xpos = gOverlayXPos;
-			DamageBar.xpos = gOverlayXOppPos;
-			ProxyBar.xpos = gOverlayXPos;
-		}
-#endif
 
 		if(!gInvincibleCar || ActiveCheats.cheat3)
 		{

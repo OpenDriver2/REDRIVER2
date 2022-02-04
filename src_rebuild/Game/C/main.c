@@ -2318,7 +2318,7 @@ void RenderGame2(int view)
 			colour = 32 - colour;
 
 		SetTextColour((colour & 0x1f) << 3, 0, 0);
-		PrintString(G_LTXT(GTXT_DEMO), 32, 15);
+		PrintString(G_LTXT(GTXT_DEMO), gOverlayXPos, 15);
 	}
 
 	for (i = 0; i < 2; i++)
