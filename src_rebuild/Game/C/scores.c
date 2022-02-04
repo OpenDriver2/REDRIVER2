@@ -2,6 +2,7 @@
 #include "scores.h"
 #include "glaunch.h"
 #include "mission.h"
+#include "loadsave.h"
 
 SCORE_TABLES ScoreTables;
 PLAYER_SCORE gPlayerScore;
@@ -55,6 +56,10 @@ void AddScoreToTable(SCORE_ENTRY *table, int entry)
 	table->items = gPlayerScore.items;
 
 	strcpy(table->name, gPlayerScore.name);
+
+#ifndef PSX
+	SaveCurrentProfile(1);
+#endif
 }
 
 // [D] [T]
