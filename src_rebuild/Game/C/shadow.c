@@ -76,19 +76,20 @@ void GetTyreTrackPositions(CAR_DATA *cp, int player_id)
 	CarPos.vz = cp->hd.where.t[2];
 
 	car_cos = cp->ap.carCos;
-	SetRotMatrix(&cp->hd.drawCarMat);
+	SetRotMatrix(&cp->hd.where);
 
 	steps = 4 / MAX_TYRE_TRACK_WHEELS;
 
 	for (loop = 0; loop < 4; loop += steps)
 	{
+		WheelPos.vx = car_cos->wheelDisp[loop].vx;
 		if (loop & 2) 
-			WheelPos.vx = car_cos->wheelDisp[loop].vx + 17;
+			WheelPos.vx += 17;
 		else
-			WheelPos.vx = car_cos->wheelDisp[loop].vx - 17;
+			WheelPos.vx -= 17;
 
 		WheelPos.vy = 0;
-		WheelPos.vz = -car_cos->wheelDisp[loop + 1 & 3].vz;
+		WheelPos.vz = car_cos->wheelDisp[loop + 1 & 3].vz;
 
 		_MatrixRotate(&WheelPos);
 

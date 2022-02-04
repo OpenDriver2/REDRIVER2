@@ -1490,10 +1490,6 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 	char tracks_and_smoke;
 	char channel, desired_skid, desired_wheel;
 
-	wheels_on_ground = 0;
-	lay_down_tracks = 0;
-	tracks_and_smoke = 0;
-
 	if (cp->controlType != CONTROL_TYPE_PLAYER && 
 		cp->controlType != CONTROL_TYPE_LEAD_AI && 
 		cp->controlType != CONTROL_TYPE_CUTSCENE)
@@ -1507,6 +1503,10 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 
 	// [A] do hubcaps here
 	HandlePlayerHubcaps(player_id);
+
+	wheels_on_ground = 0;
+	lay_down_tracks = 0;
+	tracks_and_smoke = 0;
 
 	for (cnt = 0; cnt < 4; cnt++)
 	{
@@ -1678,10 +1678,10 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 	{
 #if MAX_TYRE_TRACK_WHEELS == 4
 		ADD_WHEEL_TYRE_TRACK(0, 0)
-			ADD_WHEEL_TYRE_TRACK(2, 2)
+		ADD_WHEEL_TYRE_TRACK(2, 2)
 #else
 		ADD_WHEEL_TYRE_TRACK(0, 0)
-			ADD_WHEEL_TYRE_TRACK(2, 1)
+		ADD_WHEEL_TYRE_TRACK(2, 1)
 #endif
 	}
 	else
@@ -1699,7 +1699,7 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 	if (lay_down_tracks & 2) // front
 	{
 		ADD_WHEEL_TYRE_TRACK(1, 1)
-			ADD_WHEEL_TYRE_TRACK(3, 3)
+		ADD_WHEEL_TYRE_TRACK(3, 3)
 	}
 	else
 	{
