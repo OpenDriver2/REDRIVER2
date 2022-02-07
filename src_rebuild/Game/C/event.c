@@ -3421,22 +3421,6 @@ VECTOR* TriggerEvent(int i)
 		return NULL;
 	}
 
-	if (GameLevel >= 2 && i > 0 && i < 4) // Vegas and Rio detonators
-	{
-		if (stage[i] == 0)
-		{
-			ev = &firstMissionEvent[i - 1];
-
-			ev->next = firstEvent->next;
-			firstEvent->next = ev;
-
-			VisibilityLists(VIS_ADD, ev - event);
-			SetMSoundVar(i, NULL);
-
-			detonator.count++;
-		}
-	}
-	else
 	{
 		if (GameLevel == 0)
 		{
@@ -3613,6 +3597,25 @@ VECTOR* TriggerEvent(int i)
 
 					event[1].next = &event[2];
 					break;
+				case 1:
+				case 2:
+				case 3:
+					if (gCurrentMissionNumber == 30)
+					{
+						if (stage[i] == 0)
+						{
+							ev = &firstMissionEvent[i - 1];
+
+							ev->next = firstEvent->next;
+							firstEvent->next = ev;
+
+							VisibilityLists(VIS_ADD, ev - event);
+							SetMSoundVar(i, NULL);
+
+							detonator.count++;
+						}
+					}
+					break;
 				case 4:
 					TriggerDoor(&vegasDoor[i - 4], &stage[i], 0);
 					break;
@@ -3622,7 +3625,7 @@ VECTOR* TriggerEvent(int i)
 				case 5:
 				case 6:
 				case 7:
-					TriggerDoor(&vegasDoor[i - 4], &stage[i], 1);
+					TriggerDoor(&vegasDoor[i - 5], &stage[i], 1);
 					break;
 				case 9:
 					SetMSoundVar(5, NULL);
@@ -3634,6 +3637,25 @@ VECTOR* TriggerEvent(int i)
 			{
 				case 0:
 					event->timer = 1;
+					break;
+				case 1:
+				case 2:
+				case 3:
+					if (gCurrentMissionNumber == 30)
+					{
+						if (stage[i] == 0)
+						{
+							ev = &firstMissionEvent[i - 1];
+
+							ev->next = firstEvent->next;
+							firstEvent->next = ev;
+
+							VisibilityLists(VIS_ADD, ev - event);
+							SetMSoundVar(i, NULL);
+
+							detonator.count++;
+						}
+					}
 					break;
 				case 4:
 					// open race track gates
