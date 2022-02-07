@@ -678,14 +678,19 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 			cop = &EventCop[count - mdcount];
 
 		model = modelpointers[cop->type];
-		num_cb = *(int*)model->collision_block;	// box count
 
 		if ((uint)model->collision_block > 0 /*&&
 			model->num_vertices - 3 < 300 &&
 			model->num_point_normals < 300 &&
-			model->num_polys < 300*/ &&
-			num_cb > 0)
+			model->num_polys < 300*/)
 		{
+			num_cb = *(int*)model->collision_block;	// box count
+
+			if (!num_cb)
+			{
+				continue;
+			}
+
 			dx = cop->pos.vx - player_pos.vx;
 			dz = cop->pos.vz - player_pos.vz;
 					

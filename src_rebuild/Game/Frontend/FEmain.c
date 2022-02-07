@@ -331,8 +331,8 @@ char carNumLookup[4][10] = {
 int minmaxSelections[4][2] = {
 
 	{ 0, 8 },
-	{ 8, 17 },
-	{ 18, 27 },
+	{ 8, 18 },
+	{ 18, 28 },
 	{ 28, 37 }
 };
 
@@ -2223,7 +2223,7 @@ int MissionSelectScreen(int bSetup)
 		for (i = 0; (i < 4) && !done; i++)
 		{
 			if (botch[currMission + i].missNum > gFurthestMission ||
-				currMission + i > minmaxSelections[currCity][1] ||
+				currMission + i >= minmaxSelections[currCity][1] ||
 				currMission + i > 36) 
 			{
 				done = true;
