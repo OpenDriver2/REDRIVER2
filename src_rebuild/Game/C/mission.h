@@ -1,7 +1,7 @@
 #ifndef MISSION_H
 #define MISSION_H
 
-extern char* MissionName[37];
+extern char* MissionName[40];
 
 extern int GameLevel;
 extern int gInvincibleCar;

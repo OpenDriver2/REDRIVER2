@@ -36,7 +36,7 @@
 #include <SDL.h>
 #endif // PSX
 
-char* MissionName[37] =
+char* MissionName[40] =
 {
 	// Chicago
 	M_LTXT_ID(MTXT_Surveillancetipoff),
@@ -46,11 +46,13 @@ char* MissionName[37] =
 	M_LTXT_ID(MTXT_Escapetothesafehouse),
 	M_LTXT_ID(MTXT_Chasetheintruder),
 	M_LTXT_ID(MTXT_Cainescompound),
+	M_LTXT_ID(MTXT_Jonesrendezvous),
 	M_LTXT_ID(MTXT_LeavingChicago),
 
 	// Havana
 	M_LTXT_ID(MTXT_Followupthelead),
 	M_LTXT_ID(MTXT_Hijackthetruck),
+	M_LTXT_ID(MTXT_Trucktothelockup),
 	M_LTXT_ID(MTXT_Stopthetruck),
 	M_LTXT_ID(MTXT_Findtheclue),
 	M_LTXT_ID(MTXT_Escapetoferry),
@@ -78,6 +80,7 @@ char* MissionName[37] =
 	M_LTXT_ID(MTXT_Cainescash),
 	M_LTXT_ID(MTXT_SaveJones),
 	M_LTXT_ID(MTXT_Boatjump),
+	M_LTXT_ID(MTXT_Losethecops),
 	M_LTXT_ID(MTXT_Jonesintrouble),
 	M_LTXT_ID(MTXT_ChasetheGunMan),
 	M_LTXT_ID(MTXT_Lennyescaping),
@@ -689,16 +692,6 @@ void LoadMission(int missionnum)
 	if (gCurrentMissionNumber - 1U < 40)
 	{
 		int titleId = gCurrentMissionNumber;
-
-		if (titleId > 36)
-			titleId--;
-
-		if (titleId > 11)
-			titleId--;
-		
-		if (titleId > 7)
-			titleId--;
-
 		gMissionTitle = GET_MISSION_TXT(MissionName[titleId - 1]);
 	}
 	else

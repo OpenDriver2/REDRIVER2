@@ -330,13 +330,13 @@ char carNumLookup[4][10] = {
 
 int minmaxSelections[4][2] = {
 
-	{ 0, 8 },
-	{ 8, 18 },
-	{ 18, 28 },
-	{ 28, 37 }
+	{ 0, 9 },
+	{ 9, 20 },
+	{ 20, 30 },
+	{ 30, 40 }
 };
 
-BOTCH botch[38] = {
+BOTCH botch[41] = {
 	{ 1, &MissionName[0]},
 	{ 2, &MissionName[1]},
 	{ 3, &MissionName[2]},
@@ -344,36 +344,39 @@ BOTCH botch[38] = {
 	{ 5, &MissionName[4]},
 	{ 6, &MissionName[5]},
 	{ 7, &MissionName[6]},
-	{ 9, &MissionName[7]},
-	{ 10, &MissionName[8]},
-	{ 11, &MissionName[9]},
-	{ 13, &MissionName[10]},
-	{ 14, &MissionName[11]},
-	{ 15, &MissionName[12]},
-	{ 16, &MissionName[13]},
-	{ 17, &MissionName[14]},
-	{ 18, &MissionName[15]},
-	{ 19, &MissionName[16]},
-	{ 20, &MissionName[17]},
-	{ 21, &MissionName[18]},
-	{ 22, &MissionName[19]},
-	{ 23, &MissionName[20]},
-	{ 24, &MissionName[21]},
-	{ 25, &MissionName[22]},
-	{ 26, &MissionName[23]},
-	{ 27, &MissionName[24]},
-	{ 28, &MissionName[25]},
-	{ 29, &MissionName[26]},
-	{ 30, &MissionName[27]},
-	{ 31, &MissionName[28]},
-	{ 32, &MissionName[29]},
-	{ 33, &MissionName[30]},
-	{ 34, &MissionName[31]},
-	{ 35, &MissionName[32]},
-	{ 37, &MissionName[33]},
-	{ 38, &MissionName[34]},
-	{ 39, &MissionName[35]},
-	{ 40, &MissionName[36]},
+	{ 8, &MissionName[7]},
+	{ 9, &MissionName[8]},
+	{ 10, &MissionName[9]},
+	{ 11, &MissionName[10]},
+	{ 12, &MissionName[11]},
+	{ 13, &MissionName[12]},
+	{ 14, &MissionName[13]},
+	{ 15, &MissionName[14]},
+	{ 16, &MissionName[15]},
+	{ 17, &MissionName[16]},
+	{ 18, &MissionName[17]},
+	{ 19, &MissionName[18]},
+	{ 20, &MissionName[19]},
+	{ 21, &MissionName[20]},
+	{ 22, &MissionName[21]},
+	{ 23, &MissionName[22]},
+	{ 24, &MissionName[23]},
+	{ 25, &MissionName[24]},
+	{ 26, &MissionName[25]},
+	{ 27, &MissionName[26]},
+	{ 28, &MissionName[27]},
+	{ 29, &MissionName[28]},
+	{ 30, &MissionName[29]},
+	{ 31, &MissionName[30]},
+	{ 32, &MissionName[31]},
+	{ 33, &MissionName[32]},
+	{ 34, &MissionName[33]},
+	{ 35, &MissionName[34]},
+	{ 36, &MissionName[35]},
+	{ 37, &MissionName[36]},
+	{ 38, &MissionName[37]},
+	{ 39, &MissionName[38]},
+	{ 40, &MissionName[39]},
 	{ 0,NULL}
 };
 
@@ -2224,7 +2227,7 @@ int MissionSelectScreen(int bSetup)
 		{
 			if (botch[currMission + i].missNum > gFurthestMission ||
 				currMission + i >= minmaxSelections[currCity][1] ||
-				currMission + i > 36) 
+				currMission + i > 39) 
 			{
 				done = true;
 			}
