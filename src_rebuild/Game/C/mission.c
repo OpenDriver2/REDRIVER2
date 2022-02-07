@@ -263,7 +263,7 @@ void InitialiseMissionDefaults(void)
 
 	prevCopsInPursuit = 0;
 
-	for (i = 0; i < 15; i++)
+	for (i = 0; i < MAX_MISSION_THREADS; i++)
 	{
 		MissionThreads[i].initial_sp = MissionStack[i];
 		MissionThreads[i].active = 0;
