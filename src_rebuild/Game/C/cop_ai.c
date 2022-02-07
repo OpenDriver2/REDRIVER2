@@ -1189,8 +1189,7 @@ void ControlCops(void)
 
 		copsWereInPursuit = 0;
 
-		if (CopsCanSeePlayer && OutOfSightCount < 256 ||	// [A] was player_position_known. Resolves speech in some missions
-			player_position_known > 1 && GameType == GAME_GETAWAY)
+		if (player_position_known > 0)
 		{
 			if (*playerFelony > FELONY_PURSUIT_MIN_VALUE)
 				copsWereInPursuit = 1;

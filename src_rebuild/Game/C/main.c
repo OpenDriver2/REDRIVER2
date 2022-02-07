@@ -1546,9 +1546,7 @@ void CheckForPause(void)
 	}
 }
 
-#ifdef PSX
 int gMultiStep = 0;
-#endif
 
 // [D] [T]
 void State_GameLoop(void* param)
@@ -1568,17 +1566,16 @@ void State_GameLoop(void* param)
 	UpdatePadData();
 	CheckForPause();
 
+	// moved from StepGame
+	if (FrameCnt == 5)
+		SetDispMask(1);
+
 #ifdef PSX
 	static int lastTime32Hz = 0;
 
 	int curTime = clock_realTime.time32Hz;
 	int numFrames = curTime - lastTime32Hz;
 
-	// moved from StepGame
-	if (FrameCnt == 5)
-		SetDispMask(1);
-
-	// game makes 7 frames
 	if (FastForward)
 		cnt = 7;
 	else
@@ -1598,25 +1595,14 @@ void State_GameLoop(void* param)
 
 		StepGame();
 	}
-
-	DrawGame();
 #else
-	// moved from StepGame
-	if (FrameCnt == 5)
-		SetDispMask(1);
-
-	// game makes 7 frames
-	if (FastForward)
-		cnt = 7;
-	else
-		cnt = 1;
-
+	cnt = FastForward ? 7 : 1;
 	while (--cnt >= 0)
 		StepGame();
+#endif
 
 	_CutRec_Draw();
 	DrawGame();
-#endif
 	
 	if (game_over)
 		SetState(STATE_GAMECOMPLETE);
