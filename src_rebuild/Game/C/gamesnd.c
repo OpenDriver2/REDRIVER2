@@ -184,7 +184,7 @@ int CarHasSiren(int index)
 		}
 	}
 
-	return M_SHRT_2((MissionHeader->residentModels[index] == 0) ? SOUND_BANK_VOICES : 0, 0);
+	return M_SHRT_2((MissionHeader->residentModels[index] == 0) ? SOUND_BANK_VOICES : 0, 6);
 }
 
 // [D] [T]
@@ -323,11 +323,6 @@ void LoadLevelSFX(int missionNum)
 	LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_SFX);
 	LoadBankFromLump(SOUND_BANK_TANNER, SBK_ID_TANNER );
 
-	if (GameLevel & 2)
-		LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_SIREN_START + (GameLevel & 1) * 2);
-	else
-		LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_SIREN_START + (GameLevel & 3));
-
 	// Load cop voices except those missions
 	if (missionNum - 1U > 3 && missionNum != 6 && missionNum != 7 &&
 		missionNum != 9 && missionNum != 10 && missionNum != 11 &&
@@ -428,9 +423,6 @@ void LoadLevelSFX(int missionNum)
 		case 32:
 			index = SBK_ID_MISSION_32;
 			break;
-		case 33:
-			index = SBK_ID_MISSION_33;
-			break;
 		case 35:
 			index = SBK_ID_MISSION_35;
 			break;
@@ -441,13 +433,7 @@ void LoadLevelSFX(int missionNum)
 			index = SBK_ID_MISSION_40;
 			break;
 		case 52:
-		case 53:
-			index = SBK_ID_HAVANA_TAKEADRIVE;	// [A] load Havana bank again
-			break;
 		case 54:
-		case 55:
-			index = SBK_ID_VEGAS_TAKEADRIVE;
-			break;
 		case 11:
 		case 20:
 		case 21:

@@ -39,23 +39,18 @@ enum SoundBankIds
 	SBK_ID_MISSION_18 = 52,	// Tail Jericho
 	SBK_ID_MISSION_22 = 53,	// Beat the train
 	SBK_ID_MISSION_23 = 54,	// Car bomb
-	SBK_ID_MISSION_24 = 55,	// Stake out
-	SBK_ID_MISSION_27 = 56,
+	SBK_ID_MISSION_24 = 55, // Car bomb escape
+	SBK_ID_MISSION_27 = 56, // Stake out
 	SBK_ID_MISSION_29 = 57,	// C4 deal
 	SBK_ID_MISSION_30 = 58,	// Destroy the yard
 	SBK_ID_MISSION_32 = 59,	// Steal the cop car
-	SBK_ID_MISSION_33 = 60,	// Caine's cash - UNUSED
-	SBK_ID_MISSION_35 = 61,	// Boat jump
-	SBK_ID_MISSION_39 = 62,	// Lenny escaping - UNUSED
-	SBK_ID_MISSION_40 = 63,	// Lenny gets caught
+	SBK_ID_MISSION_35 = 60,	// Boat jump
+	SBK_ID_MISSION_39 = 61,	// Lenny escaping
+	SBK_ID_MISSION_40 = 62,	// Lenny gets caught
 
-	SBK_ID_HAVANA_TAKEADRIVE = 64,
-	SBK_ID_VEGAS_TAKEADRIVE = 65,
-
-	SBK_ID_TANNER = 66,
-	SBK_ID_SPECIAL_SIREN1 = 67,
-	SBK_ID_SPECIAL_SIREN2 = 68,
-	SBK_COP_SIREN_START = 69,
+	SBK_ID_TANNER = 63,
+	SBK_ID_SPECIAL_SIREN1 = 64,
+	SBK_ID_SPECIAL_SIREN2 = 65
 };
 
 struct SPEECH_QUEUE
