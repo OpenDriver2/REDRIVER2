@@ -4,6 +4,7 @@ branches:
   only:
   - master
   - appveyor
+  - pre_d2
   
 skip_tags: true
 
