@@ -62,9 +62,15 @@ struct EventCarriage
 	short vel;
 };
 
+struct MultiCarInstance
+{
+	MULTICAR_DATA* data;
+	int slot;
+};
+
 struct MultiCar
 {
-	EVENT* event;
+	MultiCarInstance cars[10];
 	int count;
 };
 
@@ -1150,28 +1156,10 @@ void SetUpEvents(int full)
 			chicagoDoor[2].model = FindModelIdxWithName("FRAME");
 			chicagoDoor[0].model = FindModelIdxWithName(chicagoDoor[0].modelName);
 			chicagoDoor[1].model = FindModelIdxWithName(chicagoDoor[1].modelName);
-
-			// Caine's compund semi model
-			carModel = FindModelIdxWithName("LORRY");
 		}
 
 		// Caine's compound trucks
 		multiCar.count = 0;
-		multiCar.event = &event[cEvents];
-
-		evt = multiCar.event;
-		for (i = 0; i < 7; i++)
-		{
-			evt[i].flags = 0x680;
-
-			if (full)
-				evt[i].model = carModel;
-
-			evt[i].radius = 0;
-			evt[i].next = &evt[i + 1];
-		}
-
-		cEvents += 7;
 	}
 	else if (GameLevel == 1)
 	{
@@ -2385,6 +2373,40 @@ void StepHelicopter(EVENT* ev)
 	}
 }
 
+void PingInMultiCar()
+{
+	int i, dx, dz, dist;
+	LONGVECTOR4 pos;
+	MultiCarInstance* car;
+
+	for (i = 0; i < multiCar.count; i++)
+	{
+		car = &multiCar.cars[i];
+
+		dx = player[0].pos[0] - car->data->x;
+		dz = player[0].pos[2] - car->data->z;
+
+		dist = dx * dx + dz * dz;
+
+		if (dist < 24000 * 24000)
+		{
+			if (car->slot == -1)
+			{
+				pos[0] = car->data->x;
+				pos[1] = 0;
+				pos[2] = car->data->z;
+
+				car->slot = CreateStationaryCivCar(car->data->rot, 0, 0, &pos, car->data->model, car->data->palette, 0);
+			}
+		}
+		else if (car->slot != -1)
+		{
+			PingOutCar(&car_data[car->slot]);
+			car->slot = -1;
+		}
+	}
+}
+
 // [D] [T]
 void StepEvents(void)
 {
@@ -2406,6 +2428,8 @@ void StepEvents(void)
 
 	if (detonator.timer)
 		DetonatorTimer();
+
+	PingInMultiCar();
 
 	while (ev)
 	{
@@ -3994,43 +4018,24 @@ int DetonatorTimer(void)
 // [D] [T]
 void MultiCarEvent(MS_TARGET* target)
 {
-	EVENT* first;
-	int n;
-	EVENT* ev;
 	MULTICAR_DATA* mcd;
+	MultiCarInstance* car;
 	int i;
-
-	first = firstEvent;
 
 	// [A] validate
 	if (target->type != Target_MultiCar)
 		return;
-	
-	firstEvent = multiCar.event + multiCar.count;
 
-	for (i = 0; i < 5; i++)
+	for (i = 0; i < 5 && multiCar.count < 10; i++)
 	{
 		mcd = &target->multiCar[i];
 
 		if (mcd->x == 0x80000000)
 			break;
-		
-		n = (multiCar.event - event) + multiCar.count;
 
-		ev = event + n;
+		car = &multiCar.cars[multiCar.count++];
 
-		ev->position.vx = mcd->x;
-		ev->position.vz = mcd->z;
-		
-		ev->position.vy = -312;
-	
-		ev->rotation = mcd->rot;
-
-		VisibilityLists(VIS_ADD, n);
-
-		multiCar.count++;
+		car->data = mcd;
+		car->slot = -1;
 	}
-
-	//firstEvent->next = first; // [A] bug fix
-	multiCar.event[multiCar.count - 1].next = first;
 }
