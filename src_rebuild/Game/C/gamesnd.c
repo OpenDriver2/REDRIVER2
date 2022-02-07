@@ -184,7 +184,7 @@ int CarHasSiren(int index)
 		}
 	}
 
-	return M_SHRT_2((MissionHeader->residentModels[index] == 0) ? SOUND_BANK_VOICES : 0, 6);
+	return (MissionHeader->residentModels[index] == 0) ? M_SHRT_2(SOUND_BANK_VOICES, 6) : 0;
 }
 
 // [D] [T]
