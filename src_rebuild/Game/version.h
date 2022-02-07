@@ -6,5 +6,5 @@
 #define GAME_VERSION_RES	7,4
 #endif
 
-#define GAME_TITLE			"REDRIVER2"
+#define GAME_TITLE			"PreDRIVER2"
 #define GAME_VERSION		GAME_TITLE " " GAME_VERSION_N

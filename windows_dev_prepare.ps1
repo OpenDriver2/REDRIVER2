@@ -34,4 +34,4 @@ Rename-Item -Path ($windows_jpeg_dir + '\\jconfig.vc') -NewName "jconfig.h"
 & .\\premake5 vs2019
 
 # Open solution
-& .\\project_vs2019_windows\\REDRIVER2.sln
+& .\\project_vs2019_windows\\PreDRIVER2.sln

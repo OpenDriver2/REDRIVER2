@@ -32,7 +32,7 @@ end
 
 ------------------------------------------
 	
-workspace "REDRIVER2"
+workspace "PreDRIVER2"
     location "project_%{_ACTION}_%{os.target()}"
     configurations { "Debug", "Release", "Release_dev" }
 	
@@ -84,7 +84,7 @@ workspace "REDRIVER2"
 		platforms { "x86" } --, "x86_64" }
 	end
 	
-	startproject "REDRIVER2"
+	startproject "PreDRIVER2"
 	
 	configuration "raspberry-pi"
 		defines { "__RPI__" }
@@ -138,7 +138,7 @@ end
 include "premake5_psycross.lua"
 
 -- game iteslf
-project "REDRIVER2"
+project "PreDRIVER2"
     kind "WindowedApp"
 
     language "c++"
