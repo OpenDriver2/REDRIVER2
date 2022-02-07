@@ -47,7 +47,7 @@ void Tile1x1(MODEL *model)
 		gte_nclip();
 		gte_stopz(&opz);
 
-		if (opz > 0)
+		if (opz > 0 || GameLevel == 0)
 		{
 			prims = (POLY_FT4*)plotContext.primptr;
 
@@ -329,7 +329,7 @@ void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 				opz = -opz;		// front face
 		}
 
-		if (opz > 0 && z > 5)
+		if ((opz > 0 || GameLevel == 0) && z > 5)
 		{
 			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
 
