@@ -626,8 +626,8 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 			cp->hd.where.t[0] += cd[0].vel.vx;
 			cp->hd.where.t[2] += cd[0].vel.vz;
 
-			cd[0].length[0] = 90;
-			cd[0].length[1] = 90;
+			cd[0].length[0] = 40;
+			cd[0].length[1] = 40;
 		}
 		else if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER)
 		{
