@@ -610,9 +610,10 @@ void DrawBodySprite(LPPEDESTRIAN pDrawingPed, int boneId, VERTTYPE v1[2], VERTTY
 #ifdef USE_PGXP
 	if (!bDoingShadow) // [A] Psy-X is currently incorrectly offsets the offscreen PGXP geometry. We don't need it anyway.
 	{
+		ushort pgxpIdx = PGXP_GetIndex(0) - 64;
 		PGXPVData vdata1, vdata2;
-		PGXP_GetCacheData(&vdata1, PGXP_LOOKUP_VALUE(v1[0], v1[1]), 0);
-		PGXP_GetCacheData(&vdata2, PGXP_LOOKUP_VALUE(v2[0], v2[1]), 0);
+		PGXP_GetCacheData(&vdata1, PGXP_LOOKUP_VALUE(v1[0], v1[1]), pgxpIdx);
+		PGXP_GetCacheData(&vdata2, PGXP_LOOKUP_VALUE(v2[0], v2[1]), pgxpIdx);
 
 		{
 			float len;
