@@ -911,7 +911,7 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 #ifdef USE_PGXP
 		// store PGXP index
 		// HACK: -1 is needed here for some reason
-		dv[0].pgxp_index = dv[1].pgxp_index = dv[2].pgxp_index = PGXP_GetIndex() - 1;
+		dv[0].pgxp_index = dv[1].pgxp_index = dv[2].pgxp_index = PGXP_GetIndex(0) - 1;
 #endif
 		dv += 3;
 		verts += 3;
