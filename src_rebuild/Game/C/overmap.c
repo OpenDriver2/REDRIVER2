@@ -849,8 +849,7 @@ void DrawSightCone(COP_SIGHT_DATA *pCopSightData, VECTOR *pPosition, int directi
 // [D] [T]
 u_int Long2DDistance(VECTOR *pPoint1, VECTOR *pPoint2)
 {
-	int tempTheta;
-	int theta;
+	int theta, tempTheta;
 	u_int result;
 	VECTOR delta;
 
@@ -859,7 +858,7 @@ u_int Long2DDistance(VECTOR *pPoint1, VECTOR *pPoint2)
 
 	theta = ratan2(delta.vz, delta.vx);
 
-	if ((theta & 0x7ff) - 512U <= 1024)
+	if ((theta & 2047) - 512U <= 1024)
 	{
 		tempTheta = RSIN(theta);
 		result = delta.vz;
@@ -870,7 +869,7 @@ u_int Long2DDistance(VECTOR *pPoint1, VECTOR *pPoint2)
 		result = delta.vx;
 	}
 
-	if (result < 0x80000) 
+	if (result < 512 * 1024) 
 		result = (result << 12) / tempTheta;
 	else 
 		result = (result << 9) / tempTheta << 3;
