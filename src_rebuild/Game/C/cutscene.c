@@ -437,10 +437,7 @@ int SelectCutsceneFile(char* filename, int init, int subindex)
 	}
 	else
 	{
-		if (gCurrentMissionNumber < 21)
-			sprintf(filename, "REPLAYS\\CUT%d.R", gCurrentMissionNumber);
-		else
-			sprintf(filename, "REPLAYS\\A\\CUT%d.R", gCurrentMissionNumber);
+		sprintf(filename, "REPLAYS\\CUT%d.R", gCurrentMissionNumber);
 	}
 
 	return FileExists(filename);

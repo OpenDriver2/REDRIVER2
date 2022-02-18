@@ -282,10 +282,7 @@ int LoadCutsceneAsReplay(int subindex)
 		gCutsceneAsReplay_ReChaseLoaded = 0;
 		printWarning("--- NO re-recorded chases available! ---\n");
 		
-		if (gCutsceneAsReplay < 21)
-			sprintf(filename, "REPLAYS\\CUT%d.R", gCutsceneAsReplay);
-		else
-			sprintf(filename, "REPLAYS\\A\\CUT%d.R", gCutsceneAsReplay);
+		sprintf(filename, "REPLAYS\\CUT%d.R", gCutsceneAsReplay);
 	}
 	else
 	{
