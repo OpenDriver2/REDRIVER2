@@ -78,7 +78,7 @@ CYCLE_OBJECT* Lev_CycleObjPtrs[] = {
 	Lev3
 };
 
-int Num_LevCycleObjs[] = { 2, 0, 12, 0 };
+int Num_LevCycleObjs[] = { numberOf(Lev0), 0, numberOf(Lev2), 0 };
 
 ANIMATED_OBJECT Lev0AnimObjects[9] =
 {
@@ -220,7 +220,9 @@ void ColourCycle(void)
 	RECT16 vram;
 
 	if (!num_cycle_obj)
+	{
 		return;
+	}
 
 	if (LoadingArea != 0)
 	{
@@ -228,66 +230,76 @@ void ColourCycle(void)
 		return;
 	}
 
+	if (FrameCnt & 1) // [A]
+	{
+		return;
+	}
+
 	vram.w = 16;
 	vram.h = 1;
 	cyc = Lev_CycleObjPtrs[GameLevel];
 		
-	for (i = 0; i < num_cycle_obj; i++)
+	for (i = 0; i < num_cycle_obj; i++, cyc++)
 	{
+		TEXTURE_DETAILS* cycTex = &cycle_tex[i];
 		bufaddr = (u_short*)cyclecluts[i].p;
 
-		if (tpageloaded[cycle_tex[i].texture_page] != 0)
+		if (tpageloaded[cycTex->texture_page] == 0)
 		{
-			if (cycle_phase == 0)
-			{
-				// initialize
-				temp = texture_cluts[cycle_tex[i].texture_page][cycle_tex[i].texture_number];
-
-				cyc->vx = vram.x = (temp & 0x3f) << 4;
-				cyc->vy = vram.y = (temp >> 6);
-
-				StoreImage(&vram, (u_long*)bufaddr);
-			}
-			else
-			{
-				if ((cycle_timer & cyc->speed1) == 0)
-				{
-					if (cyc->start1 != -1)
-					{
-						temp = bufaddr[cyc->start1];
-						memmove((u_char*)(bufaddr + cyc->start1), (u_char*)(bufaddr + cyc->start1 + 1), (cyc->stop1 - cyc->start1) << 1);
-
-						bufaddr[cyc->stop1] = temp;
-					}
-				}
-
-				if ((cycle_timer & cyc->speed2) == 0)
-				{
-					if (cyc->start2 != -1)
-					{
-						temp = bufaddr[cyc->start2];
-						memmove((u_char*)(bufaddr + cyc->start2), (u_char*)(bufaddr + cyc->start2 + 1), (cyc->stop2 - cyc->start2) << 1);
-
-						bufaddr[cyc->stop2] = temp;
-					}
-				}
-
-				vram.x = cyc->vx;
-				vram.y = cyc->vy;
-
-				SetDrawLoad(&cyclecluts[i], &vram);
-
-				addPrim(current->ot, &cyclecluts[i]);
-			}
+			continue;
 		}
 
-		cyc++;
+		if (cycle_phase == 0)
+		{
+			// initialize clut data from VRAM
+			temp = texture_cluts[cycTex->texture_page][cycTex->texture_number];
+
+			cyc->vx = vram.x = (temp & 63) << 4;
+			cyc->vy = vram.y = (temp >> 6);
+
+			StoreImage(&vram, (u_long*)bufaddr);
+		}
+		else
+		{
+			if ((cycle_timer & cyc->speed1) == 0)
+			{
+				if (cyc->start1 != -1)
+				{
+					temp = bufaddr[cyc->start1];
+					memmove((u_char*)(bufaddr + cyc->start1), (u_char*)(bufaddr + cyc->start1 + 1), (cyc->stop1 - cyc->start1) * sizeof(ushort));
+
+					bufaddr[cyc->stop1] = temp;
+				}
+			}
+
+			if ((cycle_timer & cyc->speed2) == 0)
+			{
+				if (cyc->start2 != -1)
+				{
+					temp = bufaddr[cyc->start2];
+					memmove((u_char*)(bufaddr + cyc->start2), (u_char*)(bufaddr + cyc->start2 + 1), (cyc->stop2 - cyc->start2) * sizeof(ushort));
+
+					bufaddr[cyc->stop2] = temp;
+				}
+			}
+
+			vram.x = cyc->vx;
+			vram.y = cyc->vy;
+
+			SetDrawLoad(&cyclecluts[i], &vram);
+
+			addPrim(current->ot, &cyclecluts[i]);
+		}
 	}
 
 	if (cycle_phase != 0)
+	{
 		cycle_timer++;
-
-	cycle_phase ^= 1;
+	}
+	else
+	{
+		cycle_phase = 1;
+	}
 }
 
 

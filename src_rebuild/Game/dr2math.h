@@ -29,7 +29,6 @@ extern short rcossin_tbl[8192];
 
 // math constants
 #define FixHalfRound(x, bits)		(((x) + (1 << (bits-1))) >> bits)
-#define FixFloorSigned(x, bits)		((x) / (1 << bits)) // in disassembly: ((int(x) < 0 ? int(x) + (1 << bits)-1 : int(x)) >> bits)
 
 #define	FIXEDH(a)		FixHalfRound(a, ONE_BITS)		// Fixed Half Round number
 #define	FIXED(a)		((a) >> ONE_BITS)				// Fixed number (unsigned)

@@ -243,10 +243,12 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 		model = modelpointers[modelnumber];
 		plotContext.colour = spriteColour;
 
-#ifndef PSX
-		if ((pco->value & 0x3f) == 63 || (gTimeOfDay == 3 && modelnumber == 945)) // [A] Vegas tree fix
+		if ((pco->value & 63) == 63 ||
+			(gTimeOfDay == 3 && modelnumber != 1223 && (!(model->flags2 & MODEL_FLAG_TREE) || modelnumber == 945 || modelnumber == 497))) // [A] multiple sprites lighting fixes
+		{
 			plotContext.colour = 0x2c808080;
-#endif
+		}
+
 		plotContext.scribble[0] = pco->pos.vx;
 		plotContext.scribble[1] = (pco->pos.vy << 0x10) >> 0x11;
 		plotContext.scribble[2] = pco->pos.vz;
