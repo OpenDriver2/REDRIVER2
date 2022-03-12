@@ -650,12 +650,12 @@ void ConvertPolygonTypes(MODEL* model, _pct* pc)
 	int i;
 
 	// [A] we are storing the processing flag here
-	if (model->tri_verts & 0x8000)
+	if (model->tri_verts & 0x80)
 	{
 		return;
 	}
 	
-	model->tri_verts |= 0x8000;
+	model->tri_verts |= 0x80;
 
 	srcVerts = (SVECTOR*)model->vertices;
 	polys = (PL_POLYFT4*)model->poly_block;

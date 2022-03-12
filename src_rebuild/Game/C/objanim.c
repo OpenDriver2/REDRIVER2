@@ -344,7 +344,7 @@ void InitAnimatingObjects(void)
 
 			// [A] store animated object number in normals pointer
 			// after all it was always unused
-			modelPtr->normals = loop;
+			modelPtr->tri_verts = loop;
 
 			if (modelPtr->instance_number != -1 &&
 				modelpointers[modelPtr->instance_number] != &dummyModel)
@@ -357,7 +357,7 @@ void InitAnimatingObjects(void)
 
 				// [A] store animated object number in normals pointer
 				// after all it was always unused
-				modelPtr->normals = loop;
+				modelPtr->tri_verts = loop;
 			}
 		}
 		else
@@ -394,7 +394,7 @@ void InitSpooledAnimObj(int model_number)
 
 			// [A] store animated object number in normals pointer
 			// after all it was always unused
-			modelPtr->normals = i;
+			modelPtr->tri_verts = i;
 			
 			break;
 		}
@@ -428,7 +428,7 @@ void DrawAllAnimatingObjects(CELL_OBJECT** objects, int num_animated)
 		model = modelpointers[type];
 
 		// [A] optimized
-		animate_object(cop, aop[model->normals].internal_id);
+		animate_object(cop, aop[model->tri_verts & 31].internal_id);
 	}
 }
 
