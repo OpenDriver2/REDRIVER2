@@ -592,9 +592,9 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 
 	// [A] handle REDRIVER2 dedicated look back button
 	if ((paddCamera & CAMERA_PAD_LOOK_BACK) == CAMERA_PAD_LOOK_BACK || (paddCamera & CAMERA_PAD_LOOK_BACK_DED))
-		camera_angle.vy = 2048 - baseDir & 0xfff;
+		camera_angle.vy = 2048 - baseDir & 4095;
 	else
-		camera_angle.vy = (lp->headPos >> 16) - baseDir & 0xfff;
+		camera_angle.vy = (lp->headPos >> 16) - baseDir & 4095;
 
 	if (cp)
 	{
@@ -632,13 +632,18 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 	}
 	else
 	{
+		LPPEDESTRIAN pPlayerPed;
+		pPlayerPed = lp->pPed;
+
 		camera_angle.vx = -tannerLookAngle.vx;
 
-		// pedestrian camera is much simpler
 		BuildWorldMatrix();
 
-		viewer_position.vy += lp->pPed->head_pos - 25;
-		//viewer_position.vz += 45;
+		if (pPlayerPed)
+		{
+			// apply pedestrian bobbing
+			viewer_position.vy += pPlayerPed->head_pos - 25;
+		}
 
 		angle = -baseDir;
 
