@@ -879,7 +879,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 
 							Start3DSoundVolPitch(chan, SOUND_BANK_SFX, match->sound,
 								collisionResult.hit.vx, -collisionResult.hit.vy, collisionResult.hit.vz, 
-								match->volume, match->pitch + (((velocity.vx ^ velocity.vz) * (collisionResult.hit.vx ^ collisionResult.hit.vz) & 0x3ff) - 0x200));
+								match->volume, match->pitch + (((velocity.vx ^ velocity.vz) * (collisionResult.hit.vx ^ collisionResult.hit.vz) & 1023) - 512));
 						}
 
 						cp->hd.where.t[0] = tempwhere.vx;

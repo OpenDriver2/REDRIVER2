@@ -243,8 +243,11 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 		model = modelpointers[modelnumber];
 		plotContext.colour = spriteColour;
 
-		if ((pco->value & 0x3f) == 63 || (gTimeOfDay == 3 && (!(model->flags2 & MODEL_FLAG_TREE) || modelnumber == 945 || modelnumber == 497))) // [A] Vegas tree fix
+		if ((pco->value & 63) == 63 ||
+			(gTimeOfDay == 3 && modelnumber != 1223 && (!(model->flags2 & MODEL_FLAG_TREE) || modelnumber == 945 || modelnumber == 497))) // [A] multiple sprites lighting fixes
+		{
 			plotContext.colour = 0x2c808080;
+		}
 
 		plotContext.scribble[0] = pco->pos.vx;
 		plotContext.scribble[1] = (pco->pos.vy << 0x10) >> 0x11;
