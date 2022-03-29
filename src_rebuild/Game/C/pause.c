@@ -239,12 +239,12 @@ MENU_ITEM DebugTimeOfDayItems[] =
 	{ "Night", 	PAUSE_TYPE_FUNC,  2,  DebugTimeOfDayNight,MENU_QUIT_NONE,		NULL },
 	{ "Dusk", 	PAUSE_TYPE_FUNC, 	2,  DebugTimeOfDayDusk, MENU_QUIT_NONE,		NULL },
 	{ "Dawn", 	PAUSE_TYPE_FUNC, 	2,  DebugTimeOfDayDawn,	MENU_QUIT_NONE,		NULL },
-	{ "Rain", 	PAUSE_TYPE_FUNC, 	2,  DebugTimeOfDayRain,	MENU_QUIT_NONE,		NULL },
+	{ "Rainy", 	PAUSE_TYPE_FUNC, 	2,  DebugTimeOfDayRain,	MENU_QUIT_NONE,		NULL },
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
 MENU_HEADER DebugTimeOfDayHeader =
-{ "Time Of Day", { 0, 0, 0, 0 }, 0u, DebugTimeOfDayItems };
+{ "Time of Day", { 0, 0, 0, 0 }, 0u, DebugTimeOfDayItems };
 
 MENU_ITEM DebugJustForFunItems[] =
 {
