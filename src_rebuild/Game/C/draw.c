@@ -250,10 +250,12 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 		model = modelpointers[modelnumber];
 		plotContext.colour = spriteColour;
 
-#ifndef PSX
-		if ((pco->value & 0x3f) == 63 || (gTimeOfDay == 3 && modelnumber == 945)) // [A] Vegas tree fix
+		if ((pco->value & 63) == 63 ||
+			(gTimeOfDay == 3 && modelnumber != 1223 && (!(model->flags2 & MODEL_FLAG_TREE) || modelnumber == 945 || modelnumber == 497))) // [A] multiple sprites lighting fixes
+		{
 			plotContext.colour = 0x2c808080;
-#endif
+		}
+
 		plotContext.scribble[0] = pco->pos.vx;
 		plotContext.scribble[1] = (pco->pos.vy << 0x10) >> 0x11;
 		plotContext.scribble[2] = pco->pos.vz;
@@ -655,12 +657,12 @@ void ConvertPolygonTypes(MODEL* model, _pct* pc)
 	int i;
 
 	// [A] we are storing the processing flag here
-	if (model->tri_verts & 0x8000)
+	if (model->tri_verts & 0x80)
 	{
 		return;
 	}
 	
-	model->tri_verts |= 0x8000;
+	model->tri_verts |= 0x80;
 
 	srcVerts = (SVECTOR*)model->vertices;
 	polys = (PL_POLYFT4*)model->poly_block;
@@ -1401,10 +1403,8 @@ void DrawMapPSX(int* comp_val)
 				cellz > -1 && cellz < cells_down &&
 				PVS_ptr[vis_v * pvs_square + vis_h]) // check PVS table
 			{
-				ppco = GetFirstPackedCop(cellx, cellz, &ci, 1, drawData.cellLevel);
-
 				// walk each cell object in cell
-				while (ppco != NULL)
+				for (ppco = GetFirstPackedCop(cellx, cellz, &ci, 1, drawData.cellLevel); ppco; ppco = GetNextPackedCop(&ci))
 				{
 					model = modelpointers[(ppco->value >> 6) | ((ppco->pos).vy & 1) << 10];
 
@@ -1498,8 +1498,6 @@ void DrawMapPSX(int* comp_val)
 							}
 						}
 					}
-
-					ppco = GetNextPackedCop(&ci);
 				}
 			}
 		}

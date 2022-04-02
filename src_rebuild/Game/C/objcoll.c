@@ -41,9 +41,7 @@ char CellEmpty(VECTOR *pPosition, int radius)
 	cell_x = (pPosition->vx + units_across_halved) / MAP_CELL_SIZE;
 	cell_z = (pPosition->vz + units_down_halved) / MAP_CELL_SIZE;
 
-	ppco = GetFirstPackedCop(cell_x, cell_z, &ci, 0);
-
-	while(ppco)
+	for (ppco = GetFirstPackedCop(cell_x, cell_z, &ci, 0); ppco; ppco = GetNextPackedCop(&ci))
 	{
 		type = (ppco->value >> 6) | ((ppco->pos.vy & 1) << 10);
 		pModel = modelpointers[type];
@@ -198,8 +196,6 @@ char CellEmpty(VECTOR *pPosition, int radius)
 				}
 			}
 		}
-
-		ppco = GetNextPackedCop(&ci);
 	}
 
 	return 1;
@@ -372,9 +368,7 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 
 		if ((ocx != cell_x) || (ocz != cell_z))
 		{
-			ppco = GetFirstPackedCop(cell_x, cell_z, &ci, 0);
-
-			while (ppco)
+			for (ppco = GetFirstPackedCop(cell_x, cell_z, &ci, 0); ppco; ppco = GetNextPackedCop(&ci))
 			{
 				QuickUnpackCellObject(ppco, &ci.nearCell, &tempCO);
 				pModel = modelpointers[tempCO.type];
@@ -503,7 +497,6 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 						collide++;
 					}
 				}
-				ppco = GetNextPackedCop(&ci);
 			}
 		}
 
@@ -555,9 +548,7 @@ void CollisionCopList(XZPAIR* pos, int* count)
 				// check if we have valid region
 				if (cbr.x + cbr.z * regions_across == RoadMapRegions[(cbr.x & 1) + (cbr.z & 1) * 2])
 				{
-					ppco = GetFirstPackedCop(cell.x, cell.z, &ci, 1, cellLevel);
-					
-					while (ppco)
+					for (ppco = GetFirstPackedCop(cell.x, cell.z, &ci, 1, cellLevel); ppco; ppco = GetNextPackedCop(&ci))
 					{
 						type = (ppco->value >> 6) | ((ppco->pos.vy & 1) << 10);
 
@@ -576,8 +567,6 @@ void CollisionCopList(XZPAIR* pos, int* count)
 							pcoplist[cnt] = ppco;
 							cnt++;
 						}
-
-						ppco = GetNextPackedCop(&ci);
 					}
 				}
 
@@ -678,14 +667,19 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 			cop = &EventCop[count - mdcount];
 
 		model = modelpointers[cop->type];
-		num_cb = *(int*)model->collision_block;	// box count
 
 		if ((uint)model->collision_block > 0 /*&&
 			model->num_vertices - 3 < 300 &&
 			model->num_point_normals < 300 &&
-			model->num_polys < 300*/ &&
-			num_cb > 0)
+			model->num_polys < 300*/)
 		{
+			num_cb = *(int*)model->collision_block;	// box count
+
+			if (!num_cb)
+			{
+				continue;
+			}
+
 			dx = cop->pos.vx - player_pos.vx;
 			dz = cop->pos.vz - player_pos.vz;
 					
@@ -888,8 +882,8 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 						cd[1].length[0] = collide->zsize / 2 + 100;
 						cd[1].length[1] = collide->xsize / 2 + 100;
 
-						cd[1].x.vx = pPos->vx + (((offset.vx - pPos->vx) << 0x10) >> 0x10);
-						cd[1].x.vz = pPos->vz + (((offset.vz - pPos->vz) << 0x10) >> 0x10);
+						cd[1].x.vx = pPos->vx + (short)(offset.vx - pPos->vx);
+						cd[1].x.vz = pPos->vz + (short)(offset.vz - pPos->vz);
 
 						cd[1].vel.vx = 0;
 						cd[1].vel.vz = 0;
