@@ -1257,21 +1257,18 @@ int find_lamp_streak(int LampId)
 	return -1;
 }
 
+
+
 // [D] [T]
 void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 {
 	int count;
 	DAMAGED_LAMP* dam;
 	int halo_size;
-	short size;
-	short angle;
-	VECTOR v1;
-	VECTOR v2;
-	VECTOR v3;
-	SVECTOR pos;
-	CVECTOR col;
-	CVECTOR col1;
-	SVECTOR dpos;
+	short size, angle;
+	VECTOR v1, v2, v3;
+	SVECTOR pos, dpos;
+	CVECTOR col, col1;
 
 	dam = damaged_lamp;
 	col = {140, 140, 140};
@@ -1296,7 +1293,8 @@ void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 	}
 
 	count = 0;
-	do {
+	for(count = 0; count < 4; count++)
+	{
 		if (dam->index == cop->pos.vx + cop->pos.vz) 
 		{
 			if (dam->damage > 2) 
@@ -1308,10 +1306,8 @@ void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 
 			break;
 		}
-
-		count++;
 		dam++;
-	} while (count < 4);
+	}
 
 	dpos.vx = cop->pos.vx - camera_position.vx;
 	dpos.vy = cop->pos.vy - camera_position.vy;
@@ -1381,6 +1377,8 @@ void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 
 	DisplayLightReflections(&v2, &col1, halo_size * 2, &lightref_texture);
 
+	AddDlight(&v3, &col, size * 280 >> 4);
+
 	LightSortCorrect = -10;
 }
 
@@ -1390,8 +1388,7 @@ void AddLightEffect(CELL_OBJECT *cop, int x, int y, int z, int type, int colour)
 	short yang;
 	int angle;
 	int size;
-	VECTOR v1;
-	VECTOR v2;
+	VECTOR v1, v2;
 	VECTOR dpos;
 	SVECTOR pos;
 	CVECTOR col;
@@ -1504,6 +1501,8 @@ void AddLightEffect(CELL_OBJECT *cop, int x, int y, int z, int type, int colour)
 
 	ShowLight1(&v1, &col, size, &light_texture);
 	DisplayLightReflections(&v2, &col, (size << 0xd) >> 0x10, &lightref_texture);
+
+	AddDlight(&v1, &col, size * 180 >> 4);
 }
 
 // [D] [T]

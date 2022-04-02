@@ -16,7 +16,7 @@ void Tile1x1(MODEL *model)
 	PL_POLYFT4* polys;
 	int i;
 	u_char ptype;
-	POLY_FT4* prims;
+	POLY_GT4* prims;
 	SVECTOR* srcVerts;
 
 	srcVerts = (SVECTOR*)model->vertices;
@@ -49,11 +49,14 @@ void Tile1x1(MODEL *model)
 
 		if (opz > 0)
 		{
-			prims = (POLY_FT4*)plotContext.primptr;
+			prims = (POLY_GT4*)plotContext.primptr;
 
-			setPolyFT4(prims);
 			*(ulong*)&prims->r0 = plotContext.colour;
-
+			*(ulong*)&prims->r1 = plotContext.colour;
+			*(ulong*)&prims->r2 = plotContext.colour;
+			*(ulong*)&prims->r3 = plotContext.colour;
+			setPolyGT4(prims);
+			
 			// retrieve first three verts
 			gte_stsxy3(&prims->x0, &prims->x1, &prims->x2);
 
@@ -74,9 +77,32 @@ void Tile1x1(MODEL *model)
 			*(ushort*)&prims->u2 = *(ushort*)&polys->uv3;
 			*(ushort*)&prims->u3 = *(ushort*)&polys->uv2;
 
+#ifdef DYNAMIC_LIGHTING
+			SVECTOR tmpPos;
+			gte_ldv0(&srcVerts[polys->v0]);
+			gte_rtps();
+			gte_stsv(&tmpPos);
+			GetDLightLevel(&tmpPos, (u_int*)&prims->r0);
+
+			gte_ldv0(&srcVerts[polys->v1]);
+			gte_rtps();
+			gte_stsv(&tmpPos);
+			GetDLightLevel(&tmpPos, (u_int*)&prims->r1);
+			
+			gte_ldv0(&srcVerts[polys->v3]);
+			gte_rtps();
+			gte_stsv(&tmpPos);
+			GetDLightLevel(&tmpPos, (u_int*)&prims->r2);
+			
+			gte_ldv0(&srcVerts[polys->v2]);
+			gte_rtps();
+			gte_stsv(&tmpPos);
+			GetDLightLevel(&tmpPos, (u_int*)&prims->r3);
+#endif
+
 			addPrim(plotContext.ot + (Z >> 1) + ofse, prims);
 
-			plotContext.primptr += sizeof(POLY_FT4);
+			plotContext.primptr += sizeof(POLY_GT4);
 		}
 
 		polys = (PL_POLYFT4*)((char*)polys + plotContext.polySizes[ptype]);
@@ -158,10 +184,11 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 
 			pModel = modelpointers[model_number];
 
-			if (Z < 2000)
-				TileNxN(pModel, 4, 75);
-			else 
-				TileNxN(pModel, 2, 35);
+			//if (Z < 2000)
+			//	TileNxN(pModel, 4, 75);
+			//else 
+			//	TileNxN(pModel, 2, 35);
+			Tile1x1(pModel);
 		}
 		else
 		{

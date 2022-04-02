@@ -86,6 +86,13 @@ SVECTOR night_colours[4] =
   { 880, 880, 905, 0 }
 };
 
+#ifdef DYNAMIC_LIGHTING
+
+int gNumDlights = 0;
+DLIGHT gLights[MAX_DLIGHTS];
+
+#endif // DYNAMIC_LIGHTING
+
 void* model_object_ptrs[MAX_DRAWN_BUILDINGS];
 void* model_tile_ptrs[MAX_DRAWN_TILES];
 void* anim_obj_buffer[MAX_DRAWN_ANIMATING];
@@ -1552,6 +1559,9 @@ void DrawMapPSX(int* comp_val)
 
 	SetupPlaneColours(combointensity);
 
+	if (drawData.anim_objs_found)
+		DrawAllAnimatingObjects((CELL_OBJECT**)anim_obj_buffer, drawData.anim_objs_found);
+
 	if (drawData.sprites_found)
 		DrawSprites((PACKED_CELL_OBJECT**)spriteList, drawData.sprites_found);
 
@@ -1561,8 +1571,71 @@ void DrawMapPSX(int* comp_val)
 	if (drawData.other_models_found)
 		DrawAllBuildings((CELL_OBJECT**)model_object_ptrs, drawData.other_models_found);
 
-	if (drawData.anim_objs_found)
-		DrawAllAnimatingObjects((CELL_OBJECT**)anim_obj_buffer, drawData.anim_objs_found);
+#ifdef DYNAMIC_LIGHTING
+	gNumDlights = 0;
+#endif
 
 	setupYet = 0;
+}
+
+void AddDlight(VECTOR* position, CVECTOR* color, int radius)
+{
+#ifdef DYNAMIC_LIGHTING
+	DLIGHT* pLight;
+	VECTOR lightPos;
+	if (gNumDlights + 1 >= MAX_DLIGHTS)
+	{
+		return;
+	}
+
+	pLight = &gLights[gNumDlights++];
+
+	lightPos = *position;
+	VecCopy(&pLight->position, &lightPos);
+
+	pLight->color = *color;
+	pLight->radius = radius;
+#endif // DYNAMIC_LIGHTING
+}
+
+void GetDLightLevel(SVECTOR* position, CVECTOR* inOutColor)
+{
+#ifdef DYNAMIC_LIGHTING
+
+#endif // DYNAMIC_LIGHTING
+}
+
+void GetDLightLevel(SVECTOR* position, u_int* inOutColor)
+{
+#ifdef DYNAMIC_LIGHTING
+	DLIGHT* pLight;
+	int dx, dy, dz, dist, light;
+	u_int lightR, lightG, lightB;
+
+	lightR = (*inOutColor & 255);
+	lightG = (*inOutColor >> 8 & 255);
+	lightB = (*inOutColor >> 16 & 255);
+
+	for (int i = 0; i < gNumDlights; i++)
+	{
+		pLight = &gLights[i];
+		dx = (int)position->vx - (int)pLight->position.vx;
+		dy = (int)position->vy - (int)pLight->position.vy;
+		dz = (int)position->vz - (int)pLight->position.vz;
+
+		dist = SquareRoot0(dx * dx + dy * dy + dz * dz);
+
+		if (dist > pLight->radius) {
+			continue;
+		}
+
+		light = pLight->radius - dist;
+
+		lightR += pLight->color.r * light >> 13;
+		lightG += pLight->color.g * light >> 13;
+		lightB += pLight->color.b * light >> 13;
+	}
+
+	*inOutColor = MIN(lightB, 255) << 16 | MIN(lightG, 255) << 8 | MIN(lightR, 255) | (*inOutColor & 0xFF000000);
+#endif // DYNAMIC_LIGHTING
 }

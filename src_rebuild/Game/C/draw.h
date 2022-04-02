@@ -1,6 +1,10 @@
 #ifndef DRAW_H
 #define DRAW_H
 
+#ifndef PSX
+#define DYNAMIC_LIGHTING
+#endif
+
 // Primitive plot context used in scratchpad
 struct _pct
 {
@@ -20,6 +24,20 @@ struct _pct
 	int scribble[8];
 	int model;
 };
+
+#ifdef DYNAMIC_LIGHTING
+
+// dynamic light
+struct DLIGHT
+{
+	SVECTOR position;
+	CVECTOR color;
+	int radius;
+};
+
+#define MAX_DLIGHTS 32
+
+#endif
 
 extern SVECTOR day_vectors[4];
 extern SVECTOR night_vectors[4];
@@ -85,6 +103,10 @@ extern int gForceLowDetailCars;
 extern int num_cars_drawn;
 
 extern char CurrentPVS[444];
+
+extern void AddDlight(VECTOR* position, CVECTOR* color, int radius);
+extern void GetDLightLevel(SVECTOR* position, CVECTOR* inOutColor);
+extern void GetDLightLevel(SVECTOR* position, u_int* inOutColor);
 
 extern void DrawMapPSX(int *comp_val); // 0x0003F6B0
 
