@@ -175,7 +175,6 @@ SMASHABLE_OBJECT smashable[] =
 	{ 0, 0, 0, 0, 0 }
 };
 
-
 int num_anim_objects = 0;
 int num_cycle_obj = 0;
 
@@ -432,6 +431,7 @@ void DrawAllAnimatingObjects(CELL_OBJECT** objects, int num_animated)
 	}
 }
 
+
 // [D] [T]
 void animate_object(CELL_OBJECT* cop, int type)
 {
@@ -440,12 +440,11 @@ void animate_object(CELL_OBJECT* cop, int type)
 
 	yang = cop->yang * 64;
 
-	// [A] Rev 1.1 has less of those types
-
 	if (GameLevel == 0)
 	{
 		switch (type)
 		{
+
 			case 0:
 			case 7:
 				yang += 1024;
@@ -453,15 +452,15 @@ void animate_object(CELL_OBJECT* cop, int type)
 
 				if (phase == 1)
 				{
-					AddTrafficLight(cop, 0, -0x2c4, -0x2d, 0x200, yang);
+					AddTrafficLight(cop, 0, -708, -45, 0x200, yang);
 				}
 				else if (phase == 2)
 				{
-					AddTrafficLight(cop, 0,  -0x284, -0x2d, 0x400, yang);
+					AddTrafficLight(cop, 0,  -644, -45, 0x400, yang);
 				}
 				else if (phase == 3)
 				{
-					AddTrafficLight(cop, 0, -0x244, -0x2d, 0x800, yang);
+					AddTrafficLight(cop, 0, -580, -45, 0x800, yang);
 				}
 				break;
 			case 1:
@@ -470,15 +469,15 @@ void animate_object(CELL_OBJECT* cop, int type)
 
 				if (phase == 1)
 				{
-					AddTrafficLight(cop, 0x196, -0x2c4, -0x2e, 0x200, yang);
+					AddTrafficLight(cop, 406, -708, -46, 0x200, yang);
 				}
 				else if (phase == 2)
 				{
-					AddTrafficLight(cop, 0x196, -0x292, -0x2e, 0x400, yang);
+					AddTrafficLight(cop, 406, -658, -46, 0x400, yang);
 				}
 				else if (phase == 3)
 				{
-					AddTrafficLight(cop,  0x196, -0x252, -0x2e, 0x800, yang);
+					AddTrafficLight(cop, 406, -594, -46, 0x800, yang);
 				}
 				break;
 			case 2:
@@ -486,27 +485,27 @@ void animate_object(CELL_OBJECT* cop, int type)
 				if (gLightsOn == 0)
 					break;
 
-				AddLightEffect(cop, 0x1ad, -0x4d2, 0, 0, 3);
+				AddLightEffect(cop, 429, -1234, 0, 0, 3);
 				break;
 			case 4:
 				if (gLightsOn == 0)
 					break;
 
-				AddLightEffect(cop, -0x1b0, -0x4d9, 0, 0, 3);
-				AddLightEffect(cop, 0x1b0, -0x4d9, 0, 0, 3);
+				AddLightEffect(cop, -432, -1241, 0, 0, 3);
+				AddLightEffect(cop, 432, -1241, 0, 0, 3);
 				break;
 			case 5:
 				if (gLightsOn == 0)
 					break;
 
-				AddLightEffect(cop, 0, -0x50, 0, 2, 2);
+				AddLightEffect(cop, 0, -80, 0, 2, 2);
 				break;
 			case 6:
 				if (gLightsOn == 0)
 					break;
 
-				AddLightEffect(cop, 0xea, -0x47a, 0, 0, 3);
-				AddLightEffect(cop,  -0xea, -0x47a, 0, 0, 3);
+				AddLightEffect(cop, 234, -1146, 0, 0, 3);
+				AddLightEffect(cop, -234, -1146, 0, 0, 3);
 		}
 	}
 	else if (GameLevel == 1)
@@ -518,15 +517,15 @@ void animate_object(CELL_OBJECT* cop, int type)
 
 				if (phase == 2)
 				{
-					AddTrafficLight(cop, -0x1a1, -800, -0x1e, 0x400, yang);
+					AddTrafficLight(cop, -417, -800, -30, 0x400, yang);
 				}
 				else if (phase == 1)
 				{
-					AddTrafficLight(cop, -0x1ea, -800, -0x1e, 0x200, yang);
+					AddTrafficLight(cop, -490, -800, -30, 0x200, yang);
 				}
 				else if (phase == 3)
 				{
-					AddTrafficLight(cop, -0x157, -800, -0x1e, 0x800, yang);
+					AddTrafficLight(cop, -343, -800, -30, 0x800, yang);
 				}
 
 				break;
@@ -534,20 +533,20 @@ void animate_object(CELL_OBJECT* cop, int type)
 				if (gLightsOn == 0)
 					break;
 
-				AddSmallStreetLight(cop, 0xe6, -0x442, 0, 0);
+				AddSmallStreetLight(cop, 230, -1090, 0, 0);
 				break;
 			case 3:
 				if (gLightsOn == 0)
 					break;
 
-				AddLightEffect(cop, -0x265, -0x7d2, 0, 0, 3);
+				AddLightEffect(cop, -613, -2002, 0, 0, 3);
 				break;
 			case 4:
 				if (gLightsOn == 0)
 					break;
 
-				AddLightEffect(cop, -0x250, -2000, 0, 0, 3);
-				AddLightEffect(cop, 0x252, -2000, 0, 0, 3);
+				AddLightEffect(cop, -592, -2000, 0, 0, 3);
+				AddLightEffect(cop, 594, -2000, 0, 0, 3);
 				break;
 		}
 	}
@@ -560,21 +559,21 @@ void animate_object(CELL_OBJECT* cop, int type)
 			
 				if (phase == 1)
 				{
-					AddTrafficLight(cop, -0x857, -0x458, -0x44, 0x200, yang);
-					AddTrafficLight(cop, -0x520, -0x421, -0x44, 0x200, yang);
-					AddTrafficLight(cop, -0x202, -0x400, -0x44, 0x200, yang);
+					AddTrafficLight(cop, -2135, -1112, -68, 0x200, yang);
+					AddTrafficLight(cop, -1312, -1057, -68, 0x200, yang);
+					AddTrafficLight(cop, -514, -1024, -68, 0x200, yang);
 				}
 				else if (phase == 2)
 				{
-					AddTrafficLight(cop, -0x85c, -0x3fd, -0x41, 0x400, yang);
-					AddTrafficLight(cop, -0x51e, -0x3d4, -0x41, 0x400, yang);
-					AddTrafficLight(cop, -0x208, -0x3ab, -0x41, 0x400, yang);
+					AddTrafficLight(cop, -2140, -1021, -65, 0x400, yang);
+					AddTrafficLight(cop, -1310, -980, -65, 0x400, yang);
+					AddTrafficLight(cop, -520, -939, -65, 0x400, yang);
 				}
 				else if (phase == 3)
 				{
-					AddTrafficLight(cop, -0x85a, -0x3a9, -0x3e, 0x800, yang);
-					AddTrafficLight(cop, -0x51d, -0x381, -0x3e, 0x800, yang);
-					AddTrafficLight(cop, -0x206, -0x353, -0x3e, 0x800, yang);
+					AddTrafficLight(cop, -2138, -937, -62, 0x800, yang);
+					AddTrafficLight(cop, -1309, -897, -62, 0x800, yang);
+					AddTrafficLight(cop, -518, -851, -62, 0x800, yang);
 				}
 				break;
 			case 1:
@@ -582,41 +581,42 @@ void animate_object(CELL_OBJECT* cop, int type)
 
 				if (phase == 1)
 				{
-					AddTrafficLight(cop, -4, -0x219, -0x29, 0x200, yang);
+					AddTrafficLight(cop, -4, -537, -41, 0x200, yang);
 				}
 				else if (phase == 2)
 				{
-					AddTrafficLight(cop, -4, -0x1d2, -0x29, 0x400, yang);
+					AddTrafficLight(cop, -4, -466, -41, 0x400, yang);
 				}
 				else if (phase == 3)
 				{
-					AddTrafficLight(cop, -4, -0x18b, -0x29, 0x800, yang);
+					AddTrafficLight(cop, -4, -395, -41, 0x800, yang);
 				}
 				break;
 			case 2:
 				if (gLightsOn == 0)
 					break;
 
-				AddLightEffect(cop, -0x348, -0x7b4, -0x3d, 0, 3);
+				AddLightEffect(cop, -840, -1972, -61, 0, 3);
 				break;
 			case 3:
 				if (gLightsOn == 0)
 					break;
 
-				AddLightEffect(cop, -0x361, -0x8c9, 0, 0, 3);
-				AddLightEffect(cop, 0x361, -0x8c9, 0, 0, 3);
+				AddLightEffect(cop, -865, -2249, 0, 0, 3);
+				AddLightEffect(cop, 865, -2249, 0, 0, 3);
 				break;
 			case 4:
 				if (gLightsOn == 0)
 					break;
 
+				// spooled?
 				if (cop->pos.vx - 137190U < 50687 && cop->pos.vz > 713372 && cop->pos.vz < 719516)
 				{
-					AddSmallStreetLight(cop, -0x26c, -0x65, 0, 0);
+					AddSmallStreetLight(cop, -620, -101, 0, 0);
 					break;
 				}
 			
-				AddLightEffect(cop, -0x26c, -0x652, 0, 0, 3);
+				AddLightEffect(cop, -620, -1618, 0, 0, 3);
 				break;
 		}
 	}
@@ -629,15 +629,15 @@ void animate_object(CELL_OBJECT* cop, int type)
 			
 				if (phase == 1)
 				{
-					AddTrafficLight(cop, -0x2cf, -0x38a, -0x16, 0x200, yang);
+					AddTrafficLight(cop, -719, -906, -22, 0x200, yang);
 				}
 				else if (phase == 2)
 				{
-					AddTrafficLight(cop, -0x2cf, -0x345, -0x16, 0x400, yang);
+					AddTrafficLight(cop, -719, -837, -22, 0x400, yang);
 				}
 				else if (phase == 3)
 				{
-					AddTrafficLight(cop, -0x2cf, -0x2fa, -0x16, 0x800, yang);
+					AddTrafficLight(cop, -719, -762, -22, 0x800, yang);
 				}
 				break;
 			case 1:
@@ -645,36 +645,36 @@ void animate_object(CELL_OBJECT* cop, int type)
 
 				if (phase == 1)
 				{
-					AddTrafficLight(cop, 0, -0x28e, -0x15, 0x200, yang);
+					AddTrafficLight(cop, 0, -654, -21, 0x200, yang);
 				}
 				else if (phase == 2)
 				{
-					AddTrafficLight(cop, 0, -0x242, -0x15, 0x400, yang);
+					AddTrafficLight(cop, 0, -578, -21, 0x400, yang);
 				}
 				else if (phase == 3)
 				{
-					AddTrafficLight(cop, 0, -0x1fd, -0x15, 0x800, yang);
+					AddTrafficLight(cop, 0, -509, -21, 0x800, yang);
 				}
 				break;
 			case 2:
 				if (gLightsOn == 0)
 					break;
 
-				AddLightEffect(cop, -0x1f1, -0x59d, 0, 0, 3);
+				AddLightEffect(cop, -497, -1437, 0, 0, 3);
 
 				break;
 			case 3:
 				if (gLightsOn == 0)
 					break;
 
-				AddLightEffect(cop, 0,  -0xaa7, 0, 0, 3);
+				AddLightEffect(cop, 0,  -2727, 0, 0, 3);
 			
 				break;
 			case 4:
 				if (gLightsOn == 0)
 					break;
 
-				AddSmallStreetLight(cop, 0, -0x492, 0, 1);
+				AddSmallStreetLight(cop, 0, -1170, 0, 1);
 				break;
 		}
 	}

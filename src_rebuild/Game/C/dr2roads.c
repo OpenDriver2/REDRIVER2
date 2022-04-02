@@ -574,7 +574,7 @@ int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, sdPlane **plane)
 	{
 		return 4096;
 	}
-	else if ((*plane)->surface == 4)
+	else if ((*plane)->surface == SURF_GRASS)
 	{
 		if (gInGameCutsceneActive && gCurrentMissionNumber == 23 && gInGameCutsceneID == 0)
 			out->vy += RSIN((pos->vx + pos->vz) * 2) >> 9;			// rcossin_tbl[(pos->vx + pos->vz) * 4 & 0x1fff] >> 9;

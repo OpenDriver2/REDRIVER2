@@ -882,8 +882,8 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 						cd[1].length[0] = collide->zsize / 2 + 100;
 						cd[1].length[1] = collide->xsize / 2 + 100;
 
-						cd[1].x.vx = pPos->vx + (((offset.vx - pPos->vx) << 0x10) >> 0x10);
-						cd[1].x.vz = pPos->vz + (((offset.vz - pPos->vz) << 0x10) >> 0x10);
+						cd[1].x.vx = pPos->vx + (short)(offset.vx - pPos->vx);
+						cd[1].x.vz = pPos->vz + (short)(offset.vz - pPos->vz);
 
 						cd[1].vel.vx = 0;
 						cd[1].vel.vz = 0;
