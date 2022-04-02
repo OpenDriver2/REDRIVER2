@@ -8,8 +8,8 @@
 
 #include "ASM/rndrasm.h"
 
-// [D] [T] [A]
-void Tile1x1(MODEL *model)
+#ifdef DYNAMIC_LIGHTING
+void Tile1x1Lit(MODEL* model)
 {
 	int opz, Z;
 	int ofse;
@@ -56,6 +56,110 @@ void Tile1x1(MODEL *model)
 			*(ulong*)&prims->r2 = plotContext.colour;
 			*(ulong*)&prims->r3 = plotContext.colour;
 			setPolyGT4(prims);
+
+			// retrieve first three verts
+			gte_stsxy3(&prims->x0, &prims->x1, &prims->x2);
+
+			// translate 4th vert and get OT Z value
+			gte_ldv0(&srcVerts[polys->v2]);
+			gte_rtps();
+			gte_avsz4();
+
+			gte_stotz(&Z);
+
+			gte_stsxy(&prims->x3);
+
+			prims->tpage = (*plotContext.ptexture_pages)[polys->texture_set];
+			prims->clut = (*plotContext.ptexture_cluts)[polys->texture_set][polys->texture_id];
+
+			*(ushort*)&prims->u0 = *(ushort*)&polys->uv0;
+			*(ushort*)&prims->u1 = *(ushort*)&polys->uv1;
+			*(ushort*)&prims->u2 = *(ushort*)&polys->uv3;
+			*(ushort*)&prims->u3 = *(ushort*)&polys->uv2;
+
+			SVECTOR tmpPos;
+			gte_ldv0(&srcVerts[polys->v0]);
+			gte_rtps();
+			gte_stsv(&tmpPos);
+			GetDLightLevel(&tmpPos, NULL, (u_int*)&prims->r0);
+
+			gte_ldv0(&srcVerts[polys->v1]);
+			gte_rtps();
+			gte_stsv(&tmpPos);
+			GetDLightLevel(&tmpPos, NULL, (u_int*)&prims->r1);
+
+			gte_ldv0(&srcVerts[polys->v3]);
+			gte_rtps();
+			gte_stsv(&tmpPos);
+			GetDLightLevel(&tmpPos, NULL, (u_int*)&prims->r2);
+
+			gte_ldv0(&srcVerts[polys->v2]);
+			gte_rtps();
+			gte_stsv(&tmpPos);
+			GetDLightLevel(&tmpPos, NULL, (u_int*)&prims->r3);
+
+			addPrim(plotContext.ot + (Z >> 1) + ofse, prims);
+
+			plotContext.primptr += sizeof(POLY_GT4);
+		}
+
+		polys = (PL_POLYFT4*)((char*)polys + plotContext.polySizes[ptype]);
+	}
+
+#ifdef USE_PGXP
+	PGXP_SetZOffsetScale(0.0f, 1.0f);
+#endif
+
+	// done
+	plotContext.current->primptr = plotContext.primptr;
+}
+#endif
+
+// [D] [T] [A]
+void Tile1x1(MODEL *model)
+{
+	int opz, Z;
+	int ofse;
+	PL_POLYFT4* polys;
+	int i;
+	u_char ptype;
+	POLY_FT4* prims;
+	SVECTOR* srcVerts;
+
+	srcVerts = (SVECTOR*)model->vertices;
+	polys = (PL_POLYFT4*)model->poly_block;
+
+	// grass should be under pavements and other things
+	if ((model->shape_flags & SHAPE_FLAG_WATER) || (model->flags2 & MODEL_FLAG_GRASS))
+		ofse = 229;
+	else
+		ofse = 133;
+
+#ifdef USE_PGXP
+	PGXP_SetZOffsetScale(0.0f, ofse > 200 ? 1.005f : 0.995f);
+#endif
+
+	i = model->num_polys;
+	while (i-- > 0)
+	{
+		// iterate through polygons
+		// with skipping
+		ptype = polys->id & 0x1f;
+
+		// perform transform
+		gte_ldv3(&srcVerts[polys->v0], &srcVerts[polys->v1], &srcVerts[polys->v3]);
+		gte_rtpt();
+
+		// get culling value
+		gte_nclip();
+		gte_stopz(&opz);
+
+		if (opz > 0)
+		{
+			prims = (POLY_FT4*)plotContext.primptr;
+
+			*(ulong*)&prims->r0 = plotContext.colour;
+			setPolyFT4(prims);
 			
 			// retrieve first three verts
 			gte_stsxy3(&prims->x0, &prims->x1, &prims->x2);
@@ -77,32 +181,9 @@ void Tile1x1(MODEL *model)
 			*(ushort*)&prims->u2 = *(ushort*)&polys->uv3;
 			*(ushort*)&prims->u3 = *(ushort*)&polys->uv2;
 
-#ifdef DYNAMIC_LIGHTING
-			SVECTOR tmpPos;
-			gte_ldv0(&srcVerts[polys->v0]);
-			gte_rtps();
-			gte_stsv(&tmpPos);
-			GetDLightLevel(&tmpPos, (u_int*)&prims->r0);
-
-			gte_ldv0(&srcVerts[polys->v1]);
-			gte_rtps();
-			gte_stsv(&tmpPos);
-			GetDLightLevel(&tmpPos, (u_int*)&prims->r1);
-			
-			gte_ldv0(&srcVerts[polys->v3]);
-			gte_rtps();
-			gte_stsv(&tmpPos);
-			GetDLightLevel(&tmpPos, (u_int*)&prims->r2);
-			
-			gte_ldv0(&srcVerts[polys->v2]);
-			gte_rtps();
-			gte_stsv(&tmpPos);
-			GetDLightLevel(&tmpPos, (u_int*)&prims->r3);
-#endif
-
 			addPrim(plotContext.ot + (Z >> 1) + ofse, prims);
 
-			plotContext.primptr += sizeof(POLY_GT4);
+			plotContext.primptr += sizeof(POLY_FT4);
 		}
 
 		polys = (PL_POLYFT4*)((char*)polys + plotContext.polySizes[ptype]);
@@ -184,17 +265,20 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 
 			pModel = modelpointers[model_number];
 
-			//if (Z < 2000)
-			//	TileNxN(pModel, 4, 75);
-			//else 
-			//	TileNxN(pModel, 2, 35);
-			Tile1x1(pModel);
+			if (Z < 2000)
+				TileNxN(pModel, 4, 75);
+			else
+				TileNxN(pModel, 2, 35);
 		}
 		else
 		{
 			pModel = Z > DRAW_LOD_DIST_LOW ? pLodModels[model_number] : modelpointers[model_number];
 			
+#ifdef DYNAMIC_LIGHTING
+			Tile1x1Lit(pModel);
+#else
 			Tile1x1(pModel);
+#endif // DYNAMIC_LIGHTING
 		}
 	}
 	current->primptr = plotContext.primptr;
@@ -383,6 +467,102 @@ void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 	pc->primptr = (char*)prim;
 }
 
+#ifdef DYNAMIC_LIGHTING
+void drawMeshLit(MVERTEX(*VSP)[5][5], int m, int n, _pct* pc)
+{
+	POLY_GT4* prim;
+	int z, opz;
+
+	prim = (POLY_GT4*)pc->primptr;
+
+	int numPolys = 4;
+
+	if (n < 2)
+		numPolys = 1;
+
+#if 0
+	// no need to subdivide!
+	if (g_pgxpZBuffer)
+		numPolys = 1;
+#endif
+
+	for (int index = 0; index < numPolys; index++)
+	{
+		setPolyGT4(prim);
+
+		// test
+		gte_ldv3(&(*VSP)[index][0], &(*VSP)[index][1], &(*VSP)[index][2]);
+		gte_rtpt();
+		gte_nclip();
+		gte_stopz(&opz);
+
+		gte_avsz3();
+
+		gte_stotz(&z);
+
+		if (pc->flags & (PLOT_NO_CULL | PLOT_INV_CULL))
+		{
+			if (pc->flags & PLOT_NO_CULL)
+				opz = 1;		// no culling
+			else // PLOT_FRONT_CULL
+				opz = -opz;		// front face
+		}
+
+		if (opz > 0 && z > 5)
+		{
+			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
+
+			gte_ldv0(&(*VSP)[index][3]);
+			gte_rtps();
+
+			gte_stsxy(&prim->x3);
+
+			* (ulong*)&prim->r0 = plotContext.colour;
+			*(ulong*)&prim->r1 = plotContext.colour;
+			*(ulong*)&prim->r2 = plotContext.colour;
+			*(ulong*)&prim->r3 = plotContext.colour;
+
+			SVECTOR tmpPos;
+			gte_ldv0(&(*VSP)[index][0]);
+			gte_rtps();
+			gte_stsv(&tmpPos);
+			GetDLightLevel(&tmpPos, NULL, (u_int*)&prim->r0);
+
+			gte_ldv0(&(*VSP)[index][1]);
+			gte_rtps();
+			gte_stsv(&tmpPos);
+			GetDLightLevel(&tmpPos, NULL, (u_int*)&prim->r1);
+
+			gte_ldv0(&(*VSP)[index][2]);
+			gte_rtps();
+			gte_stsv(&tmpPos);
+			GetDLightLevel(&tmpPos, NULL, (u_int*)&prim->r2);
+
+			gte_ldv0(&(*VSP)[index][3]);
+			gte_rtps();
+			gte_stsv(&tmpPos);
+			GetDLightLevel(&tmpPos, NULL, (u_int*)&prim->r3);
+
+			setPolyGT4(prim);
+
+			* (ushort*)&prim->u0 = (*VSP)[index][0].uv.val;
+			*(ushort*)&prim->u1 = (*VSP)[index][1].uv.val;
+			*(ushort*)&prim->u2 = (*VSP)[index][2].uv.val;
+			*(ushort*)&prim->u3 = (*VSP)[index][3].uv.val;
+
+			prim->clut = pc->clut >> 0x10;
+			prim->tpage = pc->tpage >> 0x10;
+
+			addPrim(pc->ot + (z >> 1), prim);
+
+			prim++;
+		}
+	}
+
+	pc->primptr = (char*)prim;
+}
+#endif // DYNAMIC_LIGHTING
+
 // [A] custom implemented function
 void SubdivNxM(char *polys, int n, int m, int ofse)
 {
@@ -410,7 +590,11 @@ void SubdivNxM(char *polys, int n, int m, int ofse)
 	plotContext.ot += ofse;
 
 	makeMesh((MVERTEX(*)[5][5])subdivVerts, m, n);
+#ifdef DYNAMIC_LIGHTING
+	drawMeshLit((MVERTEX(*)[5][5])subdivVerts, m, n, &plotContext);
+#else
 	drawMesh((MVERTEX(*)[5][5])subdivVerts, m, n, &plotContext);
+#endif
 
 	plotContext.ot -= ofse;
 }

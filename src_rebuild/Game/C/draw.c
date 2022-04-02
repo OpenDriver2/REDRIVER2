@@ -1569,10 +1569,6 @@ void DrawMapPSX(int* comp_val)
 	if (drawData.other_models_found)
 		DrawAllBuildings((CELL_OBJECT**)model_object_ptrs, drawData.other_models_found);
 
-#ifdef DYNAMIC_LIGHTING
-	gNumDlights = 0;
-#endif
-
 	setupYet = 0;
 }
 
@@ -1595,15 +1591,9 @@ void AddDlight(VECTOR* position, CVECTOR* color, int radius)
 	pLight->radius = radius;
 #endif // DYNAMIC_LIGHTING
 }
+#pragma optimize("", off)
 
-void GetDLightLevel(SVECTOR* position, CVECTOR* inOutColor)
-{
-#ifdef DYNAMIC_LIGHTING
-
-#endif // DYNAMIC_LIGHTING
-}
-
-void GetDLightLevel(SVECTOR* position, u_int* inOutColor)
+void GetDLightLevel(SVECTOR* position, SVECTOR* normal, u_int* inOutColor)
 {
 #ifdef DYNAMIC_LIGHTING
 	DLIGHT* pLight;
@@ -1628,6 +1618,19 @@ void GetDLightLevel(SVECTOR* position, u_int* inOutColor)
 		}
 
 		light = pLight->radius - dist;
+
+		if (normal) {
+			int dot;
+
+			// calc dot product
+			dx = normal->vx - dx;
+			dy = normal->vy - dy;
+			dz = normal->vz - dz;
+
+			dot = MAX(dx * dx + dy * dy + dz * dz, 0) >> 6;
+
+			light = (light * dot) >> 12;
+		}
 
 		lightR += pLight->color.r * light >> 13;
 		lightG += pLight->color.g * light >> 13;

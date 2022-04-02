@@ -269,6 +269,95 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 	pg->primptr = (unsigned char*)prim;
 }
 
+
+#ifdef DYNAMIC_LIGHTING
+void plotCarPolyGT3Lit(int numTris, CAR_POLY* src, SVECTOR* vlist, SVECTOR* nlist, plotCarGlobals* pg, int palette)
+{
+	int Z;
+	int otz;
+	SVECTOR* v2;
+	SVECTOR* v1;
+	SVECTOR* v0;
+	SVECTOR* n2;
+	SVECTOR* n1;
+	SVECTOR* n0;
+	u_int indices;
+	POLY_GT3* prim;
+	int ofse;
+
+	prim = (POLY_GT3*)pg->primptr;
+
+	int GT3rgb = pg->intensity | 0x34000000;
+	gte_ldrgb(&GT3rgb);
+
+	while (numTris > 0)
+	{
+		indices = src->vindices;
+
+		v0 = vlist + (indices & 0xff);
+		v1 = vlist + (indices >> 8 & 0xff);
+		v2 = vlist + (indices >> 16 & 0xff);
+
+		n0 = nlist + (indices & 0xff);
+		n1 = nlist + (indices >> 8 & 0xff);
+		n2 = nlist + (indices >> 16 & 0xff);
+
+		gte_ldv3(v0, v1, v2);
+
+		gte_rtpt();
+		gte_nclip();
+
+		gte_stopz(&Z);
+
+		gte_avsz3();
+
+		gte_stotz(&otz);
+
+		if (Z > -1 && otz > 0)
+		{
+			ofse = pg->damageLevel[src->originalindex];
+
+			*(u_int*)&prim->u0 = (src->clut_uv0 & 0xffffU | pg->pciv_clut[palette + (src->clut_uv0 >> 0x10)] << 0x10) + ofse;
+			*(u_int*)&prim->u1 = src->tpage_uv1 + ofse;
+			*(u_int*)&prim->u2 = src->uv3_uv2 + ofse;
+
+			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
+
+			*(u_int*)&prim->r0 = GT3rgb;
+			*(u_int*)&prim->r1 = GT3rgb;
+			*(u_int*)&prim->r2 = GT3rgb;
+
+			SVECTOR tmpPos;
+			gte_ldv0(v0);
+			gte_rtps();
+			gte_stsv(&tmpPos);
+			GetDLightLevel(&tmpPos, NULL, (u_int*)&prim->r0);
+
+			gte_ldv0(v1);
+			gte_rtps();
+			gte_stsv(&tmpPos);
+			GetDLightLevel(&tmpPos, NULL, (u_int*)&prim->r1);
+
+			gte_ldv0(v2);
+			gte_rtps();
+			gte_stsv(&tmpPos);
+			GetDLightLevel(&tmpPos, NULL, (u_int*)&prim->r2);
+
+			setPolyGT3(prim);
+			addPrim(pg->ot + (otz >> 1), prim);
+
+			prim++;
+		}
+
+		src++;
+		numTris--;
+	}
+
+	pg->primptr = (unsigned char*)prim;
+}
+#endif // DYNAMIC_LIGHTING
+
+
 // [D] [T]
 void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *pg, int palette)
 {
@@ -855,7 +944,11 @@ void plotNewCarModel(CAR_MODEL* car, int palette)
 	if (gTimeOfDay == 3)
 	{
 		_pg.intensity = (combointensity & 0xfcfcf0U) >> 2;
+#ifdef DYNAMIC_LIGHTING
+		plotCarPolyGT3Lit(car->numGT3, car->pGT3, car->vlist, car->nlist, &_pg, palette);
+#else
 		plotCarPolyGT3nolight(car->numGT3, car->pGT3, car->vlist, &_pg, palette);
+#endif // DYNAMIC_LIGHTING
 	}
 	else
 	{

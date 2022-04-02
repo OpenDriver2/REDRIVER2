@@ -1,9 +1,5 @@
 #ifndef DRAW_H
-#define DRAW_H
-
-#ifndef PSX
-#define DYNAMIC_LIGHTING
-#endif
+#define DRAW_Haaaa
 
 // Primitive plot context used in scratchpad
 struct _pct
@@ -36,6 +32,7 @@ struct DLIGHT
 };
 
 #define MAX_DLIGHTS 32
+extern int gNumDlights;
 
 #endif
 
@@ -84,7 +81,7 @@ enum PlotFlags
 	PLOT_INV_CULL = (1 << 1),
 	PLOT_NO_CULL = (1 << 2),
 	PLOT_NO_SHADE = (1 << 3),
-	PLOT_CUSTOM_PALETTE = (1 << 4),
+	PLOT_CUSTOM_PALETTE = (1 << 4)
 };
 
 extern void* model_tile_ptrs[MAX_DRAWN_TILES];
@@ -105,8 +102,7 @@ extern int num_cars_drawn;
 extern char CurrentPVS[444];
 
 extern void AddDlight(VECTOR* position, CVECTOR* color, int radius);
-extern void GetDLightLevel(SVECTOR* position, CVECTOR* inOutColor);
-extern void GetDLightLevel(SVECTOR* position, u_int* inOutColor);
+extern void GetDLightLevel(SVECTOR* position, SVECTOR* normal, u_int* inOutColor);
 
 extern void DrawMapPSX(int *comp_val); // 0x0003F6B0
 

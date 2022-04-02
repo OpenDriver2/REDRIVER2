@@ -5,6 +5,7 @@
 // please populate this file only with engine limits during refactoring
 
 #ifndef PSX
+#define DYNAMIC_LIGHTING
 #define MAX_PLAYERS				16			// used for replay streams mostly
 #else
 #define MAX_PLAYERS				8			// used for replay streams mostly
