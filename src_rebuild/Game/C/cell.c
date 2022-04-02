@@ -7,7 +7,7 @@
 int cell_object_index = 0;
 CELL_OBJECT cell_object_buffer[1024];
 
-unsigned char cell_object_computed_values[2048];
+u_char cell_object_computed_values[2048];
 
 extern u_char NumPlayers;
 
@@ -69,11 +69,11 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 			8767,555,445,223 - objects of list 2
 			0x8000           - end of cell objects
 		*/
-		
-		while (cell->num != (level | 0x4000))	// skip until we reach the needed list header
+
+		level |= 0x4000;
+		while (cell->num != level)	// skip until we reach the needed list header
 		{
 			cell++;
-			
 			if (cell->num & 0x8000)	// end of cell objects?
 				return NULL;
 		}
@@ -86,8 +86,8 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 
 	pci->pcd = cell;
 
-	num = cell->num;
-	ppco = &cell_objects[num & 0x3fff];
+	num = cell->num & 16383;
+	ppco = &cell_objects[num];
 
 	if (ppco->value == 0xffff && (ppco->pos.vy & 1)) 
 	{
@@ -95,9 +95,9 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 	}
 	else if (use_computed)
 	{
-		value = 1 << (num & 7) & 0xffff;
+		value = 1 << (num & 7);
 
-		if (cell_object_computed_values[(num & 0x3fff) >> 3] & value) // get cached value
+		if (cell_object_computed_values[num / 8] & value) // get cached value
 		{
 			ppco = GetNextPackedCop(pci);
 			pci->ppco = ppco;
@@ -105,7 +105,7 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 			return ppco;
 		}
 
-		cell_object_computed_values[(num & 0x3fff) >> 3] |= value;
+		cell_object_computed_values[num / 8] |= value;
 	}
 
 	pci->ppco = ppco;
@@ -135,20 +135,19 @@ PACKED_CELL_OBJECT* GetNextPackedCop(CELL_ITERATOR* pci)
 			if (num & 0x4000)			// end of list?
 				return NULL;
 
-			ppco = &cell_objects[num & 0x3fff];
+			num &= 16383;
+			ppco = &cell_objects[num];
 		} while (ppco->value == 0xffff && (ppco->pos.vy & 1));
 		
 		if (!pci->use_computed)
 			break;
 
-		value = 1 << (num & 7) & 0xffff;
-
-		if ((cell_object_computed_values[(num & 0x3fff) >> 3] & value) == 0)
+		value = 1 << (num & 7);
+		if ((cell_object_computed_values[num / 8] & value) == 0)
 		{
-			cell_object_computed_values[(num & 0x3fff) >> 3] |= value;
+			cell_object_computed_values[num / 8] |= value;
 			break;
 		}
-
 	} while (true);
 
 	pci->pcd = celld;
@@ -157,34 +156,20 @@ PACKED_CELL_OBJECT* GetNextPackedCop(CELL_ITERATOR* pci)
 	return ppco;
 }
 
+
 // [D] [T]
 CELL_OBJECT* UnpackCellObject(PACKED_CELL_OBJECT* ppco, XZPAIR* near)
 {
+	int newIndex;
 	CELL_OBJECT* pco;
 
 	if (ppco == NULL)
 		return NULL;
 
-	pco = &cell_object_buffer[cell_object_index];
-	cell_object_index = cell_object_index + 1 & 0x3ff;
+	pco = &cell_object_buffer[newIndex = cell_object_index];
+	cell_object_index = newIndex + 1 & 1023;
 
-	pco->pos.vx = near->x + (((ppco->pos.vx - near->x) << 0x10) >> 0x10);
-	pco->pos.vz = near->z + (((ppco->pos.vz - near->z) << 0x10) >> 0x10);
-
-	pco->pos.vy = (ppco->pos.vy << 0x10) >> 0x11;
-	pco->yang = ppco->value & 0x3f;
-	pco->type = (ppco->value >> 6) | ((ppco->pos.vy & 1) << 10);
+	QuickUnpackCellObject(ppco, near, pco);
 
 	return pco;
-}
-
-// [D] [T]
-void QuickUnpackCellObject(PACKED_CELL_OBJECT* ppco, XZPAIR* near, CELL_OBJECT* pco)
-{
-	pco->pos.vx = near->x + (((ppco->pos.vx - near->x) << 0x10) >> 0x10);
-	pco->pos.vz = near->z + (((ppco->pos.vz - near->z) << 0x10) >> 0x10);
-
-	pco->pos.vy = (ppco->pos.vy << 0x10) >> 0x11;
-	pco->yang = ppco->value & 0x3f;
-	pco->type = (ppco->value >> 6) | ((ppco->pos.vy & 1) << 10);
 }

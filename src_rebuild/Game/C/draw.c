@@ -1396,10 +1396,8 @@ void DrawMapPSX(int* comp_val)
 				cellz > -1 && cellz < cells_down &&
 				PVS_ptr[vis_v * pvs_square + vis_h]) // check PVS table
 			{
-				ppco = GetFirstPackedCop(cellx, cellz, &ci, 1, drawData.cellLevel);
-
 				// walk each cell object in cell
-				while (ppco != NULL)
+				for (ppco = GetFirstPackedCop(cellx, cellz, &ci, 1, drawData.cellLevel); ppco; ppco = GetNextPackedCop(&ci))
 				{
 					model = modelpointers[(ppco->value >> 6) | ((ppco->pos).vy & 1) << 10];
 
@@ -1493,8 +1491,6 @@ void DrawMapPSX(int* comp_val)
 							}
 						}
 					}
-
-					ppco = GetNextPackedCop(&ci);
 				}
 			}
 		}
