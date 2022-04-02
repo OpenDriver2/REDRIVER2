@@ -330,6 +330,7 @@ void InitAnimatingObjects(void)
 	{
 		// My way
 		int model_idx = FindModelIdxWithName(aop->name);
+		aop->model_num = model_idx;
 
 		if (model_idx != -1 && modelpointers[model_idx] != &dummyModel)
 		{
@@ -338,8 +339,6 @@ void InitAnimatingObjects(void)
 
 			if (aop->LitPoly)
 				modelPtr->flags2 |= MODEL_FLAG_LAMP;
-			
-			aop->model_num = model_idx;
 
 			// [A] store animated object number in normals pointer
 			// after all it was always unused
@@ -359,8 +358,6 @@ void InitAnimatingObjects(void)
 				modelPtr->tri_verts = loop;
 			}
 		}
-		else
-			aop->model_num = -1;
 
 		aop++;
 	}
