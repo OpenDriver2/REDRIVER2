@@ -1005,20 +1005,19 @@ void DoDopplerSFX(void)
 		}
 	}
 
-	// sort cars by distance distance
-	for (i = 0; i < num_noisy_cars - 1; i++)
+	// sort cars by distance
+	for (i = 1; i < num_noisy_cars; i++)
 	{
-		for (j = i + 1; j < num_noisy_cars; j++)
-		{
-			int tmpi;
-			tmpi = indexlist[i];
+		int tmpi;
+		tmpi = indexlist[i];
 
-			if (car_dist[indexlist[j]] < car_dist[tmpi])
-			{
-				indexlist[i] = indexlist[j];
-				indexlist[j] = tmpi;
-			}
+		j = i - 1;
+		while (j >= 0 && car_dist[indexlist[j]] > car_dist[tmpi])
+		{
+			indexlist[j + 1] = indexlist[j];
+			j = j - 1;
 		}
+		indexlist[j + 1] = tmpi;
 	}
 
 	car_flags = 0;
