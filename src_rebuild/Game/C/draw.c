@@ -86,13 +86,6 @@ SVECTOR night_colours[4] =
   { 880, 880, 905, 0 }
 };
 
-#ifdef DYNAMIC_LIGHTING
-
-int gNumDlights = 0;
-DLIGHT gLights[MAX_DLIGHTS];
-
-#endif // DYNAMIC_LIGHTING
-
 void* model_object_ptrs[MAX_DRAWN_BUILDINGS];
 void* model_tile_ptrs[MAX_DRAWN_TILES];
 void* anim_obj_buffer[MAX_DRAWN_ANIMATING];
@@ -532,30 +525,23 @@ void DrawAllTheCars(int view)
 	{
 		gForceLowDetailCars = 0;
 
-		// sort cars by distance
-		i = 1;
-		while (i < num_cars_to_draw)
+		// insertion sort of cars by distance
+		for (i = 1; i < num_cars_to_draw; i++)
 		{
 			cp = cars_to_draw[i];
 			dist = car_distance[i];
 
 			j = i - 1;
 
-			while (dist < car_distance[j])
+			while (j >= 0 && dist < car_distance[j])
 			{
 				car_distance[i] = car_distance[j];
 				cars_to_draw[i] = cars_to_draw[j];
-
-				if (j == 0)
-					break;
-				
 				j--;
 			}
 			
-			cars_to_draw[i] = cp;
-			car_distance[i] = dist;
-
-			i++;
+			cars_to_draw[j+1] = cp;
+			car_distance[j+1] = dist;
 		}
 
 		i = 0;
@@ -1573,6 +1559,17 @@ void DrawMapPSX(int* comp_val)
 }
 
 #ifdef DYNAMIC_LIGHTING
+struct DLIGHT
+{
+	SVECTOR position;
+	CVECTOR color;
+};
+
+int gEnableDlights = 0;
+
+int gNumDlights = 0;
+DLIGHT gLights[MAX_DLIGHTS];
+
 void AddDlight(VECTOR* position, CVECTOR* color, int radius)
 {
 	DLIGHT* pLight;
@@ -1586,10 +1583,9 @@ void AddDlight(VECTOR* position, CVECTOR* color, int radius)
 
 	lightPos = *position;
 	VecCopy(&pLight->position, &lightPos);
+	pLight->position.pad = ABS(radius);
 
 	pLight->color = *color;
-	pLight->radius = ABS(radius);
-
 }
 
 void GetDLightLevel(SVECTOR* position, u_int* inOutColor)
@@ -1604,18 +1600,22 @@ void GetDLightLevel(SVECTOR* position, u_int* inOutColor)
 
 	for (int i = 0; i < gNumDlights; i++)
 	{
+		int radius;
 		pLight = &gLights[i];
+
 		dx = (int)position->vx - (int)pLight->position.vx;
 		dy = (int)position->vy - (int)pLight->position.vy;
 		dz = (int)position->vz - (int)pLight->position.vz;
 
 		dist = SquareRoot0(dx * dx + dy * dy + dz * dz);
 
-		if (dist > pLight->radius) {
+		radius = pLight->position.pad;
+
+		if (dist > radius) {
 			continue;
 		}
 
-		light = pLight->radius - dist;
+		light = radius - dist;
 
 		lightR += pLight->color.r * light >> 13;
 		lightG += pLight->color.g * light >> 13;

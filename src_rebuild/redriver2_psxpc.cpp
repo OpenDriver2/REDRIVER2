@@ -19,6 +19,7 @@
 #include "C/overlay.h"
 #include "C/players.h"
 #include "C/time.h"
+#include "C/draw.h"
 
 #include "utils/ini.h"
 
@@ -27,6 +28,7 @@
 #include <SDL_messagebox.h>
 
 #include "PsyX/PsyX_globals.h"
+
 
 
 int(*GPU_printf)(const char *fmt, ...);
@@ -584,6 +586,7 @@ int main(int argc, char** argv)
 
 		// configure host game
 		ini_sget(config, "game", "drawDistance", "%d", &gDrawDistance);
+		ini_sget(config, "game", "dynamicLights", "%d", &gEnableDlights);
 		ini_sget(config, "game", "disableChicagoBridges", "%d", &gDisableChicagoBridges);
 		ini_sget(config, "game", "fieldOfView", "%d", &newScrZ);
 		ini_sget(config, "game", "freeCamera", "%d", &enableFreecamera);

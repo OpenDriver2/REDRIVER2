@@ -22,21 +22,11 @@ struct _pct
 };
 
 #ifdef DYNAMIC_LIGHTING
-
-// dynamic light
-struct DLIGHT
-{
-	SVECTOR position;
-	CVECTOR color;
-	int radius;
-};
-
-#define MAX_DLIGHTS 32
+extern int gEnableDlights;
 extern int gNumDlights;
 
 extern void AddDlight(VECTOR* position, CVECTOR* color, int radius);
 extern void GetDLightLevel(SVECTOR* position, u_int* inOutColor);
-
 #endif
 
 extern SVECTOR day_vectors[4];

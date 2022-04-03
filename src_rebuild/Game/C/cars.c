@@ -292,11 +292,9 @@ void plotCarPolyGT3Lit(int numTris, CAR_POLY* src, SVECTOR* vlist, SVECTOR* nlis
 	SVECTOR* v2;
 	SVECTOR* v1;
 	SVECTOR* v0;
-	SVECTOR* n2;
-	SVECTOR* n1;
-	SVECTOR* n0;
 	u_int indices;
 	POLY_GT3* prim;
+	u_int r0, r1, r2;
 	int ofse;
 
 	prim = (POLY_GT3*)pg->primptr;
@@ -312,21 +310,29 @@ void plotCarPolyGT3Lit(int numTris, CAR_POLY* src, SVECTOR* vlist, SVECTOR* nlis
 		v1 = vlist + (indices >> 8 & 0xff);
 		v2 = vlist + (indices >> 16 & 0xff);
 
-		n0 = nlist + (indices & 0xff);
-		n1 = nlist + (indices >> 8 & 0xff);
-		n2 = nlist + (indices >> 16 & 0xff);
-
 		gte_ldv3(v0, v1, v2);
 
 		gte_rtpt();
 		gte_nclip();
+
 		gte_stopz(&Z);
 
 		gte_avsz3();
+
 		gte_stotz(&otz);
 
 		if (Z > -1 && otz > 0)
 		{
+			indices = src->nindices;
+
+			r0 = (u_int)(ushort)nlist[indices & 0xff].pad;
+			r1 = (u_int)(ushort)nlist[indices >> 8 & 0xff].pad;
+			r2 = (u_int)(ushort)nlist[indices >> 16 & 0xff].pad;
+
+			*(u_int*)&prim->r0 = (r0 & 0xff) << 0x10 | r0;
+			*(u_int*)&prim->r1 = (r1 & 0xff) << 0x10 | r1;
+			*(u_int*)&prim->r2 = (r2 & 0xff) << 0x10 | r2;
+
 			ofse = pg->damageLevel[src->originalindex];
 
 			*(u_int*)&prim->u0 = (src->clut_uv0 & 0xffffU | pg->pciv_clut[palette + (src->clut_uv0 >> 0x10)] << 0x10) + ofse;
@@ -334,10 +340,6 @@ void plotCarPolyGT3Lit(int numTris, CAR_POLY* src, SVECTOR* vlist, SVECTOR* nlis
 			*(u_int*)&prim->u2 = src->uv3_uv2 + ofse;
 
 			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
-
-			*(u_int*)&prim->r0 = GT3rgb;
-			*(u_int*)&prim->r1 = GT3rgb;
-			*(u_int*)&prim->r2 = GT3rgb;
 
 			SVECTOR tmpPos;
 			gte_ldv0(v0);
@@ -443,7 +445,7 @@ void setupLightingMatrices(void)
 
 	if (gTimeOfDay == 3)
 	{
-		gte_SetBackColor(64, 64, 64);
+		gte_SetBackColor(48, 48, 48);
 	}
 	else
 	{
@@ -469,20 +471,19 @@ void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 	int num_norms, count;
 	SVECTOR* ppads;
 	SVECTOR* norms;
-	SVECTOR lightsourcevector;
-	SVECTOR colour;
+	SVECTOR colour, lightsourcevector;
 	CVECTOR c0, c1, c2;
 	u_int GT3rgb;
 
-	if (gTimeOfDay < 3)
-	{
-		lightsourcevector = day_vectors[GameLevel];
-		colour = day_colours[GameLevel];
-	}
-	else if (gTimeOfDay == 3)
+	if (gTimeOfDay == 3)
 	{
 		lightsourcevector = night_vectors[GameLevel];
 		colour = night_colours[GameLevel];
+	}
+	else
+	{
+		lightsourcevector = day_vectors[GameLevel];
+		colour = day_colours[GameLevel];
 	}
 
 	InvertMatrix(&cp->hd.where, &scratchPadMat);
@@ -490,69 +491,58 @@ void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 
 	gte_ldv0(&lightsourcevector);
 	gte_rtv0();
-
 	gte_stsv(light_matrix.m[0]);
-
-	doLight = 0;
 
 	colour_matrix.m[0][0] = colour.vx;
 	colour_matrix.m[1][0] = colour.vy;
 	colour_matrix.m[2][0] = colour.vz;
 
-	if (gTimeOfDay != 3)
+	orY = ABS(cp->st.n.orientation[1] - cp->ap.qy);
+	orW = ABS(cp->st.n.orientation[3] - cp->ap.qw);
+
+	doLight = 0;
+
+	if ((orY + orW > 200) || (cp->lowDetail != (detail | lightning)))
+		doLight = 1;
+
+	if ((gTimeOfDay == 0 || gTimeOfDay == 2) && (cp->id & 15) == (CameraCnt & 15))
+		doLight = 1;
+
+	if (doLight)
 	{
-		orY = cp->st.n.orientation[1] - cp->ap.qy;
-
-		if (orY < 1)
-			orY = cp->ap.qy - cp->st.n.orientation[1];
-
-		orW = cp->st.n.orientation[3] - cp->ap.qw;
-
-		if (orW < 1)
-			orW = cp->ap.qw - cp->st.n.orientation[3];
-
-		if ((orY + orW > 200) || (cp->lowDetail != (detail | lightning)))
-			doLight = 1;
-
-		if ((gTimeOfDay == 0 || gTimeOfDay == 2) && (cp->id & 0xf) == (CameraCnt & 0xfU))
-			doLight = 1;
-
 		setupLightingMatrices();
 
-		if (doLight)
+		GT3rgb = combointensity & 0xffffffU | 0x34000000;
+		gte_ldrgb(&GT3rgb);
+
+		cp->ap.qy = cp->st.n.orientation[1];
+		cp->ap.qw = cp->st.n.orientation[3];
+		cp->lowDetail = detail | lightning;
+
+		if (detail == 0)
+			model = gCarLowModelPtr[cp->ap.model];
+		else
+			model = gCarCleanModelPtr[cp->ap.model];
+
+		num_norms = model->num_point_normals / 3;
+		norms = (SVECTOR*)model->point_normals;
+
+		ppads = gTempCarVertDump[cp->id];
+		count = num_norms;// +1;
+
+		while (count >= 0)
 		{
-			GT3rgb = combointensity & 0xffffffU | 0x34000000;
-			gte_ldrgb(&GT3rgb);
+			gte_ldv3(&norms[0], &norms[1], &norms[2]);
+			gte_ncct();
+			gte_strgb3(&c0, &c1, &c2);
 
-			cp->ap.qy = cp->st.n.orientation[1];
-			cp->ap.qw = cp->st.n.orientation[3];
-			cp->lowDetail = detail | lightning;
+			ppads[0].pad = *(short*)&c0;
+			ppads[1].pad = *(short*)&c1;
+			ppads[2].pad = *(short*)&c2;
 
-			if (detail == 0)
-				model = gCarLowModelPtr[cp->ap.model];
-			else
-				model = gCarCleanModelPtr[cp->ap.model];
-
-			num_norms = model->num_point_normals / 3;
-			norms = (SVECTOR*)model->point_normals;
-
-			ppads = gTempCarVertDump[cp->id];
-			count = num_norms;// +1;
-
-			while (count >= 0)
-			{
-				gte_ldv3(&norms[0], &norms[1], &norms[2]);
-				gte_ncct();
-				gte_strgb3(&c0, &c1, &c2);
-
-				ppads[0].pad = *(short*)&c0;
-				ppads[1].pad = *(short*)&c1;
-				ppads[2].pad = *(short*)&c2;
-
-				count--;
-				norms += 3;
-				ppads += 3;
-			}
+			count--;
+			norms += 3;
+			ppads += 3;
 		}
 
 		restoreLightingMatrices();
@@ -946,7 +936,7 @@ void plotNewCarModel(CAR_MODEL* car, int palette)
 	{
 		_pg.intensity = (combointensity & 0xfcfcf0U) >> 2;
 #ifdef DYNAMIC_LIGHTING
-		plotCarPolyGT3Lit(car->numGT3, car->pGT3, car->vlist, car->nlist, &_pg, palette);
+		(gEnableDlights ? plotCarPolyGT3Lit : plotCarPolyGT3)(car->numGT3, car->pGT3, car->vlist, car->nlist, &_pg, palette);
 #else
 		plotCarPolyGT3nolight(car->numGT3, car->pGT3, car->vlist, &_pg, palette);
 #endif // DYNAMIC_LIGHTING

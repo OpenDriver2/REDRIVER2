@@ -275,7 +275,7 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 			pModel = Z > DRAW_LOD_DIST_LOW ? pLodModels[model_number] : modelpointers[model_number];
 			
 #ifdef DYNAMIC_LIGHTING
-			Tile1x1Lit(pModel);
+			(gEnableDlights ? Tile1x1Lit : Tile1x1)(pModel);
 #else
 			Tile1x1(pModel);
 #endif // DYNAMIC_LIGHTING
@@ -591,7 +591,7 @@ void SubdivNxM(char *polys, int n, int m, int ofse)
 
 	makeMesh((MVERTEX(*)[5][5])subdivVerts, m, n);
 #ifdef DYNAMIC_LIGHTING
-	drawMeshLit((MVERTEX(*)[5][5])subdivVerts, m, n, &plotContext);
+	(gEnableDlights ? drawMeshLit : drawMesh)((MVERTEX(*)[5][5])subdivVerts, m, n, &plotContext);
 #else
 	drawMesh((MVERTEX(*)[5][5])subdivVerts, m, n, &plotContext);
 #endif

@@ -2387,6 +2387,7 @@ void RenderGame2(int view)
 	DrawAllTheCars(view);
 
 #ifndef PSX
+
 #ifdef DYNAMIC_LIGHTING
 	gNumDlights = 0;
 #endif
