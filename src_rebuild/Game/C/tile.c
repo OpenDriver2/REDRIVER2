@@ -81,22 +81,22 @@ void Tile1x1Lit(MODEL* model)
 			gte_ldv0(&srcVerts[polys->v0]);
 			gte_rtps();
 			gte_stsv(&tmpPos);
-			GetDLightLevel(&tmpPos, NULL, (u_int*)&prims->r0);
+			GetDLightLevel(&tmpPos, (u_int*)&prims->r0);
 
 			gte_ldv0(&srcVerts[polys->v1]);
 			gte_rtps();
 			gte_stsv(&tmpPos);
-			GetDLightLevel(&tmpPos, NULL, (u_int*)&prims->r1);
+			GetDLightLevel(&tmpPos, (u_int*)&prims->r1);
 
 			gte_ldv0(&srcVerts[polys->v3]);
 			gte_rtps();
 			gte_stsv(&tmpPos);
-			GetDLightLevel(&tmpPos, NULL, (u_int*)&prims->r2);
+			GetDLightLevel(&tmpPos, (u_int*)&prims->r2);
 
 			gte_ldv0(&srcVerts[polys->v2]);
 			gte_rtps();
 			gte_stsv(&tmpPos);
-			GetDLightLevel(&tmpPos, NULL, (u_int*)&prims->r3);
+			GetDLightLevel(&tmpPos, (u_int*)&prims->r3);
 
 			addPrim(plotContext.ot + (Z >> 1) + ofse, prims);
 
@@ -526,22 +526,22 @@ void drawMeshLit(MVERTEX(*VSP)[5][5], int m, int n, _pct* pc)
 			gte_ldv0(&(*VSP)[index][0]);
 			gte_rtps();
 			gte_stsv(&tmpPos);
-			GetDLightLevel(&tmpPos, NULL, (u_int*)&prim->r0);
+			GetDLightLevel(&tmpPos, (u_int*)&prim->r0);
 
 			gte_ldv0(&(*VSP)[index][1]);
 			gte_rtps();
 			gte_stsv(&tmpPos);
-			GetDLightLevel(&tmpPos, NULL, (u_int*)&prim->r1);
+			GetDLightLevel(&tmpPos, (u_int*)&prim->r1);
 
 			gte_ldv0(&(*VSP)[index][2]);
 			gte_rtps();
 			gte_stsv(&tmpPos);
-			GetDLightLevel(&tmpPos, NULL, (u_int*)&prim->r2);
+			GetDLightLevel(&tmpPos, (u_int*)&prim->r2);
 
 			gte_ldv0(&(*VSP)[index][3]);
 			gte_rtps();
 			gte_stsv(&tmpPos);
-			GetDLightLevel(&tmpPos, NULL, (u_int*)&prim->r3);
+			GetDLightLevel(&tmpPos, (u_int*)&prim->r3);
 
 			setPolyGT4(prim);
 

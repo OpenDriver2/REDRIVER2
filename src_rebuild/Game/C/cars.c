@@ -41,10 +41,24 @@ struct plotCarGlobals
 #endif
 
 MATRIX light_matrix =
-{ { { 4096, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } }, { 0, 0, 0 } };
+{ 
+	{ 
+		{ 4096, 0, 0 }, 
+		{ 0, 0, 0 }, 
+		{ 0, 0, 0 }
+	}, 
+	{ 0, 0, 0 } 
+};
 
 MATRIX colour_matrix =
-{ { { 4032, 0, 0 }, { 3936, 0, 0 }, { 3520, 0, 0 } }, { 0, 0, 0 } };
+{ 
+	{ 
+		{ 4032, 0, 0 }, 
+		{ 3936, 0, 0 }, 
+		{ 3520, 0, 0 }
+	}, 
+	{ 0, 0, 0 } 
+};
 
 // PHYSICS
 CAR_DATA car_data[MAX_CARS + 2];	// all cars + Tanner cbox + Camera cbox
@@ -306,11 +320,9 @@ void plotCarPolyGT3Lit(int numTris, CAR_POLY* src, SVECTOR* vlist, SVECTOR* nlis
 
 		gte_rtpt();
 		gte_nclip();
-
 		gte_stopz(&Z);
 
 		gte_avsz3();
-
 		gte_stotz(&otz);
 
 		if (Z > -1 && otz > 0)
@@ -331,17 +343,17 @@ void plotCarPolyGT3Lit(int numTris, CAR_POLY* src, SVECTOR* vlist, SVECTOR* nlis
 			gte_ldv0(v0);
 			gte_rtps();
 			gte_stsv(&tmpPos);
-			GetDLightLevel(&tmpPos, NULL, (u_int*)&prim->r0);
+			GetDLightLevel(&tmpPos, (u_int*)&prim->r0);
 
 			gte_ldv0(v1);
 			gte_rtps();
 			gte_stsv(&tmpPos);
-			GetDLightLevel(&tmpPos, NULL, (u_int*)&prim->r1);
+			GetDLightLevel(&tmpPos, (u_int*)&prim->r1);
 
 			gte_ldv0(v2);
 			gte_rtps();
 			gte_stsv(&tmpPos);
-			GetDLightLevel(&tmpPos, NULL, (u_int*)&prim->r2);
+			GetDLightLevel(&tmpPos, (u_int*)&prim->r2);
 
 			setPolyGT3(prim);
 			addPrim(pg->ot + (otz >> 1), prim);
@@ -387,11 +399,9 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 
 		gte_rtpt();
 		gte_nclip();
-
 		gte_stopz(&Z);
 
 		gte_avsz3();
-
 		gte_stotz(&otz);
 
 		if (Z > -1 && otz > 0)
@@ -454,32 +464,25 @@ void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 	MATRIX& scratchPadMat = *(MATRIX*)((u_char*)getScratchAddr(0) + 0x344);
 
 	int doLight;
-	int orW;
-	int orY;
+	int orW, orY;
 	MODEL* model;
-	int num_norms;
-	int count;
+	int num_norms, count;
 	SVECTOR* ppads;
 	SVECTOR* norms;
 	SVECTOR lightsourcevector;
 	SVECTOR colour;
-	CVECTOR c0;
-	CVECTOR c1;
-	CVECTOR c2;
+	CVECTOR c0, c1, c2;
 	u_int GT3rgb;
 
-	if (gTimeOfDay > -1)
+	if (gTimeOfDay < 3)
 	{
-		if (gTimeOfDay < 3)
-		{
-			lightsourcevector = day_vectors[GameLevel];
-			colour = day_colours[GameLevel];
-		}
-		else if (gTimeOfDay == 3)
-		{
-			lightsourcevector = night_vectors[GameLevel];
-			colour = night_colours[GameLevel];
-		}
+		lightsourcevector = day_vectors[GameLevel];
+		colour = day_colours[GameLevel];
+	}
+	else if (gTimeOfDay == 3)
+	{
+		lightsourcevector = night_vectors[GameLevel];
+		colour = night_colours[GameLevel];
 	}
 
 	InvertMatrix(&cp->hd.where, &scratchPadMat);
@@ -539,9 +542,7 @@ void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 			while (count >= 0)
 			{
 				gte_ldv3(&norms[0], &norms[1], &norms[2]);
-
 				gte_ncct();
-
 				gte_strgb3(&c0, &c1, &c2);
 
 				ppads[0].pad = *(short*)&c0;

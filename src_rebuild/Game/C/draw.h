@@ -1,5 +1,5 @@
 #ifndef DRAW_H
-#define DRAW_Haaaa
+#define DRAW_H
 
 // Primitive plot context used in scratchpad
 struct _pct
@@ -33,6 +33,9 @@ struct DLIGHT
 
 #define MAX_DLIGHTS 32
 extern int gNumDlights;
+
+extern void AddDlight(VECTOR* position, CVECTOR* color, int radius);
+extern void GetDLightLevel(SVECTOR* position, u_int* inOutColor);
 
 #endif
 
@@ -100,9 +103,6 @@ extern int gForceLowDetailCars;
 extern int num_cars_drawn;
 
 extern char CurrentPVS[444];
-
-extern void AddDlight(VECTOR* position, CVECTOR* color, int radius);
-extern void GetDLightLevel(SVECTOR* position, SVECTOR* normal, u_int* inOutColor);
 
 extern void DrawMapPSX(int *comp_val); // 0x0003F6B0
 

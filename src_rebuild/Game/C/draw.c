@@ -1572,9 +1572,9 @@ void DrawMapPSX(int* comp_val)
 	setupYet = 0;
 }
 
+#ifdef DYNAMIC_LIGHTING
 void AddDlight(VECTOR* position, CVECTOR* color, int radius)
 {
-#ifdef DYNAMIC_LIGHTING
 	DLIGHT* pLight;
 	VECTOR lightPos;
 	if (gNumDlights + 1 >= MAX_DLIGHTS)
@@ -1588,14 +1588,12 @@ void AddDlight(VECTOR* position, CVECTOR* color, int radius)
 	VecCopy(&pLight->position, &lightPos);
 
 	pLight->color = *color;
-	pLight->radius = radius;
-#endif // DYNAMIC_LIGHTING
-}
-#pragma optimize("", off)
+	pLight->radius = ABS(radius);
 
-void GetDLightLevel(SVECTOR* position, SVECTOR* normal, u_int* inOutColor)
+}
+
+void GetDLightLevel(SVECTOR* position, u_int* inOutColor)
 {
-#ifdef DYNAMIC_LIGHTING
 	DLIGHT* pLight;
 	int dx, dy, dz, dist, light;
 	u_int lightR, lightG, lightB;
@@ -1619,24 +1617,12 @@ void GetDLightLevel(SVECTOR* position, SVECTOR* normal, u_int* inOutColor)
 
 		light = pLight->radius - dist;
 
-		if (normal) {
-			int dot;
-
-			// calc dot product
-			dx = normal->vx - dx;
-			dy = normal->vy - dy;
-			dz = normal->vz - dz;
-
-			dot = MAX(dx * dx + dy * dy + dz * dz, 0) >> 6;
-
-			light = (light * dot) >> 12;
-		}
-
 		lightR += pLight->color.r * light >> 13;
 		lightG += pLight->color.g * light >> 13;
 		lightB += pLight->color.b * light >> 13;
 	}
 
 	*inOutColor = MIN(lightB, 255) << 16 | MIN(lightG, 255) << 8 | MIN(lightR, 255) | (*inOutColor & 0xFF000000);
-#endif // DYNAMIC_LIGHTING
 }
+
+#endif // DYNAMIC_LIGHTING

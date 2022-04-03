@@ -1377,7 +1377,9 @@ void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 
 	DisplayLightReflections(&v2, &col1, halo_size * 2, &lightref_texture);
 
+#ifdef DYNAMIC_LIGHTING
 	AddDlight(&v3, &col, size * 280 >> 4);
+#endif // DYNAMIC_LIGHTING
 
 	LightSortCorrect = -10;
 }
@@ -1500,9 +1502,12 @@ void AddLightEffect(CELL_OBJECT *cop, int x, int y, int z, int type, int colour)
 	gte_SetTransVector(&v1);
 
 	ShowLight1(&v1, &col, size, &light_texture);
-	DisplayLightReflections(&v2, &col, (size << 0xd) >> 0x10, &lightref_texture);
 
+#ifdef DYNAMIC_LIGHTING
 	AddDlight(&v1, &col, size * 180 >> 4);
+#endif // DYNAMIC_LIGHTING
+
+	DisplayLightReflections(&v2, &col, (size << 0xd) >> 0x10, &lightref_texture);
 }
 
 // [D] [T]
