@@ -21,6 +21,14 @@ struct _pct
 	int model;
 };
 
+#ifdef DYNAMIC_LIGHTING
+extern int gEnableDlights;
+extern int gNumDlights;
+
+extern void AddDlight(VECTOR* position, CVECTOR* color, int radius);
+extern void GetDLightLevel(SVECTOR* position, u_int* inOutColor);
+#endif
+
 extern SVECTOR day_vectors[4];
 extern SVECTOR night_vectors[4];
 extern SVECTOR day_colours[4];

@@ -19,6 +19,7 @@
 #include "C/overlay.h"
 #include "C/players.h"
 #include "C/time.h"
+#include "C/draw.h"
 
 #include "utils/ini.h"
 
@@ -584,6 +585,7 @@ int main(int argc, char** argv)
 
 		// configure host game
 		ini_sget(config, "game", "drawDistance", "%d", &gDrawDistance);
+		ini_sget(config, "game", "dynamicLights", "%d", &gEnableDlights);
 		ini_sget(config, "game", "disableChicagoBridges", "%d", &gDisableChicagoBridges);
 		ini_sget(config, "game", "fieldOfView", "%d", &newScrZ);
 		ini_sget(config, "game", "freeCamera", "%d", &enableFreecamera);

@@ -14,6 +14,7 @@
 #include "spool.h"
 #include "system.h"
 #include "pause.h"
+#include "draw.h"
 
 struct ANIMATED_OBJECT
 {
@@ -337,6 +338,13 @@ void InitAnimatingObjects(void)
 			modelPtr = modelpointers[model_idx];
 			modelPtr->flags2 |= MODEL_FLAG_ANIMOBJ;
 
+#ifdef DYNAMIC_LIGHTING
+			if (gEnableDlights)
+			{
+				modelPtr->bounding_sphere <<= 3;
+			}
+#endif // DYNAMIC_LIGHTING
+
 			if (aop->LitPoly)
 				modelPtr->flags2 |= MODEL_FLAG_LAMP;
 
@@ -349,6 +357,13 @@ void InitAnimatingObjects(void)
 			{
 				modelPtr = modelpointers[modelPtr->instance_number];
 				modelPtr->flags2 |= MODEL_FLAG_ANIMOBJ;
+
+#ifdef DYNAMIC_LIGHTING
+				if (gEnableDlights)
+				{
+					modelPtr->bounding_sphere <<= 3;
+				}
+#endif // DYNAMIC_LIGHTING
 
 				if (aop->LitPoly)
 					modelPtr->flags2 |= MODEL_FLAG_LAMP;
@@ -387,6 +402,13 @@ void InitSpooledAnimObj(int model_number)
 
 			if (aop->LitPoly)
 				modelPtr->flags2 |= MODEL_FLAG_LAMP;
+
+#ifdef DYNAMIC_LIGHTING
+			if (gEnableDlights)
+			{
+				modelPtr->bounding_sphere <<= 3;
+			}
+#endif // DYNAMIC_LIGHTING
 
 			// [A] store animated object number in normals pointer
 			// after all it was always unused

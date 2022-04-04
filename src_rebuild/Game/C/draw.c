@@ -525,30 +525,23 @@ void DrawAllTheCars(int view)
 	{
 		gForceLowDetailCars = 0;
 
-		// sort cars by distance
-		i = 1;
-		while (i < num_cars_to_draw)
+		// insertion sort of cars by distance
+		for (i = 1; i < num_cars_to_draw; i++)
 		{
 			cp = cars_to_draw[i];
 			dist = car_distance[i];
 
 			j = i - 1;
 
-			while (dist < car_distance[j])
+			while (j >= 0 && dist < car_distance[j])
 			{
 				car_distance[i] = car_distance[j];
 				cars_to_draw[i] = cars_to_draw[j];
-
-				if (j == 0)
-					break;
-				
 				j--;
 			}
 			
-			cars_to_draw[i] = cp;
-			car_distance[i] = dist;
-
-			i++;
+			cars_to_draw[j+1] = cp;
+			car_distance[j+1] = dist;
 		}
 
 		i = 0;
@@ -1550,6 +1543,9 @@ void DrawMapPSX(int* comp_val)
 
 	SetupPlaneColours(combointensity);
 
+	if (drawData.anim_objs_found)
+		DrawAllAnimatingObjects((CELL_OBJECT**)anim_obj_buffer, drawData.anim_objs_found);
+
 	if (drawData.sprites_found)
 		DrawSprites((PACKED_CELL_OBJECT**)spriteList, drawData.sprites_found);
 
@@ -1559,8 +1555,74 @@ void DrawMapPSX(int* comp_val)
 	if (drawData.other_models_found)
 		DrawAllBuildings((CELL_OBJECT**)model_object_ptrs, drawData.other_models_found);
 
-	if (drawData.anim_objs_found)
-		DrawAllAnimatingObjects((CELL_OBJECT**)anim_obj_buffer, drawData.anim_objs_found);
-
 	setupYet = 0;
 }
+
+#ifdef DYNAMIC_LIGHTING
+struct DLIGHT
+{
+	SVECTOR position;
+	CVECTOR color;
+};
+
+int gEnableDlights = 0;
+
+int gNumDlights = 0;
+DLIGHT gLights[MAX_DLIGHTS];
+
+void AddDlight(VECTOR* position, CVECTOR* color, int radius)
+{
+	DLIGHT* pLight;
+	VECTOR lightPos;
+	if (gNumDlights + 1 >= MAX_DLIGHTS)
+	{
+		return;
+	}
+
+	pLight = &gLights[gNumDlights++];
+
+	lightPos = *position;
+	VecCopy(&pLight->position, &lightPos);
+	pLight->position.pad = ABS(radius);
+
+	pLight->color = *color;
+}
+
+void GetDLightLevel(SVECTOR* position, u_int* inOutColor)
+{
+	DLIGHT* pLight;
+	int dx, dy, dz, dist, light;
+	u_int lightR, lightG, lightB;
+
+	lightR = (*inOutColor & 255);
+	lightG = (*inOutColor >> 8 & 255);
+	lightB = (*inOutColor >> 16 & 255);
+
+	for (int i = 0; i < gNumDlights; i++)
+	{
+		int radius;
+		pLight = &gLights[i];
+
+		dx = (int)position->vx - (int)pLight->position.vx;
+		dy = (int)position->vy - (int)pLight->position.vy;
+		dz = (int)position->vz - (int)pLight->position.vz;
+
+		dist = SquareRoot0(dx * dx + dy * dy + dz * dz);
+
+		radius = pLight->position.pad;
+
+		if (dist > radius) {
+			continue;
+		}
+
+		light = radius - dist;
+
+		lightR += pLight->color.r * light >> 13;
+		lightG += pLight->color.g * light >> 13;
+		lightB += pLight->color.b * light >> 13;
+	}
+
+	*inOutColor = MIN(lightB, 255) << 16 | MIN(lightG, 255) << 8 | MIN(lightR, 255) | (*inOutColor & 0xFF000000);
+}
+
+#endif // DYNAMIC_LIGHTING
