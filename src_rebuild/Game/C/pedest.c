@@ -2765,7 +2765,7 @@ void ProcessTannerPad(LPPEDESTRIAN pPed, u_int pad, char PadSteer, char use_anal
 	{
 		FindSurfaceD2((VECTOR*)lcp->pos, &normal, &out, &plane);
 
-		if (plane->surface != -1 && plane->surface < 32 && (plane->surface & 0x10))
+		if (plane && plane->surface != -1 && plane->surface < 32 && (plane->surface & 0x10))
 		{
 			pPed->position.vx += (normal.vx >> 6);
 			pPed->position.vz += (normal.vz >> 6);
