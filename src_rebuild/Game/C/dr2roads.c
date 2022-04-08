@@ -348,71 +348,71 @@ sdPlane* sdGetCell(VECTOR *pos)
 	// Alpha 1.6 code, works too; not widely tested yet
 	//buffer = *(short**)((int)RoadMapDataRegions + (cellPos.x >> 14 & 4 ^ cellPos.y >> 13 & 8 ^ sdSelfModifyingCode));
 
-	plane = NULL;
+	plane = GetSeaPlane();
 	
-	if (*buffer == 2)
-	{
-		sdPlane* planeData = (sdPlane*)((char*)buffer + buffer[1]);
-		short* bspData = (short*)((char*)buffer + buffer[2]);
-		sdNode* nodeData = (sdNode*)((char*)buffer + buffer[3]);
+	if (*buffer != 2)
+		return plane;
+	
+	sdPlane* planeData = (sdPlane*)((char*)buffer + buffer[1]);
+	short* bspData = (short*)((char*)buffer + buffer[2]);
+	sdNode* nodeData = (sdNode*)((char*)buffer + buffer[3]);
 		
-		surface = &buffer[(cellPos.x >> 10 & 63) + 
-						  (cellPos.y >> 10 & 63) * 64 + 4];
+	surface = &buffer[(cellPos.x >> 10 & 63) + 
+						(cellPos.y >> 10 & 63) * 64 + 4];
 
-		// initial surface
-		if (*surface == -1)
-			return GetSeaPlane();
+	// initial surface
+	if (*surface == -1)
+		return plane;
 
-		// check surface has overlapping planes flag (aka multiple levels)
-		if ((*surface & 0x6000) == 0x2000)
-		{
-			surface = &bspData[*surface & 0x1fff];
-			do {
-				if(-256 - pos->vy > *surface)
-				{
-					surface += 2;
-					sdLevel++;
-				}
-				else
-					break;
-			} while (*surface != -0x8000); // end flag
-			
-			surface += 1;
-		}
-
-		// iterate surfaces if BSP
+	// check surface has overlapping planes flag (aka multiple levels)
+	if ((*surface & 0x6000) == 0x2000)
+	{
+		surface = &bspData[*surface & 0x1fff];
 		do {
-			nextLevel = 0;
-
-			// check if it's has BSP properties
-			// basically it determines surface bounds
-			if (*surface & 0x4000)
-			{				
-				// get closest surface by BSP lookup
-				BSPSurface = sdGetBSP(&nodeData[*surface & 0x3fff], &cell);
-
-				if (*BSPSurface == 0x7fff)
-				{
-					sdLevel++;
-					nextLevel = 1;
-					
-					BSPSurface = surface + 2; // get to the next node
-				}
-
-				surface = BSPSurface;
+			if(-256 - pos->vy > *surface)
+			{
+				surface += 2;
+				sdLevel++;
 			}
-		} while (nextLevel);
-
-		plane = &planeData[*surface];
-
-		if (((int)plane & 3) == 0 && *(int *)plane != -1) 
-		{
-			if (plane->surface - 16U < 16)
-				plane = EventSurface(pos, plane);
-		}
-		else 
-			plane = GetSeaPlane();
+			else
+				break;
+		} while (*surface != -0x8000); // end flag
+			
+		surface += 1;
 	}
+
+	// iterate surfaces if BSP
+	do {
+		nextLevel = 0;
+
+		// check if it's has BSP properties
+		// basically it determines surface bounds
+		if (*surface & 0x4000)
+		{				
+			// get closest surface by BSP lookup
+			BSPSurface = sdGetBSP(&nodeData[*surface & 0x3fff], &cell);
+
+			if (*BSPSurface == 0x7fff)
+			{
+				sdLevel++;
+				nextLevel = 1;
+					
+				BSPSurface = surface + 2; // get to the next node
+			}
+
+			surface = BSPSurface;
+		}
+	} while (nextLevel);
+
+	plane = &planeData[*surface];
+
+	if (((int)plane & 3) == 0 && *(int *)plane != -1) 
+	{
+		if (plane->surface - 16U < 16)
+			plane = EventSurface(pos, plane);
+	}
+	else 
+		plane = GetSeaPlane();
 
 	return plane;
 }
@@ -433,7 +433,7 @@ sdPlane * FindRoadInBSP(sdNode *node, sdPlane *base)
 {
 	sdPlane *plane;
 
-	while (true)
+	do
 	{
 		if (node->value > -1)
 		{
@@ -442,12 +442,8 @@ sdPlane * FindRoadInBSP(sdNode *node, sdPlane *base)
 		}
 
 		plane = FindRoadInBSP(node + 1, base);
-
-		if (plane != NULL)
-			break;
-
 		node += node->n.offset;
-	}
+	} while (plane == NULL);
 
 	return plane;
 }

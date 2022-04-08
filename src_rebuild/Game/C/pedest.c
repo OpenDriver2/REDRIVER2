@@ -2085,8 +2085,8 @@ int CalcPedestrianDirection(int last_dir, int wx, int wz, VECTOR* target)
 		}
 	}
 
-	rx = wx & 0xfffffc00;
-	rz = wz & 0xfffffc00;
+	rx = wx & ~1023;
+	rz = wz & ~1023;
 
 	if (num == 1)
 	{

@@ -46,8 +46,7 @@ char CellEmpty(VECTOR *pPosition, int radius)
 		type = (ppco->value >> 6) | ((ppco->pos.vy & 1) << 10);
 		pModel = modelpointers[type];
 
-		if ((uint)pModel->collision_block > 0 && 
-			(pModel->flags2 & (MODEL_FLAG_CHAIR | MODEL_FLAG_SMASHABLE)) == 0)
+		if ((uint)pModel->collision_block > 0 && (pModel->flags2 & (MODEL_FLAG_CHAIR | MODEL_FLAG_SMASHABLE)) == 0)
 		{
 			QuickUnpackCellObject(ppco, &ci.nearCell, &tempCO);
 
@@ -85,7 +84,7 @@ char CellEmpty(VECTOR *pPosition, int radius)
 					int theta;
 					MATRIX2* mat;
 
-					yang = -tempCO.yang & 0x3f;
+					yang = -tempCO.yang & 63;
 					theta = (tempCO.yang + collide->yang) * 64;
 
 					mat = &matrixtable[yang];
@@ -234,22 +233,34 @@ char CellAtPositionEmpty(VECTOR *pPosition, int radius)
 }
 
 
+struct tRay
+{
+	LONGVECTOR4 org, dir;
+};
+
+struct tRange
+{
+	int lower, upper;
+};
+
+struct tAABB
+{
+	tRange slab[3];
+};
+
+
 // [D] [T]
 int RaySlabsIntersection(tRay *ray, tAABB *bbox)
 {
-	int dir;
-	int d;
-	int i;
+	int dir, d, i;
 
-	tRange inside;
-	tRange cabbage;
-	tRange scaledCabbage;
+	tRange inside, cabbage, scaledCabbage;
 
 	inside.lower = 0;
 	inside.upper = 4096;
 
-	i = 0;
-	do {
+	for (i = 0; i < 3; i++)
+	{
 		d = -1;
 
 		cabbage.lower = bbox->slab[i].lower - ray->org[i];
@@ -290,10 +301,7 @@ int RaySlabsIntersection(tRay *ray, tAABB *bbox)
 
 		if (inside.upper < inside.lower)
 			return 0;
-
-		i++;
-
-	} while(i < 3);
+	}
 
 	return 1;
 }
@@ -306,31 +314,20 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 	PACKED_CELL_OBJECT* ppco;
 	CELL_OBJECT tempCO;
 	MATRIX2* mat;
-	int cell_z;
-	int cell_x;
-	int yang;
+	int cell_x, cell_z;
+	int yang, theta;
 	MODEL* pModel;
-	int theta;
-	
 	int dx,dz;
-
-	int cs;
-	int sn;
-
+	int cs, sn;
 	COLLISION_PACKET* collide;
-	VECTOR pos;
-	VECTOR va;
-	VECTOR vb;
+	VECTOR pos, va, vb;
 	tRay ray;
 	tAABB box;
 	int we;
-	int ocz;
-	int ocx;
-	int box_loop; // $s5
-	int num_cb; // $s6
- 	int sphere_sq; // $v0
- 	int xd; // $a0
- 	int zd; // $v1
+	int ocx, ocz;
+	int box_loop, num_cb;
+ 	int sphere_sq;
+ 	int xd, zd;
 
 #if 0 //def PSX
 	CELL_ITERATOR& ci = *(CELL_ITERATOR*)((u_char*)getScratchAddr(0) + 1024 - sizeof(CELL_ITERATOR));
@@ -352,9 +349,8 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 	ocx = -1;
 	ocz = -1;
 
-	we = 0;
-
-	do {
+	for (we = 0; we < 2; we++)
+	{
 		if (we == 0) 
 		{
 			cell_x = (v2->vx + units_across_halved) / MAP_CELL_SIZE;
@@ -366,15 +362,15 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 			cell_z = (v1->vz + units_down_halved) / MAP_CELL_SIZE;
 		}
 
-		if ((ocx != cell_x) || (ocz != cell_z))
+		if (ocx != cell_x || ocz != cell_z)
 		{
 			for (ppco = GetFirstPackedCop(cell_x, cell_z, &ci, 0); ppco; ppco = GetNextPackedCop(&ci))
 			{
 				QuickUnpackCellObject(ppco, &ci.nearCell, &tempCO);
 				pModel = modelpointers[tempCO.type];
 
-				xd = ((tempCO.pos.vx - ((va.vx + vb.vx) / 2 & 0xffffU)) * 0x10000) >> 0x10;
-				zd = ((tempCO.pos.vz - ((va.vz + vb.vz) / 2 & 0xffffU)) * 0x10000) >> 0x10;
+				xd = tempCO.pos.vx - (short)((va.vx + vb.vx) / 2);
+				zd = tempCO.pos.vz - (short)((va.vz + vb.vz) / 2);
 
 				sphere_sq = pModel->bounding_sphere + 800;
 
@@ -500,11 +496,9 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 			}
 		}
 
-		we++;
-
 		ocx = cell_x;
 		ocz = cell_z;
-	} while (we < 2);
+	}
 
 	return 1;
 }
