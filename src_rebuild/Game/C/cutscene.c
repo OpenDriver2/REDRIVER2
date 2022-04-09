@@ -502,7 +502,7 @@ void ReleaseInGameCutscene(void)
 		{
 			if (PlayerStartInfo[i]->flags & 4)
 			{
-				memcpy((u_char*)&player[0], (u_char*)&player[i], sizeof(PLAYER));
+				player[0] = player[i];
 
 				if (player[0].playerType == 2)
 				{
@@ -916,13 +916,14 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 	// add to existing replay streams
 	for (int i = NumReplayStreams; i < (NumReplayStreams + rheader->NumReplayStreams); i++)
 	{
+		int size;
 		sheader = (REPLAY_STREAM_HEADER *)pt;
 		pt += sizeof(REPLAY_STREAM_HEADER);
 
 		REPLAY_STREAM* destStream = &ReplayStreams[i];
 
 		// copy source type
-		memcpy((u_char*)&destStream->SourceType, (u_char*)&sheader->SourceType, sizeof(STREAM_SOURCE));
+		destStream->SourceType = sheader->SourceType;
 
 		// init buffers
 		destStream->InitialPadRecordBuffer = (PADRECORD*)replayptr;
@@ -932,7 +933,7 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 		destStream->length = sheader->Length;
 		destStream->playbackrun = 0;
 
-		int size = (sheader->Size + sizeof(PADRECORD)) & -4;
+		size = (sheader->Size + sizeof(PADRECORD)) & -4;
 
 		// copy pad data and advance buffer
 		memcpy((u_char*)replayptr, (u_char*)pt, size);
