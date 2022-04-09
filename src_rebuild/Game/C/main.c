@@ -1610,9 +1610,7 @@ void State_GameLoop(void* param)
 	_CutRec_Step();
 }
 
-// TODO: DRAW.C?
 int ObjectDrawnValue = 0;
-int ObjectDrawnCounter = 0;
 
 // [D] [T]
 void DrawGame(void)
@@ -1623,26 +1621,19 @@ void DrawGame(void)
 		DrawPauseMenus();
 
 		RenderGame2(0);
-
-		ObjectDrawnCounter++;
-		
 		SwapDrawBuffers();
 	}
 	else
 	{
 		ObjectDrawnValue = FrameCnt;
 		RenderGame2(0);
-		ObjectDrawnCounter++;
-
 		SwapDrawBuffers2(0);
 
 		ObjectDrawnValue += 16;
-		
+
 		DrawPauseMenus();
 		
 		RenderGame2(1);
-		ObjectDrawnCounter++;
-
 		SwapDrawBuffers2(1);
 	}
 

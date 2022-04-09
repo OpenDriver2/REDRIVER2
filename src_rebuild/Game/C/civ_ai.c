@@ -27,6 +27,7 @@
 
 const u_char speedLimits[3] = { 56, 97, 138 };
 
+#ifdef DEBUG
 struct
 {
 	int NumPingedIn;
@@ -40,6 +41,7 @@ struct
 	int TooClosePlayer;
 	int InvalidRegion;
 } civPingTest;
+#endif // DEBUG
 
 char modelRandomList[] = { 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 1, 0, 4 };
 u_char reservedSlots[MAX_CARS] = { 0 };
@@ -2145,7 +2147,10 @@ int PingInCivCar(int minPingInDist)
 	// wtf there were before? car wasn't set to 'confused' state
 	if (!GetSurfaceRoadInfo(&roadInfo, roadSeg))
 	{
+#ifdef DEBUG
 		civPingTest.OffRoad++;
+#endif // DEBUG
+
 		//CIV_STATE_SET_CONFUSED(newCar);
 		return 0;
 	}
@@ -2209,7 +2214,9 @@ int PingInCivCar(int minPingInDist)
 			// Car is not active. Permanently parked
 			if (ROAD_IS_AI_LANE(&roadInfo, lane) == 0)
 			{
+#ifdef DEBUG
 				civPingTest.NotDrivable++;
+#endif
 				return 0;
 			}
 
