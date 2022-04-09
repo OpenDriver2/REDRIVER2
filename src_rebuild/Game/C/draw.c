@@ -1300,10 +1300,11 @@ void DrawMapPSX(int* comp_val)
 	int cellx, cellz;
 	int hloop, vloop;
 
-#if 0 //def PSX
+#ifdef PSX
 	CELL_ITERATOR& ci = *(CELL_ITERATOR*)(u_char*)getScratchAddr(0);
 	MATRIX& mRotStore = *(MATRIX*)((u_char*)getScratchAddr(0) + sizeof(CELL_ITERATOR));
 	DrawMapData& drawData = *(DrawMapData*)((u_char*)getScratchAddr(0) + sizeof(CELL_ITERATOR) + sizeof(MATRIX));
+	static_assert(sizeof(CELL_ITERATOR) + sizeof(MATRIX) + sizeof(DrawMapData) < 1024, "scratchpad overflow");
 #else
 	CELL_ITERATOR ci;
 	MATRIX mRotStore;
