@@ -20,6 +20,7 @@ u_short *Low2LowerDetailTable = NULL;
 
 // [A]
 int staticModelSlotBitfield[48];
+int litSprites[48];
 
 // [A] returns freed slot count
 int CleanSpooledModelSlots()
@@ -48,6 +49,18 @@ int CleanSpooledModelSlots()
 	return num_freed;
 }
 
+// [A]
+void AdjustSpriteModelLighting(int modelIdx)
+{
+	MODEL* model;
+	model = modelpointers[modelIdx];
+	if (model->shape_flags & SHAPE_FLAG_SPRITE)
+	{
+		if (gTimeOfDay == 3 && modelIdx != 1223 && (!(model->flags2 & MODEL_FLAG_TREE) || modelIdx == 945 || modelIdx == 497))
+			litSprites[modelIdx >> 5] |= 1 << (modelIdx & 31);
+	}
+}
+
 // [D] [T]
 void ProcessMDSLump(char *lump_file, int lump_size)
 {
@@ -56,6 +69,7 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 	MODEL *parentmodel;
 	int modelAmts;
 	int i, size;
+	int litModel;
 
 	modelAmts = *(int *)lump_file;
 	mdsfile = (lump_file + 4);
@@ -83,6 +97,8 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 			
 			model = (MODEL*)mdsfile;
 			modelpointers[i] = model;
+
+			AdjustSpriteModelLighting(i);
 		}
 
 		mdsfile += size;

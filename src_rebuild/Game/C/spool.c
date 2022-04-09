@@ -666,6 +666,8 @@ void init_spooled_models(void)
 		if (lod != 0xffff && lod != model_number)
 			pLodModels[model_number] = modelpointers[lod];
 
+		AdjustSpriteModelLighting(model_number);
+
 		if (model->instance_number == -1)
 		{
 			if ((uint)model->collision_block != 0)

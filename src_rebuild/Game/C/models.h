@@ -15,6 +15,7 @@ extern char *car_models_lump;
 
 extern MODEL* modelpointers[MAX_MODEL_SLOTS];
 extern MODEL* pLodModels[MAX_MODEL_SLOTS];
+extern int litSprites[48];
 
 extern unsigned short *Low2HighDetailTable;
 extern unsigned short *Low2LowerDetailTable;
@@ -22,6 +23,7 @@ extern unsigned short *Low2LowerDetailTable;
 extern int num_models_in_pack;
 
 extern int CleanSpooledModelSlots();
+extern void AdjustSpriteModelLighting(int modelIdx);
 
 extern void ProcessMDSLump(char *lump_file, int lump_size); // 0x00064CFC
 

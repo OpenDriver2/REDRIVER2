@@ -160,9 +160,6 @@ void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
 	plotContext.ot -= 28;
 }
 
-
-MATRIX shadowMatrix;
-
 // [D] [T] [A]
 void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 {
@@ -175,15 +172,20 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 	PACKED_CELL_OBJECT** list;
 	int numShadows;
 
-#if 0 //def PSX
+#ifdef PSX
 	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)(u_char*)getScratchAddr(0);
+	MATRIX shadowMatrix = *(MATRIX*)((u_char*)getScratchAddr(0) + sizeof(MVERTEX5x5));
 #else
 	MVERTEX5x5 subdiVerts;
+	MATRIX shadowMatrix;
 #endif
+	SVECTOR* lightVec;
 
-	lightdd =	FIXEDH(camera_matrix.m[2][0] * day_vectors[GameLevel].vx) +
-				FIXEDH(camera_matrix.m[2][1] * day_vectors[GameLevel].vy) +
-				FIXEDH(camera_matrix.m[2][2] * day_vectors[GameLevel].vz) + ONE * 3072;
+	lightVec = (gTimeOfDay == 3) ? night_vectors : day_vectors;
+
+	lightdd =	FIXEDH(camera_matrix.m[2][0] * lightVec[GameLevel].vx) +
+				FIXEDH(camera_matrix.m[2][1] * lightVec[GameLevel].vy) +
+				FIXEDH(camera_matrix.m[2][2] * lightVec[GameLevel].vz) + ONE * 3072;
 
 	lightLevel = (lightdd >> 18) + 32 & 255;
 
@@ -230,15 +232,14 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 
 	while (numFound--)
 	{
+		int modelnumber;
 		pco = *list;
 		list++;
 
-		int modelnumber = (pco->value >> 6) | (pco->pos.vy & 1) << 10;
-
+		modelnumber = (pco->value >> 6) | (pco->pos.vy & 1) << 10;
 		model = modelpointers[modelnumber];
 
-		if ((pco->value & 63) == 63 ||
-			(gTimeOfDay == 3 && modelnumber != 1223 && (!(model->flags2 & MODEL_FLAG_TREE) || modelnumber == 945 || modelnumber == 497))) // [A] multiple sprites lighting fixes
+		if ((pco->value & 63) == 63 || litSprites[modelnumber >> 5] & 1 << (modelnumber & 31))  // [A] multiple sprites lighting fixes
 		{
 			plotContext.colour = 0x2c808080;
 		}
