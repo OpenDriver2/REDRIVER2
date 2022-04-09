@@ -5,7 +5,6 @@
 #include "map.h"
 #include "event.h"
 #include "convert.h"
-#include "cutscene.h"
 #include "mission.h"
 #include "handling.h"
 #include "main.h"
@@ -546,14 +545,17 @@ int MapHeight(VECTOR *pos)
 }
 
 // [D] [T]
-int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, sdPlane **plane)
+void FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, sdPlane **plane)
 {
-	*plane = sdGetCell(pos);
+	sdPlane* pl;
+	pl = sdGetCell(pos);
+
+	*plane = pl;
 	out->vx = pos->vx;
 	out->vz = pos->vz;
-	out->vy = sdHeightOnPlane(pos, *plane);
+	out->vy = sdHeightOnPlane(pos, pl);
 
-	if (*plane == NULL || (*plane)->b == 0)
+	if (pl == NULL || pl->b == 0)
 	{
 		normal->vx = 0;
 		normal->vy = 4096;
@@ -561,24 +563,8 @@ int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, sdPlane **plane)
 	}
 	else
 	{
-		normal->vx = (int)(*plane)->a >> 2;
-		normal->vy = (int)(*plane)->b >> 2;
-		normal->vz = (int)(*plane)->c >> 2;
+		normal->vx = (int)pl->a >> 2;
+		normal->vy = (int)pl->b >> 2;
+		normal->vz = (int)pl->c >> 2;
 	}
-
-	if (*plane == NULL)
-	{
-		return 4096;
-	}
-	else if ((*plane)->surface == SURF_GRASS)
-	{
-		if (gInGameCutsceneActive && gCurrentMissionNumber == 23 && gInGameCutsceneID == 0)
-			out->vy += RSIN((pos->vx + pos->vz) * 2) >> 9;			// rcossin_tbl[(pos->vx + pos->vz) * 4 & 0x1fff] >> 9;
-		else
-			out->vy += (RSIN((pos->vx + pos->vz) * 2) >> 8) / 3;	// (rcossin_tbl[(pos->vx + pos->vz) * 4 & 0x1fff] >> 8) / 3;
-
-		return 2048;
-	}
-
-	return 4096;
 }
