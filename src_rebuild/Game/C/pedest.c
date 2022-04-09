@@ -2587,12 +2587,11 @@ void IHaveThePower(void)
 // [D] [T]
 void ProcessTannerPad(LPPEDESTRIAN pPed, u_int pad, char PadSteer, char use_analogue)
 {
+	int mapheight[2];
+
 	sdPlane* SurfacePtr;
-	int direction;
-	VECTOR vec;
-	VECTOR normal;
-	VECTOR out;
-	VECTOR tVec;
+	int direction, diff;
+	VECTOR vec, normal, out, tVec;
 	sdPlane* plane;
 	PLAYER* lcp;
 
@@ -2631,23 +2630,21 @@ void ProcessTannerPad(LPPEDESTRIAN pPed, u_int pad, char PadSteer, char use_anal
 
 	bStopTanner = 0;
 
-	int mapheight[2];
-
 	mapheight[0] = -130 - MapHeight(&vec);
 	mapheight[1] = -130 - MapHeight(&tVec);
 
-	int dist = ABS(mapheight[1] - mapheight[0]);
+	diff = ABS(mapheight[1] - mapheight[0]);
 
 	// check slope
-	if (dist <= 1010)
+	if (diff <= 1010)
 	{
 		SurfacePtr = sdGetCell(&tVec);
 
 		if (SurfacePtr != NULL)
 		{
-			dist = ABS(((SurfacePtr->b >> 2) - 2048 & 0xfff) - 2048);
+			diff = ABS(DIFF_ANGLES((SurfacePtr->b >> 2), 0)); //ABS(((SurfacePtr->b >> 2) - 2048 & 0xfff) - 2048);
 
-			if (dist <= 1100)
+			if (diff <= 1100)
 			{
 				switch (SurfacePtr->surface)
 				{
@@ -2656,7 +2653,7 @@ void ProcessTannerPad(LPPEDESTRIAN pPed, u_int pad, char PadSteer, char use_anal
 					//case 6:	// water. We allow to walk on water in Rio a little bit. Then he drowns
 				case 9:		// water with fade out
 				default:
-					dist = -1;
+					diff = -1;
 					break;
 				}
 			}
@@ -2664,7 +2661,7 @@ void ProcessTannerPad(LPPEDESTRIAN pPed, u_int pad, char PadSteer, char use_anal
 	}
 
 	// can't walk in water
-	if (dist != -1)
+	if (diff != -1)
 		bStopTanner = 1;
 
 	if (pPed->type != PED_ACTION_SIT && !bStopTanner)
@@ -2765,10 +2762,11 @@ void ProcessTannerPad(LPPEDESTRIAN pPed, u_int pad, char PadSteer, char use_anal
 	{
 		FindSurfaceD2((VECTOR*)lcp->pos, &normal, &out, &plane);
 
-		if (plane && plane->surface != -1 && plane->surface < 32 && (plane->surface & 0x10))
+		if (plane && plane->surface != -1 && plane->surface < 32 && (plane->surface & 16))
 		{
 			pPed->position.vx += (normal.vx >> 6);
 			pPed->position.vz += (normal.vz >> 6);
+			pPed->position.vy = mapheight[0];
 		}
 	}
 }
