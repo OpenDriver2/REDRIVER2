@@ -102,8 +102,6 @@ u_int farClip2Player = 36000;
 int goFaster = 0;	// [A] was 1
 int fasterToggle = 0;
 
-//int current_object_computed_value = 0;
-
 int combointensity;
 
 char CurrentPVS[444]; // 20*20+4
@@ -187,7 +185,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 				FIXEDH(camera_matrix.m[2][1] * day_vectors[GameLevel].vy) +
 				FIXEDH(camera_matrix.m[2][2] * day_vectors[GameLevel].vz) + ONE * 3072;
 
-	lightLevel = (lightdd >> 0x12) + 0x20U & 0xff;
+	lightLevel = (lightdd >> 18) + 32 & 255;
 
 	if (gWeather > 0 && gTimeOfDay == 1)
 	{
@@ -212,25 +210,22 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 
 	spriteColour = lightLevel << 0x10 | lightLevel << 8 | 0x2c000000 | lightLevel;
 
-	i = 2;
-	do {
+	for (i = 0; i < 3; i++) 
+	{
 		shadowMatrix.m[i][0] = inv_camera_matrix.m[i][2];
 		shadowMatrix.m[i][1] = -inv_camera_matrix.m[i][0];
 		shadowMatrix.m[i][2] = inv_camera_matrix.m[i][0];
-	} while (i--);
-
+	}
 
 	plotContext.primptr = current->primptr;
 	plotContext.ptexture_pages = (ushort(*)[128])texture_pages;
 	plotContext.ptexture_cluts = (ushort(*)[128][32])texture_cluts;
 	plotContext.polySizes = PolySizes;
 	plotContext.ot = current->ot;
-
-	list = sprites;
-
 	plotContext.colour = spriteColour;
 	plotContext.current = current;
 
+	list = sprites;
 	numShadows = 0;
 
 	while (numFound--)
@@ -241,12 +236,15 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 		int modelnumber = (pco->value >> 6) | (pco->pos.vy & 1) << 10;
 
 		model = modelpointers[modelnumber];
-		plotContext.colour = spriteColour;
 
 		if ((pco->value & 63) == 63 ||
 			(gTimeOfDay == 3 && modelnumber != 1223 && (!(model->flags2 & MODEL_FLAG_TREE) || modelnumber == 945 || modelnumber == 497))) // [A] multiple sprites lighting fixes
 		{
 			plotContext.colour = 0x2c808080;
+		}
+		else
+		{
+			plotContext.colour = spriteColour;
 		}
 
 		plotContext.scribble[0] = pco->pos.vx;
@@ -308,7 +306,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 #endif
 		
 		if (wetness == 0 && gTimeOfDay != 3 &&
-			(pco->value & 0x20) == 0 && 
+			(pco->value & 32) == 0 && 
 			z < MAX_TREE_SHADOW_DISTANCE &&
 			numShadows < 40)
 		{
@@ -336,15 +334,15 @@ void SetupPlaneColours(u_int ambient)
 	{
 		if (gTimeOfDay == 1)
 		{
-			b = ambient & 0xff;
-			g = ambient >> 8 & 0xff;
-			r = ambient >> 0x10 & 0xff;
+			b = ambient & 255;
+			g = ambient >> 8 & 255;
+			r = ambient >> 16 & 255;
 
-			planeColours[1] = (r * 0x78 >> 7) << 0x10 | (g * 0x78 >> 7) << 8 | b * 0x78 >> 7;
-			planeColours[2] = (r * 0x67 >> 7) << 0x10 | (g * 0x67 >> 7) << 8 | b * 0x67 >> 7;
-			planeColours[3] = (r * 0xd >> 5) << 0x10 | (g * 0xd >> 5) << 8 | b * 0xd >> 5;
+			planeColours[1] = (r * 120 >> 7) << 16 | (g * 120 >> 7) << 8 | b * 120 >> 7;
+			planeColours[2] = (r * 103 >> 7) << 16 | (g * 103 >> 7) << 8 | b * 103 >> 7;
+			planeColours[3] = (r * 13 >> 5) << 16 | (g * 13 >> 5) << 8 | b * 13 >> 5;
 			planeColours[0] = r << 0x10 | g << 8 | b;
-			planeColours[4] = (r * 3 >> 3) << 0x10 | (g * 3 >> 3) << 8 | b * 3 >> 3;
+			planeColours[4] = (r * 3 >> 3) << 16 | (g * 3 >> 3) << 8 | b * 3 >> 3;
 			planeColours[5] = planeColours[3];
 			planeColours[6] = planeColours[2];
 			planeColours[7] = planeColours[1];
@@ -373,35 +371,45 @@ void SetupPlaneColours(u_int ambient)
 }
 
 
+int current_pvs_cell;
+
+
 // [D] [T]
 void SetupDrawMapPSX(void)
 {
-	int region_x1;
-	int region_z1;
-	int current_barrel_region_x1;
-	int current_barrel_region_z1;
+	int cell_x, cell_z;
 	int theta;
+	int pvs_cell;
 
 	if (setupYet != 0)
+	{
 		return;
+	}
 
-	current_cell_x = (camera_position.vx + units_across_halved) / MAP_CELL_SIZE;
-	current_cell_z = (camera_position.vz + units_down_halved) / MAP_CELL_SIZE;
+	cell_x = (camera_position.vx + units_across_halved) / MAP_CELL_SIZE;
+	cell_z = (camera_position.vz + units_down_halved) / MAP_CELL_SIZE;
 
-	region_x1 = current_cell_x / MAP_REGION_SIZE;
-	region_z1 = current_cell_z / MAP_REGION_SIZE;
+	current_cell_x = cell_x;
+	current_cell_z = cell_z;
 
-	current_barrel_region_x1 = (region_x1 & 1);
-	current_barrel_region_z1 = (region_z1 & 1);
+	pvs_cell = (cell_z % MAP_REGION_SIZE) * MAP_REGION_SIZE + (cell_x % MAP_REGION_SIZE);
+	if (pvs_cell != current_pvs_cell)
+	{
+		int region_x1, region_z1;
+		int current_barrel_region_x1, current_barrel_region_z1;
 
-	GetPVSRegionCell2(
-		current_barrel_region_x1 + current_barrel_region_z1 * 2,
-		region_x1 + region_z1 * regions_across,
-		(current_cell_z % MAP_REGION_SIZE) * MAP_REGION_SIZE + (current_cell_x % MAP_REGION_SIZE),
-		CurrentPVS);
+		region_x1 = cell_x / MAP_REGION_SIZE;
+		region_z1 = cell_z / MAP_REGION_SIZE;
 
-	for (theta = 0; theta < 64; theta++)
-		MulMatrix0(&inv_camera_matrix, (MATRIX*)&matrixtable[theta], (MATRIX*)&CompoundMatrix[theta]);
+		current_barrel_region_x1 = (region_x1 & 1);
+		current_barrel_region_z1 = (region_z1 & 1);
+
+		current_pvs_cell = pvs_cell;
+		GetPVSRegionCell2(
+			current_barrel_region_x1 + current_barrel_region_z1 * 2,
+			region_x1 + region_z1 * regions_across,
+			pvs_cell, CurrentPVS);
+	}
 
 	InitFrustrumMatrix();
 	SetFrustrumMatrix();
@@ -414,7 +422,7 @@ MATRIX frustrum_matrix;
 // [D] [T]
 void InitFrustrumMatrix(void)
 {
-	int a;
+	int a, t;
 
 	a = -camera_angle.vy;
 
@@ -544,10 +552,9 @@ void DrawAllTheCars(int view)
 			car_distance[j+1] = dist;
 		}
 
-		i = 0;
 		spacefree = (num_cars_to_draw - 1) * 2000;
 
-		while (i < num_cars_to_draw)
+		for (i = 0; i < num_cars_to_draw; i++)
 		{
 			// Don't exceed draw buffers
 			if ((int)(current->primtab + (-3000 - (int)(current->primptr - PRIMTAB_SIZE))) < 5800)
@@ -563,7 +570,6 @@ void DrawAllTheCars(int view)
 			DrawCar(cars_to_draw[i], view);
 			
 			spacefree -= 2000;
-			i++;
 		}
 	}
 }
@@ -804,7 +810,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 	{
 		// iterate through polygons
 		// with skipping
-		ptype = polys->id & 0x1f;
+		ptype = polys->id & 31;
 
 		if (ptype != 11 && ptype != 21 && ptype != 23)
 		{
@@ -1286,15 +1292,13 @@ struct DrawMapData
 // [D] [T]
 void DrawMapPSX(int* comp_val)
 {
-	int dir;
-	PACKED_CELL_OBJECT* ppco;
-	int distScale;
-	int cellx;
-	int cellz;
 	CELL_OBJECT* cop;
+	PACKED_CELL_OBJECT* ppco;
 	MODEL* model;
-	int hloop;
-	int vloop;
+	int dir;
+	int distScale;
+	int cellx, cellz;
+	int hloop, vloop;
 
 #if 0 //def PSX
 	CELL_ITERATOR& ci = *(CELL_ITERATOR*)(u_char*)getScratchAddr(0);
@@ -1348,7 +1352,7 @@ void DrawMapPSX(int* comp_val)
 
 	drawData.tiles_found = 0;
 	drawData.sprites_found = 0;
-	drawData.current_object_computed_value = *comp_val;
+	drawData.current_object_computed_value = (*comp_val & 4095) | drawData.cellLevel << 16;
 	drawData.other_models_found = 0;
 	drawData.anim_objs_found = 0;
 	
@@ -1428,25 +1432,19 @@ void DrawMapPSX(int* comp_val)
 						}
 						else
 						{
-							int modelNumber;
-							modelNumber = ppco->value & 0x3f;
+							int yang;
+							MATRIX2* cmat;
 
-							if (modelNumber > 0)
+							yang = ppco->value & 63;
+							cmat = &CompoundMatrix[yang];
+
+							if (cmat->computed != drawData.current_object_computed_value)
 							{
-								MATRIX2* cmat;
-								cmat = &CompoundMatrix[modelNumber];
-
-								if (cmat->computed != drawData.current_object_computed_value)
-								{
-									cmat->computed = drawData.current_object_computed_value;
-
-									gte_ReadRotMatrix(&mRotStore);
-									gte_sttr(mRotStore.t);
-
-									MulMatrix0(&inv_camera_matrix, (MATRIX*)&matrixtable[modelNumber], (MATRIX*)cmat);
-
-									gte_SetRotMatrix(&mRotStore);
-								}
+								cmat->computed = drawData.current_object_computed_value;
+								if (yang > 0)
+									MulMatrix0(&inv_camera_matrix, (MATRIX*)&matrixtable[yang], (MATRIX*)cmat);
+								else
+									*(MATRIX*)cmat = inv_camera_matrix;
 							}
 
 							if ((model->shape_flags & (SHAPE_FLAG_WATER | SHAPE_FLAG_TILE)) || 
@@ -1479,7 +1477,7 @@ void DrawMapPSX(int* comp_val)
 								if (drawData.other_models_found < MAX_DRAWN_BUILDINGS)
 									model_object_ptrs[drawData.other_models_found++] = cop;
 
-								if ((model->flags2 & MODEL_FLAG_ANIMOBJ) && drawData.anim_objs_found < MAX_DRAWN_ANIMATING)
+								if (drawData.anim_objs_found < MAX_DRAWN_ANIMATING && (model->flags2 & MODEL_FLAG_ANIMOBJ))
 									anim_obj_buffer[drawData.anim_objs_found++] = cop;
 							}
 						}
