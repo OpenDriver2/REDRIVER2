@@ -1720,7 +1720,7 @@ int TrafficLightCycle(int exit)
 {
 	int timeCnt;
 
-	timeCnt = CameraCnt - frameStart & 0x1ff;
+	timeCnt = CameraCnt - frameStart & 511;
 
 	if (exit == 0 || exit == 2)
 	{
@@ -1734,7 +1734,7 @@ int TrafficLightCycle(int exit)
 
 	if (timeCnt < 150)
 		return 3;
-	else if (timeCnt > 199)
+	else if (timeCnt >= 200)
 		return 1;
 
 	return 2;
@@ -1935,32 +1935,28 @@ int CreateStationaryCivCar(int direction, long orientX, long orientZ, LONGVECTOR
 	return -1;
 }
 
-
-VECTOR baseLoc;
-VECTOR randomLoc;
-int dx = 0; // offset 0xAAB40
-int dy = 0; // offset 0xAAB44
-int dz = 0; // offset 0xAAB48
-
 #define PINGIN_DIST_WANTED_MULT			(10)
 #define PINGIN_DIST_MULT		(8)
 
 // [D] [T] [A] - some register is not properly decompiled
 int PingInCivCar(int minPingInDist)
 {
-	int model;
-	CAR_DATA* carCnt;
-	CAR_DATA* newCar;
-	
-	//DRIVER2_CURVE* curve;
-	//DRIVER2_STRAIGHT* straight;
-
+#ifdef PSX
+	DRIVER2_ROAD_INFO& roadInfo = *(DRIVER2_ROAD_INFO*)(u_char*)getScratchAddr(0);
+	EXTRA_CIV_DATA& civDat = *(EXTRA_CIV_DATA*)((u_char*)getScratchAddr(0) + sizeof(DRIVER2_ROAD_INFO));
+	u_char* possibleLanes = ((u_char*)getScratchAddr(0) + sizeof(DRIVER2_ROAD_INFO) + sizeof(EXTRA_CIV_DATA));
+	static_assert(sizeof(CELL_ITERATOR) + sizeof(MATRIX) + 12 < 1024, "scratchpad overflow");
+#else
 	DRIVER2_ROAD_INFO roadInfo;
-	
 	EXTRA_CIV_DATA civDat;
 	u_char possibleLanes[12];
-	// carDistLanes removed as it's unused
+#endif
 	LONGVECTOR4 pos;
+	VECTOR baseLoc, randomLoc;
+	int dx, dy, dz;
+	CAR_DATA* carCnt;
+	CAR_DATA* newCar;
+	int model;
 	int distSq;
 	int dir;
 	int curveLength;
@@ -1973,9 +1969,6 @@ int PingInCivCar(int minPingInDist)
 	u_int retDistSq;
 	unsigned char* slot;
 
-	//straight = NULL;
-	//curve = NULL;
-	
 	civDat.distAlongSegment = -5;
 	lane = -1;
 	dir = 0xffffff;
@@ -2021,8 +2014,6 @@ int PingInCivCar(int minPingInDist)
 	}*/
 
 	newCar = NULL;
-
-	ClearMem((char*)&civDat, sizeof(civDat));
 
 	baseLoc.vx = player[playerNum].spoolXZ->vx;
 	baseLoc.vz = player[playerNum].spoolXZ->vz;
@@ -2198,6 +2189,8 @@ int PingInCivCar(int minPingInDist)
 
 			lane = possibleLanes[(Random2(0) >> 8) % numPossibleLanes];
 		}
+
+		ClearMem((char*)&civDat, sizeof(civDat));
 
 		// check if need to make a parked car
 		if (ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, lane))
@@ -3339,18 +3332,16 @@ int CivSteerAngle(CAR_DATA* cp)
 // [D] [T]
 void CreateRoadblock(void)
 {
-	int laneNo;
+	VECTOR startPos, endPos, currentPos;
+	VECTOR baseLoc, randomLoc;
 	CAR_COSMETICS* car_cos;
 	CAR_DATA* cp;
-	int distAlongSegment;
-	
 	DRIVER2_CURVE* crv;
 	DRIVER2_STRAIGHT* str;
 
-	VECTOR startPos;
-	VECTOR endPos;
-	
-	VECTOR currentPos;
+	int dx, dz;
+	int laneNo;
+	int distAlongSegment;
 	int numLanes;
 	int externalCopModel;
 	int noMoreCars;

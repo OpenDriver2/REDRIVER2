@@ -172,7 +172,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 	PACKED_CELL_OBJECT** list;
 	int numShadows;
 
-#ifdef PSX
+#if 0 //def PSX
 	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)(u_char*)getScratchAddr(0);
 	MATRIX shadowMatrix = *(MATRIX*)((u_char*)getScratchAddr(0) + sizeof(MVERTEX5x5));
 #else
