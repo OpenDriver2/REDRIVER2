@@ -132,6 +132,14 @@ extern short rcossin_tbl[8192];
 #define MAX(a,b)	fst_max(a,b)
 #endif
 
+#ifdef PSX
+#undef ABS		// don't use PsyQ's silly ABS that might not be optimized
+#endif
+
+#ifndef ABS
+#define ABS(a)		fst_abs(a)
+#endif
+
 inline int fst_min(int a, int b)
 {
 	int diff = a - b;
@@ -144,6 +152,12 @@ inline int fst_max(int a, int b)
 	int diff = a - b;
 	int dsgn = diff >> 31;
 	return a - (diff & dsgn);
+}
+
+inline int fst_abs(int x)
+{
+	int mask = x >> 31;
+	return (x ^ mask) - mask;
 }
 
 #endif // DR2MATH_H

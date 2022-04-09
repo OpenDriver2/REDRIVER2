@@ -2784,16 +2784,14 @@ static u_char hornchanflag[2] = { 0 };
 // [D] [T]
 void SetUpCivCollFlags(void)
 {
-	CAR_COSMETICS* car_cos;
-	CAR_DATA* cp1;
-	SVECTOR boxDisp;
 	CAR_DATA* cp0;
-	int carLength[2];
+	CAR_DATA* cp1;
+	CAR_COSMETICS* car0_cos;
+	CAR_COSMETICS* car1_cos;
+	SVECTOR boxDisp;
+	int cp0Length;
+	int cp0Computed;
 	int i;
-	int brake;
-	int dx;
-	int extraLength;
-	int boxOverlap;
 
 	CDATA2D cd[2];
 
@@ -2805,40 +2803,35 @@ void SetUpCivCollFlags(void)
 	{
 		if (cp0->controlType == CONTROL_TYPE_CIV_AI)
 		{
-			extraLength = FIXEDH(cp0->hd.wheel_speed);
+			int extraLength;
+
+			cp0Computed = 0;
+
+			car0_cos = cp0->ap.carCos;
+			cp0Length = car0_cos->colBox.vz;
+			extraLength = ABS(FIXEDH(cp0->hd.wheel_speed));
 
 			if (cp0->wheel_angle < 61)
 				extraLength *= 13;
 			else
 				extraLength *= 4;
 
-			extraLength = ABS(extraLength);
+			cd[0].length[0] = cp0Length + 93 + extraLength;
 
-			car_cos = cp0->ap.carCos;
-			carLength[0] = car_cos->colBox.vz;
-
-			cd[0].length[0] = carLength[0] + 93 + extraLength;
-			cd[0].length[1] = car_cos->colBox.vx;
-			cd[0].theta = cp0->hd.direction;
-
-			gte_SetRotMatrix(&cp0->hd.where.m);
-			gte_SetTransMatrix(&cp0->hd.where.m);
-
-			boxDisp.vx = -car_cos->cog.vx;
-			boxDisp.vy = -car_cos->cog.vy;
-			boxDisp.vz = (extraLength - car_cos->cog.vz) + 93;
-
-			gte_ldv0(&boxDisp);
-			gte_rtv0tr();
-			gte_stlvnl(&cd[0].x);
+			// temporary
+			cd[0].x.vx = cp0->hd.where.t[0];
+			cd[0].x.vy = cp0->hd.where.t[1];
+			cd[0].x.vz = cp0->hd.where.t[2];
 
 			cp1 = &car_data[MAX_CARS];
-
 			while (cp1 >= car_data)
 			{
 				if (cp1->controlType != CONTROL_TYPE_NONE && cp1 != cp0)
 				{
-					car_cos = cp1->ap.carCos;
+					int dist;
+					int brake, boxOverlap;
+
+					car1_cos = cp1->ap.carCos;
 
 					if (CAR_INDEX(cp1) == TANNER_COLLIDER_CARID)
 					{
@@ -2851,63 +2844,47 @@ void SetUpCivCollFlags(void)
 						cd[1].length[0] = 60;
 						cd[1].length[1] = 60;
 						cd[1].x.vx = player[0].pos[0];
+						cd[1].x.vy = player[0].pos[1];
 						cd[1].x.vz = player[0].pos[2];
 						cd[1].theta = player[0].dir;
 					}
 					else
 					{
-						cd[1].length[0] = car_cos->colBox.vz;
-						cd[1].length[1] = car_cos->colBox.vx;
+						cd[1].length[0] = car1_cos->colBox.vz;
+						cd[1].length[1] = car1_cos->colBox.vx;
 						cd[1].x.vx = cp1->hd.oBox.location.vx;
 						cd[1].x.vy = cp1->hd.oBox.location.vy;
 						cd[1].x.vz = cp1->hd.oBox.location.vz;
 						cd[1].theta = cp1->hd.direction;
 					}
 
-					dx = ((cd[0].length[0] + cd[1].length[0]) * 3) / 2;
+					dist = ((cd[0].length[0] + cd[1].length[0]) * 3) / 2;
 
-					if (cd[0].x.vx - cd[1].x.vx < 0)
-					{
-						if (cd[1].x.vx - cd[0].x.vx >= dx)
-						{
-							cp1--;
-							continue;
-						}
-
-					}
-					else if (dx <= cd[0].x.vx - cd[1].x.vx)
+					if (ABS(cd[0].x.vx - cd[1].x.vx) >= dist ||
+						ABS(cd[0].x.vz - cd[1].x.vz) >= dist ||
+						ABS(cd[0].x.vy - cd[1].x.vy) >= 500)
 					{
 						cp1--;
 						continue;
 					}
 
-					if (cd[0].x.vz - cd[1].x.vz < 0)
+					// compute the box if first time
+					if (cp0Computed == 0)
 					{
-						if (cd[1].x.vz - cd[0].x.vz >= dx)
-						{
-							cp1--;
-							continue;
-						}
-					}
-					else if (dx <= cd[0].x.vz - cd[1].x.vz)
-					{
-						cp1--;
-						continue;
-					}
+						cd[0].length[1] = car0_cos->colBox.vx;
+						cd[0].theta = cp0->hd.direction;
 
-					// check height difference
-					if (CAR_INDEX(cp1) == CAMERA_COLLIDER_CARID)
-					{
-						if (ABS(player[0].pos[1] - cp0->hd.where.t[1]) >= 500)
-						{
-							cp1--;
-							continue;
-						}
-					}
-					else if (ABS(cp1->hd.where.t[1] - cp0->hd.where.t[1]) >= 500 && ABS(player[0].pos[1] - cp0->hd.where.t[1]) >= 500)
-					{
-						cp1--;
-						continue;
+						gte_SetRotMatrix(&cp0->hd.where.m);
+						gte_SetTransMatrix(&cp0->hd.where.m);
+
+						boxDisp.vx = -car0_cos->cog.vx;
+						boxDisp.vy = -car0_cos->cog.vy;
+						boxDisp.vz = (extraLength - car0_cos->cog.vz) + 93;
+
+						gte_ldv0(&boxDisp);
+						gte_rtv0tr();
+						gte_stlvnl(&cd[0].x);
+						cp0Computed = 1;
 					}
 
 					// do overlap test between boxes
@@ -2917,7 +2894,7 @@ void SetUpCivCollFlags(void)
 						continue;
 					}
 
-					brake = (cd[0].length[0] - carLength[0]) - boxOverlap;
+					brake = (cd[0].length[0] - cp0Length) - boxOverlap;
 
 					if (brake < 1)
 						brake = 1;
