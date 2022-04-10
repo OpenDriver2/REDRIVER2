@@ -2005,7 +2005,7 @@ void DoCivHead(LPPEDESTRIAN pPed, SVECTOR* vert1, SVECTOR* vert2)
 	if (pPed->pallet & 0xf)
 	{
 		flags |= PLOT_CUSTOM_PALETTE; // set custom palette flag
-		plotContext.clut = civ_clut[0][texturePedHead.texture_number][pPed->pallet & 0xf] << 0x10;
+		plotContext.clut = civ_clut[0][texturePedHead.texture_number][pPed->pallet & 15];
 	}
 
 	oldcombointensity = combointensity;

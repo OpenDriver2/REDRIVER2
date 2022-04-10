@@ -567,7 +567,7 @@ void DrawWheelObject(MODEL* model, SVECTOR* verts, int transparent, int wheelnum
 	poly = (POLY_FT4*)current->primptr;
 
 	clut = texture_cluts[src->texture_set][src->texture_id];
-	tpage = texture_pages[src->texture_set];
+	tpage = texture_pages[src->texture_set] | 0x20;
 
 	if (gTimeOfDay > -1)
 	{
@@ -621,19 +621,12 @@ void DrawWheelObject(MODEL* model, SVECTOR* verts, int transparent, int wheelnum
 
 			gte_stsxy3(&poly->x1, &poly->x3, &poly->x2);
 
-			poly->u0 = src->uv0.u;
-			poly->v0 = src->uv0.v;
+			*(u_short*)&poly->u0 = *(u_short*)&src->uv0;
+			*(u_short*)&poly->u1 = *(u_short*)&src->uv1;
+			*(u_short*)&poly->u2 = *(u_short*)&src->uv3;
+			*(u_short*)&poly->u3 = *(u_short*)&src->uv2;
 			poly->clut = clut;
-
-			poly->u1 = src->uv1.u;
-			poly->v1 = src->uv1.v;
-			poly->tpage = tpage | 0x20;
-
-			poly->u2 = src->uv3.u;
-			poly->v2 = src->uv3.v;
-
-			poly->u3 = src->uv2.u;
-			poly->v3 = src->uv2.v;
+			poly->tpage = tpage;
 
 			poly++;
 		}
@@ -646,27 +639,25 @@ void DrawWheelObject(MODEL* model, SVECTOR* verts, int transparent, int wheelnum
 void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 {
 	short wheelSize;
-	int FW1z;
-	int FW2z;
-	int BW1z;
-	int BW2z;
-	int FrontWheelIncrement;
-	int BackWheelIncrement;
+	int FW1z, FW2z;
+	int BW1z, BW2z;
+	int FrontWheelIncrement, BackWheelIncrement;
 	int sizeScale;
 	int wheelnum;
 	SVECTOR* VertPtr;
-	MODEL* model;
 	SVECTOR* wheelDisp;
 	WHEEL* wheel;
 	int car_id;
-	MODEL *WheelModelBack;
-	MODEL *WheelModelFront;
+	MODEL* WheelModelBack;
+	MODEL* WheelModelFront;
+	MODEL* model;
 
-#if 0 //def PSX
+#ifdef PSX
 	MATRIX& FrontMatrix = *(MATRIX*)(u_char*)getScratchAddr(0);
 	MATRIX& SteerMatrix = *(MATRIX*)((u_char*)getScratchAddr(0) + sizeof(MATRIX));
 	VECTOR& WheelPos = *(VECTOR*)((u_char*)getScratchAddr(0) + sizeof(MATRIX) * 2);
 	SVECTOR& sWheelPos = *(SVECTOR*)((u_char*)getScratchAddr(0) + sizeof(MATRIX) * 2 + sizeof(VECTOR));
+	static_assert(sizeof(MATRIX) * 2 + sizeof(VECTOR) + sizeof(SVECTOR) * 25 < 1024, "Scratchpad overflow");
 #else
 	MATRIX FrontMatrix;
 	MATRIX SteerMatrix;
@@ -1350,10 +1341,9 @@ void DrawCar(CAR_DATA* cp, int view)
 	CAR_MODEL* CarModelPtr;
 	int model;
 	CVECTOR col;
-	VECTOR pos;
+	SVECTOR d;
+	VECTOR pos, dist;
 	VECTOR corners[4];
-	VECTOR d;
-	VECTOR dist;
 	MATRIX workmatrix;
 
 	D_CHECK_ERROR(cp < car_data, "Invalid car");

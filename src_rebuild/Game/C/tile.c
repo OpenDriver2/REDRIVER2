@@ -242,20 +242,20 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 	{
 		ppco = *tilePointers++;
 		
-		plotContext.f4colourTable[6] = ppco->pos.vx;
-		plotContext.f4colourTable[7] = (ppco->pos.vy << 0x10) >> 0x11;
-		plotContext.f4colourTable[8] = ppco->pos.vz;
+		plotContext.scribble[0] = ppco->pos.vx;
+		plotContext.scribble[1] = (ppco->pos.vy << 0x10) >> 0x11;
+		plotContext.scribble[2] = ppco->pos.vz;
 	
 		yang = ppco->value & 0x3f;
 		model_number = (ppco->value >> 6) | (ppco->pos.vy & 1) << 10;
 
 		if (previous_matrix == yang)
 		{
-			Z = Apply_InvCameraMatrixSetTrans((VECTOR_NOPAD *)(plotContext.f4colourTable + 6));
+			Z = Apply_InvCameraMatrixSetTrans((VECTOR_NOPAD *)plotContext.scribble);
 		}
 		else
 		{
-			Z = Apply_InvCameraMatrixAndSetMatrix((VECTOR_NOPAD *)(plotContext.f4colourTable + 6), &CompoundMatrix[previous_matrix = yang]);
+			Z = Apply_InvCameraMatrixAndSetMatrix((VECTOR_NOPAD *)plotContext.scribble, &CompoundMatrix[previous_matrix = yang]);
 		}
 
 		if (Z <= DRAW_LOD_DIST_HIGH)
@@ -317,31 +317,31 @@ void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 	v4 = (*VSP)[0][2];
 
 	VecSubtract(&e1, &v2, &v1); // plane[1] - plane[0];
-	e1.uv.s.u0 = (v2.uv.s.u0 - v1.uv.s.u0) / 2;
-	e1.uv.s.v0 = (v2.uv.s.v0 - v1.uv.s.v0) / 2;
+	e1.uv.s.u0 = (v2.uv.s.u0 - v1.uv.s.u0) >> 1;
+	e1.uv.s.v0 = (v2.uv.s.v0 - v1.uv.s.v0) >> 1;
 
 	VecSubtract(&e2, &v3, &v4); // plane[2] - plane[3];
-	e2.uv.s.u0 = (v3.uv.s.u0 - v4.uv.s.u0) / 2;
-	e2.uv.s.v0 = (v3.uv.s.v0 - v4.uv.s.v0) / 2;
+	e2.uv.s.u0 = (v3.uv.s.u0 - v4.uv.s.u0) >> 1;
+	e2.uv.s.v0 = (v3.uv.s.v0 - v4.uv.s.v0) >> 1;
 
 	VecSubtract(&e3, &v4, &v1); // plane[3] - plane[0];
-	e3.uv.s.u0 = (v4.uv.s.u0 - v1.uv.s.u0) / 2;
-	e3.uv.s.v0 = (v4.uv.s.v0 - v1.uv.s.v0) / 2;
+	e3.uv.s.u0 = (v4.uv.s.u0 - v1.uv.s.u0) >> 1;
+	e3.uv.s.v0 = (v4.uv.s.v0 - v1.uv.s.v0) >> 1;
 
 	VecSubtract(&e4, &v3, &v2); // plane[2] - plane[1];
-	e4.uv.s.u0 = (v3.uv.s.u0 - v2.uv.s.u0) / 2;
-	e4.uv.s.v0 = (v3.uv.s.v0 - v2.uv.s.v0) / 2;
+	e4.uv.s.u0 = (v3.uv.s.u0 - v2.uv.s.u0) >> 1;
+	e4.uv.s.v0 = (v3.uv.s.v0 - v2.uv.s.v0) >> 1;
 
 	//-----------
 
 	// half them all
-	SetVec(&e1, e1.vx / 2, e1.vy / 2, e1.vz / 2);
+	SetVec(&e1, e1.vx >> 1, e1.vy >> 1, e1.vz >> 1);
 
-	SetVec(&e2, e2.vx / 2, e2.vy / 2, e2.vz / 2);
+	SetVec(&e2, e2.vx >> 1, e2.vy >> 1, e2.vz >> 1);
 
-	SetVec(&e3, e3.vx / 2, e3.vy / 2, e3.vz / 2);
+	SetVec(&e3, e3.vx >> 1, e3.vy >> 1, e3.vz >> 1);
 
-	SetVec(&e4, e4.vx / 2, e4.vy / 2, e4.vz / 2);
+	SetVec(&e4, e4.vx >> 1, e4.vy >> 1, e4.vz >> 1);
 
 	//-----------
 
@@ -364,10 +364,10 @@ void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 	//-----------
 
 	VecSubtract(&e5, &p2, &p1); // p2 - p1;
-	e5.uv.s.u0 = (p2.uv.s.u0 - p1.uv.s.u0) / 2;
-	e5.uv.s.v0 = (p2.uv.s.v0 - p1.uv.s.v0) / 2;
+	e5.uv.s.u0 = (p2.uv.s.u0 - p1.uv.s.u0) >> 1;
+	e5.uv.s.v0 = (p2.uv.s.v0 - p1.uv.s.v0) >> 1;
 
-	SetVec(&e5, e5.vx / 2, e5.vy / 2, e5.vz / 2);
+	SetVec(&e5, e5.vx >> 1, e5.vy >> 1, e5.vz >> 1);
 
 
 	VecAdd(&p5, &e5, &p1); // e5 * 0.5f + p1;
@@ -447,7 +447,6 @@ void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 			gte_ldv0(&(*VSP)[index][3]);
 			gte_rtps();
 
-
 			gte_stsxy(&prim->x3);
 
 			*(ushort*)&prim->u0 = (*VSP)[index][0].uv.val;
@@ -455,8 +454,8 @@ void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 			*(ushort*)&prim->u2 = (*VSP)[index][2].uv.val;
 			*(ushort*)&prim->u3 = (*VSP)[index][3].uv.val;
 
-			prim->clut = pc->clut >> 0x10;
-			prim->tpage = pc->tpage >> 0x10;
+			prim->clut = pc->clut;
+			prim->tpage = pc->tpage;
 
 			addPrim(pc->ot + (z >> 1), prim);
 
@@ -517,7 +516,7 @@ void drawMeshLit(MVERTEX(*VSP)[5][5], int m, int n, _pct* pc)
 
 			gte_stsxy(&prim->x3);
 
-			* (ulong*)&prim->r0 = plotContext.colour;
+			*(ulong*)&prim->r0 = plotContext.colour;
 			*(ulong*)&prim->r1 = plotContext.colour;
 			*(ulong*)&prim->r2 = plotContext.colour;
 			*(ulong*)&prim->r3 = plotContext.colour;
@@ -550,8 +549,8 @@ void drawMeshLit(MVERTEX(*VSP)[5][5], int m, int n, _pct* pc)
 			*(ushort*)&prim->u2 = (*VSP)[index][2].uv.val;
 			*(ushort*)&prim->u3 = (*VSP)[index][3].uv.val;
 
-			prim->clut = pc->clut >> 0x10;
-			prim->tpage = pc->tpage >> 0x10;
+			prim->clut = pc->clut;
+			prim->tpage = pc->tpage;
 
 			addPrim(pc->ot + (z >> 1), prim);
 
@@ -572,8 +571,8 @@ void SubdivNxM(char *polys, int n, int m, int ofse)
 
 	POLYFT4* pft4 = (POLYFT4*)polys;
 	
-	plotContext.clut = (u_int)(*plotContext.ptexture_cluts)[pft4->texture_set][pft4->texture_id] << 0x10;
-	plotContext.tpage = (u_int)(*plotContext.ptexture_pages)[pft4->texture_set] << 0x10;
+	plotContext.clut = (u_int)(*plotContext.ptexture_cluts)[pft4->texture_set][pft4->texture_id];
+	plotContext.tpage = (u_int)(*plotContext.ptexture_pages)[pft4->texture_set];
 
 	copyVector(&subdivVerts[0][0], &verts[pft4->v0]);
 	subdivVerts[0][0].uv.val = *(ushort*)&pft4->uv0;

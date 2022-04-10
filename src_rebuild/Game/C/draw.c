@@ -134,8 +134,8 @@ void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
 
 	plotContext.colour = 0x2E000000;
 	plotContext.flags = PLOT_INV_CULL;
-	plotContext.clut = texture_cluts[src->texture_set][src->texture_id] << 0x10;
-	plotContext.tpage = texture_pages[src->texture_set] << 0x10;
+	plotContext.clut = texture_cluts[src->texture_set][src->texture_id];
+	plotContext.tpage = texture_pages[src->texture_set];
 
 	if (z > 3200)
 		m = 1; //2;
@@ -210,7 +210,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 			lightLevel /= 3;
 	}
 
-	spriteColour = lightLevel << 0x10 | lightLevel << 8 | 0x2c000000 | lightLevel;
+	spriteColour = lightLevel << 0x10 | lightLevel << 8 | lightLevel | 0x2c000000;
 
 	for (i = 0; i < 3; i++) 
 	{
@@ -268,8 +268,8 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 
 			while (numPolys--, numPolys >= 0)
 			{
-				plotContext.clut = texture_cluts[src->texture_set][src->texture_id] << 0x10;
-				plotContext.tpage = texture_pages[src->texture_set] << 0x10;
+				plotContext.clut = texture_cluts[src->texture_set][src->texture_id];
+				plotContext.tpage = texture_pages[src->texture_set];
 
 				copyVector(&subdiVerts.verts[0][0], &verts[src->v0]);
 				subdiVerts.verts[0][0].uv.val = *(ushort*)&src->uv0;
@@ -342,7 +342,7 @@ void SetupPlaneColours(u_int ambient)
 			planeColours[1] = (r * 120 >> 7) << 16 | (g * 120 >> 7) << 8 | b * 120 >> 7;
 			planeColours[2] = (r * 103 >> 7) << 16 | (g * 103 >> 7) << 8 | b * 103 >> 7;
 			planeColours[3] = (r * 13 >> 5) << 16 | (g * 13 >> 5) << 8 | b * 13 >> 5;
-			planeColours[0] = r << 0x10 | g << 8 | b;
+			planeColours[0] = r << 16 | g << 8 | b;
 			planeColours[4] = (r * 3 >> 3) << 16 | (g * 3 >> 3) << 8 | b * 3 >> 3;
 			planeColours[5] = planeColours[3];
 			planeColours[6] = planeColours[2];
@@ -587,9 +587,9 @@ u_int normalIndex(SVECTOR* verts, u_int vidx)
 
 	SVECTOR p, q;
 
-	v0 = verts + (vidx & 0xff);
-	v1 = verts + (vidx >> 8 & 0xff);
-	v2 = verts + (vidx >> 16 & 0xff);
+	v0 = verts + (vidx & 255);
+	v1 = verts + (vidx >> 8 & 255);
+	v2 = verts + (vidx >> 16 & 255);
 
 	p.vz = v1->vz - v0->vz;
 	q.vz = v2->vz - v0->vz;
@@ -634,9 +634,9 @@ u_int normalIndex(SVECTOR* verts, u_int vidx)
 		th23 += 1;
 
 	if (nx + nz < -ny)
-		th23 = th23 & 0x1f | 2;
+		th23 = th23 & 31 | 2;
 	else
-		th23 = th23 & 0x1f;
+		th23 = th23 & 31;
 
 	return th23 | 0x80;
 }
@@ -711,10 +711,12 @@ void PlotBuildingModel(MODEL* model, int rot, _pct* pc)
 
 	ConvertPolygonTypes(model, pc);
 
+	r = (rot >> 3) * 4;
+
 	i = model->num_polys;
 	while (i-- > 0)
 	{
-		ptype = polys->id & 0x1f;
+		ptype = polys->id & 31;
 
 		// skip certain polygons
 		if (ptype != 11 && ptype != 21 && ptype != 23)
@@ -731,15 +733,13 @@ void PlotBuildingModel(MODEL* model, int rot, _pct* pc)
 		gte_nclip();
 		gte_stopz(&opz);
 
-		r = rot;
-
 		if (ptype == 21)
 		{
-			pc->colour = combo & 0x2ffffffU | 0x2c000000;
+			pc->colour = combo & 0x2ffffff | 0x2c000000;
 		}
 		else
 		{
-			pc->colour = pc->f4colourTable[(r >> 3) * 4 - polys->th & 31];
+			pc->colour = pc->f4colourTable[r - polys->th & 31];
 		}
 
 		if (opz > 0)
@@ -806,6 +806,8 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 
 	ConvertPolygonTypes(model, pc);
 
+	r = (rot >> 3) * 4;
+
 	i = model->num_polys;
 	while (i-- > 0)
 	{
@@ -827,23 +829,21 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 		gte_nclip();
 		gte_stopz(&opz);
 
-		r = rot;
-
 		if (ptype == 21)
 		{
 			pc->colour = combo & 0x2ffffffU | 0x2c000000;
 		}
 		else
 		{
-			pc->colour = pc->f4colourTable[(r >> 3) * 4 - polys->th & 31];
+			pc->colour = pc->f4colourTable[r - polys->th & 31];
 		}
 
 		if (opz > 0)
 		{
 			gte_stsz3(&pc->scribble[0], &pc->scribble[1], &pc->scribble[2]);
 
-			pc->tpage = (*pc->ptexture_pages)[polys->texture_set] << 0x10;
-			pc->clut = (*pc->ptexture_cluts)[polys->texture_set][polys->texture_id] << 0x10;
+			pc->tpage = (*pc->ptexture_pages)[polys->texture_set];
+			pc->clut = (*pc->ptexture_cluts)[polys->texture_set][polys->texture_id];
 
 			minZ = pc->scribble[2];
 			if (pc->scribble[1] < minZ)
@@ -898,8 +898,8 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 
 				gte_stsxy(&prims->x3);
 
-				prims->tpage = pc->tpage >> 0x10;
-				prims->clut = pc->clut >> 0x10;
+				prims->tpage = pc->tpage;
+				prims->clut = pc->clut;
 
 				*(ushort*)&prims->u0 = uv0;
 				*(ushort*)&prims->u1 = uv1;
@@ -912,13 +912,14 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 			}
 			else
 			{
-				r = n;
+				int sub;
+				sub = n;
 				if (n == 1)
 				{
 					if (minZ - 150 < (diff << 1))
-						r = 4;
+						sub = 4;
 					else
-						r = 2;
+						sub = 2;
 				}
 
 				copyVector(&subdiVerts.verts[0][0], &srcVerts[polys->v0]);
@@ -933,8 +934,8 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 				copyVector(&subdiVerts.verts[0][3], &srcVerts[polys->v2]);
 				subdiVerts.verts[0][3].uv.val = uv2;
 
-				makeMesh((MVERTEX(*)[5][5])subdiVerts.verts, r, r);
-				drawMesh((MVERTEX(*)[5][5])subdiVerts.verts, r, r, pc);
+				makeMesh((MVERTEX(*)[5][5])subdiVerts.verts, sub, sub);
+				drawMesh((MVERTEX(*)[5][5])subdiVerts.verts, sub, sub, pc);
 			}
 		}
 
@@ -1017,13 +1018,10 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 // [D] [T] [A] custom
 void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 {
-	int opz;
+	int opz, Z, r, pr, nr;
 	int diff, minZ, maxZ;
-	int Z;
 	PL_POLYFT4* polys;
 	int i;
-	int r;
-	u_char temp;
 	u_char ptype;
 	POLY_FT4* prims;
 	SVECTOR* srcVerts;
@@ -1035,10 +1033,15 @@ void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 	MVERTEX5x5 subdiVerts;
 #endif
 
+	ConvertPolygonTypes(model, pc);
+
 	srcVerts = (SVECTOR*)model->vertices;
 	polys = (PL_POLYFT4*)model->poly_block;
 
 	combo = combointensity;
+
+	pr = (rot >> 3) * 4;
+	nr = ((rot + 32 & 63) >> 3) * 4;
 
 	// transparent object flag
 	if (pc->flags & PLOT_TRANSPARENT)
@@ -1049,19 +1052,7 @@ void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 	{
 		// iterate through polygons
 		// with skipping
-		ptype = polys->id & 0x1f;
-
-		if ((ptype & 0x1) == 0 && ptype != 8) // is FT3 triangle?
-		{
-			temp = polys->uv2.v;
-			polys->uv3.u = polys->uv2.u;
-			polys->uv3.v = temp;
-
-			polys->v3 = polys->v2;
-
-			polys->id |= 1;
-			ptype |= 1;
-		}
+		ptype = polys->id & 31;
 
 		if (ptype != 11 && ptype != 21 && ptype != 23)
 		{
@@ -1078,12 +1069,12 @@ void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 		gte_nclip();
 		gte_stopz(&opz);
 
-		r = rot;
+		r = pr;
 
 		if (pc->flags & (PLOT_INV_CULL | PLOT_NO_CULL))
 		{
 			if (opz < 0)
-				r = rot + 32 & 63;
+				r = nr;
 
 			if (pc->flags & PLOT_NO_CULL)
 				opz = 1;		// no culling
@@ -1097,22 +1088,17 @@ void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 		}
 		else
 		{
-			temp = polys->th;
-
-			if ((polys->th & 0x80) == 0) // cache normal index if it were not
-				temp = polys->th = normalIndex(srcVerts, *(u_int*)&polys->v0);
-
-			pc->colour = pc->f4colourTable[(r >> 3) * 4 - temp & 31];
+			pc->colour = pc->f4colourTable[r - polys->th & 31];
 		}
 
 		if (opz > 0)
 		{
 			gte_stsz3(&pc->scribble[0], &pc->scribble[1], &pc->scribble[2]);
 
-			pc->tpage = (*pc->ptexture_pages)[polys->texture_set] << 0x10;
+			pc->tpage = (*pc->ptexture_pages)[polys->texture_set];
 
 			if ((pc->flags & PLOT_CUSTOM_PALETTE) == 0) // [A] custom palette flag - for pedestrian heads
-				pc->clut = (*pc->ptexture_cluts)[polys->texture_set][polys->texture_id] << 0x10;
+				pc->clut = (*pc->ptexture_cluts)[polys->texture_set][polys->texture_id];
 
 			minZ = pc->scribble[2];
 			if (pc->scribble[1] < minZ)
@@ -1167,8 +1153,8 @@ void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 
 				gte_stsxy(&prims->x3);
 
-				prims->tpage = pc->tpage >> 0x10;
-				prims->clut = pc->clut >> 0x10;
+				prims->tpage = pc->tpage;
+				prims->clut = pc->clut;
 
 				*(ushort*)&prims->u0 = uv0;
 				*(ushort*)&prims->u1 = uv1;
@@ -1525,19 +1511,19 @@ void DrawMapPSX(int* comp_val)
 
 	SetTextColour(255, 255, 0);
 
-	sprintf(tempBuf, "Buildings: %d", other_models_found);
+	sprintf(tempBuf, "Buildings: %d", drawData.other_models_found);
 	PrintString(tempBuf, 10, 60);
 
-	sprintf(tempBuf, "Sprites: %d", sprites_found);
+	sprintf(tempBuf, "Sprites: %d", drawData.sprites_found);
 	PrintString(tempBuf, 10, 75);
 
-	sprintf(tempBuf, "Tiles: %d", tiles_found);
+	sprintf(tempBuf, "Tiles: %d", drawData.tiles_found);
 	PrintString(tempBuf, 10, 90);
 
-	sprintf(tempBuf, "Anims: %d", anim_objs_found);
+	sprintf(tempBuf, "Anims: %d", drawData.anim_objs_found);
 	PrintString(tempBuf, 10, 105);
 
-	sprintf(tempBuf, "TOTAL: %d", other_models_found + sprites_found + tiles_found + anim_objs_found);
+	sprintf(tempBuf, "TOTAL: %d", drawData.other_models_found + drawData.sprites_found + drawData.tiles_found + drawData.anim_objs_found);
 	PrintString(tempBuf, 10, 120);
 #endif
 
