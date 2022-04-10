@@ -26,11 +26,7 @@ struct plotCarGlobals
 	OTTYPE* ot;
 	u_int intensity;
 	u_short* pciv_clut;
-	u_int ShineyTPageASL16;
-	u_int ShineyClutASL16;
 	u_char* damageLevel;
-	u_char* shineyTable;
-	int ghost;
 };
 
 
@@ -463,7 +459,11 @@ void restoreLightingMatrices(void)
 // [D] [T]
 void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 {
+#ifdef PSX
 	MATRIX& scratchPadMat = *(MATRIX*)((u_char*)getScratchAddr(0) + 0x344);
+#else
+	MATRIX scratchPadMat;
+#endif
 
 	int doLight;
 	int orW, orY;
@@ -883,8 +883,8 @@ void PlayerCarFX(CAR_DATA *cp)
 // [D] [T]
 void plotNewCarModel(CAR_MODEL* car, int palette)
 {
-#if 0 //def PSX
-	plotCarGlobals& _pg = *(plotCarGlobals*)(u_char*)getScratchAddr(0);
+#ifdef PSX
+	plotCarGlobals& _pg = *(plotCarGlobals*)((u_char*)getScratchAddr(0) + 1024 - sizeof(plotCarGlobals));
 #else
 	plotCarGlobals _pg;
 #endif
