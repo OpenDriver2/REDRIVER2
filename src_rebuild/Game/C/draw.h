@@ -77,6 +77,14 @@ enum PlotFlags
 	PLOT_CUSTOM_PALETTE = (1 << 4),
 };
 
+enum DrawSetupFlags
+{
+	SETUP_PVS = (1 << 0),
+	SETUP_FRUSTUM = (1 << 1),
+	SETUP_MATRICES = (1 << 2),
+	SETUP_DRAW_NEEDED = (1 << 3),
+};
+
 extern void* model_tile_ptrs[MAX_DRAWN_TILES];
 
 extern int units_across_halved;

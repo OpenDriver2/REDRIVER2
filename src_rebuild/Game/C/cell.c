@@ -4,9 +4,6 @@
 #include "map.h"
 #include "spool.h"
 
-int cell_object_index = 0;
-CELL_OBJECT cell_object_buffer[1024];
-
 u_char cell_object_computed_values[2048];
 
 extern u_char NumPlayers;
@@ -154,22 +151,4 @@ PACKED_CELL_OBJECT* GetNextPackedCop(CELL_ITERATOR* pci)
 	pci->ppco = ppco;
 
 	return ppco;
-}
-
-
-// [D] [T]
-CELL_OBJECT* UnpackCellObject(PACKED_CELL_OBJECT* ppco, XZPAIR* near)
-{
-	int newIndex;
-	CELL_OBJECT* pco;
-
-	if (ppco == NULL)
-		return NULL;
-
-	pco = &cell_object_buffer[newIndex = cell_object_index];
-	cell_object_index = newIndex + 1 & 1023;
-
-	QuickUnpackCellObject(ppco, near, pco);
-
-	return pco;
 }

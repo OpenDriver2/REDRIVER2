@@ -14,6 +14,29 @@
 #include "players.h"
 #include "main.h"
 
+int cell_object_index = 0;
+CELL_OBJECT cell_object_buffer[1024];
+
+// [D] [T]
+CELL_OBJECT* UnpackCellObject(PACKED_CELL_OBJECT* ppco, XZPAIR* near)
+{
+	int newIndex;
+	CELL_OBJECT* pco;
+
+#ifndef PSX
+	if (ppco == NULL)
+		return NULL;
+#endif
+
+	pco = &cell_object_buffer[newIndex = cell_object_index];
+	cell_object_index = newIndex + 1 & 1023;
+
+	QuickUnpackCellObject(ppco, near, pco);
+
+	return pco;
+}
+
+
 // [D] [T]
 char CellEmpty(VECTOR *pPosition, int radius)
 {

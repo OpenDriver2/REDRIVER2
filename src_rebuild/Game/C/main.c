@@ -677,9 +677,8 @@ void State_GameInit(void* param)
 	if (NewLevel)
 	{
 		// alloc pointer list
-		// [A] use model_tile_ptrs for this since it is only used for drawing purposes
-		coplist = (CELL_OBJECT**)(model_tile_ptrs);
-		pcoplist = (PACKED_CELL_OBJECT**)(model_tile_ptrs + 160);
+		coplist = (CELL_OBJECT**)D_MALLOC(sizeof(CELL_OBJECT*) * 160);
+		pcoplist = (PACKED_CELL_OBJECT**)D_MALLOC(sizeof(PACKED_CELL_OBJECT*) * 160)
 	}
 
 	if (NoPlayerControl == 0)
@@ -1546,7 +1545,7 @@ void CheckForPause(void)
 	}
 }
 
-int gMultiStep = 0;
+int gMultiStep = 1;
 
 // [D] [T]
 void State_GameLoop(void* param)
@@ -1568,7 +1567,10 @@ void State_GameLoop(void* param)
 
 	// moved from StepGame
 	if (FrameCnt == 5)
+	{
+		setupYet = 0;
 		SetDispMask(1);
+	}
 
 #ifdef PSX
 	static int lastTime32Hz = 0;
@@ -2253,7 +2255,6 @@ void RenderGame2(int view)
 	SetCameraVector();
 
 	SetupDrawMapPSX();
-	setupYet = 0;
 
 	if (gLoadedMotionCapture != 0)
 		DrawAllPedestrians();
