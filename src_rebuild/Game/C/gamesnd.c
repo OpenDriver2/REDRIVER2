@@ -1243,6 +1243,7 @@ void DoDopplerSFX(void)
 	// update sounds of cars (swap between idle and rev)
 	for (j = 0; j < MAX_CAR_NOISES; j++)
 	{
+		CAR_DATA* cp;
 		char old_idle;
 
 		if (car_noise[j].in_use == 0)
@@ -1250,12 +1251,13 @@ void DoDopplerSFX(void)
 
 		car = car_noise[j].car;
 		old_idle = car_noise[j].idle;
+		cp = &car_data[car];
 
 		// determine which sound type it has to play
 		if (gInGameCutsceneActive != 0 && force_idle[car] > -1)
 			car_noise[j].idle = force_idle[car];
 		else
-			car_noise[j].idle = (car_data[car].hd.speed < 17);
+			car_noise[j].idle = (cp->hd.speed < 17);
 
 		// restart sound if it's changed
 		if (old_idle != car_noise[j].idle)
@@ -1265,7 +1267,7 @@ void DoDopplerSFX(void)
 			StopChannel(car_noise[j].chan);
 			UnlockChannel(car_noise[j].chan);
 
-			model = car_data[car].ap.model;
+			model = cp->ap.model;
 
 			if (model == 3)
 				model = cop_model;
@@ -1283,9 +1285,7 @@ void DoDopplerSFX(void)
 			else
 				sample = bank * 3;
 
-			car_noise[j].chan = Start3DTrackingSound(-1, SOUND_BANK_CARS, sample, 
-				(VECTOR*)car_data[car].hd.where.t,
-				(LONGVECTOR3*)car_data[car].st.n.linearVelocity);
+			car_noise[j].chan = Start3DTrackingSound(-1, SOUND_BANK_CARS, sample, (VECTOR*)cp->hd.where.t, (LONGVECTOR3*)cp->st.n.linearVelocity);
 			
 			LockChannel(car_noise[j].chan);
 		}
@@ -1304,10 +1304,7 @@ void DoDopplerSFX(void)
 
 		car_noise[j].in_use = 1;
 
-		SetChannelPosition3(car_noise[j].chan, 
-			(VECTOR*)car_data[car].hd.where.t,
-			(LONGVECTOR3*)car_data[car].st.n.linearVelocity, 
-			volume, pitch, 0);
+		SetChannelPosition3(car_noise[j].chan, (VECTOR*)cp->hd.where.t, (LONGVECTOR3*)cp->st.n.linearVelocity, volume, pitch, 0);
 	}
 
 	// bark on player
@@ -1323,13 +1320,12 @@ void DoDopplerSFX(void)
 	}
 
 	// update each sound channel with new info
-	for (j = 0; j < MAX_SFX_CHANNELS; j++)
+	CHANNEL_DATA* c = &channels[0];
+	for (j = 0; j < MAX_SFX_CHANNELS; j++, c++)
 	{
-		if (channels[j].loop == 0 && channels[j].time != 0 && channels[j].srcposition != NULL)
+		if ((c->flags & CHAN_LOOP) == 0 && c->time != 0 && c->srcposition != NULL)
 		{
-			SetChannelPosition3(j,
-				channels[j].srcposition, channels[j].srcvelocity,
-				channels[j].srcvolume, channels[j].srcpitch, 0);
+			SetChannelPosition3(j, c->srcposition, c->srcvelocity, c->srcvolume, c->srcpitch, 0);
 		}
 	}
 }

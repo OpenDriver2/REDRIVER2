@@ -1,28 +1,31 @@
 #ifndef SOUND_H
 #define SOUND_H
 
+enum ChanFlags
+{
+	CHAN_LOOP			= (1 << 0),
+	CHAN_LOCKED			= (1 << 1)
+};
+
 struct CHANNEL_DATA
 {
 	SpuVoiceAttr attr;
-
-	u_char loop;
-	u_char locked;
-	u_short time;
+	VECTOR* srcposition;
+	VECTOR position;
+	LONGVECTOR3* srcvelocity;
 
 	int samplerate;
-	char player;
 	int srcvolume;
 	int volumeScale;
+	int cameradist;
+	int lastcameradist;
 
 	u_short srcpitch;
 	u_short dopplerScale;
 
-	int cameradist;
-	int lastcameradist;
-
-	VECTOR* srcposition;
-	VECTOR position;
-	LONGVECTOR3* srcvelocity;
+	u_short time;
+	u_char flags;
+	char player;
 };
 
 extern CHANNEL_DATA channels[16];
