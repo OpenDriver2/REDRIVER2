@@ -2790,185 +2790,185 @@ void SetUpCivCollFlags(void)
 
 	ClearMem((char*)brakeLength, sizeof(brakeLength));
 
-	cp0 = &car_data[MAX_CARS - 1];
-
-	while (cp0 >= car_data)
+	for (cp0 = &car_data[MAX_CARS - 1]; cp0 >= car_data; cp0--)
 	{
-		if (cp0->controlType == CONTROL_TYPE_CIV_AI)
+		int extraLength;
+		int cp0BrakeLength;
+
+		if (cp0->controlType != CONTROL_TYPE_CIV_AI)
 		{
-			int extraLength;
+			continue;
+		}
 
-			cp0Computed = 0;
+		extraLength = FIXEDH(cp0->hd.wheel_speed);
 
-			car0_cos = cp0->ap.carCos;
-			cp0Length = car0_cos->colBox.vz;
-			extraLength = ABS(FIXEDH(cp0->hd.wheel_speed));
+		if (cp0->wheel_angle < 61)
+			extraLength *= 13;
+		else
+			extraLength *= 4;
 
-			if (cp0->wheel_angle < 61)
-				extraLength *= 13;
-			else
-				extraLength *= 4;
+		extraLength = ABS(extraLength);
 
-			cd[0].length[0] = cp0Length + 93 + extraLength;
+		car0_cos = cp0->ap.carCos;
+		cp0Length = car0_cos->colBox.vz;
 
-			// temporary
-			cd[0].x.vx = cp0->hd.where.t[0];
-			cd[0].x.vy = cp0->hd.where.t[1];
-			cd[0].x.vz = cp0->hd.where.t[2];
+		cd[0].length[0] = cp0Length + extraLength + 93;
+		cd[0].x.vx = cp0->hd.where.t[0];
+		cd[0].x.vy = cp0->hd.where.t[1];
+		cd[0].x.vz = cp0->hd.where.t[2];
 
-			cp1 = &car_data[MAX_CARS];
-			while (cp1 >= car_data)
+		cp0Computed = 0;
+		cp0BrakeLength = brakeLength[cp0->id];
+
+		for (cp1 = &car_data[MAX_CARS];  cp1 >= car_data; cp1--)
+		{
+			int dist, isTanner;
+			int brake, boxOverlap;
+
+			if (cp1->controlType == CONTROL_TYPE_NONE || cp1 == cp0)
 			{
-				if (cp1->controlType != CONTROL_TYPE_NONE && cp1 != cp0)
+				continue;
+			}
+
+			car1_cos = cp1->ap.carCos;
+
+			isTanner = 0;
+			if (CAR_INDEX(cp1) == TANNER_COLLIDER_CARID)
+			{
+				if (player[0].playerType != 2)
 				{
-					int dist;
-					int brake, boxOverlap;
+					continue;
+				}
+						
+				cd[1].length[0] = 60;
+				cd[1].length[1] = 60;
+				cd[1].x.vx = player[0].pos[0];
+				cd[1].x.vy = player[0].pos[1];
+				cd[1].x.vz = player[0].pos[2];
+				cd[1].theta = player[0].dir;
 
-					car1_cos = cp1->ap.carCos;
+				isTanner = 1;
+			}
+			else
+			{
+				cd[1].length[0] = car1_cos->colBox.vz;
+				cd[1].length[1] = car1_cos->colBox.vx;
+				cd[1].x.vx = cp1->hd.oBox.location.vx;
+				cd[1].x.vy = cp1->hd.oBox.location.vy;
+				cd[1].x.vz = cp1->hd.oBox.location.vz;
+				cd[1].theta = cp1->hd.direction;
+			}
 
-					if (CAR_INDEX(cp1) == TANNER_COLLIDER_CARID)
+			dist = ((cd[0].length[0] + cd[1].length[0]) * 3) / 2;
+
+			if (ABS(cd[0].x.vx - cd[1].x.vx) >= dist ||
+				ABS(cd[0].x.vz - cd[1].x.vz) >= dist ||
+				isTanner && ABS(cd[0].x.vy - cd[1].x.vy) >= 500)
+			{
+				continue;
+			}
+
+			if (cp0Computed == 0)
+			{
+				cd[0].length[1] = car0_cos->colBox.vx;
+				cd[0].theta = cp0->hd.direction;
+
+				gte_SetRotMatrix(&cp0->hd.where.m);
+				gte_SetTransMatrix(&cp0->hd.where.m);
+
+				boxDisp.vx = -car0_cos->cog.vx;
+				boxDisp.vy = -car0_cos->cog.vy;
+				boxDisp.vz = (extraLength - car0_cos->cog.vz) + 93;
+
+				gte_ldv0(&boxDisp);
+				gte_rtv0tr();
+				gte_stlvnl(&cd[0].x);
+				cp0Computed = 1;
+			}
+
+			// do overlap test between boxes
+			if (!bcollided2d(cd, &boxOverlap))
+			{
+				continue;
+			}
+
+			brake = MAX(1, (cd[0].length[0] - cp0Length) - boxOverlap);
+
+			if (cp0BrakeLength == 0 || brake < cp0BrakeLength)
+			{
+				cp0BrakeLength = brake;
+				brakeLength[cp0->id] = cp0BrakeLength;
+			}
+
+			// don't do anything further when it tries to park
+			if (cp0->ai.c.thrustState == 3)
+			{
+				continue;
+			}
+
+			// wait for Tanner to get into car
+			if (isTanner)
+			{
+				cp0->ai.c.carPauseCnt = CAR_PAUSE_START;
+			}
+
+			// do horns
+			// horn to player and chased cars (except Steal the Ambulance)
+			if (cp0->ai.c.thrustState != 3 &&
+				(isTanner || cp1->controlType == CONTROL_TYPE_PLAYER || cp1->controlType == CONTROL_TYPE_CUTSCENE && gCurrentMissionNumber != 26 && ProxyBar.active == 0))
+			{
+				int dont;
+				int rnd;
+				rnd = Random2(0);
+
+				dont = 0;
+
+				for (i = 0; i < 2; i++)
+				{
+					if (horncarflag[i] == cp0)
 					{
-						if (player[0].playerType != 2)
-						{
-							cp1--;
-							continue;
-						}
-
-						cd[1].length[0] = 60;
-						cd[1].length[1] = 60;
-						cd[1].x.vx = player[0].pos[0];
-						cd[1].x.vy = player[0].pos[1];
-						cd[1].x.vz = player[0].pos[2];
-						cd[1].theta = player[0].dir;
-					}
-					else
-					{
-						cd[1].length[0] = car1_cos->colBox.vz;
-						cd[1].length[1] = car1_cos->colBox.vx;
-						cd[1].x.vx = cp1->hd.oBox.location.vx;
-						cd[1].x.vy = cp1->hd.oBox.location.vy;
-						cd[1].x.vz = cp1->hd.oBox.location.vz;
-						cd[1].theta = cp1->hd.direction;
-					}
-
-					dist = ((cd[0].length[0] + cd[1].length[0]) * 3) / 2;
-
-					if (ABS(cd[0].x.vx - cd[1].x.vx) >= dist ||
-						ABS(cd[0].x.vz - cd[1].x.vz) >= dist ||
-						ABS(cd[0].x.vy - cd[1].x.vy) >= 500)
-					{
-						cp1--;
-						continue;
-					}
-
-					// compute the box if first time
-					if (cp0Computed == 0)
-					{
-						cd[0].length[1] = car0_cos->colBox.vx;
-						cd[0].theta = cp0->hd.direction;
-
-						gte_SetRotMatrix(&cp0->hd.where.m);
-						gte_SetTransMatrix(&cp0->hd.where.m);
-
-						boxDisp.vx = -car0_cos->cog.vx;
-						boxDisp.vy = -car0_cos->cog.vy;
-						boxDisp.vz = (extraLength - car0_cos->cog.vz) + 93;
-
-						gte_ldv0(&boxDisp);
-						gte_rtv0tr();
-						gte_stlvnl(&cd[0].x);
-						cp0Computed = 1;
-					}
-
-					// do overlap test between boxes
-					if (!bcollided2d(cd, &boxOverlap))
-					{
-						cp1--;
-						continue;
-					}
-
-					brake = (cd[0].length[0] - cp0Length) - boxOverlap;
-
-					if (brake < 1)
-						brake = 1;
-
-					if (brakeLength[cp0->id] == 0 || brake < brakeLength[cp0->id])
-						brakeLength[cp0->id] = brake;
-
-					// don't do anything further when it tries to park
-					if (cp0->ai.c.thrustState == 3)
-					{
-						cp1--;
-						continue;
-					}
-
-					if (CAR_INDEX(cp1) == TANNER_COLLIDER_CARID)
-						cp0->ai.c.carPauseCnt = CAR_PAUSE_START;
-
-					// do horns
-					// horn to player and chased cars (except Steal the Ambulance)
-					if (cp0->ai.c.thrustState != 3 &&
-						(cp1->controlType == CONTROL_TYPE_PLAYER || cp1->controlType == CONTROL_TYPE_CUTSCENE && gCurrentMissionNumber != 26 && ProxyBar.active == 0 || 
-						CAR_INDEX(cp1) == TANNER_COLLIDER_CARID))
-					{
-						int dont;
-						int rnd;
-						rnd = Random2(0);
-
-						dont = 0;
-
-						for (i = 0; i < 2; i++)
-						{
-							if (horncarflag[i] == cp0)
-							{
-								dont = 1;
-								break;
-							}
-						}
-
-						if (dont)
-						{
-							cp1--;
-							continue;
-						}
-
-						for (i = 0; i < 2; i++) 
-						{
-							if (hornchanflag[i] == 0)
-							{
-								int sample;
-
-								hornchanflag[i] = GetFreeChannel();
-								SpuSetVoiceAR(hornchanflag[i], 27);
-
-								if (cp0->ap.model == 4)
-									sample = ResidentModelsBodge();
-								else if (cp0->ap.model < 3)
-									sample = cp0->ap.model;
-								else
-									sample = cp0->ap.model - 1;
-
-								// [A] use tracking sound
-								Start3DTrackingSound(hornchanflag[i], SOUND_BANK_CARS, sample * 3 + 2, 
-									(VECTOR*)cp0->hd.where.t,
-									(LONGVECTOR3*)cp0->st.n.linearVelocity);
-								
-								SetChannelVolume(hornchanflag[i], -2000, 0);
-
-								horncarflag[i] = cp0;
-
-								channels[hornchanflag[i]].time += rnd - (rnd / 30) * 30;
-								break;
-							}
-						}
+						dont = 1;
+						break;
 					}
 				}
 
-				cp1--;
+				if (dont)
+				{
+					continue;
+				}
+
+				for (i = 0; i < 2; i++) 
+				{
+					if (hornchanflag[i] == 0)
+					{
+						int sample;
+
+						hornchanflag[i] = GetFreeChannel();
+						SpuSetVoiceAR(hornchanflag[i], 27);
+
+						if (cp0->ap.model == 4)
+							sample = ResidentModelsBodge();
+						else if (cp0->ap.model < 3)
+							sample = cp0->ap.model;
+						else
+							sample = cp0->ap.model - 1;
+
+						// [A] use tracking sound
+						Start3DTrackingSound(hornchanflag[i], SOUND_BANK_CARS, sample * 3 + 2, 
+							(VECTOR*)cp0->hd.where.t,
+							(LONGVECTOR3*)cp0->st.n.linearVelocity);
+								
+						SetChannelVolume(hornchanflag[i], -2000, 0);
+
+						horncarflag[i] = cp0;
+
+						channels[hornchanflag[i]].time += rnd - (rnd / 30) * 30;
+						break;
+					}
+				}
 			}
-		}
-		cp0--;
-	}
+		} // for cp1
+	} // for cp0
 
 	// clear on timeout
 	for (i = 0; i < 2; i++)
