@@ -91,8 +91,6 @@ void* model_tile_ptrs[MAX_DRAWN_TILES];
 void* anim_obj_buffer[MAX_DRAWN_ANIMATING];
 void* spriteList[MAX_DRAWN_SPRITES];
 
-u_int planeColours[8];
-
 MATRIX inv_camera_matrix;
 MATRIX face_camera;
 MATRIX2 CompoundMatrix[64];
@@ -189,20 +187,11 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 
 	lightLevel = (lightdd >> 18) + 32 & 255;
 
-	if (gWeather > 0 && gTimeOfDay == 1)
-	{
-		lightLevel = (lightLevel * 2 * NightAmbient) >> 8 & 0xff;
-	}
-
-	if (gTimeOfDay == 0)
+	if (gWeather > 0 && gTimeOfDay == 1 || gTimeOfDay == 0 || gTimeOfDay == 2)
 	{
 		lightLevel = (lightLevel * 2 * NightAmbient) >> 8;
 	}
-	else if (gTimeOfDay == 2)
-	{
-		lightLevel = (lightLevel * 2 * NightAmbient) >> 8;
-	}
-	else if (gTimeOfDay == 3)
+	if (gTimeOfDay == 3)
 	{
 		if (GameLevel == 0)
 			lightLevel *= 2;	// [A] level bug - Chicago trees lit wrong
@@ -264,7 +253,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 			src = (POLYFT4*)model->poly_block;
 			verts = (SVECTOR*)model->vertices;
 
-			plotContext.flags |= 4;
+			plotContext.flags |= PLOT_NO_CULL;
 
 			while (numPolys--, numPolys >= 0)
 			{
@@ -289,7 +278,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 				src++;
 			}
 
-			plotContext.flags &= ~4;
+			plotContext.flags &= ~PLOT_NO_CULL;
 		}
 		else
 		{
@@ -331,44 +320,44 @@ void SetupPlaneColours(u_int ambient)
 {
 	u_int r, g, b;
 
-	if ((gWeather - 1U > 1) && gTimeOfDay != 0 && gTimeOfDay != 2)
+	if (gWeather == 0 && gTimeOfDay != 0 && gTimeOfDay != 2)
 	{
 		if (gTimeOfDay == 1)
 		{
 			b = ambient & 255;
 			g = ambient >> 8 & 255;
 			r = ambient >> 16 & 255;
-
-			planeColours[1] = (r * 120 >> 7) << 16 | (g * 120 >> 7) << 8 | b * 120 >> 7;
-			planeColours[2] = (r * 103 >> 7) << 16 | (g * 103 >> 7) << 8 | b * 103 >> 7;
-			planeColours[3] = (r * 13 >> 5) << 16 | (g * 13 >> 5) << 8 | b * 13 >> 5;
-			planeColours[0] = r << 16 | g << 8 | b;
-			planeColours[4] = (r * 3 >> 3) << 16 | (g * 3 >> 3) << 8 | b * 3 >> 3;
-			planeColours[5] = planeColours[3];
-			planeColours[6] = planeColours[2];
-			planeColours[7] = planeColours[1];
+			
+			plotContext.planeColours[1] = (r * 120 >> 7) << 16 | (g * 120 >> 7) << 8 | b * 120 >> 7;
+			plotContext.planeColours[2] = (r * 103 >> 7) << 16 | (g * 103 >> 7) << 8 | b * 103 >> 7;
+			plotContext.planeColours[3] = (r * 13 >> 5) << 16 | (g * 13 >> 5) << 8 | b * 13 >> 5;
+			plotContext.planeColours[0] = r << 16 | g << 8 | b;
+			plotContext.planeColours[4] = (r * 3 >> 3) << 16 | (g * 3 >> 3) << 8 | b * 3 >> 3;
+			plotContext.planeColours[5] = plotContext.planeColours[3];
+			plotContext.planeColours[6] = plotContext.planeColours[2];
+			plotContext.planeColours[7] = plotContext.planeColours[1];
 			return;
 		}
 
-		planeColours[0] = ambient;
-		planeColours[1] = ambient;
-		planeColours[2] = ambient;
-		planeColours[3] = ambient;
-		planeColours[4] = ambient;
-		planeColours[5] = ambient;
-		planeColours[6] = ambient;
-		planeColours[7] = ambient;
+		plotContext.planeColours[0] = ambient;
+		plotContext.planeColours[1] = ambient;
+		plotContext.planeColours[2] = ambient;
+		plotContext.planeColours[3] = ambient;
+		plotContext.planeColours[4] = ambient;
+		plotContext.planeColours[5] = ambient;
+		plotContext.planeColours[6] = ambient;
+		plotContext.planeColours[7] = ambient;
 		return;
 	}
 
-	planeColours[0] = ambient;
-	planeColours[1] = ambient + 0x10101;
-	planeColours[2] = ambient + 0x30303;
-	planeColours[3] = ambient + 0x80808;
-	planeColours[4] = ambient + 0xa0a0a;
-	planeColours[5] = ambient + 0x80808;
-	planeColours[6] = ambient + 0x30303;
-	planeColours[7] = ambient + 0x10101;
+	plotContext.planeColours[0] = ambient;
+	plotContext.planeColours[1] = ambient + 0x10101;
+	plotContext.planeColours[2] = ambient + 0x30303;
+	plotContext.planeColours[3] = ambient + 0x80808;
+	plotContext.planeColours[4] = ambient + 0xa0a0a;
+	plotContext.planeColours[5] = ambient + 0x80808;
+	plotContext.planeColours[6] = ambient + 0x30303;
+	plotContext.planeColours[7] = ambient + 0x10101;
 }
 
 
@@ -958,10 +947,10 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 	
 	for (i = 0; i < 8; i++)
 	{
-		plotContext.f4colourTable[i * 4 + 0] = planeColours[i] | 0x2C000000;
-		plotContext.f4colourTable[i * 4 + 1] = planeColours[0] | 0x2C000000;
-		plotContext.f4colourTable[i * 4 + 2] = planeColours[5] | 0x2C000000;
-		plotContext.f4colourTable[i * 4 + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
+		plotContext.f4colourTable[i * 4 + 0] = plotContext.planeColours[i] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 1] = plotContext.planeColours[0] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 2] = plotContext.planeColours[5] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 3] = plotContext.planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
 	}
 
 	plotContext.current = current;
@@ -1223,10 +1212,10 @@ void RenderModel(MODEL* model, MATRIX* matrix, VECTOR* pos, int zBias, int flags
 
 	for (i = 0; i < 8; i++)
 	{
-		plotContext.f4colourTable[i * 4 + 0] = planeColours[i] | 0x2C000000;
-		plotContext.f4colourTable[i * 4 + 1] = planeColours[0] | 0x2C000000;
-		plotContext.f4colourTable[i * 4 + 2] = planeColours[5] | 0x2C000000;
-		plotContext.f4colourTable[i * 4 + 3] = planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
+		plotContext.f4colourTable[i * 4 + 0] = plotContext.planeColours[i] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 1] = plotContext.planeColours[0] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 2] = plotContext.planeColours[5] | 0x2C000000;
+		plotContext.f4colourTable[i * 4 + 3] = plotContext.planeColours[0] | 0x2C000000; // default: 0x2C00F0F0
 	}
 
 	plotContext.ptexture_pages = &texture_pages;
@@ -1291,7 +1280,7 @@ void DrawMapPSX(int* comp_val)
 	CELL_ITERATOR& ci = *(CELL_ITERATOR*)(u_char*)getScratchAddr(0);
 	MATRIX& mRotStore = *(MATRIX*)((u_char*)getScratchAddr(0) + sizeof(CELL_ITERATOR));
 	DrawMapData& drawData = *(DrawMapData*)((u_char*)getScratchAddr(0) + sizeof(CELL_ITERATOR) + sizeof(MATRIX));
-	static_assert(sizeof(CELL_ITERATOR) + sizeof(MATRIX) + sizeof(DrawMapData) < 1024, "scratchpad overflow");
+	static_assert(sizeof(CELL_ITERATOR) + sizeof(MATRIX) + sizeof(DrawMapData) < 1024 - sizeof(_pct), "scratchpad overflow");
 #else
 	CELL_ITERATOR ci;
 	MATRIX mRotStore;

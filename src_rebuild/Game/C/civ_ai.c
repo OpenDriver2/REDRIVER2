@@ -24,6 +24,7 @@
 #include "objcoll.h"
 #include "overlay.h"
 #include "cutrecorder.h"
+#include "draw.h"
 
 const u_char speedLimits[3] = { 56, 97, 138 };
 
@@ -1945,7 +1946,7 @@ int PingInCivCar(int minPingInDist)
 	DRIVER2_ROAD_INFO& roadInfo = *(DRIVER2_ROAD_INFO*)(u_char*)getScratchAddr(0);
 	EXTRA_CIV_DATA& civDat = *(EXTRA_CIV_DATA*)((u_char*)getScratchAddr(0) + sizeof(DRIVER2_ROAD_INFO));
 	u_char* possibleLanes = ((u_char*)getScratchAddr(0) + sizeof(DRIVER2_ROAD_INFO) + sizeof(EXTRA_CIV_DATA));
-	static_assert(sizeof(CELL_ITERATOR) + sizeof(MATRIX) + 12 < 1024, "scratchpad overflow");
+	static_assert(sizeof(CELL_ITERATOR) + sizeof(char) + 12 < 1024 - sizeof(_pct), "scratchpad overflow");
 #else
 	DRIVER2_ROAD_INFO roadInfo;
 	EXTRA_CIV_DATA civDat;

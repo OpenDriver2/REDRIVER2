@@ -232,7 +232,6 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 	plotContext.primptr = current->primptr;
 	plotContext.ptexture_pages = (ushort(*)[128])texture_pages;
 	plotContext.ptexture_cluts = (ushort(*)[128][32])texture_cluts;
-	plotContext.lastTexInfo = 0x18273472;
 	plotContext.flags = 0;
 	plotContext.polySizes = PolySizes;
 

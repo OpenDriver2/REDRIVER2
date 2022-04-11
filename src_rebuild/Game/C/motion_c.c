@@ -900,6 +900,7 @@ void SetupTannerSkeleton(LPPEDESTRIAN pDrawingPed)
 	SVECTOR_NOPAD* pSVNP;
 #ifdef PSX
 	store = (SVECTOR*)((u_char*)getScratchAddr(0) + 0x200);
+	static_assert(sizeof(SVECTOR) + NUM_BONES < 1024 - sizeof(_pct), "scratchpad overflow");
 #else
 	SVECTOR scratchVectors[64];
 	store = scratchVectors;
@@ -1010,6 +1011,7 @@ void DrawSprite(LPPEDESTRIAN pDrawingPed, BONE* pBone, SVECTOR* vJPos)
 
 #ifdef PSX
 	SVECTOR* data = (SVECTOR*)((u_char*)getScratchAddr(0) + 0x200);
+	static_assert(sizeof(SVECTOR) + NUM_BONES < 1024 - sizeof(_pct), "scratchpad overflow");
 #else
 	SVECTOR scratchVectors[64];
 	SVECTOR* data = scratchVectors;
@@ -1050,6 +1052,7 @@ void newShowTanner(LPPEDESTRIAN pDrawingPed)
 	VECTOR* cameraPos = (VECTOR*)((u_char*)getScratchAddr(0) + 0x100 + sizeof(VECTOR));
 	SVECTOR* vJPos = (SVECTOR*)((u_char*)getScratchAddr(0) + 0x100 + sizeof(VECTOR) * 2);
 	static_assert(sizeof(VECTOR) * 2 + sizeof(SVECTOR) * NUM_BONES < 0x100, "Scratchpad local overflow");
+	static_assert(sizeof(VECTOR) * 2 + sizeof(SVECTOR) * NUM_BONES < 1024 - sizeof(_pct), "Scratchpad overflow");
 #else
 	VECTOR spad[64];
 

@@ -840,7 +840,6 @@ void StepSim(void)
 	static u_int t0; // offset 0x0
 	static char t1; // offset 0x4
 	static char t2; // offset 0x5
-	static int oldsp; // offset 0x8
 
 	char padAcc;
 	short* playerFelony;
@@ -849,6 +848,7 @@ void StepSim(void)
 	PLAYER* pl;
 	int i, j;
 	int car;
+	int timeOfDay;
 
 	if (gTimeOfDay == 0 || gTimeOfDay == 2)
 	{
@@ -870,8 +870,6 @@ void StepSim(void)
 		ReleaseInGameCutscene();
 		pauseflag = 1;
 	}
-
-	//oldsp = SetSp((u_long)((u_char*)getScratchAddr(0) + 0x3e8)); // i don't know what this does
 
 	lead_pad = (u_int)controller_bits;
 
@@ -1147,8 +1145,6 @@ void StepSim(void)
 	UpdatePlayers();
 	DoScenaryCollisions();
 	CheckPlayerMiscFelonies();
-
-	//SetSp(oldsp);
 
 	CameraCnt++;
 

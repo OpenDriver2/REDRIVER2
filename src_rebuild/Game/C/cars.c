@@ -460,7 +460,7 @@ void restoreLightingMatrices(void)
 void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 {
 #ifdef PSX
-	MATRIX& scratchPadMat = *(MATRIX*)((u_char*)getScratchAddr(0) + 0x344);
+	MATRIX& scratchPadMat = *(MATRIX*)((u_char*)getScratchAddr(0) + 0x100);
 #else
 	MATRIX scratchPadMat;
 #endif
@@ -657,7 +657,7 @@ void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	MATRIX& SteerMatrix = *(MATRIX*)((u_char*)getScratchAddr(0) + sizeof(MATRIX));
 	VECTOR& WheelPos = *(VECTOR*)((u_char*)getScratchAddr(0) + sizeof(MATRIX) * 2);
 	SVECTOR& sWheelPos = *(SVECTOR*)((u_char*)getScratchAddr(0) + sizeof(MATRIX) * 2 + sizeof(VECTOR));
-	static_assert(sizeof(MATRIX) * 2 + sizeof(VECTOR) + sizeof(SVECTOR) * 25 < 1024, "Scratchpad overflow");
+	static_assert(sizeof(MATRIX) * 2 + sizeof(VECTOR) + sizeof(SVECTOR) * 25 < 1024 - sizeof(_pct), "Scratchpad overflow");
 #else
 	MATRIX FrontMatrix;
 	MATRIX SteerMatrix;
@@ -875,7 +875,7 @@ void PlayerCarFX(CAR_DATA *cp)
 void plotNewCarModel(CAR_MODEL* car, int palette)
 {
 #ifdef PSX
-	plotCarGlobals& _pg = *(plotCarGlobals*)((u_char*)getScratchAddr(0) + 1024 - sizeof(plotCarGlobals));
+	plotCarGlobals& _pg = *(plotCarGlobals*)((u_char*)getScratchAddr(0) + 1024 - sizeof(plotCarGlobals) - sizeof(_pct));
 #else
 	plotCarGlobals _pg;
 #endif
@@ -1298,8 +1298,6 @@ void ProcessPalletLump(char *lump_ptr, int lump_size)
 // [D] [T]
 void DrawCarObject(CAR_MODEL* car, MATRIX* matrix, VECTOR* pos, int palette, CAR_DATA* cp, int detail)
 {
-	static u_long savedSP;
-
 	VECTOR modelLocation;
 	SVECTOR cog;
 
@@ -1324,11 +1322,7 @@ void DrawCarObject(CAR_MODEL* car, MATRIX* matrix, VECTOR* pos, int palette, CAR
 
 	gte_SetTransVector(&modelLocation);
 
-	savedSP = SetSp((u_long)((u_char*)getScratchAddr(0) + 0x308));
-
 	plotNewCarModel(car, palette);
-
-	SetSp(savedSP);
 }
 
 // [D] [T] [A]

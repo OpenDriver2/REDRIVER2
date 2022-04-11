@@ -8,13 +8,11 @@
 #include "main.h"
 #include "debris.h"
 #include "players.h"
+#include "draw.h"
 
 struct RGB16
 {
-	short r;
-	short g;
-	short b;
-	short pad;
+	short r, g, b, pad;
 };
 
 struct FLAREREC
@@ -687,8 +685,6 @@ void DrawLensFlare(void)
 int gTunnelNum = -1;
 int skyFade;
 
-RGB16 skycolor = { 128,128,128 };
-
 // [D] [T]
 void TunnelSkyFade(void)
 {
@@ -697,9 +693,7 @@ void TunnelSkyFade(void)
 	VECTOR* v2;
 	VECTOR* v1;
 	int tun;
-
-	if (gTunnelNum == -1)
-		return;
+	int px, pz;
 
 	if (GameLevel != 3 && gTunnelNum < 3)
 		tun = gTunnelNum;
@@ -718,13 +712,16 @@ void TunnelSkyFade(void)
 	if (DIFF_ANGLES(camera_angle.vy, tunnelDir[tun][1]) + 1247 < 2495) // (((tunnelDir[tun][1] - camera_angle.vy) + 2048 & 4095) - 801 < 2495)
 		v2 = &tunnelPos[tun][1];
 
+	px = player[0].pos[0];
+	pz = player[0].pos[2];
+
 	if(v1 && v2)
 	{
-		dX = (v1->vx - player[0].pos[0]) >> 5;		// [A] smooth sky fade
-		dZ = (v1->vz - player[0].pos[2]) >> 5;
+		dX = (v1->vx - px) >> 5;		// [A] smooth sky fade
+		dZ = (v1->vz - pz) >> 5;
 
-		diffX = (v2->vx - player[0].pos[0]) >> 5;
-		diffZ = (v2->vz - player[0].pos[2]) >> 5;
+		diffX = (v2->vx - px) >> 5;
+		diffZ = (v2->vz - pz) >> 5;
 
 		len = (dX * dX + dZ * dZ);
 		l2 = (diffX * diffX + diffZ * diffZ);
@@ -734,15 +731,15 @@ void TunnelSkyFade(void)
 	}
 	else if(v2)
 	{
-		diffX = (v2->vx - player[0].pos[0]) >> 5;
-		diffZ = (v2->vz - player[0].pos[2]) >> 5;
+		diffX = (v2->vx - px) >> 5;
+		diffZ = (v2->vz - pz) >> 5;
 
 		len = (diffX * diffX + diffZ * diffZ);
 	}
 	else if(v1)
 	{
-		diffX = (v1->vx - player[0].pos[0]) >> 5;
-		diffZ = (v1->vz - player[0].pos[2]) >> 5;
+		diffX = (v1->vx - px) >> 5;
+		diffZ = (v1->vz - pz) >> 5;
 
 		len = (diffX * diffX + diffZ * diffZ);
 	}
@@ -762,7 +759,7 @@ void TunnelSkyFade(void)
 }
 
 // [D] [T]
-void calc_sky_brightness(void)
+void calc_sky_brightness(RGB16* skycolor)
 {
 	int dawn;
 	dawn = DawnCount >> 5;
@@ -771,32 +768,32 @@ void calc_sky_brightness(void)
 	{
 		if (gTimeOfDay == 0)
 		{
-			skycolor.r = dawn + 41;
-			skycolor.b = dawn + 28;
+			skycolor->r = dawn + 41;
+			skycolor->b = dawn + 28;
 		}
 		else if (gTimeOfDay == 2)
 		{
-			skycolor.r = 143 - dawn;
-			skycolor.b = 128 - dawn;
+			skycolor->r = 143 - dawn;
+			skycolor->b = 128 - dawn;
 		}
 
-		if (skycolor.r < 26)
-			skycolor.r = 26;
-		else if (skycolor.r > 128)
-			skycolor.r = 128;
+		if (skycolor->r < 26)
+			skycolor->r = 26;
+		else if (skycolor->r > 128)
+			skycolor->r = 128;
 
-		if (skycolor.b < 26)
-			skycolor.b = 26;
-		else if (skycolor.b > 128)
-			skycolor.b = 128;
+		if (skycolor->b < 26)
+			skycolor->b = 26;
+		else if (skycolor->b > 128)
+			skycolor->b = 128;
 
-		skycolor.g = skycolor.b;
+		skycolor->g = skycolor->b;
 	}
 	else
 	{
-		skycolor.b = 128;
-		skycolor.g = 128;
-		skycolor.r = 128;
+		skycolor->b = 128;
+		skycolor->g = 128;
+		skycolor->r = 128;
 	}
 	
 	if (gTunnelNum == -1 || 
@@ -808,20 +805,21 @@ void calc_sky_brightness(void)
 
 	TunnelSkyFade();
 
-	if (skycolor.r > skyFade)
-		skycolor.r = skyFade;
+	if (skycolor->r > skyFade)
+		skycolor->r = skyFade;
 
-	if (skycolor.g > skyFade)
-		skycolor.g = skyFade;
+	if (skycolor->g > skyFade)
+		skycolor->g = skyFade;
 
-	if (skycolor.b > skyFade)
-		skycolor.b = skyFade;
+	if (skycolor->b > skyFade)
+		skycolor->b = skyFade;
 }
 
 #ifdef USE_PGXP
 DVECTORF scratchPad_skyVertices[35];	// 1f800044
 #else
 #define scratchPad_skyVertices ((DVECTOR*)getScratchAddr(0x11))	// 1f800044
+static_assert(0x11 + sizeof(DVECTOR) * 35 < 1024 - sizeof(_pct), "scratchpad overflow");
 #endif
 
 // [D] [T]
@@ -875,7 +873,7 @@ void PlotSkyPoly(POLYFT4* polys, int skytexnum, unsigned char r, unsigned char g
 }
 
 // [D] [T]
-void PlotHorizonMDL(MODEL* model, int horizontaboffset)
+void PlotHorizonMDL(MODEL* model, int horizontaboffset, RGB16* skycolor)
 {
 	SVECTOR* verts;
 
@@ -929,9 +927,9 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 		polys = (unsigned char*)model->poly_block;
 		polySize = PolySizes[*polys];
 
-		red = skycolor.r;
-		green = skycolor.g;
-		blue = skycolor.b;
+		red = skycolor->r;
+		green = skycolor->g;
+		blue = skycolor->b;
 		
 		// draw sky
 		count = model->num_polys;
@@ -957,33 +955,34 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset)
 // [D] [T]
 void DrawSkyDome(void)
 {
+	RGB16 skycolor = { 128,128,128 };
 	VECTOR skyOfs = dummy;
-	skyOfs.vy = sky_y_offset[GameLevel];
 
+	calc_sky_brightness(&skycolor);
+
+	skyOfs.vy = sky_y_offset[GameLevel];
 	gte_SetRotMatrix(&inv_camera_matrix);
 	gte_SetTransVector(&skyOfs);
-	
-	calc_sky_brightness();
 
 #ifdef PSX
 	// FIXME: use frustrum angle instead?
 	if (((camera_angle.vy - 1450U) & 4095) > 2250)
-		PlotHorizonMDL(modelpointers[0], HorizonLookup[GameLevel][0]);
+		PlotHorizonMDL(modelpointers[0], HorizonLookup[GameLevel][0], &skycolor);
 
 	if (((camera_angle.vy - 651U) & 4095) < 1799)
-		PlotHorizonMDL(modelpointers[2], HorizonLookup[GameLevel][1]);
+		PlotHorizonMDL(modelpointers[2], HorizonLookup[GameLevel][1], &skycolor);
 
 	if (((camera_angle.vy - 1701U) & 4095) < 1749)
-		PlotHorizonMDL(modelpointers[3], HorizonLookup[GameLevel][2]);
+		PlotHorizonMDL(modelpointers[3], HorizonLookup[GameLevel][2], &skycolor);
 
 	if (((camera_angle.vy - 400U) & 4095) > 2300)
-		PlotHorizonMDL(modelpointers[1], HorizonLookup[GameLevel][3]);
+		PlotHorizonMDL(modelpointers[1], HorizonLookup[GameLevel][3], &skycolor);
 #else
 	// draw full sky - no need in frustrum culling
-	PlotHorizonMDL(modelpointers[0], HorizonLookup[GameLevel][0]);
-	PlotHorizonMDL(modelpointers[2], HorizonLookup[GameLevel][1]);
-	PlotHorizonMDL(modelpointers[3], HorizonLookup[GameLevel][2]);
-	PlotHorizonMDL(modelpointers[1], HorizonLookup[GameLevel][3]);
+	PlotHorizonMDL(modelpointers[0], HorizonLookup[GameLevel][0], &skycolor);
+	PlotHorizonMDL(modelpointers[2], HorizonLookup[GameLevel][1], &skycolor);
+	PlotHorizonMDL(modelpointers[3], HorizonLookup[GameLevel][2], &skycolor);
+	PlotHorizonMDL(modelpointers[1], HorizonLookup[GameLevel][3], &skycolor);
 #endif
 
 }
