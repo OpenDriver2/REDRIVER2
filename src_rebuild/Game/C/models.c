@@ -51,21 +51,21 @@ int CleanSpooledModelSlots()
 }
 
 // [A]
-void AdjustSpriteModelLighting(int modelIdx)
+void ProcessModel(int modelIdx)
 {
 	MODEL* model;
 
-	if (gTimeOfDay != 3) 
-	{
-		return;
-	}
-
 	model = modelpointers[modelIdx];
 
-	if (model->shape_flags & SHAPE_FLAG_SPRITE)
+	model->tri_verts = 0; // [A] this is used as additional flags for animated models and triangle processing
+
+	if (gTimeOfDay == 3)
 	{
-		if (modelIdx != 1223 && (!(model->flags2 & MODEL_FLAG_TREE) || modelIdx == 945 || modelIdx == 497))
-			litSprites[modelIdx >> 5] |= 1 << (modelIdx & 31);
+		if (model->shape_flags & SHAPE_FLAG_SPRITE)
+		{
+			if (modelIdx != 1223 && (!(model->flags2 & MODEL_FLAG_TREE) || modelIdx == 945 || modelIdx == 497))
+				litSprites[modelIdx >> 5] |= 1 << (modelIdx & 31);
+		}
 	}
 }
 
@@ -107,7 +107,7 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 			model = (MODEL*)mdsfile;
 			modelpointers[i] = model;
 
-			AdjustSpriteModelLighting(i);
+			ProcessModel(i);
 		}
 
 		mdsfile += size;

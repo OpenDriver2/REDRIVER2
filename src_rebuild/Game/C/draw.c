@@ -655,10 +655,10 @@ void ConvertPolygonTypes(MODEL* model, _pct* pc)
 	// pre-process vertices
 	while (i-- > 0)
 	{
-		ptype = polys->id & 0x1f;
+		ptype = polys->id & 31;
 
 		// convert poly types
-		if ((ptype & 0x1) == 0 && ptype != 8) // is FT3 triangle?
+		if ((ptype & 1) == 0 && ptype != 8) // is FT3 triangle?
 		{
 			temp = polys->uv2.v;
 			polys->uv3.u = polys->uv2.u;
