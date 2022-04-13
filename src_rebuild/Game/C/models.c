@@ -40,6 +40,7 @@ int CleanSpooledModelSlots()
 			{
 				modelpointers[i] = &dummyModel;
 				pLodModels[i] = &dummyModel;
+				litSprites[i >> 5] &= ~(1 << (i & 31));
 
 				num_freed++;
 			}
@@ -53,10 +54,17 @@ int CleanSpooledModelSlots()
 void AdjustSpriteModelLighting(int modelIdx)
 {
 	MODEL* model;
+
+	if (gTimeOfDay != 3) 
+	{
+		return;
+	}
+
 	model = modelpointers[modelIdx];
+
 	if (model->shape_flags & SHAPE_FLAG_SPRITE)
 	{
-		if (gTimeOfDay == 3 && modelIdx != 1223 && (!(model->flags2 & MODEL_FLAG_TREE) || modelIdx == 945 || modelIdx == 497))
+		if (modelIdx != 1223 && (!(model->flags2 & MODEL_FLAG_TREE) || modelIdx == 945 || modelIdx == 497))
 			litSprites[modelIdx >> 5] |= 1 << (modelIdx & 31);
 	}
 }
@@ -77,6 +85,7 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 
 	// [A] usage bits
 	ClearMem((char*)staticModelSlotBitfield, sizeof(staticModelSlotBitfield));
+	ClearMem((char*)litSprites, sizeof(litSprites));
 
 	// assign model pointers
 	for (i = 0; i < MAX_MODEL_SLOTS; i++) // [A] bug fix. Init with dummyModel
