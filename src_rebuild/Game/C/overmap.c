@@ -425,14 +425,14 @@ void LoadMapTile(int tpage, int x, int y)
 	temp = x * 32;
 
 	if (idx > -1 && idx < overlaidmaps[GameLevel].toptile &&
-		temp > -1 && (temp < overlaidmaps[GameLevel].width))
+		temp > -1 && temp < overlaidmaps[GameLevel].width)
 	{
 		UnpackRNC(MapBitMaps + *((ushort*)MapBitMaps + idx), MapBuffer);
 	}
 	else
 	{
 		for (count = 0; count < 512; count++)
-			MapBuffer[count++] = overlaidmaps[GameLevel].dummy;
+			MapBuffer[count] = overlaidmaps[GameLevel].dummy;
 	}
 
 #ifdef PSX
