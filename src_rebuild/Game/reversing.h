@@ -14,6 +14,8 @@
 #define M_INT_4(a,b,c,d) (((a) << 24) | ((b) << 16) | ((c) << 8) | (d) )
 #define M_INT_4R(a,b,c,d) M_INT_4(d, c, b, a)
 
+#define M_BIT(x) (1 << (x))
+
 //---------------------------------------
 
 #if !defined( __TYPEINFOGEN__ ) && !defined( _lint ) && defined(_WIN32)	// pcLint has problems with assert_offsetof()

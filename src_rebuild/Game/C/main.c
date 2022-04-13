@@ -850,7 +850,7 @@ void StepSim(void)
 	int car;
 	int timeOfDay;
 
-	if (gTimeOfDay == 0 || gTimeOfDay == 2)
+	if (M_BIT(gTimeOfDay) & (M_BIT(0) | M_BIT(2)))
 	{
 		DawnCount++;
 	}

@@ -503,7 +503,7 @@ void DrawLensFlare(void)
 
 	source = sun_source;
 
-	if (gWeather - 1U <= 1 || gTimeOfDay == 0 || gTimeOfDay == 2)
+	if (gWeather - 1U <= 1 || (M_BIT(gTimeOfDay) & (M_BIT(0) | M_BIT(2))))
 		return;
 	
 	if (gTimeOfDay == 3)
@@ -764,7 +764,7 @@ void calc_sky_brightness(RGB16* skycolor)
 	int dawn;
 	dawn = DawnCount >> 5;
 
-	if(gTimeOfDay == 0 || gTimeOfDay == 2)
+	if(M_BIT(gTimeOfDay) & (M_BIT(0) | M_BIT(2)))
 	{
 		if (gTimeOfDay == 0)
 		{

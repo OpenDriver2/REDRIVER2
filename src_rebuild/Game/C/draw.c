@@ -187,7 +187,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 
 	lightLevel = (lightdd >> 18) + 32 & 255;
 
-	if (gWeather > 0 && gTimeOfDay == 1 || gTimeOfDay == 0 || gTimeOfDay == 2)
+	if (gWeather > 0 && gTimeOfDay == 1 || (M_BIT(gTimeOfDay) & (M_BIT(0) | M_BIT(2))))
 	{
 		lightLevel = (lightLevel * 2 * NightAmbient) >> 8;
 	}
@@ -320,7 +320,7 @@ void SetupPlaneColours(u_int ambient)
 {
 	u_int r, g, b;
 
-	if (gWeather == 0 && gTimeOfDay != 0 && gTimeOfDay != 2)
+	if (gWeather == 0 && (M_BIT(gTimeOfDay) & (M_BIT(0) | M_BIT(2))) == 0)
 	{
 		if (gTimeOfDay == 1)
 		{
@@ -508,7 +508,9 @@ void DrawAllTheCars(int view)
 			else
 				dist = dx + dz / 2;
 
+#ifdef PSX // do not account distance on PC
 			if (dist < 16000)
+#endif
 			{
 				car_distance[num_cars_to_draw] = dx + dz;
 				cars_to_draw[num_cars_to_draw] = cp;

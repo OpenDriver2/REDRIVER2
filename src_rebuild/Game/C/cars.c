@@ -505,7 +505,7 @@ void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 	if ((orY + orW > 200) || (cp->lowDetail != (detail | lightning)))
 		doLight = 1;
 
-	if ((gTimeOfDay == 0 || gTimeOfDay == 2) && (cp->id & 15) == (CameraCnt & 15))
+	if ((M_BIT(gTimeOfDay) & (M_BIT(0) | M_BIT(2))) && (cp->id & 15) == (CameraCnt & 15))
 		doLight = 1;
 
 	if (doLight)

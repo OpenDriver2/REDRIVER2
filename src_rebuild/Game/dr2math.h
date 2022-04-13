@@ -39,8 +39,10 @@ extern short rcossin_tbl[8192];
 #define isin(a)			(rcossin_tbl[( ( a ) & 4095) * 2])
 #define icos(a)			(rcossin_tbl[((( a )+1024) & 4095) * 2])
 
-#define DIFF_ANGLES( A, B ) \
-	(((((B) - (A)) + 2048) & 4095) - 2048)
+#define DIFF_ANGLES_R( A, B, RANGE ) \
+	(((((B) - (A)) + (RANGE>>1)) & RANGE-1) - (RANGE>>1))
+
+#define DIFF_ANGLES( A, B ) DIFF_ANGLES_R(A, B, 4096)
 
 // Remap a value in the range [A,B] to [C,D].
 #define RemapVal( val, A, B, C, D) \
