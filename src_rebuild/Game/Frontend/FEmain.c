@@ -3645,7 +3645,8 @@ int BuildButtonsVertical(int count, int xStart, int yStart)
 
 #ifndef PSX
 #include "../utils/fs.h"
-char gFEReplayList[8][20];
+#define MAX_REPLAY_NAME_LENGTH 48
+char gFEReplayList[8][MAX_REPLAY_NAME_LENGTH];
 int gFEReplayCount = 0;
 #endif
 
@@ -3664,9 +3665,9 @@ int UserReplaySelectScreen(int bSetup)
 
 		while (filename)
 		{
-			strncpy(gFEReplayList[gFEReplayCount], filename, 16);
+			strncpy(gFEReplayList[gFEReplayCount], filename, MAX_REPLAY_NAME_LENGTH);
 			tmp = strchr(filename, '.');
-			gFEReplayList[gFEReplayCount][19] = 0;
+			gFEReplayList[gFEReplayCount][MAX_REPLAY_NAME_LENGTH-1] = 0;
 
 			gFEReplayCount++;
 			filename = FS_FindNext(fd);
@@ -3690,7 +3691,7 @@ int UserReplaySelectScreen(int bSetup)
 			for (int i = 0; i < numButtons; i++)
 			{
 				PSXBUTTON& btn = pCurrScreen->buttons[i];
-				strcpy(btn.Name, gFEReplayList[i]);
+				strncpy(btn.Name, gFEReplayList[i], sizeof(btn.Name));
 
 				tmp = strchr(btn.Name, '.');
 
