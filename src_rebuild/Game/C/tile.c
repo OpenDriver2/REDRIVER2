@@ -197,6 +197,19 @@ void Tile1x1(MODEL *model)
 	plotContext.current->primptr = plotContext.primptr;
 }
 
+// performs division by 3 or by 5 depending on t
+inline int fst_div_lut_3_5(int x, int t)
+{
+	static int mul[] = { 171, 205 };
+	return x * mul[t] >> (9 + t);
+}
+
+inline int fst_div_3(int x)
+{
+	return x * 171 >> 9;
+}
+
+
 // [D] [T]
 void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 {
@@ -208,13 +221,20 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 
 	if (gTimeOfDay > -1) 
 	{
+		int combo = combointensity;
 		if (gTimeOfDay < 3)
 		{
-			plotContext.colour = combointensity & 0xffffffU | 0x2C000000;
+			plotContext.colour = combo & 0xffffffU | 0x2C000000;
 		}
 		else if (gTimeOfDay == 3) 
 		{
-			plotContext.colour = ((combointensity >> 16 & 255) / 3) << 16 | ((combointensity >> 8 & 255) / 3) << 8 | (combointensity & 255) / 3 | 0x2C000000U;
+#ifdef DYNAMIC_LIGHTING
+			int t;
+			t = GameLevel == 2 && gEnableDlights == 1;
+			plotContext.colour = fst_div_lut_3_5(combo >> 16 & 255, t) << 16 | fst_div_lut_3_5(combo >> 8 & 255, t) << 8 | fst_div_lut_3_5(combo & 255, t) | 0x2C000000U;
+#else
+			plotContext.colour = fst_div_3(combo >> 16 & 255, 0) << 16 | fst_div_3(combo >> 8 & 255, 0) << 8 | fst_div_3(combo & 255, 0) | 0x2C000000U;
+#endif
 		}
 	}
 
@@ -223,7 +243,7 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 	if (gWeather - 1U < 2)
 	{
 		u_int col;
-		col = plotContext.colour >> 2 & 0x3f;
+		col = plotContext.colour >> 2 & 63;
 		plotContext.colour = col * 0x30000 | col * 0x300 | col * 3 | 0x2C000000;
 	}
 
