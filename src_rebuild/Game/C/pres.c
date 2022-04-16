@@ -3,6 +3,299 @@
 #include "system.h"
 #include "texture.h"
 
+extern int gShowMap;
+
+#ifndef PSX
+
+#define STB_TRUETYPE_IMPLEMENTATION
+#include "../utils/stb_truetype.h"
+#include "../utils/targa.h"
+
+#include "PsyX/PsyX_render.h"
+#define HIRES_FONTS
+#define HIRES_FONT_SIZE_W 768
+#define HIRES_FONT_SIZE_H 512
+
+TextureID gHiresFontTexture = 0;
+TextureID gHiresDigitsTexture = 0;
+
+stbtt_bakedchar gSTBCharData[224];	// ASCII 32..126 is 95 glyphs
+
+void InitHiresFonts()
+{
+	char namebuffer[64];
+	u_char* data;
+
+	// init digits
+	{
+		int width, height, bpp;
+
+		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\DIGITS.TGA");
+		FS_FixPathSlashes(namebuffer);
+
+		if (LoadTGAImage(namebuffer, &data, width, height, bpp))
+		{
+			if (bpp == 32)
+			{
+				gHiresDigitsTexture = GR_CreateRGBATexture(width, height, data);
+			}
+			free(data);
+		}
+	}
+
+	// init font2
+	{
+		int x, y;
+		int size;
+		FILE* fp;
+		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\ariblk.ttf");
+
+		fp = fopen(namebuffer, "rb");
+		if (fp) 
+		{
+			// read whole file
+			fseek(fp, 0, SEEK_END);
+			size = ftell(fp);
+			fseek(fp, 0, SEEK_SET);
+			data = (u_char*)malloc(size);
+			fread(data, 1, size, fp);
+			fclose(fp);
+
+			// gen font
+			u_char* tmpBitmap = (u_char*)malloc(HIRES_FONT_SIZE_W * HIRES_FONT_SIZE_H);
+			u_int* bitmapRGBA = (u_int*)malloc(HIRES_FONT_SIZE_W * HIRES_FONT_SIZE_H * 4);
+			stbtt_BakeFontBitmap(data, 0, 90.0, tmpBitmap, HIRES_FONT_SIZE_W, HIRES_FONT_SIZE_H, 32, 224, gSTBCharData);
+
+			for (x = 0; x < HIRES_FONT_SIZE_W; ++x)
+			{
+				for (y = 0; y < HIRES_FONT_SIZE_H; ++y)
+				{
+					bitmapRGBA[x + y * HIRES_FONT_SIZE_W] = tmpBitmap[x + y * HIRES_FONT_SIZE_W] << 24 | 0xffffff;
+				}
+			}
+
+			gHiresFontTexture = GR_CreateRGBATexture(HIRES_FONT_SIZE_W, HIRES_FONT_SIZE_H, (u_char*)bitmapRGBA);
+			free(bitmapRGBA);
+			free(tmpBitmap);
+			free(data);
+		}
+	}
+}
+
+void SetHiresFontTexture(int enabled)
+{
+	if (gHiresFontTexture == 0)
+	{
+		return;
+	}
+
+	DR_PSYX_TEX* tex = (DR_PSYX_TEX*)current->primptr;
+	if (enabled)
+		SetPsyXTexture(tex, gHiresFontTexture, 255, 255);
+	else
+		SetPsyXTexture(tex, 0, 0, 0);
+
+	if (gShowMap == 0) 
+	{
+		addPrim(current->ot, tex);
+		current->primptr += sizeof(DR_PSYX_TEX);
+	}
+	else
+	{
+		DrawPrim(tex);
+	}
+}
+
+void SetHiresDigitsTexture(int enabled)
+{
+	if (gHiresDigitsTexture == 0)
+	{
+		return;
+	}
+
+	DR_PSYX_TEX* tex = (DR_PSYX_TEX*)current->primptr;
+	if (enabled)
+		SetPsyXTexture(tex, gHiresDigitsTexture, 96, 59);
+	else
+		SetPsyXTexture(tex, 0, 0, 0);
+
+	addPrim(current->ot, tex);
+	current->primptr += sizeof(DR_PSYX_TEX);
+}
+
+void GetHiresBakedQuad(int char_index, float* xpos, float* ypos, stbtt_aligned_quad* q)
+{
+	float bias = 0.0f;
+	float ipw = 1.0f / HIRES_FONT_SIZE_W;
+	float iph = 1.0f / HIRES_FONT_SIZE_H;
+	const stbtt_bakedchar* b = gSTBCharData + char_index;
+
+	float scale = 0.2f;
+
+	float pos_x = (*xpos + b->xoff * scale);
+	float pos_y = (*ypos + b->yoff * scale);
+
+	pos_y += 13;
+
+	q->x0 = pos_x + bias;
+	q->y0 = pos_y + bias;
+	q->x1 = (b->x1 - b->x0) * scale;
+	q->y1 = (b->y1 - b->y0) * scale;
+
+	q->s0 = b->x0 * 255 * ipw;
+	q->t0 = b->y0 * 255 * iph;
+	q->s1 = (b->x1 - b->x0) * 255 * ipw;
+	q->t1 = (b->y1 - b->y0) * 255 * iph;
+
+	*xpos += b->xadvance * scale;
+}
+
+int StrighWidthHires(char* string)
+{
+	u_char chr;
+	int width;
+	width = 0;
+
+	while ((chr = *string++) != 0)
+	{
+		if (chr >= 128 && chr <= 138)
+		{
+			width += 24;
+			continue;
+		}
+
+		chr = (chr >= 32 && chr < 128 || chr > 138) ? chr : '?';
+
+		float fx, fy;
+		fx = 0;
+		fy = 0;
+		stbtt_aligned_quad q;
+		GetHiresBakedQuad(chr - 32, &fx, &fy, &q);
+		width += fx;
+	}
+	return width;
+}
+
+extern CVECTOR gFontColour;
+extern short fontclutid;
+extern short fonttpage;
+
+int PrintStringHires(char* string, int x, int y)
+{
+	u_char chr;
+	int width;
+	u_int index;
+	int showMap;
+
+	showMap = gShowMap;
+	width = x;
+
+	SetHiresFontTexture(showMap);
+
+	while ((chr = *string++) != 0)
+	{
+		if (chr >= 128 && chr <= 138)
+		{
+			if(showMap)
+				SetHiresFontTexture(0);
+
+			DrawButton(chr, current->primptr, width, y);
+
+			if (showMap)
+				SetHiresFontTexture(1);
+
+			width += 24;
+			x += 24;
+			continue;
+		}
+
+		chr = (chr >= 32 && chr < 128 || chr > 138) ? chr : '?';
+
+		POLY_FT4* fontFT4;
+		POLY_FT4* shadowFT4;
+		float fx, fy;
+		fx = x;
+		fy = y;
+		stbtt_aligned_quad q;
+		GetHiresBakedQuad(chr - 32, &fx, &fy, &q);
+
+		fontFT4 = (POLY_FT4*)current->primptr;
+
+		setPolyFT4(fontFT4);
+		setSemiTrans(fontFT4, 1);
+
+		setUVWH(fontFT4, q.s0, q.t0, q.s1, q.t1);
+
+		fontFT4->clut = fontclutid;
+		fontFT4->tpage = fonttpage;
+
+		if (showMap == 0)
+		{
+			setRGB0(fontFT4, gFontColour.r, gFontColour.g, gFontColour.b);
+			setXYWH(fontFT4, q.x0, q.y0, q.x1, q.y1);
+
+			addPrim(current->ot, fontFT4);
+			current->primptr += sizeof(POLY_FT4);
+
+			shadowFT4 = (POLY_FT4*)current->primptr;
+
+			// add shadow poly
+			memcpy(shadowFT4, fontFT4, sizeof(POLY_FT4));
+			setRGB0(shadowFT4, 0, 0, 0);
+			setXYWH(shadowFT4, q.x0 + 0.5f, q.y0 + 0.5f, q.x1, q.y1);
+
+			addPrim(current->ot, shadowFT4);
+			current->primptr += sizeof(POLY_FT4);
+		}
+		else
+		{
+			setRGB0(fontFT4, 0, 0, 0);
+			setXYWH(fontFT4, q.x0 + 0.5f, q.y0 + 0.5f, q.x1, q.y1);
+			DrawPrim(fontFT4);
+
+			setRGB0(fontFT4, gFontColour.r, gFontColour.g, gFontColour.b);
+			setXYWH(fontFT4, q.x0, q.y0, q.x1, q.y1);
+			DrawPrim(fontFT4);
+		}
+
+		width += fx - x;
+		x = fx;
+	}
+
+	SetHiresFontTexture(showMap == 0);
+
+	return width;
+}
+
+void PrintStringBoxedHires(char* string, int ix, int iy)
+{
+	char word[32];
+	int x, y;
+	int wordcount;
+
+	wordcount = 1;
+
+	x = ix;
+	y = iy;
+
+	while (*string)
+	{
+		string = GetNextWord(string, word);
+
+		if (x + StringWidth(word) > 308 && (wordcount != 1 || *string != 0))
+		{
+			x = ix;
+			y += 14;
+		}
+
+		x = PrintStringHires(word, x, y);
+
+		wordcount++;
+	}
+}
+
+#endif
+
 extern TEXTURE_DETAILS digit_texture;
 
 struct FONT_DIGIT
@@ -61,6 +354,13 @@ void SetTextColour(u_char Red, u_char Green, u_char Blue)
 // [D] [T]
 int StringWidth(char *pString)
 {
+#ifdef HIRES_FONTS
+	if (gHiresFontTexture)
+	{
+		return StrighWidthHires(pString);
+	}
+#endif
+
 	u_char let;
 	int w;
 
@@ -169,6 +469,10 @@ void LoadFont(char *buffer)
 	LoadImage(&fontclutpos, (u_long *)clut);	// upload clut
 	LoadImage(&dest, (u_long *)(file + 32));	// upload font image
 
+#ifdef HIRES_FONTS
+	InitHiresFonts();
+#endif
+
 	DrawSync(0);
 }
 
@@ -217,9 +521,6 @@ void SetCLUT16Flags(ushort clutID, ushort mask, char transparent)
 	LoadClut2((u_long*)buffer, x,y);
 }
 
-// MAP.C ????
-extern int gShowMap;
-
 // [D] [T]
 int PrintString(char *string, int x, int y)
 {
@@ -233,10 +534,19 @@ int PrintString(char *string, int x, int y)
 	if (current == NULL)
 		return -1;
 
+#ifdef HIRES_FONTS
+	if (gHiresFontTexture)
+	{
+		return PrintStringHires(string, x, y);
+	}
+#endif
+
 	font = (SPRT *)current->primptr;
 	
 	if (showMap != 0)
-		font = (SPRT *)SetFontTPage(font);
+	{
+		font = (SPRT*)SetFontTPage(font);
+	}
 
 	width = x;
 
@@ -247,7 +557,7 @@ int PrintString(char *string, int x, int y)
 			width += 4;
 			continue;
 		}
-		
+
 		if (chr < 32 || chr > 138 || chr < 128) 
 		{
 			if (AsciiTable[chr] == -1)
@@ -298,7 +608,9 @@ int PrintString(char *string, int x, int y)
 	}
 
 	if (showMap == 0)
-		current->primptr = (char *)SetFontTPage(font);
+	{
+		current->primptr = (char*)SetFontTPage(font);
+	}
 	else
 		DrawSync(0);
 
@@ -315,6 +627,10 @@ short PrintDigit(int x, int y, char *string)
 	SPRT *font;
 	int fixedWidth;
 	char vOff, h;
+
+#ifdef HIRES_FONTS
+	SetHiresDigitsTexture(0);
+#endif
 
 	width = x;
 	font = (SPRT *)current->primptr;
@@ -356,8 +672,18 @@ short PrintDigit(int x, int y, char *string)
 		font->x0 = width + (fixedWidth - pDigit->width) / 2;
 		font->y0 = y;
 		
-		font->u0 = digit_texture.coords.u0 + pDigit->xOffset;
-		font->v0 = vOff + digit_texture.coords.v0;
+#ifdef HIRES_FONTS
+		if (gHiresDigitsTexture) 
+		{
+			font->u0 = pDigit->xOffset;
+			font->v0 = vOff;
+		}
+		else
+#endif
+		{
+			font->u0 = digit_texture.coords.u0 + pDigit->xOffset;
+			font->v0 = digit_texture.coords.v0 + vOff;
+		}
 
 		font->w = pDigit->width;
 		font->h = h;
@@ -388,6 +714,10 @@ short PrintDigit(int x, int y, char *string)
 	addPrim(current->ot, null);
 	current->primptr += sizeof(POLY_FT3);
 
+#ifdef HIRES_FONTS
+	SetHiresDigitsTexture(1);
+#endif
+
 	return width;
 }
 
@@ -407,6 +737,14 @@ void PrintStringBoxed(char *string, int ix, int iy)
 	int y;
 	int index;
 	int wordcount;
+
+#ifdef HIRES_FONTS
+	if (gHiresFontTexture)
+	{
+		PrintStringBoxedHires(string, ix, iy);
+		return;
+	}
+#endif
 
 	font = (SPRT *)current->primptr;
 
@@ -508,10 +846,16 @@ int PrintScaledString(int y, char *string, int scale)
 	int height;
 	u_char vOff;
 
+#ifdef HIRES_FONTS
+	SetHiresDigitsTexture(0);
+#endif
+
 	font = (POLY_FT4 *)current->primptr;
 
 	if (gShowMap != 0)
-		font = (POLY_FT4 *)SetFontTPage(font);
+	{
+		font = (POLY_FT4*)SetFontTPage(font);
+	}
 
 	width = StringWidth(string) * scale;
 	x = (320 - (width / 16)) / 2;
@@ -548,6 +892,7 @@ int PrintScaledString(int y, char *string, int scale)
 			x1 = x + width;
 
 			setPolyFT4(font);
+			setSemiTrans(font, 1);
 			setRGB0(font, gFontColour.r, gFontColour.g, gFontColour.b);
 
 			font->x0 = x;		// [A] no suitable macro in libgpu
@@ -559,7 +904,16 @@ int PrintScaledString(int y, char *string, int scale)
 			font->x3 = x1;
 			font->y3 = y1;
 
-			setUVWH(font, digit_texture.coords.u0 + pDigit->xOffset, digit_texture.coords.v0 + vOff, pDigit->width, height);
+#ifdef HIRES_FONTS
+			if (gHiresDigitsTexture)
+			{
+				setUVWH(font, pDigit->xOffset, vOff, pDigit->width, height);
+			}
+			else
+#endif
+			{
+				setUVWH(font, digit_texture.coords.u0 + pDigit->xOffset, digit_texture.coords.v0 + vOff, pDigit->width, height);
+			}
 
 			font->clut = digit_texture.clutid;
 			font->tpage = digit_texture.tpageid;
@@ -573,6 +927,10 @@ int PrintScaledString(int y, char *string, int scale)
 	}
 
 	current->primptr = (char*)font;
+
+#ifdef HIRES_FONTS
+	SetHiresDigitsTexture(1);
+#endif
 
 	return x;
 }
@@ -605,7 +963,7 @@ void* DrawButton(u_char button, void *prim, int x, int y)
 	SPRT* sprt;
 	POLY_FT3* null;
 
-	btn = &button_textures[button - 0x80];
+	btn = &button_textures[button - 128];
 	sprt = (SPRT*)prim;
 	 
 	setSprt(sprt);
