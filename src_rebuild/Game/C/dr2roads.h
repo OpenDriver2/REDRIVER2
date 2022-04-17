@@ -75,7 +75,7 @@ extern void ProcessJunctionsDriver2Lump(char *lump_file, int lump_size, int fix)
 
 extern int MapHeight(VECTOR *pos); // 0x000137CC
 
-extern int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, sdPlane **plane); // 0x00012EF4
+extern void FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, sdPlane **plane); // 0x00012EF4
 
 extern int GetSurfaceIndex(VECTOR *pos); // 0x0001380C
 extern int RoadInCell(VECTOR *pos); // 0x0001322C

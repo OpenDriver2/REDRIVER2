@@ -26,11 +26,7 @@ struct plotCarGlobals
 	OTTYPE* ot;
 	u_int intensity;
 	u_short* pciv_clut;
-	u_int ShineyTPageASL16;
-	u_int ShineyClutASL16;
 	u_char* damageLevel;
-	u_char* shineyTable;
-	int ghost;
 };
 
 
@@ -41,10 +37,24 @@ struct plotCarGlobals
 #endif
 
 MATRIX light_matrix =
-{ { { 4096, 0, 0 }, { 0, 0, 0 }, { 0, 0, 0 } }, { 0, 0, 0 } };
+{ 
+	{ 
+		{ 4096, 0, 0 }, 
+		{ 0, 0, 0 }, 
+		{ 0, 0, 0 }
+	}, 
+	{ 0, 0, 0 } 
+};
 
 MATRIX colour_matrix =
-{ { { 4032, 0, 0 }, { 3936, 0, 0 }, { 3520, 0, 0 } }, { 0, 0, 0 } };
+{ 
+	{ 
+		{ 4032, 0, 0 }, 
+		{ 3936, 0, 0 }, 
+		{ 3520, 0, 0 }
+	}, 
+	{ 0, 0, 0 } 
+};
 
 // PHYSICS
 CAR_DATA car_data[MAX_CARS + 2];	// all cars + Tanner cbox + Camera cbox
@@ -269,6 +279,95 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 	pg->primptr = (unsigned char*)prim;
 }
 
+
+#ifdef DYNAMIC_LIGHTING
+void plotCarPolyGT3Lit(int numTris, CAR_POLY* src, SVECTOR* vlist, SVECTOR* nlist, plotCarGlobals* pg, int palette)
+{
+	int Z;
+	int otz;
+	SVECTOR* v2;
+	SVECTOR* v1;
+	SVECTOR* v0;
+	u_int indices;
+	POLY_GT3* prim;
+	u_int r0, r1, r2;
+	int ofse;
+
+	prim = (POLY_GT3*)pg->primptr;
+
+	int GT3rgb = pg->intensity | 0x34000000;
+	gte_ldrgb(&GT3rgb);
+
+	while (numTris > 0)
+	{
+		indices = src->vindices;
+
+		v0 = vlist + (indices & 0xff);
+		v1 = vlist + (indices >> 8 & 0xff);
+		v2 = vlist + (indices >> 16 & 0xff);
+
+		gte_ldv3(v0, v1, v2);
+
+		gte_rtpt();
+		gte_nclip();
+
+		gte_stopz(&Z);
+
+		gte_avsz3();
+
+		gte_stotz(&otz);
+
+		if (Z > -1 && otz > 0)
+		{
+			indices = src->nindices;
+
+			r0 = (u_int)(ushort)nlist[indices & 0xff].pad;
+			r1 = (u_int)(ushort)nlist[indices >> 8 & 0xff].pad;
+			r2 = (u_int)(ushort)nlist[indices >> 16 & 0xff].pad;
+
+			*(u_int*)&prim->r0 = (r0 & 0xff) << 0x10 | r0;
+			*(u_int*)&prim->r1 = (r1 & 0xff) << 0x10 | r1;
+			*(u_int*)&prim->r2 = (r2 & 0xff) << 0x10 | r2;
+
+			ofse = pg->damageLevel[src->originalindex];
+
+			*(u_int*)&prim->u0 = (src->clut_uv0 & 0xffffU | pg->pciv_clut[palette + (src->clut_uv0 >> 0x10)] << 0x10) + ofse;
+			*(u_int*)&prim->u1 = src->tpage_uv1 + ofse;
+			*(u_int*)&prim->u2 = src->uv3_uv2 + ofse;
+
+			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
+
+			SVECTOR tmpPos;
+			gte_ldv0(v0);
+			gte_rtps();
+			gte_stsv(&tmpPos);
+			GetDLightLevel(&tmpPos, (u_int*)&prim->r0);
+
+			gte_ldv0(v1);
+			gte_rtps();
+			gte_stsv(&tmpPos);
+			GetDLightLevel(&tmpPos, (u_int*)&prim->r1);
+
+			gte_ldv0(v2);
+			gte_rtps();
+			gte_stsv(&tmpPos);
+			GetDLightLevel(&tmpPos, (u_int*)&prim->r2);
+
+			setPolyGT3(prim);
+			addPrim(pg->ot + (otz >> 1), prim);
+
+			prim++;
+		}
+
+		src++;
+		numTris--;
+	}
+
+	pg->primptr = (unsigned char*)prim;
+}
+#endif // DYNAMIC_LIGHTING
+
+
 // [D] [T]
 void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *pg, int palette)
 {
@@ -298,11 +397,9 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 
 		gte_rtpt();
 		gte_nclip();
-
 		gte_stopz(&Z);
 
 		gte_avsz3();
-
 		gte_stotz(&otz);
 
 		if (Z > -1 && otz > 0)
@@ -344,7 +441,7 @@ void setupLightingMatrices(void)
 
 	if (gTimeOfDay == 3)
 	{
-		gte_SetBackColor(64, 64, 64);
+		gte_SetBackColor(48, 48, 48);
 	}
 	else
 	{
@@ -362,35 +459,31 @@ void restoreLightingMatrices(void)
 // [D] [T]
 void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 {
-	MATRIX& scratchPadMat = *(MATRIX*)((u_char*)getScratchAddr(0) + 0x344);
+#ifdef PSX
+	MATRIX& scratchPadMat = *(MATRIX*)((u_char*)getScratchAddr(0) + 0x100);
+#else
+	MATRIX scratchPadMat;
+#endif
 
 	int doLight;
-	int orW;
-	int orY;
+	int orW, orY;
 	MODEL* model;
-	int num_norms;
-	int count;
+	int num_norms, count;
 	SVECTOR* ppads;
 	SVECTOR* norms;
-	SVECTOR lightsourcevector;
-	SVECTOR colour;
-	CVECTOR c0;
-	CVECTOR c1;
-	CVECTOR c2;
+	SVECTOR colour, lightsourcevector;
+	CVECTOR c0, c1, c2;
 	u_int GT3rgb;
 
-	if (gTimeOfDay > -1)
+	if (gTimeOfDay == 3)
 	{
-		if (gTimeOfDay < 3)
-		{
-			lightsourcevector = day_vectors[GameLevel];
-			colour = day_colours[GameLevel];
-		}
-		else if (gTimeOfDay == 3)
-		{
-			lightsourcevector = night_vectors[GameLevel];
-			colour = night_colours[GameLevel];
-		}
+		lightsourcevector = night_vectors[GameLevel];
+		colour = night_colours[GameLevel];
+	}
+	else
+	{
+		lightsourcevector = day_vectors[GameLevel];
+		colour = day_colours[GameLevel];
 	}
 
 	InvertMatrix(&cp->hd.where, &scratchPadMat);
@@ -398,71 +491,58 @@ void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 
 	gte_ldv0(&lightsourcevector);
 	gte_rtv0();
-
 	gte_stsv(light_matrix.m[0]);
-
-	doLight = 0;
 
 	colour_matrix.m[0][0] = colour.vx;
 	colour_matrix.m[1][0] = colour.vy;
 	colour_matrix.m[2][0] = colour.vz;
 
-	if (gTimeOfDay != 3)
+	orY = ABS(cp->st.n.orientation[1] - cp->ap.qy);
+	orW = ABS(cp->st.n.orientation[3] - cp->ap.qw);
+
+	doLight = 0;
+
+	if ((orY + orW > 200) || (cp->lowDetail != (detail | lightning)))
+		doLight = 1;
+
+	if ((M_BIT(gTimeOfDay) & (M_BIT(0) | M_BIT(2))) && (cp->id & 15) == (CameraCnt & 15))
+		doLight = 1;
+
+	if (doLight)
 	{
-		orY = cp->st.n.orientation[1] - cp->ap.qy;
-
-		if (orY < 1)
-			orY = cp->ap.qy - cp->st.n.orientation[1];
-
-		orW = cp->st.n.orientation[3] - cp->ap.qw;
-
-		if (orW < 1)
-			orW = cp->ap.qw - cp->st.n.orientation[3];
-
-		if ((orY + orW > 200) || (cp->lowDetail != (detail | lightning)))
-			doLight = 1;
-
-		if ((gTimeOfDay == 0 || gTimeOfDay == 2) && (cp->id & 0xf) == (CameraCnt & 0xfU))
-			doLight = 1;
-
 		setupLightingMatrices();
 
-		if (doLight)
+		GT3rgb = combointensity & 0xffffffU | 0x34000000;
+		gte_ldrgb(&GT3rgb);
+
+		cp->ap.qy = cp->st.n.orientation[1];
+		cp->ap.qw = cp->st.n.orientation[3];
+		cp->lowDetail = detail | lightning;
+
+		if (detail == 0)
+			model = gCarLowModelPtr[cp->ap.model];
+		else
+			model = gCarCleanModelPtr[cp->ap.model];
+
+		num_norms = model->num_point_normals / 3;
+		norms = (SVECTOR*)model->point_normals;
+
+		ppads = gTempCarVertDump[cp->id];
+		count = num_norms;// +1;
+
+		while (count >= 0)
 		{
-			GT3rgb = combointensity & 0xffffffU | 0x34000000;
-			gte_ldrgb(&GT3rgb);
+			gte_ldv3(&norms[0], &norms[1], &norms[2]);
+			gte_ncct();
+			gte_strgb3(&c0, &c1, &c2);
 
-			cp->ap.qy = cp->st.n.orientation[1];
-			cp->ap.qw = cp->st.n.orientation[3];
-			cp->lowDetail = detail | lightning;
+			ppads[0].pad = *(short*)&c0;
+			ppads[1].pad = *(short*)&c1;
+			ppads[2].pad = *(short*)&c2;
 
-			if (detail == 0)
-				model = gCarLowModelPtr[cp->ap.model];
-			else
-				model = gCarCleanModelPtr[cp->ap.model];
-
-			num_norms = model->num_point_normals / 3;
-			norms = (SVECTOR*)model->point_normals;
-
-			ppads = gTempCarVertDump[cp->id];
-			count = num_norms;// +1;
-
-			while (count >= 0)
-			{
-				gte_ldv3(&norms[0], &norms[1], &norms[2]);
-
-				gte_ncct();
-
-				gte_strgb3(&c0, &c1, &c2);
-
-				ppads[0].pad = *(short*)&c0;
-				ppads[1].pad = *(short*)&c1;
-				ppads[2].pad = *(short*)&c2;
-
-				count--;
-				norms += 3;
-				ppads += 3;
-			}
+			count--;
+			norms += 3;
+			ppads += 3;
 		}
 
 		restoreLightingMatrices();
@@ -487,7 +567,7 @@ void DrawWheelObject(MODEL* model, SVECTOR* verts, int transparent, int wheelnum
 	poly = (POLY_FT4*)current->primptr;
 
 	clut = texture_cluts[src->texture_set][src->texture_id];
-	tpage = texture_pages[src->texture_set];
+	tpage = texture_pages[src->texture_set] | 0x20;
 
 	if (gTimeOfDay > -1)
 	{
@@ -541,19 +621,12 @@ void DrawWheelObject(MODEL* model, SVECTOR* verts, int transparent, int wheelnum
 
 			gte_stsxy3(&poly->x1, &poly->x3, &poly->x2);
 
-			poly->u0 = src->uv0.u;
-			poly->v0 = src->uv0.v;
+			*(u_short*)&poly->u0 = *(u_short*)&src->uv0;
+			*(u_short*)&poly->u1 = *(u_short*)&src->uv1;
+			*(u_short*)&poly->u2 = *(u_short*)&src->uv3;
+			*(u_short*)&poly->u3 = *(u_short*)&src->uv2;
 			poly->clut = clut;
-
-			poly->u1 = src->uv1.u;
-			poly->v1 = src->uv1.v;
-			poly->tpage = tpage | 0x20;
-
-			poly->u2 = src->uv3.u;
-			poly->v2 = src->uv3.v;
-
-			poly->u3 = src->uv2.u;
-			poly->v3 = src->uv2.v;
+			poly->tpage = tpage;
 
 			poly++;
 		}
@@ -566,27 +639,25 @@ void DrawWheelObject(MODEL* model, SVECTOR* verts, int transparent, int wheelnum
 void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 {
 	short wheelSize;
-	int FW1z;
-	int FW2z;
-	int BW1z;
-	int BW2z;
-	int FrontWheelIncrement;
-	int BackWheelIncrement;
+	int FW1z, FW2z;
+	int BW1z, BW2z;
+	int FrontWheelIncrement, BackWheelIncrement;
 	int sizeScale;
 	int wheelnum;
 	SVECTOR* VertPtr;
-	MODEL* model;
 	SVECTOR* wheelDisp;
 	WHEEL* wheel;
 	int car_id;
-	MODEL *WheelModelBack;
-	MODEL *WheelModelFront;
+	MODEL* WheelModelBack;
+	MODEL* WheelModelFront;
+	MODEL* model;
 
-#if 0 //def PSX
+#ifdef PSX
 	MATRIX& FrontMatrix = *(MATRIX*)(u_char*)getScratchAddr(0);
 	MATRIX& SteerMatrix = *(MATRIX*)((u_char*)getScratchAddr(0) + sizeof(MATRIX));
 	VECTOR& WheelPos = *(VECTOR*)((u_char*)getScratchAddr(0) + sizeof(MATRIX) * 2);
 	SVECTOR& sWheelPos = *(SVECTOR*)((u_char*)getScratchAddr(0) + sizeof(MATRIX) * 2 + sizeof(VECTOR));
+	static_assert(sizeof(MATRIX) * 2 + sizeof(VECTOR) + sizeof(SVECTOR) * 25 < 1024 - sizeof(_pct), "Scratchpad overflow");
 #else
 	MATRIX FrontMatrix;
 	MATRIX SteerMatrix;
@@ -803,8 +874,8 @@ void PlayerCarFX(CAR_DATA *cp)
 // [D] [T]
 void plotNewCarModel(CAR_MODEL* car, int palette)
 {
-#if 0 //def PSX
-	plotCarGlobals& _pg = *(plotCarGlobals*)(u_char*)getScratchAddr(0);
+#ifdef PSX
+	plotCarGlobals& _pg = *(plotCarGlobals*)((u_char*)getScratchAddr(0) + 1024 - sizeof(plotCarGlobals) - sizeof(_pct));
 #else
 	plotCarGlobals _pg;
 #endif
@@ -855,12 +926,20 @@ void plotNewCarModel(CAR_MODEL* car, int palette)
 	if (gTimeOfDay == 3)
 	{
 		_pg.intensity = (combointensity & 0xfcfcf0U) >> 2;
+#ifdef DYNAMIC_LIGHTING
+		(gEnableDlights ? plotCarPolyGT3Lit : plotCarPolyGT3)(car->numGT3, car->pGT3, car->vlist, car->nlist, &_pg, palette);
+#else
 		plotCarPolyGT3nolight(car->numGT3, car->pGT3, car->vlist, &_pg, palette);
+#endif // DYNAMIC_LIGHTING
 	}
 	else
 	{
 		_pg.intensity = combointensity & 0xffffff;
+#ifdef DYNAMIC_LIGHTING
+		(gEnableDlights ? plotCarPolyGT3Lit : plotCarPolyGT3)(car->numGT3, car->pGT3, car->vlist, car->nlist, &_pg, palette);
+#else
 		plotCarPolyGT3(car->numGT3, car->pGT3, car->vlist, car->nlist, &_pg, palette);
+#endif
 	}
 
 	current->primptr = (char*)_pg.primptr;
@@ -1219,8 +1298,6 @@ void ProcessPalletLump(char *lump_ptr, int lump_size)
 // [D] [T]
 void DrawCarObject(CAR_MODEL* car, MATRIX* matrix, VECTOR* pos, int palette, CAR_DATA* cp, int detail)
 {
-	static u_long savedSP;
-
 	VECTOR modelLocation;
 	SVECTOR cog;
 
@@ -1245,11 +1322,7 @@ void DrawCarObject(CAR_MODEL* car, MATRIX* matrix, VECTOR* pos, int palette, CAR
 
 	gte_SetTransVector(&modelLocation);
 
-	savedSP = SetSp((u_long)((u_char*)getScratchAddr(0) + 0x308));
-
 	plotNewCarModel(car, palette);
-
-	SetSp(savedSP);
 }
 
 // [D] [T] [A]
@@ -1262,10 +1335,9 @@ void DrawCar(CAR_DATA* cp, int view)
 	CAR_MODEL* CarModelPtr;
 	int model;
 	CVECTOR col;
-	VECTOR pos;
+	SVECTOR d;
+	VECTOR pos, dist;
 	VECTOR corners[4];
-	VECTOR d;
-	VECTOR dist;
 	MATRIX workmatrix;
 
 	D_CHECK_ERROR(cp < car_data, "Invalid car");

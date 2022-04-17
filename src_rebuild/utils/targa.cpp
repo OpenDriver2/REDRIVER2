@@ -1,6 +1,7 @@
 #include "targa.h"
 #include <stdio.h>
 #include <string.h>
+#include <malloc.h>
 
 bool LoadTGAImage(const char* filename, u_char** data, int& width, int& height, int& bpp)
 {
@@ -32,7 +33,7 @@ bool LoadTGAImage(const char* filename, u_char** data, int& width, int& height, 
 		fread(palette, sizeof(palette), 1, fp);
 
 	// Read the file data
-	fBuffer = new u_char[size - sizeof(header) - palLength];
+	fBuffer = (u_char*)malloc(size - sizeof(header) - palLength);
 	fread(fBuffer, size - sizeof(header) - palLength, 1, fp);
 	fclose(fp);
 
@@ -43,7 +44,7 @@ bool LoadTGAImage(const char* filename, u_char** data, int& width, int& height, 
 	{
 		uint c, count;
 
-		tempBuffer = new u_char[size];
+		tempBuffer = (u_char*)malloc(size);
 
 		dest = tempBuffer;
 		src = fBuffer;
@@ -95,7 +96,7 @@ bool LoadTGAImage(const char* filename, u_char** data, int& width, int& height, 
 			if (palLength > 0)
 			{
 				bpp = 24;
-				dest = *data = new u_char[width * height * 3];
+				dest = *data = (u_char*)malloc(width * height * 3);
 				for (y = 0; y < height; y++)
 				{
 					for (x = 0; x < width; x++)
@@ -111,7 +112,7 @@ bool LoadTGAImage(const char* filename, u_char** data, int& width, int& height, 
 			else
 			{
 				bpp = 8;
-				dest = *data = new u_char[width * height];
+				dest = *data = (u_char*)malloc(width * height);
 				for (y = 0; y < height; y++)
 				{
 					memcpy(dest, src, width);
@@ -122,7 +123,7 @@ bool LoadTGAImage(const char* filename, u_char** data, int& width, int& height, 
 			break;
 		case 16:
 			bpp = 32;
-			dest = *data = new u_char[width * height * 4];
+			dest = *data = (u_char*)malloc(width * height * 4);
 			for (y = 0; y < height; y++)
 			{
 				for (x = 0; x < width; x++)
@@ -141,7 +142,7 @@ bool LoadTGAImage(const char* filename, u_char** data, int& width, int& height, 
 			break;
 		case 24:
 			bpp = 24;
-			dest = *data = new u_char[width * height * 3];
+			dest = *data = (u_char*)malloc(width * height * 3);
 
 			for (y = 0; y < height; y++)
 			{
@@ -157,7 +158,7 @@ bool LoadTGAImage(const char* filename, u_char** data, int& width, int& height, 
 			break;
 		case 32:
 			bpp = 32;
-			dest = *data = new u_char[width * height * 4];
+			dest = *data = (u_char*)malloc(width * height * 4);
 			for (y = 0; y < height; y++)
 			{
 				for (x = 0; x < width; x++)
@@ -173,8 +174,8 @@ bool LoadTGAImage(const char* filename, u_char** data, int& width, int& height, 
 			break;
 	}
 
-	delete[] tempBuffer;
-	delete[] fBuffer;
+	free(tempBuffer);
+	free(fBuffer);
 
 	return true;
 }

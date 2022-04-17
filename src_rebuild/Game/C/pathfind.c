@@ -19,17 +19,14 @@
 
 struct tNode
 {
-	int vx;
-	int vy;
-	int vz;
+	int vx, vy, vz;
 	u_short dist;
 	u_short ptoey;	// just a padding. 
 };
 
 struct XZDIR
 {
-	short dx;
-	short dz;
+	short dx, dz;
 };
 
 ushort distanceCache[16384];
@@ -287,7 +284,6 @@ void WunCell(VECTOR* pbase)
 
 	// [A] definitely better code
 	// new 16 vs old 12 passes but map is not leaky at all
-
 	for (i = 0; i < 4; i++)
 	{
 		for (j = 0; j < 4; j++)
@@ -308,8 +304,8 @@ void InvalidateMapEnds()
 	int tile;
 	int i;
 	XZPAIR pos;
-	pos.x = (player[0].pos[0] & 0xfffffc00) >> 10;
-	pos.z = (player[0].pos[2] & 0xfffffc00) >> 10;
+	pos.x = (player[0].pos[0] & ~1023) >> 10;
+	pos.z = (player[0].pos[2] & ~1023) >> 10;
 
 	for(i = 0; i < 32; i++)
 	{
@@ -331,8 +327,7 @@ void InvalidateMapEnds()
 void InvalidateMap(void)
 {
 	int dir;
-	int p;
-	int q;
+	int p, q;
 	int count;
 	int px, pz;
 	VECTOR bPos;
@@ -342,11 +337,10 @@ void InvalidateMap(void)
 	p = 0;
 	dir = 0;
 
-	bPos.vx = player[0].pos[0] & 0xfffffc00;
-	bPos.vz = player[0].pos[2] & 0xfffffc00;
+	bPos.vx = player[0].pos[0] & ~1023;
+	bPos.vz = player[0].pos[2] & ~1023;
 
-	count = 0;
-	do
+	for(count = 0; count < 1024; count++)
 	{
 		px = bPos.vx >> 10;
 		pz = bPos.vz >> 10;
@@ -358,39 +352,25 @@ void InvalidateMap(void)
 		
 		if (dir == 0)
 		{
-			p++;
 			bPos.vx += MAP_CELL_SIZE / 2;
-
-			if (p + q == 1)
-				dir = 1;
+			dir = (++p + q == 1) ? 1 : dir;
 		}
 		else if (dir == 1)
 		{
-			q++;
 			bPos.vz += MAP_CELL_SIZE / 2;
-
-			if (p == q)
-				dir = 2;
+			dir = (p == ++q) ? 2 : dir;
 		}
 		else if (dir == 2)
 		{
-			p--;
 			bPos.vx -= MAP_CELL_SIZE / 2;
-
-			if (p + q == 0)
-				dir = 3;
+			dir = (--p + q == 0) ? 3 : dir;
 		}
 		else
 		{
-			q--;
 			bPos.vz -= MAP_CELL_SIZE / 2;
-	
-			if (p == q)
-				dir = 0;
+			dir = (p == --q) ? 0 : dir;
 		}
-
-		count++;
-	}while (count < 1024);
+	}
 }
 
 
@@ -400,40 +380,37 @@ u_int cellsPerFrame = 4;
 // [D] [T]
 void BloodyHell(void)
 {
+	VECTOR bPos;
 	int dir;
-	int p;
-	int q;
+	int p, q;
 	int px, pz;
 	u_int howMany;
 	int count;
-	VECTOR bPos;
 	int tile, i;
 
 	cellsThisFrame = 0;
 	
 	// [A] really it should be based on player's height
-	bPos.vy = player[0].pos[1] ;
-
-	bPos.vx = player[0].pos[0] & 0xfffffc00;
-	bPos.vz = player[0].pos[2] & 0xfffffc00;
+	bPos.vy = player[0].pos[1];
+	bPos.vx = player[0].pos[0] & ~1023;
+	bPos.vz = player[0].pos[2] & ~1023;
 
 	howMany = cellsPerFrame;
 
 	if (CameraCnt < 4)
 		howMany = cellsPerFrame + 20;
-
-	q = 0;
 	
 	if (CameraCnt < 8)
 		howMany += 4;
 
+	q = 0;
 	p = 0;
 	dir = 0;
-	count = 0;
 
 	InvalidateMapEnds();
 
-	do {
+	for (count = 0; count < 840; count++)
+	{
 		if (count == 200)
 			howMany--;
 
@@ -446,51 +423,33 @@ void BloodyHell(void)
 		if (i != 0)
 		{
 			DONEMAP_V(px, pz) = tile ^ i;
-
 			WunCell(&bPos);
 
-			cellsThisFrame++;
-
-			if (cellsThisFrame >= howMany)
+			if (++cellsThisFrame >= howMany)
 				return;
 		}
 
 		if (dir == 0)
 		{
-			p++;
 			bPos.vx += MAP_CELL_SIZE / 2;
-
-			if (p + q == 1)
-				dir = 1;
+			dir = (++p + q == 1) ? 1 : dir;
 		}
-		else if (dir == 1) 
+		else if (dir == 1)
 		{
-			q++;
 			bPos.vz += MAP_CELL_SIZE / 2;
-			
-			if (p == q)
-				dir = 2;
+			dir = (p == ++q) ? 2 : dir;
 		}
 		else if (dir == 2)
 		{
-			p--;
-
 			bPos.vx -= MAP_CELL_SIZE / 2;
-
-			if (p + q == 0)
-				dir = 3;
+			dir = (--p + q == 0) ? 3 : dir;
 		}
-		else 
+		else
 		{
-			q--;
 			bPos.vz -= MAP_CELL_SIZE / 2;
-
-			if (p == q)
-				dir = 0;
+			dir = (p == --q) ? 0 : dir;
 		}
-
-		count++;
-	} while( count < 840 );
+	}
 }
 
 int slowWallTests = 0;

@@ -135,7 +135,7 @@ int SaveReplayToBuffer(char *buffer)
 	header->wantedCar[0] = wantedCar[0];
 	header->wantedCar[1] = wantedCar[1];
 
-	memcpy((u_char*)&header->SavedData, (u_char*)&MissionEndData, sizeof(MISSION_DATA));
+	header->SavedData = MissionEndData;
 
 	// write each stream data
 	for (int i = 0; i < NumPlayers; i++)
@@ -146,7 +146,7 @@ int SaveReplayToBuffer(char *buffer)
 		REPLAY_STREAM* srcStream = &ReplayStreams[i];
 
 		// copy source type
-		memcpy((u_char*)&sheader->SourceType, (u_char*)&srcStream->SourceType, sizeof(STREAM_SOURCE));
+		sheader->SourceType = srcStream->SourceType;
 		sheader->Size = srcStream->padCount * sizeof(PADRECORD); // srcStream->PadRecordBufferEnd - srcStream->InitialPadRecordBuffer;
 		sheader->Length = srcStream->length;
 
@@ -214,7 +214,7 @@ int LoadReplayFromBuffer(char *buffer)
 	wantedCar[0] = header->wantedCar[0];
 	wantedCar[1] = header->wantedCar[1];
 
-	memcpy((u_char*)&MissionEndData, (u_char*)&header->SavedData, sizeof(MISSION_DATA));
+	MissionEndData = header->SavedData;
 
 	pt = (char*)(header+1);
 
@@ -227,7 +227,7 @@ int LoadReplayFromBuffer(char *buffer)
 		REPLAY_STREAM* destStream = &ReplayStreams[i];
 		
 		// copy source type
-		memcpy((u_char*)&destStream->SourceType, (u_char*)&sheader->SourceType, sizeof(STREAM_SOURCE));
+		destStream->SourceType = sheader->SourceType;
 
 		int size = (sheader->Size + sizeof(PADRECORD)) & -4;
 		

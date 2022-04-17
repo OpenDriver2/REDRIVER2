@@ -98,8 +98,11 @@ void ProcessMapLump(char* lump_ptr, int lump_size)
 		trap(0x400);
 	}
 #endif
-
+#ifdef PSX
 	view_dist = 10;
+#else
+	view_dist = 21;
+#endif
 	pvs_square = 21;
 	pvs_square_sq = 21 * 21;
 

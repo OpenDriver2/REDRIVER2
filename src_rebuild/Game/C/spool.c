@@ -658,10 +658,15 @@ void init_spooled_models(void)
 		size = *(int *)addr;
 		model = (MODEL *)(addr + 4);
 
+		modelpointers[model_number] = model;
+		pLodModels[model_number] = model;
+
 		lod = Low2LowerDetailTable[model_number];
 
 		if (lod != 0xffff && lod != model_number)
 			pLodModels[model_number] = modelpointers[lod];
+
+		ProcessModel(model_number);
 
 		if (model->instance_number == -1)
 		{
@@ -689,10 +694,6 @@ void init_spooled_models(void)
 		}
 	
 		model->poly_block += (int)model;
-
-		modelpointers[model_number] = model;
-		pLodModels[model_number] = model;
-
 		addr += size + 4;
 	}
 

@@ -751,9 +751,6 @@ void GlobalTimeStep(void)
 void SetShadowPoints(CAR_DATA* c0, VECTOR* outpoints)
 {
 	int i;
-	SVECTOR disp;
-	VECTOR pointPos;
-	VECTOR surfaceNormal;
 	CAR_COSMETICS* car_cos;
 
 	sdPlane* surfacePtr;
@@ -766,15 +763,10 @@ void SetShadowPoints(CAR_DATA* c0, VECTOR* outpoints)
 
 	for (i = 0; i < 4; i++)
 	{
-		disp = car_cos->cPoints[i];
-
-		gte_ldv0(&disp);
-
+		gte_ldv0(&car_cos->cPoints[i]);
 		gte_rtv0tr();
-
-		gte_stlvnl(&pointPos);
-
-		FindSurfaceD2(&pointPos, &surfaceNormal, &outpoints[i], &surfacePtr);
+		gte_stlvnl(&outpoints[i]);
+		outpoints[i].vy = MapHeight(&outpoints[i]);
 	}
 }
 

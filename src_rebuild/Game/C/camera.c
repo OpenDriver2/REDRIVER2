@@ -286,9 +286,7 @@ int CameraCollisionCheck(void)
 
 		if (gCameraDistance > 0)
 		{
-			ppco = GetFirstPackedCop(cellx, cellz, &ci, 0, cellLevel);
-			
-			while (ppco) 
+			for (ppco = GetFirstPackedCop(cellx, cellz, &ci, 0, cellLevel); ppco; ppco = GetNextPackedCop(&ci))
 			{
 				int type = (ppco->value >> 6) | ((ppco->pos.vy & 1) << 10);
 
@@ -349,7 +347,6 @@ int CameraCollisionCheck(void)
 						}
 					}
 				}
-				ppco = GetNextPackedCop(&ci);
 			}
 		}
 		count++;

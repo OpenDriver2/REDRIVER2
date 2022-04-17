@@ -20,6 +20,7 @@ u_short *Low2LowerDetailTable = NULL;
 
 // [A]
 int staticModelSlotBitfield[48];
+int litSprites[48];
 
 // [A] returns freed slot count
 int CleanSpooledModelSlots()
@@ -39,6 +40,7 @@ int CleanSpooledModelSlots()
 			{
 				modelpointers[i] = &dummyModel;
 				pLodModels[i] = &dummyModel;
+				litSprites[i >> 5] &= ~(1 << (i & 31));
 
 				num_freed++;
 			}
@@ -46,6 +48,25 @@ int CleanSpooledModelSlots()
 	}
 
 	return num_freed;
+}
+
+// [A]
+void ProcessModel(int modelIdx)
+{
+	MODEL* model;
+
+	model = modelpointers[modelIdx];
+
+	model->tri_verts = 0; // [A] this is used as additional flags for animated models and triangle processing
+
+	if (gTimeOfDay == 3)
+	{
+		if (model->shape_flags & SHAPE_FLAG_SPRITE)
+		{
+			if (modelIdx != 1223 && (!(model->flags2 & MODEL_FLAG_TREE) || modelIdx == 945 || modelIdx == 497))
+				litSprites[modelIdx >> 5] |= 1 << (modelIdx & 31);
+		}
+	}
 }
 
 // [D] [T]
@@ -56,6 +77,7 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 	MODEL *parentmodel;
 	int modelAmts;
 	int i, size;
+	int litModel;
 
 	modelAmts = *(int *)lump_file;
 	mdsfile = (lump_file + 4);
@@ -63,6 +85,7 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 
 	// [A] usage bits
 	ClearMem((char*)staticModelSlotBitfield, sizeof(staticModelSlotBitfield));
+	ClearMem((char*)litSprites, sizeof(litSprites));
 
 	// assign model pointers
 	for (i = 0; i < MAX_MODEL_SLOTS; i++) // [A] bug fix. Init with dummyModel
@@ -83,6 +106,8 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 			
 			model = (MODEL*)mdsfile;
 			modelpointers[i] = model;
+
+			ProcessModel(i);
 		}
 
 		mdsfile += size;

@@ -1,25 +1,41 @@
 #ifndef DRAW_H
 #define DRAW_H
 
+enum PlotFlags
+{
+	PLOT_TRANSPARENT = (1 << 0),
+	PLOT_INV_CULL = (1 << 1),
+	PLOT_NO_CULL = (1 << 2),
+	PLOT_NO_SHADE = (1 << 3),
+	PLOT_CUSTOM_PALETTE = (1 << 4),
+};
+
 // Primitive plot context used in scratchpad
 struct _pct
 {
-	struct DB* current;
+	int f4colourTable[32];
+	u_int planeColours[8];
+	int scribble[8];
 	u_short(*ptexture_pages)[128];
 	u_short(*ptexture_cluts)[128][32];
-	int f4colourTable[32];
+	struct DB* current;
+	SVECTOR* verts;
 	int* polySizes;
 	char* primptr;
 	OTTYPE* ot;
-	u_int clut;
-	u_int tpage;
 	u_int colour;
-	int flags;
-	SVECTOR* verts;
-	u_int lastTexInfo;
-	int scribble[8];
-	int model;
+	u_int flags;
+	u_short clut;
+	u_short tpage;
 };
+
+#ifdef DYNAMIC_LIGHTING
+extern int gEnableDlights;
+extern int gNumDlights;
+
+extern void AddDlight(VECTOR* position, CVECTOR* color, int radius);
+extern void GetDLightLevel(SVECTOR* position, u_int* inOutColor);
+#endif
 
 extern SVECTOR day_vectors[4];
 extern SVECTOR night_vectors[4];
@@ -59,15 +75,6 @@ extern MATRIX2 CompoundMatrix[64];
 extern _pct& plotContext;
 
 #endif
-
-enum PlotFlags
-{
-	PLOT_TRANSPARENT = (1 << 0),
-	PLOT_INV_CULL = (1 << 1),
-	PLOT_NO_CULL = (1 << 2),
-	PLOT_NO_SHADE = (1 << 3),
-	PLOT_CUSTOM_PALETTE = (1 << 4),
-};
 
 extern void* model_tile_ptrs[MAX_DRAWN_TILES];
 

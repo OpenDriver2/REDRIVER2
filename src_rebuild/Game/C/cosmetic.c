@@ -47,7 +47,7 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 		if (model != -1) 
 		{
 			offset = *(int*)(lump_ptr + model * sizeof(int));
-			memcpy((u_char*)&car_cosmetics[i], (u_char*)lump_ptr + offset, sizeof(CAR_COSMETICS));
+			car_cosmetics[i] = *(CAR_COSMETICS*)((u_char*)lump_ptr + offset);
 
 			FixCarCos(&car_cosmetics[i], model);
 		}
@@ -59,7 +59,7 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 		model = 8 + i;
 
 		offset = *(int*)(lump_ptr + model * sizeof(int));
-		memcpy((u_char*)&levelSpecCosmetics[i], (u_char*)lump_ptr + offset, sizeof(CAR_COSMETICS));
+		levelSpecCosmetics[i] = *(CAR_COSMETICS*)((u_char*)lump_ptr + offset);
 	}
 }
 
@@ -115,9 +115,9 @@ void SetupSpecCosmetics(char *loadbuffer)
 
 #if 1
 	// [A] always use cached cosmetics
-	memcpy((u_char*)&car_cosmetics[4], (u_char*)&levelSpecCosmetics[model - 8], sizeof(CAR_COSMETICS));
+	car_cosmetics[4] = levelSpecCosmetics[model - 8];
 #else
-	memcpy((u_char*)&car_cosmetics[4], loadbuffer, sizeof(CAR_COSMETICS));
+	car_cosmetics[4] = *(CAR_COSMETICS*)loadbuffer;
 #endif
 
 	// [A] don't forget

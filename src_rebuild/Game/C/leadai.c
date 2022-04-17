@@ -1522,9 +1522,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 			if (RoadMapRegions[cbr] != cbrX + cbrZ * regions_across)
 				continue;
 
-			ppco = GetFirstPackedCop(cell_x, cell_z, &ci, 1);
-
-			while (ppco)
+			for (ppco = GetFirstPackedCop(cell_x, cell_z, &ci, 1); ppco; ppco = GetNextPackedCop(&ci))
 			{
 				int type = (ppco->value >> 6) | ((ppco->pos.vy & 1) << 10);
 				model = modelpointers[type];
@@ -1666,7 +1664,6 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 						collide++;
 					}
 				}
-				ppco = GetNextPackedCop(&ci);
 			}
 		}
 	}

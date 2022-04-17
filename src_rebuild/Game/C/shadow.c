@@ -493,8 +493,8 @@ void PlaceShadowForCar(VECTOR *shadowPoints, int subdiv, int zOfs, int flag)
 
 	POLYFT4* pft4 = &shadowpoly;
 
-	plotContext.clut = (u_int)(*plotContext.ptexture_cluts)[pft4->texture_set][pft4->texture_id] << 0x10;
-	plotContext.tpage = ((u_int)(*plotContext.ptexture_pages)[pft4->texture_set] | 0x40) << 0x10;
+	plotContext.clut = (u_int)(*plotContext.ptexture_cluts)[pft4->texture_set][pft4->texture_id];
+	plotContext.tpage = ((u_int)(*plotContext.ptexture_pages)[pft4->texture_set] | 0x40);
 
 	copyVector(&subdivVerts[0][0], &points[pft4->v0]);
 	subdivVerts[0][0].uv.val = *(ushort*)&pft4->uv0;

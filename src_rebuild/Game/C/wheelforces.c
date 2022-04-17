@@ -12,6 +12,7 @@
 #include "sound.h"
 #include "glaunch.h"
 #include "system.h"
+#include "cutscene.h"
 
 #define GRAVITY_FORCE		(-7456)			// D1 has -10922
 
@@ -199,21 +200,18 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 	int chan;
 	WHEEL* wheel;
 	int friction_coef;
-	int oldSpeed;
-	int wheelspd;
-	LONGVECTOR4 wheelPos;
-	LONGVECTOR4 surfacePoint;
-	LONGVECTOR4 surfaceNormal;
+	int oldSpeed, wheelspd;
+	LONGVECTOR4 wheelPos, surfacePoint, surfaceNormal;
 	VECTOR force;
 	LONGVECTOR4 pointVel;
-	int frontFS;
-	int rearFS;
+	int frontFS, rearFS;
 	sdPlane* SurfacePtr;
 	int i;
 	int cdx, cdz;
 	int sdx, sdz;
 	CAR_COSMETICS* car_cos;
 	int player_id;
+	int oldCutRoughness;
 
 	oldSpeed = cp->hd.speed * 3 >> 1;
 
@@ -232,6 +230,7 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 
 	player_id = GetPlayerId(cp);
 	car_cos = &car_cosmetics[cp->ap.model];
+	oldCutRoughness = gInGameCutsceneActive && gCurrentMissionNumber == 23 && gInGameCutsceneID == 0; // [A] hack moved here
 
 	GetFrictionScalesDriver1(cp, cl, &frontFS, &rearFS);
 	cp->hd.front_vel = 0;
@@ -248,9 +247,23 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 		gte_rtv0tr();
 		gte_stlvnl(wheelPos);
 
-		newCompression = FindSurfaceD2((VECTOR*)&wheelPos, (VECTOR*)&surfaceNormal, (VECTOR*)&surfacePoint, &SurfacePtr);
+		FindSurfaceD2((VECTOR*)&wheelPos, (VECTOR*)&surfaceNormal, (VECTOR*)&surfacePoint, &SurfacePtr);
 
-		friction_coef = (newCompression * (32400 - wetness) >> 15) + 500;
+		if (SurfacePtr && SurfacePtr->surface == SURF_GRASS)
+		{
+			int roughness;
+			roughness = RSIN((surfacePoint[0] + surfacePoint[2]) * 2) >> 8;
+
+			surfacePoint[1] += oldCutRoughness ? (roughness >> 1) : (roughness / 3);
+
+			forcefac = 2048;
+		}
+		else
+		{
+			forcefac = 4096;
+		}
+
+		friction_coef = (forcefac * (32400 - wetness) >> 15) + 500;
 
 		if (SurfacePtr != NULL)
 			wheel->onGrass = SurfacePtr->surface == SURF_GRASS;
@@ -602,6 +615,11 @@ void StepOneCar(CAR_DATA* cp)
 		lever[2] = pointPos[2] - cp->hd.where.t[2];
 
 		FindSurfaceD2((VECTOR*)pointPos, (VECTOR*)surfaceNormal, (VECTOR*)&surfacePoint, &SurfacePtr);
+
+		if (SurfacePtr && SurfacePtr->surface == SURF_GRASS)
+		{
+			surfacePoint[1] += (RSIN((surfacePoint[0] + surfacePoint[2]) * 2) >> 8) / 3;
+		}
 
 		if ((surfacePoint[1] - pointPos[1]) - 1U < 799)
 		{

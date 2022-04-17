@@ -840,7 +840,6 @@ void StepSim(void)
 	static u_int t0; // offset 0x0
 	static char t1; // offset 0x4
 	static char t2; // offset 0x5
-	static int oldsp; // offset 0x8
 
 	char padAcc;
 	short* playerFelony;
@@ -849,8 +848,9 @@ void StepSim(void)
 	PLAYER* pl;
 	int i, j;
 	int car;
+	int timeOfDay;
 
-	if (gTimeOfDay == 0 || gTimeOfDay == 2)
+	if (M_BIT(gTimeOfDay) & (M_BIT(0) | M_BIT(2)))
 	{
 		DawnCount++;
 	}
@@ -870,8 +870,6 @@ void StepSim(void)
 		ReleaseInGameCutscene();
 		pauseflag = 1;
 	}
-
-	//oldsp = SetSp((u_long)((u_char*)getScratchAddr(0) + 0x3e8)); // i don't know what this does
 
 	lead_pad = (u_int)controller_bits;
 
@@ -1147,8 +1145,6 @@ void StepSim(void)
 	UpdatePlayers();
 	DoScenaryCollisions();
 	CheckPlayerMiscFelonies();
-
-	//SetSp(oldsp);
 
 	CameraCnt++;
 
@@ -1610,9 +1606,7 @@ void State_GameLoop(void* param)
 	_CutRec_Step();
 }
 
-// TODO: DRAW.C?
 int ObjectDrawnValue = 0;
-int ObjectDrawnCounter = 0;
 
 // [D] [T]
 void DrawGame(void)
@@ -1623,26 +1617,19 @@ void DrawGame(void)
 		DrawPauseMenus();
 
 		RenderGame2(0);
-
-		ObjectDrawnCounter++;
-		
 		SwapDrawBuffers();
 	}
 	else
 	{
 		ObjectDrawnValue = FrameCnt;
 		RenderGame2(0);
-		ObjectDrawnCounter++;
-
 		SwapDrawBuffers2(0);
 
 		ObjectDrawnValue += 16;
-		
+
 		DrawPauseMenus();
 		
 		RenderGame2(1);
-		ObjectDrawnCounter++;
-
 		SwapDrawBuffers2(1);
 	}
 
@@ -2387,6 +2374,11 @@ void RenderGame2(int view)
 	DrawAllTheCars(view);
 
 #ifndef PSX
+
+#ifdef DYNAMIC_LIGHTING
+	gNumDlights = 0;
+#endif
+
 	extern void DrawDebugOverlays();
 
 	DrawDebugOverlays();

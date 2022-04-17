@@ -1155,24 +1155,6 @@ struct ROADBLOCK
 //---------------------------------------------------------------------------------------
 // TODO: OBJCOLL.H
 
-struct tRay
-{
-	LONGVECTOR4 org;
-	LONGVECTOR4 dir;
-};
-
-struct tRange
-{
-	int lower;
-	int upper;
-};
-
-struct tAABB
-{
-	tRange slab[3];
-};
-
-
 struct TestResult
 {
 	int depth;
