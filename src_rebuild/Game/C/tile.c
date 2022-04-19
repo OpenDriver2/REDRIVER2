@@ -8,6 +8,10 @@
 
 #include "ASM/rndrasm.h"
 
+#ifdef PSX
+#pragma GCC optimization ("O3")
+#endif
+
 #ifdef DYNAMIC_LIGHTING
 void Tile1x1Lit(MODEL* model)
 {
@@ -233,7 +237,7 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 			t = GameLevel == 2 && gEnableDlights == 1;
 			plotContext.colour = fst_div_lut_3_5(combo >> 16 & 255, t) << 16 | fst_div_lut_3_5(combo >> 8 & 255, t) << 8 | fst_div_lut_3_5(combo & 255, t) | 0x2C000000U;
 #else
-			plotContext.colour = fst_div_3(combo >> 16 & 255, 0) << 16 | fst_div_3(combo >> 8 & 255, 0) << 8 | fst_div_3(combo & 255, 0) | 0x2C000000U;
+			plotContext.colour = fst_div_3(combo >> 16 & 255) << 16 | fst_div_3(combo >> 8 & 255) << 8 | fst_div_3(combo & 255) | 0x2C000000U;
 #endif
 		}
 	}

@@ -10,6 +10,10 @@
 #include "felony.h"
 #include "map.h"
 
+#ifdef PSX
+#pragma GCC optimization ("O3")
+#endif
+
 #define DEBUG_PATHFINDING_VIEW	0
 
 #if DEBUG_PATHFINDING_VIEW && !defined(PSX)

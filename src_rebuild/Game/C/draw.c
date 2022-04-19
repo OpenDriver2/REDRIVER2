@@ -16,6 +16,9 @@
 #include "ASM/rndrasm.h"
 #include "event.h"
 
+#ifdef PSX
+#pragma GCC optimization ("O3")
+#endif
 
 MATRIX aspect =
 {
@@ -97,7 +100,11 @@ MATRIX2 CompoundMatrix[64];
 
 u_int farClip2Player = 36000;
 
+#ifdef PSX
+int goFaster = 1;
+#else
 int goFaster = 0;	// [A] was 1
+#endif
 int fasterToggle = 0;
 
 int combointensity;
@@ -431,7 +438,6 @@ void InitFrustrumMatrix(void)
 	frustrum_matrix.m[2][1] = 0;
 	frustrum_matrix.m[2][0] = RSIN(a);
 	frustrum_matrix.m[2][2] = RCOS(a);
-	frustrum_matrix.t[0] = -80;
 }
 
 // [D] [T]
@@ -611,7 +617,7 @@ u_int normalIndex(SVECTOR* verts, u_int vidx)
 		if (x + y < 1)
 			th23 = x < 0 ? 6 : 7;
 		else
-			th23 = 0 < y ? 1 : 0;
+			th23 = y > 0 ? 1 : 0;
 	}
 
 	th23 *= 4;
