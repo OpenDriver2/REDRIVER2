@@ -187,7 +187,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 
 	lightLevel = (lightdd >> 18) + 32 & 255;
 
-	if (gWeather > 0 && gTimeOfDay == TIME_DAY || (M_BIT(gTimeOfDay) & (M_BIT(TIME_DAWN) | M_BIT(TIME_DUSK))))
+	if (gWeather > WEATHER_NONE && gTimeOfDay == TIME_DAY || (M_BIT(gTimeOfDay) & (M_BIT(TIME_DAWN) | M_BIT(TIME_DUSK))))
 	{
 		lightLevel = (lightLevel * 2 * NightAmbient) >> 8;
 	}

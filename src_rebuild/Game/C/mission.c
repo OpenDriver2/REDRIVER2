@@ -151,7 +151,7 @@ MS_MISSION* MissionHeader;
 STREAM_SOURCE* PlayerStartInfo[8];
 int numPlayersToCreate = 0;
 int gStartOnFoot = 0;
-int gWeather = 0;
+int gWeather = WEATHER_NONE;
 int gTimeOfDay = TIME_DAY;
 int gShowPlayerDamage = 0;
 int gDontPingInCops = 0;
@@ -520,7 +520,7 @@ void LoadMission(int missionnum)
 		gNight = 0;
 
 	// setup weather
-	if (gWeather == 1)
+	if (gWeather == WEATHER_RAIN)
 	{
 		gRainCount = 30;
 		gEffectsTimer = 41;
@@ -1670,7 +1670,7 @@ int MRCommand(MR_THREAD *thread, u_int cmd)
 	else if (cmd == 0x1000090)			// SetRaining
 	{
 		MR_DebugWarn("MR %d command: SetRaining\n", thread - MissionThreads);
-		gWeather = 1;
+		gWeather = WEATHER_RAIN;
 		return 1;
 	}
 	else if (cmd == 0x1000040)

@@ -225,7 +225,7 @@ void DebugTimeOfDayRain(int direction)
 	gWeather ^= 1;
 	wantedWeather = gWeather;
 
-	if (gWeather == 1)
+	if (gWeather == WEATHER_RAIN)
 		wetness = 7000;
 	else
 		wetness = 0;

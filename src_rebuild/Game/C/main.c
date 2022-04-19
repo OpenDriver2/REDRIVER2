@@ -694,10 +694,8 @@ void State_GameInit(void* param)
 
 	FrAng = 512;
 
-	if (gWeather == 1)
+	if (gWeather == WEATHER_RAIN)
 		wetness = 7000;
-	//else if (gWeather == 2)	// [A] addition that I have disabled
-	//	wetness = 3000;
 	else
 		wetness = 0;
 
@@ -1365,7 +1363,7 @@ void StepGame(void)
 		NightAmbient = 128;
 	}
 
-	if (gWeather != 0 && gWeather == 1)
+	if (gWeather == WEATHER_RAIN)
 	{
 		DoLightning();
 		DoThunder();

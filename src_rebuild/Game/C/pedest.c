@@ -1433,7 +1433,7 @@ void PingInPedestrians(void)
 	baseLoc.vy = player[0].pos[1];
 	baseLoc.vz = player[0].pos[2];
 
-	if (gWeather == 0 && FindSeated() != NULL)
+	if (gWeather == WEATHER_NONE && FindSeated() != NULL)
 		return;
 
 	for (i = 0; i < 50; i++)
@@ -2553,7 +2553,7 @@ void IHaveThePower(void)
 		{
 			oldWeather = gWeather;
 			bPower = 1;
-			gWeather = 1;
+			gWeather = WEATHER_RAIN;
 		}
 
 		powerCounter++;

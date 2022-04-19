@@ -739,7 +739,7 @@ void AddLeaf(VECTOR *Position, int num_leaves, int Type)
 		{
 			*(u_int*)&myleaf->rgb = *(u_int*)&myleaf->rgb >> 2 & 0x3f3f3f3f;
 		}
-		else if (gWeather == 1 || gWeather == 2)
+		else if (gWeather == WEATHER_RAIN || gWeather == WEATHER_WET)
 		{
 			*(u_int*)&myleaf->rgb = *(u_int*)&myleaf->rgb >> 1 & 0x7f7f7f7f;
 		}
@@ -3809,7 +3809,7 @@ void DoThunder(void)
 // [D] [T]
 void DoWeather(int weather)
 {
-	if (weather != 1)
+	if (weather != WEATHER_RAIN)
 		return;
 
 	if(pauseflag == 0)
