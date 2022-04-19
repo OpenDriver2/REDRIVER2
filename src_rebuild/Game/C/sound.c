@@ -52,6 +52,7 @@ int gMasterVolume = 0;
 int gMusicVolume = -4000;
 
 int Song_ID = -1;
+int Song_SetPos = -1;
 int VABID = -1;
 
 int gSoundMode = 1;		// mono or stereo
@@ -100,7 +101,15 @@ void VsyncProc(void)
 	vblcounter++;
 
 	if (Song_ID != -1)
+	{
+		if (Song_SetPos != -1) 
+		{
+			XM_SetSongPos(Song_ID, Song_SetPos);
+			Song_SetPos = -1;
+		}
+
 		XM_Update();
+	}
 
 	SoundHandler();
 }

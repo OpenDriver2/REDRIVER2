@@ -1578,7 +1578,7 @@ void FunkUpDaBGMTunez(int funk)
 		if (copmusic != 0)
 		{
 			copmusic = 0;
-			XM_SetSongPos(Song_ID, 0);
+			Song_SetPos = 0;
 		}
 	}
 	else
@@ -1586,7 +1586,7 @@ void FunkUpDaBGMTunez(int funk)
 		if (copmusic == 0)
 		{
 			copmusic = 1;
-			XM_SetSongPos(Song_ID, xm_coptrackpos[current_music_id]);
+			Song_SetPos = xm_coptrackpos[current_music_id];
 		}
 	}
 }

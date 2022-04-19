@@ -35,6 +35,7 @@ extern int gMusicVolume;
 extern int gSoundMode;
 
 extern int Song_ID;
+extern int Song_SetPos;
 extern int VABID;
 extern int music_paused;
 
