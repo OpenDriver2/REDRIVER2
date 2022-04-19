@@ -1328,4 +1328,21 @@ enum GAMEMODE
 	GAMEMODE_DEMO = 6,
 };
 
+//---------------------------------------------------
+
+enum TIMEOFDAY
+{
+	TIME_DAWN = 0,
+	TIME_DAY = 1,
+	TIME_DUSK = 2,
+	TIME_NIGHT = 3
+};
+
+enum WEATHER
+{
+	WEATHER_NONE = 0,
+	WEATHER_RAIN = 1,
+	WEATHER_SNOW = 2
+};
+
 #endif // DR2TYPES_H

@@ -191,7 +191,7 @@ void InitCyclingPals(void)
 	int i;
 
 	// only enabled at Night
-	if (gTimeOfDay != 3)
+	if (gTimeOfDay != TIME_NIGHT)
 	{
 		num_cycle_obj = 0;
 		return;

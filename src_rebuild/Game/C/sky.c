@@ -257,20 +257,20 @@ void LoadSky(void)
 
 	if (gWeather - 1U < 2)
 	{
-		if (gTimeOfDay == 3)
+		if (gTimeOfDay == TIME_NIGHT)
 			offset = 0x10000;
 		else
 			offset = 0x20000;
 	}
 	else
 	{
-		if (gTimeOfDay == 0)
+		if (gTimeOfDay == TIME_DAWN)
 			offset = 0x30000;
-		else if (gTimeOfDay == 1)
+		else if (gTimeOfDay == TIME_DAY)
 			offset = 0;
-		else if (gTimeOfDay == 2)
+		else if (gTimeOfDay == TIME_DUSK)
 			offset = 0x40000;
-		else if (gTimeOfDay == 3)
+		else if (gTimeOfDay == TIME_NIGHT)
 			offset = 0x10000;
 	}
 
@@ -503,10 +503,10 @@ void DrawLensFlare(void)
 
 	source = sun_source;
 
-	if (gWeather - 1U <= 1 || (M_BIT(gTimeOfDay) & (M_BIT(0) | M_BIT(2))))
+	if (gWeather - 1U <= 1 || (M_BIT(gTimeOfDay) & (M_BIT(TIME_DAWN) | M_BIT(TIME_DUSK))))
 		return;
 	
-	if (gTimeOfDay == 3)
+	if (gTimeOfDay == TIME_NIGHT)
 		col.r = 128;
 	else
 		col.r = 254;
@@ -517,7 +517,7 @@ void DrawLensFlare(void)
 	col.b = col.r;
 
 	// get the sun brightness from framebuffer copy
-	if (gTimeOfDay != 3 && last_attempt_failed == 0)
+	if (gTimeOfDay != TIME_NIGHT && last_attempt_failed == 0)
 	{
 		pwBuffer = buffer;
 		StoreImage(&source, (u_long*)buffer);
@@ -546,7 +546,7 @@ void DrawLensFlare(void)
 	gte_SetRotMatrix(&inv_camera_matrix);
 	gte_SetTransVector(&dummy);
 
-	if (gTimeOfDay == 3)
+	if (gTimeOfDay == TIME_NIGHT)
 	{
 		gte_ldv0(&moon_position[GameLevel]);
 	}
@@ -568,7 +568,7 @@ void DrawLensFlare(void)
 	
 	distance_to_sun = SquareRoot0(xgap * xgap + ygap * ygap);
 
-	if (gTimeOfDay == 3)
+	if (gTimeOfDay == TIME_NIGHT)
 	{
 		if (distance_to_sun < 500)
 		{
@@ -764,14 +764,14 @@ void calc_sky_brightness(RGB16* skycolor)
 	int dawn;
 	dawn = DawnCount >> 5;
 
-	if(M_BIT(gTimeOfDay) & (M_BIT(0) | M_BIT(2)))
+	if(M_BIT(gTimeOfDay) & (M_BIT(TIME_DAWN) | M_BIT(TIME_DUSK)))
 	{
-		if (gTimeOfDay == 0)
+		if (gTimeOfDay == TIME_DAWN)
 		{
 			skycolor->r = dawn + 41;
 			skycolor->b = dawn + 28;
 		}
-		else if (gTimeOfDay == 2)
+		else if (gTimeOfDay == TIME_DUSK)
 		{
 			skycolor->r = 143 - dawn;
 			skycolor->b = 128 - dawn;

@@ -1175,7 +1175,7 @@ void ReInitScreens(int returnToMain)
 		NumPlayers = 1;
 		gWantNight = 0;
 		gNight = 0;
-		gTimeOfDay = 1;
+		gTimeOfDay = TIME_DAY;
 		gSubGameNumber = 0;
 
 		feVariableSave[3] = -1;
@@ -3769,7 +3769,7 @@ int TimeOfDaySelectScreen(int bSetup)
 	{
 		// setup time we want to reset it
 		wantedWeather = 0;
-		wantedTimeOfDay = 1;
+		wantedTimeOfDay = TIME_DAY;
 
 		numButtons = BuildButtonsVertical(3, 168, 208);
 
@@ -3829,7 +3829,7 @@ int TimeOfDaySelectScreen(int bSetup)
 			wantedTimeOfDay += dir;
 			wantedTimeOfDay &= 3;
 
-			gWantNight = wantedTimeOfDay == 2 || wantedTimeOfDay == 3;
+			gWantNight = wantedTimeOfDay == TIME_DUSK || wantedTimeOfDay == TIME_NIGHT;
 		}
 		else if (i == 1)
 		{

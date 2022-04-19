@@ -392,7 +392,7 @@ void MoveHubcap()
 		_MatrixRotate(&Position);
 		savecombo = combointensity;
 
-		if (gTimeOfDay == 3)
+		if (gTimeOfDay == TIME_NIGHT)
 		{
 			cmb = (combointensity & 0xffU) / 3;
 			combointensity = cmb << 0x10 | cmb << 8 | cmb;

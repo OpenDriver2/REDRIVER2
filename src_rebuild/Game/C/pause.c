@@ -188,32 +188,32 @@ extern void LoadSky(void);
 
 void DebugTimeOfDayDay(int direction)
 {
-	wantedTimeOfDay = 1;
-	gTimeOfDay = 1;
+	wantedTimeOfDay = TIME_DAY;
+	gTimeOfDay = TIME_DAY;
 	gWantNight = 0;
 	LoadSky();
 }
 
 void DebugTimeOfDayNight(int direction)
 {
-	wantedTimeOfDay = 3;
-	gTimeOfDay = 3;
+	wantedTimeOfDay = TIME_NIGHT;
+	gTimeOfDay = TIME_NIGHT;
 	gWantNight = 1;
 	LoadSky();
 }
 
 void DebugTimeOfDayDusk(int direction)
 {
-	wantedTimeOfDay = 0;
-	gTimeOfDay = 0;
+	wantedTimeOfDay = TIME_DAWN;
+	gTimeOfDay = TIME_DAWN;
 	gWantNight = 0;
 	LoadSky();
 }
 
 void DebugTimeOfDayDawn(int direction)
 {
-	wantedTimeOfDay = 2;
-	gTimeOfDay = 2;
+	wantedTimeOfDay = TIME_DUSK;
+	gTimeOfDay = TIME_DUSK;
 	gWantNight = 0;
 	LoadSky();
 }

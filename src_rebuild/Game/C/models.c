@@ -59,7 +59,7 @@ void ProcessModel(int modelIdx)
 
 	model->tri_verts = 0; // [A] this is used as additional flags for animated models and triangle processing
 
-	if (gTimeOfDay == 3)
+	if (gTimeOfDay == TIME_NIGHT)
 	{
 		if (model->shape_flags & SHAPE_FLAG_SPRITE)
 		{

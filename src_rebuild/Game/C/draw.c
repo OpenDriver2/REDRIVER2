@@ -179,7 +179,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 #endif
 	SVECTOR* lightVec;
 
-	lightVec = (gTimeOfDay == 3) ? night_vectors : day_vectors;
+	lightVec = (gTimeOfDay == TIME_NIGHT) ? night_vectors : day_vectors;
 
 	lightdd =	FIXEDH(camera_matrix.m[2][0] * lightVec[GameLevel].vx) +
 				FIXEDH(camera_matrix.m[2][1] * lightVec[GameLevel].vy) +
@@ -187,11 +187,11 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 
 	lightLevel = (lightdd >> 18) + 32 & 255;
 
-	if (gWeather > 0 && gTimeOfDay == 1 || (M_BIT(gTimeOfDay) & (M_BIT(0) | M_BIT(2))))
+	if (gWeather > 0 && gTimeOfDay == TIME_DAY || (M_BIT(gTimeOfDay) & (M_BIT(TIME_DAWN) | M_BIT(TIME_DUSK))))
 	{
 		lightLevel = (lightLevel * 2 * NightAmbient) >> 8;
 	}
-	if (gTimeOfDay == 3)
+	if (gTimeOfDay == TIME_NIGHT)
 	{
 		if (GameLevel == 0)
 			lightLevel *= 2;	// [A] level bug - Chicago trees lit wrong
@@ -295,7 +295,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 #define MAX_TREE_SHADOW_DISTANCE 14000
 #endif
 		
-		if (wetness == 0 && gTimeOfDay != 3 &&
+		if (wetness == 0 && gTimeOfDay != TIME_NIGHT &&
 			(pco->value & 32) == 0 && 
 			z < MAX_TREE_SHADOW_DISTANCE &&
 			numShadows < 40)
@@ -320,9 +320,9 @@ void SetupPlaneColours(u_int ambient)
 {
 	u_int r, g, b;
 
-	if (gWeather == 0 && (M_BIT(gTimeOfDay) & (M_BIT(0) | M_BIT(2))) == 0)
+	if (gWeather == 0 && (M_BIT(gTimeOfDay) & (M_BIT(TIME_DAWN) | M_BIT(TIME_DUSK))) == 0)
 	{
-		if (gTimeOfDay == 1)
+		if (gTimeOfDay == TIME_DAY)
 		{
 			b = ambient & 255;
 			g = ambient >> 8 & 255;

@@ -222,11 +222,11 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 	if (gTimeOfDay > -1) 
 	{
 		int combo = combointensity;
-		if (gTimeOfDay < 3)
+		if (gTimeOfDay < TIME_NIGHT)
 		{
 			plotContext.colour = combo & 0xffffffU | 0x2C000000;
 		}
-		else if (gTimeOfDay == 3) 
+		else if (gTimeOfDay == TIME_NIGHT)
 		{
 #ifdef DYNAMIC_LIGHTING
 			int t;

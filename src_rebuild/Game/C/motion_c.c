@@ -1651,7 +1651,7 @@ void DrawTanner(LPPEDESTRIAN pPed)
 
 	if (pPed->padId == 0)
 	{
-		if (gTimeOfDay == 3)
+		if (gTimeOfDay == TIME_NIGHT)
 		{
 			cV.b = 12;
 			cV.g = 12;
@@ -1699,7 +1699,7 @@ int DrawCharacter(LPPEDESTRIAN pPed)
 		bDoingShadow = 1;
 		v.vy = -camera_position.vy - MapHeight((VECTOR*)&pPed->position);
 
-		if (gTimeOfDay == 3)
+		if (gTimeOfDay == TIME_NIGHT)
 		{
 			cV.b = cV.g = cV.r = 12;
 			TannerShadow(pPed, &v, moon_position + GameLevel, &cV, pPed->dir.vy);
@@ -1753,7 +1753,7 @@ void InitTannerShadow(void)
 	POLY_FT4* poly;
 	int i;
 
-	if (gTimeOfDay == 3)
+	if (gTimeOfDay == TIME_NIGHT)
 		brightness = 12;
 	else
 		brightness = 32;

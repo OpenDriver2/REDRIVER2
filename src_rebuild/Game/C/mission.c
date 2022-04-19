@@ -152,7 +152,7 @@ STREAM_SOURCE* PlayerStartInfo[8];
 int numPlayersToCreate = 0;
 int gStartOnFoot = 0;
 int gWeather = 0;
-int gTimeOfDay = 0;
+int gTimeOfDay = TIME_DAY;
 int gShowPlayerDamage = 0;
 int gDontPingInCops = 0;
 int gBatterPlayer = 1;
@@ -514,7 +514,7 @@ void LoadMission(int missionnum)
 	if (wantedWeather > -1)
 		gWeather = wantedWeather;
 
-	if (gTimeOfDay >= 3) 
+	if (gTimeOfDay >= TIME_NIGHT)
 		gNight = 1;
 	else 
 		gNight = 0;

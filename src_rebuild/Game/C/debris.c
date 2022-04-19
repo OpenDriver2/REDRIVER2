@@ -735,7 +735,7 @@ void AddLeaf(VECTOR *Position, int num_leaves, int Type)
 		}
 
 		// apply colors
-		if (gTimeOfDay == 3)
+		if (gTimeOfDay == TIME_NIGHT)
 		{
 			*(u_int*)&myleaf->rgb = *(u_int*)&myleaf->rgb >> 2 & 0x3f3f3f3f;
 		}
@@ -1092,7 +1092,7 @@ void DrawSmashable_sprites(void)
 				{
 					UNIMPLEMENTED();
 
-					if (gWeather - 1U < 2 || gTimeOfDay == 3)
+					if (gWeather - 1U < 2 || gTimeOfDay == TIME_NIGHT)
 					{
 						plotContext.colour = NightAmbient << 0x10 | NightAmbient << 8 | NightAmbient | 0x2c000000;
 					}
@@ -2465,7 +2465,7 @@ void DisplaySpark(SMOKE *spark)
 	{
 		colorind = spark->drift.vy * 3 & 3;
 
-		if (gTimeOfDay == 1)
+		if (gTimeOfDay == TIME_DAY)
 		{
 			poly->r0 = grassColour[colorind][0];
 			poly->g0 = grassColour[colorind][1];
@@ -2582,7 +2582,7 @@ void Setup_Debris(VECTOR *ipos, VECTOR *ispeed, int num_debris, int type)
 			mydebris->rgb.g = debris_colour[GameLevel][col].g;
 			mydebris->rgb.b = debris_colour[GameLevel][col].b;
 
-			if (gTimeOfDay == 3) 
+			if (gTimeOfDay == TIME_NIGHT)
 			{
 				mydebris->rgb.r >>= 1;
 				mydebris->rgb.g >>= 1;

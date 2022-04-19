@@ -304,7 +304,7 @@ void LoadLevelSFX(int missionNum)
 	int i;
 	u_int city_night_fx;
 
-	city_night_fx = (gTimeOfDay == 3);
+	city_night_fx = (gTimeOfDay == TIME_NIGHT);
 
 	cop_bank = missionNum % 4 + 1;
 	cop_model = 3;

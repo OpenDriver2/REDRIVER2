@@ -527,7 +527,7 @@ void DrawN(VECTOR *pScreenPosition, int direct)
 		linef2->x1 = lastPoint.x;
 		linef2->y1 = lastPoint.y;
 
-		if (gTimeOfDay == 3)
+		if (gTimeOfDay == TIME_NIGHT)
 		{
 			linef2->r0 = 75;
 			linef2->g0 = 75;
@@ -1059,7 +1059,7 @@ void DrawMultiplayerMap(void)
 	poly->clut = MapClut;
 	poly->tpage = MapTPage;
 
-	if (gTimeOfDay == 3)
+	if (gTimeOfDay == TIME_NIGHT)
 		r = 50;
 	else
 		r = 100;
@@ -1369,7 +1369,7 @@ void DrawOverheadMap(void)
 			setPolyFT4(spt);
 			setSemiTrans(spt, 1);
 			
-			if (gTimeOfDay == 3) 
+			if (gTimeOfDay == TIME_NIGHT)
 				spt->r0 = spt->g0 = spt->b0 = 50;
 			else
 				spt->r0 = spt->g0 = spt->b0 = 100;

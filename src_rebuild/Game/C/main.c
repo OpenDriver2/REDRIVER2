@@ -388,14 +388,14 @@ void LoadGameLevel(void)
 
 	if (gMultiplayerLevels == 0)
 	{
-		if (gTimeOfDay == 3)
+		if (gTimeOfDay == TIME_NIGHT)
 			SetCityType(CITYTYPE_NIGHT);
 		else
 			SetCityType(CITYTYPE_DAY);
 	}
 	else
 	{
-		if (gTimeOfDay == 3)
+		if (gTimeOfDay == TIME_NIGHT)
 			SetCityType(CITYTYPE_MULTI_NIGHT);
 		else
 			SetCityType(CITYTYPE_MULTI_DAY);
@@ -701,7 +701,7 @@ void State_GameInit(void* param)
 	else
 		wetness = 0;
 
-	if (gTimeOfDay == 2)
+	if (gTimeOfDay == TIME_DUSK)
 	{
 		for ( i = 0; i < MAX_CARS; i++)
 			lightsOnDelay[i] = (i * 11);
@@ -850,7 +850,7 @@ void StepSim(void)
 	int car;
 	int timeOfDay;
 
-	if (M_BIT(gTimeOfDay) & (M_BIT(0) | M_BIT(2)))
+	if (M_BIT(gTimeOfDay) & (M_BIT(TIME_DAWN) | M_BIT(TIME_DUSK)))
 	{
 		DawnCount++;
 	}
@@ -1295,7 +1295,7 @@ void StepGame(void)
 		ControlMap();
 	}
 
-	if (gTimeOfDay == 3)
+	if (gTimeOfDay == TIME_NIGHT)
 		PreLampStreak();
 
 	if ((padd & 0x2000U) && (padd & 0x8000U))
@@ -1317,7 +1317,7 @@ void StepGame(void)
 	lis_pos = camera_position;
 
 	// update colours of ambience
-	if (gTimeOfDay == 0)
+	if (gTimeOfDay == TIME_DAWN)
 	{
 		NightAmbient = (DawnCount >> 7) + 26;
 		gLightsOn = (DawnCount < 4000);
@@ -1325,7 +1325,7 @@ void StepGame(void)
 		if (NightAmbient > 96)
 			NightAmbient = 96;
 	}
-	else if (gTimeOfDay == 1)
+	else if (gTimeOfDay == TIME_DAY)
 	{
 		gLightsOn = 0;
 
@@ -1334,7 +1334,7 @@ void StepGame(void)
 		else
 			NightAmbient = 78;
 	}
-	else if (gTimeOfDay == 2)
+	else if (gTimeOfDay == TIME_DUSK)
 	{
 		if (DawnCount < 3000)
 		{
@@ -1359,7 +1359,7 @@ void StepGame(void)
 		if (NightAmbient < 45)
 			NightAmbient = 45;
 	}
-	else if (gTimeOfDay == 3)
+	else if (gTimeOfDay == TIME_NIGHT)
 	{
 		gLightsOn = 1;
 		NightAmbient = 128;

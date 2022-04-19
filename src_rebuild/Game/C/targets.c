@@ -347,7 +347,7 @@ void DrawStopZone(VECTOR *pPosition)
 	*(ushort*)&pPoly->u2 = *(ushort*)&light_texture.coords.u2;
 	*(ushort*)&pPoly->u3 = *(ushort*)&light_texture.coords.u3;
 
-	if (gTimeOfDay == 3)
+	if (gTimeOfDay == TIME_NIGHT)
 		pPoly->tpage = light_texture.tpageid | 0x20;
 	else
 		pPoly->tpage = light_texture.tpageid | 0x40;

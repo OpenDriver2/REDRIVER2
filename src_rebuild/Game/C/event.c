@@ -3132,7 +3132,7 @@ void DrawEvents(int camera)
 
 									pos.vy += ev->data[2];
 
-									if (gTimeOfDay != 1)
+									if (gTimeOfDay != TIME_DAY)
 										SetupPlaneColours(0x00282828);
 
 									RenderModel(foam.model, &matrix, &pos, 200, (foam.rotate & 0x8000) ? 0x3 : 0x1, 1, 0);

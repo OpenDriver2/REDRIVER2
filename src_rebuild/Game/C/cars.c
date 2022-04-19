@@ -439,7 +439,7 @@ void setupLightingMatrices(void)
 	gte_SetColorMatrix(&colour_matrix);
 	gte_SetLightMatrix(&light_matrix);
 
-	if (gTimeOfDay == 3)
+	if (gTimeOfDay == TIME_NIGHT)
 	{
 		gte_SetBackColor(48, 48, 48);
 	}
@@ -475,7 +475,7 @@ void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 	CVECTOR c0, c1, c2;
 	u_int GT3rgb;
 
-	if (gTimeOfDay == 3)
+	if (gTimeOfDay == TIME_NIGHT)
 	{
 		lightsourcevector = night_vectors[GameLevel];
 		colour = night_colours[GameLevel];
@@ -505,7 +505,7 @@ void ComputeCarLightingLevels(CAR_DATA* cp, char detail)
 	if ((orY + orW > 200) || (cp->lowDetail != (detail | lightning)))
 		doLight = 1;
 
-	if ((M_BIT(gTimeOfDay) & (M_BIT(0) | M_BIT(2))) && (cp->id & 15) == (CameraCnt & 15))
+	if ((M_BIT(gTimeOfDay) & (M_BIT(TIME_DAWN) | M_BIT(TIME_DUSK))) && (cp->id & 15) == (CameraCnt & 15))
 		doLight = 1;
 
 	if (doLight)
@@ -571,12 +571,12 @@ void DrawWheelObject(MODEL* model, SVECTOR* verts, int transparent, int wheelnum
 
 	if (gTimeOfDay > -1)
 	{
-		if (gTimeOfDay < 3)
+		if (gTimeOfDay < TIME_NIGHT)
 		{
 			bright = combointensity & 0xffffffU | 0x2c000000;
 			dim = (combointensity & 0xfcfcfcU) >> 2 | 0x2c000000;
 		}
-		else if (gTimeOfDay == 3)
+		else if (gTimeOfDay == TIME_NIGHT)
 		{
 			combo = (combointensity & 0xffU) / 3;
 			combo = combo << 0x10 | combo << 8 | combo;
@@ -891,9 +891,9 @@ void plotNewCarModel(CAR_MODEL* car, int palette)
 
 	if (gTimeOfDay > -1)
 	{
-		if (gTimeOfDay < 3)
+		if (gTimeOfDay < TIME_NIGHT)
 			lightlevel = combointensity | 0x30000000;
-		else if (gTimeOfDay == 3)
+		else if (gTimeOfDay == TIME_NIGHT)
 			lightlevel = 0x302a2a2a;
 	}
 
@@ -923,7 +923,7 @@ void plotNewCarModel(CAR_MODEL* car, int palette)
 
 	// draw car body
 	_pg.ot = (OTTYPE*)(current->ot + 4);
-	if (gTimeOfDay == 3)
+	if (gTimeOfDay == TIME_NIGHT)
 	{
 		_pg.intensity = (combointensity & 0xfcfcf0U) >> 2;
 #ifdef DYNAMIC_LIGHTING
