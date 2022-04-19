@@ -27,6 +27,7 @@ void InitHiresFonts()
 	u_char* data;
 
 	// init digits
+	if(!gHiresDigitsTexture)
 	{
 		int width, height, bpp;
 
@@ -44,6 +45,7 @@ void InitHiresFonts()
 	}
 
 	// init font2
+	if(!gHiresFontTexture)
 	{
 		int x, y;
 		int size;
@@ -263,6 +265,8 @@ int PrintStringHires(char* string, int x, int y)
 	}
 
 	SetHiresFontTexture(showMap == 0);
+	if(showMap)
+		DrawSync(0);
 
 	return width;
 }
