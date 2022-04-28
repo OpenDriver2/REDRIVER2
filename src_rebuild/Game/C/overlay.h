@@ -28,6 +28,12 @@ extern PERCENTAGE_BAR ProxyBar;
 extern int gDoOverlays;
 extern int gWidescreenOverlayAlign;
 
+//[A]
+extern int gSpeedoType;
+extern int gDisplaySpeedo;
+extern int gDisplayGears;
+extern int gDisplayRPM;
+
 extern int gOverlayXPos;
 extern int gOverlayXOppPos;
 
@@ -35,6 +41,12 @@ extern char OverlayFlashValue;
 
 extern void InitOverlays(); // 0x00014A58
 extern void DisplayOverlays(); // 0x00014C3C
+
+//[A]
+extern void DrawSpeedometer();
+extern void DrawGearDisplay();
+extern void DrawRPMDisplay();
+
 
 extern void SetFullscreenDrawing(); // 0x00015E70
 

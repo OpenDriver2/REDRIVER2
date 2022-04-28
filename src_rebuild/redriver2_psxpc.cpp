@@ -20,6 +20,7 @@
 #include "C/players.h"
 #include "C/time.h"
 #include "C/draw.h"
+#include "C/pres.h"
 
 #include "utils/ini.h"
 
@@ -563,6 +564,14 @@ int main(int argc, char** argv)
 		const char* dataFolderStr = ini_get(config, "fs", "dataFolder");
 		const char* userReplaysStr = ini_get(config, "game", "userChases");
 
+		// [A]
+		extern int gSpeedoType;
+		extern int gDisplaySpeedo;
+		extern int gTextureChoice;
+		extern int gDigitChoice;
+		extern int gDisplayGears;
+		extern int gDisplayRPM;
+
 		if(!cdImageFileName)
 			cdImageFileName = ini_get(config, "cdfs", "image");
 
@@ -594,6 +603,14 @@ int main(int argc, char** argv)
 		ini_sget(config, "game", "fastLoadingScreens", "%d", &gFastLoadingScreens);
 		ini_sget(config, "game", "languageId", "%d", &gUserLanguage);
 		ini_sget(config, "game", "overrideContent", "%d", &gContentOverride);
+
+		// configure game extras [A]
+		ini_sget(config, "extras", "SpeedometerType", "%d", &gSpeedoType);
+		ini_sget(config, "extras", "DisplaySpeedometer", "%d", &gDisplaySpeedo);
+		ini_sget(config, "extras", "DisplayGears", "%d", &gDisplayGears);
+		ini_sget(config, "extras", "DisplayRPM", "%d", &gDisplayRPM);
+		ini_sget(config, "extras", "FontChoice", "%d", &gTextureChoice);
+		ini_sget(config, "extras", "DigitChoice", "%d", &gDigitChoice);
 		
 	
 		gCameraDefaultScrZ = MAX(MIN(newScrZ, 384), 128);

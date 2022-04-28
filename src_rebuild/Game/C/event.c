@@ -512,6 +512,7 @@ FixedEvent rioDoor[6] =
   }
 };
 
+// if you want to make the final mission absolute hell. Heli pathing is done here. 
 Helicopter HelicopterData =
 {
   400,

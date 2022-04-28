@@ -19,6 +19,9 @@ extern int gShowMap;
 TextureID gHiresFontTexture = 0;
 TextureID gHiresDigitsTexture = 0;
 
+int gTextureChoice = 0; 
+int gDigitChoice = 0;
+
 stbtt_bakedchar gSTBCharData[224];	// ASCII 32..126 is 95 glyphs
 
 void InitHiresFonts()
@@ -30,8 +33,12 @@ void InitHiresFonts()
 	if(!gHiresDigitsTexture)
 	{
 		int width, height, bpp;
-
-		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\DIGITS.TGA");
+		
+		if (gDigitChoice == 1)
+			sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\DIGITS.TGA");
+		else 
+			sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\HACK.TGA");
+		
 		FS_FixPathSlashes(namebuffer);
 
 		if (LoadTGAImage(namebuffer, &data, width, height, bpp))
@@ -50,7 +57,14 @@ void InitHiresFonts()
 		int x, y;
 		int size;
 		FILE* fp;
+
+		if (gTextureChoice == 1)
 		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\ariblk.ttf");
+	else
+		if (gTextureChoice == 2)
+		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\ariblk_D1.ttf");
+	else
+		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\OG.ttf");
 
 		fp = fopen(namebuffer, "rb");
 		if (fp) 
@@ -244,7 +258,7 @@ int PrintStringHires(char* string, int x, int y)
 			// add shadow poly
 			memcpy(shadowFT4, fontFT4, sizeof(POLY_FT4));
 			setRGB0(shadowFT4, 0, 0, 0);
-			setXYWH(shadowFT4, q.x0 + 0.5f, q.y0 + 0.5f, q.x1, q.y1);
+			setXYWH(shadowFT4, q.x0 + 1.0f, q.y0 + 1.0f, q.x1, q.y1); // adjust shadow with x.xf
 
 			addPrim(current->ot, shadowFT4);
 			current->primptr += sizeof(POLY_FT4);

@@ -15,6 +15,10 @@
 #include "camera.h"
 #include "felony.h"
 #include "scores.h"
+#include "dr2roads.h"
+#include "convert.h"
+#include "cop_ai.h"
+#include "civ_ai.h"
 
 COLOUR_BAND felonyColour[3] =
 {
@@ -51,6 +55,11 @@ int gWidescreenOverlayAlign = 0; // [A] custom widescreen alignment by PSX hack
 // [A]
 int gOverlayXPos = 16;
 int gOverlayXOppPos = 208;
+
+int gSpeedoType = 0; // 0 for KPH, 1 for MPH
+int gDisplaySpeedo = 0; // 0 for no, 1 for Yes
+int gDisplayGears = 0; 
+int gDisplayRPM = 0; 
 
 // [D] [T]
 void PrintScoreTableTime(int x, int y, int time)
@@ -669,11 +678,199 @@ void DrawDrivingGameOverlays(void)
 	}
 }
 
+// [A] 
+void DrawGearDisplay(void)
+{
+	//Gear Display
+	{
+		int player_id = 0;
+		CAR_DATA* cp;
+		PLAYER* lp;
+
+		lp = &player[player_id];
+		//cp = &car_data[lp->cameraCarId];
+		cp = &car_data[player[0].playerCarId];
+
+		char gearString[32];
+		int GearDisplay;
+		int GearSpeed;
+
+		int gGearOverlayXPos = gMapXOffset - 22;
+		int gGearOverlayYPos = gMapYOffset + 58;
+
+		GearDisplay = cp->hd.gear + 1;
+		GearSpeed = cp->hd.wheel_speed;
+
+		int gear = GearDisplay;
+
+
+		if (GearSpeed < 0)
+			sprintf(gearString, ".G: R.", gear);
+		else 
+			if (GearSpeed == 0)
+				sprintf(gearString, ".G: N.", gear);
+			else
+				sprintf(gearString, ".G: %d.", gear);
+
+		SetTextColour(255, 255, 255);
+
+		PrintString(gearString, gGearOverlayXPos, gGearOverlayYPos);
+	}
+}
+
+// [A] 
+void DrawRPMDisplay(void)
+{
+	//Gear Display
+	{
+		int player_id = 0;
+		CAR_DATA* cp;
+		PLAYER* lp;
+
+		lp = &player[player_id];
+		cp = &car_data[player[0].playerCarId];
+
+		char RPMString[32];
+
+		int RPMMin;
+		int RPMMax;
+		int RPMDisplay;
+
+		int gRPMOverlayXPos = gMapXOffset - 90;
+		int gRPMOverlayYPos = gMapYOffset + 58;
+
+		RPMMax = cp->hd.revs / 4;
+		RPMMin = 800;
+		RPMDisplay = RPMMin + RPMMax; 
+
+		int RPM = RPMDisplay;
+		
+		sprintf(RPMString, "RPM %d", RPM);
+
+		SetTextColour(255, 255, 255);
+
+		PrintString(RPMString, gRPMOverlayXPos, gRPMOverlayYPos);
+	}
+}
+
+// [A] 
+void DrawSpeedometer(void)
+{
+	// Speedometer
+	{
+		int player_id = 0;
+		CAR_DATA* cp;
+		PLAYER* lp;
+		int i;
+		bool goingWrongWay;
+		int surfInd;
+		int maxSpeed;
+		int limit;
+		int exitId;
+		int _exitId;
+		VECTOR* carPos;
+		DRIVER2_ROAD_INFO roadInfo;
+		DRIVER2_JUNCTION* jn;
+
+		lp = &player[player_id];
+		//cp = &car_data[lp->cameraCarId];
+		cp = &car_data[player[0].playerCarId];
+		carPos = (VECTOR*)cp->hd.where.t;
+
+		char string[32];
+		int WheelSpeed;
+
+		int gSpeedoOverlayXPos = gMapXOffset + 15;
+		int gSpeedoOverlayYPos = gMapYOffset + 58;
+
+		WheelSpeed = cp->hd.wheel_speed;
+
+
+		int kph = WheelSpeed / 6161;
+		int mph = WheelSpeed / 9989;
+
+		if (gSpeedoType == 0) 
+		//if (GameLevel == 1 || GameLevel == 3)
+			sprintf(string, "%d:Kph", kph);
+		else
+			sprintf(string, "%d:Mph", mph);
+
+		//Fetch the road speed limits and update. Mostly ported from felony.c. Easier Method? 
+		surfInd = GetSurfaceIndex(carPos);
+
+		// check junctions
+		if (IS_JUNCTION_SURFACE(surfInd))
+		{
+			jn = GET_JUNCTION(surfInd);
+
+			if ((IS_CURVED_SURFACE(playerLastRoad) || IS_STRAIGHT_SURFACE(playerLastRoad)) && (jn->flags & 0x1))
+			{
+				exitId = 0;
+				i = 0;
+				while (i < 4)
+				{
+					if (jn->ExitIdx[i] == playerLastRoad)
+					{
+						exitId = i;
+						break;
+					}
+					i++;
+				}
+			}
+		}
+		playerLastRoad = surfInd;
+
+		// get road speed limit
+		if (GetSurfaceRoadInfo(&roadInfo, surfInd))
+		{
+			int lane;
+			int crd;
+
+			lane = GetLaneByPositionOnRoad(&roadInfo, carPos);
+
+			if (roadInfo.straight)
+				crd = (roadInfo.straight->angle - cp->hd.direction) + 1024U >> 0xb & 1;
+			else
+				crd = NotTravellingAlongCurve(carPos->vx, carPos->vz, cp->hd.direction, roadInfo.curve);
+
+			
+		maxSpeed = speedLimits[ROAD_SPEED_LIMIT(&roadInfo)];
+		}
+		else
+		{
+			maxSpeed = speedLimits[2];
+		}
+
+		if (speedLimits[2] == maxSpeed)
+			limit = (maxSpeed * 19) >> 4;
+		else
+			limit = (maxSpeed * 3) >> 1;
+
+		int speedoFlash = CameraCnt * 15; // flash speed for the speedometer
+
+		if (FIXEDH(WheelSpeed) > limit)
+			SetTextColour(255, speedoFlash, speedoFlash); // Red and white
+			//SetColourByValue();
+		else
+			SetTextColour(255, 255, 255);
+
+		PrintString(string, gSpeedoOverlayXPos, gSpeedoOverlayYPos);
+	}
+}
 
 // [D] [T]
 void DisplayOverlays(void)
 {
-	short* felony;
+	short* felony;	
+	
+
+	int player_id = 0;
+	CAR_DATA* cp;
+	PLAYER* lp;
+
+	lp = &player[player_id];
+	//cp = &car_data[lp->cameraCarId];
+	cp = &car_data[player[0].playerCarId];
 
 #ifndef PSX
 	if (gWidescreenOverlayAlign)
@@ -731,6 +928,16 @@ void DisplayOverlays(void)
 
 		DrawDrivingGameOverlays();
 		DrawOverheadMap();
+
+		if (gDisplaySpeedo == 1 && lp->playerType == 1)
+			DrawSpeedometer();
+			
+
+		if (gDisplayGears == 1 && lp->playerType == 1)
+			DrawGearDisplay();
+
+		if (gDisplayRPM == 1 && lp->playerType == 1)
+			DrawRPMDisplay();
 
 		if (CopsCanSeePlayer)
 		{

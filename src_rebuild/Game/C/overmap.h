@@ -1,8 +1,8 @@
 #ifndef OVERMAP_H
 #define OVERMAP_H
 
-#define MAP_SIZE_W	64
-#define MAP_SIZE_H	60
+#define MAP_SIZE_W	64 // default 64
+#define MAP_SIZE_H	60 // default 60
 
 extern int gMapXOffset;
 extern int gMapYOffset;

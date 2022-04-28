@@ -1,5 +1,5 @@
 #ifndef GAME_VERSION_N
-#define GAME_VERSION_N		"7.6"
+#define GAME_VERSION_N		"7.6 - HEY!"
 #endif
 
 #ifndef GAME_VERSION_RES

@@ -88,8 +88,8 @@ static unsigned short MapTPage = 0;
 
 static int gUseRotatedMap = 0;
 
-int gMapXOffset = 249;
-int gMapYOffset = 181;
+int gMapXOffset = 640;
+int gMapYOffset = 480;
 
 void WorldToOverheadMapPositions(VECTOR * pGlobalPosition, VECTOR * pOverheadMapPosition, int count, char inputRelative, int outputRelative);
 void WorldToMultiplayerMap(VECTOR * in, VECTOR * out);
@@ -463,7 +463,7 @@ void draw_box(int yPos, int h)
 
 	linef4->r0 = 0;
 	linef4->g0 = 0;
-	linef4->b0 = 128;
+	linef4->b0 = 128; // default 128
 
 	linef4->x0 = gMapXOffset;
 	linef4->y0 = yPos;
@@ -485,7 +485,7 @@ void draw_box(int yPos, int h)
 
 	linef2->r0 = 0;
 	linef2->g0 = 0;
-	linef2->b0 = 128;
+	linef2->b0 = 128; // default 128
 
 	linef2->x0 = gMapXOffset;
 	linef2->y0 = yPos;
@@ -1180,7 +1180,7 @@ void DrawOverheadMap(void)
 	addPrim(current->ot + 1, drarea);
 	current->primptr += sizeof(DR_AREA);
 
-	WorldToOverheadMapPositions((VECTOR *)player->pos, &vec, 1, 0, 0);
+	WorldToOverheadMapPositions((VECTOR *)player->pos, &vec, 1, 0, 0); // the playerDot
 
 	// draw map center
 	if (vec.vx > map_minX && vec.vx < map_maxX && 

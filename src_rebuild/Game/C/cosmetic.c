@@ -70,11 +70,12 @@ void LoadCosmetics(int level)
 	ProcessCosmeticsLump((char*)_other_buffer, 0);
 }
 
-#define REVERSELIGHT_SIZE		14
+
+#define REVERSELIGHT_SIZE		18
 #define INDICATORLIGHT_SIZE		20
-#define BRAKELIGHT_SIZE			17
-#define HEADLIGHT_SIZE			18
-#define BACKLIGHT_SIZE			17
+#define BRAKELIGHT_SIZE			20 // default 17
+#define HEADLIGHT_SIZE			20 // default 18
+#define BACKLIGHT_SIZE			25 // default 17
 
 // [D] [T]
 void AddReverseLight(CAR_DATA *cp)
@@ -469,9 +470,10 @@ void AddNightLights(CAR_DATA *cp)
 		lights = 0;
 		lightFlag = 8 << (loop & 0x1f);
 
-		col.r = 128;
-		col.g = 124;
-		col.b = 112;
+		// change these to brighten the lights
+		col.r = 255;
+		col.g = 255;
+		col.b = 255;
 		col2 = col;
 
 		if (cp->ap.damage[loop] < 1000)
@@ -498,7 +500,8 @@ void AddNightLights(CAR_DATA *cp)
 				Position1.vz = vec.vz + (cp->ap.damage[loop] >> 6);
 				Position2.vz = vec.vz + (cp->ap.damage[loop] >> 6);
 
-				ShowCarlight(&Position1, cp, &col, HEADLIGHT_SIZE, HEADLIGHT_SIZE*4, &light_texture, lightFlag & 0xff | 1);
+				// * 3 on the headlight_sizes 
+				ShowCarlight(&Position1, cp, &col, HEADLIGHT_SIZE, HEADLIGHT_SIZE*3, &light_texture, lightFlag & 0xff | 1);
 
 				lights = 1;
 				lit++;
@@ -507,7 +510,7 @@ void AddNightLights(CAR_DATA *cp)
 				{
 					lights++;
 
-					ShowCarlight(&Position2, cp, &col2, HEADLIGHT_SIZE, HEADLIGHT_SIZE * 4, &light_texture, 1);
+					ShowCarlight(&Position2, cp, &col2, HEADLIGHT_SIZE, HEADLIGHT_SIZE * 3, &light_texture, 1);
 					lit++;
 				}
 			}
@@ -519,7 +522,7 @@ void AddNightLights(CAR_DATA *cp)
 				Position1.vz = vec.vz + (cp->ap.damage[loop] >> 6);
 				Position2.vz = vec.vz + (cp->ap.damage[loop] >> 6);
 
-				ShowCarlight(&Position1, cp, &col, HEADLIGHT_SIZE, HEADLIGHT_SIZE * 4, &light_texture, lightFlag & 0xff | 1);
+				ShowCarlight(&Position1, cp, &col, HEADLIGHT_SIZE, HEADLIGHT_SIZE * 3, &light_texture, lightFlag & 0xff | 1);
 
 				lights = 1;
 				lit++;
@@ -613,9 +616,9 @@ void AddNightLights(CAR_DATA *cp)
 	// front lights pool
 	if (lit)
 	{
-		col.r = 128;
-		col.g = 120;
-		col.b = 110;
+		col.r = 255;
+		col.g = 255;
+		col.b = 255;
 
 		PlacePoolForCar(cp, &col, 1, 0);
 	}
