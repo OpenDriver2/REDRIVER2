@@ -712,7 +712,7 @@ void DrawGearDisplay(void)
 			else
 				sprintf(gearString, ".G: %d.", gear);
 
-		SetTextColour(255, 255, 255);
+		SetTextColour(128, 128, 64);
 
 		PrintString(gearString, gGearOverlayXPos, gGearOverlayYPos);
 	}
@@ -747,7 +747,7 @@ void DrawRPMDisplay(void)
 		
 		sprintf(RPMString, "RPM %d", RPM);
 
-		SetTextColour(255, 255, 255);
+		SetTextColour(128, 128, 64);
 
 		PrintString(RPMString, gRPMOverlayXPos, gRPMOverlayYPos);
 	}

@@ -21,6 +21,7 @@
 #include "C/time.h"
 #include "C/draw.h"
 #include "C/pres.h"
+#include "C/cosmetic.h"
 
 #include "utils/ini.h"
 
@@ -571,6 +572,7 @@ int main(int argc, char** argv)
 		extern int gDigitChoice;
 		extern int gDisplayGears;
 		extern int gDisplayRPM;
+		extern int gTurnSignalColour;
 
 		if(!cdImageFileName)
 			cdImageFileName = ini_get(config, "cdfs", "image");
@@ -609,6 +611,7 @@ int main(int argc, char** argv)
 		ini_sget(config, "extras", "DisplaySpeedometer", "%d", &gDisplaySpeedo);
 		ini_sget(config, "extras", "DisplayGears", "%d", &gDisplayGears);
 		ini_sget(config, "extras", "DisplayRPM", "%d", &gDisplayRPM);
+		ini_sget(config, "extras", "AmberSignals", "%d", &gTurnSignalColour);
 		ini_sget(config, "extras", "FontChoice", "%d", &gTextureChoice);
 		ini_sget(config, "extras", "DigitChoice", "%d", &gDigitChoice);
 		

@@ -754,6 +754,7 @@ void CopIndicator(int xpos, int strength)
 }
 
 // [D] [T]
+// Note for later, remember to remove.
 void DrawSightCone(COP_SIGHT_DATA *pCopSightData, VECTOR *pPosition, int direction, int flags)
 {
 	short temp;

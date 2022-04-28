@@ -23,6 +23,9 @@ CAR_COSMETICS car_cosmetics[MAX_CAR_MODELS];
 // remember: we already have more than 1k of free memory with optimizations
 CAR_COSMETICS levelSpecCosmetics[5];
 
+//[A]
+int gTurnSignalColour = 0;
+
 // [D] [T]
 void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 {
@@ -147,10 +150,15 @@ void AddIndicatorLight(CAR_DATA *cp, int Type)
 	else
 		brightness = cp->ap.life << 1;
 
-	col.r = brightness & 0xFF;
+	// [A] 1 for orange/amber 0 for original.
+	
+		col.r = brightness & 0xFF;
+		col.g = 0;
+		col.b = 0;
 
-	col.g = 0;
-	col.b = 0;
+		if (gTurnSignalColour == 1)
+		col.g = brightness / 2;
+	
 
 	if (pauseflag == 0)
 		*life += 8;
