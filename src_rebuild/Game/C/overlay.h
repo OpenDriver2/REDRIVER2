@@ -44,7 +44,9 @@ extern void DisplayOverlays(); // 0x00014C3C
 
 //[A]
 extern void DrawSpeedometer();
+extern void DrawSpeedometer2();
 extern void DrawGearDisplay();
+extern void DrawGearDisplay2();
 extern void DrawRPMDisplay();
 
 

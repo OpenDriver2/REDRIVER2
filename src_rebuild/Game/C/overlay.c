@@ -61,6 +61,10 @@ int gDisplaySpeedo = 0; // 0 for no, 1 for Yes
 int gDisplayGears = 0; 
 int gDisplayRPM = 0; 
 
+extern int gMultiplayerLevels;
+extern short gCameraDefaultScrZ;
+
+
 // [D] [T]
 void PrintScoreTableTime(int x, int y, int time)
 {
@@ -678,7 +682,7 @@ void DrawDrivingGameOverlays(void)
 	}
 }
 
-// [A] 
+// [A] Singleplayer Gears
 void DrawGearDisplay(void)
 {
 	//Gear Display
@@ -696,7 +700,11 @@ void DrawGearDisplay(void)
 		int GearSpeed;
 
 		int gGearOverlayXPos = gMapXOffset - 22;
-		int gGearOverlayYPos = gMapYOffset + 58;
+		int gGearOverlayYPos = gMapYOffset + 61;
+
+		// Multiplayer 
+		int gGearOverlayXPos2 = gMapXOffset - 22;
+		int gGearOverlayYPos2 = gMapYOffset - 16;
 
 		GearDisplay = cp->hd.gear + 1;
 		GearSpeed = cp->hd.wheel_speed;
@@ -714,6 +722,50 @@ void DrawGearDisplay(void)
 
 		SetTextColour(128, 128, 64);
 
+		if (NumPlayers == 2)
+			PrintString(gearString, gGearOverlayXPos2, gGearOverlayYPos2);
+		else
+			PrintString(gearString, gGearOverlayXPos, gGearOverlayYPos);
+	}
+}
+
+// [A] Multiplayer Gears
+void DrawGearDisplay2(void)
+{
+	//Gear Display
+	{
+		int player_id = 0;
+		CAR_DATA* cp;
+		PLAYER* lp;
+
+		lp = &player[player_id];
+		//cp = &car_data[lp->cameraCarId];
+		cp = &car_data[player[1].playerCarId];
+
+		char gearString[32];
+		int GearDisplay;
+		int GearSpeed;
+
+		int gGearOverlayXPos = gMapXOffset - 22;
+		int gGearOverlayYPos = gMapYOffset + 134;
+
+		GearDisplay = cp->hd.gear + 1;
+		GearSpeed = cp->hd.wheel_speed;
+
+		int gear = GearDisplay;
+
+
+		if (GearSpeed < 0)
+			sprintf(gearString, ".G: R.", gear);
+		else
+			if (GearSpeed == 0)
+				sprintf(gearString, ".G: N.", gear);
+			else
+				sprintf(gearString, ".G: %d.", gear);
+
+		SetTextColour(128, 128, 64);
+
+		
 		PrintString(gearString, gGearOverlayXPos, gGearOverlayYPos);
 	}
 }
@@ -737,7 +789,7 @@ void DrawRPMDisplay(void)
 		int RPMDisplay;
 
 		int gRPMOverlayXPos = gMapXOffset - 90;
-		int gRPMOverlayYPos = gMapYOffset + 58;
+		int gRPMOverlayYPos = gMapYOffset + 61;
 
 		RPMMax = cp->hd.revs / 4;
 		RPMMin = 800;
@@ -753,7 +805,7 @@ void DrawRPMDisplay(void)
 	}
 }
 
-// [A] 
+// [A] Singleplayer Speedometer
 void DrawSpeedometer(void)
 {
 	// Speedometer
@@ -780,8 +832,13 @@ void DrawSpeedometer(void)
 		char string[32];
 		int WheelSpeed;
 
+		// Singleplayer
 		int gSpeedoOverlayXPos = gMapXOffset + 15;
-		int gSpeedoOverlayYPos = gMapYOffset + 58;
+		int gSpeedoOverlayYPos = gMapYOffset + 61;
+
+		// Multiplayer 
+		int gSpeedoOverlayXPos2 = gMapXOffset + 15;
+		int gSpeedoOverlayYPos2 = gMapYOffset - 16;
 
 		WheelSpeed = cp->hd.wheel_speed;
 
@@ -854,6 +911,114 @@ void DrawSpeedometer(void)
 		else
 			SetTextColour(255, 255, 255);
 
+		if (NumPlayers == 2)
+			PrintString(string, gSpeedoOverlayXPos2, gSpeedoOverlayYPos2);
+		else
+			PrintString(string, gSpeedoOverlayXPos, gSpeedoOverlayYPos);
+	}
+}
+
+// [A] Player 2 Speedometer
+void DrawSpeedometer2(void)
+{
+	// Speedometer
+	{
+		int player_id = 0;
+		CAR_DATA* cp;
+		PLAYER* lp;
+		int i;
+		bool goingWrongWay;
+		int surfInd;
+		int maxSpeed;
+		int limit;
+		int exitId;
+		int _exitId;
+		VECTOR* carPos;
+		DRIVER2_ROAD_INFO roadInfo;
+		DRIVER2_JUNCTION* jn;
+
+		lp = &player[player_id];
+		//cp = &car_data[lp->cameraCarId];
+		cp = &car_data[player[1].playerCarId];
+		carPos = (VECTOR*)cp->hd.where.t;
+
+		char string[32];
+		int WheelSpeed;
+
+		int gSpeedoOverlayXPos = gMapXOffset + 15;
+		int gSpeedoOverlayYPos = gMapYOffset + 134;
+
+		WheelSpeed = cp->hd.wheel_speed;
+
+
+		int kph = WheelSpeed / 6161;
+		int mph = WheelSpeed / 9989;
+
+		if (gSpeedoType == 0)
+			//if (GameLevel == 1 || GameLevel == 3)
+			sprintf(string, "%d:Kph", kph);
+		else
+			sprintf(string, "%d:Mph", mph);
+
+		//Fetch the road speed limits and update. Mostly ported from felony.c. Easier Method? 
+		surfInd = GetSurfaceIndex(carPos);
+
+		// check junctions
+		if (IS_JUNCTION_SURFACE(surfInd))
+		{
+			jn = GET_JUNCTION(surfInd);
+
+			if ((IS_CURVED_SURFACE(playerLastRoad) || IS_STRAIGHT_SURFACE(playerLastRoad)) && (jn->flags & 0x1))
+			{
+				exitId = 0;
+				i = 0;
+				while (i < 4)
+				{
+					if (jn->ExitIdx[i] == playerLastRoad)
+					{
+						exitId = i;
+						break;
+					}
+					i++;
+				}
+			}
+		}
+		playerLastRoad = surfInd;
+
+		// get road speed limit
+		if (GetSurfaceRoadInfo(&roadInfo, surfInd))
+		{
+			int lane;
+			int crd;
+
+			lane = GetLaneByPositionOnRoad(&roadInfo, carPos);
+
+			if (roadInfo.straight)
+				crd = (roadInfo.straight->angle - cp->hd.direction) + 1024U >> 0xb & 1;
+			else
+				crd = NotTravellingAlongCurve(carPos->vx, carPos->vz, cp->hd.direction, roadInfo.curve);
+
+
+			maxSpeed = speedLimits[ROAD_SPEED_LIMIT(&roadInfo)];
+		}
+		else
+		{
+			maxSpeed = speedLimits[2];
+		}
+
+		if (speedLimits[2] == maxSpeed)
+			limit = (maxSpeed * 19) >> 4;
+		else
+			limit = (maxSpeed * 3) >> 1;
+
+		int speedoFlash = CameraCnt * 15; // flash speed for the speedometer
+
+		if (FIXEDH(WheelSpeed) > limit)
+			SetTextColour(255, speedoFlash, speedoFlash); // Red and white
+			//SetColourByValue();
+		else
+			SetTextColour(255, 255, 255);
+
 		PrintString(string, gSpeedoOverlayXPos, gSpeedoOverlayYPos);
 	}
 }
@@ -865,12 +1030,31 @@ void DisplayOverlays(void)
 	
 
 	int player_id = 0;
+	int player_id2 = 1;
 	CAR_DATA* cp;
 	PLAYER* lp;
+	PLAYER* lp2;
 
 	lp = &player[player_id];
+	lp2 =&player[player_id2];
 	//cp = &car_data[lp->cameraCarId];
 	cp = &car_data[player[0].playerCarId];
+
+	// [A] Single Player Stats 
+	if (gDisplaySpeedo == 1 && lp->playerType == 1)
+		DrawSpeedometer();
+
+	if (gDisplayGears == 1 && lp->playerType == 1)
+		DrawGearDisplay();
+
+	if (gDisplayRPM == 1 && gMultiplayerLevels == 0 && lp->playerType == 1)
+		DrawRPMDisplay();
+
+	// [A] Multiplayer 
+	if (gDisplaySpeedo == 1 && gMultiplayerLevels == 1 && lp2->playerType == 1)
+		DrawSpeedometer2();
+	if (gDisplayGears == 1 && gMultiplayerLevels == 1 && lp2->playerType == 1)
+		DrawGearDisplay2();
 
 #ifndef PSX
 	if (gWidescreenOverlayAlign)
@@ -929,15 +1113,12 @@ void DisplayOverlays(void)
 		DrawDrivingGameOverlays();
 		DrawOverheadMap();
 
-		if (gDisplaySpeedo == 1 && lp->playerType == 1)
-			DrawSpeedometer();
-			
-
-		if (gDisplayGears == 1 && lp->playerType == 1)
-			DrawGearDisplay();
-
-		if (gDisplayRPM == 1 && lp->playerType == 1)
-			DrawRPMDisplay();
+		
+		// [A] Multiplayer FOV
+			if (NumPlayers == 2)
+				gCameraDefaultScrZ = 200;
+			else
+				gCameraDefaultScrZ = 256; // Need to learn better way
 
 		if (CopsCanSeePlayer)
 		{
