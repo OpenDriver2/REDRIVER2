@@ -8,6 +8,7 @@ extern int gcar_num;
 
 //[A] 
 extern int gTurnSignalColour;
+extern int gToggleBeamStrength;
 
 extern void LoadCosmetics(int level); // 0x00031160
 extern void SetupSpecCosmetics(char *loadbuffer); // 0x00031360

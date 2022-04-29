@@ -1040,22 +1040,6 @@ void DisplayOverlays(void)
 	//cp = &car_data[lp->cameraCarId];
 	cp = &car_data[player[0].playerCarId];
 
-	// [A] Single Player Stats 
-	if (gDisplaySpeedo == 1 && lp->playerType == 1)
-		DrawSpeedometer();
-
-	if (gDisplayGears == 1 && lp->playerType == 1)
-		DrawGearDisplay();
-
-	if (gDisplayRPM == 1 && gMultiplayerLevels == 0 && lp->playerType == 1)
-		DrawRPMDisplay();
-
-	// [A] Multiplayer 
-	if (gDisplaySpeedo == 1 && gMultiplayerLevels == 1 && lp2->playerType == 1)
-		DrawSpeedometer2();
-	if (gDisplayGears == 1 && gMultiplayerLevels == 1 && lp2->playerType == 1)
-		DrawGearDisplay2();
-
 #ifndef PSX
 	if (gWidescreenOverlayAlign)
 	{
@@ -1113,12 +1097,29 @@ void DisplayOverlays(void)
 		DrawDrivingGameOverlays();
 		DrawOverheadMap();
 
+		// [A] Single Player Stats 
+		if (gDisplaySpeedo == 1 && lp->playerType == 1)
+			DrawSpeedometer();
+
+		if (gDisplayGears == 1 && lp->playerType == 1)
+			DrawGearDisplay();
+
+		if (gDisplayRPM == 1 && gMultiplayerLevels == 0 && lp->playerType == 1)
+			DrawRPMDisplay();
+
+		// [A] Multiplayer 
+		if (gDisplaySpeedo == 1 && gMultiplayerLevels == 1 && lp2->playerType == 1)
+			DrawSpeedometer2();
+		if (gDisplayGears == 1 && gMultiplayerLevels == 1 && lp2->playerType == 1)
+			DrawGearDisplay2();
+
 		
 		// [A] Multiplayer FOV
-			if (NumPlayers == 2)
-				gCameraDefaultScrZ = 200;
-			else
-				gCameraDefaultScrZ = 256; // Need to learn better way
+		if (NumPlayers == 2)
+			gCameraDefaultScrZ = 200;
+		else
+			gCameraDefaultScrZ = 256; // Need to learn better way
+			
 
 		if (CopsCanSeePlayer)
 		{

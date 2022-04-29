@@ -127,6 +127,13 @@ void FreeCameraKeyboardHandler(int nKey, char down)
 		g_FreeCameraEnabled ^= 1;
 		printf("Free camera: %s\n", g_FreeCameraEnabled ? "ON" : "OFF");
 	}
+
+	if (nKey == SDL_SCANCODE_L)
+	{
+		gToggleBeamStrength ^= 1;
+		//gSpeedoType ^= 1;
+		printf("LightBeams: %s\n", g_FreeCameraEnabled ? "ON" : "OFF");
+	}
 }
 
 int gShowCollisionDebug = 0;
@@ -573,6 +580,7 @@ int main(int argc, char** argv)
 		extern int gDisplayGears;
 		extern int gDisplayRPM;
 		extern int gTurnSignalColour;
+		extern int gToggleBeamStrength;
 
 		if(!cdImageFileName)
 			cdImageFileName = ini_get(config, "cdfs", "image");
@@ -607,6 +615,7 @@ int main(int argc, char** argv)
 		ini_sget(config, "game", "overrideContent", "%d", &gContentOverride);
 
 		// configure game extras [A]
+		ini_sget(config,"extras", "ToggleBeamStrength", "%d", & gToggleBeamStrength);
 		ini_sget(config, "extras", "SpeedometerType", "%d", &gSpeedoType);
 		ini_sget(config, "extras", "DisplaySpeedometer", "%d", &gDisplaySpeedo);
 		ini_sget(config, "extras", "DisplayGears", "%d", &gDisplayGears);
