@@ -910,7 +910,7 @@ void StepSim(void)
 			for (i = 0; i < 10; i++)
 				PingInCivCar(15900);
 		}
-		else if (numCivCars < maxCivCars && (NumPlayers == 1 || (NumPlayers == 2 && GameType == GAME_COPSANDROBBERS)))
+		else if (numCivCars < maxCivCars) // Traffic in multiplayer is fun
 		{
 			// make 5 tries
 			for (i = 0; i < 5; i++)

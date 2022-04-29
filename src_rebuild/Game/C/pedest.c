@@ -1991,7 +1991,7 @@ void CivPedSit(LPPEDESTRIAN pPed)
 // [D] [T]
 void HandlePedestrians(void)
 {
-	if (gInGameCutsceneActive != 0 || NumPlayers != 1)
+	if (gInGameCutsceneActive != 0)
 		return;
 
 	BuildCarCollisionBox();
