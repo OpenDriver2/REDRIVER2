@@ -230,23 +230,11 @@ void InitialiseMissionDefaults(void)
 {
 	int i;
 
-	// Messy I know :P 
-	if (NumPlayers == 2 && GameType == GAME_TAKEADRIVE)
-		lockAllTheDoors = 0;
-	else
-		if (NumPlayers == 2 && GameType == GAME_COPSANDROBBERS) 
+	// [A] 
+	if (GameType > GAME_TAKEADRIVE)
 		lockAllTheDoors = 1;
 	else
-		if (NumPlayers == 2 && GameType == GAME_CAPTURETHEFLAG)
-			lockAllTheDoors = 1;
-		else
-			if (NumPlayers == 2 && GameType == GAME_CHECKPOINT)
-				lockAllTheDoors = 1;
-			else
-				if (NumPlayers == 2 && GameType == GAME_SECRET)
-					lockAllTheDoors = 1;
-				else
-					lockAllTheDoors = 0;
+		lockAllTheDoors = 0;
 
 	tannerDeathTimer = 0;
 
