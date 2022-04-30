@@ -38,7 +38,8 @@ void CarReflection()
 		int width, height, bpp;
 
 		
-		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\REFLECTIONS.TGA");
+		//sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\REFLECTIONS.TGA");
+		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\DIGITS.TGA");
 		
 
 		FS_FixPathSlashes(namebuffer);
@@ -130,27 +131,36 @@ void InitHiresFonts()
 
 // [A] attempt to restore D1 reflections on car.
 // Not working yet
-void SetCarReflection(int enabled, CAR_POLY)
+void SetCarReflection(int enabled)
 {
+	int Z;
+	int indices;
+	u_int FT3rgb;
+	SVECTOR* v2;
+	SVECTOR* v1;
+	SVECTOR* v0;
+	POLY_F3* prim;
+	OTTYPE* ot;
+
 	if (gCarReflectionTexture == 0)
 	{
 		return;
 	}
 
-	DR_PSYX_TEX* CAR_POLY = (DR_PSYX_TEX*)current->primptr;
+	DR_PSYX_TEX* tex = (DR_PSYX_TEX*)current->primptr;
 	if (enabled)
-		SetPsyXTexture(CAR_POLY, gCarReflectionTexture, 255, 255);
+		SetPsyXTexture(tex, gCarReflectionTexture, 255, 255);
 	else
-		SetPsyXTexture(CAR_POLY, 0, 0, 0);
+		SetPsyXTexture(tex, 0, 0, 0);
 
 	if (gShowMap == 0)
 	{
-		addPrim(current->ot, CAR_POLY);
+		addPrim(current->ot, tex);
 		current->primptr += sizeof(DR_PSYX_TEX);
 	}
 	else
 	{
-		DrawPrim(CAR_POLY);
+		DrawPrim(tex);
 	}
 
 }

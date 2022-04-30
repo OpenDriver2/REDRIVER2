@@ -1087,6 +1087,28 @@ void DisplayOverlays(void)
 	if (NoPlayerControl || gInGameCutsceneActive || gInGameCutsceneDelay)
 		return;
 
+	// [A] Single Player Stats 
+	if (gDisplaySpeedo == 1 && lp->playerType == 1)
+	{
+		if (!gDoOverlays)
+			return;
+		DrawSpeedometer();
+	}
+
+	if (gDisplayGears == 1 && lp->playerType == 1)
+	{
+		if (!gDoOverlays)
+			return;
+		DrawGearDisplay();
+	}
+
+	if (gDisplayRPM == 1 && gMultiplayerLevels == 0 && lp->playerType == 1 && NumPlayers == 1)
+	{
+		if (!gDoOverlays)
+			return;
+		DrawRPMDisplay();
+	}
+
 	//[A]
 	if (CurrentPlayerView == 0)
 	{
@@ -1142,16 +1164,6 @@ void DisplayOverlays(void)
 		{
 			DrawOverheadMap();
 		}
-
-		// [A] Single Player Stats 
-		if (gDisplaySpeedo == 1 && lp->playerType == 1)
-			DrawSpeedometer();
-
-		if (gDisplayGears == 1 && lp->playerType == 1)
-			DrawGearDisplay();
-
-		if (gDisplayRPM == 1 && gMultiplayerLevels == 0 && lp->playerType == 1 && NumPlayers == 1)
-			DrawRPMDisplay();
 
 		// [A] Multiplayer 
 		if (gDisplaySpeedo == 1 && lp2->playerType == 1)

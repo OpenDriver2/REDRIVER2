@@ -1690,14 +1690,12 @@ void SoundTasks(void)
 		i++;
 	}
 
-	if (NumPlayers < 2 || NoPlayerControl != 0)
-	{
+		// [A] Removed if statement for MP sound fx. 
 		UpdateEnvSounds[EStags.func_cnt++](envsnd, ESdata, 0);
 		EStags.func_cnt %= 4;
 
 		DoDopplerSFX();
 		Tunnels(&tunnels);
-	}
 
 	ControlSpeech(&gSpeechQueue);
 
