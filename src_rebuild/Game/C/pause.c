@@ -881,7 +881,9 @@ void InitaliseMenu(PAUSEMODE mode)
 		case PAUSEMODE_PAUSE:
 		case PAUSEMODE_PAUSEP1:
 		case PAUSEMODE_PAUSEP2:
-			if (NumPlayers == 1 && gMultiplayerLevels == 0) 
+
+			//Fix map in MP
+			if (gMultiplayerLevels == 0) 
 			{
 				if (gInGameCutsceneActive == 0)
 					pNewMenu = &PauseMenuHeader;
@@ -901,7 +903,7 @@ void InitaliseMenu(PAUSEMODE mode)
 					break;
 				case GAME_GETAWAY:
 				case GAME_CHECKPOINT:
-					if (NumPlayers == 1)
+					if (NumPlayers == 1 || NumPlayers == 2)
 					{
 						pNewMenu = &DrivingGameFinishedHeader;
 						gMissionCompletionState = mode;
@@ -915,7 +917,7 @@ void InitaliseMenu(PAUSEMODE mode)
 				case GAME_GATERACE:
 				case GAME_TRAILBLAZER:
 				case GAME_SURVIVAL:
-					if (NumPlayers == 1)
+					if (NumPlayers == 1 || NumPlayers == 2)
 					{
 						pNewMenu = &DrivingGameFinishedHeader;
 						gMissionCompletionState = mode;
@@ -928,7 +930,7 @@ void InitaliseMenu(PAUSEMODE mode)
 					}
 					break;
 				default:
-					if (NumPlayers == 1)
+					if (NumPlayers == 1 || NumPlayers == 2)
 					{
 						pNewMenu = &TakeARideFinishedHeader;
 						gMissionCompletionState = mode;
@@ -956,7 +958,7 @@ void InitaliseMenu(PAUSEMODE mode)
 				case GAME_SURVIVAL:
 				case GAME_COPSANDROBBERS:
 				case GAME_CAPTURETHEFLAG:
-					if (NumPlayers == 1) 
+					if (NumPlayers == 1 || NumPlayers == 2) 
 					{
 						pNewMenu = &DrivingGameFinishedHeader;
 						gMissionCompletionState = mode;
@@ -973,7 +975,7 @@ void InitaliseMenu(PAUSEMODE mode)
 					gMissionCompletionState = mode;
 					break;
 				default:
-					if (NumPlayers == 1)
+					if (NumPlayers == 1 || NumPlayers == 2)
 					{
 						pNewMenu = &TakeARideFinishedHeader;
 						gMissionCompletionState = mode;

@@ -481,13 +481,6 @@ void AddNightLights(CAR_DATA *cp)
 		lights = 0;
 		lightFlag = 8 << (loop & 0x1f);
 
-		
-			col.r = 128;
-			col.g = 124;
-			col.b = 112;
-
-
-			col2 = col;
 
 		// Brighten the lights to OG D2 levels 
 			if (gToggleBeamStrength == 1)
@@ -496,9 +489,15 @@ void AddNightLights(CAR_DATA *cp)
 				col.g = 224;
 				col.b = 212;
 
-
-				col2 = col;
 			}
+			else
+			{
+				col.r = 128;
+				col.g = 124;
+				col.b = 112;
+			}
+
+			col2 = col;
 		
 
 		if (cp->ap.damage[loop] < 1000)

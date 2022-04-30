@@ -700,7 +700,7 @@ void DrawGearDisplay(void)
 		int GearSpeed;
 
 		int gGearOverlayXPos = gMapXOffset - 22;
-		int gGearOverlayYPos = gMapYOffset + 61;
+		int gGearOverlayYPos = gMapYOffset + 57;
 
 		// Multiplayer 
 		int gGearOverlayXPos2 = gMapXOffset - 22;
@@ -789,7 +789,7 @@ void DrawRPMDisplay(void)
 		int RPMDisplay;
 
 		int gRPMOverlayXPos = gMapXOffset - 90;
-		int gRPMOverlayYPos = gMapYOffset + 61;
+		int gRPMOverlayYPos = gMapYOffset + 57;
 
 		RPMMax = cp->hd.revs / 4;
 		RPMMin = 800;
@@ -834,7 +834,7 @@ void DrawSpeedometer(void)
 
 		// Singleplayer
 		int gSpeedoOverlayXPos = gMapXOffset + 15;
-		int gSpeedoOverlayYPos = gMapYOffset + 61;
+		int gSpeedoOverlayYPos = gMapYOffset + 57;
 
 		// Multiplayer 
 		int gSpeedoOverlayXPos2 = gMapXOffset + 15;
@@ -1061,6 +1061,22 @@ void DisplayOverlays(void)
 	}
 #endif
 
+	// [A] Single Player Stats 
+	if (gDisplaySpeedo == 1 && lp->playerType == 1)
+		DrawSpeedometer();
+
+	if (gDisplayGears == 1 && lp->playerType == 1)
+		DrawGearDisplay();
+
+	if (gDisplayRPM == 1 && gMultiplayerLevels == 0 && lp->playerType == 1)
+		DrawRPMDisplay();
+
+	// [A] Multiplayer 
+	if (gDisplaySpeedo == 1 && gMultiplayerLevels == 1 && lp2->playerType == 1)
+		DrawSpeedometer2();
+	if (gDisplayGears == 1 && gMultiplayerLevels == 1 && lp2->playerType == 1)
+		DrawGearDisplay2();
+
 	if (NoPlayerControl || gInGameCutsceneActive || gInGameCutsceneDelay)
 		return;
 
@@ -1096,30 +1112,7 @@ void DisplayOverlays(void)
 
 		DrawDrivingGameOverlays();
 		DrawOverheadMap();
-
-		// [A] Single Player Stats 
-		if (gDisplaySpeedo == 1 && lp->playerType == 1)
-			DrawSpeedometer();
-
-		if (gDisplayGears == 1 && lp->playerType == 1)
-			DrawGearDisplay();
-
-		if (gDisplayRPM == 1 && gMultiplayerLevels == 0 && lp->playerType == 1)
-			DrawRPMDisplay();
-
-		// [A] Multiplayer 
-		if (gDisplaySpeedo == 1 && gMultiplayerLevels == 1 && lp2->playerType == 1)
-			DrawSpeedometer2();
-		if (gDisplayGears == 1 && gMultiplayerLevels == 1 && lp2->playerType == 1)
-			DrawGearDisplay2();
-
 		
-		// [A] Multiplayer FOV
-		if (NumPlayers == 2)
-			gCameraDefaultScrZ = 200;
-		else
-			gCameraDefaultScrZ = 256; // Need to learn better way
-			
 
 		if (CopsCanSeePlayer)
 		{

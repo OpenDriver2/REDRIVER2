@@ -434,6 +434,10 @@ void PlaceCameraFollowCar(PLAYER *lp)
 	maxCameraDist = 850;
 	carheight = -220;
 	camExpandSpeed = 10;
+
+	// [A] Further Camera when walking as Tammah in Multiplayer
+	if (NumPlayers == 2)
+		maxCameraDist = 1300;
 	
 	if (lp->cameraCarId >= 0)
 	{
@@ -452,6 +456,11 @@ void PlaceCameraFollowCar(PLAYER *lp)
 			// [A] default just adds 248, but it's too close for big vehicles
 			addDist = MAX(248, car_cos->colBox.vy * 3);
 
+			// [A] fix car cameraDist in multiplayer
+			if (NumPlayers == 2)
+			
+				addDist = MAX(248, car_cos->colBox.vy * 6);
+			
 			if (gCameraMaxDistance == 0)
 				maxCameraDist = car_cos->colBox.vz * 2 + car_cos->colBox.vy + addDist;
 			else

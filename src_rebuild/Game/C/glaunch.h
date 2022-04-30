@@ -30,6 +30,8 @@ extern int AutoDirect;
 
 extern int quick_replay;
 
+extern int gBigCityMP;
+
 extern MISSION_DATA MissionStartData;
 extern MISSION_DATA MissionEndData;
 

@@ -18,6 +18,8 @@
 
 #include "Frontend/FEmain.h"
 
+int gBigCityMP = 0;
+
 struct MISSION_STEP
 {
 	u_char flags : 3;
@@ -173,10 +175,13 @@ void State_GameStart(void* param)
 			break;
 		case GAME_TAKEADRIVE:
 
-			if (NumPlayers == 1)
+			//[A] Make big city optional for Multiplayer
+			if (gBigCityMP == 1)
 				gCurrentMissionNumber = 50;
 			else
 				gCurrentMissionNumber = 58;
+
+			// 498
 
 			gCurrentMissionNumber += GameLevel * 2 + gWantNight + gSubGameNumber * 440;
 
