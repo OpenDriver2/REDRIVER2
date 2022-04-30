@@ -294,7 +294,6 @@ void DrawPlayerDot(VECTOR *pos, short rot, u_char r, u_char g, u_char b, int fla
 	POLY_F3 *poly;
 	VECTOR opos[3];
 	VECTOR vec;
-	VECTOR vec2;
 
 	if (flags & 0x20) 
 	{
@@ -1121,7 +1120,7 @@ void DrawOverheadMap(void)
 		return;
 	}
 	
-	//if (NumPlayers > 1) for map to work in MP
+	//if (NumPlayers > 1)
 		//return;
 
 	map_minX = gMapXOffset;

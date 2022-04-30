@@ -117,8 +117,8 @@ void InitOverlays(void)
 	if (NumPlayers > 1)
 	{
 		InitPercentageBar(&Player2FelonyBar, 4096, felonyColour, G_LTXT(GTXT_Felony));
-		Player2FelonyBar.xpos = gOverlayXOppPos - 249;
-		Player2FelonyBar.ypos = 154;
+		Player2FelonyBar.xpos = gOverlayXOppPos - 200;
+		Player2FelonyBar.ypos = SCREEN_H / 2 + 12;
 		Player2FelonyBar.active = 1;
 	}
 
@@ -1077,6 +1077,7 @@ void DisplayOverlays(void)
 		// set up
 		PlayerDamageBar.xpos = gOverlayXPos;
 		Player2DamageBar.xpos = gOverlayXPos;
+		Player2FelonyBar.xpos = gOverlayXOppPos;
 		FelonyBar.xpos = gOverlayXPos;
 		DamageBar.xpos = gOverlayXOppPos;
 		ProxyBar.xpos = gOverlayXPos;
@@ -1089,6 +1090,8 @@ void DisplayOverlays(void)
 	//[A]
 	if (CurrentPlayerView == 0)
 	{
+		if (!gDoOverlays)
+			return;
 		DrawOverheadMap();
 	}
 	else
@@ -1098,25 +1101,13 @@ void DisplayOverlays(void)
 
 	if (NumPlayers == 2 && gMultiplayerLevels == 0)
 	{
+		if (!gDoOverlays)
+			return;
 		gMapYOffset = 59;
 		draw_box(gMapYOffset, MAP_SIZE_H);
 	}
 
-	// [A] Single Player Stats 
-	if (gDisplaySpeedo == 1 && lp->playerType == 1)
-		DrawSpeedometer();
-
-	if (gDisplayGears == 1 && lp->playerType == 1)
-		DrawGearDisplay();
-
-	if (gDisplayRPM == 1 && gMultiplayerLevels == 0 && lp->playerType == 1 && NumPlayers == 1)
-		DrawRPMDisplay();
-
-	// [A] Multiplayer 
-	if (gDisplaySpeedo == 1 && lp2->playerType == 1)
-		DrawSpeedometer2();
-	if (gDisplayGears == 1 && lp2->playerType == 1)
-		DrawGearDisplay2();
+	
 
 	UpdateFlashValue();
 
@@ -1151,6 +1142,22 @@ void DisplayOverlays(void)
 		{
 			DrawOverheadMap();
 		}
+
+		// [A] Single Player Stats 
+		if (gDisplaySpeedo == 1 && lp->playerType == 1)
+			DrawSpeedometer();
+
+		if (gDisplayGears == 1 && lp->playerType == 1)
+			DrawGearDisplay();
+
+		if (gDisplayRPM == 1 && gMultiplayerLevels == 0 && lp->playerType == 1 && NumPlayers == 1)
+			DrawRPMDisplay();
+
+		// [A] Multiplayer 
+		if (gDisplaySpeedo == 1 && lp2->playerType == 1)
+			DrawSpeedometer2();
+		if (gDisplayGears == 1 && lp2->playerType == 1)
+			DrawGearDisplay2();
 		
 
 		if (CopsCanSeePlayer)
