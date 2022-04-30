@@ -1091,6 +1091,7 @@ void DrawOverheadMap(void)
 	SVECTOR direction;
 	RECT16 clipped_size;
 	VECTOR vec;
+	VECTOR vec2;
 	long flag;
 	int i, j;
 	int tw, th;
@@ -1098,6 +1099,9 @@ void DrawOverheadMap(void)
 	int MeshWidth, MeshHeight;
 	int map_minX, map_maxX;
 	int map_minY, map_maxY;
+
+	PLAYER* pl;
+	PLAYER* pl2;
 
 	static int flashtimer = 0;
 	static u_char ptab[] = {
@@ -1181,7 +1185,25 @@ void DrawOverheadMap(void)
 	addPrim(current->ot + 1, drarea);
 	current->primptr += sizeof(DR_AREA);
 
-	WorldToOverheadMapPositions((VECTOR *)player->pos, &vec, 1, 0, 0); // the playerDot
+	if (NumPlayers == 2 && gMultiplayerLevels == 0)
+	{
+		for (i = 0; i < NumPlayers; i++)
+		{
+			pl = &player[0];
+			pl2 = &player[1];
+
+			pl->pos[0];
+			pl2->pos[2];
+
+			WorldToOverheadMapPositions((VECTOR*)pl->pos, &vec, 1, 0, 0); // player1
+
+			WorldToOverheadMapPositions((VECTOR*)pl2->pos, &vec2, 1, 0, 0); // player2
+		}
+	}
+	else
+	{
+		WorldToOverheadMapPositions((VECTOR*)player->pos, &vec, 1, 0, 0); // the playerDot
+	}
 
 	// draw map center
 	if (vec.vx > map_minX && vec.vx < map_maxX && 
@@ -1201,7 +1223,26 @@ void DrawOverheadMap(void)
 		current->primptr += sizeof(TILE_1);
 	}
 
-	DrawTargetBlip((VECTOR *)player->pos, 64, 64, 64, 3);
+	if (NumPlayers == 2 && gMultiplayerLevels == 0)
+	{
+		for (i = 0; i < NumPlayers; i++)
+		{
+			pl = &player[0];
+			pl2 = &player[1];
+
+			pl->pos[0];
+			pl2->pos[2];
+
+			DrawTargetBlip((VECTOR*)pl->pos, 64, 64, 64, 3);
+			DrawTargetBlip((VECTOR*)pl2->pos, 64, 64, 64, 3);
+		}
+	}
+	else
+	{
+		DrawTargetBlip((VECTOR*)player->pos, 64, 64, 64, 3); // the playerDot
+	}
+
+	//DrawTargetBlip((VECTOR *)player->pos, 64, 64, 64, 3);
 	
 	DrawCompass();
 
