@@ -2,6 +2,7 @@
 #include "pres.h"
 #include "system.h"
 #include "texture.h"
+#include "cars.h"
 
 extern int gShowMap;
 
@@ -18,11 +19,40 @@ extern int gShowMap;
 
 TextureID gHiresFontTexture = 0;
 TextureID gHiresDigitsTexture = 0;
+TextureID gCarReflectionTexture = 0;
 
 int gTextureChoice = 0; 
 int gDigitChoice = 0;
 
 stbtt_bakedchar gSTBCharData[224];	// ASCII 32..126 is 95 glyphs
+
+// Get Started
+void CarReflection()
+{
+	char namebuffer[64];
+	u_char* data;
+
+	// init Reflections Interactive
+	if (!gCarReflectionTexture)
+	{
+		int width, height, bpp;
+
+		
+		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\REFLECTIONS.TGA");
+		
+
+		FS_FixPathSlashes(namebuffer);
+
+		if (LoadTGAImage(namebuffer, &data, width, height, bpp))
+		{
+			if (bpp == 32)
+			{
+				gCarReflectionTexture = GR_CreateRGBATexture(width, height, data);
+			}
+			free(data);
+		}
+	}
+}
 
 void InitHiresFonts()
 {
@@ -96,6 +126,33 @@ void InitHiresFonts()
 			free(data);
 		}
 	}
+}
+
+// [A] attempt to restore D1 reflections on car.
+// Not working yet
+void SetCarReflection(int enabled, CAR_POLY)
+{
+	if (gCarReflectionTexture == 0)
+	{
+		return;
+	}
+
+	DR_PSYX_TEX* CAR_POLY = (DR_PSYX_TEX*)current->primptr;
+	if (enabled)
+		SetPsyXTexture(CAR_POLY, gCarReflectionTexture, 255, 255);
+	else
+		SetPsyXTexture(CAR_POLY, 0, 0, 0);
+
+	if (gShowMap == 0)
+	{
+		addPrim(current->ot, CAR_POLY);
+		current->primptr += sizeof(DR_PSYX_TEX);
+	}
+	else
+	{
+		DrawPrim(CAR_POLY);
+	}
+
 }
 
 void SetHiresFontTexture(int enabled)

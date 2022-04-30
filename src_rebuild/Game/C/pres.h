@@ -20,6 +20,7 @@ extern int gDigitChoice;
 extern void InitButtonTextures(); // 0x00074E54
 
 extern void LoadFont(char *buffer); // 0x00073CC8
+extern void CarReflection();
 
 extern void SetTextColour(u_char Red, u_char Green, u_char Blue); // 0x00074A10
 extern int StringWidth(char *pString); // 0x00074A24
@@ -41,6 +42,9 @@ extern char* GetNextWord(char *string, char *word); // 0x00074D54
 extern void* DrawButton(u_char button, void *prim, int x, int y); // 0x00074858
 
 extern void* SetFontTPage(void *prim); // 0x00074D94
+
+extern void CarReflection();
+extern void SetCarReflection(int enabled, CAR_POLY);
 
 
 #endif

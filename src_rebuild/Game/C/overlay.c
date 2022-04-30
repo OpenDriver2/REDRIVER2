@@ -1163,14 +1163,13 @@ void DisplayOverlays(void)
 		if (CopsCanSeePlayer)
 		{
 			if (player[0].playerCarId < 0)
+			{
 				felony = &pedestrianFelony;
+			}
 			else
+			{
 				felony = &car_data[player[0].playerCarId].felonyRating;
-
-			if (player[1].playerCarId < 0)
-				felony = &pedestrianFelony;
-			else
-				felony = &car_data[player[1].playerCarId].felonyRating;
+			}
 
 			if (*felony > FELONY_PURSUIT_MIN_VALUE)
 				DrawCopIndicators();

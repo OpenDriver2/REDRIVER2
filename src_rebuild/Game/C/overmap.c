@@ -693,7 +693,7 @@ void DrawBigCompass(VECTOR *root, int angle)
 	DrawN(position, 1);
 }
 
-// [D] [T]
+// [D] [T] // Label these please. This is arrow under the car when cop behind.
 void CopIndicator(int xpos, int strength)
 {
 	int startH, endH;
@@ -1187,18 +1187,15 @@ void DrawOverheadMap(void)
 
 	if (NumPlayers == 2 && gMultiplayerLevels == 0)
 	{
-		for (i = 0; i < NumPlayers; i++)
-		{
 			pl = &player[0];
 			pl2 = &player[1];
 
 			pl->pos[0];
 			pl2->pos[2];
 
-			WorldToOverheadMapPositions((VECTOR*)pl->pos, &vec, 1, 0, 0); // player1
+			WorldToOverheadMapPositions((VECTOR*)player->pos, &vec, 1, 0, 0); // player1
 
-			WorldToOverheadMapPositions((VECTOR*)pl2->pos, &vec2, 1, 0, 0); // player2
-		}
+			WorldToOverheadMapPositions((VECTOR*)player->pos, &vec2, 1, 0, 0); // player2
 	}
 	else
 	{
@@ -1225,8 +1222,6 @@ void DrawOverheadMap(void)
 
 	if (NumPlayers == 2 && gMultiplayerLevels == 0)
 	{
-		for (i = 0; i < NumPlayers; i++)
-		{
 			pl = &player[0];
 			pl2 = &player[1];
 
@@ -1235,7 +1230,6 @@ void DrawOverheadMap(void)
 
 			DrawTargetBlip((VECTOR*)pl->pos, 64, 64, 64, 3);
 			DrawTargetBlip((VECTOR*)pl2->pos, 64, 64, 64, 3);
-		}
 	}
 	else
 	{
@@ -1369,8 +1363,16 @@ void DrawOverheadMap(void)
 	direction.vz = 0;
 	direction.vy = player[0].dir & 0xfff;
 
+	
 	InitMatrix(map_matrix);
-	_RotMatrixY(&map_matrix, player[0].dir & 0xfff);
+	if (NumPlayers == 2 && gMultiplayerLevels == 0)
+	{
+		//_RotMatrixY(&map_matrix, player[0].dir & 0xfff);
+	}
+	else
+	{
+		_RotMatrixY(&map_matrix, player[0].dir & 0xfff);
+	}
 
 	gte_SetRotMatrix(&map_matrix);
 	gte_SetTransVector(&translate);
@@ -1912,10 +1914,19 @@ void WorldToOverheadMapPositions(VECTOR *pGlobalPosition, VECTOR *pOverheadMapPo
 	MATRIX tempMatrix;
 	SVECTOR tempVector;
 	XZPAIR playerPos;
+	XZPAIR playerPos2;
 	long flag;
 
-	cs = RCOS(player[0].dir);
-	sn = RSIN(player[0].dir);
+	if (NumPlayers == 2 && gMultiplayerLevels == 0)
+	{
+		cs = RCOS(0);
+		sn = RSIN(0);
+	}
+	else
+	{
+		cs = RCOS(player[0].dir);
+		sn = RSIN(player[0].dir);
+	}
 
 	tempMatrix.m[0][1] = 0;
 	tempMatrix.m[1][0] = 0;
@@ -1947,6 +1958,9 @@ void WorldToOverheadMapPositions(VECTOR *pGlobalPosition, VECTOR *pOverheadMapPo
 	scale = overlaidmaps[GameLevel].scale;
 	playerPos.x = player[0].pos[0];
 	playerPos.z = player[0].pos[2];
+
+	playerPos2.x = player[1].pos[0];
+	playerPos2.z = player[1].pos[2];
 
 	count--;
 	while (count >= 0) 

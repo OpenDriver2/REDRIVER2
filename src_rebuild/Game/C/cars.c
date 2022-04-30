@@ -19,6 +19,7 @@
 #include "convert.h"
 #include "glaunch.h"
 #include "ASM/rndrasm.h"
+#include "pres.h"
 
 struct plotCarGlobals
 {
