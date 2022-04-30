@@ -176,10 +176,14 @@ void State_GameStart(void* param)
 		case GAME_TAKEADRIVE:
 
 			//[A] Make big city optional for Multiplayer
-			if (gBigCityMP == 1)
+			if (NumPlayers == 2 && gBigCityMP == 1)
 				gCurrentMissionNumber = 50;
 			else
-				gCurrentMissionNumber = 58;
+				if (NumPlayers == 2 && gBigCityMP == 0)
+					gCurrentMissionNumber = 58;
+				else 
+					if (NumPlayers == 1) // oops
+						gCurrentMissionNumber = 50;
 
 			// 498
 
