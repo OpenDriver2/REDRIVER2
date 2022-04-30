@@ -19,6 +19,7 @@ extern void DrawTargetArrow(VECTOR *pos, int flags); // 0x00016578
 extern void DrawCopIndicators(void);
 
 extern void DrawOverheadMap(); // 0x00016D14
+extern void draw_box(int yPos, int h);
 extern void DrawFullscreenMap();
 
 extern u_int Long2DDistance(VECTOR *pPoint1, VECTOR *pPoint2); // 0x00016C0C

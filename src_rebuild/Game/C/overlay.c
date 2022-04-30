@@ -45,6 +45,7 @@ PERCENTAGE_BAR Player2DamageBar;
 PERCENTAGE_BAR DamageBar;
 PERCENTAGE_BAR FelonyBar;
 PERCENTAGE_BAR ProxyBar;
+PERCENTAGE_BAR Player2FelonyBar;
 
 int gDoOverlays = 1;
 int gWidescreenOverlayAlign = 0; // [A] custom widescreen alignment by PSX hack
@@ -112,6 +113,14 @@ void InitOverlays(void)
 	FelonyBar.xpos = gOverlayXPos;
 	FelonyBar.ypos = 46;
 	FelonyBar.active = 0;
+
+	if (NumPlayers > 1)
+	{
+		InitPercentageBar(&Player2FelonyBar, 4096, felonyColour, G_LTXT(GTXT_Felony));
+		Player2FelonyBar.xpos = gOverlayXOppPos - 249;
+		Player2FelonyBar.ypos = 154;
+		Player2FelonyBar.active = 1;
+	}
 
 	InitPercentageBar(&DamageBar, 1, damageColour, G_LTXT(GTXT_Damage));
 	DamageBar.xpos = gOverlayXOppPos;
@@ -746,8 +755,11 @@ void DrawGearDisplay2(void)
 		int GearDisplay;
 		int GearSpeed;
 
-		int gGearOverlayXPos = gMapXOffset - 22;
-		int gGearOverlayYPos = gMapYOffset + 134;
+		int gGearOverlay2XPos = gMapXOffset - 22;
+		int gGearOverlay2YPos = gMapYOffset + 134;
+
+		int gGearOverlay2XPos2 = gMapXOffset - 22;
+		int gGearOverlay2YPos2 = gMapYOffset + 160;
 
 		GearDisplay = cp->hd.gear + 1;
 		GearSpeed = cp->hd.wheel_speed;
@@ -765,8 +777,10 @@ void DrawGearDisplay2(void)
 
 		SetTextColour(128, 128, 64);
 
-		
-		PrintString(gearString, gGearOverlayXPos, gGearOverlayYPos);
+		if (NumPlayers == 2 && gMultiplayerLevels == 0)
+			PrintString(gearString, gGearOverlay2XPos2, gGearOverlay2YPos2);
+		else
+			PrintString(gearString, gGearOverlay2XPos, gGearOverlay2YPos);
 	}
 }
 
@@ -948,6 +962,9 @@ void DrawSpeedometer2(void)
 		int gSpeedoOverlayXPos = gMapXOffset + 15;
 		int gSpeedoOverlayYPos = gMapYOffset + 134;
 
+		int gSpeedoOverlayXPos2 = gMapXOffset + 15;
+		int gSpeedoOverlayYPos2 = gMapYOffset + 160;
+
 		WheelSpeed = cp->hd.wheel_speed;
 
 
@@ -1019,7 +1036,10 @@ void DrawSpeedometer2(void)
 		else
 			SetTextColour(255, 255, 255);
 
-		PrintString(string, gSpeedoOverlayXPos, gSpeedoOverlayYPos);
+		if (NumPlayers == 2 && gMultiplayerLevels == 0)
+			PrintString(string, gSpeedoOverlayXPos2, gSpeedoOverlayYPos2);
+		else
+			PrintString(string, gSpeedoOverlayXPos, gSpeedoOverlayYPos);
 	}
 }
 
@@ -1032,6 +1052,7 @@ void DisplayOverlays(void)
 	int player_id = 0;
 	int player_id2 = 1;
 	CAR_DATA* cp;
+	CAR_DATA* cp2;
 	PLAYER* lp;
 	PLAYER* lp2;
 
@@ -1039,6 +1060,7 @@ void DisplayOverlays(void)
 	lp2 =&player[player_id2];
 	//cp = &car_data[lp->cameraCarId];
 	cp = &car_data[player[0].playerCarId];
+	cp2 = &car_data[player[1].playerCarId];
 
 #ifndef PSX
 	if (gWidescreenOverlayAlign)
@@ -1061,6 +1083,25 @@ void DisplayOverlays(void)
 	}
 #endif
 
+	if (NoPlayerControl || gInGameCutsceneActive || gInGameCutsceneDelay)
+		return;
+
+	//[A]
+	if (CurrentPlayerView == 0)
+	{
+		DrawOverheadMap();
+	}
+	else
+	{
+		SetFullscreenDrawing();
+	} 
+
+	if (NumPlayers == 2 && gMultiplayerLevels == 0)
+	{
+		gMapYOffset = 59;
+		draw_box(gMapYOffset, MAP_SIZE_H);
+	}
+
 	// [A] Single Player Stats 
 	if (gDisplaySpeedo == 1 && lp->playerType == 1)
 		DrawSpeedometer();
@@ -1068,25 +1109,14 @@ void DisplayOverlays(void)
 	if (gDisplayGears == 1 && lp->playerType == 1)
 		DrawGearDisplay();
 
-	if (gDisplayRPM == 1 && gMultiplayerLevels == 0 && lp->playerType == 1)
+	if (gDisplayRPM == 1 && gMultiplayerLevels == 0 && lp->playerType == 1 && NumPlayers == 1)
 		DrawRPMDisplay();
 
 	// [A] Multiplayer 
-	if (gDisplaySpeedo == 1 && gMultiplayerLevels == 1 && lp2->playerType == 1)
+	if (gDisplaySpeedo == 1 && lp2->playerType == 1)
 		DrawSpeedometer2();
-	if (gDisplayGears == 1 && gMultiplayerLevels == 1 && lp2->playerType == 1)
+	if (gDisplayGears == 1 && lp2->playerType == 1)
 		DrawGearDisplay2();
-
-	if (NoPlayerControl || gInGameCutsceneActive || gInGameCutsceneDelay)
-		return;
-
-	if (NumPlayers > 1)
-	{
-		if (CurrentPlayerView == 0)
-			return;
-
-		SetFullscreenDrawing();
-	}
 
 	UpdateFlashValue();
 
@@ -1108,10 +1138,19 @@ void DisplayOverlays(void)
 			DrawPercentageBar(&FelonyBar);
 		}
 
+		if (NumPlayers == 2 && gMultiplayerLevels == 0)
+		{
+			DrawPercentageBar(&Player2FelonyBar);
+		}
+
 		DrawPercentageBar(&DamageBar);
 
 		DrawDrivingGameOverlays();
-		DrawOverheadMap();
+
+		if (NumPlayers == 2 && gMultiplayerLevels == 1)
+		{
+			DrawOverheadMap();
+		}
 		
 
 		if (CopsCanSeePlayer)
@@ -1120,6 +1159,11 @@ void DisplayOverlays(void)
 				felony = &pedestrianFelony;
 			else
 				felony = &car_data[player[0].playerCarId].felonyRating;
+
+			if (player[1].playerCarId < 0)
+				felony = &pedestrianFelony;
+			else
+				felony = &car_data[player[1].playerCarId].felonyRating;
 
 			if (*felony > FELONY_PURSUIT_MIN_VALUE)
 				DrawCopIndicators();
