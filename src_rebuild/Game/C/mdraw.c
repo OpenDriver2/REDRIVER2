@@ -31,12 +31,17 @@ void DrawTimer(MR_TIMER* timer)
 			SetTextColour(128, 128, 128);
 		}
 		else
-		{
-			if (timer == Mission.timer)
-				SetTextColour(128, 32, 32);
-			else
-				SetTextColour(32, 128, 32);
-		}
+			if (NumPlayers == 2 && gMultiplayerLevels == 0)
+			{
+				SetTextColour(128, 128, 64);
+			}
+			else 
+			{
+				if (timer == Mission.timer)
+					SetTextColour(128, 32, 32);
+				else
+					SetTextColour(32, 128, 32);
+			}
 
 		sprintf(string, "%02d:%02d", (u_int)timer->min, (u_int)timer->sec);
 		digit_pos = PrintDigit((int)timer->x, (int)timer->y, string);

@@ -538,6 +538,19 @@ void LoadMission(int missionnum)
 	Mission.timer[0].x = Mission.timer[1].x = 124;
 	Mission.timer[0].y = 16;
 	Mission.timer[1].y = SCREEN_H / 2 + 8;
+
+	if (NumPlayers == 2)
+	{
+		if (gMultiplayerLevels == 0)
+		{
+			Mission.timer[0].y = 106;
+			Mission.timer[1].y = 300;
+		}
+		else
+		{
+			Mission.timer[0].y = 16;
+		}
+	}
 	
 	if (MissionHeader->timer || (MissionHeader->timerFlags & MISSIONTIMER_FLAG_COUNTER))
 	{
@@ -3200,7 +3213,15 @@ void HandleMission(void)
 	gTannerActionNeeded = 0;
 
 	HandleTimer(&Mission.timer[0]);
-	HandleTimer(&Mission.timer[1]);
+
+	if (NumPlayers == 2 && gMultiplayerLevels == 0)
+	{
+		//HandleTimer(&Mission.timer[1]);
+	}
+	else
+	{
+		HandleTimer(&Mission.timer[1]);
+	}
 
 	HandleThrownBombs();
 	HandleMissionThreads();
