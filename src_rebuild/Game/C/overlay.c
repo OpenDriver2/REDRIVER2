@@ -117,7 +117,7 @@ void InitOverlays(void)
 	if (NumPlayers > 1)
 	{
 		InitPercentageBar(&Player2FelonyBar, 4096, felonyColour, G_LTXT(GTXT_Felony));
-		Player2FelonyBar.xpos = gOverlayXOppPos - 200;
+		Player2FelonyBar.xpos = gOverlayXPos;
 		Player2FelonyBar.ypos = SCREEN_H / 2 + 12;
 		Player2FelonyBar.active = 1;
 	}
@@ -1053,6 +1053,7 @@ void DisplayOverlays(void)
 	int player_id2 = 1;
 	CAR_DATA* cp;
 	CAR_DATA* cp2;
+
 	PLAYER* lp;
 	PLAYER* lp2;
 
@@ -1062,27 +1063,6 @@ void DisplayOverlays(void)
 	cp = &car_data[player[0].playerCarId];
 	cp2 = &car_data[player[1].playerCarId];
 
-#ifndef PSX
-	if (gWidescreenOverlayAlign)
-	{
-		// align to PSX-mapped screen coordinates
-		RECT16 emuViewport;
-		PsyX_GetPSXWidescreenMappedViewport(&emuViewport);
-
-		// recalc pos
-		gOverlayXPos = 16 + emuViewport.x;
-		gOverlayXOppPos = emuViewport.w - 16 - PERCENTAGE_BAR_WIDTH;
-		gMapXOffset = emuViewport.w - 16 - MAP_SIZE_W;
-
-		// set up
-		PlayerDamageBar.xpos = gOverlayXPos;
-		Player2DamageBar.xpos = gOverlayXPos;
-		Player2FelonyBar.xpos = gOverlayXOppPos;
-		FelonyBar.xpos = gOverlayXPos;
-		DamageBar.xpos = gOverlayXOppPos;
-		ProxyBar.xpos = gOverlayXPos;
-	}
-#endif
 
 	if (NoPlayerControl || gInGameCutsceneActive || gInGameCutsceneDelay)
 		return;
@@ -1102,7 +1082,7 @@ void DisplayOverlays(void)
 		DrawGearDisplay();
 	}
 
-	if (gDisplayRPM == 1 && gMultiplayerLevels == 0 && lp->playerType == 1 && NumPlayers == 1)
+	if (gDisplayRPM == 1 && lp->playerType == 1 && NumPlayers == 1)
 	{
 		if (!gDoOverlays)
 			return;
@@ -1114,20 +1094,66 @@ void DisplayOverlays(void)
 	{
 		if (!gDoOverlays)
 			return;
-		DrawOverheadMap();
+		if (gShowMap == 0)
+		{
+			DrawOverheadMap();
+		}
+		else
+		{
+			DrawFullscreenMap();
+		}
+		if (NumPlayers == 2 || NoPlayerControl != 0)
+			return;
 	}
 	else
 	{
 		SetFullscreenDrawing();
-	} 
+	}
 
 	if (NumPlayers == 2 && gMultiplayerLevels == 0)
 	{
 		if (!gDoOverlays)
 			return;
-		gMapYOffset = 59;
-		draw_box(gMapYOffset, MAP_SIZE_H);
+		if (gShowMap == 0)
+		{
+			gMapYOffset = 59;
+			draw_box(gMapYOffset, MAP_SIZE_H);
+		}
 	}
+
+	if (NumPlayers == 2 && gMultiplayerLevels == 1)
+	{
+		DrawOverheadMap();
+	}
+
+#ifndef PSX
+	if (gWidescreenOverlayAlign)
+	{
+		// align to PSX-mapped screen coordinates
+		RECT16 emuViewport;
+		PsyX_GetPSXWidescreenMappedViewport(&emuViewport);
+
+		// recalc pos
+		gOverlayXPos = 16 + emuViewport.x;
+		gOverlayXOppPos = emuViewport.w - 16 - PERCENTAGE_BAR_WIDTH;
+		gMapXOffset = emuViewport.w - 16 - MAP_SIZE_W;
+
+		// set up
+		PlayerDamageBar.xpos = gOverlayXPos;
+		Player2DamageBar.xpos = gOverlayXPos;
+		Player2FelonyBar.xpos = gOverlayXPos;
+		Player2FelonyBar.ypos = 154;
+		FelonyBar.xpos = gOverlayXPos;
+		DamageBar.xpos = gOverlayXOppPos;
+		ProxyBar.xpos = gOverlayXPos;
+
+		if (NumPlayers == 2)
+		{
+			DamageBar.ypos = 127;
+			ProxyBar.ypos = 115;
+		}
+	}
+#endif
 
 	
 
@@ -1160,11 +1186,6 @@ void DisplayOverlays(void)
 
 		DrawDrivingGameOverlays();
 
-		if (NumPlayers == 2 && gMultiplayerLevels == 1)
-		{
-			DrawOverheadMap();
-		}
-
 		// [A] Multiplayer 
 		if (gDisplaySpeedo == 1 && lp2->playerType == 1)
 			DrawSpeedometer2();
@@ -1191,5 +1212,6 @@ void DisplayOverlays(void)
 	{
 		FastForward = 1;
 		DrawFullscreenMap();
+		
 	}
 }

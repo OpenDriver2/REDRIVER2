@@ -353,9 +353,7 @@ void LoadLevelSFX(int missionNum)
 
 	ShowLoading();
 
-	// load ambient effects
-	if (NumPlayers < 2 || NoPlayerControl != 0)
-	{
+	// load ambient effects [A] 
 		if (GameLevel == 0)
 			LoadBankFromLump(SOUND_BANK_ENVIRONMENT, SBK_CITY_EFFECTS_START + city_night_fx);
 		else if (GameLevel == 1)
@@ -364,7 +362,6 @@ void LoadLevelSFX(int missionNum)
 			LoadBankFromLump(SOUND_BANK_ENVIRONMENT, SBK_CITY_EFFECTS_START + city_night_fx + 4);
 		else if (GameLevel == 3)
 			LoadBankFromLump(SOUND_BANK_ENVIRONMENT, SBK_CITY_EFFECTS_START + city_night_fx + 6);
-	}
 
 	// total phrases
 	phrase_top = 0;
@@ -597,8 +594,8 @@ void StartGameSounds(void)
 
 	InitEnvSnd(MAX_LEVEL_ENVSOUNDS);
 	
-	if (NumPlayers < 2 || NoPlayerControl != 0)
-		AddEnvSounds(GameLevel, gTimeOfDay);
+	// [A]
+	AddEnvSounds(GameLevel, gTimeOfDay);
 
 	InitDopplerSFX();
 	InitSkidding();
