@@ -272,12 +272,11 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 
 			prim++;
 		}
-
 		src++;
 		numTris--;
 	}
-
 	pg->primptr = (unsigned char*)prim;
+	SetCarReflection(1); // AAAAAAAA
 }
 
 
