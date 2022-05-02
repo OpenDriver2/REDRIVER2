@@ -583,6 +583,7 @@ int main(int argc, char** argv)
 		extern int gToggleBeamStrength;
 		extern int gBigCityMP;
 		extern int gHighLODDistance;
+		extern int gCarLODDistance;
 
 		if(!cdImageFileName)
 			cdImageFileName = ini_get(config, "cdfs", "image");
@@ -627,6 +628,7 @@ int main(int argc, char** argv)
 		ini_sget(config, "extras", "FontChoice", "%d", &gTextureChoice);
 		ini_sget(config, "extras", "DigitChoice", "%d", &gDigitChoice);
 		ini_sget(config, "extras", "EnvLODDist", "%d", &gHighLODDistance);
+		ini_sget(config, "extras", "CarLODDist", "%d", &gCarLODDistance);
 		
 	
 		gCameraDefaultScrZ = MAX(MIN(newScrZ, 384), 128);

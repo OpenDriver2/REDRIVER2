@@ -50,5 +50,7 @@ extern void MangleWheelModels(); // 0x000230C8
 
 extern char GetCarPalIndex(int tpage); // 0x00023390
 
+extern int gCarLODDistance;
+
 
 #endif

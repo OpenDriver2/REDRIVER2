@@ -30,11 +30,13 @@ struct plotCarGlobals
 	u_char* damageLevel;
 };
 
+int gCarLODDistance = 0;
+
 
 #ifndef PSX
-#define CAR_LOD_SWITCH_DISTANCE switch_detail_distance
+#define CAR_LOD_SWITCH_DISTANCE gCarLODDistance;
 #else
-#define CAR_LOD_SWITCH_DISTANCE 5500
+#define CAR_LOD_SWITCH_DISTANCE gCarLODDistance; // default 5500
 #endif
 
 MATRIX light_matrix =
@@ -1472,9 +1474,8 @@ void DrawCar(CAR_DATA* cp, int view)
 	// to check if car is flipped
 	yVal = cp->hd.where.m[1][1];
 
-	// LOD switching [A] uncomment top for LODs like normal. Bottom for No LODs on cars.
-	//if (pos.vz <= CAR_LOD_SWITCH_DISTANCE && gForceLowDetailCars == 0 || cp->controlType == CONTROL_TYPE_PLAYER)
-	if (gForceLowDetailCars == 0 || cp->controlType == CONTROL_TYPE_PLAYER)
+	// LOD switching [A] Give player control over car LODs?
+	if (pos.vz <= gCarLODDistance && gForceLowDetailCars == 0 || cp->controlType == CONTROL_TYPE_PLAYER)
 	{
 		int doSmoke = 0;
 
