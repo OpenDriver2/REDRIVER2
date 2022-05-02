@@ -116,6 +116,8 @@ int setupYet = 0;
 int gDrawDistance = 441;
 
 int gHighLODDistance = 0; 
+int gTileLODDistance = 0;
+int gSpriteShadowDist = 0;
 
 #ifndef PSX
 _pct& plotContext = *(_pct*)((u_char*)getScratchAddr(0) + 1024 - sizeof(_pct));	// orig offset: 0x1f800020
@@ -301,7 +303,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 #ifdef PSX
 #define MAX_TREE_SHADOW_DISTANCE 7000
 #else
-#define MAX_TREE_SHADOW_DISTANCE gHighLODDistance // Default 14000
+#define MAX_TREE_SHADOW_DISTANCE gSpriteShadowDist // Default 14000
 #endif
 		
 		if (wetness == 0 && gTimeOfDay != TIME_NIGHT &&

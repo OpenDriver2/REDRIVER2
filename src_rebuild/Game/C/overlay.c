@@ -118,7 +118,7 @@ void InitOverlays(void)
 	{
 		InitPercentageBar(&Player2FelonyBar, 4096, felonyColour, G_LTXT(GTXT_Felony));
 		Player2FelonyBar.xpos = gOverlayXPos;
-		Player2FelonyBar.ypos = SCREEN_H / 2 + 12;
+		Player2FelonyBar.ypos = SCREEN_H / 2 + 34;
 		Player2FelonyBar.active = 1;
 	}
 	else
@@ -1154,7 +1154,6 @@ void DisplayOverlays(void)
 		PlayerDamageBar.xpos = gOverlayXPos;
 		Player2DamageBar.xpos = gOverlayXPos;
 		Player2FelonyBar.xpos = gOverlayXPos;
-		Player2FelonyBar.ypos = 154;
 		FelonyBar.xpos = gOverlayXPos;
 		DamageBar.xpos = gOverlayXOppPos;
 		ProxyBar.xpos = gOverlayXPos;
@@ -1187,11 +1186,10 @@ void DisplayOverlays(void)
 		if (!gPlayerImmune || ActiveCheats.cheat4)
 		{
 			DrawPercentageBar(&FelonyBar);
-		}
-
-		if (NumPlayers == 2 && gMultiplayerLevels == 0)
-		{
-			DrawPercentageBar(&Player2FelonyBar);
+			if (NumPlayers == 2)
+			{
+				DrawPercentageBar(&Player2FelonyBar);
+			}
 		}
 
 		if (NumPlayers == 1)

@@ -42,8 +42,5 @@ extern void* DrawButton(u_char button, void *prim, int x, int y); // 0x00074858
 
 extern void* SetFontTPage(void *prim); // 0x00074D94
 
-extern void InitCarReflection();
-extern void SetCarReflection(int enabled);
-
 
 #endif

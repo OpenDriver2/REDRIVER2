@@ -51,6 +51,8 @@ extern MATRIX2 matrixtable[64];
 extern MATRIX2 CompoundMatrix[64];
 
 extern int gHighLODDistance;
+extern int gTileLODDistance;
+extern int gSpriteShadowDist;
 
 #ifdef PSX
 
@@ -71,8 +73,8 @@ extern int gHighLODDistance;
 #define MAX_DRAWN_ANIMATING		48
 #define MAX_DRAWN_SPRITES		128
 
-#define DRAW_LOD_DIST_HIGH		7000
-#define DRAW_LOD_DIST_LOW		gHighLODDistance // Default was 10,000
+#define DRAW_LOD_DIST_HIGH		gTileLODDistance // Default 700 // Determines how close low LOD tiles are. Don't go over 12,000.
+#define DRAW_LOD_DIST_LOW		gHighLODDistance // Default was 10,000 // Determins how close "Low" Model LODs show. 
 
 extern _pct& plotContext;
 

@@ -539,17 +539,15 @@ void LoadMission(int missionnum)
 	Mission.timer[0].y = 16;
 	Mission.timer[1].y = SCREEN_H / 2 + 8;
 
-	if (NumPlayers == 2)
+	// [A] Multiplayer Hack for Timer
+	if (NumPlayers == 2 && GameType == GAME_MISSION || NumPlayers == 2 && GameType == GAME_PURSUIT)
 	{
-		if (gMultiplayerLevels == 0)
-		{
-			Mission.timer[0].y = 106;
-			Mission.timer[1].y = 300;
-		}
-		else
-		{
-			Mission.timer[0].y = 16;
-		}
+		Mission.timer[0].y = 106;
+		Mission.timer[1].y = 300;
+	}
+	else
+	{
+		Mission.timer[0].y = 16;
 	}
 	
 	if (MissionHeader->timer || (MissionHeader->timerFlags & MISSIONTIMER_FLAG_COUNTER))

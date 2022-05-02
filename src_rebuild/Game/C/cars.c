@@ -21,6 +21,13 @@
 #include "ASM/rndrasm.h"
 #include "pres.h"
 
+#include "../utils/stb_truetype.h"
+#include "../utils/targa.h"
+
+#include "PsyX/PsyX_render.h"
+
+TextureID gCarReflectionTexture = 0;
+
 struct plotCarGlobals
 {
 	u_char* primptr;
@@ -36,7 +43,7 @@ int gCarLODDistance = 0;
 #ifndef PSX
 #define CAR_LOD_SWITCH_DISTANCE gCarLODDistance;
 #else
-#define CAR_LOD_SWITCH_DISTANCE gCarLODDistance; // default 5500
+#define CAR_LOD_SWITCH_DISTANCE 5500; // default 5500
 #endif
 
 MATRIX light_matrix =
@@ -100,6 +107,56 @@ CAR_POLY carPolyBuffer[2001];
 char LeftLight = 0;
 char RightLight = 0;
 char TransparentObject = 0;
+
+// Get Started
+void InitCarReflection()
+{
+	char namebuffer[64];
+	u_char* data;
+
+	// init Reflections Interactive
+	if (!gCarReflectionTexture)
+	{
+		int width, height, bpp;
+
+
+		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\REFLECTIONS.TGA");
+
+
+		FS_FixPathSlashes(namebuffer);
+
+		if (LoadTGAImage(namebuffer, &data, width, height, bpp))
+		{
+			if (bpp == 32)
+			{
+				gCarReflectionTexture = GR_CreateRGBATexture(width, height, data);
+			}
+			free(data);
+		}
+	}
+}
+
+// [A] attempt to restore D1 reflections on car.
+// Not working yet.
+void SetCarReflection(int enabled, plotCarGlobals* pg)
+{
+
+	if (gCarReflectionTexture == 0)
+	{
+		return;
+	}
+
+	DR_PSYX_TEX* tex = (DR_PSYX_TEX*)current->primptr;
+	if (enabled)
+		SetPsyXTexture(tex, gCarReflectionTexture, 255, 255);
+	else
+		SetPsyXTexture(tex, 0, 0, 0);
+
+	//setPolyF3(prim);
+	addPrim(current->ot, tex);
+	current->primptr += sizeof(DR_PSYX_TEX);
+
+}
 
 // [D] [T]
 void plotCarPolyB3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *pg)
@@ -208,7 +265,7 @@ void plotCarPolyFT3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *
 		numTris--;
 		src++;
 	}
-
+	//SetCarReflection(1, pg);
 	pg->primptr = (unsigned char*)prim;
 }
 
@@ -252,6 +309,7 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 		if (Z > -1 && otz > 0)
 		{
 			indices = src->nindices;
+			
 
 			r0 = (u_int)(ushort)nlist[indices & 0xff].pad;
 			r1 = (u_int)(ushort)nlist[indices >> 8 & 0xff].pad;
@@ -271,14 +329,13 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 
 			setPolyGT3(prim);
 			addPrim(pg->ot + (otz >> 1), prim);
-
 			prim++;
 		}
 		src++;
 		numTris--;
 	}
+	//SetCarReflection(1, pg);
 	pg->primptr = (unsigned char*)prim;
-	SetCarReflection(1);
 }
 
 
@@ -360,7 +417,7 @@ void plotCarPolyGT3Lit(int numTris, CAR_POLY* src, SVECTOR* vlist, SVECTOR* nlis
 
 			prim++;
 		}
-
+		//SetCarReflection(1, pg);
 		src++;
 		numTris--;
 	}
@@ -421,6 +478,7 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 
 			prim++;
 		}
+		//SetCarReflection(1, pg);
 
 		src++;
 		numTris--;
