@@ -582,6 +582,7 @@ int main(int argc, char** argv)
 		extern int gTurnSignalColour;
 		extern int gToggleBeamStrength;
 		extern int gBigCityMP;
+		extern int gHighLODDistance;
 
 		if(!cdImageFileName)
 			cdImageFileName = ini_get(config, "cdfs", "image");
@@ -625,6 +626,7 @@ int main(int argc, char** argv)
 		ini_sget(config, "extras", "AmberSignals", "%d", &gTurnSignalColour);
 		ini_sget(config, "extras", "FontChoice", "%d", &gTextureChoice);
 		ini_sget(config, "extras", "DigitChoice", "%d", &gDigitChoice);
+		ini_sget(config, "extras", "EnvLODDist", "%d", &gHighLODDistance);
 		
 	
 		gCameraDefaultScrZ = MAX(MIN(newScrZ, 384), 128);

@@ -276,7 +276,7 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 		numTris--;
 	}
 	pg->primptr = (unsigned char*)prim;
-	SetCarReflection(1); // AAAAAAAA
+	SetCarReflection(1);
 }
 
 
@@ -1472,8 +1472,9 @@ void DrawCar(CAR_DATA* cp, int view)
 	// to check if car is flipped
 	yVal = cp->hd.where.m[1][1];
 
-	// LOD switching
-	if (pos.vz <= CAR_LOD_SWITCH_DISTANCE && gForceLowDetailCars == 0 || cp->controlType == CONTROL_TYPE_PLAYER)
+	// LOD switching [A] uncomment top for LODs like normal. Bottom for No LODs on cars.
+	//if (pos.vz <= CAR_LOD_SWITCH_DISTANCE && gForceLowDetailCars == 0 || cp->controlType == CONTROL_TYPE_PLAYER)
+	if (gForceLowDetailCars == 0 || cp->controlType == CONTROL_TYPE_PLAYER)
 	{
 		int doSmoke = 0;
 

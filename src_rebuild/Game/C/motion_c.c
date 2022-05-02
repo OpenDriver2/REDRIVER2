@@ -1541,7 +1541,8 @@ void DrawCiv(LPPEDESTRIAN pPed)
 
 		boneId = boneIdvals[i];
 		
-		if (boneId == HEAD && szList[0] <= switch_detail_distance / 2)
+		//[A] Increase Jack Distance
+		if (boneId == HEAD && szList[0] <= switch_detail_distance)
 			bHeadModel = 1;
 		else
 			DrawBodySprite(pPed, boneId, (VERTTYPE*)&sxyList[i*2], (VERTTYPE*)&sxyList[i*2 + 1], szList[i*2], szList[i*2+1]);

@@ -17,5 +17,7 @@ extern void StopXA(); // 0x00082F78
 extern void ResumeXA(); // 0x00082FC4
 extern void PauseXA(); // 0x00083078
 
+extern void DoMenuMusic();
+
 
 #endif

@@ -159,7 +159,9 @@ void AddIndicatorLight(CAR_DATA *cp, int Type)
 		col.b = 0;
 
 		if (gTurnSignalColour == 1)
-		col.g = brightness / 2;
+		{
+			col.g = brightness / 2;
+		}
 	
 
 	if (pauseflag == 0)

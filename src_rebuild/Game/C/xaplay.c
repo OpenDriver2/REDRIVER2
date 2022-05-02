@@ -55,6 +55,8 @@ static int gPlaying = 0;
 unsigned short gChannel = 0;
 static int xa_prepared = 0;
 
+extern int gInFrontend;
+
 static unsigned short CurrentChannel;
 static unsigned short ID;
 static int StartPos;
@@ -484,6 +486,15 @@ void PauseXA(void)
 		gXASubtitlePauseTime = VSync(-1);
 	}
 #endif
+}
+
+void DoMenuMusic(void)
+{
+	if (gInFrontend == 1)
+	{
+		// TODO: Figure it out. 
+	}
+
 }
 
 

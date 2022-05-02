@@ -50,6 +50,8 @@ extern MATRIX face_camera;
 extern MATRIX2 matrixtable[64];
 extern MATRIX2 CompoundMatrix[64];
 
+extern int gHighLODDistance;
+
 #ifdef PSX
 
 #define MAX_DRAWN_BUILDINGS		192
@@ -70,7 +72,7 @@ extern MATRIX2 CompoundMatrix[64];
 #define MAX_DRAWN_SPRITES		128
 
 #define DRAW_LOD_DIST_HIGH		7000
-#define DRAW_LOD_DIST_LOW		10000
+#define DRAW_LOD_DIST_LOW		gHighLODDistance // Default was 10,000
 
 extern _pct& plotContext;
 

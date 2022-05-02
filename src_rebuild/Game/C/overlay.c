@@ -121,6 +121,10 @@ void InitOverlays(void)
 		Player2FelonyBar.ypos = SCREEN_H / 2 + 12;
 		Player2FelonyBar.active = 1;
 	}
+	else
+	{
+		Player2FelonyBar.active = 0;
+	}
 
 	InitPercentageBar(&DamageBar, 1, damageColour, G_LTXT(GTXT_Damage));
 	DamageBar.xpos = gOverlayXOppPos;
@@ -1067,26 +1071,34 @@ void DisplayOverlays(void)
 	if (NoPlayerControl || gInGameCutsceneActive || gInGameCutsceneDelay)
 		return;
 
-	// [A] Single Player Stats 
-	if (gDisplaySpeedo == 1 && lp->playerType == 1)
+	if (NumPlayers == 2 && gShowMap == 0)
 	{
-		if (!gDoOverlays)
-			return;
-		DrawSpeedometer();
+		DrawPercentageBar(&DamageBar);
 	}
 
-	if (gDisplayGears == 1 && lp->playerType == 1)
+	if (gShowMap == 0)
 	{
-		if (!gDoOverlays)
-			return;
-		DrawGearDisplay();
-	}
+		// [A] Single Player Stats 
+		if (gDisplaySpeedo == 1 && lp->playerType == 1)
+		{
+			if (!gDoOverlays)
+				return;
+			DrawSpeedometer();
+		}
 
-	if (gDisplayRPM == 1 && lp->playerType == 1 && NumPlayers == 1)
-	{
-		if (!gDoOverlays)
-			return;
-		DrawRPMDisplay();
+		if (gDisplayGears == 1 && lp->playerType == 1)
+		{
+			if (!gDoOverlays)
+				return;
+			DrawGearDisplay();
+		}
+
+		if (gDisplayRPM == 1 && lp->playerType == 1 && NumPlayers == 1)
+		{
+			if (!gDoOverlays)
+				return;
+			DrawRPMDisplay();
+		}
 	}
 
 	//[A]
@@ -1149,7 +1161,7 @@ void DisplayOverlays(void)
 
 		if (NumPlayers == 2)
 		{
-			DamageBar.ypos = 127;
+			DamageBar.ypos = 120;
 			ProxyBar.ypos = 115;
 		}
 	}
@@ -1182,6 +1194,7 @@ void DisplayOverlays(void)
 			DrawPercentageBar(&Player2FelonyBar);
 		}
 
+		if (NumPlayers == 1)
 		DrawPercentageBar(&DamageBar);
 
 		DrawDrivingGameOverlays();
