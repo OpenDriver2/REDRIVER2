@@ -1186,10 +1186,7 @@ void DisplayOverlays(void)
 		if (!gPlayerImmune || ActiveCheats.cheat4)
 		{
 			DrawPercentageBar(&FelonyBar);
-			if (NumPlayers == 2)
-			{
-				DrawPercentageBar(&Player2FelonyBar);
-			}
+			DrawPercentageBar(&Player2FelonyBar);
 		}
 
 		if (NumPlayers == 1)

@@ -3180,13 +3180,21 @@ void HandleMission(void)
 		{
 		case 0x20:
 			FelonyBar.flags |= 0x2;
+			if (NumPlayers == 2)
+			Player2FelonyBar.flags |= 0x2;
 		case 0:
 			FelonyBar.active = 0x1;
+			if (NumPlayers == 2)
+			Player2FelonyBar.active = 0x1;
 			break;
 		case 0x10:
 			FelonyBar.active = 0;
+			if (NumPlayers == 2)
+			Player2FelonyBar.active = 0;
 		default:
 			FelonyBar.active = 0;
+			if (NumPlayers == 2)
+			Player2FelonyBar.active = 0;
 		}
 	}
 

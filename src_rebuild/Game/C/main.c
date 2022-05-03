@@ -433,7 +433,7 @@ void LoadGameLevel(void)
 	SpoolLumpOffset = citylumps[GameLevel][CITYLUMP_SPOOL].x;
 
 	//Init_Reflection_Mapping();	// [A] I know that this is obsolete and used NOWHERE
-	//InitCarReflection();
+	InitCarReflection();
 	InitDebrisNames();
 	InitShadow();
 	//InitTextureNames();			// [A] I know that this is obsolete and used NOWHERE
@@ -483,7 +483,7 @@ void State_GameInit(void* param)
 	InitEvents();
 	InitPadRecording();
 	InitSpeechQueue(&gSpeechQueue);
-	InitCarReflection();
+	//InitCarReflection();
 
 	if (NewLevel)
 	{

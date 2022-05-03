@@ -138,24 +138,22 @@ void InitCarReflection()
 
 // [A] attempt to restore D1 reflections on car.
 // Not working yet.
+
 void SetCarReflection(int enabled, plotCarGlobals* pg)
 {
-
 	if (gCarReflectionTexture == 0)
 	{
 		return;
 	}
 
-	DR_PSYX_TEX* tex = (DR_PSYX_TEX*)current->primptr;
+	DR_PSYX_TEX* tex = (DR_PSYX_TEX*)pg->primptr;
 	if (enabled)
-		SetPsyXTexture(tex, gCarReflectionTexture, 255, 255);
+		SetPsyXTexture(tex, gCarReflectionTexture, 64, 64);
 	else
 		SetPsyXTexture(tex, 0, 0, 0);
 
-	//setPolyF3(prim);
-	addPrim(current->ot, tex);
-	current->primptr += sizeof(DR_PSYX_TEX);
-
+	addPrim(pg->ot, tex);
+	pg->primptr += sizeof(DR_PSYX_TEX);
 }
 
 // [D] [T]
@@ -206,7 +204,6 @@ void plotCarPolyB3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *p
 		numTris--;
 		src++;
 	}
-
 	pg->primptr = (unsigned char*)prim;
 }
 
@@ -265,7 +262,6 @@ void plotCarPolyFT3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *
 		numTris--;
 		src++;
 	}
-	//SetCarReflection(1, pg);
 	pg->primptr = (unsigned char*)prim;
 }
 
@@ -283,6 +279,7 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 	int ofse;
 
 	prim = (POLY_GT3 *)pg->primptr;
+	//SetCarReflection(0, pg);
 
 	int GT3rgb = pg->intensity | 0x34000000;
 	gte_ldrgb(&GT3rgb);
@@ -417,7 +414,6 @@ void plotCarPolyGT3Lit(int numTris, CAR_POLY* src, SVECTOR* vlist, SVECTOR* nlis
 
 			prim++;
 		}
-		//SetCarReflection(1, pg);
 		src++;
 		numTris--;
 	}
@@ -478,7 +474,6 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 
 			prim++;
 		}
-		//SetCarReflection(1, pg);
 
 		src++;
 		numTris--;

@@ -131,8 +131,14 @@ void FreeCameraKeyboardHandler(int nKey, char down)
 	if (nKey == SDL_SCANCODE_L)
 	{
 		gToggleBeamStrength ^= 1;
+		//gEnableDlights ^= 1;
 		//gSpeedoType ^= 1;
 		printf("LightBeams: %s\n", g_FreeCameraEnabled ? "ON" : "OFF");
+	}
+	if (nKey == SDL_SCANCODE_B)
+	{
+		g_cfg_bilinearFiltering ^= 1;
+		printf("Bilinear Filtering: %s\n", g_FreeCameraEnabled ? "ON" : "OFF");
 	}
 }
 

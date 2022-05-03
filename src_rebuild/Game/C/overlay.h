@@ -23,6 +23,7 @@ extern PERCENTAGE_BAR PlayerDamageBar;
 extern PERCENTAGE_BAR Player2DamageBar;
 extern PERCENTAGE_BAR DamageBar;
 extern PERCENTAGE_BAR FelonyBar;
+extern PERCENTAGE_BAR Player2FelonyBar;
 extern PERCENTAGE_BAR ProxyBar;
 
 extern int gDoOverlays;

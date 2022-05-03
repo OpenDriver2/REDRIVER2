@@ -7,6 +7,7 @@
 #include "gamesnd.h"
 #include "xaplay.h"
 #include "players.h"
+#include "overmap.h"
 
 #define SPU_CHANNEL_COUNT 24
 #define LSB_BANK_COUNT 7
@@ -526,6 +527,12 @@ void ComputeDoppler(CHANNEL_DATA *ch)
 	PLAYER *pl;
 	int dx, dy, dz;
 
+	PLAYER* pl1;
+	PLAYER* pl2;
+
+	pl1 = &player[0];
+	pl2 = &player[1];
+
 	srcPos = ch->srcposition;
 
 	if (srcPos == NULL)
@@ -555,6 +562,16 @@ void ComputeDoppler(CHANNEL_DATA *ch)
 
 	if (ch->dopplerScale << 16 < 0)
 		ch->dopplerScale = 0;
+
+	// [A] Fix doopler for players 1 and 2 in MP.
+	if (Long2DDistance(&player[0].cameraPos, srcPos) < Long2DDistance(&player[1].cameraPos, srcPos))
+	{
+		ch->player = 0;
+	}
+	else
+	{
+		ch->player = 1;
+	}
 }
 
 
