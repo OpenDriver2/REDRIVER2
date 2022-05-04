@@ -123,7 +123,7 @@ void ChangeCarPlayerToPed(int playerID)
 	}
 
 	lcp->controlType = CONTROL_TYPE_CIV_AI;
-	lcp->wheel_angle = 0;
+	//lcp->wheel_angle = 0;
 	lcp->ai.c.thrustState = 3;
 	lcp->ai.c.ctrlState = 7;
 

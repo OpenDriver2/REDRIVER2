@@ -1193,9 +1193,9 @@ void DrawOverheadMap(void)
 			pl->pos[0];
 			pl2->pos[2];
 
-			WorldToOverheadMapPositions((VECTOR*)player->pos, &vec, 1, 0, 0); // player1
+			//WorldToOverheadMapPositions((VECTOR*)&player[0].pos, &vec, 1, 0, 0); // player1
 
-			WorldToOverheadMapPositions((VECTOR*)player->pos, &vec2, 1, 0, 0); // player2
+			//WorldToOverheadMapPositions((VECTOR*)&player[1].pos, &vec2, 1, 0, 0); // player2
 	}
 	else
 	{
@@ -1228,15 +1228,13 @@ void DrawOverheadMap(void)
 			pl->pos[0];
 			pl2->pos[2];
 
-			DrawTargetBlip((VECTOR*)pl->pos, 64, 64, 64, 3);
-			DrawTargetBlip((VECTOR*)pl2->pos, 64, 64, 64, 3);
+			DrawTargetBlip((VECTOR*)pl->pos, 0, 255, 255, 3);
+			DrawTargetBlip((VECTOR*)pl2->pos, 255, 64, 128, 3);
 	}
 	else
 	{
-		DrawTargetBlip((VECTOR*)player->pos, 64, 64, 64, 3); // the playerDot
+		DrawTargetBlip((VECTOR*)player->pos, 64, 64, 64, 3); // the playerDot shadow
 	}
-
-	//DrawTargetBlip((VECTOR *)player->pos, 64, 64, 64, 3);
 	
 	DrawCompass();
 

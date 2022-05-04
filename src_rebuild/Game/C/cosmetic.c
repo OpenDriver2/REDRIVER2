@@ -487,9 +487,9 @@ void AddNightLights(CAR_DATA *cp)
 		// Brighten the lights to OG D2 levels 
 			if (gToggleBeamStrength == 1)
 			{
-				col.r = 228;
-				col.g = 224;
-				col.b = 212;
+				col.r = 255;
+				col.g = 255;
+				col.b = 255;
 
 			}
 			else
@@ -645,9 +645,9 @@ void AddNightLights(CAR_DATA *cp)
 		// Toggle the bool light between dim and bright
 		if (gToggleBeamStrength == 1)
 		{
-			col.r = 228;
-			col.g = 220;
-			col.b = 210;
+			col.r = 255;
+			col.g = 255;
+			col.b = 255;
 		}
 		else
 		{

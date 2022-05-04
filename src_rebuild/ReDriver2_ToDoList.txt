@@ -1,0 +1,28 @@
+Cheats from cheat engine that need to be ported to RE:DRIVER 2:
+[ ] Horn in Emergency Vehicles
+[x] No Vehicle & Ped Low LOD
+[ ] Player Death Effects
+[ ] Restore Demo Walk Animation
+[X] Keep Wheel Angle After Leaving Vehicle
+[ ] More Multiplayer Games
+[ ] Cop Indicators on both screens in Split Screen
+[ ] Both Players Can be Chased
+[ ] Gate Racing Versus Support
+[ ] Minimap + Full Pause Menu/Static Minimap Rotation
+[ ] Player 2 Spawn Point on Singleplayer Levels
+[ ] Render & Spawn Traffic Around the players
+[ ] Co=op Support and fixes
+[ ] Choose Players' Characters
+[ ] Play Cut Cop Lines [XAs Required]
+[ ] Play Menu Music [XA Required]
+[ ] Use Cut 321Go Sound Fx
+[x] Amber Turn Signals
+[ ] Fix double animation speed in split-screen
+[x] Original Headlights
+[x] Speedometer
+[x] Gear Indicator
+[ ] Manual Transmision (Optional)
+
+Shit that needs to be restored from Driver 1 
+[ ] Car Reflections via PsyX hacks 
+[ ] Cruise Control Toggle (Driver 1 PC)

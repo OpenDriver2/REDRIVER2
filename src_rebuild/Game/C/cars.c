@@ -39,6 +39,8 @@ struct plotCarGlobals
 
 int gCarLODDistance = 0;
 
+#define CAR_REFLECTION 
+
 
 #ifndef PSX
 #define CAR_LOD_SWITCH_DISTANCE gCarLODDistance;
@@ -138,6 +140,58 @@ void InitCarReflection()
 
 // [A] attempt to restore D1 reflections on car.
 // Not working yet.
+//void SetCarReflection(int enabled, int numTris, CAR_POLY* src, plotCarGlobals* pg)
+//{
+//	int Z;
+//	int otz;
+//	u_int indices;
+//	POLY_GT3* prim;
+//	u_int r0, r1, r2;
+//	int ofse;
+//
+//	prim = (POLY_GT3*)pg->primptr;
+//
+//	int GT3rgb = pg->intensity | 0x34000000;
+//	gte_ldrgb(&GT3rgb);
+//
+//	MATRIX reflection_matrix;
+//	VECTOR translate;
+//
+//	prim = (POLY_GT3*)pg->primptr;
+//
+//	if (gCarReflectionTexture == 0)
+//	{
+//		return;
+//	}
+//
+//	DR_PSYX_TEX* tex = (DR_PSYX_TEX*)pg->primptr;
+//	if (enabled)
+//		SetPsyXTexture(tex, gCarReflectionTexture, 64, 64);
+//	else
+//		SetPsyXTexture(tex, 0, 0, 0);
+//
+//	// hopefully make reflection move and turn with the car? 
+//	//InitMatrix(reflection_matrix);
+//	//_RotMatrixY(&reflection_matrix, player[0].dir & 0xfff);
+//
+//	//gte_SetRotMatrix(&reflection_matrix);
+//	//gte_SetTransVector(&translate);
+//
+//	//Texture wasn't showing up and causing game crashes until I plotted this in here from plotCarPolyGT3
+//	//Though it appears on everything. 
+//	while (numTris > 0)
+//	{
+//
+//		if (Z > -1 && otz > 0)
+//		{
+//			setSemiTrans(prim, 1);
+//			addPrim(pg->ot + (otz >> 1), prim);
+//			prim++;
+//		}
+//	}
+//	pg->primptr += sizeof(DR_PSYX_TEX);
+//
+//}
 
 void SetCarReflection(int enabled, plotCarGlobals* pg)
 {
@@ -278,8 +332,10 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 	u_int r0,r1,r2;
 	int ofse;
 
-	prim = (POLY_GT3 *)pg->primptr;
 	//SetCarReflection(0, pg);
+
+	//SetCarReflection(0, numTris, src, pg);
+	prim = (POLY_GT3 *)pg->primptr;
 
 	int GT3rgb = pg->intensity | 0x34000000;
 	gte_ldrgb(&GT3rgb);
@@ -307,7 +363,7 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 		{
 			indices = src->nindices;
 			
-
+			
 			r0 = (u_int)(ushort)nlist[indices & 0xff].pad;
 			r1 = (u_int)(ushort)nlist[indices >> 8 & 0xff].pad;
 			r2 = (u_int)(ushort)nlist[indices >> 16 & 0xff].pad;
@@ -323,16 +379,20 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 			*(u_int*)&prim->u2 = src->uv3_uv2 + ofse;
 
 			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
-
+			
 			setPolyGT3(prim);
 			addPrim(pg->ot + (otz >> 1), prim);
 			prim++;
+			
 		}
 		src++;
 		numTris--;
+		//SetCarReflection(1, pg);
 	}
-	//SetCarReflection(1, pg);
-	pg->primptr = (unsigned char*)prim;
+		
+		//SetCarReflection(0, numTris, src, pg);
+		pg->primptr = (unsigned char*)prim;
+
 }
 
 

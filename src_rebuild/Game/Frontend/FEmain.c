@@ -1960,21 +1960,19 @@ int CarSelectScreen(int bSetup)
 		iScreenSelect = SCREEN_CAR;
 
 		// setup secret cars
-		if (NumPlayers == 1)
-		{
+		// [A] Let Secret Car be available anyway in MP. 
 			CarAvailability[0][9] = AvailableCheats.cheat5;
 			CarAvailability[1][9] = AvailableCheats.cheat6;
 			CarAvailability[2][9] = AvailableCheats.cheat7;
 			CarAvailability[3][9] = AvailableCheats.cheat8;
-		}
 
-		// setup unlockable cars
-		if (gFurthestMission == 40 && NumPlayers == 1)
+		// setup unlockable cars // [A] Let secret cars be Everwhere. 
+		if (gFurthestMission == 40)
 		{
 			for (int i = 4; i < 9; i++)
 			{
-				if (i != 8)
-					CarAvailability[0][i] = 1;	// remove truck
+				
+				CarAvailability[0][i] = 1;	// remove truck // Nah readding it. 
 
 				CarAvailability[1][i] = 1;
 				CarAvailability[2][i] = 1;

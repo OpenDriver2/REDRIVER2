@@ -23,6 +23,7 @@
 #include "sky.h"
 #include "debris.h"
 #include "felony.h"
+#include "overmap.h"
 
 typedef struct __othercarsound
 {
@@ -971,12 +972,23 @@ void DoDopplerSFX(void)
 	int dx, dz;
 	u_int dist;
 
+	PLAYER* pl;
+
+	PLAYER* pl1;
+	PLAYER* pl2;
+
+	pl1 = &player[0];
+	pl2 = &player[1];
+
 	num_noisy_cars = 0;
 
 	// collect sounding cars and estimate their distance to camera
 	for (i = 0; i < MAX_CARS; i++)
 	{
 		car_ptr = &car_data[i];
+
+		dx = car_ptr->hd.where.t[0] - camera_position.vx;
+		dz = car_ptr->hd.where.t[2] - camera_position.vz;
 
 		dx = car_ptr->hd.where.t[0] - camera_position.vx;
 		dz = car_ptr->hd.where.t[2] - camera_position.vz;
