@@ -122,8 +122,8 @@ void InitCarReflection()
 		int width, height, bpp;
 
 		if (gCarReflectionMapping == 1)
-			//sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\REFLECTIONS.TGA");
-			sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\REFLECTIONSPC.TGA");
+			sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\REFLECTIONS.TGA");
+			//sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\REFLECTIONSPC.TGA");
 
 
 		FS_FixPathSlashes(namebuffer);
@@ -151,7 +151,7 @@ void SetCarReflection(int enabled, plotCarGlobals* pg, int otOfs)
 
 	DR_PSYX_TEX* tex = (DR_PSYX_TEX*)pg->primptr;
 	if (enabled)
-		SetPsyXTexture(tex, gCarReflectionTexture, 256, 256);
+		SetPsyXTexture(tex, gCarReflectionTexture, 320, 320);
 	else
 		SetPsyXTexture(tex, 0, 0, 0);
 
@@ -225,12 +225,12 @@ void plotCarPolyFT3Reflection(CAR_DATA *cp,int numTris, CAR_POLY* src, SVECTOR* 
 			*(u_int*)&prim->u1 = src->tpage_uv1;
 			*(u_int*)&prim->u2 = src->uv3_uv2;
 			// Handles reflection movement
-			prim->u0 += cp->hd.where.t[0];
-			prim->u1 += cp->hd.where.t[0];
-			prim->u2 += cp->hd.where.t[0];
-			prim->v0 += cp->hd.where.t[2];
-			prim->v1 += cp->hd.where.t[2];
-			prim->v2 += cp->hd.where.t[2];
+			//prim->u0 += cp->hd.where.t[0];
+			//prim->u1 += cp->hd.where.t[0];
+			//prim->u2 += cp->hd.where.t[0];
+			//prim->v0 += cp->hd.where.t[2];
+			//prim->v1 += cp->hd.where.t[2];
+			//prim->v2 += cp->hd.where.t[2];
 
 			prim->tpage = 0x20;
 
@@ -422,7 +422,7 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 		src++;
 		numTris--;
 	}
-		//
+		
 		pg->primptr = (unsigned char*)prim;
 
 }
