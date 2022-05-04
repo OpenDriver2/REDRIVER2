@@ -527,12 +527,6 @@ void ComputeDoppler(CHANNEL_DATA *ch)
 	PLAYER *pl;
 	int dx, dy, dz;
 
-	PLAYER* pl1;
-	PLAYER* pl2;
-
-	pl1 = &player[0];
-	pl2 = &player[1];
-
 	srcPos = ch->srcposition;
 
 	if (srcPos == NULL)

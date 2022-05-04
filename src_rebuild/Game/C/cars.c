@@ -139,61 +139,9 @@ void InitCarReflection()
 }
 
 // [A] attempt to restore D1 reflections on car.
-// Not working yet.
-//void SetCarReflection(int enabled, int numTris, CAR_POLY* src, plotCarGlobals* pg)
-//{
-//	int Z;
-//	int otz;
-//	u_int indices;
-//	POLY_GT3* prim;
-//	u_int r0, r1, r2;
-//	int ofse;
-//
-//	prim = (POLY_GT3*)pg->primptr;
-//
-//	int GT3rgb = pg->intensity | 0x34000000;
-//	gte_ldrgb(&GT3rgb);
-//
-//	MATRIX reflection_matrix;
-//	VECTOR translate;
-//
-//	prim = (POLY_GT3*)pg->primptr;
-//
-//	if (gCarReflectionTexture == 0)
-//	{
-//		return;
-//	}
-//
-//	DR_PSYX_TEX* tex = (DR_PSYX_TEX*)pg->primptr;
-//	if (enabled)
-//		SetPsyXTexture(tex, gCarReflectionTexture, 64, 64);
-//	else
-//		SetPsyXTexture(tex, 0, 0, 0);
-//
-//	// hopefully make reflection move and turn with the car? 
-//	//InitMatrix(reflection_matrix);
-//	//_RotMatrixY(&reflection_matrix, player[0].dir & 0xfff);
-//
-//	//gte_SetRotMatrix(&reflection_matrix);
-//	//gte_SetTransVector(&translate);
-//
-//	//Texture wasn't showing up and causing game crashes until I plotted this in here from plotCarPolyGT3
-//	//Though it appears on everything. 
-//	while (numTris > 0)
-//	{
-//
-//		if (Z > -1 && otz > 0)
-//		{
-//			setSemiTrans(prim, 1);
-//			addPrim(pg->ot + (otz >> 1), prim);
-//			prim++;
-//		}
-//	}
-//	pg->primptr += sizeof(DR_PSYX_TEX);
-//
-//}
+// Working, needs to move though.
 
-void SetCarReflection(int enabled, plotCarGlobals* pg)
+void SetCarReflection(int enabled, plotCarGlobals* pg, int otOfs)
 {
 	if (gCarReflectionTexture == 0)
 	{
@@ -202,12 +150,84 @@ void SetCarReflection(int enabled, plotCarGlobals* pg)
 
 	DR_PSYX_TEX* tex = (DR_PSYX_TEX*)pg->primptr;
 	if (enabled)
-		SetPsyXTexture(tex, gCarReflectionTexture, 64, 64);
+		SetPsyXTexture(tex, gCarReflectionTexture, 256, 256);
 	else
 		SetPsyXTexture(tex, 0, 0, 0);
 
-	addPrim(pg->ot, tex);
+	addPrim(pg->ot + otOfs, tex);
 	pg->primptr += sizeof(DR_PSYX_TEX);
+}
+
+// [D] [T]
+void plotCarPolyFT3Reflection(int numTris, CAR_POLY* src, SVECTOR* vlist, plotCarGlobals* pg)
+{
+	int indices;
+	int ofse;
+	SVECTOR* v2;
+	SVECTOR* v1;
+	SVECTOR* v0;
+	int Z;
+	POLY_FT3* prim;
+	OTTYPE* ot;
+	int FT3rgb;
+	int reg;
+
+	FT3rgb = pg->intensity | 0x24000000;
+	ot = pg->ot;
+
+	gte_ldrgb(&FT3rgb);
+
+	while (numTris > 0)
+	{
+		indices = src->vindices;
+		v0 = vlist + (indices & 0xff);
+		v1 = vlist + (indices >> 8 & 0xff);
+		v2 = vlist + (indices >> 16 & 0xff);
+
+		gte_ldv3(v0, v1, v2);
+
+		gte_rtpt();
+
+		gte_nclip();
+		gte_stopz(&Z);
+		gte_avsz3();
+
+		if (Z > -1)
+		{
+			VERTTYPE sxy0[2];
+			VERTTYPE sxy1[2];
+			VERTTYPE sxy2[2];
+
+			gte_stsxy3(&sxy0, &sxy1, &sxy2);
+			gte_stotz(&Z);
+
+			SetCarReflection(0, pg, (Z >> 1));
+
+			prim = (POLY_FT3*)pg->primptr;
+
+			*(uint*)&prim->x0 = *(uint*)sxy0;
+			*(uint*)&prim->x1 = *(uint*)sxy1;
+			*(uint*)&prim->x2 = *(uint*)sxy2;
+
+			*(uint*)&prim->r0 = 0x202020;
+
+			*(u_int*)&prim->u0 = src->clut_uv0;
+			*(u_int*)&prim->u1 = src->tpage_uv1;
+			*(u_int*)&prim->u2 = src->uv3_uv2;
+
+			prim->tpage = 0x20;
+
+			setPolyFT3(prim);
+			setSemiTrans(prim, 1);
+			addPrim(ot + (Z >> 1), prim);
+
+			pg->primptr = (unsigned char*)(prim + 1);
+
+			SetCarReflection(1, pg, (Z >> 1));
+		}
+		numTris--;
+		src++;
+	}
 }
 
 // [D] [T]
@@ -322,7 +342,6 @@ void plotCarPolyFT3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *
 // [D] [T]
 void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, plotCarGlobals *pg, int palette)
 {
-	
 	int Z;
 	int otz;	
 	SVECTOR* v2;
@@ -333,12 +352,9 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 	u_int r0,r1,r2;
 	int ofse;
 
-	SetCarReflection(0, pg);
-
-	//SetCarReflection(0, numTris, src, pg);
 	prim = (POLY_GT3 *)pg->primptr;
 	int GT3rgb = pg->intensity | 0x34000000;
-	gte_ldrgb(&GT3rgb);
+	gte_ldrgb(&GT3rgb); 
 	
 
 	while (numTris > 0)
@@ -389,10 +405,8 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 		src++;
 		numTris--;
 	}
-		//SetCarReflection(0, numTris, src, pg);
+		//
 		pg->primptr = (unsigned char*)prim;
-		
-			SetCarReflection(1, pg);
 
 }
 
@@ -1057,6 +1071,9 @@ void plotNewCarModel(CAR_MODEL* car, int palette)
 		plotCarPolyGT3(car->numGT3, car->pGT3, car->vlist, car->nlist, &_pg, palette);
 #endif
 	}
+
+	_pg.ot = (OTTYPE*)(current->ot - 4);
+	plotCarPolyFT3Reflection(car->numGT3, car->pGT3, car->vlist, &_pg);
 
 	current->primptr = (char*)_pg.primptr;
 
