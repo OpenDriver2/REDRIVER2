@@ -483,7 +483,7 @@ void State_GameInit(void* param)
 	InitEvents();
 	InitPadRecording();
 	InitSpeechQueue(&gSpeechQueue);
-	InitCarReflection();
+	InitCarReflection(); // Here in State_GameInit right?
 
 	if (NewLevel)
 	{

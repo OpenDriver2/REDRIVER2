@@ -52,6 +52,7 @@ extern char GetCarPalIndex(int tpage); // 0x00023390
 
 extern int gCarLODDistance;
 
+// Reflection Init
 extern void InitCarReflection();
 
 

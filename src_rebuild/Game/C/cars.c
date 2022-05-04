@@ -322,6 +322,7 @@ void plotCarPolyFT3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *
 // [D] [T]
 void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, plotCarGlobals *pg, int palette)
 {
+	
 	int Z;
 	int otz;	
 	SVECTOR* v2;
@@ -332,13 +333,13 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 	u_int r0,r1,r2;
 	int ofse;
 
-	//SetCarReflection(0, pg);
+	SetCarReflection(0, pg);
 
 	//SetCarReflection(0, numTris, src, pg);
 	prim = (POLY_GT3 *)pg->primptr;
-
 	int GT3rgb = pg->intensity | 0x34000000;
 	gte_ldrgb(&GT3rgb);
+	
 
 	while (numTris > 0)
 	{
@@ -387,11 +388,11 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 		}
 		src++;
 		numTris--;
-		//SetCarReflection(1, pg);
 	}
-		
 		//SetCarReflection(0, numTris, src, pg);
 		pg->primptr = (unsigned char*)prim;
+		
+			SetCarReflection(1, pg);
 
 }
 
