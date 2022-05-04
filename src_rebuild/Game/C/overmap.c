@@ -755,7 +755,7 @@ void CopIndicator(int xpos, int strength)
 
 // [D] [T]
 // Note for later, remember to remove.
-void DrawSightCone(COP_SIGHT_DATA *pCopSightData, VECTOR *pPosition, int direction, int flags)
+void DrawSightCone(CAR_DATA* cp, COP_SIGHT_DATA *pCopSightData, VECTOR *pPosition, int direction, int flags)
 {
 	short temp;
 	int dir;
@@ -818,7 +818,11 @@ void DrawSightCone(COP_SIGHT_DATA *pCopSightData, VECTOR *pPosition, int directi
 		poly->x2 = pNextVertex->vx;
 		poly->y2 = pNextVertex->vz;
 
-		poly->r0 = poly->g0 = poly->b0 = 96;
+		if (MissionHeader->residentModels[cp->ap.model] == 0)
+			poly->r0 = poly->g0 = poly->b0 = 96;
+		else
+			poly->r0 = 255, poly->g0 = poly->b0 = 56;
+
 		poly->r1 = poly->g1 = poly->b1 = 0;
 		poly->r2 = poly->g2 = poly->b2 = 0;
 
@@ -1244,7 +1248,7 @@ void DrawOverheadMap(void)
 	cp = car_data;
 	do {
 		if (cp->controlType == CONTROL_TYPE_PURSUER_AI && cp->ai.p.dying == 0 || (cp->controlFlags & CONTROL_FLAG_COP))
-			DrawSightCone(&copSightData, (VECTOR *)cp->hd.where.t, cp->hd.direction, cp->controlType == CONTROL_TYPE_PURSUER_AI);
+			DrawSightCone(cp,&copSightData, (VECTOR *)cp->hd.where.t, cp->hd.direction, cp->controlType == CONTROL_TYPE_PURSUER_AI);
 
 		cp++;
 	} while (cp <= &car_data[MAX_CARS]);

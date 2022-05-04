@@ -38,8 +38,7 @@ struct plotCarGlobals
 };
 
 int gCarLODDistance = 0;
-
-#define CAR_REFLECTION 
+int gCarReflectionMapping = 0;
 
 
 #ifndef PSX
@@ -109,6 +108,7 @@ CAR_POLY carPolyBuffer[2001];
 char LeftLight = 0;
 char RightLight = 0;
 char TransparentObject = 0;
+MATRIX reflection_matrix;
 
 // Get Started
 void InitCarReflection()
@@ -121,7 +121,7 @@ void InitCarReflection()
 	{
 		int width, height, bpp;
 
-
+		if (gCarReflectionMapping == 1)
 		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\REFLECTIONS.TGA");
 
 
@@ -150,7 +150,7 @@ void SetCarReflection(int enabled, plotCarGlobals* pg, int otOfs)
 
 	DR_PSYX_TEX* tex = (DR_PSYX_TEX*)pg->primptr;
 	if (enabled)
-		SetPsyXTexture(tex, gCarReflectionTexture, 256, 256);
+		SetPsyXTexture(tex, gCarReflectionTexture, 360, 360);
 	else
 		SetPsyXTexture(tex, 0, 0, 0);
 
@@ -159,7 +159,7 @@ void SetCarReflection(int enabled, plotCarGlobals* pg, int otOfs)
 }
 
 // [D] [T]
-void plotCarPolyFT3Reflection(int numTris, CAR_POLY* src, SVECTOR* vlist, plotCarGlobals* pg)
+void plotCarPolyFT3Reflection(CAR_DATA *cp,int numTris, CAR_POLY* src, SVECTOR* vlist, plotCarGlobals* pg)
 {
 	int indices;
 	int ofse;
@@ -171,6 +171,12 @@ void plotCarPolyFT3Reflection(int numTris, CAR_POLY* src, SVECTOR* vlist, plotCa
 	OTTYPE* ot;
 	int FT3rgb;
 	int reg;
+	SVECTOR direction;
+	int i; 
+	VECTOR* carPos;
+
+	cp = &car_data[i];
+	carPos = (VECTOR*)cp->hd.direction;
 
 	FT3rgb = pg->intensity | 0x24000000;
 	ot = pg->ot;
@@ -214,6 +220,13 @@ void plotCarPolyFT3Reflection(int numTris, CAR_POLY* src, SVECTOR* vlist, plotCa
 			*(u_int*)&prim->u0 = src->clut_uv0;
 			*(u_int*)&prim->u1 = src->tpage_uv1;
 			*(u_int*)&prim->u2 = src->uv3_uv2;
+			// Handles reflection movement
+			prim->u0 += cp->hd.where.t[0];
+			prim->u1 += cp->hd.where.t[0];
+			prim->u2 += cp->hd.where.t[0];
+			prim->v0 += cp->hd.where.t[2];
+			prim->v1 += cp->hd.where.t[2];
+			prim->v2 += cp->hd.where.t[2];
 
 			prim->tpage = 0x20;
 
@@ -1002,7 +1015,7 @@ void PlayerCarFX(CAR_DATA *cp)
 }
 
 // [D] [T]
-void plotNewCarModel(CAR_MODEL* car, int palette)
+void plotNewCarModel(CAR_MODEL* car, CAR_DATA* cp, int palette)
 {
 #ifdef PSX
 	plotCarGlobals& _pg = *(plotCarGlobals*)((u_char*)getScratchAddr(0) + 1024 - sizeof(plotCarGlobals) - sizeof(_pct));
@@ -1072,8 +1085,11 @@ void plotNewCarModel(CAR_MODEL* car, int palette)
 #endif
 	}
 
-	_pg.ot = (OTTYPE*)(current->ot - 4);
-	plotCarPolyFT3Reflection(car->numGT3, car->pGT3, car->vlist, &_pg);
+	if (gCarReflectionMapping == 1)
+	{
+		_pg.ot = (OTTYPE*)(current->ot - 4);
+		plotCarPolyFT3Reflection(cp, car->numGT3, car->pGT3, car->vlist, &_pg);
+	}
 
 	current->primptr = (char*)_pg.primptr;
 
@@ -1455,7 +1471,7 @@ void DrawCarObject(CAR_MODEL* car, MATRIX* matrix, VECTOR* pos, int palette, CAR
 
 	gte_SetTransVector(&modelLocation);
 
-	plotNewCarModel(car, palette);
+	plotNewCarModel(car, cp, palette);
 }
 
 // [D] [T] [A]
