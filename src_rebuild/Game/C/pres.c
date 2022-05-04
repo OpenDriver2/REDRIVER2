@@ -37,8 +37,6 @@ void InitHiresFonts()
 		
 		if (gDigitChoice == 1)
 			sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\DIGITS.TGA");
-		else 
-			sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\HACK.TGA");
 		
 		FS_FixPathSlashes(namebuffer);
 
@@ -64,8 +62,6 @@ void InitHiresFonts()
 	else
 		if (gTextureChoice == 2)
 		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\ariblk_D1.ttf");
-	else
-		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\OG.ttf");
 
 		fp = fopen(namebuffer, "rb");
 		if (fp) 

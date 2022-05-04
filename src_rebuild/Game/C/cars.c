@@ -122,7 +122,8 @@ void InitCarReflection()
 		int width, height, bpp;
 
 		if (gCarReflectionMapping == 1)
-		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\REFLECTIONS.TGA");
+			//sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\REFLECTIONS.TGA");
+			sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\REFLECTIONSPC.TGA");
 
 
 		FS_FixPathSlashes(namebuffer);
@@ -150,7 +151,7 @@ void SetCarReflection(int enabled, plotCarGlobals* pg, int otOfs)
 
 	DR_PSYX_TEX* tex = (DR_PSYX_TEX*)pg->primptr;
 	if (enabled)
-		SetPsyXTexture(tex, gCarReflectionTexture, 360, 360);
+		SetPsyXTexture(tex, gCarReflectionTexture, 256, 256);
 	else
 		SetPsyXTexture(tex, 0, 0, 0);
 
@@ -174,9 +175,12 @@ void plotCarPolyFT3Reflection(CAR_DATA *cp,int numTris, CAR_POLY* src, SVECTOR* 
 	SVECTOR direction;
 	int i; 
 	VECTOR* carPos;
+	//int reflectionSpeed; 
 
 	cp = &car_data[i];
 	carPos = (VECTOR*)cp->hd.direction;
+
+	//reflectionSpeed = cp->hd.where.t[0] & cp->hd.wheel_speed;
 
 	FT3rgb = pg->intensity | 0x24000000;
 	ot = pg->ot;

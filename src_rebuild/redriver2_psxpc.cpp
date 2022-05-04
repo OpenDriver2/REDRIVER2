@@ -133,15 +133,10 @@ void FreeCameraKeyboardHandler(int nKey, char down)
 		gToggleBeamStrength ^= 1;
 		printf("LightBeams: %s\n", g_FreeCameraEnabled ? "ON" : "OFF");
 	}
-	if (nKey == SDL_SCANCODE_B)
-	{
-		gEnableDlights ^= 1;
-		printf("Bilinear Filtering: %s\n", g_FreeCameraEnabled ? "ON" : "OFF");
-	}
 	if (nKey == SDL_SCANCODE_R)
 	{
 		gCarReflectionMapping ^= 1;
-		printf("Reflection Mapping: %s\n", g_FreeCameraEnabled ? "ON" : "OFF");
+		printf("LightBeams: %s\n", g_FreeCameraEnabled ? "ON" : "OFF");
 	}
 }
 
@@ -631,7 +626,6 @@ int main(int argc, char** argv)
 		ini_sget(config, "game", "BigCityMP", "%d", &gBigCityMP);
 
 		// configure game extras [A]
-		ini_sget(config, "extras", "CarReflection", "%d", &gCarReflectionMapping);
 		ini_sget(config,"extras", "ToggleBeamStrength", "%d", &gToggleBeamStrength);
 		ini_sget(config, "extras", "SpeedometerType", "%d", &gSpeedoType);
 		ini_sget(config, "extras", "DisplaySpeedometer", "%d", &gDisplaySpeedo);
@@ -640,6 +634,7 @@ int main(int argc, char** argv)
 		ini_sget(config, "extras", "AmberSignals", "%d", &gTurnSignalColour);
 		ini_sget(config, "extras", "FontChoice", "%d", &gTextureChoice);
 		ini_sget(config, "extras", "DigitChoice", "%d", &gDigitChoice);
+		ini_sget(config, "extras", "CarReflection", "%d", &gCarReflectionMapping);
 		ini_sget(config, "extras", "EnvLODDist", "%d", &gHighLODDistance);
 		ini_sget(config, "extras", "CarLODDist", "%d", &gCarLODDistance);
 		ini_sget(config, "extras", "SpriteShadowDist", "%d", &gSpriteShadowDist);
