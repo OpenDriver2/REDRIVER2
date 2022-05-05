@@ -1398,6 +1398,7 @@ int Swap2Cars(int curslot, int newslot)
 
 	gDontResetCarDamage = 0;
 
+#if ENABLE_GAME_FIXES
 	// [A] swap cars in targets and fix "Bank Job" bug
 	for (int i = 0; i < MAX_MISSION_TARGETS; i++)
 	{
@@ -1411,6 +1412,7 @@ int Swap2Cars(int curslot, int newslot)
 				swapTgt->s.car.slot = curslot;
 		}		
 	}
+#endif
 
 	return newslot;
 }

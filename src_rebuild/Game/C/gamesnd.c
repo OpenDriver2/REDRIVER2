@@ -272,7 +272,6 @@ int MapCarIndexToBank(int index)
 
 	model = RM[index];
 
-	// [A] Rev 1.1 removes this block
 	if (gCurrentMissionNumber - 39U < 2 && RM[index] == 13)
 	{
 		model = 10 - (RM[0] + RM[1] + RM[2]);

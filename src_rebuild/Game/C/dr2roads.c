@@ -203,11 +203,13 @@ void ProcessStraightsDriver2Lump(char *lump_file, int lump_size)
 	}
 	else if (GameLevel == 2)
 	{
+#if ENABLE_GAME_FIXES
 		int i;
 		DRIVER2_STRAIGHT* str;
 
 		Driver2StraightsPtr[348].ConnectIdx[2] = 8244;
 		Driver2StraightsPtr[348].ConnectIdx[3] = 351;
+#endif
 	}
 }
 

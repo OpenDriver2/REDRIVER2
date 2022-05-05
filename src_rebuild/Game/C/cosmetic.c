@@ -19,9 +19,11 @@ char* CosmeticFiles[] = {
 
 CAR_COSMETICS car_cosmetics[MAX_CAR_MODELS];
 
+#if ENABLE_GAME_FIXES
 // [A] storage for spooled models
 // remember: we already have more than 1k of free memory with optimizations
 CAR_COSMETICS levelSpecCosmetics[5];
+#endif
 
 //[A]
 int gTurnSignalColour = 0;
@@ -58,6 +60,7 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 	}
 
 	// [A] cache all special vehicle cosmetics
+#if ENABLE_GAME_FIXES
 	for (i = 0; i < 5; i++)
 	{
 		model = 8 + i;
@@ -65,6 +68,7 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 		offset = *(int*)(lump_ptr + model * sizeof(int));
 		levelSpecCosmetics[i] = *(CAR_COSMETICS*)((u_char*)lump_ptr + offset);
 	}
+#endif
 }
 
 // [D] [T]
@@ -119,7 +123,7 @@ void SetupSpecCosmetics(char *loadbuffer)
 	int model;
 	model = MissionHeader->residentModels[4];
 
-#if 1
+#if ENABLE_GAME_FIXES
 	// [A] always use cached cosmetics
 	car_cosmetics[4] = levelSpecCosmetics[model - 8];
 #else
