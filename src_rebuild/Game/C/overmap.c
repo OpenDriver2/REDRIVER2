@@ -91,6 +91,8 @@ static int gUseRotatedMap = 0;
 int gMapXOffset = 640;
 int gMapYOffset = 480;
 
+int gColorCodedCopIndicators = 1;
+
 void WorldToOverheadMapPositions(VECTOR * pGlobalPosition, VECTOR * pOverheadMapPosition, int count, char inputRelative, int outputRelative);
 void WorldToMultiplayerMap(VECTOR * in, VECTOR * out);
 void WorldToFullscreenMap(VECTOR * in, VECTOR * out);
@@ -694,7 +696,7 @@ void DrawBigCompass(VECTOR *root, int angle)
 }
 
 // [D] [T] // Label these please. This is arrow under the car when cop behind.
-void CopIndicator(int xpos, int strength)
+void CopIndicator(CAR_DATA *cp, int xpos, int strength)
 {
 	int startH, endH;
 	int str2;
@@ -723,6 +725,23 @@ void CopIndicator(int xpos, int strength)
 	poly->y1 = endH;
 	poly->x2 = xpos + 12;
 	poly->y2 = startH;
+
+	if (gColorCodedCopIndicators == 1 && MissionHeader->residentModels[cp->ap.model] == 0)
+	{
+		poly->b0 = strength;
+
+		str2 = (strength >> 2);
+
+		poly->r0 = str2;
+	}
+	else
+	{
+		poly->r0 = strength;
+
+		str2 = (strength >> 2);
+
+		poly->b0 = str2;
+	}
 
 	addPrim(current->ot + 1, poly);
 	current->primptr += sizeof(POLY_F3);
@@ -1882,7 +1901,7 @@ void DrawCopIndicators(void)
 			
 			if (ABS(p) < q)
 			{
-				CopIndicator((p * 266) / q + 160, 0x3fff0 / ((q >> 3) + 600));
+				CopIndicator(cp,(p * 266) / q + 160, 0x3fff0 / ((q >> 3) + 600));
 			}
 		}
 		cp++;

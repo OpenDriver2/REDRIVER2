@@ -24,4 +24,6 @@ extern void DrawFullscreenMap();
 
 extern u_int Long2DDistance(VECTOR *pPoint1, VECTOR *pPoint2); // 0x00016C0C
 
+extern int gColorCodedCopIndicators;
+
 #endif
