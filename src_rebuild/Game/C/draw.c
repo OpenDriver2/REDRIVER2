@@ -115,9 +115,9 @@ int setupYet = 0;
 
 int gDrawDistance = 441;
 
-int gHighLODDistance = 0; 
-int gTileLODDistance = 0;
-int gSpriteShadowDist = 0;
+int gHighLODDistance = 10000; 
+int gTileLODDistance = 7000;
+int gSpriteShadowDist = 14000;
 
 #ifndef PSX
 _pct& plotContext = *(_pct*)((u_char*)getScratchAddr(0) + 1024 - sizeof(_pct));	// orig offset: 0x1f800020

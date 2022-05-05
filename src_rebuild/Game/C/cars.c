@@ -37,7 +37,7 @@ struct plotCarGlobals
 	u_char* damageLevel;
 };
 
-int gCarLODDistance = 0;
+int gCarLODDistance = 10000; // initalized default
 int gCarReflectionMapping = 0;
 
 
@@ -180,7 +180,7 @@ void plotCarPolyFT3Reflection(CAR_DATA *cp,int numTris, CAR_POLY* src, SVECTOR* 
 	cp = &car_data[i];
 	carPos = (VECTOR*)cp->hd.direction;
 
-	//reflectionSpeed = cp->hd.where.t[0] & cp->hd.wheel_speed;
+	//reflectionSpeed = cp->hd.where.t[0] & cp->hd.wheel_speed; // was testing an idea earlier. 
 
 	FT3rgb = pg->intensity | 0x24000000;
 	ot = pg->ot;
@@ -225,12 +225,12 @@ void plotCarPolyFT3Reflection(CAR_DATA *cp,int numTris, CAR_POLY* src, SVECTOR* 
 			*(u_int*)&prim->u1 = src->tpage_uv1;
 			*(u_int*)&prim->u2 = src->uv3_uv2;
 			// Handles reflection movement
-			//prim->u0 += cp->hd.where.t[0];
-			//prim->u1 += cp->hd.where.t[0];
-			//prim->u2 += cp->hd.where.t[0];
-			//prim->v0 += cp->hd.where.t[2];
-			//prim->v1 += cp->hd.where.t[2];
-			//prim->v2 += cp->hd.where.t[2];
+			prim->u0 += cp->hd.where.t[0];
+			prim->u1 += cp->hd.where.t[0];
+			prim->u2 += cp->hd.where.t[0];
+			prim->v0 += cp->hd.where.t[2];
+			prim->v1 += cp->hd.where.t[2];
+			prim->v2 += cp->hd.where.t[2];
 
 			prim->tpage = 0x20;
 
