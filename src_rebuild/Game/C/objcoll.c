@@ -643,7 +643,6 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 	else
 		extraDist = 580;
 
-	// [A] FIXME: replace with 'cell_header.cell_size'
 	cell.x = (player_pos.vx + units_across_halved - (MAP_REGION_SIZE*MAP_REGION_SIZE)) / MAP_CELL_SIZE;
 	cell.z = (player_pos.vz + units_down_halved - (MAP_REGION_SIZE*MAP_REGION_SIZE)) / MAP_CELL_SIZE;
 
@@ -688,7 +687,6 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 					yang = -cop->yang & 63;
 
 					// box 'rotated' by matrix
-					// [A] FIXME: replace add+shift by division
 					bbox.pos.vx = cop->pos.vx + FIXEDH(collide->xpos * matrixtable[yang].m[0][0] + collide->zpos * matrixtable[yang].m[2][0]);
 					bbox.pos.vy = cop->pos.vy + collide->ypos;
 					bbox.pos.vz = cop->pos.vz + FIXEDH(collide->xpos * matrixtable[yang].m[0][2] + collide->zpos * matrixtable[yang].m[2][2]);
@@ -759,14 +757,18 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 					{
 						if (count >= mdcount && cop->pad != 0)
 						{
+							int extraFlags;
+							extraFlags = 0;
 							cp->st.n.linearVelocity[2] = ExBoxDamage + cp->st.n.linearVelocity[2];
-									
-							if (CarBuildingCollision(cp, &bbox, cop, (cop->pad == 1) ? CollisionCheckFlag_IsVegasMovingTrain : 0))
+#if ENABLE_GAME_FIXES
+							extraFlags |= (cop->pad == 1) ? CollisionCheckFlag_IsVegasMovingTrain : 0;
+#endif
+							if (CarBuildingCollision(cp, &bbox, cop, extraFlags))
 							{
 								cp->ap.needsDenting = 1;
 							}
 
-							//cp->st.n.linearVelocity[2] -= 700000; // [A] Vegas train velocity - disabled here
+							//cp->st.n.linearVelocity[2] -= 700000; // [A] Vegas train velocity - disabled here, see flag above
 						}
 						else
 						{

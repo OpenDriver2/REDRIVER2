@@ -566,16 +566,17 @@ void SetVariable(int var)
 			GameType = GAME_IDLEDEMO;
 			gCurrentMissionNumber = (value + 400);
 			break;
+#if ENABLE_BONUS_CONTENT
 		case 14: // [A]
 		{
 			ShowBonusGallery();
-
 			LoadFrontendScreens(0);
 		}
-		case 15:
+		case 15: // [A] mini cars cheat
 		{
 			ActiveCheats.cheat13 = value;
 		}
+#endif
 	}
 }
 
@@ -1057,22 +1058,23 @@ void LoadFrontendScreens(int full)
 			}
 		}
 
-#ifndef PSX
 		// [A] SCREEN HACKS
-		
-		// for web demo content (or empty SCRS.BIN)
-		if(PsxScreens[0].userFunctionNum == 128)
-			PsxScreens[0].userFunctionNum = 23;		// DemoScreen
 
 		// Time of day extended screen
-		PsxScreens[3].userFunctionNum = 22;			//TimeOfDaySelectScreen
-		
+		PsxScreens[3].userFunctionNum = 22;			// TimeOfDaySelectScreen
+
+		// for web demo content (or empty SCRS.BIN)
+		if (PsxScreens[0].userFunctionNum == 128)
+			PsxScreens[0].userFunctionNum = 23;		// DemoScreen
+
+#ifndef PSX
 		// replay theater
 		PsxScreens[4].buttons[0].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 39);
 		PsxScreens[4].buttons[0].var = -1;
-
 		PsxScreens[39].userFunctionNum = 21;		// UserReplaySelectScreen
+#endif // PSX
 
+#if ENABLE_BONUS_CONTENT
 		 // make mini cars cheat screen
 		PsxScreens[40] = PsxScreens[31];
 		PsxScreens[40].userFunctionNum = 24;		// MiniCarsOnOffScreen
@@ -1197,7 +1199,7 @@ void ReInitScreens(int returnToMain)
 	pCurrScreen = pScreenStack[ScreenDepth];
 	pNewButton = pButtonStack[ScreenDepth];
 
-	// [A] state hack
+	// [A] state hack for demo
 	if (pCurrScreen == NULL)
 		pCurrScreen = &PsxScreens[0];
 
@@ -3298,8 +3300,8 @@ static char* cheatText[] =
 	G_LTXT_ID(GTXT_Circuit),
 	G_LTXT_ID(GTXT_Invincibility),
 	G_LTXT_ID(GTXT_Immunity),
-	G_LTXT_ID(GTXT_MiniCars), // [A]
-	G_LTXT_ID(GTXT_BonusGallery) // [A]
+	G_LTXT_ID(GTXT_MiniCars),		// [A]
+	G_LTXT_ID(GTXT_BonusGallery)	// [A]
 };
 
 // [D] [T]
@@ -3335,7 +3337,7 @@ int CheatScreen(int bSetup)
 	}
 
 	if (gFurthestMission == 40) 
-		numOpen = 6;	// [A] now 5 elements as "Bonus gallery" is open
+		numOpen = 4 + ENABLE_BONUS_CONTENT * 2;	// [A] now 5 elements as "Bonus gallery" is open
 	else 
 		numOpen = AvailableCheats.cheat1 + AvailableCheats.cheat2 + AvailableCheats.cheat3 + AvailableCheats.cheat4;
 	
@@ -3472,7 +3474,7 @@ int CheatScreen(int bSetup)
 			pCurrScreen->buttons[4].u = 4;
 		}
 
-		// [A] adding bonus gallery
+		// [A] adding mini cars cheat
 		if (numOpen >= 6)
 		{
 			pCurrScreen->buttons[5].action = hackLookup1[cheatOn[5]];

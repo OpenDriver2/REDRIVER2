@@ -269,6 +269,7 @@ void WunCell(VECTOR* pbase)
 	int height1;
 	int i, j;
 
+#if ENABLE_GAME_FIXES
 	// [A] hack with height map (fixes some bits in Havana)
 	height1 = MapHeight(pbase);
 	
@@ -298,6 +299,38 @@ void WunCell(VECTOR* pbase)
 			OMapSet(v[0].vx >> 8, v[0].vz >> 8, CellAtPositionEmpty(&v[0], 128) == 0);
 		}
 	}
+#else
+	for (i = 0; i < 2; i++) 
+	{
+		if (i != 0)
+			pbase->vx += 512;
+
+		v[0].vx = pbase->vx;
+		v[0].vz = pbase->vz;
+
+		for (j = 0; j < 6; j++)
+		{
+			int dx, dz;
+			v[0].vx = pbase->vx + ends[j][0].dx;
+			v[0].vz = pbase->vz + ends[j][0].dz;
+
+			v[1].vx = pbase->vx + ends[j][1].dx;
+			v[1].vz = pbase->vz + ends[j][1].dz;
+
+			dx = v[0].vx + v[1].vx >> 1;
+			dz = v[0].vz + v[1].vz >> 1;
+
+			OMapSet(dx >> 8, dz >> 8, lineClear(&v[0], &v[1]) == 0);
+
+			j++;
+		}
+
+		if (i != 0)
+			pbase->vx -= 512;
+
+		i++;
+	}
+#endif
 }
 
 // [A] function that invalidates map at ends
@@ -411,7 +444,9 @@ void BloodyHell(void)
 	p = 0;
 	dir = 0;
 
+#if ENABLE_GAME_FIXES
 	InvalidateMapEnds();
+#endif
 
 	for (count = 0; count < 840; count++)
 	{

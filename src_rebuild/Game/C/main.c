@@ -2532,7 +2532,7 @@ void DealWithHorn(char* hr, int i)
 	*hr = (*hr + 1) % 3;
 }
 
-// [D] [T] [A] Has bugs - some rooms not drawn properly
+// [D] [T]
 int Havana3DOcclusion(occlFunc func, int* param)
 {
 	int loop;

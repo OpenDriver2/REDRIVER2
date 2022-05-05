@@ -1507,7 +1507,9 @@ void DrawCar(CAR_DATA* cp, int view)
 		if (doSmoke && WheelSpeed + 399999U < 1199999)
 			AddSmokingEngine(cp, doSmoke - 1, WheelSpeed);
 
+#if ENABLE_GAME_ENCHANCEMENTS
 		AddExhaustSmoke(cp, doSmoke > 1, WheelSpeed);
+#endif
 
 		SetShadowPoints(cp, corners);
 		PlaceShadowForCar(corners, 4, 10, yVal < 0 ? 0 : 2);
