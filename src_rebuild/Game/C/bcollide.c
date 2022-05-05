@@ -798,7 +798,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 			collisionResult.hit.vy = cp->hd.where.t[1] + 41;
 
 			// perform error correction
-			if((model->flags2 & MODEL_FLAG_SMASHABLE) == 0 || gInGameCutsceneActive == 0)
+			if((model->flags2 & MODEL_FLAG_SMASHABLE) == 0 || gInGameCutsceneActive == 0 || cd[0].isCameraOrTanner)
 			{
 				cp->hd.where.t[0] += FIXEDH(collisionResult.penetration * collisionResult.surfNormal.vx);
 				cp->hd.where.t[2] += FIXEDH(collisionResult.penetration * collisionResult.surfNormal.vz);
