@@ -1160,6 +1160,13 @@ void ProcessCarPad(CAR_DATA* cp, u_int pad, char PadSteer, char use_analogue)
 
 			int_steer = 0;
 			use_analogue = 1;
+
+			//Player death effects:
+			player[player_id].idlevol = 0xD000;
+			if (channels[player_id * 3 + 2].samplerate > 80)
+				channels[player_id * 3 + 2].samplerate -= 80; //Siren failing.
+			else
+				player[player_id].horn.on = 0; //Siren off.
 		}
 
 		// turn of horning
@@ -1168,7 +1175,25 @@ void ProcessCarPad(CAR_DATA* cp, u_int pad, char PadSteer, char use_analogue)
 			if (CarHasSiren(cp->ap.model) == 0)
 				player[player_id].horn.on = (pad >> 3) & 1;
 			else if ((cp->lastPad & 8U) == 0 && (pad & 8) != 0)
-				player[player_id].horn.on ^= 8;
+				if (cp->lastPad & 0x4000) //Pressing d-pad down.
+				{
+					if ((player[player_id].horn.on & 8) == 0)
+						player[player_id].horn.request = 1; //Use horn when holding d-pad down.
+					else
+						channels[player_id * 3 + 2].samplerate ^= 8000; //Toggle only lights.
+				}
+				else
+				{
+					channels[player_id * 3 + 2].samplerate = 8000;
+					if ((channels[player_id * 3 + 2].flags & CHAN_LOOP) == 0) //Restore siren:
+						if (MissionHeader->residentModels[cp->ap.model] == 0)
+							Start3DSoundVolPitch(player_id * 3 + 2, SOUND_BANK_VOICES, 0, 0, 0, 0, 0, 0x1000); //Cop siren.
+						else
+							Start3DSoundVolPitch(player_id * 3 + 2, SOUND_BANK_SFX, 12, 0, 0, 0, 0, 0x1000); //Fire/Ambulance siren.
+					if (cp->lastPad & 0x1000) //D-pad up.
+						channels[player_id * 3 + 2].samplerate = 0; //Start only lights.
+					player[player_id].horn.on ^= 8;
+				}
 		}
 	}
 

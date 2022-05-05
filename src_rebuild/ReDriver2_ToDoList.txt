@@ -1,7 +1,7 @@
 Cheats from cheat engine that need to be ported to RE:DRIVER 2:
-[ ] Horn in Emergency Vehicles
+[x] Horn in Emergency Vehicles
 [x] No Vehicle & Ped Low LOD
-[ ] Player Death Effects
+[x] Player Death Effects
 [ ] Restore Demo Walk Animation
 [X] Keep Wheel Angle After Leaving Vehicle
 [ ] More Multiplayer Games
@@ -24,5 +24,5 @@ Cheats from cheat engine that need to be ported to RE:DRIVER 2:
 [ ] Manual Transmision (Optional)
 
 Shit that needs to be restored from Driver 1 
-[ ] Car Reflections via PsyX hacks 
+[/] Car Reflections via PsyX hacks (Almost there, it just needs to scroll while vehicle is moving) 
 [ ] Cruise Control Toggle (Driver 1 PC)

@@ -1650,6 +1650,23 @@ void SoundTasks(void)
 		if (lcp->crash_timer > 0)
 			lcp->crash_timer--;
 
+		//Control emergency horn:
+		if (cp)
+		{
+			if ((channels[i * 3 + 2].flags & CHAN_LOOP) == 0)
+			{
+				if ((cp->lastPad & 8) != 0)
+				{
+					if (channels[i * 3 + 2].time == 2) //Loop horn:
+						lcp->horn.request = 1;
+				}
+				else
+				{
+					channels[i * 3 + 2].samplerate = 0; //Stop horn sound.
+				}
+			}
+		}
+
 		// car engine sounds
 		if (cp)
 		{

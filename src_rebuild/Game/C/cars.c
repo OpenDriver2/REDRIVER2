@@ -151,7 +151,7 @@ void SetCarReflection(int enabled, plotCarGlobals* pg, int otOfs)
 
 	DR_PSYX_TEX* tex = (DR_PSYX_TEX*)pg->primptr;
 	if (enabled)
-		SetPsyXTexture(tex, gCarReflectionTexture, 320, 320);
+		SetPsyXTexture(tex, gCarReflectionTexture, 640, 640);
 	else
 		SetPsyXTexture(tex, 0, 0, 0);
 
