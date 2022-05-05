@@ -974,12 +974,6 @@ void DoDopplerSFX(void)
 
 	PLAYER* pl;
 
-	PLAYER* pl1;
-	PLAYER* pl2;
-
-	pl1 = &player[0];
-	pl2 = &player[1];
-
 	num_noisy_cars = 0;
 
 	// collect sounding cars and estimate their distance to camera
@@ -990,10 +984,8 @@ void DoDopplerSFX(void)
 		dx = car_ptr->hd.where.t[0] - camera_position.vx;
 		dz = car_ptr->hd.where.t[2] - camera_position.vz;
 
-		dx = car_ptr->hd.where.t[0] - camera_position.vx;
-		dz = car_ptr->hd.where.t[2] - camera_position.vz;
-
-		if (ABS(dx) < 16384 && ABS(dz) < 16384)
+		// Somewhat fixes 2 player far away sounds?
+		if (ABS(dx) < 16384 && ABS(dz) < 16384 || NumPlayers != 1)
 		{
 			if (car_ptr->controlType == CONTROL_TYPE_CIV_AI && car_ptr->ai.c.ctrlState != 5 && car_ptr->ai.c.ctrlState != 7)
 			{
