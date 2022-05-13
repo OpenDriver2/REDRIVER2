@@ -6,7 +6,7 @@
 #ifdef PSX
 #define VIEW_DRAW_DISTANCE 16000
 #else
-#define VIEW_DRAW_DISTANCE 25000
+#define VIEW_DRAW_DISTANCE 22000
 #endif
 
 extern VECTOR camera_position;
