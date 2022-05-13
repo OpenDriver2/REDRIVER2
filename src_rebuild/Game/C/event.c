@@ -556,6 +556,12 @@ static EventCamera eventCamera;
 
 void MakeEventTrackable(EVENT* ev);
 
+#ifdef PSX
+#define EVENT_DRAW_DISTANCE VIEW_DRAW_DISTANCE
+#else
+#define EVENT_DRAW_DISTANCE 15000 // [A] world becomes repetetive if further :(
+#endif // PSX
+
 // [D] [T]
 int GetVisValue(int index, int zDir)
 {
@@ -566,17 +572,16 @@ int GetVisValue(int index, int zDir)
 
 	if (index & 0xC000)
 	{
-		camera = (index >> 0xf ^ 1) & 1;
+		camera = (index >> 15 ^ 1) & 1;
+		radius = EVENT_DRAW_DISTANCE;
 
 		if (zDir == 0)
 		{
 			pos.vx = player[camera].cameraPos.vx;
-			radius = 16000;
 		}
 		else
 		{
 			pos.vx = player[camera].cameraPos.vz;
-			radius = 16000;
 		}
 	}
 	else
@@ -584,9 +589,9 @@ int GetVisValue(int index, int zDir)
 		int multiple;
 
 		if (index & 0x80)
-			ev = (EVENT*)&fixedEvent[index & 0x7f];
+			ev = (EVENT*)&fixedEvent[index & 127];
 		else
-			ev = &event[index & 0x7f];
+			ev = &event[index & 127];
 
 		if (index & 0xf00)
 		{
@@ -748,9 +753,9 @@ void VisibilityLists(VisType type, int i)
 	else if (type == VIS_ADD)
 	{
 		if (i & 0x80)
-			ev = (EVENT*)&fixedEvent[i & 0x7f];
+			ev = (EVENT*)&fixedEvent[i & 127];
 		else
-			ev = &event[i & 0x7f];
+			ev = &event[i & 127];
 
 		if (ev->radius == 0)
 		{
@@ -2038,7 +2043,7 @@ void StepPathEvent(EVENT* ev)
 		ev->position.vx += offset.x;
 		ev->position.vz += offset.z;
 
-		ev->rotation = ratan2(offset.x, offset.z) + 1024U & 0xfff;
+		ev->rotation = ratan2(offset.x, offset.z) + 1024U & 4095;
 
 		if (ev->flags & 0x8000)
 		{
@@ -2330,7 +2335,7 @@ void StepHelicopter(EVENT* ev)
 		}
 
 		ev->rotation += FIXEDH(FIXEDH(direction * direction) * direction);
-		ev->rotation &= 0xfff;
+		ev->rotation &= 4095;
 
 		if (GetSurfaceIndex(&ev->position) == -23)
 		{
@@ -2603,7 +2608,7 @@ void StepEvents(void)
 				}
 
 				chicagoDoor[2].rotation -= chicagoDoor[2].active;
-				chicagoDoor[2].rotation &= 0xfff;
+				chicagoDoor[2].rotation &= 4095;
 			}
 		}
 
@@ -2643,9 +2648,9 @@ void StepEvents(void)
 				if ((*x & otherCamera) == 0)
 				{
 					if ((*x & 0x80) == 0)
-						evt = &event[*x & 0x7f];
+						evt = &event[*x & 127];
 					else
-						evt = (EVENT*)&fixedEvent[*x & 0x7f];
+						evt = (EVENT*)&fixedEvent[*x & 127];
 
 					// events that enable drawing
 					if ((evt->flags & 0x204) == 0x200)
@@ -2654,7 +2659,7 @@ void StepEvents(void)
 
 						while ((*z & thisCamera) == 0)
 						{
-							if ((*z & otherCamera) == 0 && (*x & 0xfff) == (*z & 0xfff))
+							if ((*z & otherCamera) == 0 && (*x & 4095) == (*z & 4095))
 							{
 								cop = &EventCop[event_models_active++];
 
@@ -2777,7 +2782,7 @@ void DrawRotor(VECTOR pos, MATRIX* matrix)
 	pos.vy -= camera_position.vy;
 	pos.vz -= camera_position.vz;
 
-	_RotMatrixY(&localMat, HelicopterData.rotorrot & 0xfff);
+	_RotMatrixY(&localMat, HelicopterData.rotorrot & 4095);
 	ApplyMatrixSV(matrix, v, v);
 	MulMatrix0(matrix, &localMat, &localMat);
 	ApplyMatrixSV(&localMat, v + 1, v + 1);
@@ -2925,15 +2930,15 @@ void DrawEvents(int camera)
 		if ((*x & otherCamera) == 0)
 		{
 			if ((*x & 0x80) == 0)
-				ev = &event[*x & 0x7f];
+				ev = &event[*x & 127];
 			else
-				ev = (EVENT*)&fixedEvent[*x & 0x7f];
+				ev = (EVENT*)&fixedEvent[*x & 127];
 
 			z = zVis;
 
 			while ((*z & thisCamera) == 0)
 			{
-				if ((*z & otherCamera) == 0 && (*x & 0xfff) == (*z & 0xfff))
+				if ((*z & otherCamera) == 0 && (*x & 4095) == (*z & 4095))
 				{
 					if ((ev->flags & 4) == 0 && (ev->flags & 1) == camera)
 					{
@@ -3051,9 +3056,9 @@ void DrawEvents(int camera)
 								{
 									if (ev->model == HelicopterData.cleanModel)
 									{
-										_RotMatrixZ(&matrix, HelicopterData.roll & 0xfff);
-										_RotMatrixX(&matrix, HelicopterData.pitch & 0xfff);
-										_RotMatrixY(&matrix, ev->rotation & 0xfff);
+										_RotMatrixZ(&matrix, HelicopterData.roll & 4095);
+										_RotMatrixX(&matrix, HelicopterData.pitch & 4095);
+										_RotMatrixY(&matrix, ev->rotation & 4095);
 
 										DrawRotor(ev->position, &matrix);
 

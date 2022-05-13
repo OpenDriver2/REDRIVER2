@@ -65,7 +65,7 @@ static int said_picked_up = 0;
 
 char last_cop_phrase = 0;
 
-char CopWorkMem[444];		// PVS table
+char CopWorkMem[PVS_CELL_COUNT * PVS_CELL_COUNT + 3];		// PVS table
 COP_SIGHT_DATA copSightData;
 
 int player_position_known = 0;

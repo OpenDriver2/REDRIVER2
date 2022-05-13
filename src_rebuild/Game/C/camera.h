@@ -3,6 +3,12 @@
 
 #define CAMERA_COLLIDER_CARID (MAX_CARS+1)
 
+#ifdef PSX
+#define VIEW_DRAW_DISTANCE 16000
+#else
+#define VIEW_DRAW_DISTANCE 25000
+#endif
+
 extern VECTOR camera_position;
 extern char old_camera_change;
 extern char camera_change;
