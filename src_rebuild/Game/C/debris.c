@@ -2854,7 +2854,7 @@ void Setup_Sparks(VECTOR *ipos, VECTOR *ispeed, int num_sparks, char SparkType)
 // [D] [T]
 void DisplayDebris(DEBRIS *debris, char type)
 {
-	int uVar3;
+	u_int cbgr;
 	TRI_POINT* tv;
 	POLY_GT4 *poly1;
 	POLY_FT3 *poly;
@@ -2914,15 +2914,17 @@ void DisplayDebris(DEBRIS *debris, char type)
 
 				gte_stsxy(&poly1->x3);
 
-				if (type == 2) 
-					uVar3 = (debris->rgb.b + combointensity) * 0x10000 | (debris->rgb.g + combointensity) * 0x100 | 0x3c000000 | debris->rgb.r + combointensity;
-				else
-					uVar3 = debris->rgb.b << 0x10 | debris->rgb.g << 8 | 0x3c000000 | debris->rgb.r;
+				cbgr = (u_char)combointensity;
 
-				*(u_int *)&poly1->r0 = uVar3;
-				*(u_int *)&poly1->r2 = uVar3;
-				*(u_int *)&poly1->r1 = uVar3 + 0x202020;
-				*(u_int *)&poly1->r3 = uVar3 + 0x303030;
+				if (type == 2) 
+					cbgr = 0x3c000000 | (debris->rgb.b + cbgr) << 16 | (debris->rgb.g + cbgr) << 8 | (debris->rgb.r + cbgr);
+				else
+					cbgr = 0x3c000000 | debris->rgb.b << 16 | debris->rgb.g << 8 | debris->rgb.r;
+
+				*(u_int *)&poly1->r0 = cbgr;
+				*(u_int *)&poly1->r2 = cbgr;
+				*(u_int *)&poly1->r1 = cbgr + 0x202020;
+				*(u_int *)&poly1->r3 = cbgr + 0x303030;
 
 				setPolyGT4(poly1);
 				addPrim(current->ot + (z >> 3), poly1);
