@@ -3647,9 +3647,12 @@ int CivControl(CAR_DATA* cp)
 		if (cp->ai.c.thrustState != 3)
 			steer = CivSteerAngle(cp);
 
-		thrust = CivAccel(cp) - MAX(ABS(steer), 4) * 3; // [A] reduce acceleration when steering is applied
-
-		if (thrust < 0 && cp->hd.wheel_speed < 5)
+		thrust = CivAccel(cp);
+		if (thrust != 0) // [A] reduce acceleration when steering is applied
+			thrust = CivAccel(cp) - MAX(ABS(steer), 4) * 3;
+		
+		// [A] fix backwards crawl
+		if (thrust < 0 && cp->hd.wheel_speed < 100)
 			thrust = 0;
 
 		cp->wheel_angle = steer;
