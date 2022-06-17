@@ -118,6 +118,10 @@ int AttractMode = 0;
 int gLoadedReplay = 0;
 int gHaveStoredData = 0;
 
+int gHaveExtraData = 0;
+
+EXTRA_CONFIG_DATA gExtraConfig = { 0 };
+
 int gLastChase = 0;
 int gChaseNumber = 0;
 int gRandomChase = 0;
@@ -131,15 +135,88 @@ int gWantNight = 0;
 int gOldVibrationMode;
 int gSurvivalCopSettingsBackup;
 ACTIVE_CHEATS gCheatsBackup;
+EXTRA_CONFIG_DATA gExtraConfigBackup;
 
-void RestoreGameVars()
+int vars_stored = 0;
+
+void RestoreGameVars(int replay)
 {
-	_CutRec_Reset();
-	
-	gLoadedReplay = 0;
-	gVibration = gOldVibrationMode;
-	gCopDifficultyLevel = gSurvivalCopSettingsBackup;
-	ActiveCheats = gCheatsBackup;
+	if (vars_stored)
+	{
+		if (replay == 0)
+		{
+#ifdef DEBUG
+			printInfo("**** Restoring game vars ****\n");
+#endif
+			gVibration = gOldVibrationMode;
+			gCopDifficultyLevel = gSurvivalCopSettingsBackup;
+			ActiveCheats = gCheatsBackup;
+
+			vars_stored = 0;
+		}
+#ifdef DEBUG
+		printInfo("**** Restoring extra data ****\n");
+#endif
+		gExtraConfig = gExtraConfigBackup;
+		gHaveExtraData = (gExtraConfig.magic == EXTRA_DATA_MAGIC);
+	}
+}
+
+void StoreGameVars(int replay)
+{
+	if (!vars_stored)
+	{
+#ifdef DEBUG
+		printInfo("**** Backing up game vars (replay=%d) ****\n", replay);
+#endif
+		gOldVibrationMode = gVibration;
+		gSurvivalCopSettingsBackup = gCopDifficultyLevel;
+		gCheatsBackup = ActiveCheats;
+		gExtraConfigBackup = gExtraConfig;
+
+		vars_stored = 1;
+	}
+
+	if (replay != 0)
+	{
+		// clear all extra config data:
+		// - any zero value means 'do backwards compatiblity'
+		// - ensures older replays are fully backwards compatible
+		// - newer replays always have this data stored (even if empty)
+		memset(&gExtraConfig, 0, sizeof(EXTRA_CONFIG_DATA));
+		gHaveExtraData = 0;
+	}
+}
+
+void LoadExtraData(EXTRA_CONFIG_DATA *extraData, int profile)
+{
+	if (extraData->magic == EXTRA_DATA_MAGIC)
+	{
+		memcpy(&gExtraConfig, extraData, sizeof(EXTRA_CONFIG_DATA));
+		gHaveExtraData = 1;
+	}
+
+	if (profile)
+	{
+		// setup special flags to be saved into replays
+		gExtraConfig.Flags.NoWibblyWobblyCars = 1;
+		gExtraConfig.Flags.AllowParkedTurnedWheels = 1;
+		gExtraConfig.Flags.FixCivCarsOnStraights = 1;
+	}
+}
+
+void SaveExtraData(EXTRA_CONFIG_DATA *extraData, int profile)
+{
+	// always save extra data, even if it's empty;
+	// this will make future backwards compat. efforts easier ;)
+	extraData->magic = EXTRA_DATA_MAGIC;
+	memcpy(extraData, &gExtraConfig, sizeof(EXTRA_CONFIG_DATA));
+
+	if (profile)
+	{
+		// don't save any special flags in profile data
+		memset(&extraData->Flags, 0, sizeof(ACTIVE_FLAGS));
+	}
 }
 
 // [D] [T]
@@ -162,9 +239,7 @@ void State_GameStart(void* param)
 	AttractMode = 0;
 	NewLevel = 1;
 
-	gOldVibrationMode = gVibration;
-	gSurvivalCopSettingsBackup = gCopDifficultyLevel;
-	gCheatsBackup = ActiveCheats;
+	StoreGameVars(0);
 
 	switch (GameType)
 	{
@@ -664,7 +739,11 @@ void State_GameComplete(void* param)
 
 	if(nextState == STATE_INITFRONTEND)
 	{
-		RestoreGameVars();
+		_CutRec_Reset();
+
+		gLoadedReplay = 0;
+
+		RestoreGameVars(0);
 		
 		lead_car = 0;
 		NoPlayerControl = 0;

@@ -12,6 +12,10 @@ extern int gSubGameNumber;
 extern int gLoadedReplay;
 extern int gHaveStoredData;
 
+// [A]
+extern int gHaveExtraData;
+extern EXTRA_CONFIG_DATA gExtraConfig;
+
 extern int gMissionLadderPos;
 extern int gFurthestMission;
 extern int gWantNight;
@@ -44,6 +48,12 @@ extern void State_FMVPlay(void* param); // 0x000536B0
 extern void ReInitFrontend(int returnToMain); // 0x00052E98
 
 extern void RunMissionLadder(int newgame); // 0x00052FE8
+
+extern void StoreGameVars(int replay);
+extern void RestoreGameVars(int replay);
+
+extern void LoadExtraData(EXTRA_CONFIG_DATA *extraData, int profile);
+extern void SaveExtraData(EXTRA_CONFIG_DATA *extraData, int profile);
 
 extern void GetRandomChase(); // 0x000535D8
 

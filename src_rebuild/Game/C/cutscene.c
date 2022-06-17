@@ -495,6 +495,8 @@ void ReleaseInGameCutscene(void)
 
 	if (gInGameCutsceneActive != 0)
 	{
+		RestoreGameVars(-1);
+
 		PingOutAllCivCarsAndCopCars();
 		InitCivCars();
 
@@ -904,6 +906,10 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 		ShowCutsceneError();
 		return 0;
 	}
+
+	StoreGameVars(-1);
+
+	LoadExtraData(&rheader->ExtraData, 0);
 
 	CutsceneStreamIndex = NumReplayStreams; //rheader->NumReplayStreams;
 	NumCutsceneStreams = rheader->NumReplayStreams;
