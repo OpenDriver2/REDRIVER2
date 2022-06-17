@@ -1765,7 +1765,7 @@ void InitCivCars(void)
 	closeEncounter = 3;
 }
 
-const int EVENT_CAR_SPEED = 71;
+const int EVENT_CAR_SPEED = 60;
 const int DistanceTriggerCarMoves = 5000;
 
 // [D] [T] [A]
@@ -2313,7 +2313,7 @@ int PingInCivCar(int minPingInDist)
 		}
 		else
 		{
-			scDist = lbody / 2;
+			scDist = lbody * 2;
 			minDistAlong = 0;
 		}
 
