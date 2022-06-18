@@ -107,6 +107,7 @@ enum FEScreenType
 	// New entries
 	Sc_ReplayTheater,
 	Sc_MiniCarsOnOff,
+	Sc_ChangeDensity,
 
 	Sc_MAX_COUNT		= 42,
 };
@@ -142,6 +143,7 @@ enum FEButtonVariable
 	// New entries
 	VAR_BONUS_GALLERY,
 	VAR_MINI_CARS,
+	VAR_DENSITY_TYPE,
 };
 
 #define FE_MAKEVAR(code, value)		((code & 0xffff) << 8 | (value & 0xff))
@@ -210,6 +212,8 @@ int UserReplaySelectScreen(int bSetup);
 int TimeOfDaySelectScreen(int bSetup);
 int DemoScreen(int bSetup);
 int MiniCarsOnOffScreen(int bSetup);
+int AdjustDensityScreen(int bSetup);
+
 #define FN_OK	0
 #define FN_DONE	1
 
@@ -277,6 +281,7 @@ enum FEUserFunction
 	Fn_TimeOfDaySelectScreen,
 	Fn_DemoScreen,
 	Fn_MiniCarsOnOffScreen,
+	Fn_AdjustDensityScreen,
 
 	Fn_End = 128,
 };
@@ -565,6 +570,9 @@ int lastCity = -1;
 int currMission = -1;
 int missionSetup = 0;
 
+int density_type;
+u_char *density_value;
+
 char* ScreenNames[12] = { 0 };
 
 char loaded[3] = {
@@ -717,6 +725,23 @@ void SetVariable(int var)
 			ActiveCheats.cheat13 = value;
 		}
 #endif
+		case VAR_DENSITY_TYPE: // [A] density type
+		{
+			density_type = value;
+			switch (value)
+			{
+				case 0:
+					density_value = &gExtraConfig.gTrafficDensity;
+					break;
+				case 1:
+					density_value = &gExtraConfig.gPedestrianDensity;
+					break;
+				default:
+					density_value = NULL;
+					density_type = -1;
+					break;
+			}
+		}
 	}
 }
 
@@ -1264,6 +1289,58 @@ void LoadFrontendScreens(int full)
 		PsxScreens[Sc_Replays].buttons[0].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_ReplayTheater);
 		PsxScreens[Sc_Replays].buttons[0].var = VAR_NONE;
 		PsxScreens[Sc_ReplayTheater].userFunctionNum = Fn_UserReplaySelectScreen;
+
+		// traffic/pedestrian density menu, copy the Cop Difficulty screen
+		PsxScreens[Sc_ChangeDensity] = PsxScreens[Sc_CopDifficulty];
+		PsxScreens[Sc_ChangeDensity].userFunctionNum = Fn_AdjustDensityScreen;
+		{
+			//
+			// add to end of Gameplay menu
+			//
+
+			FE_SCREEN *gameplaySc = &PsxScreens[Sc_GameplayOptions];
+			FE_BUTTON *btn = &gameplaySc->buttons[gameplaySc->numButtons - 1];
+
+			int lastButton = gameplaySc->numButtons;
+
+			static char *density_names[] = {
+				"Traffic Density",
+				"Peds Density",
+			};
+
+			for (int i = 0; i < 2; i++)
+			{
+				if (i == 0)
+					btn->d = lastButton + 1;
+				else
+					btn[i].d = lastButton + 1;
+
+				// copy the button
+				btn[i + 1] = *btn;
+
+				btn[i + 1].u = lastButton;
+				btn[i + 1].d = 1;
+
+				btn[i + 1].l = 0;
+				btn[i + 1].r = 0;
+
+				btn[i + 1].s_x = btn->s_x;
+				btn[i + 1].s_y = btn->s_y + (i + 1) * 38;
+
+				btn[i + 1].x = btn->x;
+				btn[i + 1].y = btn->y + (i + 1) * 38;
+
+				btn[i + 1].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_ChangeDensity);
+				btn[i + 1].var = FE_MAKEVAR(VAR_DENSITY_TYPE, i);
+
+				strcpy(btn[i + 1].Name, density_names[i]);
+
+				lastButton = ++gameplaySc->numButtons;
+			}
+
+			gameplaySc->buttons[0].u = lastButton;
+			gameplaySc->buttons[lastButton - 1].d = 1;
+		}
 #endif // PSX
 
 #if ENABLE_BONUS_CONTENT
@@ -4092,4 +4169,53 @@ int DemoScreen(int bSetup)
 
 	return FN_OK;
 }
+
+char* DensityItems[] = {
+	"Low",
+	"Medium",
+	"High",
+	"Ultra",
+};
+
+int AdjustDensityScreen(int bSetup)
+{
+	if (bSetup)
+	{
+		int numButtons = BuildButtonsVertical(4, 168, 208);
+		int what = -1;
+
+		if (density_value)
+			what = *density_value;
+
+		for (int i = 0; i < numButtons; i++)
+		{
+			FE_BUTTON& btn = pCurrScreen->buttons[i];
+			strcpy(btn.Name, DensityItems[i]);
+
+			btn.action = FE_MAKEVAR(BTN_PREVIOUS_SCREEN, 0);
+		}
+
+		if (what != -1)
+			pCurrButton = &pCurrScreen->buttons[what];
+		else
+			pCurrButton = pCurrScreen->buttons;
+
+		return FN_DONE;
+	}
+
+	if (feNewPad & MPAD_CROSS)
+	{
+		if (density_value)
+			*density_value = (currSelIndex & 3) + 1;
+	}
+	else if (feNewPad & MPAD_D_UP)
+	{
+		currSelIndex = pCurrButton->u - 1;
+	}
+	else if (feNewPad & MPAD_D_DOWN)
+	{
+		currSelIndex = pCurrButton->d - 1;
+	}
+
+	return FN_OK;
 }
