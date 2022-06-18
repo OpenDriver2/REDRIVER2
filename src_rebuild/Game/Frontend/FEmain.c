@@ -4185,7 +4185,7 @@ int AdjustDensityScreen(int bSetup)
 		int what = -1;
 
 		if (density_value)
-			what = *density_value;
+			what = *density_value - 1;
 
 		for (int i = 0; i < numButtons; i++)
 		{
@@ -4196,7 +4196,7 @@ int AdjustDensityScreen(int bSetup)
 		}
 
 		if (what != -1)
-			pCurrButton = &pCurrScreen->buttons[what];
+			pCurrButton = &pCurrScreen->buttons[what & 3];
 		else
 			pCurrButton = pCurrScreen->buttons;
 
