@@ -1731,6 +1731,13 @@ int TannerCarCollisionCheck(VECTOR* pPos, int dir, int bQuick)
 	cp1 = &car_data[MAX_CARS - 1];
 
 	do {
+		// [A] skip sooner
+		if (cp1->controlType == CONTROL_TYPE_NONE)
+		{
+			cp1--;
+			continue;
+		}
+
 		car_cos = &car_cosmetics[cp1->ap.model];
 
 		cd[1].length[0] = car_cos->colBox.vz;
@@ -1751,15 +1758,19 @@ int TannerCarCollisionCheck(VECTOR* pPos, int dir, int bQuick)
 
 		gte_stlvnl(&cd[1].x);
 
-		if (cp1->controlType != CONTROL_TYPE_NONE &&
-			ABS(cp1->hd.where.t[1] + pPos->vy) < 500 &&
-			bcollided2d(cd))
+		int dist = ABS(cp1->hd.where.t[1] + pPos->vy);
+
+		if (dist < 500 && bcollided2d(cd))
 		{
 			if (bQuick != 0)
 				return 1;
 
 			if (FIXEDH(cp1->hd.wheel_speed) > 50)
-				return 1;
+			{
+				// [A] testing revealed the dist was usually 99 or 100 here
+				if (!gExtraConfig.Flags.FixTannerPhasingThruCars || dist > 100)
+					return 1;
+			}
 
 			bFindCollisionPoint(cd, &collisionResult);
 

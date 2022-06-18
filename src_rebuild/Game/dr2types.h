@@ -1043,7 +1043,7 @@ struct ACTIVE_FLAGS
 	u_char NoWibblyWobblyCars : 1;
 	u_char AllowParkedTurnedWheels : 1;
 	u_char FixCivCarsOnStraights : 1;
-	u_char extraFlag4 : 1;
+	u_char FixTannerPhasingThruCars : 1;
 	u_char extraFlag5 : 1;
 	u_char extraFlag6 : 1;
 	u_char extraFlag7 : 1;
