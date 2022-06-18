@@ -34,15 +34,82 @@ struct PSXBUTTON
 	char Name[32];
 };
 
-struct PSXSCREEN
+#ifdef PSX
+typedef struct PSXBUTTON FE_BUTTON;
+#else
+struct FE_BUTTON
+{
+	short x, y, w, h;
+	u_char l, r;		// left, right next item id
+	u_char u, d;		// up, down next item id
+	u_char cR, cG, cB, justify;
+	short s_x, s_y, s_w, s_h;
+	short action, var;
+	char Name[32];
+};
+
+static_assert(sizeof(FE_BUTTON) == sizeof(PSXBUTTON), "SIZE INVALID");
+#endif
+
+typedef struct PSXSCREEN
 {
 	u_char index;
 	u_char numButtons;
 	u_char userFunctionNum;
-	PSXBUTTON buttons[8];
-};
+	FE_BUTTON buttons[8];
+} FE_SCREEN;
 
 // #define USE_EMBEDDED_FRONTEND_SCREENS
+
+enum FEScreenType
+{
+	// Defaults - do not edit
+	Sc_Main				= 0,
+	Sc_TakeARide		= 1,
+	Sc_Undercover		= 2,
+	Sc_TimeOfDay		= 3,
+	Sc_Replays			= 4,
+	Sc_DrivingGames		= 5,
+	Sc_Multiplayer		= 6,
+	Sc_SubGameType		= 7,
+	Sc_SubGameTime		= 8,
+	Sc_SubGameCity		= 9,
+	Sc_NotAvailable		= 10, // unused replay menu?
+	Sc_GameCity			= 11,
+	Sc_CentreScreen		= 12,
+	Sc_Options			= 13,
+	Sc_CarSelect		= 14,
+	Sc_GameplayOptions	= 15,
+	Sc_CopDifficulty	= 16,
+	Sc_VibrationOnOff	= 17,
+	Sc_MPSubGameCity	= 18,
+	Sc_MissionSelect	= 19,
+	Sc_MissionCity		= 20,
+	Sc_CutSceneCity		= 21,
+	Sc_CutSceneSelect	= 22,
+	Sc_SoundOptions		= 23,
+	Sc_ScoreSelect		= 24,
+	Sc_ScoreMode		= 25,
+	Sc_HighScores		= 26,
+	Sc_SubtitlesOnOff	= 27,
+	Sc_Controller		= 28,
+	Sc_Secrets			= 29,
+	Sc_InvincibleOnOff	= 30,
+	Sc_ImmunityOnOff	= 31,
+	Sc_RaceSelect		= 32,
+	Sc_RaceMode			= 33,
+	Sc_MPCitySelect		= 34,
+	Sc_MPChicagoMode	= 35,
+	Sc_MPHavanaMode		= 36,
+	Sc_MPVegasMode		= 37,
+	Sc_MPRioMode		= 38,
+
+	// New entries
+	Sc_ReplayTheater,
+	Sc_MiniCarsOnOff,
+
+	Sc_MAX_COUNT		= 42,
+};
 
 enum FEButtonAction
 {
@@ -53,12 +120,36 @@ enum FEButtonAction
 	BTN_HIDDEN = 5
 };
 
+enum FEButtonVariable
+{
+	VAR_NONE			= -1,
+
+	// Defaults - do not edit
+	VAR_GAME_LEVEL		= 1,
+	VAR_GAME_TYPE		= 2,
+	VAR_MULTIPLAYER		= 3,
+	VAR_TIMEOFDAY		= 4,
+	VAR_MISSION_NUMBER	= 5,
+	VAR_LOAD_GAME		= 6,
+	VAR_SAVE_GAME		= 7,
+	VAR_SUB_GAME		= 8,
+	VAR_SUBTITLES		= 9,
+	VAR_INVINCIBILITY	= 10,
+	VAR_IMMUNITY		= 11,
+	VAR_MINIGAME		= 12,
+	VAR_DEMO_CHASE		= 13,
+
+	// New entries
+	VAR_BONUS_GALLERY,
+	VAR_MINI_CARS,
+};
+
 #define FE_MAKEVAR(code, value)		((code & 0xffff) << 8 | (value & 0xff))
 
 #ifdef USE_EMBEDDED_FRONTEND_SCREENS
 #include "FEscreens.inc"
 #else
-PSXSCREEN PsxScreens[42];
+FE_SCREEN PsxScreens[Sc_MAX_COUNT];
 #endif
 
 #define FE_OTSIZE 16
@@ -123,6 +214,8 @@ int MiniCarsOnOffScreen(int bSetup);
 #define FN_DONE	1
 
 screenFunc fpUserFunctions[] = {
+
+	// Defaults - do not edit
 	CentreScreen,
 	CarSelectScreen,
 	CopDiffLevelScreen,
@@ -143,10 +236,49 @@ screenFunc fpUserFunctions[] = {
 	GamePlayScreen,
 	GameNameScreen,
 	CheatNumlayerSelect,
+
+	// New entries
 	UserReplaySelectScreen,
 	TimeOfDaySelectScreen,
 	DemoScreen,
-	MiniCarsOnOffScreen
+	MiniCarsOnOffScreen,
+	AdjustDensityScreen,
+};
+
+// NB: Any changes to 'fpUserFunctions' must be reflected here
+enum FEUserFunction
+{
+	Fn_None = 0,
+
+	// Defaults - do not edit
+	Fn_CentreScreen				= 1,
+	Fn_CarSelectScreen			= 2,
+	Fn_CopDiffLevelScreen		= 3,
+	Fn_VibroOnOffScreen			= 4,
+	Fn_MissionSelectScreen		= 5,
+	Fn_MissionCityScreen		= 6,
+	Fn_CutSceneCitySelectScreen = 7,
+	Fn_CutSceneSelectScreen		= 8,
+	Fn_SetVolumeScreen			= 9,
+	Fn_ScoreScreen				= 10,
+	Fn_SubtitlesOnOffScreen		= 11,
+	Fn_CityCutOffScreen			= 12,
+	Fn_ControllerScreen			= 13,
+	Fn_MainScreen				= 14,
+	Fn_CheatScreen				= 15,
+	Fn_ImmunityOnOffScreen		= 16,
+	Fn_InvincibleOnOffScreen	= 17,
+	Fn_GamePlayScreen			= 18,
+	Fn_GameNameScreen			= 19,
+	Fn_CheatNumlayerSelect		= 20,
+
+	// New entries
+	Fn_UserReplaySelectScreen,
+	Fn_TimeOfDaySelectScreen,
+	Fn_DemoScreen,
+	Fn_MiniCarsOnOffScreen,
+
+	Fn_End = 128,
 };
 
 #define FE_CALLBACK(userFunctionNum) (fpUserFunctions[userFunctionNum - 1])
@@ -441,14 +573,14 @@ char loaded[3] = {
 	-1  // Cuts
 };
 
-PSXSCREEN* pCurrScreen = NULL;
-PSXSCREEN* pNewScreen = NULL;
+FE_SCREEN* pCurrScreen = NULL;
+FE_SCREEN* pNewScreen = NULL;
 
-PSXBUTTON* pNewButton = NULL;
-PSXBUTTON* pCurrButton = NULL;
+FE_BUTTON* pNewButton = NULL;
+FE_BUTTON* pCurrButton = NULL;
 
-PSXSCREEN* pScreenStack[10] = { 0 };
-PSXBUTTON* pButtonStack[10] = { 0 };
+FE_SCREEN* pScreenStack[10] = { 0 };
+FE_BUTTON* pButtonStack[10] = { 0 };
 
 POLY_FT4 BackgroundPolys[6];
 FE_FONT feFont;
@@ -476,28 +608,28 @@ void SetVariable(int var)
 
 	switch (code)
 	{
-		case 1:
+		case VAR_GAME_LEVEL:
 			GameLevel = value;
 			break;
-		case 2:
+		case VAR_GAME_TYPE:
 			GameType = (GAMETYPE)value;
 
 			if (value != GAME_COPSANDROBBERS)
 				gWantNight = 0;
 
 			break;
-		case 3:
+		case VAR_MULTIPLAYER:
 			NumPlayers = (value + 1);
 			break;
-		case 4:
+		case VAR_TIMEOFDAY:
 			gWantNight = value > 0;
 
 			break;
-		case 5:
+		case VAR_MISSION_NUMBER:
 			gCurrentMissionNumber = 1;
 			GameType = GAME_MISSION;
 			break;
-		case 6:
+		case VAR_LOAD_GAME:
 			pScreenStack[ScreenDepth] = pCurrScreen;
 			pButtonStack[ScreenDepth] = pCurrButton;
 
@@ -530,7 +662,7 @@ void SetVariable(int var)
 			}
 
 			break;
-		case 7:
+		case VAR_SAVE_GAME:
 			pScreenStack[ScreenDepth] = pCurrScreen;
 			pButtonStack[ScreenDepth] = pCurrButton;
 
@@ -552,35 +684,35 @@ void SetVariable(int var)
 #endif
 
 			break;
-		case 8:
+		case VAR_SUB_GAME:
 			gSubGameNumber = value;
 			break;
-		case 9:
+		case VAR_SUBTITLES:
 			gSubtitles = (value == 0) ? 0 : 1;
 			break;
-		case 10:
+		case VAR_INVINCIBILITY:
 			gInvincibleCar = value;
 			ActiveCheats.cheat3 = value;
 			break;
-		case 11:
+		case VAR_IMMUNITY:
 			gPlayerImmune = value;
 			ActiveCheats.cheat4 = value;
 			break;
-		case 12:
+		case VAR_MINIGAME:
 			GameLevel = 3;
 			gSubGameNumber = (value == 0) ? 2 : 0;
 			break;
-		case 13:
+		case VAR_DEMO_CHASE:
 			GameType = GAME_IDLEDEMO;
 			gCurrentMissionNumber = (value + 400);
 			break;
 #if ENABLE_BONUS_CONTENT
-		case 14: // [A]
+		case VAR_BONUS_GALLERY: // [A]
 		{
 			ShowBonusGallery();
 			LoadFrontendScreens(0);
 		}
-		case 15: // [A] mini cars cheat
+		case VAR_MINI_CARS: // [A] mini cars cheat
 		{
 			ActiveCheats.cheat13 = value;
 		}
@@ -659,7 +791,7 @@ void SetupScreenSprts(PSXSCREEN *pScr)
 	pNewScreen = NULL;
 	pCurrScreen = pScr;
 
-	if (pScr->userFunctionNum == 0 || pScr->userFunctionNum == 128 || FE_INIT_SCREEN(pScr) == FN_OK)
+	if (pScr->userFunctionNum == Fn_None || pScr->userFunctionNum == Fn_End || FE_INIT_SCREEN(pScr) == FN_OK)
 	{
 		if (pNewButton != NULL) 
 		{
@@ -675,7 +807,18 @@ DR_MOVE In;
 DR_MOVE Out;
 RECT16 storeRect = { 768, 475, 255, 36 };
 
+char* TimeOfDayNames[] = {
+	G_LTXT_ID(GTXT_Dawn),
+	G_LTXT_ID(GTXT_Day),
+	G_LTXT_ID(GTXT_Dusk),
+	G_LTXT_ID(GTXT_Night)
+};
 
+char* WeatherNames[] = {
+	G_LTXT_ID(GTXT_Clear),
+	G_LTXT_ID(GTXT_Rainy),
+	G_LTXT_ID(GTXT_Wet),
+};
 
 // [D] [T]
 void DisplayOnScreenText(void)
@@ -721,10 +864,16 @@ void DisplayOnScreenText(void)
 
 			FEPrintStringSized(text, 100, 226, 0xc00, 1, 64, 64, 64);
 		}
+
+		if (iScreenSelect == SCREEN_TIMEOFDAY)
+		{
+			FEPrintString(GET_GAME_TXT(TimeOfDayNames[wantedTimeOfDay]), 596, 208, 4, 128, 128, 128);
+			FEPrintString(GET_GAME_TXT(WeatherNames[wantedWeather]), 596, 246, 4, 128, 128, 128);
+		}
 	}
 }
 
-void DrawButton(PSXBUTTON* pBtn, int i)
+void DrawButton(FE_BUTTON* pBtn, int i)
 {
 	int status = pBtn->action >> 8;
 
@@ -739,6 +888,10 @@ void DrawButton(PSXBUTTON* pBtn, int i)
 
 		rect.x = pCurrButton->s_x;
 		rect.y = pCurrButton->s_y;
+#ifndef PSX
+		rect.w = pCurrButton->s_w;
+		rect.h = pCurrButton->s_h;
+#endif
 
 		hghltSprt = (SPRT*)current->primptr;
 		current->primptr += sizeof(SPRT);
@@ -749,6 +902,9 @@ void DrawButton(PSXBUTTON* pBtn, int i)
 		*hghltDummy = HighlightDummy;
 
 		setXY0(hghltSprt, rect.x, rect.y);
+#ifndef PSX
+		setWH(hghltSprt, rect.w, rect.h);
+#endif
 
 		addPrim(current->ot + 6, hghltSprt);
 		addPrim(current->ot + 6, hghltDummy);
@@ -761,10 +917,17 @@ void DrawButton(PSXBUTTON* pBtn, int i)
 	{
 		if (status == BTN_DISABLED)
 		{
+#ifndef PSX
+			FEPrintString(pBtn->Name, pBtn->x * 2 + pBtn->w, pBtn->y, pBtn->justify, 32, 32, 32);
+#else
 			FEPrintString(pBtn->Name, pBtn->x * 2 + pBtn->w, pBtn->y, 4, 32, 32, 32);
+#endif
 		}
 		else
 		{
+#ifndef PSX
+			FEPrintString(pBtn->Name, pBtn->x * 2 + pBtn->w, pBtn->y, pBtn->justify, pBtn->cR, pBtn->cG, pBtn->cB);
+#else
 			if (iScreenSelect == SCREEN_MISSION && (i == 0 || i == 5) ||
 				iScreenSelect == SCREEN_CAR && (i == 0 || i == 2) ||
 				iScreenSelect == SCREEN_CUTSCENE && (i == 0 || i == 2) ||
@@ -776,6 +939,7 @@ void DrawButton(PSXBUTTON* pBtn, int i)
 			{
 				FEPrintString(pBtn->Name, pBtn->x * 2 + pBtn->w, pBtn->y, 4, 128, 128, 128);
 			}
+#endif
 		}
 	}
 }
@@ -1048,33 +1212,66 @@ void LoadFrontendScreens(int full)
 
 			for (int j = 0; j < PsxScreens[i].numButtons; j++)
 			{
+#ifndef PSX
+				PSXBUTTON *pPSXBtn = (PSXBUTTON*)ptr;
+				FE_BUTTON *pBtn = &PsxScreens[i].buttons[j];
+
+				// copy everything into our struct
+				memcpy((u_char*)pBtn, (u_char*)ptr, sizeof(PSXBUTTON));
+				ptr += sizeof(PSXBUTTON);
+
+				// fixup our struct
+				pBtn->justify = 4;
+
+				pBtn->s_w = 256;
+				pBtn->s_h = 36;
+
+				pBtn->action = (short)pPSXBtn->action;
+				pBtn->var = (short)pPSXBtn->var;
+
+				if (i == Sc_MissionSelect && (j == 0 || j == 5) ||
+					i == Sc_CarSelect && (j == 0 || j == 2) ||
+					i == Sc_CutSceneSelect && (j == 0 || j == 2))
+				{
+					pBtn->cR = 124;
+					pBtn->cG = 108;
+					pBtn->cB = 40;
+				}
+				else
+				{
+					pBtn->cR = 128;
+					pBtn->cG = 128;
+					pBtn->cB = 128;
+				}
+#else
 				memcpy((u_char*)&PsxScreens[i].buttons[j], (u_char*)ptr, sizeof(PSXBUTTON));
 				ptr += sizeof(PSXBUTTON);
+#endif
 			}
 		}
 
 		// [A] SCREEN HACKS
 
 		// Time of day extended screen
-		PsxScreens[3].userFunctionNum = 22;			// TimeOfDaySelectScreen
+		PsxScreens[Sc_TimeOfDay].userFunctionNum = Fn_TimeOfDaySelectScreen;
 
 		// for web demo content (or empty SCRS.BIN)
-		if (PsxScreens[0].userFunctionNum == 128)
-			PsxScreens[0].userFunctionNum = 23;		// DemoScreen
+		if (PsxScreens[Sc_Main].userFunctionNum == Fn_End)
+			PsxScreens[Sc_Main].userFunctionNum = Fn_DemoScreen;
 
 #ifndef PSX
 		// replay theater
-		PsxScreens[4].buttons[0].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 39);
-		PsxScreens[4].buttons[0].var = -1;
-		PsxScreens[39].userFunctionNum = 21;		// UserReplaySelectScreen
+		PsxScreens[Sc_Replays].buttons[0].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_ReplayTheater);
+		PsxScreens[Sc_Replays].buttons[0].var = VAR_NONE;
+		PsxScreens[Sc_ReplayTheater].userFunctionNum = Fn_UserReplaySelectScreen;
 #endif // PSX
 
 #if ENABLE_BONUS_CONTENT
 		 // make mini cars cheat screen
-		PsxScreens[40] = PsxScreens[31];
-		PsxScreens[40].userFunctionNum = 24;		// MiniCarsOnOffScreen
-		PsxScreens[40].buttons[0].var = FE_MAKEVAR(15, 1);
-		PsxScreens[40].buttons[1].var = FE_MAKEVAR(15, 0);
+		PsxScreens[Sc_MiniCarsOnOff] = PsxScreens[Sc_ImmunityOnOff];
+		PsxScreens[Sc_MiniCarsOnOff].userFunctionNum = Fn_MiniCarsOnOffScreen;
+		PsxScreens[Sc_MiniCarsOnOff].buttons[0].var = FE_MAKEVAR(VAR_MINI_CARS, 1);
+		PsxScreens[Sc_MiniCarsOnOff].buttons[1].var = FE_MAKEVAR(VAR_MINI_CARS, 0);
 #endif
 	}
 #endif
@@ -1196,7 +1393,7 @@ void ReInitScreens(int returnToMain)
 
 	// [A] state hack for demo
 	if (pCurrScreen == NULL)
-		pCurrScreen = &PsxScreens[0];
+		pCurrScreen = &PsxScreens[Sc_Main];
 
 	SetupScreenSprts(pCurrScreen);
 	SetupBackgroundPolys();
@@ -1207,7 +1404,7 @@ void ReInitScreens(int returnToMain)
 // [D] [T]
 void NewSelection(short dir)
 {
-	PSXBUTTON *pNewB;
+	FE_BUTTON *pNewB;
 	RECT16 rect;
 
 	if (pCurrScreen->numButtons == 0)
@@ -1280,7 +1477,7 @@ int HandleKeyPress(void)
 	if (pCurrScreen == NULL || pCurrButton == NULL)
 		return 0;
 
-	if (pCurrScreen->userFunctionNum != 0)
+	if (pCurrScreen->userFunctionNum != Fn_None)
 	{
 		// notify the user function first
 		if (FE_STEP_SCREEN(pCurrScreen) != FN_OK)
@@ -1298,7 +1495,7 @@ int HandleKeyPress(void)
 		{
 			FESound(2);
 
-			if (pCurrButton->var != -1)
+			if (pCurrButton->var != VAR_NONE)
 				SetVariable(pCurrButton->var);
 
 			switch (action)
@@ -1458,7 +1655,7 @@ void PadChecks(void)
 		{
 			allowVibration = 0;
 
-			if (pCurrScreen->userFunctionNum == 18)
+			if (pCurrScreen->userFunctionNum == Fn_GamePlayScreen)
 			{
 				bRedrawFrontend = 1;
 				GamePlayScreen(1);
@@ -1471,7 +1668,7 @@ void PadChecks(void)
 		{
 			allowVibration = 1;
 
-			if (pCurrScreen->userFunctionNum == 18)
+			if (pCurrScreen->userFunctionNum == Fn_GamePlayScreen)
 			{
 				bRedrawFrontend = 1;
 				GamePlayScreen(1);
@@ -1487,7 +1684,7 @@ void PadChecks(void)
 		bRedrawFrontend = 1;
 		feNewPad = 0x10;
 
-		if (pCurrScreen->userFunctionNum != 0) 
+		if (pCurrScreen->userFunctionNum != Fn_None) 
 		{
 			FE_STEP_SCREEN(pCurrScreen);
 		}
@@ -1500,7 +1697,7 @@ void PadChecks(void)
 		}
 	}
 	if (bRedrawFrontend == 0 && numPadsConnected != oldnum &&
-		(gInFrontend != 0 && (pCurrScreen != NULL && pCurrScreen->userFunctionNum != 0)))
+		(gInFrontend != 0 && (pCurrScreen != NULL && pCurrScreen->userFunctionNum != Fn_None)))
 	{
 		FE_INIT_SCREEN(pCurrScreen);
 		bRedrawFrontend = 1;
@@ -1561,7 +1758,7 @@ void InitFrontend(void)
 	LoadFrontendScreens(1);
 
 	SetupBackgroundPolys();
-	SetupScreenSprts(&PsxScreens[0]);
+	SetupScreenSprts(&PsxScreens[Sc_Main]);
 
 	// load frontend bank
 	LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_MENU);
@@ -1999,9 +2196,9 @@ int CarSelectScreen(int bSetup)
 
 		LoadBackgroundFile("DATA\\CARS\\CARBACK.RAW");
 
-		if (feVariableSave[0] != -1)
+		if (feVariableSave[2] != -1)
 		{
-			carSelection = feVariableSave[0];
+			carSelection = feVariableSave[2];
 			SetupExtraPoly(gfxNames[GameLevel], carSelection, 0);
 		}
 		else
@@ -2022,10 +2219,10 @@ int CarSelectScreen(int bSetup)
 			}
 		}
 
-		feVariableSave[0] = -1;
-		feVariableSave[1] = -1;
-		feVariableSave[2] = -1;
-		feVariableSave[3] = -1;
+		//feVariableSave[0] = -1;
+		//feVariableSave[1] = -1;
+		//feVariableSave[2] = -1;
+		//feVariableSave[3] = -1;
 
 		lastCutCity = -1;
 		currSelIndex = 1;
@@ -2059,6 +2256,8 @@ int CarSelectScreen(int bSetup)
 		}
 #endif
 		currPlayer = 1;
+		feVariableSave[2] = carSelection;
+
 		iScreenSelect = SCREEN_NONE;
 	}
 
@@ -2095,7 +2294,7 @@ int CarSelectScreen(int bSetup)
 			// select the vehicle
 			if (currPlayer == 1)
 			{
-				feVariableSave[0] = carSelection;
+				feVariableSave[2] = carSelection;
 				wantedCar[0] = carNumLookup[GameLevel][carSelection];
 			}
 			else {
@@ -2434,31 +2633,31 @@ int MissionCityScreen(int bSetup)
 		}
 		else if (gFurthestMission < 10)
 		{
-			pCurrScreen->buttons[0].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 19);
+			pCurrScreen->buttons[0].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_MissionSelect);
 			pCurrScreen->buttons[1].action = FE_MAKEVAR(BTN_DISABLED, 0);
 			pCurrScreen->buttons[2].action = FE_MAKEVAR(BTN_DISABLED, 0);
 			pCurrScreen->buttons[3].action = FE_MAKEVAR(BTN_DISABLED, 0);
 		}
 		else if (gFurthestMission < 21)
 		{
-			pCurrScreen->buttons[0].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 19);
-			pCurrScreen->buttons[1].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 19);
+			pCurrScreen->buttons[0].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_MissionSelect);
+			pCurrScreen->buttons[1].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_MissionSelect);
 			pCurrScreen->buttons[2].action = FE_MAKEVAR(BTN_DISABLED, 0);
 			pCurrScreen->buttons[3].action = FE_MAKEVAR(BTN_DISABLED, 0);
 		}
 		else if (gFurthestMission < 31)
 		{
-			pCurrScreen->buttons[0].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 19);
-			pCurrScreen->buttons[1].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 19);
-			pCurrScreen->buttons[2].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 19);
+			pCurrScreen->buttons[0].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_MissionSelect);
+			pCurrScreen->buttons[1].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_MissionSelect);
+			pCurrScreen->buttons[2].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_MissionSelect);
 			pCurrScreen->buttons[3].action = FE_MAKEVAR(BTN_DISABLED, 0);
 		}
 		else
 		{
-			pCurrScreen->buttons[0].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 19);
-			pCurrScreen->buttons[1].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 19);
-			pCurrScreen->buttons[2].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 19);
-			pCurrScreen->buttons[3].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 19);
+			pCurrScreen->buttons[0].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_MissionSelect);
+			pCurrScreen->buttons[1].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_MissionSelect);
+			pCurrScreen->buttons[2].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_MissionSelect);
+			pCurrScreen->buttons[3].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_MissionSelect);
 		}
 
 		LoadBackgroundFile("DATA\\CITYBACK.RAW");
@@ -2680,31 +2879,31 @@ int CutSceneCitySelectScreen(int bSetup)
 		}
 		else if (gFurthestMission < 10)
 		{
-			pCurrScreen->buttons[0].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 22);
+			pCurrScreen->buttons[0].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_CutSceneSelect);
 			pCurrScreen->buttons[1].action = FE_MAKEVAR(BTN_DISABLED, 0);
 			pCurrScreen->buttons[2].action = FE_MAKEVAR(BTN_DISABLED, 0);
 			pCurrScreen->buttons[3].action = FE_MAKEVAR(BTN_DISABLED, 0);
 		}
 		else if (gFurthestMission < 21)
 		{
-			pCurrScreen->buttons[0].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 22);
-			pCurrScreen->buttons[1].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 22);
+			pCurrScreen->buttons[0].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_CutSceneSelect);
+			pCurrScreen->buttons[1].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_CutSceneSelect);
 			pCurrScreen->buttons[2].action = FE_MAKEVAR(BTN_DISABLED, 0);
 			pCurrScreen->buttons[3].action = FE_MAKEVAR(BTN_DISABLED, 0);
 		}
 		else if (gFurthestMission < 31) 
 		{
-			pCurrScreen->buttons[0].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 22);
-			pCurrScreen->buttons[1].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 22);
-			pCurrScreen->buttons[2].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 22);
+			pCurrScreen->buttons[0].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_CutSceneSelect);
+			pCurrScreen->buttons[1].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_CutSceneSelect);
+			pCurrScreen->buttons[2].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_CutSceneSelect);
 			pCurrScreen->buttons[3].action = FE_MAKEVAR(BTN_DISABLED, 0);
 		}
 		else 
 		{
-			pCurrScreen->buttons[0].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 22);
-			pCurrScreen->buttons[1].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 22);
-			pCurrScreen->buttons[2].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 22);
-			pCurrScreen->buttons[3].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 22);
+			pCurrScreen->buttons[0].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_CutSceneSelect);
+			pCurrScreen->buttons[1].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_CutSceneSelect);
+			pCurrScreen->buttons[2].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_CutSceneSelect);
+			pCurrScreen->buttons[3].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_CutSceneSelect);
 
 			if (gFurthestMission == 40)
 			{
@@ -3277,7 +3476,7 @@ int MainScreen(int bSetup)
 	{
 		if (numPadsConnected == 2) 
 		{
-			pCurrScreen->buttons[3].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 6);
+			pCurrScreen->buttons[3].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_Multiplayer);
 		}
 		else 
 		{
@@ -3309,21 +3508,21 @@ int CheatScreen(int bSetup)
 	int evilRuss[6];
 
 	int hackLookup1[6] = {
-		FE_MAKEVAR(BTN_NEXT_SCREEN, 33),
-		FE_MAKEVAR(BTN_NEXT_SCREEN, 33),
-		FE_MAKEVAR(BTN_NEXT_SCREEN, 30),
-		FE_MAKEVAR(BTN_NEXT_SCREEN, 31),
-		FE_MAKEVAR(BTN_NEXT_SCREEN, 40),
+		FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_RaceMode),
+		FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_RaceMode),
+		FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_InvincibleOnOff),
+		FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_ImmunityOnOff),
+		FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_MiniCarsOnOff),
 		0,
 	};
 
 	int hackLookup2[6] = {
-		FE_MAKEVAR(12, 1),
-		FE_MAKEVAR(12, 0),
+		FE_MAKEVAR(VAR_MINIGAME, 1),
+		FE_MAKEVAR(VAR_MINIGAME, 0),
 		-1,
 		-1,
 		-1,
-		FE_MAKEVAR(14, 0),
+		FE_MAKEVAR(VAR_BONUS_GALLERY, 0),
 	};
 
 	if (bSetup == 0)
@@ -3544,7 +3743,7 @@ int GamePlayScreen(int bSetup)
 {
 	if (bSetup)
 	{
-		pCurrScreen->buttons[2].action = (allowVibration == 0) ? FE_MAKEVAR(BTN_DISABLED, 0) : FE_MAKEVAR(BTN_NEXT_SCREEN, 17);
+		pCurrScreen->buttons[2].action = (allowVibration == 0) ? FE_MAKEVAR(BTN_DISABLED, 0) : FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_VibrationOnOff);
 	}
 
 	return FN_OK;
@@ -3582,7 +3781,7 @@ int CheatNumlayerSelect(int bSetup)
 	{
 		if (numPadsConnected == 2) 
 		{
-			pCurrScreen->buttons[1].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 32);
+			pCurrScreen->buttons[1].action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_RaceSelect);
 		}
 		else 
 		{
@@ -3611,10 +3810,10 @@ int BuildButtonsVertical(int count, int xStart, int yStart)
 		if (nextButton >= numButtons)
 			nextButton -= numButtons;
 
-		PSXBUTTON& btn = pCurrScreen->buttons[i];
+		FE_BUTTON& btn = pCurrScreen->buttons[i];
 
 		// copy button 0
-		btn = PsxScreens[4].buttons[0];
+		btn = PsxScreens[Sc_Replays].buttons[0];
 
 		btn.u = prevButton + 1;
 		btn.d = nextButton + 1;
@@ -3687,7 +3886,7 @@ int UserReplaySelectScreen(int bSetup)
 
 			for (int i = 0; i < numButtons; i++)
 			{
-				PSXBUTTON& btn = pCurrScreen->buttons[i];
+				FE_BUTTON& btn = pCurrScreen->buttons[i];
 				strncpy(btn.Name, gFEReplayList[i], sizeof(btn.Name));
 
 				tmp = strchr(btn.Name, '.');
@@ -3702,7 +3901,7 @@ int UserReplaySelectScreen(int bSetup)
 		{
 			BuildButtonsVertical(1, 160, 208);
 
-			PSXBUTTON& btn = pCurrScreen->buttons[0];
+			FE_BUTTON& btn = pCurrScreen->buttons[0];
 			btn.action = FE_MAKEVAR(BTN_PREVIOUS_SCREEN, 0);
 			strcpy(btn.Name, G_LTXT(GTXT_NoSavedData));
 		}
@@ -3736,19 +3935,6 @@ int UserReplaySelectScreen(int bSetup)
 	return FN_OK;
 }
 
-char* TimeOfDayNames[] = {
-	G_LTXT_ID(GTXT_Dawn),
-	G_LTXT_ID(GTXT_Day),
-	G_LTXT_ID(GTXT_Dusk),
-	G_LTXT_ID(GTXT_Night)
-};
-
-char* WeatherNames[] = {
-	G_LTXT_ID(GTXT_Clear),
-	G_LTXT_ID(GTXT_Rainy),
-	G_LTXT_ID(GTXT_Wet),
-};
-
 char* TimeOfDayItems[] = {
 	G_LTXT_ID(GTXT_TimeOfDay),
 	G_LTXT_ID(GTXT_Condition),
@@ -3765,45 +3951,70 @@ int TimeOfDaySelectScreen(int bSetup)
 	if (bSetup)
 	{
 		// setup time we want to reset it
-		wantedWeather = 0;
-		wantedTimeOfDay = TIME_DAY;
+		if (feVariableSave[0] == -1)
+		{
+			wantedTimeOfDay = TIME_DAY;
+			wantedWeather = 0;
+		}
+		else
+		{
+			wantedTimeOfDay = feVariableSave[0];
+			wantedWeather = feVariableSave[1];
+		}
 
 		numButtons = BuildButtonsVertical(3, 168, 208);
 
 		for (i = 0; i < numButtons; i++)
 		{
-			PSXBUTTON& btn = pCurrScreen->buttons[i];
+			FE_BUTTON& btn = pCurrScreen->buttons[i];
 			sprintf(btn.Name, "%s%c", GET_GAME_TXT(TimeOfDayItems[i]), i == 2 ? 0 : ':');
 
 			if (i == 2)
 			{
 				btn.y += 32;
 				btn.s_y += 32;
-				btn.action = FE_MAKEVAR(BTN_NEXT_SCREEN, 14);
+				btn.action = FE_MAKEVAR(BTN_NEXT_SCREEN, Sc_CarSelect);
+#ifndef PSX
+				btn.cR = 124;
+				btn.cG = 108;
+				btn.cB = 40;
+#endif
 			}
 			else
 			{
-				btn.x -= 80;
+				btn.x -= 50;
 				btn.l = btn.r = i + 1;
+#ifndef PSX
+				btn.cR = 124;
+				btn.cG = 76;
+				btn.cB = 20;
+#endif
 			}
 		}
 
-		pNewButton = &pCurrScreen->buttons[2];
+		pCurrButton = &pCurrScreen->buttons[2];
 		iScreenSelect = SCREEN_TIMEOFDAY;
 
-		return FN_OK;
+		return FN_DONE;
 	}
 
-	FEPrintString(GET_GAME_TXT(TimeOfDayNames[wantedTimeOfDay]), 590, ypos[0], 4, 128, 128, 128);
-	FEPrintString(GET_GAME_TXT(WeatherNames[wantedWeather]), 590, ypos[1], 4, 128, 128, 128);
+	//FEPrintString(GET_GAME_TXT(TimeOfDayNames[wantedTimeOfDay]), 590, ypos[0], 4, 128, 128, 128);
+	//FEPrintString(GET_GAME_TXT(WeatherNames[wantedWeather]), 590, ypos[1], 4, 128, 128, 128);
 
 	if (feNewPad & MPAD_TRIANGLE)
 	{
 		// reset back
-		wantedWeather = -1;
 		wantedTimeOfDay = -1;
+		wantedWeather = -1;
+
+		feVariableSave[3] = -1;
+		feVariableSave[2] = -1;
+		feVariableSave[1] = -1;
+		feVariableSave[0] = -1;
 
 		iScreenSelect = SCREEN_NONE;
+
+		return FN_OK;
 	}
 
 	dir = 0;
@@ -3812,7 +4023,7 @@ int TimeOfDaySelectScreen(int bSetup)
 	{
 		dir = -1;
 	}
-	else if (feNewPad & MPAD_D_RIGHT)
+	else if (feNewPad & (MPAD_D_RIGHT | MPAD_CROSS))
 	{
 		dir = 1;
 	}
@@ -3825,6 +4036,7 @@ int TimeOfDaySelectScreen(int bSetup)
 		{
 			wantedTimeOfDay += dir;
 			wantedTimeOfDay &= 3;
+			feVariableSave[0] = wantedTimeOfDay;
 
 			gWantNight = wantedTimeOfDay == TIME_DUSK || wantedTimeOfDay == TIME_NIGHT;
 		}
@@ -3835,9 +4047,8 @@ int TimeOfDaySelectScreen(int bSetup)
 				wantedWeather += 3;
 			else if (wantedWeather >= 3)
 				wantedWeather -= 3;
+			feVariableSave[1] = wantedWeather;
 		}
-		else
-			dir = 0;
 	}
 
 	return FN_OK;
