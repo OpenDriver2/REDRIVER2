@@ -1041,9 +1041,9 @@ struct ACTIVE_FLAGS
 {
 	// special feature flags
 	u_char AllowParkedTurnedWheels : 1;
-	u_char extraFlags2 : 1;
-	u_char extraFlags3 : 1;
-	u_char extraFlags4 : 1;
+	u_char extraFlag2 : 1;
+	u_char extraFlag3 : 1;
+	u_char extraFlag4 : 1;
 	u_char extraFlag5 : 1;
 	u_char extraFlag6 : 1;
 	u_char extraFlag7 : 1;
