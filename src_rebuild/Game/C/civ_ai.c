@@ -2343,21 +2343,40 @@ int PingInCivCar(int minPingInDist)
 	{
 		int theta;
 		int minDistAlong;
-		int scDist;
 
-		if (requestCopCar == 0)
+		// don't spawn outside straight
+		if (!gExtraConfig.Flags.FixCivCarsOnStraights)
 		{
-			scDist = lbody * 2;
-			minDistAlong = lbody * 3;
+			int scDist;
+
+			if (requestCopCar == 0)
+			{
+				scDist = lbody * 2;
+				minDistAlong = lbody * 3;
+			}
+			else
+			{
+				scDist = lbody / 2; // *** BUGGERED ***
+				minDistAlong = 0;
+			}
+
+			if (roadInfo.straight->length <= (scDist + lbody) * 2)
+				return 0;
 		}
 		else
 		{
-			scDist = lbody / 2;
-			minDistAlong = 0;
-		}
+			if (requestCopCar == 0)
+			{
+				minDistAlong = lbody * 3;
+			}
+			else
+			{
+				minDistAlong = 0;
+			}
 
-		if (roadInfo.straight->length <= (scDist + lbody) * 2) // don't spawn outside straight
-			return 0;
+			if (roadInfo.straight->length <= lbody * 6)
+				return 0;
+		}
 
 		dx = randomLoc.vx - roadInfo.straight->Midx;
 		dz = randomLoc.vz - roadInfo.straight->Midz;
@@ -2508,6 +2527,19 @@ int PingInCivCar(int minPingInDist)
 	if (newCar->ai.c.ctrlState == 5)
 	{
 		numParkedCars++;
+
+		if (gExtraConfig.Flags.AllowParkedTurnedWheels)
+		{
+			int tmp = ((Random2(0) & 0xff) + 1536) & 0x1ff;
+
+			if (FrameCnt % 16)
+			{
+				if (tmp & 8)
+					tmp = -tmp;
+
+				newCar->wheel_angle = tmp;
+			}
+		}
 
 		// parked car is going to unpark
 		if (newCar->ai.c.thrustState == 3)
@@ -3686,10 +3718,24 @@ int CivControl(CAR_DATA* cp)
 		if (cp->ai.c.thrustState != 3)
 			steer = CivSteerAngle(cp);
 
-		thrust = CivAccel(cp) - MAX(ABS(steer), 4) * 3; // [A] reduce acceleration when steering is applied
+		thrust = CivAccel(cp);
+		
+		// [A] reduce acceleration when steering is applied
+		if (gExtraConfig.Flags.NoWibblyWobblyCars)
+		{
+			if (thrust != 0)
+				thrust -= MAX(ABS(steer), 4) * 3;
 
-		if (thrust < 0 && cp->hd.wheel_speed < 5)
-			thrust = 0;
+			if (thrust < 0 && cp->hd.wheel_speed < 100)
+				thrust = 0;
+		}
+		else
+		{
+			thrust = thrust - MAX(ABS(steer), 4) * 3;
+
+			if (thrust < 0 && cp->hd.wheel_speed < 5)
+				thrust = 0;
+		}
 
 		cp->wheel_angle = steer;
 		cp->thrust = thrust;

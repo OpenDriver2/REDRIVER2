@@ -1191,8 +1191,10 @@ void ProcessCarPad(CAR_DATA* cp, u_int pad, char PadSteer, char use_analogue)
 	int player_id;
 	int int_steer;
 	int analog_angle;
+	int leaving_car;
 	PED_MODEL_TYPES whoExit;
 
+	leaving_car = 0;
 	whoExit = TANNER_MODEL;
 
 	int_steer = PadSteer;
@@ -1212,6 +1214,7 @@ void ProcessCarPad(CAR_DATA* cp, u_int pad, char PadSteer, char use_analogue)
 						whoExit = OTHER_MODEL;
 
 					ActivatePlayerPedestrian(cp, NULL, 0, NULL, whoExit);
+					leaving_car = gExtraConfig.Flags.NoWibblyWobblyCars;
 				}
 			}
 			else if (lockAllTheDoors != 0)
@@ -1311,8 +1314,8 @@ void ProcessCarPad(CAR_DATA* cp, u_int pad, char PadSteer, char use_analogue)
 			}
 		}
 
-		if (pad & (CAR_PAD_LEFT | CAR_PAD_RIGHT))
-			cp->hd.autoBrake++;
+		if (pad & (CAR_PAD_LEFT | CAR_PAD_RIGHT) && !leaving_car) // [A] bugfix: wibbly wobbly cars
+ 			cp->hd.autoBrake++;
 		else
 			cp->hd.autoBrake = 0;
 	}
@@ -1353,6 +1356,7 @@ void ProcessCarPad(CAR_DATA* cp, u_int pad, char PadSteer, char use_analogue)
 	cp->thrust = 0;
 
 	//if (gTimeInWater != 0)
+	if (!leaving_car) // [A] bugfix: wibbly wobbly cars
 	{
 		if (pad & CAR_PAD_BRAKE)
 		{
