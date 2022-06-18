@@ -1767,8 +1767,7 @@ int TannerCarCollisionCheck(VECTOR* pPos, int dir, int bQuick)
 
 			if (FIXEDH(cp1->hd.wheel_speed) > 50)
 			{
-				// [A] testing revealed the dist was usually 99 or 100 here
-				if (!gExtraConfig.Flags.FixTannerPhasingThruCars || dist > 100)
+				if (dist > 100) // [A] add dist check; testing usually showed 99 or 100 here
 					return 1;
 			}
 

@@ -2345,38 +2345,17 @@ int PingInCivCar(int minPingInDist)
 		int minDistAlong;
 
 		// don't spawn outside straight
-		if (!gExtraConfig.Flags.FixCivCarsOnStraights)
+		if (requestCopCar == 0)
 		{
-			int scDist;
-
-			if (requestCopCar == 0)
-			{
-				scDist = lbody * 2;
-				minDistAlong = lbody * 3;
-			}
-			else
-			{
-				scDist = lbody / 2; // *** BUGGERED ***
-				minDistAlong = 0;
-			}
-
-			if (roadInfo.straight->length <= (scDist + lbody) * 2)
-				return 0;
+			minDistAlong = lbody * 3;
 		}
 		else
 		{
-			if (requestCopCar == 0)
-			{
-				minDistAlong = lbody * 3;
-			}
-			else
-			{
-				minDistAlong = 0;
-			}
-
-			if (roadInfo.straight->length <= lbody * 6)
-				return 0;
+			minDistAlong = 0;
 		}
+
+		if (roadInfo.straight->length <= lbody * 6)
+			return 0;
 
 		dx = randomLoc.vx - roadInfo.straight->Midx;
 		dz = randomLoc.vz - roadInfo.straight->Midz;

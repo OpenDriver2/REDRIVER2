@@ -199,10 +199,7 @@ void LoadExtraData(EXTRA_CONFIG_DATA *extraData, int profile)
 	if (profile)
 	{
 		// setup special flags to be saved into replays
-		gExtraConfig.Flags.NoWibblyWobblyCars = 1;
 		gExtraConfig.Flags.AllowParkedTurnedWheels = 1;
-		gExtraConfig.Flags.FixCivCarsOnStraights = 1;
-		gExtraConfig.Flags.FixTannerPhasingThruCars = 1;
 	}
 }
 

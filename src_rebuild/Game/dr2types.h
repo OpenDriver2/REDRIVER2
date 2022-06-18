@@ -1039,11 +1039,11 @@ struct REPLAY_PARAMETER_BLOCK
 
 struct ACTIVE_FLAGS
 {
-	// special flags for regression fixes, etc.
-	u_char NoWibblyWobblyCars : 1;
+	// special feature flags
 	u_char AllowParkedTurnedWheels : 1;
-	u_char FixCivCarsOnStraights : 1;
-	u_char FixTannerPhasingThruCars : 1;
+	u_char extraFlags2 : 1;
+	u_char extraFlags3 : 1;
+	u_char extraFlags4 : 1;
 	u_char extraFlag5 : 1;
 	u_char extraFlag6 : 1;
 	u_char extraFlag7 : 1;

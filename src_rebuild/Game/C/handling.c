@@ -1214,7 +1214,7 @@ void ProcessCarPad(CAR_DATA* cp, u_int pad, char PadSteer, char use_analogue)
 						whoExit = OTHER_MODEL;
 
 					ActivatePlayerPedestrian(cp, NULL, 0, NULL, whoExit);
-					leaving_car = gExtraConfig.Flags.NoWibblyWobblyCars;
+					leaving_car = 1;
 				}
 			}
 			else if (lockAllTheDoors != 0)
