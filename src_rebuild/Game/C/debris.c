@@ -348,6 +348,7 @@ char PoolPrimData[16] = {
 	0xA,  0x5,  0xB,  0x7
 };
 
+short light_col = 0;
 int LightSortCorrect = 0;
 
 TEXTURE_DETAILS smoke_texture;
@@ -607,6 +608,8 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 			for(i = 0; i < 4; i++)
 			{
 				char* VertIdx;
+
+				spolys = (POLY_F3*)current->primptr;
 				
 				VertIdx = PoolPrimData + i * 4;
 
@@ -620,7 +623,7 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 
 				if (brightness)
 				{
-					int test = col->r * brightness;
+					light_col = brightness * 16;
 
 					color.r = MIN(255, col->r * brightness >> 4);
 					color.g = MIN(255, col->g * brightness >> 4);
@@ -631,15 +634,17 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 						sQuad(sout + VertIdx[0],
 						      sout + VertIdx[2],
 						      sout + VertIdx[3],
-						      sout + VertIdx[1], &color, LightSortCorrect);
+						      sout + VertIdx[1], &color);
 					}
 					else
 					{
 						sQuad(sout + VertIdx[1],
 						      sout + VertIdx[3],
 						      sout + VertIdx[2],
-						      sout + VertIdx[0], &color, LightSortCorrect);
+						      sout + VertIdx[0], &color);
 					}
+
+					current->primptr = (char*)spolys;
 				}
 			}
 		}

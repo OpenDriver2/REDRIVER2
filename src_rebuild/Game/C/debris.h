@@ -17,6 +17,9 @@ struct SMASHABLE_OBJECT
 
 #define OBJECT_SMASHED_MARK		0xFD46FEC0
 
+extern short light_col;
+extern int LightSortCorrect;
+
 extern TEXTURE_DETAILS smoke_texture;
 extern TEXTURE_DETAILS debris_texture;
 extern TEXTURE_DETAILS litter_texture;
