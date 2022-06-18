@@ -3700,21 +3700,12 @@ int CivControl(CAR_DATA* cp)
 		thrust = CivAccel(cp);
 		
 		// [A] reduce acceleration when steering is applied
-		if (gExtraConfig.Flags.NoWibblyWobblyCars)
-		{
-			if (thrust != 0)
-				thrust -= MAX(ABS(steer), 4) * 3;
+		if (thrust != 0)
+			thrust -= MAX(ABS(steer), 4) * 3;
 
-			if (thrust < 0 && cp->hd.wheel_speed < 100)
-				thrust = 0;
-		}
-		else
-		{
-			thrust = thrust - MAX(ABS(steer), 4) * 3;
-
-			if (thrust < 0 && cp->hd.wheel_speed < 5)
-				thrust = 0;
-		}
+		// [A] fix backwards crawl
+		if (thrust < 0 && cp->hd.wheel_speed < 100)
+			thrust = 0;
 
 		cp->wheel_angle = steer;
 		cp->thrust = thrust;
