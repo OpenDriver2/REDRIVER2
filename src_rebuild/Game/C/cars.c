@@ -29,13 +29,6 @@ struct plotCarGlobals
 	u_char* damageLevel;
 };
 
-
-#ifndef PSX
-#define CAR_LOD_SWITCH_DISTANCE switch_detail_distance
-#else
-#define CAR_LOD_SWITCH_DISTANCE 5500
-#endif
-
 MATRIX light_matrix =
 { 
 	{ 
@@ -1508,11 +1501,22 @@ void DrawCar(CAR_DATA* cp, int view)
 			AddSmokingEngine(cp, doSmoke - 1, WheelSpeed);
 
 #if ENABLE_GAME_ENCHANCEMENTS
-		AddExhaustSmoke(cp, doSmoke > 1, WheelSpeed);
+		if (pos.vz < (CAR_LOD_SWITCH_DISTANCE / 2) + 750)
+			AddExhaustSmoke(cp, doSmoke > 1, WheelSpeed);
 #endif
 
+#ifndef PSX
+		SetShadowPoints(cp, corners);
+
+		// do simple shadows when further away
+		if (pos.vz >= CAR_LOD_SWITCH_DISTANCE / 4)
+			PlaceShadowForCar(corners, 0, 10, yVal < 0 ? 0 : 2);
+		else
+			PlaceShadowForCar(corners, 4, 10, yVal < 0 ? 0 : 2);
+#else
 		SetShadowPoints(cp, corners);
 		PlaceShadowForCar(corners, 4, 10, yVal < 0 ? 0 : 2);
+#endif
 
 		ComputeCarLightingLevels(cp, 1);
 

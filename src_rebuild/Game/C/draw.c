@@ -514,18 +514,14 @@ void DrawAllTheCars(int view)
 			else
 				dist = dx + dz / 2;
 
-#ifdef PSX // do not account distance on PC
 			if (dist < 16000)
-#endif
 			{
 				car_distance[num_cars_to_draw] = dx + dz;
 				cars_to_draw[num_cars_to_draw] = cp;
 				num_cars_to_draw++;
 			}
 		}
-
-		cp--;
-	} while (cp >= car_data);
+	} while (--cp >= car_data);
 
 	if (num_cars_to_draw != 0)
 	{
@@ -554,19 +550,28 @@ void DrawAllTheCars(int view)
 
 		for (i = 0; i < num_cars_to_draw; i++)
 		{
+			int pofs = (int)(current->primtab - (current->primptr - PRIMTAB_SIZE)) - 3000;
+
 			// Don't exceed draw buffers
-			if ((int)(current->primtab + (-3000 - (int)(current->primptr - PRIMTAB_SIZE))) < 5800)
-				return;
+			if (pofs < 5800)
+				break;
 
 			// make cars look uglier
-			if ((int)(current->primtab + (-3000 - (int)(current->primptr - PRIMTAB_SIZE)) - spacefree) < 5800)
+			if (pofs - spacefree < 5800)
 				gForceLowDetailCars = 1;
-
+#ifndef PSX
+			// [A] make non-player far away cars look uglier
+			else if (cars_to_draw[i]->controlType != CONTROL_TYPE_PLAYER && car_distance[i] >= CAR_LOD_SWITCH_DISTANCE)
+				gForceLowDetailCars = 1;
+			else
+				gForceLowDetailCars = 0;
+#else
 			if (cars_to_draw[i]->controlType == CONTROL_TYPE_PLAYER)
 				gForceLowDetailCars = 0;
+#endif
 
 			DrawCar(cars_to_draw[i], view);
-			
+
 			spacefree -= 2000;
 		}
 	}

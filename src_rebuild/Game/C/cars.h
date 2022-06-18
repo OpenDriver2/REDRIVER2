@@ -6,6 +6,12 @@
 
 #define IS_ROADBLOCK_CAR(cp) (cp->controlType == CONTROL_TYPE_CIV_AI && (cp->controlFlags & CONTROL_FLAG_COP_SLEEPING))
 
+#ifndef PSX
+#define CAR_LOD_SWITCH_DISTANCE (switch_detail_distance+500)
+#else
+#define CAR_LOD_SWITCH_DISTANCE 5500
+#endif
+
 // PHYSICS
 extern CAR_DATA car_data[MAX_CARS + 2];	// all cars + Tanner cbox + Camera cbox
 
