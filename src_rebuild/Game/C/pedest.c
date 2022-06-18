@@ -24,6 +24,7 @@
 #include "map.h"
 #include "system.h"
 #include "handling.h"
+#include "draw.h"
 
 #include "ASM/rndrasm.h"
 

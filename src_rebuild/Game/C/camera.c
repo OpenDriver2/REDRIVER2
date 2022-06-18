@@ -704,7 +704,7 @@ void PlaceCameraAtLocation(PLAYER* lp, int zoom)
 
 		d = PointAtTarget(&lp->cameraPos, &temp, &camera_angle);
 
-		if (d > 16000)
+		if (d > VIEW_DRAW_DISTANCE)
 		{
 			lp->cameraView = 0;
 			return;

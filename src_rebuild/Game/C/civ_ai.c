@@ -1804,7 +1804,7 @@ void InitCivCars(/*[A]*/int recording)
 #endif
 }
 
-const int EVENT_CAR_SPEED = 71;
+const int EVENT_CAR_SPEED = 60;
 const int DistanceTriggerCarMoves = 5000;
 
 // [D] [T] [A]

@@ -109,11 +109,11 @@ int fasterToggle = 0;
 
 int combointensity;
 
-char CurrentPVS[444]; // 20*20+4
+char CurrentPVS[PVS_CELL_COUNT * PVS_CELL_COUNT + 3]; // 20*20+4
 MATRIX2 matrixtable[64];
 int setupYet = 0;
 
-int gDrawDistance = 441;
+int gDrawDistance = PVS_CELL_COUNT * PVS_CELL_COUNT;
 
 #ifndef PSX
 _pct& plotContext = *(_pct*)((u_char*)getScratchAddr(0) + 1024 - sizeof(_pct));	// orig offset: 0x1f800020
@@ -480,6 +480,12 @@ void PlotMDL_less_than_128(MODEL* model)
 	RenderModel(model, NULL, NULL, 0, 0, 0, 0);
 }
 
+// [D] [T]
+int PositionVisible(VECTOR* pos)
+{
+	return newPositionVisible(pos, CurrentPVS, current_cell_x, current_cell_z);
+}
+
 int gForceLowDetailCars = 0;
 int num_cars_drawn = 0;
 
@@ -514,7 +520,7 @@ void DrawAllTheCars(int view)
 			else
 				dist = dx + dz / 2;
 
-			if (dist < 16000)
+			if (dist < VIEW_DRAW_DISTANCE)
 			{
 				car_distance[num_cars_to_draw] = dx + dz;
 				cars_to_draw[num_cars_to_draw] = cp;
@@ -1367,11 +1373,11 @@ void DrawMapPSX(int* comp_val)
 	// walk through all cells
 	do
 	{
-		if (ABS(hloop) + ABS(vloop) < 21)
+		if (ABS(hloop) + ABS(vloop) < PVS_CELL_COUNT)
 		{
 			// clamped vis values
-			int vis_h = MIN(MAX(hloop, -9), 10);
-			int vis_v = MIN(MAX(vloop, -9), 10);
+			int vis_h = MIN(MAX(hloop, -9), PVS_CELL_COUNT / 2);
+			int vis_v = MIN(MAX(vloop, -9), PVS_CELL_COUNT / 2);
 
 			cellx = drawData.cellxpos + hloop;
 			cellz = drawData.cellzpos + vloop;

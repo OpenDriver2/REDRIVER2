@@ -19,7 +19,7 @@ extern int gShowMap;
 TextureID gHiresFontTexture = 0;
 TextureID gHiresDigitsTexture = 0;
 
-stbtt_bakedchar gSTBCharData[224];	// ASCII 32..126 is 95 glyphs
+stbtt_packedchar gSTBCharData[224];	// ASCII 32..126 is 95 glyphs
 
 void InitHiresFonts()
 {
@@ -66,7 +66,13 @@ void InitHiresFonts()
 			// gen font
 			u_char* tmpBitmap = (u_char*)malloc(HIRES_FONT_SIZE_W * HIRES_FONT_SIZE_H);
 			u_int* bitmapRGBA = (u_int*)malloc(HIRES_FONT_SIZE_W * HIRES_FONT_SIZE_H * 4);
-			stbtt_BakeFontBitmap(data, 0, 90.0, tmpBitmap, HIRES_FONT_SIZE_W, HIRES_FONT_SIZE_H, 32, 224, gSTBCharData);
+
+			stbtt_pack_context pc;
+
+			stbtt_PackBegin(&pc, tmpBitmap, HIRES_FONT_SIZE_W, HIRES_FONT_SIZE_H, 0, 1, NULL);
+			stbtt_PackSetOversampling(&pc, 2, 2);
+			stbtt_PackFontRange(&pc, data, 0, 40.0f, 32, 224, gSTBCharData);
+			stbtt_PackEnd(&pc);
 
 			for (x = 0; x < HIRES_FONT_SIZE_W; ++x)
 			{
@@ -127,27 +133,26 @@ void SetHiresDigitsTexture(int enabled)
 
 void GetHiresBakedQuad(int char_index, float* xpos, float* ypos, stbtt_aligned_quad* q)
 {
-	float bias = 0.0f;
-	float ipw = 1.0f / HIRES_FONT_SIZE_W;
-	float iph = 1.0f / HIRES_FONT_SIZE_H;
-	const stbtt_bakedchar* b = gSTBCharData + char_index;
+	float ipw = 1.0f / (float)HIRES_FONT_SIZE_W;
+	float iph = 1.0f / (float)HIRES_FONT_SIZE_H;
+	const stbtt_packedchar* b = gSTBCharData + char_index;
 
-	float scale = 0.2f;
+	float scale = 0.45f;
 
-	float pos_x = (*xpos + b->xoff * scale);
-	float pos_y = (*ypos + b->yoff * scale);
+	float s_x = b->x1 - b->x0;
+	float s_y = b->y1 - b->y0;
 
-	pos_y += 13;
+	q->x0 = *xpos + b->xoff * scale;
+	q->y0 = *ypos + b->yoff * scale;
+	q->x1 = (b->xoff2 - b->xoff) * scale;
+	q->y1 = (b->yoff2 - b->yoff) * scale;
 
-	q->x0 = pos_x + bias;
-	q->y0 = pos_y + bias;
-	q->x1 = (b->x1 - b->x0) * scale;
-	q->y1 = (b->y1 - b->y0) * scale;
+	q->s0 = b->x0 * 255.0f * ipw;
+	q->t0 = b->y0 * 255.0f * iph;
+	q->s1 = s_x * 255.0f * ipw;
+	q->t1 = s_y * 255.0f * iph;
 
-	q->s0 = b->x0 * 255 * ipw;
-	q->t0 = b->y0 * 255 * iph;
-	q->s1 = (b->x1 - b->x0) * 255 * ipw;
-	q->t1 = (b->y1 - b->y0) * 255 * iph;
+	q->y0 += 14.0f;
 
 	*xpos += b->xadvance * scale;
 }
@@ -155,7 +160,7 @@ void GetHiresBakedQuad(int char_index, float* xpos, float* ypos, stbtt_aligned_q
 int StrighWidthHires(char* string)
 {
 	u_char chr;
-	int width;
+	float width;
 	width = 0;
 
 	while ((chr = *string++) != 0)
@@ -169,8 +174,8 @@ int StrighWidthHires(char* string)
 		chr = (chr >= 32 && chr < 128 || chr > 138) ? chr : '?';
 
 		float fx, fy;
-		fx = 0;
-		fy = 0;
+		fx = 0.0f;
+		fy = 0.0f;
 		stbtt_aligned_quad q;
 		GetHiresBakedQuad(chr - 32, &fx, &fy, &q);
 		width += fx;
@@ -185,7 +190,7 @@ extern short fonttpage;
 int PrintStringHires(char* string, int x, int y)
 {
 	u_char chr;
-	int width;
+	float width;
 	u_int index;
 	int showMap;
 
@@ -216,7 +221,7 @@ int PrintStringHires(char* string, int x, int y)
 		POLY_FT4* fontFT4;
 		POLY_FT4* shadowFT4;
 		float fx, fy;
-		fx = x;
+		fx = width;
 		fy = y;
 		stbtt_aligned_quad q;
 		GetHiresBakedQuad(chr - 32, &fx, &fy, &q);
@@ -260,8 +265,7 @@ int PrintStringHires(char* string, int x, int y)
 			DrawPrim(fontFT4);
 		}
 
-		width += fx - x;
-		x = fx;
+		width += fx - width;
 	}
 
 	SetHiresFontTexture(showMap == 0);
