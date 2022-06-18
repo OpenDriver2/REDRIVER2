@@ -952,8 +952,12 @@ void InitDopplerSFX(void)
 		loudhail_time = 75;
 }
 
+#ifndef PSX
+char noisy_cars[MAX_CARS] = { 0 };
+#else
 char force_idle[8] = { 0 };
 char force_siren[8] = { 0 };
+#endif
 
 // [D] [T]
 void DoDopplerSFX(void)
@@ -962,7 +966,13 @@ void DoDopplerSFX(void)
 	short* playerFelony;
 	int i, j;
 	int car;
+#ifdef PSX
 	u_int car_flags;
+
+#define CARNOISE_IS_ACTIVE(id) (car_flags & (1 << id))
+#define CARNOISE_ENABLE(id) (car_flags |= (1 << id))
+#define CARNOISE_DISABLE(id) (car_flags &= ~(1 << id))
+#endif
 	int num_noisy_cars;
 	int sirens;
 
@@ -979,7 +989,10 @@ void DoDopplerSFX(void)
 	for (i = 0; i < MAX_CARS; i++)
 	{
 		car_ptr = &car_data[i];
-
+#ifndef PSX
+		// we don't use car_flags; reset it now since we're going through all cars
+		CARNOISE_DISABLE(i);
+#endif
 		dx = car_ptr->hd.where.t[0] - camera_position.vx;
 		dz = car_ptr->hd.where.t[2] - camera_position.vz;
 
@@ -1010,16 +1023,15 @@ void DoDopplerSFX(void)
 		int tmpi;
 		tmpi = indexlist[i];
 
-		j = i - 1;
-		while (j >= 0 && car_dist[indexlist[j]] > car_dist[tmpi])
-		{
+		for (j = i - 1; j >= 0 && car_dist[indexlist[j]] > car_dist[tmpi]; j--)
 			indexlist[j + 1] = indexlist[j];
-			j = j - 1;
-		}
+
 		indexlist[j + 1] = tmpi;
 	}
 
+#ifdef PSX
 	car_flags = 0;
+#endif
 	sirens = 0;
 
 	// collect cop cars for siren sound
@@ -1047,7 +1059,7 @@ void DoDopplerSFX(void)
 		}
 
 		// any cutscene cop car or car with forced siren
-		if (gInGameCutsceneActive != 0 && car_ptr->controlType == CONTROL_TYPE_CUTSCENE && force_siren[indexlist[i]] != 0)
+		if (gInGameCutsceneActive != 0 && car_ptr->controlType == CONTROL_TYPE_CUTSCENE && CARNOISE_HAS_FORCED_SIREN(indexlist[i]) != 0)
 		{
 			siren = 1;
 		}
@@ -1062,72 +1074,85 @@ void DoDopplerSFX(void)
 			siren = 1;
 		}
 
-		if (!siren)
-			continue;
-
-		car_flags |= 1 << indexlist[i];
-
-		if (gInGameCutsceneActive == 0)
-			sirens++;
-	}
-
-	// stop unused siren noises
-	for (i = 0; i < MAX_SIREN_NOISES; i++)
-	{
-		int siren;
-		siren = (car_flags & 1 << siren_noise[i].car) != 0;
-
-		siren_noise[i].in_use = siren;
-		car_flags &= ~(siren << siren_noise[i].car);
-
-		if (siren == 0 && siren_noise[i].stopped == 0)
+		if (siren)
 		{
-			StopChannel(siren_noise[i].chan);
-			UnlockChannel(siren_noise[i].chan);
+			CARNOISE_ENABLE(indexlist[i]);
 
-			siren_noise[i].chan = -1;
-			siren_noise[i].car = 20;
-			siren_noise[i].stopped = 1;
+			if (gInGameCutsceneActive == 0)
+				sirens++;	
 		}
 	}
 
-	// start sirens
-	for (i = 0; i < num_noisy_cars; i++)
+	int noises = 0;
+
+	// update siren noise status
+	for (i = 0; i < MAX_SIREN_NOISES; i++)
 	{
-		if (car_flags & 1 << indexlist[i])
+		if (CARNOISE_IS_ACTIVE(siren_noise[i].car))
 		{
-			car = indexlist[i];
+			// already in use, no need to start again
+			CARNOISE_DISABLE(siren_noise[i].car);
 
-			// dispatch siren sounds
-			for (j = 0; j < MAX_SIREN_NOISES; j++)
+			siren_noise[i].in_use = 1;
+			noises++;
+		}
+		else
+		{
+			// stop unused siren noises
+			if (siren_noise[i].stopped == 0)
 			{
-				if (siren_noise[j].in_use != 0)
-					continue;
+				StopChannel(siren_noise[i].chan);
+				UnlockChannel(siren_noise[i].chan);
 
-				siren_noise[j].in_use = 1;
-				siren_noise[j].stopped = 0;
-				siren_noise[j].car = car;
-
-				if (car_data[car].controlType != CONTROL_TYPE_CIV_AI)
-				{
-					int siren;
-					siren = CarHasSiren(car_data[car].ap.model);
-
-					siren_noise[j].chan = Start3DTrackingSound(-1, (siren & 0xff00) >> 8, siren & 0xff,
-						(VECTOR*)car_data[car].hd.where.t,
-						(LONGVECTOR3*)car_data[car].st.n.linearVelocity);
-				}
-				else
-				{
-					// play music
-					siren_noise[j].chan = Start3DTrackingSound(-1, SOUND_BANK_ENVIRONMENT, 5,
-						(VECTOR*)car_data[car].hd.where.t,
-						(LONGVECTOR3*)car_data[car].st.n.linearVelocity);
-				}
-
-				LockChannel(siren_noise[j].chan);
-				break;
+				siren_noise[i].chan = -1;
+				siren_noise[i].car = MAX_CARS;
+				siren_noise[i].stopped = 1;
 			}
+			siren_noise[i].in_use = 0;
+		}
+	}
+
+	// start new sirens
+	// pick free car noise slot and play
+	// [A] stop if no more sounds are available
+	for (i = 0; i < num_noisy_cars && noises < MAX_SIREN_NOISES; i++)
+	{
+		car = indexlist[i];
+
+		if (!CARNOISE_IS_ACTIVE(indexlist[i]))
+			continue;
+
+		// dispatch siren sounds
+		for (j = 0; j < MAX_SIREN_NOISES; j++)
+		{
+			if (siren_noise[j].in_use != 0)
+				continue;
+
+			siren_noise[j].in_use = 1;
+			siren_noise[j].stopped = 0;
+			siren_noise[j].car = car;
+
+			if (car_data[car].controlType != CONTROL_TYPE_CIV_AI)
+			{
+				int siren;
+				siren = CarHasSiren(car_data[car].ap.model);
+
+				siren_noise[j].chan = Start3DTrackingSound(-1, (siren & 0xff00) >> 8, siren & 0xff,
+					(VECTOR*)car_data[car].hd.where.t,
+					(LONGVECTOR3*)car_data[car].st.n.linearVelocity);
+			}
+			else
+			{
+				// play music
+				siren_noise[j].chan = Start3DTrackingSound(-1, SOUND_BANK_ENVIRONMENT, 5,
+					(VECTOR*)car_data[car].hd.where.t,
+					(LONGVECTOR3*)car_data[car].st.n.linearVelocity);
+			}
+
+			LockChannel(siren_noise[j].chan);
+			noises++;
+
+			break;
 		}
 	}
 
@@ -1153,88 +1178,105 @@ void DoDopplerSFX(void)
 	// siren noises occupy car noise channels
 	num_noisy_cars = MIN(num_noisy_cars, MAX_CAR_NOISES - sirens);
 
+#ifndef PSX
+	// reset all cars' noisy status
+	for (i = 0; i < MAX_CARS; i++)
+		CARNOISE_DISABLE(i);
+#else
 	car_flags = 0;
+#endif
 
+	// collect noisy cars
 	for (j = 0; j < num_noisy_cars; j++)
 	{
 		car = indexlist[j];
 
 		if (car_data[car].controlType != CONTROL_TYPE_PURSUER_AI || car_data[car].ai.p.dying == 0)
-			car_flags |= 1 << car;
+			CARNOISE_ENABLE(car);
 	}
 
+	noises = 0;
+
+	// update noisy cars' status
 	for (j = 0; j < MAX_CAR_NOISES; j++)
 	{
-		int noise;
-
-		noise = (car_flags & (1 << car_noise[j].car)) != 0;
-		car_noise[j].in_use = noise;
-
-		car_flags &= ~(noise << car_noise[j].car);
-	}
-
-	for (j = 0; j < MAX_CAR_NOISES; j++)
-	{
-		if (car_noise[j].in_use == 0 && car_noise[j].stopped == 0)
+		if (CARNOISE_IS_ACTIVE(car_noise[j].car))
 		{
-			StopChannel(car_noise[j].chan);
-			UnlockChannel(car_noise[j].chan);
+			// already in use, no need to start again
+			CARNOISE_DISABLE(car_noise[j].car);
 
-			car_noise[j].chan = -1;
-			car_noise[j].car = 20;
-			car_noise[j].stopped = 1;
+			car_noise[j].in_use = 1;
+			noises++;
 		}
+		else
+		{
+			// stop unused car noises
+			if (car_noise[j].stopped == 0)
+			{
+				StopChannel(car_noise[j].chan);
+				UnlockChannel(car_noise[j].chan);
+
+				car_noise[j].chan = -1;
+				car_noise[j].car = MAX_CARS;
+				car_noise[j].stopped = 1;
+			}
+			car_noise[j].in_use = 0;
+		}	
 	}
 
 	// start new sounds
 	// pick free car noise slot and play
-	for (i = 0; i < num_noisy_cars; i++)
+	// [A] stop if no more sounds are available
+	for (i = 0; i < num_noisy_cars && noises < MAX_CAR_NOISES; i++)
 	{
-		if (car_flags & 1 << indexlist[i])
+		car = indexlist[i];
+
+		if (!CARNOISE_IS_ACTIVE(car))
+			continue;
+		
+		for (j = 0; j < MAX_CAR_NOISES; j++)
 		{
-			car = indexlist[i];
-			for (j = 0; j < MAX_CAR_NOISES; j++)
-			{
-				int bank, model;
+			int bank, model;
 
-				if (car_noise[j].in_use)
-					continue;
+			if (car_noise[j].in_use)
+				continue;
 
-				car_noise[j].in_use = 1;
-				car_noise[j].stopped = 0;
-				car_noise[j].car = car;
+			car_noise[j].in_use = 1;
+			car_noise[j].stopped = 0;
+			car_noise[j].car = car;
 
-				// determine which sound type it has to play
-				if (gInGameCutsceneActive != 0 && force_idle[car] > -1)
-					car_noise[j].idle = force_idle[car];
-				else
-					car_noise[j].idle = (car_data[car].hd.speed < 17);
+			// determine which sound type it has to play
+			if (gInGameCutsceneActive != 0 && CARNOISE_HAS_FORCED_IDLE(car))
+				car_noise[j].idle = 0;
+			else
+				car_noise[j].idle = (car_data[car].hd.speed < 17);
 
-				model = car_data[car].ap.model;
+			model = car_data[car].ap.model;
 
-				if (model == 3)
-					model = cop_model;
+			if (model == 3)
+				model = cop_model;
 
-				// get bank id
-				if (model == 4)
-					bank = ResidentModelsBodge();
-				else if (model < 3)
-					bank = model;
-				else
-					bank = model - 1;
+			// get bank id
+			if (model == 4)
+				bank = ResidentModelsBodge();
+			else if (model < 3)
+				bank = model;
+			else
+				bank = model - 1;
 
-				if (car_noise[j].idle)
-					sample = bank * 3 + 1;
-				else
-					sample = bank * 3;
+			if (car_noise[j].idle)
+				sample = bank * 3 + 1;
+			else
+				sample = bank * 3;
 
-				car_noise[j].chan = Start3DTrackingSound(-1, SOUND_BANK_CARS, sample, 
-					(VECTOR*)car_data[car].hd.where.t, 
-					(LONGVECTOR3*)car_data[car].st.n.linearVelocity);
+			car_noise[j].chan = Start3DTrackingSound(-1, SOUND_BANK_CARS, sample, 
+				(VECTOR*)car_data[car].hd.where.t, 
+				(LONGVECTOR3*)car_data[car].st.n.linearVelocity);
 
-				LockChannel(car_noise[j].chan);
-				break;
-			}
+			LockChannel(car_noise[j].chan);
+			noises++;
+
+			break;
 		}
 	}
 
@@ -1253,8 +1295,8 @@ void DoDopplerSFX(void)
 		cp = &car_data[car];
 
 		// determine which sound type it has to play
-		if (gInGameCutsceneActive != 0 && force_idle[car] > -1)
-			car_noise[j].idle = force_idle[car];
+		if (gInGameCutsceneActive != 0 && CARNOISE_HAS_FORCED_IDLE(car))
+			car_noise[j].idle = 0; // [A] only one idle type anyways
 		else
 			car_noise[j].idle = (cp->hd.speed < 17);
 

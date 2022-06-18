@@ -1303,15 +1303,43 @@ int Swap2Cars(int curslot, int newslot)
 	memcpy((u_char*)&car_data[curslot], (u_char*)&cd, sizeof(CAR_DATA));
 
 	// [A] event - swap cars on boat
-	tmp = carsOnBoat & (1 << newslot);
-	carsOnBoat &= ~(1 << newslot);
+#ifndef PSX
+	tmp = carsOnBoat.cars[newslot];
 
+	if (carsOnBoat.cars[curslot])
+	{
+		if (!tmp)
+		{
+			carsOnBoat.cars[newslot] = 1;
+			carsOnBoat.count++;
+		}
+	}
+	else
+	{
+		if (tmp)
+		{
+			carsOnBoat.cars[newslot] = 0;
+			carsOnBoat.count--;
+		}
+	}
+
+	if (tmp && carsOnBoat.cars[curslot] == 0)
+	{
+		carsOnBoat.cars[curslot] = 1;
+		carsOnBoat.count++;
+	}
+
+#else
+	tmp = carsOnBoat & (1 << newslot);
+	
 	if (carsOnBoat & (1 << curslot))
 		carsOnBoat |= (1 << newslot);
+	else
+		carsOnBoat &= ~(1 << newslot);
 
 	if(tmp)
 		carsOnBoat |= (1 << curslot);
-
+#endif
 	// swap ids
 	car_data[newslot].id = newslot;
 	car_data[curslot].id = curslot;

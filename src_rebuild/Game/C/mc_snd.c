@@ -216,12 +216,18 @@ void InitializeCutsceneSound(int cutscene)
 	int i;
 
 	cutscene_timer = 0;
-	i = 0;
-	while (i < 8)
+#ifndef PSX
+	for (i = 0; i < MAX_CARS; i++)
 	{
-		force_idle[i] = -1;
-		force_siren[i++] = 0;
+		CARNOISE_CLEAR_FLAG(i, CARNOISE_FLAG_FORCE_IDLE|CARNOISE_FLAG_FORCE_SIREN);
 	}
+#else
+	for (i = 0; i < 8; i++)
+	{
+		CARNOISE_CLEAR_FORCED_IDLE(i);
+		CARNOISE_CLEAR_FORCED_SIREN(i);
+	}
+#endif
 }
 
 
@@ -240,9 +246,9 @@ void DoCutsceneSound(void)
 				return;
 
 			if (cutscene_timer > 74)
-				force_idle[1] = -1;
+				CARNOISE_CLEAR_FORCED_IDLE(1);
 			else
-				force_idle[1] = 0;
+				CARNOISE_SET_FORCED_IDLE(1);
 			break;
 		case 5:
 			if (gInGameCutsceneID != 0)
@@ -250,18 +256,18 @@ void DoCutsceneSound(void)
 
 			if (cutscene_timer > 150)
 			{
-				force_siren[2] = 1;
-				force_siren[1] = 1;
+				CARNOISE_SET_FORCED_SIREN(2);
+				CARNOISE_SET_FORCED_SIREN(1);
 			}
 			else if (cutscene_timer > 140)
 			{
-				force_siren[1] = 1;
-				force_siren[2] = 0;
+				CARNOISE_SET_FORCED_SIREN(1);
+				CARNOISE_CLEAR_FORCED_SIREN(2);
 			}
 			else
 			{
-				force_siren[1] = 0;
-				force_siren[2] = 0;
+				CARNOISE_CLEAR_FORCED_SIREN(1);
+				CARNOISE_CLEAR_FORCED_SIREN(2);
 			}
 
 			break;
@@ -269,14 +275,14 @@ void DoCutsceneSound(void)
 			if (gInGameCutsceneID == 0)
 			{
 				if (cutscene_timer < 100)
-					force_idle[1] = 0;
+					CARNOISE_SET_FORCED_IDLE(1);
 				else
-					force_idle[1] = -1;
+					CARNOISE_CLEAR_FORCED_IDLE(1);
 			}
 			if (gInGameCutsceneID != 1)
 				return;
 
-			force_idle[1] = 0;
+			CARNOISE_SET_FORCED_IDLE(1);
 			break;
 		case 18:
 			if (gInGameCutsceneID == 0)
@@ -308,8 +314,8 @@ void DoCutsceneSound(void)
 			if (gInGameCutsceneID != 0)
 				return;
 
-			force_siren[2] = 1;
-			force_siren[1] = 1;
+			CARNOISE_SET_FORCED_SIREN(2);
+			CARNOISE_SET_FORCED_SIREN(1);
 			break;
 		case 27:
 			if (gInGameCutsceneID != 0)
@@ -318,12 +324,12 @@ void DoCutsceneSound(void)
 			if (cutscene_timer == 460)
 			{
 				Start3DTrackingSound(-1, SOUND_BANK_MISSION, GetMissionSound(24), (VECTOR*)car_data[2].hd.where.t, NULL);
-				force_siren[7] = 1;
-				force_siren[6] = 1;
-				force_siren[5] = 1;
-				force_siren[4] = 1;
-				force_siren[3] = 1;
-				force_siren[2] = 1;
+				CARNOISE_SET_FORCED_SIREN(7);
+				CARNOISE_SET_FORCED_SIREN(6);
+				CARNOISE_SET_FORCED_SIREN(5);
+				CARNOISE_SET_FORCED_SIREN(4);
+				CARNOISE_SET_FORCED_SIREN(3);
+				CARNOISE_SET_FORCED_SIREN(2);
 			}
 
 			if (cutscene_timer == 510)
@@ -332,7 +338,7 @@ void DoCutsceneSound(void)
 			if (cutscene_timer < 51)
 				return;
 
-			force_idle[1] = 0;
+			CARNOISE_SET_FORCED_IDLE(1);
 			break;
 
 		case 29:
@@ -350,9 +356,9 @@ void DoCutsceneSound(void)
 				}
 
 				if (cutscene_timer < 641)
-					force_siren[3] = 0;
+					CARNOISE_CLEAR_FORCED_SIREN(3);
 				else
-					force_siren[3] = 1;
+					CARNOISE_SET_FORCED_SIREN(3);
 			}
 			break;
 		case 33:
@@ -365,7 +371,7 @@ void DoCutsceneSound(void)
 			if (cutscene_timer == 960)
 				SetEnvSndVol(rio_alarm, 3000);
 
-			force_idle[1] = 0;
+			CARNOISE_SET_FORCED_IDLE(1);
 			break;
 
 	}

@@ -17,12 +17,21 @@
 #endif
 
 #define MAX_MODEL_SLOTS			1536		// DO NOT CHANGE. No effect in upping it - limited by cell types
-#define MAX_CARS				20
 
 #define MAX_CAR_MODELS			5
+#ifndef PSX
+#define MAX_CARS				64
+#define MAX_PEDESTRIANS			64
+// NB: these are not used in this manner on PC
+//#define MAX_SEATED_PEDS		20
+//#define MAX_PLACED_PEDS		15
+#else
+#define MAX_CARS				20			// NB: Upper limit is 32 because we use bitfields for optimization!
 #define MAX_PEDESTRIANS			28
 #define MAX_SEATED_PEDS			20
 #define MAX_PLACED_PEDS			15
+#endif
+
 #define MAX_EXPLOSION_OBJECTS	5
 #define MAX_THROWN_BOMBS		5
 #define MAX_MOTION_CAPTURE		24

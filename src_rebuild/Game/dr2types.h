@@ -351,7 +351,7 @@ typedef struct _HANDLING_DATA
 	int direction;
 	int front_vel;
 	int rear_vel;
-	int mayBeColliding;		// [A] now used as a bitfield to create collision pairs
+	int mayBeColliding;		// [A][PSX] now used as a bitfield to create collision pairs
 	short revs;
 	char gear;
 	char changingGear;

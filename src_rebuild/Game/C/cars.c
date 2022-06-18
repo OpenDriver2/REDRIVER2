@@ -1573,7 +1573,7 @@ void DrawCar(CAR_DATA* cp, int view)
 	if(CarHasSiren(cp->ap.model))
 	{
 		if ((IS_ROADBLOCK_CAR(cp) || cp->controlType == CONTROL_TYPE_PURSUER_AI) ||		// any regular cop car including roadblock
-			gInGameCutsceneActive && cp->controlType == CONTROL_TYPE_CUTSCENE && force_siren[CAR_INDEX(cp)] != 0 ||		// any car with siren in cutscene
+			gInGameCutsceneActive && cp->controlType == CONTROL_TYPE_CUTSCENE && CARNOISE_HAS_FORCED_SIREN(CAR_INDEX(cp)) != 0 ||		// any car with siren in cutscene
 			gCurrentMissionNumber == 26 && cp->controlType == CONTROL_TYPE_CUTSCENE && cp->ap.model == 4)				// Vegas ambulance
 		{
 			if (cp->ai.p.dying < 75)

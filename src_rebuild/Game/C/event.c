@@ -542,9 +542,14 @@ static CameraDelay cameraDelay;
 static Detonator detonator;
 static int eventHaze = 0;
 static int doneFirstHavanaCameraHack = 0;
-static SVECTOR boatOffset;
+SVECTOR boatOffset;
 static FixedEvent* fixedEvent = NULL;
+
+#ifndef PSX
+BOAT_CARS carsOnBoat;
+#else
 int carsOnBoat = 0;
+#endif
 
 MultiCar multiCar;
 
@@ -892,7 +897,11 @@ void InitEvents(void)
 
 	cameraDelay.delay = 0;
 	eventHaze = 0;
+#ifndef PSX
+	ClearMem((char*)&carsOnBoat, sizeof(BOAT_CARS)); // clear count + array
+#else
 	carsOnBoat = 0;
+#endif
 	doneFirstHavanaCameraHack = 0;
 
 	boatOffset.vx = 0;
@@ -1685,8 +1694,13 @@ void SetCamera(EVENT* ev)
 // [D] [T]
 void EventCollisions(CAR_DATA* cp, int type)
 {
+#ifndef PSX
+	if (carsOnBoat.count == 0 || carsOnBoat.cars[CAR_INDEX(cp)] == 0)
+		return;
+#else
 	if (carsOnBoat >> CAR_INDEX(cp) == 0)
 		return;
+#endif
 
 	if (type == 0)
 	{
@@ -2397,11 +2411,16 @@ void StepEvents(void)
 	VECTOR* vel;
 	CELL_OBJECT* cop;
 	CAR_DATA* cp;
+#ifndef PSX
+	static BOAT_CARS onBoatLastFrame;
+#else
 	int onBoatLastFrame;
+#endif
 	int dist;
 	int thisCamera, otherCamera;
 
 	onBoatLastFrame = carsOnBoat;
+
 	ev = firstEvent;
 
 	if (detonator.timer)
@@ -2418,22 +2437,43 @@ void StepEvents(void)
 				i = 0;
 				cp = car_data;
 
+#ifndef PSX
+				ClearMem((char*)&carsOnBoat, sizeof(BOAT_CARS)); // clear count + array
+#else
 				carsOnBoat = 0;
+#endif
 				do {
 
 					if (cp->controlType != CONTROL_TYPE_NONE &&
 						OnBoat((VECTOR*)cp->hd.where.t, ev, &dist))
 					{
+#ifndef PSX
+						carsOnBoat.cars[i] = 1;
+						carsOnBoat.count++;
+#else
 						carsOnBoat |= 1 << i;
+#endif
 					}
 
 					i++;
 					cp++;
+#ifndef PSX
+				} while (i < MAX_CARS);
+#else
 				} while (i < MAX_CARS && i < 32);
+#endif
 
 				// make Tanner on boat also
 				if (player[0].playerType == 2 && OnBoat((VECTOR*)player[0].pos, ev, &dist))
+				{
+#ifndef PSX
+					carsOnBoat.cars[TANNER_COLLIDER_CARID] = 1;
+					carsOnBoat.cars[CAMERA_COLLIDER_CARID] = 1;
+					carsOnBoat.count += 2;
+#else
 					carsOnBoat |= (1 << TANNER_COLLIDER_CARID) | 0x200000;// 0x300000;
+#endif
+				}
 
 				BoatOffset(&boatOffset, ev);
 
@@ -2467,18 +2507,27 @@ void StepEvents(void)
 			}
 
 			// move cars on boats
+#ifndef PSX
+			if ((ev->flags & 0x40) && (carsOnBoat.count != 0 || onBoatLastFrame.count != 0))
+			{
+#else	
 			if ((ev->flags & 0x40) && (carsOnBoat != 0 || onBoatLastFrame != 0))
 			{
 				int bit;
+#endif
 
 				speed.x = ev->position.vx - old.vx;
 				speed.z = ev->position.vz - old.vz;
 
 				// go thru cars
+#ifndef PSX
+				for (i = 0; i < MAX_CARS + 1; i++)
+				{
+#else
 				for (i = 0; i < MAX_CARS + 1 && i < 32; i++)
 				{
 					bit = (1 << i);
-
+#endif
 					if (i == TANNER_COLLIDER_CARID)
 					{
 						pos = (VECTOR*)player[0].pos;
@@ -2491,7 +2540,11 @@ void StepEvents(void)
 					}
 
 					// update position and add velocity
+#ifndef PSX
+					if (carsOnBoat.cars[i])
+#else
 					if (carsOnBoat & bit)
+#endif
 					{
 						pos->vx += speed.x;
 						pos->vz += speed.z;
@@ -2499,9 +2552,18 @@ void StepEvents(void)
 						if (i == TANNER_COLLIDER_CARID)
 						{
 							SetTannerPosition(pos);
+#ifndef PSX
+							carsOnBoat.cars[TANNER_COLLIDER_CARID] = 0;
+							carsOnBoat.count--;
+#else
 							carsOnBoat &= ~(1 << TANNER_COLLIDER_CARID);
+#endif
 						}
+#ifndef PSX
+						else if (onBoatLastFrame.cars[i] == 0)
+#else
 						else if ((onBoatLastFrame & bit) == 0)
+#endif
 						{
 							vel->vx -= speed.x * 4096;
 							vel->vz -= speed.z * 4096;
@@ -2511,7 +2573,11 @@ void StepEvents(void)
 						// car_data[i].st.n.fposition[0] = pos->vx << 4;
 						// car_data[i].st.n.fposition[2] = pos->vz << 4;
 					}
+#ifndef PSX
+					else if (vel && onBoatLastFrame.cars[i])
+#else
 					else if (vel && (onBoatLastFrame & bit))
+#endif
 					{
 						vel->vx += speed.x * 4096;
 						vel->vz += speed.z * 4096;

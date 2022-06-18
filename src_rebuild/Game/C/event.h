@@ -37,7 +37,17 @@ extern EventGlobal events;
 extern CELL_OBJECT *EventCop;
 extern int event_models_active;
 
+#ifndef PSX
+struct BOAT_CARS
+{
+	int count;
+	char cars[MAX_CARS+2];
+};
+
+extern BOAT_CARS carsOnBoat;
+#else
 extern int carsOnBoat;
+#endif
 
 extern void InitEvents(); // 0x0004BBD4
 extern void SetUpEvents(int full); // 0x00046258

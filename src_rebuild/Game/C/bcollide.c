@@ -14,6 +14,7 @@
 #include "objanim.h"
 #include "system.h"
 #include "cutscene.h"
+#include "event.h"
 
 extern int gCameraBoxOverlap;
 
@@ -678,6 +679,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 
 #if defined(COLLISION_DEBUG) && !defined(PSX)
 		extern int gShowCollisionDebug;
+		extern SVECTOR boatOffset;
 		if (gShowCollisionDebug == 1)
 		{
 			extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
@@ -687,12 +689,29 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 			CVECTOR rrcv = { 250, 0, 0 };
 			CVECTOR yycv = { 250, 250, 0 };
 
+			VECTOR offset = { 0 };
+
 			// show both box axes
 			{
 				VECTOR _zero = { 0 };
 				VECTOR b1p = cd[0].x;
 				VECTOR b2p = cd[1].x;
 				b2p.vy = b1p.vy;
+
+				if (carsOnBoat.count != 0 && carsOnBoat.cars[cp->id])
+				{
+					offset.vx = boatOffset.vx;
+					offset.vy = boatOffset.vy;
+					offset.vz = boatOffset.vz;
+
+					b1p.vx -= offset.vx;
+					b1p.vy -= offset.vy;
+					b1p.vz -= offset.vz;
+
+					b2p.vx -= offset.vx;
+					b2p.vy -= offset.vy;
+					b2p.vz -= offset.vz;
+				}
 
 				// show position to position
 				//Debug_AddLine(b1p1, b2p1, yycv);

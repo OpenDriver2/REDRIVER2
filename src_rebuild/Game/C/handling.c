@@ -267,6 +267,12 @@ int ghost_mode = 0;
 int playerghost = 0;
 int playerhitcopsanyway = 0;
 
+#ifndef PSX
+typedef char COLLISION_LIST[MAX_CARS];
+
+COLLISION_LIST collided_cars[MAX_CARS];
+#endif
+
 // [D] [T]
 void GlobalTimeStep(void)
 {
@@ -274,7 +280,11 @@ void GlobalTimeStep(void)
 	static RigidBodyState _d0[MAX_CARS]; // offset 0x410
 	static RigidBodyState _d1[MAX_CARS]; // offset 0x820
 
+#ifndef PSX
+	COLLISION_LIST *collisions;
+#else
 	int mayBeCollidingBits;
+#endif
 	int howHard;
 	int tmp;
 	RigidBodyState* thisState_i;
@@ -413,11 +423,19 @@ void GlobalTimeStep(void)
 					CheckScenaryCollisions(cp);
 				}
 
+#ifdef PSX
 				mayBeCollidingBits = cp->hd.mayBeColliding;
+#endif
 
 				// if has any collision, process with double precision
+#ifndef PSX
+				if (cp->hd.mayBeColliding)
+				{
+					collisions = &collided_cars[CAR_INDEX(cp)];
+#else
 				if (mayBeCollidingBits)
 				{
+#endif
 					if (RKstep == 0)
 					{
 						thisState_i = &cp->st;
@@ -457,7 +475,13 @@ void GlobalTimeStep(void)
 
 						// [A] optimized run to not use the box checking
 						// as it has already composed bitfield / pairs
-						if((mayBeCollidingBits & (1 << CAR_INDEX(c1))) != 0 && (c1->hd.speed != 0 || cp->hd.speed != 0))
+						if(
+#ifndef PSX
+							collisions[CAR_INDEX(c1)] != 0
+#else
+							(mayBeCollidingBits & (1 << CAR_INDEX(c1))) != 0
+#endif
+							&& (c1->hd.speed != 0 || cp->hd.speed != 0))
 						{
 							if(CarCarCollision3(cp, c1, &depth, (VECTOR*)collisionpoint, (VECTOR*)normal))
 							{
@@ -983,6 +1007,10 @@ void CheckCarToCarCollisions(void)
 	cp = car_data;
 	loop1 = 0;
 
+#ifndef PSX
+	memset(collided_cars, 0, sizeof(collided_cars));
+#endif
+
 	// build boxes
 	do {
 		if (cp->controlType == CONTROL_TYPE_NONE ||
@@ -1030,10 +1058,15 @@ void CheckCarToCarCollisions(void)
 		bb->y0 = (cp->hd.where.t[1] - colBox->vy * 2) / 16;
 		bb->y1 = (cp->hd.where.t[1] + colBox->vy * 4) / 16;
 
-		// make player handled cars always processed with precision
+		// make player handled cars always processed with double precision
 		if (cp->hndType == 0)
 		{
+#ifndef PSX
+			if (cp->controlType != CONTROL_TYPE_CIV_AI)
+				cp->hd.mayBeColliding = 2;
+#else
 			cp->hd.mayBeColliding = (1 << 31);
+#endif
 		}
 
 		loop1++;
@@ -1053,11 +1086,23 @@ void CheckCarToCarCollisions(void)
 		while (loop2 < MAX_CARS)
 		{
 			if (bb1->y1 != INT_MAX && bb2->y1 != INT_MAX &&
-				bb2->x0 < bb1->x1 && bb2->z0 < bb1->z1 && bb1->x0 < bb2->x1 &&
-				bb1->z0 < bb2->z1 && bb2->y0 < bb1->y1 && bb1->y0 < bb2->y1)
+				bb2->x0 < bb1->x1 &&
+				bb2->z0 < bb1->z1 &&
+				bb1->x0 < bb2->x1 &&
+				bb1->z0 < bb2->z1 &&
+				bb2->y0 < bb1->y1 &&
+				bb1->y0 < bb2->y1)
 			{
+#ifndef PSX
+				collided_cars[loop1][loop2] = 1;
+				collided_cars[loop2][loop1] = 1;
+
+				car_data[loop1].hd.mayBeColliding |= 1;
+				car_data[loop2].hd.mayBeColliding |= 1;
+#else
 				car_data[loop1].hd.mayBeColliding |= (1 << loop2);
 				car_data[loop2].hd.mayBeColliding |= (1 << loop1);
+#endif
 			}
 
 			loop2++;
@@ -1071,10 +1116,14 @@ void CheckCarToCarCollisions(void)
 			extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
 
 			CVECTOR bbcv = { 0, 0, 250 };
+			CVECTOR ggcv = { 0, 250, 0 };
+			CVECTOR ppcv = { 250, 0, 250 };
 			CVECTOR rrcv = { 250, 0, 0 };
 			CVECTOR yycv = { 250, 250, 0 };
 
-			CVECTOR bbcol = car_data[loop1].hd.mayBeColliding ? rrcv : yycv;
+			int mayBeColliding = car_data[loop1].hd.mayBeColliding;
+
+			CVECTOR bbcol = (mayBeColliding == 1) ? rrcv : ((mayBeColliding == 2) ? ggcv : ((mayBeColliding == 3) ? ppcv : yycv));
 
 			VECTOR box_pointsy0[4] = {
 				{bb1->x0 * 16, bb1->y0 * 16, bb1->z0 * 16, 0},	// front left
@@ -1104,6 +1153,29 @@ void CheckCarToCarCollisions(void)
 			Debug_AddLine(box_pointsy0[1], box_pointsy1[1], bbcol);
 			Debug_AddLine(box_pointsy0[2], box_pointsy1[2], bbcol);
 			Debug_AddLine(box_pointsy0[3], box_pointsy1[3], bbcol);
+
+			if (car_data[loop1].hd.mayBeColliding)
+			{
+				for (loop2 = loop1 + 1; loop2 < MAX_CARS; loop2++)
+				{
+					if (!collided_cars[loop1][loop2])
+						continue;
+
+					bb2 = &bbox[loop2];
+
+					VECTOR box_pointsy3[4] = {
+						{bb1->x0 * 16, bb1->y0 * 16, bb1->z0 * 16, 0},	// front left
+						{bb2->x0 * 16, bb2->y0 * 16, bb2->z0 * 16, 0},	// front right
+						{bb1->x1 * 16, bb1->y0 * 16, bb1->z1 * 16, 0},	// back right
+						{bb2->x0 * 16, bb2->y0 * 16, bb2->z1 * 16, 0},	// back left
+					};
+
+					Debug_AddLine(box_pointsy3[0], box_pointsy3[1], bbcv);
+					Debug_AddLine(box_pointsy3[1], box_pointsy3[2], bbcv);
+					Debug_AddLine(box_pointsy3[2], box_pointsy3[3], bbcv);
+					Debug_AddLine(box_pointsy3[3], box_pointsy3[0], bbcv);
+				}
+			}
 		}
 #endif
 
