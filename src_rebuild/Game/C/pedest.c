@@ -100,8 +100,17 @@ LPPEDESTRIAN pUsedPeds = NULL;	// linked list of pedestrians
 LPPEDESTRIAN pFreePeds = NULL;
 LPPEDESTRIAN pHold = NULL;
 
-int max_pedestrians;
+int max_pedestrians = 28;
 int num_pedestrians;
+
+int max_sitter_peds,max_placed_peds;
+
+#ifndef PSX
+#define MAX_TANNER_PEDS 8
+#define NO_MORE_PEDS() (num_pedestrians >= max_placed_peds)
+#else
+#define NO_MORE_PEDS() (num_pedestrians >= MAX_PLACED_PEDS)
+#endif
 
 char ping_in_pedestrians = 0;
 
@@ -182,6 +191,14 @@ void SetTannerPosition(VECTOR* pVec)
 	}
 }
 
+#ifndef PSX
+static int PED_PING_RADIUS = (250000 << 6);
+
+int pedestrianDensityMap[] = { 28, 38, 48, 64 };
+#else
+const int PED_PING_RADIUS = (250000 << 6);
+#endif
+
 // [D] [T]
 void InitPedestrians(void)
 {
@@ -190,6 +207,13 @@ void InitPedestrians(void)
 
 	memset((u_char*)pedestrians, 0, sizeof(pedestrians));
 	DestroyPedestrians();
+
+	max_pedestrians = 28;
+
+#ifndef PSX
+	if (gExtraConfig.gPedestrianDensity != 0)
+		max_pedestrians = pedestrianDensityMap[gExtraConfig.gPedestrianDensity - 1];
+#endif
 
 	LPPEDESTRIAN lastPed = &pedestrians[0];
 
@@ -202,6 +226,17 @@ void InitPedestrians(void)
 		lastPed->pNext = currPed;
 		currPed->pPrev = lastPed++;
 	}
+
+#ifndef PSX
+	// terminate linked-list earlier if needed
+	if (max_pedestrians < MAX_PEDESTRIANS)
+	{
+		lastPed = &pedestrians[max_pedestrians - 1];
+
+		// break the chain
+		lastPed->pNext->pPrev = NULL;
+	}
+#endif
 
 	lastPed->pNext = NULL;
 
@@ -228,6 +263,23 @@ void InitPedestrians(void)
 	seated_count = 0;
 	ping_in_pedestrians = 1;
 	numCopPeds = 0;
+
+#ifndef PSX
+	int peds_available = (max_pedestrians-MAX_TANNER_PEDS);
+
+	if (peds_available > 20)
+	{
+		// smoothly ramp up clustering factor when not using defaults
+		PED_PING_RADIUS = ((250000 >> (peds_available / 20)) << 6);
+	}
+	else
+	{
+		PED_PING_RADIUS = (250000 << 6);
+	}
+
+	max_sitter_peds = peds_available / 4;
+	max_placed_peds = peds_available - max_sitter_peds;
+#endif
 }
 
 // [D] [T]
@@ -422,7 +474,7 @@ int CreatePedAtLocation(LONGVECTOR4* pPos, int pedType)
 {
 	LPPEDESTRIAN pPed;
 
-	if (num_pedestrians >= MAX_PLACED_PEDS)
+	if ( NO_MORE_PEDS() )
 		return 0;
 
 	pPed = CreatePedestrian();
@@ -1426,7 +1478,7 @@ void PingInPedestrians(void)
 	VECTOR randomLoc;
 	VECTOR baseLoc;
 
-	if (num_pedestrians >= MAX_PLACED_PEDS || pFreePeds == NULL || pFreePeds->pNext == NULL)
+	if (NO_MORE_PEDS() || pFreePeds == NULL || pFreePeds->pNext == NULL)
 		return;
 
 	baseLoc.vx = player[0].pos[0];
@@ -1461,7 +1513,7 @@ void PingInPedestrians(void)
 
 				bFound = 0;
 
-				while (dx * dx + dz * dz > 15999999)
+				while (dx * dx + dz * dz >= PED_PING_RADIUS)
 				{
 					pPed = pPed->pNext;
 
@@ -2258,13 +2310,31 @@ SEATEDPTR FindTannerASeat(LPPEDESTRIAN pPed)
 	return NULL;
 }
 
+#ifndef PSX
+int PedsAvailable()
+{
+	int peds_available = max_pedestrians - num_pedestrians;
+
+	if (peds_available <= MAX_TANNER_PEDS)
+		return 0;
+
+	peds_available -= MAX_TANNER_PEDS;
+
+	return peds_available;
+}
+#endif
+
 // [D] [T]
 void add_seated(SEATEDPTR seatedptr, int seat_index)
 {
 	LPPEDESTRIAN pedptr;
 	int rnd;
 
+#ifndef PSX
+	if (PedsAvailable() > 0)
+#else
 	if (num_pedestrians < MAX_SEATED_PEDS)
+#endif
 	{
 		pedptr = CreatePedestrian();
 

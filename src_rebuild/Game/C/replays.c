@@ -11,6 +11,7 @@
 #include "camera.h"
 #include "civ_ai.h"
 #include "cutrecorder.h"
+#include "pedest.h"
 
 char AnalogueUnpack[16] = { 
 	0, -51, -63, -75, -87, -99, -111, -123,

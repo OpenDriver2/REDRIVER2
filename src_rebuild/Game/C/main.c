@@ -2477,7 +2477,7 @@ void InitGameVariables(void)
 		}
 	}
 
-	InitCivCars();
+	InitCivCars(0);
 }
 
 // [D] [T]

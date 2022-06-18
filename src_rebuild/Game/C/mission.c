@@ -238,8 +238,15 @@ void InitialiseMissionDefaults(void)
 	tannerDeathTimer = 0;
 
 	maxPlayerCars = 1;
-	maxCivCars = 14;
-	maxParkedCars = 7;
+#ifndef PSX
+	// make sure we always have the bare minimum amount available
+	// (just in case InitCivCars didn't go first)
+	if (gExtraConfig.gTrafficDensity == 0)
+#endif
+	{
+		maxCivCars = 14;
+		maxParkedCars = 7;
+	}
 	maxCopCars = 4;
 
 	gPlayerDamageFactor = 4096;

@@ -25,6 +25,7 @@
 #include "overlay.h"
 #include "cutrecorder.h"
 #include "draw.h"
+#include "glaunch.h"
 
 const u_char speedLimits[3] = { 56, 97, 138 };
 
@@ -1741,8 +1742,30 @@ int TrafficLightCycle(int exit)
 	return 2;
 }
 
+struct TRAFFIC_DENSITY_DATA
+{
+	int maxCivCars;
+	int maxParkedCars;
+};
+
+TRAFFIC_DENSITY_DATA trafficDensityMap[2][4] = {
+	{
+		{ 14, 7 },
+		{ 25, 11 },
+		{ 40, 24 },
+		{ 64, 32 },
+	},
+	{
+		// recording-specific densities
+		{ 14, 7 },
+		{ 25, 11 },
+		{ 32, 24 }, // <-- recordings have fixed limits above Medium
+		{ 32, 24 },
+	},
+};
+
 // [D] [T]
-void InitCivCars(void)
+void InitCivCars(/*[A]*/int recording)
 {
 	PingBufferPos = 0;
 	cookieCount = 0;
@@ -1763,6 +1786,22 @@ void InitCivCars(void)
 	testNumPingedOut = 0;
 	currentAngle = 0;
 	closeEncounter = 3;
+
+#ifndef PSX
+	if (gExtraConfig.gTrafficDensity != 0)
+	{
+		TRAFFIC_DENSITY_DATA *trafficDensity = &trafficDensityMap[recording & 1][(gExtraConfig.gTrafficDensity - 1) & 3];
+
+		maxCivCars = trafficDensity->maxCivCars;
+		maxParkedCars = trafficDensity->maxParkedCars;
+	}
+	else
+	{
+		// make sure we always have the bare minimum amount available
+		maxCivCars = 14;
+		maxParkedCars = 7;
+	}
+#endif
 }
 
 const int EVENT_CAR_SPEED = 71;
