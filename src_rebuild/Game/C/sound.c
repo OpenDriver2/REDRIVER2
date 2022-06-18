@@ -312,10 +312,8 @@ int CalculateVolume(int channel)
 		ofse.vy = srcPos->vy + plPos->vy;
 		ofse.vz = srcPos->vz - plPos->vz;
 
-		gte_ldlvl(&ofse);
-		gte_sqr0();
-		gte_stlvnl(&ofse);
-
+		gte_Square0(&ofse, &ofse);
+		
 		distance = SquareRoot0(ofse.vx + ofse.vy + ofse.vz);
 
 		if (distance < 1024)

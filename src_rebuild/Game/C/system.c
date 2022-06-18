@@ -697,8 +697,7 @@ void SwapDrawBuffers2(int player)
 	current = MPcurrent[1 - player];
 	last = MPlast[1 - player];
 
-	ClearOTagR((u_long*)current->ot, OTSIZE);
-	current->primptr = current->primtab;
+	ClearCurrentDrawBuffers();
 }
 
 short paddp;

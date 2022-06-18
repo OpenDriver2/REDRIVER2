@@ -3026,16 +3026,8 @@ void DrawEvents(int camera)
 								pos.vy = ev->position.vy - camera_position.vy;
 								pos.vz = ev->position.vz - camera_position.vz;
 
-								matrix.m[0][0] = ONE;
-								matrix.m[1][0] = 0;
-								matrix.m[2][0] = 0;
-								matrix.m[0][1] = 0;
-								matrix.m[1][1] = ONE;
-								matrix.m[2][1] = 0;
-								matrix.m[0][2] = 0;
-								matrix.m[1][2] = 0;
-								matrix.m[2][2] = ONE;
-
+								InitMatrix(matrix);
+								
 								reflection = 0;
 
 								if ((ev->flags & 2U) == 0)
