@@ -202,43 +202,49 @@ void LoadExtraData(EXTRA_CONFIG_DATA *extraData, int profile)
 
 	if (profile)
 	{
-		if (gExtraConfig.sdType == 1)
+		if (gHaveExtraData)
 		{
-			// TODO: load profile overrides
-		}
+			if (gExtraConfig.sdType == 1)
+			{
+				// TODO: load profile overrides
+			}
 
-		// clear the data since we're done with it
-		memset(&gExtraConfig.data, 0, sizeof(gExtraConfig.data));
+			// clear the data since we're done with it
+			memset(&gExtraConfig.data, 0, sizeof(gExtraConfig.data));
+		}
 
 		// initialize extra data for missions
 		gExtraConfig.sdType = 2;
 		gExtraConfig.m.AllowParkedTurnedWheels = 1;
 	}
-	else if (gExtraConfig.sdType == 2)
+	else if (gHaveExtraData)
 	{
-		// load mission overrides
-		REPLAY_SAVE_HEADER *header = (REPLAY_SAVE_HEADER*)((char*)&extraData[1] - sizeof(REPLAY_SAVE_HEADER));
-
-		// resolve saved position slots
-		for (int i = 0; i < 2; i++)
+		if (gExtraConfig.sdType == 2)
 		{
-			if (extraData->m.SavedSlot[i] != -1)
-			{
-				gSavedCars[i] = header->SavedData.CarPos[extraData->m.SavedSlot[i]];
+			// load mission overrides
+			REPLAY_SAVE_HEADER *header = (REPLAY_SAVE_HEADER*)((char*)&extraData[1] - sizeof(REPLAY_SAVE_HEADER));
 
-				gExtraConfig.m.SavedPos[i] = &gSavedCars[i];
-			}
-			else
+			// resolve saved position slots
+			for (int i = 0; i < 2; i++)
 			{
-				gExtraConfig.m.SavedPos[i] = NULL;
+				if (gExtraConfig.m.SavedSlot[i] != -1)
+				{
+					gSavedCars[i] = header->SavedData.CarPos[gExtraConfig.m.SavedSlot[i]];
+
+					gExtraConfig.m.SavedPos[i] = &gSavedCars[i];
+				}
+				else
+				{
+					gExtraConfig.m.SavedPos[i] = NULL;
+				}
 			}
 		}
-	}
-	else if (gExtraConfig.sdType != 0)
-	{
-		// clear out invalid data
-		gExtraConfig.cookie = 0;
-		memset(&gExtraConfig.data, 0, sizeof(extraData->data));
+		else if (gExtraConfig.sdType != 0)
+		{
+			// clear out invalid data
+			gExtraConfig.cookie = 0;
+			memset(&gExtraConfig.data, 0, sizeof(gExtraConfig.data));
+		}
 	}
 }
 
