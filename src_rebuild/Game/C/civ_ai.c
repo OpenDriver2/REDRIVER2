@@ -2507,7 +2507,7 @@ int PingInCivCar(int minPingInDist)
 	{
 		numParkedCars++;
 
-		if (gExtraConfig.Flags.AllowParkedTurnedWheels)
+		if (gExtraConfig.m.AllowParkedTurnedWheels)
 		{
 			int tmp = ((Random2(0) & 0xff) + 1536) & 0x1ff;
 
