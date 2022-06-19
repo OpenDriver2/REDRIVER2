@@ -246,8 +246,8 @@ void SaveExtraData(EXTRA_CONFIG_DATA *extraData, int profile)
 {
 	// always save extra data, even if it's empty;
 	// this will make future backwards compat. efforts easier ;)
-	extraData->magic = EXTRA_DATA_MAGIC;
 	memcpy(extraData, &gExtraConfig, sizeof(EXTRA_CONFIG_DATA));
+	extraData->magic = EXTRA_DATA_MAGIC;
 
 	int invalid = 0;
 
