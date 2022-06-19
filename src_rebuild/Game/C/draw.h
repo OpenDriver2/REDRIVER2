@@ -60,6 +60,8 @@ extern MATRIX2 CompoundMatrix[64];
 #define DRAW_LOD_DIST_HIGH		4000
 #define DRAW_LOD_DIST_LOW		7000
 
+#define SWITCH_LOD_DIST			10000
+
 #define plotContext (*(_pct*)((u_char*)getScratchAddr(0) + 1024 - sizeof(_pct)))
 
 #else
@@ -69,8 +71,10 @@ extern MATRIX2 CompoundMatrix[64];
 #define MAX_DRAWN_ANIMATING		48
 #define MAX_DRAWN_SPRITES		128
 
-#define DRAW_LOD_DIST_HIGH		7000
-#define DRAW_LOD_DIST_LOW		10000
+#define DRAW_LOD_DIST_HIGH		8000
+#define DRAW_LOD_DIST_LOW		16000
+
+#define SWITCH_LOD_DIST			DRAW_LOD_DIST_LOW
 
 extern _pct& plotContext;
 

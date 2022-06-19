@@ -568,7 +568,7 @@ void DrawAllTheCars(int view)
 #ifndef PSX
 			// [A] make non-player far away cars look uglier
 			else if (cars_to_draw[i]->controlType != CONTROL_TYPE_PLAYER && car_distance[i] >= CAR_LOD_SWITCH_DISTANCE)
-				gForceLowDetailCars = 1;
+				gForceLowDetailCars = 1 ^ ((cars_to_draw[i]->controlFlags & CONTROL_FLAG_DONT_USE_LOW_LOD) != 0);
 			else
 				gForceLowDetailCars = 0;
 #else

@@ -86,6 +86,15 @@ int test555 = 0;
 	cp->ai.c.thrustState = 3; cp->ai.c.ctrlState = 7;
 #endif
 
+#ifndef PSX
+char UglyLowCarLODs[4][10] = {
+	{ 0,0,0,0,0, 1,0,0,0, 0 },
+	{ 0,0,0,0,0, 0,0,0,0, 0 },
+	{ 0,0,0,0,0, 0,0,1,1, 0 },
+	{ 1,0,0,0,0, 1,1,1,0, 0 },
+};
+#endif
+
 // [D] [T]
 int InitCar(CAR_DATA* cp, int direction, LONGVECTOR4* startPos, unsigned char control, int model, int palette, char* extraData)
 {
@@ -159,6 +168,16 @@ int InitCar(CAR_DATA* cp, int direction, LONGVECTOR4* startPos, unsigned char co
 			cp->hndType = 5;
 			break;
 	}
+
+#ifndef PSX
+	int rm = MissionHeader->residentModels[cp->ap.model];
+
+	if (rm >= 8)
+		rm -= 3;
+
+	if (UglyLowCarLODs[GameLevel][rm])
+		cp->controlFlags |= CONTROL_FLAG_DONT_USE_LOW_LOD;
+#endif
 
 	CreateDentableCar(cp);
 	DentCar(cp);
