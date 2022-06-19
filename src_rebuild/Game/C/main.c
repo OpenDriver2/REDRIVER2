@@ -2352,7 +2352,7 @@ void RenderGame2(int view)
 	}
 
 	// Steven Adams and Andreas Tawn of Havana team
-	notInDreaAndStevesEvilLair = Havana3DOcclusion(DrawMapPSX, (int*)&ObjectDrawnValue);
+	notInDreaAndStevesEvilLair = Havana3DOcclusion(DrawMapPSX, &ObjectDrawnValue);
 
 	if (notInDreaAndStevesEvilLair)
 	{		
@@ -2448,11 +2448,24 @@ void InitGameVariables(void)
 		PlayerStartInfo[0]->controlType = CONTROL_TYPE_PLAYER;
 		PlayerStartInfo[0]->flags = 0;
 
-		PlayerStartInfo[0]->rotation = levelstartpos[GameLevel + (gWantNight * 4)][1];
-
 		PlayerStartInfo[0]->position.vy = 0;
-		PlayerStartInfo[0]->position.vx = levelstartpos[GameLevel + (gWantNight * 4)][0];
-		PlayerStartInfo[0]->position.vz = levelstartpos[GameLevel + (gWantNight * 4)][2];
+
+#if 0 // !!! NOT IMPLEMENTED YET !!!
+		if (wantedStartPos != -1)
+		{
+			// select player 1 custom spawn point and save the car position
+			// ...
+			// ...
+
+			SetSavedCar(PlayerStartInfo[0], 0);
+		}
+		else
+#endif
+		{
+			PlayerStartInfo[0]->rotation = levelstartpos[GameLevel + (gWantNight * 4)][1];
+			PlayerStartInfo[0]->position.vx = levelstartpos[GameLevel + (gWantNight * 4)][0];
+			PlayerStartInfo[0]->position.vz = levelstartpos[GameLevel + (gWantNight * 4)][2];
+		}
 
 		numPlayersToCreate = 1;
 
@@ -2467,11 +2480,25 @@ void InitGameVariables(void)
 			PlayerStartInfo[1]->controlType = CONTROL_TYPE_PLAYER;
 			PlayerStartInfo[1]->flags = 0;
 
-			PlayerStartInfo[1]->rotation = levelstartpos[GameLevel][1];
 
 			PlayerStartInfo[1]->position.vy = 0;
-			PlayerStartInfo[1]->position.vx = levelstartpos[GameLevel][0] + 600;
-			PlayerStartInfo[1]->position.vz = levelstartpos[GameLevel][2];
+
+#if 0 // !!! NOT IMPLEMENTED YET !!!
+			if (wantedStartPos != -1)
+			{
+				// select player 2 custom spawn point and save the car position
+				// ...
+				// ...
+
+				SetSavedCar(PlayerStartInfo[1], 1);
+			}
+			else
+#endif
+			{
+				PlayerStartInfo[1]->rotation = levelstartpos[GameLevel][1];
+				PlayerStartInfo[1]->position.vx = levelstartpos[GameLevel][0] + 600;
+				PlayerStartInfo[1]->position.vz = levelstartpos[GameLevel][2];
+			}
 
 			numPlayersToCreate = NumPlayers;
 		}

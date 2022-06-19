@@ -15,6 +15,7 @@ extern int gHaveStoredData;
 // [A]
 extern int gHaveExtraData;
 extern EXTRA_CONFIG_DATA gExtraConfig;
+extern SAVED_CAR_POS gSavedCars[2];
 
 extern int gMissionLadderPos;
 extern int gFurthestMission;
@@ -54,6 +55,12 @@ extern void RestoreGameVars(int replay);
 
 extern void LoadExtraData(EXTRA_CONFIG_DATA *extraData, int profile);
 extern void SaveExtraData(EXTRA_CONFIG_DATA *extraData, int profile);
+
+extern int GetSavedCar(STREAM_SOURCE *player, int slot);
+extern int SetSavedCar(int slot, STREAM_SOURCE *player);
+
+extern int SavePlayerCarSpawn(int slot);
+extern int ResetPlayerCarSpawn(int slot);
 
 extern void GetRandomChase(); // 0x000535D8
 

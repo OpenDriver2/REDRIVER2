@@ -162,6 +162,7 @@ int wantedCar[2] = { -1, -1 };
 // [A]
 int wantedTimeOfDay = -1;
 int wantedWeather = -1;
+int wantedStartPos = -1;
 
 MS_TARGET* MissionTargets;
 u_int* MissionScript;
@@ -489,7 +490,10 @@ void LoadMission(int missionnum)
 		PlayerStartInfo[0]->rotation = MissionHeader->playerStartRotation;
 		PlayerStartInfo[0]->position.vx = MissionHeader->playerStartPosition.x;
 		PlayerStartInfo[0]->position.vz = MissionHeader->playerStartPosition.y;
-	
+
+		PlayerStartInfo[0]->model = MissionHeader->playerCarModel;
+		PlayerStartInfo[0]->palette = MissionHeader->playerCarColour;
+
 #ifdef DEBUG_OPTIONS
 		if(gStartPos.x != 0 && gStartPos.z != 0)
 		{
@@ -498,9 +502,16 @@ void LoadMission(int missionnum)
 			PlayerStartInfo[0]->position.vz = gStartPos.z;
 		}
 #endif
-	
-		PlayerStartInfo[0]->model = MissionHeader->playerCarModel;
-		PlayerStartInfo[0]->palette = MissionHeader->playerCarColour;
+
+		// [A] override start position if available, otherwise store it for the replay
+		if (gExtraConfig.mfStartPos)
+		{
+			GetSavedCar(PlayerStartInfo[0], 0);
+		}
+		else
+		{
+			SetSavedCar(0, PlayerStartInfo[0]);
+		}
 	}
 
 	if (MissionHeader->maxDamage != 0) 
@@ -509,17 +520,32 @@ void LoadMission(int missionnum)
 		MaxPlayerDamage[0] = MissionHeader->maxDamage;
 	}
 
-	// setup weather and time of day
+	// setup weather and time of day using mission defaults
 	gTimeOfDay = MissionHeader->time;
 	gWeather = MissionHeader->weather;
 
-	// [A] custom time of day
-	if(wantedTimeOfDay > -1)
+	// [A] use overrides if available
+	if (gExtraConfig.m.TimeOfDay != 0)
+	{
+		gTimeOfDay = gExtraConfig.m.TimeOfDay - 1;
+	}
+	else if (wantedTimeOfDay > -1)
+	{
+		// [A] use custom time of day and store in replay
 		gTimeOfDay = wantedTimeOfDay;
+		gExtraConfig.m.TimeOfDay = gTimeOfDay + 1;
+	}
 
-	// [A] custom weather
-	if (wantedWeather > -1)
+	if (gExtraConfig.m.Weather != 0)
+	{
+		gWeather = gExtraConfig.m.Weather - 1;
+	}
+	else if (wantedWeather > -1)
+	{
+		// [A] use custom weather and store in replay
 		gWeather = wantedWeather;
+		gExtraConfig.m.Weather = gWeather + 1;
+	}
 
 	if (gTimeOfDay >= TIME_NIGHT)
 		gNight = 1;
@@ -2771,15 +2797,27 @@ void PreProcessTargets(void)
 		{
 			PlayerStartInfo[1] = &ReplayStreams[1].SourceType;
 
-			ReplayStreams[1].SourceType.type = 1;
-			ReplayStreams[1].SourceType.position.vx = target->s.car.posX;
-			ReplayStreams[1].SourceType.position.vy = 0;
-			ReplayStreams[1].SourceType.position.vz = target->s.car.posZ;
-			ReplayStreams[1].SourceType.rotation = target->s.car.rotation;
-			ReplayStreams[1].SourceType.model = target->s.car.model;
-			ReplayStreams[1].SourceType.palette = target->s.car.palette;
-			ReplayStreams[1].SourceType.controlType = CONTROL_TYPE_PLAYER;
-			ReplayStreams[1].SourceType.flags = 0;
+			PlayerStartInfo[1]->type = 1;
+			
+			PlayerStartInfo[1]->position.vx = target->s.car.posX;
+			PlayerStartInfo[1]->position.vy = 0;
+			PlayerStartInfo[1]->position.vz = target->s.car.posZ;
+			PlayerStartInfo[1]->rotation = target->s.car.rotation;
+			PlayerStartInfo[1]->model = target->s.car.model;
+			PlayerStartInfo[1]->palette = target->s.car.palette;
+
+			// [A] override start position if available, otherwise store it for the replay
+			if (gExtraConfig.mfStartPos)
+			{
+				GetSavedCar(PlayerStartInfo[1], 1);
+			}
+			else
+			{
+				SetSavedCar(1, PlayerStartInfo[1]);
+			}
+
+			PlayerStartInfo[1]->controlType = CONTROL_TYPE_PLAYER;
+			PlayerStartInfo[1]->flags = 0;
 
 			if (target->s.car.type & 0x3)
 				target->s.car.cutscene = -1;

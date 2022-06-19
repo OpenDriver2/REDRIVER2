@@ -1037,29 +1037,6 @@ struct REPLAY_PARAMETER_BLOCK
 
 #define EXTRA_DATA_MAGIC			0xF12EB12D
 
-struct ACTIVE_FLAGS
-{
-	// special feature flags
-	u_char AllowParkedTurnedWheels : 1;
-	u_char extraFlag2 : 1;
-	u_char extraFlag3 : 1;
-	u_char extraFlag4 : 1;
-	u_char extraFlag5 : 1;
-	u_char extraFlag6 : 1;
-	u_char extraFlag7 : 1;
-	u_char extraFlag8 : 1;
-	u_char extraFlag9 : 1;
-	u_char extraFlag10 : 1;
-	u_char extraFlag11 : 1;
-	u_char extraFlag12 : 1;
-	u_char extraFlag13 : 1;
-	u_char extraFlag14 : 1;
-	u_char extraFlag15 : 1;
-	u_char extraFlag16 : 1;
-	u_char reserved1;
-	u_char reserved2;
-};
-
 struct EXTRA_CONFIG_DATA
 {
 	u_int magic;
@@ -1067,11 +1044,78 @@ struct EXTRA_CONFIG_DATA
 	// configuration options
 	u_char gTrafficDensity;
 	u_char gPedestrianDensity;
-	u_char pad1[2];
+	u_char pad1;
 
-	int reserved[3];
+	// flags to determine what data we hold
+	union
+	{
+		struct
+		{
+			u_char sdType		: 2; // the type of data we have
+			u_char sdFlags		: 6; // reserved
+		};
+		struct /* type 1 - PROFILE */
+		{
+			u_char				: 2; // reserved for type
+			u_char pfReserved	: 6;
+		};
+		struct /* type 2 - MISSION */
+		{
+			u_char				: 2; // reserved for type
+			u_char				: 5;
+			u_char mfStartPos	: 1;
+		};
+		u_char cookie;
+	};
+	
+	union
+	{
+		struct MISSION_OVERRIDES
+		{
+			u_char TimeOfDay;
+			u_char Weather;
+			u_char pad1[2];
 
-	ACTIVE_FLAGS Flags;
+			union
+			{
+				SAVED_CAR_POS *SavedPos[2];
+				int SavedSlot[2];
+			}; // valid if mfStartPos = 1
+
+			struct
+			{
+				// special feature flags
+				u_char AllowParkedTurnedWheels : 1;
+				u_char extraFlag2 : 1;
+				u_char extraFlag3 : 1;
+				u_char extraFlag4 : 1;
+				u_char extraFlag5 : 1;
+				u_char extraFlag6 : 1;
+				u_char extraFlag7 : 1;
+				u_char extraFlag8 : 1;
+				u_char extraFlag9 : 1;
+				u_char extraFlag10 : 1;
+				u_char extraFlag11 : 1;
+				u_char extraFlag12 : 1;
+				u_char extraFlag13 : 1;
+				u_char extraFlag14 : 1;
+				u_char extraFlag15 : 1;
+				u_char extraFlag16 : 1;
+			};
+
+			u_char pad2[2];
+		} m; // type 2
+
+		struct PROFILE_OVERRIDES
+		{
+			int reserved[3];
+		} p; // type 1
+
+		struct
+		{
+			int zeropad[4];
+		} data; // type 0
+	};
 };
 
 // NB: necessary to fit at the end of certain fixed-size structs
