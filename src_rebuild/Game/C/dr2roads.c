@@ -352,7 +352,7 @@ sdPlane* sdGetCell(VECTOR *pos)
 	plane = GetSeaPlane();
 	
 	if (*buffer != 2)
-		return plane;
+		return &default_plane;
 	
 	sdPlane* planeData = (sdPlane*)((char*)buffer + buffer[1]);
 	short* bspData = (short*)((char*)buffer + buffer[2]);

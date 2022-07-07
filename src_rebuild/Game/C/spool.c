@@ -853,7 +853,7 @@ void ClearRegion(int target_region)
 
 	ClearMem(PVS_Buffers[target_region]-4, pvsSize[target_region]);
 
-	RoadMapDataRegions[target_region] = (short*)PVS_Buffers[0];
+	RoadMapDataRegions[target_region] = (short*)PVS_Buffers[target_region];
 }
 
 inline int _getIntAdv(char** ptr)
