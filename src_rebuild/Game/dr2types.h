@@ -1038,6 +1038,47 @@ struct REPLAY_PARAMETER_BLOCK
 
 #define EXTRA_DATA_MAGIC			0xF12EB12D
 
+struct MISSION_OVERRIDES
+{
+	u_char TimeOfDay;
+	u_char Weather;
+	u_char pad1[2];
+
+	union
+	{
+		SAVED_CAR_POS* SavedPos[2];
+		int SavedSlot[2];
+	}; // valid if mfStartPos = 1
+
+	struct
+	{
+		// special feature flags
+		u_char AllowParkedTurnedWheels : 1;
+		u_char extraFlag2 : 1;
+		u_char extraFlag3 : 1;
+		u_char extraFlag4 : 1;
+		u_char extraFlag5 : 1;
+		u_char extraFlag6 : 1;
+		u_char extraFlag7 : 1;
+		u_char extraFlag8 : 1;
+		u_char extraFlag9 : 1;
+		u_char extraFlag10 : 1;
+		u_char extraFlag11 : 1;
+		u_char extraFlag12 : 1;
+		u_char extraFlag13 : 1;
+		u_char extraFlag14 : 1;
+		u_char extraFlag15 : 1;
+		u_char extraFlag16 : 1;
+	};
+
+	u_char pad2[2];
+};
+
+struct PROFILE_OVERRIDES
+{
+	int reserved[3];
+};
+
 struct EXTRA_CONFIG_DATA
 {
 	u_int magic;
@@ -1071,46 +1112,9 @@ struct EXTRA_CONFIG_DATA
 	
 	union
 	{
-		struct MISSION_OVERRIDES
-		{
-			u_char TimeOfDay;
-			u_char Weather;
-			u_char pad1[2];
+		MISSION_OVERRIDES m; // type 2
 
-			union
-			{
-				SAVED_CAR_POS *SavedPos[2];
-				int SavedSlot[2];
-			}; // valid if mfStartPos = 1
-
-			struct
-			{
-				// special feature flags
-				u_char AllowParkedTurnedWheels : 1;
-				u_char extraFlag2 : 1;
-				u_char extraFlag3 : 1;
-				u_char extraFlag4 : 1;
-				u_char extraFlag5 : 1;
-				u_char extraFlag6 : 1;
-				u_char extraFlag7 : 1;
-				u_char extraFlag8 : 1;
-				u_char extraFlag9 : 1;
-				u_char extraFlag10 : 1;
-				u_char extraFlag11 : 1;
-				u_char extraFlag12 : 1;
-				u_char extraFlag13 : 1;
-				u_char extraFlag14 : 1;
-				u_char extraFlag15 : 1;
-				u_char extraFlag16 : 1;
-			};
-
-			u_char pad2[2];
-		} m; // type 2
-
-		struct PROFILE_OVERRIDES
-		{
-			int reserved[3];
-		} p; // type 1
+		PROFILE_OVERRIDES p; // type 1
 
 		struct
 		{

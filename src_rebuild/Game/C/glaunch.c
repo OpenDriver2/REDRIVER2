@@ -184,11 +184,11 @@ void StoreGameVars(int replay)
 		// - any zero value means 'do backwards compatiblity'
 		// - ensures older replays are fully backwards compatible
 		// - newer replays always have this data stored (even if empty)
-		memset(&gExtraConfig, 0, sizeof(EXTRA_CONFIG_DATA));
+		memset((u_char*)&gExtraConfig, 0, sizeof(EXTRA_CONFIG_DATA));
 		gHaveExtraData = 0;
 
 		// clear saved cars
-		memset(&gSavedCars, 0, sizeof(gSavedCars));
+		memset((u_char*)&gSavedCars, 0, sizeof(gSavedCars));
 	}
 }
 
@@ -196,7 +196,7 @@ void LoadExtraData(EXTRA_CONFIG_DATA *extraData, int profile)
 {
 	if (extraData->magic == EXTRA_DATA_MAGIC)
 	{
-		memcpy(&gExtraConfig, extraData, sizeof(EXTRA_CONFIG_DATA));
+		memcpy((u_char*)&gExtraConfig, (u_char*)extraData, sizeof(EXTRA_CONFIG_DATA));
 		gHaveExtraData = 1;
 	}
 
@@ -210,7 +210,7 @@ void LoadExtraData(EXTRA_CONFIG_DATA *extraData, int profile)
 			}
 
 			// clear the data since we're done with it
-			memset(&gExtraConfig.data, 0, sizeof(gExtraConfig.data));
+			memset((u_char*)&gExtraConfig.data, 0, sizeof(gExtraConfig.data));
 		}
 
 		// initialize extra data for missions
@@ -243,7 +243,7 @@ void LoadExtraData(EXTRA_CONFIG_DATA *extraData, int profile)
 		{
 			// clear out invalid data
 			gExtraConfig.cookie = 0;
-			memset(&gExtraConfig.data, 0, sizeof(gExtraConfig.data));
+			memset((u_char*)&gExtraConfig.data, 0, sizeof(gExtraConfig.data));
 		}
 	}
 }
@@ -252,7 +252,7 @@ void SaveExtraData(EXTRA_CONFIG_DATA *extraData, int profile)
 {
 	// always save extra data, even if it's empty;
 	// this will make future backwards compat. efforts easier ;)
-	memcpy(extraData, &gExtraConfig, sizeof(EXTRA_CONFIG_DATA));
+	memcpy((u_char*)extraData, (u_char*)&gExtraConfig, sizeof(EXTRA_CONFIG_DATA));
 	extraData->magic = EXTRA_DATA_MAGIC;
 
 	int invalid = 0;
@@ -314,7 +314,7 @@ void SaveExtraData(EXTRA_CONFIG_DATA *extraData, int profile)
 	{
 		// clear out invalid data
 		extraData->cookie = 0;
-		memset(&extraData->data, 0, sizeof(extraData->data));
+		memset((u_char*)&extraData->data, 0, sizeof(extraData->data));
 	}
 }
 
