@@ -585,7 +585,9 @@ int main(int argc, char** argv)
 
 		// configure host game
 		ini_sget(config, "game", "drawDistance", "%d", &gDrawDistance);
+#ifdef DYNAMIC_LIGHTING
 		ini_sget(config, "game", "dynamicLights", "%d", &gEnableDlights);
+#endif
 		ini_sget(config, "game", "disableChicagoBridges", "%d", &gDisableChicagoBridges);
 		ini_sget(config, "game", "fieldOfView", "%d", &newScrZ);
 		ini_sget(config, "game", "freeCamera", "%d", &enableFreecamera);
