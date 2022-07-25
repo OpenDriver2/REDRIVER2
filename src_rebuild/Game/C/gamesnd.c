@@ -934,16 +934,17 @@ void InitDopplerSFX(void)
 	for (i = 0; i < MAX_SIREN_NOISES; i++)
 	{
 		siren_noise[i].chan = -1;
-		siren_noise[i].car = 20;
+		siren_noise[i].car = MAX_CARS;
 		siren_noise[i].in_use = 0;
+		siren_noise[i].stopped = 1; // [A] initially stopped
 	}
 
 	for (i = 0; i < MAX_CAR_NOISES; i++)
 	{
 		car_noise[i].chan = -1;
-		car_noise[i].chan = -1;
-		car_noise[i].car = 20;
+		car_noise[i].car = MAX_CARS;
 		car_noise[i].in_use = 0;
+		car_noise[i].stopped = 1; // [A] initially stopped
 	}
 
 	if (GameType == GAME_GETAWAY)
@@ -1011,9 +1012,8 @@ void DoDopplerSFX(void)
 			else
 				continue;
 
-			indexlist[num_noisy_cars] = i;
 			car_dist[i] = dist;
-			num_noisy_cars++;
+			indexlist[num_noisy_cars++] = i;
 		}
 	}
 
@@ -1059,7 +1059,7 @@ void DoDopplerSFX(void)
 		}
 
 		// any cutscene cop car or car with forced siren
-		if (gInGameCutsceneActive != 0 && car_ptr->controlType == CONTROL_TYPE_CUTSCENE && CARNOISE_HAS_FORCED_SIREN(indexlist[i]) != 0)
+		if (gInGameCutsceneActive != 0 && car_ptr->controlType == CONTROL_TYPE_CUTSCENE && CARNOISE_HAS_FORCED_SIREN(indexlist[i]))
 		{
 			siren = 1;
 		}
@@ -1088,10 +1088,17 @@ void DoDopplerSFX(void)
 	// update siren noise status
 	for (i = 0; i < MAX_SIREN_NOISES; i++)
 	{
-		if (CARNOISE_IS_ACTIVE(siren_noise[i].car))
+		car = siren_noise[i].car;
+
+#ifndef PSX
+		// [A] fix memory overflow reads
+		if (car < MAX_CARS && CARNOISE_IS_ACTIVE(car))
+#else
+		if (CARNOISE_IS_ACTIVE(car))
+#endif
 		{
 			// already in use, no need to start again
-			CARNOISE_DISABLE(siren_noise[i].car);
+			CARNOISE_DISABLE(car);
 
 			siren_noise[i].in_use = 1;
 			noises++;
@@ -1119,7 +1126,7 @@ void DoDopplerSFX(void)
 	{
 		car = indexlist[i];
 
-		if (!CARNOISE_IS_ACTIVE(indexlist[i]))
+		if (!CARNOISE_IS_ACTIVE(car))
 			continue;
 
 		// dispatch siren sounds
@@ -1200,10 +1207,17 @@ void DoDopplerSFX(void)
 	// update noisy cars' status
 	for (j = 0; j < MAX_CAR_NOISES; j++)
 	{
-		if (CARNOISE_IS_ACTIVE(car_noise[j].car))
+		car = car_noise[j].car;
+
+#ifndef PSX
+		// [A] fix memory overflow reads
+		if (car < MAX_CARS && CARNOISE_IS_ACTIVE(car))
+#else
+		if (CARNOISE_IS_ACTIVE(car))
+#endif
 		{
 			// already in use, no need to start again
-			CARNOISE_DISABLE(car_noise[j].car);
+			CARNOISE_DISABLE(car);
 
 			car_noise[j].in_use = 1;
 			noises++;
