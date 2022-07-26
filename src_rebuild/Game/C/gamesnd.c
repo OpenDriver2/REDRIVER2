@@ -203,53 +203,52 @@ int SpecialVehicleKludge(char vehicle2)
 // [D] [T]
 int ResidentModelsBodge(void)
 {
-	int i;
-	int j;
+	int i, j;
 
-	j = MissionHeader->residentModels[4];
-
-	if (gCurrentMissionNumber == 24 || gCurrentMissionNumber == 27 ||
-		gCurrentMissionNumber == 29 ||
-		(gCurrentMissionNumber == 30 || gCurrentMissionNumber == 35))
+	i = MissionHeader->residentModels[4];
+	j = 3;
+	
+	// mission-specific bodges
+	switch (gCurrentMissionNumber)
 	{
-		return 3;
+		case 24:
+		case 27:
+		case 29:
+		case 30:
+		case 35:
+			return 3;
+		default:
+			if (gCurrentMissionNumber >= 50 && gCurrentMissionNumber <= 65)
+			{
+				if (i == 12)
+					return 5;
+			}
+			break;
 	}
 
-	if (gCurrentMissionNumber - 50U < 16 && j == 12)
-	{
-		return 5;
-	}
-
+	// level-specific bodges
 	if (GameLevel == 0)
 	{
-		i = 11;
-
-		if (j != 9)
-			return 3;
+		if (i == 9 || i == 11)
+			j = 4;
 	}
-	else if (GameLevel == 1) 
+	else if (GameLevel == 1)
 	{
-		if (j - 8U > 1) 
-			return 3;
+		if (i == 8 || i == 9)
+			j = 4;
 	}
 	else if (GameLevel == 2)
 	{
-		i = 8;
-
-		if (j != i)
-			return 3;
+		if (i == 8)
+			j = 4;
 	}
 	else if (GameLevel == 3)
 	{
-		i = 11;
-
-		if (j != i)
-			return 3;
+		if (i == 11)
+			j = 4;
 	}
-	else
-		return 3;
 
-	return 4;
+	return j;
 }
 
 // [D] [T]
@@ -270,25 +269,29 @@ int MapCarIndexToBank(int index)
 	RM = MissionHeader->residentModels;
 
 	model = RM[index];
+	ret = 1;
 
-	if (gCurrentMissionNumber - 39U < 2 && RM[index] == 13)
+	if (model != 0)
 	{
-		model = 10 - (RM[0] + RM[1] + RM[2]);
+		if (gCurrentMissionNumber == 39 || gCurrentMissionNumber == 40)
+		{
+			if (model == 13)
+			{
+				model = 10 - (RM[0] + RM[1] + RM[2]);
 
-		if (model < 1)
-			model = 1;
+				if (model < 1)
+					model = 1;
 
-		if (model > 4)
-			model = 4;
+				if (model > 4)
+					model = 4;
+			}
+		}
+
+		ret = model - 1;
+
+		if (ret > 6)
+			ret -= 3;
 	}
-
-	ret = model - 1;
-
-	if (model == 0)
-		ret = 1;
-
-	if (ret > 6)
-		ret -= 3;
 
 	return car_banks[GameLevel][ret];
 }
@@ -613,7 +616,6 @@ void StartGameSounds(void)
 ushort GetEngineRevs(CAR_DATA* cp)
 {
 	int acc;
-	GEAR_DESC* gd;
 	int gear;
 	int lastgear;
 	int ws, lws;
@@ -631,49 +633,33 @@ ushort GetEngineRevs(CAR_DATA* cp)
 		if (gear > 3)
 			gear = 3;
 
-		gd = &geard[type][gear];
-
 		do {
-			if (acc < 1)
-				lws = gd->lowidl_ws;
-			else
-				lws = gd->low_ws;
-
 			lastgear = gear;
 
+			if (acc < 1)
+				lws = geard[type][gear].lowidl_ws;
+			else
+				lws = geard[type][gear].low_ws;
+
 			if (ws < lws)
-			{
-				gd--;
-				lastgear = gear - 1;
-			}
+				gear--;
 
-			if (gd->hi_ws < ws)
-			{
-				gd++;
-				lastgear++;
-			}
-
-			if (gear == lastgear)
-				break;
-
-			gear = lastgear;
-
-		} while (true);
-
-		cp->hd.gear = lastgear;
+			if (ws > geard[type][gear].hi_ws)
+				gear++;
+		} while (gear != lastgear);
 	}
 	else
 	{
 		ws = -ws / 2048;
-		lastgear = 0;
-
-		cp->hd.gear = 0;
+		gear = 0;
 	}
 
-	if (acc != 0)
-		return ws * geard[type][lastgear].ratio_ac;
+	cp->hd.gear = gear;
 
-	return ws * geard[type][lastgear].ratio_id;
+	if (acc != 0)
+		return ws * geard[type][gear].ratio_ac;
+
+	return ws * geard[type][gear].ratio_id;
 }
 
 const int maxrevdrop = 1440;
@@ -794,14 +780,10 @@ char PlaySpeech(SPEECH_QUEUE* pSpeechQueue, int sound)
 	if (pSpeechQueue->count >= 7)
 		return 0;
 
-	i = pSpeechQueue->count - 1;
-
-	while (i >= 0)
-	{
-		pSpeechQueue->slot[i + 1] = pSpeechQueue->slot[i];
-		i--;
-	}
-
+	// move speech queue back
+	for (i = pSpeechQueue->count; i != 0; i--)
+		pSpeechQueue->slot[i] = pSpeechQueue->slot[i - 1];
+	
 	pSpeechQueue->slot[0] = sound;
 	pSpeechQueue->count++;
 
@@ -857,16 +839,12 @@ void ControlSpeech(SPEECH_QUEUE* pSpeechQueue)
 
 		channels[pSpeechQueue->chan].time = 0;
 
-		pSpeechQueue->count--;
-
-		DoSpeech(pSpeechQueue->chan, pSpeechQueue->slot[pSpeechQueue->count]);
+		DoSpeech(pSpeechQueue->chan, pSpeechQueue->slot[--pSpeechQueue->count]);
 		TimeSinceLastSpeech = 0;
 	}
 	else if (SpuGetKeyStatus(SPU_VOICECH(pSpeechQueue->chan)) == 0)
 	{
-		pSpeechQueue->count--;
-
-		DoSpeech(pSpeechQueue->chan, pSpeechQueue->slot[pSpeechQueue->count]);
+		DoSpeech(pSpeechQueue->chan, pSpeechQueue->slot[--pSpeechQueue->count]);
 		TimeSinceLastSpeech = 0;
 	}
 }
