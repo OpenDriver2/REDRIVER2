@@ -1515,7 +1515,9 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 		rear_vel = ABS(cp->hd.rear_vel);
 		front_vel = ABS(cp->hd.front_vel);
 
-		if ((wheels_on_ground & 5) && (rear_vel > 15000 || cp->wheelspin))
+		const int front_wh = 0x1 | 0x4;
+		const int rear_wh = 0x2 | 0x8;
+		if ((wheels_on_ground & 10) && (rear_vel > 15000 || cp->wheelspin))
 		{
 			lay_down_tracks |= 1;
 
@@ -1528,7 +1530,7 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 				skidsound = 13000;
 		}
 		
-		if ((wheels_on_ground & 10) && front_vel > 15000)
+		if ((wheels_on_ground & 5) && front_vel > 15000)
 		{
 			lay_down_tracks |= 2;
 		}
@@ -1669,18 +1671,18 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 	if (lay_down_tracks & 1) // rear
 	{
 #if MAX_TYRE_TRACK_WHEELS == 4
-		ADD_WHEEL_TYRE_TRACK(0, 0)
-		ADD_WHEEL_TYRE_TRACK(2, 2)
+		ADD_WHEEL_TYRE_TRACK(1, 1)
+		ADD_WHEEL_TYRE_TRACK(3, 3)
 #else
-		ADD_WHEEL_TYRE_TRACK(0, 0)
-		ADD_WHEEL_TYRE_TRACK(2, 1)
+		ADD_WHEEL_TYRE_TRACK(1, 0)
+		ADD_WHEEL_TYRE_TRACK(3, 1)
 #endif
 	}
 	else
 	{
 #if MAX_TYRE_TRACK_WHEELS == 4
-		last_track_state[player_id][0] = -1;
-		last_track_state[player_id][2] = -1;
+		last_track_state[player_id][1] = -1;
+		last_track_state[player_id][3] = -1;
 #else
 		last_track_state[player_id][0] = -1;
 		last_track_state[player_id][1] = -1;
@@ -1690,13 +1692,13 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 #if MAX_TYRE_TRACK_WHEELS == 4
 	if (lay_down_tracks & 2) // front
 	{
-		ADD_WHEEL_TYRE_TRACK(1, 1)
-		ADD_WHEEL_TYRE_TRACK(3, 3)
+		ADD_WHEEL_TYRE_TRACK(0, 0)
+		ADD_WHEEL_TYRE_TRACK(2, 2)
 	}
 	else
 	{
-		last_track_state[player_id][1] = -1;
-		last_track_state[player_id][3] = -1;
+		last_track_state[player_id][0] = -1;
+		last_track_state[player_id][2] = -1;
 	}
 #endif
 
