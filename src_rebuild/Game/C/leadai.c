@@ -1216,8 +1216,8 @@ void BlockToMap(MAP_DATA* data)
 					dx = corners[left][1] - corners[right][1];
 					dy = corners[left][0] - corners[right][0];
 
-					theta = (ratan2(dy, dx) + 3072 & 0xfff) - 2048;	// there should be DIFF_ANGLES but idk
-
+					theta = DIFF_ANGLES(0, ratan2(dy, dx) + 1024);
+					
 					vx = RSIN(theta) * corners[left][0];
 					vz = RCOS(theta) * corners[left][1];
 
