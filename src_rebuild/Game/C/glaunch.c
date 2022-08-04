@@ -591,8 +591,8 @@ void ReInitFrontend(int returnToMain)
 	SpuSetReverbVoice(0, SPU_ALLCH);
 	UnPauseSound();
 
-	LoadSoundBankDynamic((char*)0x0, 0, 0);
-	LoadBankFromLump(1, 0);
+	LoadSoundBankDynamic(NULL, 0, 0);
+	LoadBankFromLump(SOUND_BANK_SFX, 0);
 	
 	// load frontend
 	LOAD_OVERLAY("FRONTEND.BIN", _overlay_buffer);
