@@ -244,7 +244,7 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 
 	previous_matrix = -1;
 
-	if (gWeather - 1U < 2)
+	if (gWeather == WEATHER_RAIN || gWeather == WEATHER_WET)
 	{
 		u_int col;
 		col = plotContext.colour >> 2 & 63;

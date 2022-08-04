@@ -1327,10 +1327,10 @@ void StepGame(void)
 	{
 		gLightsOn = 0;
 
-		if (gWeather - 1U > 1)
-			NightAmbient = 128;
-		else
+		if (gWeather == WEATHER_RAIN || gWeather == WEATHER_WET)
 			NightAmbient = 78;
+		else
+			NightAmbient = 128;
 	}
 	else if (gTimeOfDay == TIME_DUSK)
 	{
@@ -1349,7 +1349,7 @@ void StepGame(void)
 			}
 		}
 
-		if (gWeather - 1U < 2)
+		if (gWeather == WEATHER_RAIN || gWeather == WEATHER_WET)
 			NightAmbient = 78 - (DawnCount >> 7);
 		else
 			NightAmbient = 96 - (DawnCount >> 5);

@@ -3460,7 +3460,8 @@ VECTOR* TriggerEvent(int i)
 		return NULL;
 	}
 
-	if (GameLevel >= 2 && i > 0 && i < 4) // Vegas and Rio detonators
+	if ((GameLevel == 2 || GameLevel == 3) &&
+		(i >= 1 && i <= 3)) // Vegas and Rio detonators
 	{
 		if (stage[i] == 0)
 		{
@@ -3900,11 +3901,11 @@ int DetonatorTimer(void)
 
 	if (gCurrentMissionNumber == 23)
 	{
-		if (detonator.timer - 3U < 17)
+		if (detonator.timer > 2 && detonator.timer < 18)
 		{
 			ScreenShake(detonator.timer - 2, &rememberCameraAngle);
 		}
-		else if (detonator.timer - 31U > 8)
+		else if (detonator.timer <= 30 || detonator.timer >= 40)
 		{
 			if (detonator.timer == 21)
 			{
@@ -3961,7 +3962,7 @@ int DetonatorTimer(void)
 	}
 	else
 	{
-		if (detonator.timer - 141U < 19)
+		if (detonator.timer > 140 && detonator.timer < 160)
 		{
 			ScreenShake(detonator.timer - 140, &rememberCameraAngle);
 			Setup_Smoke(&firstMissionEvent[0].position, 100, 500, SMOKE_BLACK, 0, &dummy, 0);

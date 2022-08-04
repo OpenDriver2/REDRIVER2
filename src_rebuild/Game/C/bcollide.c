@@ -467,14 +467,16 @@ int DamageCar3D(CAR_DATA *cp, LONGVECTOR4* delta, int strikeVel, CAR_DATA *pOthe
 	if (player_id < 0)
 		player_id = GetPlayerId(pOtherCar);
 
-	kludge = GetPlayerId(cp);
-
-	if (kludge != 0 || (kludge = 2, pOtherCar->controlType != CONTROL_TYPE_CIV_AI))
+	if (GetPlayerId(cp) == 0 && pOtherCar->controlType == CONTROL_TYPE_CIV_AI ||
+		GetPlayerId(pOtherCar) == 0 && cp->controlType == CONTROL_TYPE_CIV_AI)
 	{
+		// tanner collided with a civilian - his passenger may react to this
+		kludge = 2;
+	}
+	else
+	{
+		// normal collision between two cars
 		kludge = 1;
-
-		if (GetPlayerId(pOtherCar) == 0 && cp->controlType == CONTROL_TYPE_CIV_AI)
-			kludge = 2;
 	}
 
 	CollisionSound(player_id, cp, strikeVel / 128, kludge);

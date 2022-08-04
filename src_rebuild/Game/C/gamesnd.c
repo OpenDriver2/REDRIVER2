@@ -331,7 +331,8 @@ void LoadLevelSFX(int missionNum)
 		LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_SIREN_START + (GameLevel & 3));
 
 	// Load cop voices except those missions
-	if (missionNum - 1U > 3 && missionNum != 6 && missionNum != 7 &&
+	if (missionNum != 1 && missionNum != 2 && missionNum != 3 &&
+		missionNum != 4 && missionNum != 6 && missionNum != 7 &&
 		missionNum != 9 && missionNum != 10 && missionNum != 11 &&
 		missionNum != 13 && missionNum != 14 && missionNum != 18 &&
 		missionNum != 19 && missionNum != 20 && missionNum != 22 &&
@@ -371,12 +372,13 @@ void LoadLevelSFX(int missionNum)
 	// total phrases
 	phrase_top = 0;
 
-	if (missionNum - 2U < 3 || missionNum == 9 || missionNum == 10 || missionNum == 27)
+	if (missionNum == 2 || missionNum == 3 || missionNum == 4 ||
+		missionNum == 9 || missionNum == 10 || missionNum == 27)
 	{
 		LoadBankFromLump(SOUND_BANK_MISSION, SBK_ID_JONES);
 		phrase_top = 7;
 	}
-	else if (missionNum - 20U < 2 || missionNum == 25 || missionNum == 39)
+	else if (missionNum == 20 || missionNum == 21 || missionNum == 25 || missionNum == 39)
 	{
 		LoadBankFromLump(SOUND_BANK_MISSION, SBK_ID_JERICHO);
 		phrase_top = 3;
@@ -476,7 +478,7 @@ void LoadLevelSFX(int missionNum)
 	LoadSoundBankDynamic(NULL, 3, SOUND_BANK_CARS);
 
 	// special vehicle 1 bank
-	if (missionNum - 39U < 2 || missionNum >= 400 && missionNum <= 404)
+	if (missionNum == 39 || missionNum == 40 || (missionNum >= 400 && missionNum <= 404))
 		LoadBankFromLump(SOUND_BANK_CARS, MapCarIndexToBank(4));
 	else
 		LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(0));
@@ -490,7 +492,7 @@ void LoadLevelSFX(int missionNum)
 	}
 
 	// secret car sound bank
-	if (missionNum - 50U < 16 || missionNum >= 400)
+	if ((missionNum >= 50 && missionNum <= 65) || missionNum >= 400)
 	{
 		LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(2));
 	}
@@ -702,7 +704,7 @@ void ControlCarRevs(CAR_DATA* cp)
 	newRevs = desiredRevs;
 	desiredRevs = (oldRevs - newRevs);
 
-	if (maxrevdrop < desiredRevs)
+	if (desiredRevs > maxrevdrop)
 	{
 		acc = 0;
 		cp->hd.changingGear = 1;
@@ -711,13 +713,13 @@ void ControlCarRevs(CAR_DATA* cp)
 
 	desiredRevs = newRevs - oldRevs;
 
-	if (maxrevrise < desiredRevs)
+	if (desiredRevs > maxrevrise)
 		newRevs = oldRevs + maxrevrise;
 
 	cp->hd.revs = newRevs;
 	if (player_id != -1)
 	{
-		if (acc == 0 && newRevs < 7001)
+		if (acc == 0 && newRevs <= 7000)
 		{
 			acc = player[player_id].revsvol;
 

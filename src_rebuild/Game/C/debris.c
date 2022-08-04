@@ -1097,7 +1097,7 @@ void DrawSmashable_sprites(void)
 				{
 					UNIMPLEMENTED();
 
-					if (gWeather - 1U < 2 || gTimeOfDay == TIME_NIGHT)
+					if (gWeather == WEATHER_RAIN || gWeather == WEATHER_WET || gTimeOfDay == TIME_NIGHT)
 					{
 						plotContext.colour = NightAmbient << 0x10 | NightAmbient << 8 | NightAmbient | 0x2c000000;
 					}

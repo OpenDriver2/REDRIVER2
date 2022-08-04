@@ -1617,7 +1617,7 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 	// should be on asphalt
 	if (skidsound != 0 && ((cp->hd.wheel[1].surface & 0x80) == 0 || (cp->hd.wheel[3].surface & 0x80) == 0))
 	{
-		if (gWeather - 1U < 2)
+		if (gWeather == WEATHER_RAIN || gWeather == WEATHER_WET)
 			desired_skid = -1;
 		else
 			desired_skid = 7;
@@ -1672,7 +1672,7 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 		if (wheel2 > wnse)
 			wnse = wheel2;
 
-		if (gWeather - 1U > 1)
+		if (gWeather == WEATHER_RAIN || gWeather == WEATHER_WET)
 		{
 			if (wnse != 0)
 				desired_wheel = wnse + 8;
