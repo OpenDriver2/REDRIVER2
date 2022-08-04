@@ -45,7 +45,13 @@ struct
 } civPingTest;
 #endif // DEBUG
 
-char modelRandomList[] = { 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 1, 0, 4 };
+char modelRandomList[] = {
+	0, 0, 0, 0,
+	1, 1, 1, 1,
+	2, 2, 2, 2,
+	0, 1, 0, 4
+};
+
 u_char reservedSlots[MAX_CARS] = { 0 };
 
 int distFurthestCivCarSq = 0;
@@ -2028,7 +2034,7 @@ int PingInCivCar(int minPingInDist)
 	u_int retDistSq;
 	unsigned char* slot;
 
-	civDat.distAlongSegment = -5;
+	int distAlongSegment = -5;
 	lane = -1;
 	dir = 0xffffff;
 
@@ -2328,14 +2334,15 @@ int PingInCivCar(int minPingInDist)
 		model = 3;
 		civDat.controlFlags = CONTROL_FLAG_COP;
 	}
+	else if (minPingInDist == 666)
+	{
+		// force spawn limo nearby in Caine's Cash
+		model = 4;
+	}
 	else
 	{
 		model = modelRandomList[Random2(0) & 0xf];
 	}
-
-	// force spawn limo nearby in Caine's Cash
-	if (minPingInDist == 666)
-		model = 4;
 
 	// select car color palette
 	if (MissionHeader->residentModels[model] == 0 || MissionHeader->residentModels[model] > 4)
@@ -2381,15 +2388,15 @@ int PingInCivCar(int minPingInDist)
 
 		theta = roadInfo.straight->angle - ratan2(dx, dz);
 
-		civDat.distAlongSegment = (roadInfo.straight->length / 2) + FIXEDH(RCOS(theta) * SquareRoot0(dx * dx + dz * dz));
+		distAlongSegment = (roadInfo.straight->length / 2) + FIXEDH(RCOS(theta) * SquareRoot0(dx * dx + dz * dz));
 
 		if (requestCopCar == 0)
 		{
-			if (civDat.distAlongSegment < minDistAlong)
-				civDat.distAlongSegment = minDistAlong;
+			if (distAlongSegment < minDistAlong)
+				distAlongSegment = minDistAlong;
 
-			if (roadInfo.straight->length - civDat.distAlongSegment < minDistAlong)
-				civDat.distAlongSegment = roadInfo.straight->length - minDistAlong;
+			if (roadInfo.straight->length - distAlongSegment < minDistAlong)
+				distAlongSegment = roadInfo.straight->length - minDistAlong;
 		}
 
 		if (ROAD_LANE_DIR(roadInfo.straight, lane) == 0)
@@ -2416,24 +2423,25 @@ int PingInCivCar(int minPingInDist)
 		}
 
 		segmentLen = (roadInfo.curve->end - roadInfo.curve->start) - minDistAlong & 0xfff;
+		distAlongSegment = (currentAngle & 0xfffU) - roadInfo.curve->start;
 
 		if (roadInfo.curve->inside < 10)
-			civDat.distAlongSegment = (currentAngle & 0xfffU) - roadInfo.curve->start & 0xf80;
+			distAlongSegment &= 0xf80;
 		else if (roadInfo.curve->inside < 20)
-			civDat.distAlongSegment = (currentAngle & 0xfffU) - roadInfo.curve->start & 0xfc0;
+			distAlongSegment &= 0xfc0;
 		else
-			civDat.distAlongSegment = (currentAngle & 0xfffU) - roadInfo.curve->start & 0xfe0;
+			distAlongSegment &= 0xfe0;
 		
-		if (civDat.distAlongSegment <= minDistAlong)
-			civDat.distAlongSegment = minDistAlong;
+		if (distAlongSegment <= minDistAlong)
+			distAlongSegment = minDistAlong;
 
-		if (civDat.distAlongSegment >= segmentLen)
-			civDat.distAlongSegment = segmentLen;
+		if (distAlongSegment >= segmentLen)
+			distAlongSegment = segmentLen;
 
 		if (ROAD_LANE_DIR(roadInfo.curve, lane) == 0)
-			dir = civDat.distAlongSegment + roadInfo.curve->start + 1024;
+			dir = distAlongSegment + roadInfo.curve->start + 1024;
 		else
-			dir = civDat.distAlongSegment + roadInfo.curve->start - 1024;
+			dir = distAlongSegment + roadInfo.curve->start - 1024;
 
 		curveLength = ((roadInfo.curve->end - roadInfo.curve->start & 0xfffU) * roadInfo.curve->inside * 11) / 7;
 
@@ -2447,13 +2455,13 @@ int PingInCivCar(int minPingInDist)
 		return 0;
 	}
 
-	if (dir == 0xffffff || lane < 0 || civDat.distAlongSegment < 0)
+	if (dir == 0xffffff || lane < 0 || distAlongSegment < 0)
 	{
 		//CIV_STATE_SET_CONFUSED(newCar);
 		return 0;
 	}
 
-	GetNodePos(roadInfo.straight, NULL, roadInfo.curve, civDat.distAlongSegment, newCar, &newCar->ai.c.targetRoute[0].x, &newCar->ai.c.targetRoute[0].z, lane);
+	GetNodePos(roadInfo.straight, NULL, roadInfo.curve, distAlongSegment, newCar, &newCar->ai.c.targetRoute[0].x, &newCar->ai.c.targetRoute[0].z, lane);
 
 	retDistSq = INT_MAX;
 	pos[0] = newCar->ai.c.targetRoute[0].x;
@@ -2512,7 +2520,7 @@ int PingInCivCar(int minPingInDist)
 		return 0;
 	}
 
-	
+	civDat.distAlongSegment = distAlongSegment;
 	civDat.angle = dir;
 	InitCar(newCar, dir, &pos, 2, model, 0, (char*)&civDat);
 
