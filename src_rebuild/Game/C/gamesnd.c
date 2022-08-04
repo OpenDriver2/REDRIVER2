@@ -1592,7 +1592,7 @@ void ExplosionSound(VECTOR* pos, int type)
 	int bang;
 	VECTOR P;
 
-	bang = 255;
+	bang = -1;
 	rnd = Random2(4);
 
 	if (gCurrentMissionNumber == 13 || gCurrentMissionNumber == 23)
@@ -1604,7 +1604,7 @@ void ExplosionSound(VECTOR* pos, int type)
 		bang = GetMissionSound(29);
 	}
 
-	if (bang == 255)
+	if (bang == -1)
 		return;
 
 	if (type == BIG_BANG)
