@@ -2437,6 +2437,7 @@ void InitGameVariables(void)
 	CopsCanSeePlayer = 0;
 
 	Havana3DLevelDraw = -1;
+	Havana3DLevelMode = -1;
 
 	srand(0x1234);
 	RandomInit(0xd431, 0x350b1);
