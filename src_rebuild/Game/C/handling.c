@@ -1045,14 +1045,14 @@ void CheckCarToCarCollisions(void)
 		bb->z1 = (cp->hd.where.t[2] + zz) / 16;
 
 		if (cp->st.n.linearVelocity[0] < 0)
-			bb->x0 = (cp->hd.where.t[0] - xx) / 16 + FIXEDH(cp->st.n.linearVelocity[0]) / 8;
+			bb->x0 += FIXEDH(cp->st.n.linearVelocity[0]) / 8;
 		else
-			bb->x1 = (cp->hd.where.t[0] + xx) / 16 + FIXEDH(cp->st.n.linearVelocity[0]) / 8;
+			bb->x1 += FIXEDH(cp->st.n.linearVelocity[0]) / 8;
 
 		if (cp->st.n.linearVelocity[2] < 0)
-			bb->z0 = bb->z0 + (FIXEDH(cp->st.n.linearVelocity[2]) / 8);
+			bb->z0 += FIXEDH(cp->st.n.linearVelocity[2]) / 8;
 		else
-			bb->z1 = bb->z1 + (FIXEDH(cp->st.n.linearVelocity[2]) / 8);
+			bb->z1 += FIXEDH(cp->st.n.linearVelocity[2]) / 8;
 
 		// [A] 2400 for box size - bye bye collision check performance under bridges
 		bb->y0 = (cp->hd.where.t[1] - colBox->vy * 2) / 16;
@@ -1501,23 +1501,14 @@ void nose_down(CAR_DATA* cp)
 // [D] [T]
 void jump_debris(CAR_DATA* cp)
 {
-	WHEEL* wheel;
-	int count;
-	VECTOR position;
-	VECTOR velocity;
-
-	wheel = cp->hd.wheel;
-
-	for(count = 0; count < 4; count++)
+	for(int count = 0; count < 4; count++)
 	{
-		if (wheel->susCompression != 0)
+		if (cp->hd.wheel[count].susCompression != 0)
 		{
 			DebrisTimer = 0;
 			cp->wasOnGround = 1;
 			return;
 		}
-
-		wheel++;
 	}
 
 	if (cp->wasOnGround == 1)
@@ -1530,17 +1521,15 @@ void jump_debris(CAR_DATA* cp)
 
 	if (DebrisTimer != 0 && --DebrisTimer < 75)
 	{
+		VECTOR position, velocity;
+
 		memset((u_char*)&velocity, 0, sizeof(velocity));
 
 		velocity.vx = cp->hd.where.t[0] + ((rand() & 0x1ff) - 256);
 		velocity.vy = 200 - cp->hd.where.t[1];
+		velocity.vz = cp->hd.where.t[2] + ((rand() & 0x1ff) - 256);
 
-		position.vz = cp->hd.where.t[2] + ((rand() & 0x1ff) - 256);
-		position.vx = velocity.vx;
-		position.vy = velocity.vy;
-		position.pad = velocity.pad;
-
-		velocity.vz = position.vz;
+		position = velocity;
 
 		memset((u_char*)&velocity, 0, sizeof(velocity));
 		Setup_Debris(&position, &velocity, 5, 0xb);
@@ -1674,13 +1663,16 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 
 		if (gWeather == WEATHER_RAIN || gWeather == WEATHER_WET)
 		{
-			if (wnse != 0)
-				desired_wheel = wnse + 8;
-			else
-				desired_wheel = -1;
+			desired_wheel = 13 - 4;
+		}
+		else if (wnse != 0)
+		{
+			desired_wheel = wnse + 8;
 		}
 		else
-			desired_wheel = 13 - 4;
+		{
+			desired_wheel = -1;
+		}
 	}
 
 	// play noise sound
