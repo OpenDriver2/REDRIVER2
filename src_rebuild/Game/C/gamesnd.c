@@ -326,32 +326,53 @@ void LoadLevelSFX(int missionNum)
 	LoadBankFromLump(SOUND_BANK_TANNER, SBK_ID_TANNER );
 
 	if (GameLevel & 2)
-		LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_SIREN_START + (GameLevel & 1) * 2);
+		LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_SIREN_START + (GameLevel & 1) * 2); // Vegas, Rio
 	else
-		LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_SIREN_START + (GameLevel & 3));
+		LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_SIREN_START + (GameLevel & 3)); // Chicago, Havana
 
-	// Load cop voices except those missions
-	if (missionNum != 1 && missionNum != 2 && missionNum != 3 &&
-		missionNum != 4 && missionNum != 6 && missionNum != 7 &&
-		missionNum != 9 && missionNum != 10 && missionNum != 11 &&
-		missionNum != 13 && missionNum != 14 && missionNum != 18 &&
-		missionNum != 19 && missionNum != 20 && missionNum != 22 &&
-		missionNum != 26 && missionNum != 28 && missionNum != 31 &&
-		missionNum != 33 && missionNum != 34 && missionNum != 38 &&
-		missionNum != 40)
+	// Load cop voices except for certain missions
+	switch (missionNum)
 	{
-		// first bank - directions
-		// second bank - 
-		if (GameLevel & 2)
-		{
-			LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_PHRASES_START + (GameLevel & 1) * 8 + (GameLevel & 1) * 2);
-			LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_PHRASES_START + (GameLevel & 1) * 10 + cop_bank);
-		}
-		else
-		{
-			LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_PHRASES_START + (GameLevel & 3) * 4 + (GameLevel & 3));
-			LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_PHRASES_START + (GameLevel & 3) * 5 + cop_bank);
-		}
+		case 1:
+		case 2:
+		case 3:
+		case 4:
+		case 6:
+		case 7:
+		case 9:
+		case 10:
+		case 11:
+		case 13:
+		case 14:
+		case 18:
+		case 19:
+		case 20:
+		case 22:
+		case 26:
+		case 28:
+		case 31:
+		case 33:
+		case 34:
+		case 38:
+		case 40:
+			// don't load
+			break;
+		default:
+			// first bank - directions
+			// second bank - 
+			if (GameLevel & 2)
+			{
+				// Vegas, Rio
+				LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_PHRASES_START + (GameLevel & 1) * 8 + (GameLevel & 1) * 2);
+				LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_PHRASES_START + (GameLevel & 1) * 10 + cop_bank);
+			}
+			else
+			{
+				// Chicago, Havana
+				LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_PHRASES_START + (GameLevel & 3) * 4 + (GameLevel & 3));
+				LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_PHRASES_START + (GameLevel & 3) * 5 + cop_bank);
+			}
+			break;
 	}
 
 	ShowLoading();
@@ -359,29 +380,34 @@ void LoadLevelSFX(int missionNum)
 	// load ambient effects
 	if (NumPlayers < 2 || NoPlayerControl != 0)
 	{
-		if (GameLevel == 0)
-			LoadBankFromLump(SOUND_BANK_ENVIRONMENT, SBK_CITY_EFFECTS_START + city_night_fx);
-		else if (GameLevel == 1)
-			LoadBankFromLump(SOUND_BANK_ENVIRONMENT, SBK_CITY_EFFECTS_START + city_night_fx + 2);
-		else if (GameLevel == 2)
-			LoadBankFromLump(SOUND_BANK_ENVIRONMENT, SBK_CITY_EFFECTS_START + city_night_fx + 4);
-		else if (GameLevel == 3)
-			LoadBankFromLump(SOUND_BANK_ENVIRONMENT, SBK_CITY_EFFECTS_START + city_night_fx + 6);
+		// NB: 2 ambient effects per city
+		LoadBankFromLump(SOUND_BANK_ENVIRONMENT, SBK_CITY_EFFECTS_START + city_night_fx + (GameLevel * 2));
 	}
 
 	// total phrases
 	phrase_top = 0;
 
-	if (missionNum == 2 || missionNum == 3 || missionNum == 4 ||
-		missionNum == 9 || missionNum == 10 || missionNum == 27)
+	// in-car voices
+	switch (missionNum)
 	{
-		LoadBankFromLump(SOUND_BANK_MISSION, SBK_ID_JONES);
-		phrase_top = 7;
-	}
-	else if (missionNum == 20 || missionNum == 21 || missionNum == 25 || missionNum == 39)
-	{
-		LoadBankFromLump(SOUND_BANK_MISSION, SBK_ID_JERICHO);
-		phrase_top = 3;
+		case 2:
+		case 3:
+		case 4:
+		case 9:
+		case 10:
+		case 27:
+			// jones in the car
+			LoadBankFromLump(SOUND_BANK_MISSION, SBK_ID_JONES);
+			phrase_top = 7;
+			break;
+		case 20:
+		case 21:
+		case 25:
+		case 39:
+			// jericho in the car
+			LoadBankFromLump(SOUND_BANK_MISSION, SBK_ID_JERICHO);
+			phrase_top = 3;
+			break;
 	}
 
 	switch (missionNum)
@@ -468,53 +494,84 @@ void LoadLevelSFX(int missionNum)
 		LoadBankFromLump(SOUND_BANK_MISSION, index);
 
 	// special siren bank
-	if (GameLevel == 0 || GameLevel == 3)
-		LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_SPECIAL_SIREN1);
-	else if (GameLevel == 2)
-		LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_SPECIAL_SIREN2);
-
+	switch (GameLevel)
+	{
+		case 0:
+		case 3:
+			LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_SPECIAL_SIREN1);
+			break;
+		case 2:
+			LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_SPECIAL_SIREN2);
+			break;
+	}
+	
 	// [A] padding?
 	LoadSoundBankDynamic(NULL, 1, SOUND_BANK_DUMMY);
 	LoadSoundBankDynamic(NULL, 3, SOUND_BANK_CARS);
 
 	// special vehicle 1 bank
-	if (missionNum == 39 || missionNum == 40 || (missionNum >= 400 && missionNum <= 404))
-		LoadBankFromLump(SOUND_BANK_CARS, MapCarIndexToBank(4));
-	else
-		LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(0));
+	switch (missionNum)
+	{
+		case 39:
+		case 40:
+		// [A]
+		case 400:
+		case 401:
+		case 402:
+		case 403:
+		case 404:
+			LoadBankFromLump(SOUND_BANK_CARS, MapCarIndexToBank(4));
+			break;
+		default:
+			LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(0));
+			break;
+	}
 
 	// special vehicle 2 bank
-	if (missionNum != 24 && missionNum != 27 &&
-		missionNum != 29 && missionNum != 30 &&
-		missionNum != 35)
+	switch (missionNum)
 	{
-		LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(1));
+		case 24:
+		case 27:
+		case 29:
+		case 30:
+		case 35:
+			// don't load
+			break;
+		default:
+			LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(1));
+			break;
 	}
 
 	// secret car sound bank
-	if ((missionNum >= 50 && missionNum <= 65) || missionNum >= 400)
+	if ((missionNum >= 50 && missionNum <= 65) ||
+		missionNum >= 400 /*[A]*/)
 	{
 		LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(2));
 	}
 
 	// disable cop speech on specific missions (gangs)
 	// and set cop model (car sound bank)
-	if (missionNum == 7 || missionNum == 9 ||
-		missionNum == 11 || missionNum == 20 ||
-		missionNum == 26 || missionNum == 31 ||
-		missionNum == 33 || missionNum == 40)
+	switch (missionNum)
 	{
-		gDoCopSpeech = 0;
+		case 7:
+		case 9:
+		case 11:
+		case 20:
+		case 26:
+		case 31:
+		case 33:
+		case 40:
+			gDoCopSpeech = 0;
 
-		for (i = 0; i < 3; i++)
-		{
-			if (MissionHeader->residentModels[i] == MissionHeader->residentModels[3])
-				cop_model = i;
-		}
-	}
-	else
-	{
-		gDoCopSpeech = 1;
+			for (i = 0; i < 3; i++)
+			{
+				if (MissionHeader->residentModels[i] == MissionHeader->residentModels[3])
+					cop_model = i;
+			}
+			break;
+		default:
+			gDoCopSpeech = 1;
+			break;
 	}
 }
 
@@ -717,14 +774,13 @@ void ControlCarRevs(CAR_DATA* cp)
 		newRevs = oldRevs + maxrevrise;
 
 	cp->hd.revs = newRevs;
+
 	if (player_id != -1)
 	{
 		if (acc == 0 && newRevs <= 7000)
 		{
-			acc = player[player_id].revsvol;
-
 			player[player_id].idlevol += 200;
-			player[player_id].revsvol = acc - 200;
+			player[player_id].revsvol -= 200;
 
 			if (player[player_id].idlevol > -6000)
 				player[player_id].idlevol = -6000;
@@ -748,15 +804,15 @@ void ControlCarRevs(CAR_DATA* cp)
 
 			player[player_id].idlevol += acc;
 
+			if (player[player_id].idlevol < -10000)
+				player[player_id].idlevol = -10000;
+
 			if (spin == 0)
 				acc = 175;
 			else
 				acc = 700;
 
-			player[player_id].revsvol = player[player_id].revsvol + acc;
-
-			if (player[player_id].idlevol < -10000)
-				player[player_id].idlevol = -10000;
+			player[player_id].revsvol += acc;
 
 			if (player[player_id].revsvol > revsmax)
 				player[player_id].revsvol = revsmax;
@@ -1330,7 +1386,7 @@ void DoDopplerSFX(void)
 		else
 			volume = -6250;
 
-		pitch = (car_data[car].hd.revs << 0x10) >> 0x12;
+		pitch = car_data[car].hd.revs / 4;
 
 		if (car_noise[j].idle != 0)
 			pitch += 4096;
@@ -1485,43 +1541,45 @@ void CollisionSound(char player_id, CAR_DATA* cp, int impact, int car_car)
 
 	player[playerid].crash_timer = 2;
 
-	if ((impact & 5) && 
-		GetPlayerId(cp) == 0 &&
-		(gCurrentMissionNumber - 2 <= 2 || gCurrentMissionNumber == 9 || gCurrentMissionNumber == 10 || gCurrentMissionNumber == 27))
+	if ((impact & 5) && GetPlayerId(cp) == 0)
 	{
-		rnd = Random2(1);
+		switch (gCurrentMissionNumber)
+		{
+			case 2:
+			case 3:
+			case 4:
+			case 9:
+			case 10:
+			case 27:
+				rnd = Random2(1);
 
-		if (rnd == (rnd / 3) * 3)
-		{
-			phrase |= 4;
-		}
-		else
-		{
-			if (car_car != 2)
-			{
-				if (phrase != 0)
+				if (rnd == (rnd / 3) * 3)
 				{
-					if ((Random2(1) & 1) == 0)
-						sample = 3;
-					else
-						sample = 0;
-
-					BodSay(sample);
+					phrase |= 4;
 				}
+				else if (car_car != 2)
+				{
+					if (phrase != 0)
+					{
+						if ((rnd & 1) != 0)
+							sample = 0;
+						else
+							sample = 3;
 
-				return;
-			}
+						BodSay(sample);
+					}
+				}
+				else if (phrase != 0)
+				{
+					if ((rnd & 1) != 0)
+						phrase = 1;
+					else
+						phrase = 2;
 
-			if (phrase == 0)
-				return;
-
-			if ((Random2(1) & 1) != 0)
-				phrase = 1;
-			else
-				phrase = 2;
+					BodSay(phrase);
+				}
+				break;
 		}
-
-		BodSay(phrase);
 	}
 }
 
@@ -1608,20 +1666,20 @@ void JerichoSpeak(void)
 // [D] [T]
 void FunkUpDaBGMTunez(int funk)
 {
-	if (funk == 0)
-	{
-		if (copmusic != 0)
-		{
-			copmusic = 0;
-			Song_SetPos = 0;
-		}
-	}
-	else
+	if (funk)
 	{
 		if (copmusic == 0)
 		{
 			copmusic = 1;
 			Song_SetPos = xm_coptrackpos[current_music_id];
+		}
+	}
+	else
+	{
+		if (copmusic != 0)
+		{
+			copmusic = 0;
+			Song_SetPos = 0;
 		}
 	}
 }
