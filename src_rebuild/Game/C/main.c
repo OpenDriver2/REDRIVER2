@@ -910,13 +910,16 @@ void StepSim(void)
 			for (i = 0; i < 10; i++)
 				PingInCivCar(15900);
 		}
-		else if (numCivCars < maxCivCars && (NumPlayers == 1 || (NumPlayers == 2 && GameType == GAME_COPSANDROBBERS)))
+		else
 		{
-			// make 5 tries
-			for (i = 0; i < 5; i++)
+			if (numCivCars < maxCivCars && (NumPlayers == 1 || (NumPlayers == 2 && GameType == GAME_COPSANDROBBERS)))
 			{
-				if (PingInCivCar(15900))
-					break;
+				// make 5 tries
+				for (i = 0; i < 5; i++)
+				{
+					if (PingInCivCar(15900))
+						break;
+				}
 			}
 		}
 
@@ -2207,11 +2210,17 @@ void UpdatePlayerInformation(void)
 		}
 
 		// die with fade on mountain race track
-		if ((gCurrentMissionNumber > 479 && gCurrentMissionNumber < 482 ||
-			gCurrentMissionNumber > 483 && gCurrentMissionNumber < 486) &&
-			cp->hd.where.t[1] < -750 && gDieWithFade == 0)
+		switch (gCurrentMissionNumber)
 		{
-			gDieWithFade = 1;
+			case 480:
+			case 481:
+			case 484:
+			case 485:
+			case 486:
+			case 487:
+				if (cp->hd.where.t[1] < -750 && !gDieWithFade)
+					gDieWithFade = 1;
+				break;
 		}
 	}
 }
@@ -2754,9 +2763,6 @@ int Havana3DOcclusion(occlFunc func, int* param)
 			events.camera = 0;
 			return outside;
 		}
-	
-		(*func)(param);
-		return 1;
 	}
 
 	(*func)(param);
