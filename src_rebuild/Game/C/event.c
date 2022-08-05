@@ -22,6 +22,8 @@
 #include "dr2roads.h"
 #include "ASM/rndrasm.h"
 #include "cutrecorder.h"
+#include "overmap.h"
+#include "mission.h"
 
 struct FixedEvent // same as EVENT but different fields
 {
@@ -4097,4 +4099,261 @@ void MultiCarEvent(MS_TARGET* target)
 
 	//firstEvent->next = first; // [A] bug fix
 	multiCar.event[multiCar.count - 1].next = first;
+}
+
+extern int MRProcessTarget(MR_THREAD * thread, MS_TARGET * target);
+
+int user_events_allowed = 0;
+
+int FindFreeTargets(MS_TARGET **targets, int count, int index)
+{
+	if (targets == NULL || count == 0 || index >= MAX_MISSION_TARGETS)
+		return -1;
+
+	int found = 0;
+
+	for (int i = index; i < MAX_MISSION_TARGETS && found < count; i++)
+	{
+		MS_TARGET *target = &MissionTargets[i];
+
+		if (target->type == 0)
+			targets[found++] = target;
+	}
+
+	return found;
+}
+
+int EmptyMissionEvents(MR_THREAD *thread, int init)
+{
+	return 0;
+}
+
+int ChicagoTAREvents(MR_THREAD *thread, int init)
+{
+	if (init)
+	{
+		printInfo("**** CHICAGO TAR EVENT SETUP\n");
+
+		if (gCurrentMissionNumber == 50 || gCurrentMissionNumber == 51)
+			return 1;
+	}
+
+	return 0;
+}
+
+int HavanaTAREvents(MR_THREAD *thread, int init)
+{
+	static MS_TARGET *safehouse_targets[4];
+	static int targets;
+	static int cars_to_spawn;
+	static int door_state;
+
+	if (init)
+	{
+		printInfo("**** HAVANA TAR EVENT SETUP\n");
+
+		safehouse_targets[0] = NULL;
+		safehouse_targets[1] = NULL;
+		targets = 0;
+		cars_to_spawn = 0;
+		door_state = 0;
+		
+		if (gCurrentMissionNumber == 52 || gCurrentMissionNumber == 53)
+		{
+			targets = FindFreeTargets(safehouse_targets, 4, 0);
+
+			// need at least 2 free targets
+			if (targets < 2)
+				return 0;
+
+			MS_TARGET *target = safehouse_targets[0];
+
+			// outside switch
+			target->type = Target_Point;
+			target->s.target_flags = 0x400000;
+			target->s.display_flags = 0;
+			target->s.point.posX = -182450;
+			target->s.point.posZ = -41235;
+			target->s.point.radius = 150;
+			target->s.point.actionFlag = 0x310003;
+
+			// inside switch
+			target++;
+			target->type = Target_Point;
+			target->s.target_flags = 0x400000;
+			target->s.display_flags = 0;
+			target->s.point.posX = -182705;
+			target->s.point.posZ = -41723;
+			target->s.point.radius = 150;
+			target->s.point.actionFlag = 0x310003;
+
+			printInfo("**** Doors are ready!\n");
+
+			if (targets == 4)
+			{
+				// random car 1
+				target++;
+				target->type = Target_Car;
+				target->s.target_flags = 0;
+				target->s.display_flags = 0;
+				target->s.car.posX = -184200;
+				target->s.car.posZ = -43680;
+				target->s.car.rotation = 0;
+				target->s.car.slot = -1;
+				target->s.car.type = 1;
+				target->s.car.flags = 32;
+
+				// random car 2
+				target++;
+				target->type = Target_Car;
+				target->s.target_flags = 0;
+				target->s.display_flags = 0;
+				target->s.car.posX = -181920;
+				target->s.car.posZ = -43400;
+				target->s.car.rotation = -1536;
+				target->s.car.slot = -1;
+				target->s.car.type = 1;
+				target->s.car.flags = 32;
+
+				cars_to_spawn = 2;
+
+				printInfo("**** Cars are ready!\n");
+			}
+
+			return 1;
+		}
+
+		// setup failed!
+		return 0;
+	}
+
+	// doors
+	for (int i = 0; i < 2; i++)
+	{
+		if (MRProcessTarget(thread, safehouse_targets[i]))
+		{
+			TriggerEvent(2);
+			
+			if (i == 0)
+				door_state = (door_state == 0) ? 1 : 0;
+			else if (i == 1)
+				door_state = (door_state == 1) ? 0 : 1;
+
+			printWarning("**** DOOR IS NOW %s\n", (door_state == 1) ? "OPEN" : "CLOSED");
+		}
+	}
+
+	if (door_state == 1 && cars_to_spawn > 0)
+	{
+		VECTOR tv;
+
+		for (int j = 0; j < cars_to_spawn; j++)
+		{
+			MS_TARGET *target = safehouse_targets[j + 2];
+
+			if (!(target->s.target_flags & TARGET_FLAG_CAR_PINGED_IN))
+			{
+				printWarning("**** REQUESTING RANDOM SPAWN OF CAR %d\n", j);
+
+				int model = 0;
+				int pal = Random2(0) % 6;
+				int rm = Random2(0) % 3;
+
+				// only request available civ cars (no cops or specials)
+				if (rm > 2)
+					rm = 2;
+
+				model = MissionHeader->residentModels[rm];
+
+				target->s.car.model = model;
+				target->s.car.palette = pal;
+
+				MRProcessTarget(thread, target);
+				return 0;
+			}
+		}
+
+		// door is opened and all cars are spawned
+		cars_to_spawn = -cars_to_spawn;
+	}
+	else if (door_state == 0 && cars_to_spawn < 0)
+	{
+		// door is closed - check if all cars are spawned next time it opens
+		cars_to_spawn = -cars_to_spawn;
+	}
+
+	return 0;
+}
+
+int VegasTAREvents(MR_THREAD *thread, int init)
+{
+	if (init)
+	{
+		printInfo("**** VEGAS TAR EVENT SETUP\n");
+
+		if (gCurrentMissionNumber == 54 || gCurrentMissionNumber == 55)
+			return 1;
+	}
+
+	return 0;
+}
+
+int RioTAREvents(MR_THREAD *thread, int init)
+{
+	if (init)
+	{
+		printInfo("**** RIO TAR EVENT SETUP\n");
+
+		if (gCurrentMissionNumber == 56 || gCurrentMissionNumber == 57)
+			return 1;
+	}
+
+	return 0;
+}
+
+typedef int userEventFunc(MR_THREAD *thread, int init);
+typedef userEventFunc * (userEventFuncList)[4];
+
+userEventFuncList fnTAREventHandlers[] = {
+	ChicagoTAREvents,
+	HavanaTAREvents,
+	VegasTAREvents,
+	RioTAREvents,
+};
+
+userEventFuncList fnNullMissionEventHandlers[] = {
+	EmptyMissionEvents,
+	EmptyMissionEvents,
+	EmptyMissionEvents,
+	EmptyMissionEvents,
+};
+
+userEventFuncList * fnMissionEventHandlers;
+
+int StopUserMissionEvents(MR_THREAD *thread)
+{
+	return 1;
+}
+
+int RunUserMissionEvents(MR_THREAD *thread)
+{
+	if (gCurrentMissionNumber >= 50 && gCurrentMissionNumber <= 65)
+		maxCopCars = 32;
+
+	return (*fnMissionEventHandlers)[GameLevel](thread, 0);
+}
+
+int InitUserMissionEvents(MR_THREAD *thread)
+{
+	thread->stepFunc = RunUserMissionEvents;
+	thread->stopFunc = StopUserMissionEvents;
+
+	if (gCurrentMissionNumber >= 50 && gCurrentMissionNumber <= 57)
+		fnMissionEventHandlers = fnTAREventHandlers;
+	else
+		fnMissionEventHandlers = fnNullMissionEventHandlers;
+
+	user_events_allowed = (*fnMissionEventHandlers)[GameLevel](thread, 1);
+
+	return 1;
 }

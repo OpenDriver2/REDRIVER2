@@ -1627,28 +1627,36 @@ void HandleMissionThreads(void)
 		while (running && (Mission.gameover_delay == -1)
 			&& (!gInGameCutsceneActive && gInGameCutsceneDelay == 0))
 		{
-			value = *thread->pc++;
-
-			switch (value & 0xff000000)
+			if (thread->type == 2)
 			{
-			case 0x0:
-			case 0x2000000:
-			case 0xff000000:
-				MR_DebugPrint("MR: push %d\n", value);
-				MRPush(thread, value);
-				break;
-			case 0x1000000:
-				MR_DebugPrint("MR: command %x\n", value);
-				running = MRCommand(thread, value);
-				break;
-			case 0x3000000:
-				MR_DebugPrint("MR: operator %x\n", value);
-				running = MROperator(thread, value);
-				break;
-			case 0x4000000:
-				MR_DebugPrint("MR: function %x\n", value);
-				running = MRFunction(thread, value);
-				break;
+				if (thread->stepFunc != NULL)
+					running = thread->stepFunc(thread);
+			}
+			else
+			{
+				value = *thread->pc++;
+
+				switch (value & 0xff000000)
+				{
+					case 0x0:
+					case 0x2000000:
+					case 0xff000000:
+						MR_DebugPrint("MR: push %d\n", value);
+						MRPush(thread, value);
+						break;
+					case 0x1000000:
+						MR_DebugPrint("MR: command %x\n", value);
+						running = MRCommand(thread, value);
+						break;
+					case 0x3000000:
+						MR_DebugPrint("MR: operator %x\n", value);
+						running = MROperator(thread, value);
+						break;
+					case 0x4000000:
+						MR_DebugPrint("MR: function %x\n", value);
+						running = MRFunction(thread, value);
+						break;
+				}
 			}
 		}
 
@@ -1957,11 +1965,38 @@ int MRFunction(MR_THREAD *thread, u_int fnc)
 void MRInitialiseThread(MR_THREAD *thread, u_int *pc, u_char player)
 {
 	thread->active = 1;
+	thread->type = 1;
+	thread->flags = 0;
 	thread->pc = pc;
 	thread->player = player;
 	thread->sp = thread->initial_sp;
 }
 
+void MRInitialiseUserThread(MR_THREAD *thread, MR_THREAD *callingthread, threadFunc *initFunc, u_char player)
+{
+	thread->active = 1;
+	thread->type = 2;
+	thread->flags = 0;
+	thread->player = player;
+
+	thread->owner = callingthread;
+	thread->stepFunc = NULL;
+	thread->stopFunc = NULL;
+
+	int handled = 0;
+
+	if (initFunc)
+		handled = initFunc(thread);
+
+	if (!handled)
+	{
+		if (thread->stepFunc == NULL || thread->stopFunc == NULL)
+		{
+			thread->active = 0;
+			thread->flags = -666;
+		}
+	}
+}
 
 // [D] [T]
 void MRStartThread(MR_THREAD *callingthread, u_int addr, unsigned char player)
@@ -1969,9 +2004,22 @@ void MRStartThread(MR_THREAD *callingthread, u_int addr, unsigned char player)
 	int i;
 	for (i = 0; i < MAX_MISSION_THREADS; i++)
 	{
-		if (!MissionThreads[i].active)
+		if (!MissionThreads[i].active && MissionThreads[i].type != 2)
 		{
 			MRInitialiseThread(&MissionThreads[i], callingthread->pc + addr, player);
+			break;
+		}
+	}
+}
+
+void MRStartUserThread(MR_THREAD *callingthread, threadFunc *initFunc, u_char player)
+{
+	// NB: make user threads run at the end
+	for (int i = 12; i < MAX_MISSION_THREADS; i++)
+	{
+		if (!MissionThreads[i].active && MissionThreads[i].type != 1)
+		{
+			MRInitialiseUserThread(&MissionThreads[i], callingthread, initFunc, player);
 			break;
 		}
 	}
@@ -1981,6 +2029,13 @@ void MRStartThread(MR_THREAD *callingthread, u_int addr, unsigned char player)
 int MRStopThread(MR_THREAD *thread)
 {
 	thread->active = 0;
+
+	if (thread->type == 2)
+	{
+		if (thread->stopFunc != NULL)
+			return thread->stopFunc(thread);
+	}
+
 	return 0;
 }
 
@@ -3363,6 +3418,8 @@ void HandleMission(void)
 			FelonyBar.active = 0;
 			break;
 		}
+
+		MRStartUserThread(&MissionThreads[0], InitUserMissionEvents, 0);
 	}
 
 	if (bMissionTitleFade)

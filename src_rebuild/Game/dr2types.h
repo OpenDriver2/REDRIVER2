@@ -839,14 +839,33 @@ struct MR_MISSION
 	char* StealMessage;
 };
 
+typedef int threadFunc(struct MR_THREAD *thread);
+
 struct MR_THREAD
 {
 	u_char active;
 	u_char player;
-	u_int* initial_sp;
-	u_int* pc;
-	u_int* sp;
+	u_char type;
+	u_char flags;
+	union
+	{
+		struct
+		{
+			u_int* initial_sp;
+			u_int* pc;
+			u_int* sp;
+		};
+
+		struct
+		{
+			MR_THREAD *owner;
+			threadFunc *stepFunc;
+			threadFunc *stopFunc;
+		};
+	};
 };
+
+assert_sizeof(MR_THREAD, 16);
 
 //---------------------------------------------------------------------------------------
 // TODO: SCORES.H

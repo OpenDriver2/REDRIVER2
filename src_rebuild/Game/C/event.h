@@ -71,5 +71,7 @@ extern int DetonatorTimer(); // 0x0004B5FC
 
 extern void MultiCarEvent(MS_TARGET *target); // 0x0004BAB0
 
+extern int InitUserMissionEvents(MR_THREAD *thread);
+
 
 #endif
