@@ -1224,17 +1224,28 @@ void ProcessCarPad(CAR_DATA* cp, u_int pad, char PadSteer, char use_analogue)
 			}
 		}
 
+		int noPlayerInput = gStopPadReads != 0 || gCantDrive != 0;
+
 		// Lock car if it has mission lock or fully damaged
-		if (gStopPadReads != 0 || MaxPlayerDamage[*cp->ai.padid] <= cp->totalDamage || gCantDrive != 0)
+		if (noPlayerInput || cp->totalDamage >= MaxPlayerDamage[*cp->ai.padid])
 		{
+			u_int oldpad = pad;
+
 			pad = CAR_PAD_HANDBRAKE;
 
 			// apply brakes
 			if (cp->hd.wheel_speed > 36864)
 				pad = CAR_PAD_BRAKE;
 
-			int_steer = 0;
-			use_analogue = 1;
+			if (noPlayerInput)
+			{
+				int_steer = 0;
+				use_analogue = 1;
+			}
+			else if (gExtraConfig.m.AllowParkedTurnedWheels)
+			{
+				pad |= (oldpad & (CAR_PAD_LEFT | CAR_PAD_RIGHT | CAR_PAD_FASTSTEER));
+			}
 		}
 
 		// turn of horning

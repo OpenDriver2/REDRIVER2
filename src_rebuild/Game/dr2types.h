@@ -1076,7 +1076,22 @@ struct MISSION_OVERRIDES
 
 struct PROFILE_OVERRIDES
 {
-	int reserved[3];
+	// NB: not implemented yet
+	u_char Language;
+	u_char FullScreen;
+	//------------------------
+
+	u_char VSync;
+	u_char Bilinear;
+	u_char PGXPMode;
+	u_char DrawDistance;
+	u_char DynamicLights;
+	u_char pad1;
+	
+	// NB: not implemented yet
+	u_short DisplayWidth;
+	u_short DisplayHeight;
+	//------------------------
 };
 
 struct EXTRA_CONFIG_DATA

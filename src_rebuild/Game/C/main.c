@@ -2467,7 +2467,7 @@ void InitGameVariables(void)
 			// ...
 			// ...
 
-			SetSavedCar(PlayerStartInfo[0], 0);
+			SetSavedCar(0, PlayerStartInfo[0]);
 		}
 		else
 #endif
@@ -2500,7 +2500,7 @@ void InitGameVariables(void)
 				// ...
 				// ...
 
-				SetSavedCar(PlayerStartInfo[1], 1);
+				SetSavedCar(1, PlayerStartInfo[1]);
 			}
 			else
 #endif

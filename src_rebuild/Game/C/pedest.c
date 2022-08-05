@@ -723,7 +723,7 @@ void AnimatePed(LPPEDESTRIAN pPed)
 			pPed->frame1 = 0;
 	}
 
-	if (pPed->pedType != CIVILIAN && pPed->padId != -1 && pPed->type < PED_ACTION_BACK)
+	if (pPed->pedType != CIVILIAN && pPed->type < PED_ACTION_BACK)
 	{
 		int surfId;
 		surfId = PedSurfaceType(&vec);
@@ -3071,9 +3071,6 @@ void DeActivatePlayerPedestrian(LPPEDESTRIAN pPed)
 
 	getIn = 0;
 	playerId = pPed->padId;
-
-	if (playerId < 0)
-		playerId = -playerId;
 
 	cp = FindClosestCar(player[playerId].pos[0], player[playerId].pos[1], player[playerId].pos[2], &distToCarSq);
 

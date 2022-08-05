@@ -38,7 +38,7 @@
 
 char* MissionName[37] =
 {
-	// Chicago
+	// Chicago (0 - 7)
 	M_LTXT_ID(MTXT_Surveillancetipoff),
 	M_LTXT_ID(MTXT_Chasethewitness),
 	M_LTXT_ID(MTXT_Trainpursuit),
@@ -48,7 +48,7 @@ char* MissionName[37] =
 	M_LTXT_ID(MTXT_Cainescompound),
 	M_LTXT_ID(MTXT_LeavingChicago),
 
-	// Havana
+	// Havana (8 - 17)
 	M_LTXT_ID(MTXT_Followupthelead),
 	M_LTXT_ID(MTXT_Hijackthetruck),
 	M_LTXT_ID(MTXT_Stopthetruck),
@@ -60,7 +60,7 @@ char* MissionName[37] =
 	M_LTXT_ID(MTXT_PursueJericho),
 	M_LTXT_ID(MTXT_EscapetheBrazilians),
 
-	// Vegas
+	// Vegas (18 - 27)
 	M_LTXT_ID(MTXT_Casinogetaway),
 	M_LTXT_ID(MTXT_Beatthetrain),
 	M_LTXT_ID(MTXT_Carbomb),
@@ -72,7 +72,7 @@ char* MissionName[37] =
 	M_LTXT_ID(MTXT_C4deal),
 	M_LTXT_ID(MTXT_Destroytheyard),
 
-	// Rio
+	// Rio (28 - 36)
 	M_LTXT_ID(MTXT_Buscrash),
 	M_LTXT_ID(MTXT_Stealthecopcar),
 	M_LTXT_ID(MTXT_Cainescash),
@@ -158,6 +158,7 @@ int gDontPingInCops = 0;
 int gBatterPlayer = 1;
 
 int wantedCar[2] = { -1, -1 };
+int wantedColour[2] = { -1, -1 };
 
 // [A]
 int wantedTimeOfDay = -1;
@@ -382,6 +383,12 @@ void SetupResidentModels()
 			// force palette
 			if (singlePal)
 				PlayerStartInfo[i]->palette = 0;
+			else
+				PlayerStartInfo[i]->palette = wantedColour[i];
+
+			// store for replay if necessary
+			if (gExtraConfig.m.SavedPos[i] == NULL)
+				SetSavedCar(i, PlayerStartInfo[i]);
 		}
 	}
 }
@@ -505,13 +512,7 @@ void LoadMission(int missionnum)
 
 		// [A] override start position if available, otherwise store it for the replay
 		if (gExtraConfig.mfStartPos)
-		{
 			GetSavedCar(PlayerStartInfo[0], 0);
-		}
-		else
-		{
-			SetSavedCar(0, PlayerStartInfo[0]);
-		}
 	}
 
 	if (MissionHeader->maxDamage != 0) 
@@ -2806,16 +2807,10 @@ void PreProcessTargets(void)
 			PlayerStartInfo[1]->model = target->s.car.model;
 			PlayerStartInfo[1]->palette = target->s.car.palette;
 
-			// [A] override start position if available, otherwise store it for the replay
+			// [A] override start position if available
 			if (gExtraConfig.mfStartPos)
-			{
 				GetSavedCar(PlayerStartInfo[1], 1);
-			}
-			else
-			{
-				SetSavedCar(1, PlayerStartInfo[1]);
-			}
-
+			
 			PlayerStartInfo[1]->controlType = CONTROL_TYPE_PLAYER;
 			PlayerStartInfo[1]->flags = 0;
 

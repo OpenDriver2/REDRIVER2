@@ -327,25 +327,34 @@ void SetupPlaneColours(u_int ambient)
 {
 	u_int r, g, b;
 
-	if (gWeather == 0 && (M_BIT(gTimeOfDay) & (M_BIT(TIME_DAWN) | M_BIT(TIME_DUSK))) == 0)
+	if (gWeather != WEATHER_NONE || (M_BIT(gTimeOfDay) & (M_BIT(TIME_DAWN) | M_BIT(TIME_DUSK))) != 0)
 	{
-		if (gTimeOfDay == TIME_DAY)
-		{
-			b = ambient & 255;
-			g = ambient >> 8 & 255;
-			r = ambient >> 16 & 255;
-			
-			plotContext.planeColours[1] = (r * 120 >> 7) << 16 | (g * 120 >> 7) << 8 | b * 120 >> 7;
-			plotContext.planeColours[2] = (r * 103 >> 7) << 16 | (g * 103 >> 7) << 8 | b * 103 >> 7;
-			plotContext.planeColours[3] = (r * 13 >> 5) << 16 | (g * 13 >> 5) << 8 | b * 13 >> 5;
-			plotContext.planeColours[0] = r << 16 | g << 8 | b;
-			plotContext.planeColours[4] = (r * 3 >> 3) << 16 | (g * 3 >> 3) << 8 | b * 3 >> 3;
-			plotContext.planeColours[5] = plotContext.planeColours[3];
-			plotContext.planeColours[6] = plotContext.planeColours[2];
-			plotContext.planeColours[7] = plotContext.planeColours[1];
-			return;
-		}
+		plotContext.planeColours[0] = ambient;
+		plotContext.planeColours[1] = ambient + 0x10101;
+		plotContext.planeColours[2] = ambient + 0x30303;
+		plotContext.planeColours[3] = ambient + 0x80808;
+		plotContext.planeColours[4] = ambient + 0xa0a0a;
+		plotContext.planeColours[5] = ambient + 0x80808;
+		plotContext.planeColours[6] = ambient + 0x30303;
+		plotContext.planeColours[7] = ambient + 0x10101;
+	}
+	else if (gTimeOfDay == TIME_DAY)
+	{
+		b = ambient & 255;
+		g = ambient >> 8 & 255;
+		r = ambient >> 16 & 255;
 
+		plotContext.planeColours[0] = M_INT_RGB(r, g, b);
+		plotContext.planeColours[1] = M_INT_RGB(r * 120 >> 7, g * 120 >> 7, b * 120 >> 7);
+		plotContext.planeColours[2] = M_INT_RGB(r * 103 >> 7, g * 103 >> 7, b * 103 >> 7);
+		plotContext.planeColours[3] = M_INT_RGB(r * 13 >> 5, g * 13 >> 5, b * 13 >> 5);
+		plotContext.planeColours[4] = M_INT_RGB(r * 3 >> 3, g * 3 >> 3, b * 3 >> 3);
+		plotContext.planeColours[5] = plotContext.planeColours[3];
+		plotContext.planeColours[6] = plotContext.planeColours[2];
+		plotContext.planeColours[7] = plotContext.planeColours[1];
+	}
+	else
+	{
 		plotContext.planeColours[0] = ambient;
 		plotContext.planeColours[1] = ambient;
 		plotContext.planeColours[2] = ambient;
@@ -354,17 +363,34 @@ void SetupPlaneColours(u_int ambient)
 		plotContext.planeColours[5] = ambient;
 		plotContext.planeColours[6] = ambient;
 		plotContext.planeColours[7] = ambient;
-		return;
 	}
+}
 
-	plotContext.planeColours[0] = ambient;
-	plotContext.planeColours[1] = ambient + 0x10101;
-	plotContext.planeColours[2] = ambient + 0x30303;
-	plotContext.planeColours[3] = ambient + 0x80808;
-	plotContext.planeColours[4] = ambient + 0xa0a0a;
-	plotContext.planeColours[5] = ambient + 0x80808;
-	plotContext.planeColours[6] = ambient + 0x30303;
-	plotContext.planeColours[7] = ambient + 0x10101;
+void SetDrawDistance(int level)
+{
+	switch (level)
+	{
+		case 1:
+			gDrawDistance = 441;
+			syscfg.gDrawDistanceLevel = 0;
+			break;
+		case 2:
+			gDrawDistance = 600;
+			syscfg.gDrawDistanceLevel = 1;
+			break;
+		case 3:
+			gDrawDistance = 1200;
+			syscfg.gDrawDistanceLevel = 2;
+			break;
+		case 4:
+			gDrawDistance = 1800;
+			syscfg.gDrawDistanceLevel = 3;
+			break;
+		case 5:
+			gDrawDistance = syscfg.gDrawDistance;
+			syscfg.gDrawDistanceLevel = 4;
+			break;
+	}
 }
 
 

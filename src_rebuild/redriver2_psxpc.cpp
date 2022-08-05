@@ -543,9 +543,6 @@ int main(int argc, char** argv)
 
 	config = ini_load(configFilename);
 
-	// best distance
-	gDrawDistance = 600;
-
 	int windowWidth = 800;
 	int windowHeight = 600;
 	int screenWidth = 800;
@@ -553,13 +550,14 @@ int main(int argc, char** argv)
 	int fullScreen = 0;
 	int vsync = 0;
 	int enableFreecamera = 0;
+	int drawDistance = -1;
 
 	extern int gUserLanguage;
+	extern int gDisableChicagoBridges;
+	extern int gContentOverride;
 
 	if (config)
 	{
-		extern int gDisableChicagoBridges;
-		extern int gContentOverride;
 		int newScrZ = gCameraDefaultScrZ;
 		const char* dataFolderStr = ini_get(config, "fs", "dataFolder");
 		const char* userReplaysStr = ini_get(config, "game", "userChases");
@@ -585,7 +583,7 @@ int main(int argc, char** argv)
 		ini_sget(config, "render", "bilinearFiltering", "%d", &g_cfg_bilinearFiltering);
 
 		// configure host game
-		ini_sget(config, "game", "drawDistance", "%d", &gDrawDistance);
+		ini_sget(config, "game", "drawDistance", "%d", &drawDistance);
 		ini_sget(config, "game", "dynamicLights", "%d", &gEnableDlights);
 		ini_sget(config, "game", "disableChicagoBridges", "%d", &gDisableChicagoBridges);
 		ini_sget(config, "game", "fieldOfView", "%d", &newScrZ);
@@ -642,6 +640,46 @@ int main(int argc, char** argv)
 	g_dbg_gameDebugMouse = FreeCameraMouseHandler;
 
 #endif
+
+	syscfg.windowWidth = windowWidth;
+	syscfg.windowHeight = windowHeight;
+	syscfg.screenWidth = screenWidth;
+	syscfg.screenHeight = screenHeight;
+	syscfg.fullScreen = fullScreen;
+	syscfg.vsync = g_cfg_swapInterval;
+
+	syscfg.gUserLanguage = gUserLanguage;
+	syscfg.gEnableDlights = gEnableDlights;
+	syscfg.gDisableChicagoBridges = gDisableChicagoBridges;
+	syscfg.gCameraDefaultScrZ = gCameraDefaultScrZ;
+	syscfg.gDriver1Music = gDriver1Music;
+	syscfg.gWidescreenOverlayAlign = gWidescreenOverlayAlign;
+	syscfg.gFastLoadingScreens = gFastLoadingScreens;
+	syscfg.gContentOverride = gContentOverride;
+
+	if (drawDistance != -1)
+	{	
+		syscfg.gDrawDistance = drawDistance;
+		SetDrawDistance(5);
+	}
+	else
+	{
+		syscfg.gDrawDistance = -1;
+
+		// best distance
+		SetDrawDistance(2);
+	}
+
+	syscfg.gDrawDistanceLevelBackup = syscfg.gDrawDistanceLevel;
+
+	syscfg.gTrafficDensity = 1;
+	syscfg.gPedestrianDensity = 1;
+
+	syscfg.psyx_cfg_pad1device = g_cfg_controllerToSlotMapping[0];
+	syscfg.psyx_cfg_pad2device = g_cfg_controllerToSlotMapping[1];
+	syscfg.psyx_cfg_swapInterval = g_cfg_swapInterval;
+	syscfg.psyx_cfg_pgxpMode = ((g_cfg_pgxpZBuffer != 0) << 1) | (g_cfg_pgxpTextureCorrection != 0);
+	syscfg.psyx_cfg_bilinearFiltering = g_cfg_bilinearFiltering;
 
 	PsyX_Initialise("REDRIVER2", fullScreen ? screenWidth : windowWidth, fullScreen ? screenHeight : windowHeight, fullScreen);
 

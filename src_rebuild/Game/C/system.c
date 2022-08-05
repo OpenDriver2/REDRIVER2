@@ -40,6 +40,9 @@ _repl_org				| 0x1FABBC | 0x3444  | probably inside mallocTab
 
 #else
 
+// initialized elsewhere
+SYSTEM_CONFIG syscfg;
+
 // Initialized in redriver2_main
 volatile char* _frontend_buffer = NULL;		// 0xFB400
 volatile char* _other_buffer = NULL;		// 0xF3000

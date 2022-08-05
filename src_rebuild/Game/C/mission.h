@@ -60,6 +60,7 @@ extern STOPCOPS gStopCops;
 extern MR_MISSION Mission;
 
 extern int wantedCar[2];
+extern int wantedColour[2];
 extern int wantedTimeOfDay;
 extern int wantedWeather;
 extern int wantedStartPos;

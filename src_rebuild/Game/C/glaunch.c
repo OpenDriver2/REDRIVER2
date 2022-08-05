@@ -192,6 +192,14 @@ void StoreGameVars(int replay)
 	}
 }
 
+int GetOptionOrDefault(int option_value, int default_value)
+{
+	if (option_value < 1)
+		return default_value;
+
+	return option_value - 1;
+}
+
 void LoadExtraData(EXTRA_CONFIG_DATA *extraData, int profile)
 {
 	if (extraData->magic == EXTRA_DATA_MAGIC)
@@ -206,16 +214,44 @@ void LoadExtraData(EXTRA_CONFIG_DATA *extraData, int profile)
 		{
 			if (gExtraConfig.sdType == 1)
 			{
-				// TODO: load profile overrides
+				extern void SetDrawDistance(int level);
+				extern int gEnableDlights;
+				extern int gUserLanguage;
+
+				gUserLanguage = GetOptionOrDefault(gExtraConfig.p.Language, syscfg.gUserLanguage);
+
+				// NB: not implemented yet
+				int fullScreen = GetOptionOrDefault(gExtraConfig.p.FullScreen, syscfg.fullScreen);
+
+				int pgxpMode = GetOptionOrDefault(gExtraConfig.p.PGXPMode, syscfg.psyx_cfg_pgxpMode);
+
+				g_cfg_pgxpZBuffer = (pgxpMode & 2);
+				g_cfg_pgxpTextureCorrection = (pgxpMode & 1);
+				g_cfg_swapInterval = GetOptionOrDefault(gExtraConfig.p.VSync, syscfg.vsync);
+				g_cfg_bilinearFiltering = GetOptionOrDefault(gExtraConfig.p.Bilinear, syscfg.psyx_cfg_bilinearFiltering);
+
+				int drawDistance = GetOptionOrDefault(gExtraConfig.p.DrawDistance, syscfg.gDrawDistanceLevelBackup);
+
+				SetDrawDistance(drawDistance);
+
+				gEnableDlights = GetOptionOrDefault(gExtraConfig.p.DynamicLights, syscfg.gEnableDlights);
 			}
+			else
+			{
+				// init profile configuration
+				gExtraConfig.sdType = 1;
+				gExtraConfig.gTrafficDensity = syscfg.gTrafficDensity + 1;
+				gExtraConfig.gPedestrianDensity = syscfg.gPedestrianDensity + 1;
 
-			// clear the data since we're done with it
-			memset((u_char*)&gExtraConfig.data, 0, sizeof(gExtraConfig.data));
+				gExtraConfig.p.Language = syscfg.gUserLanguage + 1;
+				gExtraConfig.p.FullScreen = syscfg.fullScreen + 1;
+				gExtraConfig.p.VSync = syscfg.vsync + 1;
+				gExtraConfig.p.Bilinear = syscfg.psyx_cfg_bilinearFiltering + 1;
+				gExtraConfig.p.PGXPMode = syscfg.psyx_cfg_pgxpMode + 1;
+				gExtraConfig.p.DrawDistance = syscfg.gDrawDistanceLevel + 1;
+				gExtraConfig.p.DynamicLights = syscfg.gEnableDlights + 1;
+			}
 		}
-
-		// initialize extra data for missions
-		gExtraConfig.sdType = 2;
-		gExtraConfig.m.AllowParkedTurnedWheels = 1;
 	}
 	else if (gHaveExtraData)
 	{
@@ -230,6 +266,9 @@ void LoadExtraData(EXTRA_CONFIG_DATA *extraData, int profile)
 				if (gExtraConfig.m.SavedSlot[i] != -1)
 				{
 					gSavedCars[i] = header->SavedData.CarPos[gExtraConfig.m.SavedSlot[i]];
+
+					header->wantedCar[i] = gSavedCars[i].model;
+					wantedColour[i] = gSavedCars[i].palette;
 
 					gExtraConfig.m.SavedPos[i] = &gSavedCars[i];
 				}
@@ -332,6 +371,9 @@ int GetSavedCar(STREAM_SOURCE *player, int slot)
 	player->position.vx = gExtraConfig.m.SavedPos[slot]->vx;
 	player->position.vz = gExtraConfig.m.SavedPos[slot]->vz;
 
+	wantedCar[slot] = player->model;
+	wantedColour[slot] = player->palette;
+
 	return 1;
 }
 
@@ -418,6 +460,13 @@ void State_GameStart(void* param)
 	NewLevel = 1;
 
 	StoreGameVars(0);
+
+	// clear the data since we're done with it
+	memset((u_char*)&gExtraConfig.data, 0, sizeof(gExtraConfig.data));
+
+	// initialize extra data for missions
+	gExtraConfig.sdType = 2;
+	gExtraConfig.m.AllowParkedTurnedWheels = 1;
 
 	switch (GameType)
 	{
@@ -571,6 +620,9 @@ void ReInitFrontend(int returnToMain)
 
 	wantedCar[1] = -1;
 	wantedCar[0] = -1;
+
+	wantedColour[1] = -1;
+	wantedColour[0] = -1;
 
 	wantedWeather = -1;
 	wantedTimeOfDay = -1;

@@ -95,6 +95,8 @@ extern int combointensity;
 extern int gForceLowDetailCars;
 extern int num_cars_drawn;
 
+extern void SetDrawDistance(int level);
+
 extern int PositionVisible(VECTOR* pos); // 0x0005D560
 
 extern void DrawMapPSX(int *comp_val); // 0x0003F6B0
