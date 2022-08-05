@@ -669,6 +669,51 @@ void DrawDrivingGameOverlays(void)
 	}
 }
 
+#ifndef PSX
+void DrawSpeedometer()
+{
+	extern u_char speedLimits[4];
+	
+	char buffer[32];
+
+	if (NumPlayers > 1)
+		return;
+
+	int playerCarId = player[0].playerCarId;
+
+	if (playerCarId == -1)
+		return;
+
+	CAR_DATA *cp = &car_data[playerCarId];
+
+	float KPH_FACTOR = 1.8875f;
+	float MPH_FACTOR = 1.6f;
+
+	int limitKmh = (int)(speedLimits[3] / KPH_FACTOR);
+	int limitMph = (int)(limitKmh / MPH_FACTOR);
+
+	int speedKmh = (int)(cp->hd.speed / KPH_FACTOR);
+	int speedMph = (int)(speedKmh / MPH_FACTOR);
+
+	sprintf(buffer, "%dmph", speedMph);
+
+	char col = 255;
+
+	if (FelonyBar.active && FIXEDH(cp->hd.wheel_speed) > speedLimits[3])
+		col = ((CameraCnt + 1) % 16) * 16;
+
+	// setup scaling and color
+	SetTextScale(0xc00, 1);
+	SetTextColour(255, col, col);
+
+	// display the speedometer
+	PrintStringRightAligned(buffer, gMapXOffset + MAP_SIZE_W, gMapYOffset + MAP_SIZE_H - 2);
+
+	// restore scaling
+	ResetTextScale();
+}
+#endif
+
 
 // [D] [T]
 void DisplayOverlays(void)
@@ -735,6 +780,10 @@ void DisplayOverlays(void)
 			if (*GetPlayerFelonyData() > FELONY_PURSUIT_MIN_VALUE)
 				DrawCopIndicators();
 		}
+
+#ifndef PSX
+		DrawSpeedometer();
+#endif
 	}
 	else
 	{
