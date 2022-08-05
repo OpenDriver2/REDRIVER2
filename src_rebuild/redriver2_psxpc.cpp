@@ -207,7 +207,7 @@ void GameDebugKeys(int nKey, char down)
 
 		static bool already = false;
 		static bool leadReady = false;
-		static int lastmodel = 1;
+		static int lastmodel = 4;
 
 		/*
 			---- LEAD VALUES ----
@@ -269,18 +269,19 @@ void GameDebugKeys(int nKey, char down)
 						// rare chance of spawning special car
 						model = MissionHeader->residentModels[4];
 						palette = 0;
-						lastmodel = model;
-						break;
 					}
 					else if (tmp & 3)
 					{
 						model = newmodel;
 						palette = CameraCnt % 6;
-						lastmodel = model;
-						break;
-					}
+					} 
 				}
 			}
+
+			if (model > 4)
+				palette = 0;
+
+			lastmodel = model;
 		}
 
 		// add a little more room
