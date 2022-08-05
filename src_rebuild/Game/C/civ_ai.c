@@ -26,8 +26,10 @@
 #include "cutrecorder.h"
 #include "draw.h"
 #include "glaunch.h"
+#include "pad.h"
 
-const u_char speedLimits[3] = { 56, 97, 138 };
+// [A] keep track of player's speed limit using last one
+u_char speedLimits[4] = { 56, 97, 138 };
 
 #ifdef DEBUG
 struct

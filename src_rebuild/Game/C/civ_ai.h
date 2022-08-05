@@ -12,7 +12,7 @@ typedef struct _EXTRA_CIV_DATA
 	u_char controlFlags;
 } EXTRA_CIV_DATA;
 
-extern const u_char speedLimits[3];
+extern u_char speedLimits[4];
 extern unsigned char reservedSlots[MAX_CARS];
 extern int frameStart;
 
