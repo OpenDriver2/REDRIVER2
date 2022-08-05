@@ -15,6 +15,12 @@
 #ifdef DYNAMIC_LIGHTING
 void Tile1x1Lit(MODEL* model)
 {
+	if (gNumDlights == 0)
+	{
+		Tile1x1(model);
+		return;
+	}
+
 	int opz, Z;
 	int ofse;
 	PL_POLYFT4* polys;
@@ -492,6 +498,12 @@ void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 #ifdef DYNAMIC_LIGHTING
 void drawMeshLit(MVERTEX(*VSP)[5][5], int m, int n, _pct* pc)
 {
+	if (gNumDlights == 0)
+	{
+		drawMesh(VSP, m, n, pc);
+		return;
+	}
+
 	POLY_GT4* prim;
 	int z, opz;
 
