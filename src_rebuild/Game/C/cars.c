@@ -276,6 +276,12 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 #ifdef DYNAMIC_LIGHTING
 void plotCarPolyGT3Lit(int numTris, CAR_POLY* src, SVECTOR* vlist, SVECTOR* nlist, plotCarGlobals* pg, int palette)
 {
+	if (gNumDlights == 0)
+	{
+		plotCarPolyGT3(numTris, src, vlist, nlist, pg, palette);
+		return;
+	}
+
 	int Z;
 	int otz;
 	SVECTOR* v2;
