@@ -758,7 +758,7 @@ void SetupDoNowt(LPPEDESTRIAN pPed)
 {
 	pPed->speed = 0;
 	pPed->dir.vz = 0;
-	pPed->type = PED_ACTION_BACK;
+	pPed->type = PED_ACTION_TIME;
 
 	SetupPedMotionData(pPed);
 
@@ -945,6 +945,19 @@ void PedDoNothing(LPPEDESTRIAN pPed)
 
 		if (iAllowWatch != 0)
 			iAllowWatch--;
+	}
+	else if (pPed->speed == 0)
+	{
+		if (pPed->doing_turn != 0)
+		{
+			pPed->type = PED_ACTION_BACK;
+			SetupPedMotionData(pPed);
+		}
+		else if (pPed->interest != 0 && pPed->type != PED_ACTION_TIME)
+		{
+			pPed->type = PED_ACTION_TIME;
+			SetupPedMotionData(pPed);
+		}
 	}
 }
 
@@ -1314,7 +1327,7 @@ void PedPressButton(LPPEDESTRIAN pPed)
 	}
 	else
 	{
-		pPed->type = PED_ACTION_BACK;
+		pPed->type = PED_ACTION_TIME;
 		pPed->fpAgitatedState = NULL;
 		pPed->frame1 = 0;
 
@@ -2966,7 +2979,7 @@ int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVEC
 
 	if (pCar == NULL)
 	{
-		pedptr->type = PED_ACTION_BACK;
+		pedptr->type = PED_ACTION_TIME;
 		pedptr->fpAgitatedState = NULL;
 		pedptr->fpRestState = fpPedPersonalityFunctions[0];
 	}
