@@ -409,6 +409,9 @@ void LoadLevelSFX(int missionNum)
 			phrase_top = 3;
 			break;
 	}
+	
+	// [A] pedestrian sounds
+	LoadBankFromLump(SOUND_BANK_TANNER, SBK_ID_JONES);
 
 	switch (missionNum)
 	{

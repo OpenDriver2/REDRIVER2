@@ -106,6 +106,9 @@ int num_pedestrians;
 
 int max_sitter_peds,max_placed_peds;
 
+int ped_speech_timer = 0;
+int ped_speech_last = -1;
+
 #ifndef PSX
 #define MAX_TANNER_PEDS 8
 #define NO_MORE_PEDS() (num_pedestrians >= max_placed_peds)
@@ -210,6 +213,9 @@ void InitPedestrians(void)
 
 	memset((u_char*)pedestrians, 0, sizeof(pedestrians));
 	DestroyPedestrians();
+
+	ped_speech_timer = 0;
+	ped_speech_last = -1;
 
 	max_pedestrians = 28;
 
@@ -1948,6 +1954,47 @@ void CivPedJump(LPPEDESTRIAN pPed)
 		pPed->speed *= 2;
 	else if (pPed->frame1 == 14)
 		pPed->speed /= 2;
+	else if (pPed->frame1 == 1 && pPed->interest != 0)
+	{
+		ped_speech_timer -= pPed->interest / 10;
+
+		if (ped_speech_timer < 200)
+		{
+			int pitch = 0x1000;
+
+			if (((CameraCnt - frameStart) % 16) == 0)
+			{
+				int rand = Random2(0) & 0x3f;
+				if (rand % 32)
+					rand = (-rand + (rand & 0x7f));
+				pitch -= rand;
+			}
+
+			int sample = Random2(0) % 5;
+
+			if (sample == 0)
+				sample = 5; // HEY!
+			else if ((CameraCnt % sample) == 0)
+				sample = 6; // DAMN!
+			else
+				sample += 7; // WOAH! / WHAT THE!?
+
+			if (sample != ped_speech_last)
+			{
+				pitch += ((sample >> 3) * 48);
+
+				Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, sample, pPed->position.vx, pPed->position.vy, pPed->position.vz, -4500, pitch);
+				
+				ped_speech_timer = pPed->interest;
+				ped_speech_last = sample;
+			}	
+			else
+			{
+				// give the next ped a chance to say something
+				ped_speech_timer = 0;
+			}
+		}
+	}
 
 	AnimatePed(pPed);
 
