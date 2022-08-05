@@ -265,10 +265,10 @@ FixedEvent chicagoDoor[3] =
 	{ -207616, 0, 659706, 0 },
 	0,
 	0,
-	800u,
-	0u,
-	25u,
-	50u,
+	800,
+	0,
+	25,
+	50,
 	80,
 	0,
 	0,
@@ -279,10 +279,10 @@ FixedEvent chicagoDoor[3] =
 	{ -209152, -512, 668928, 0 },
 	0,
 	0,
-	2496u,
-	4096u,
-	25u,
-	50u,
+	2496,
+	4096,
+	25,
+	50,
 	64,
 	0,
 	0,
@@ -293,10 +293,10 @@ FixedEvent chicagoDoor[3] =
 	{ 195264, -3728, 74752, 0 },
 	0,
 	0,
-	0u,
-	0u,
-	0u,
-	0u,
+	0,
+	0,
+	0,
+	0,
 	1088,
 	0,
 	0,
@@ -325,10 +325,10 @@ FixedEvent havanaFixed[3] =
 	{ -455168, 1529, -125440, 0 },
 	0,
 	0,
-	0u,
-	0u,
-	0u,
-	0u,
+	0,
+	0,
+	0,
+	0,
 	1536,
 	0,
 	0,
@@ -339,10 +339,10 @@ FixedEvent havanaFixed[3] =
 	{ -487936, 0, -136689, 0 },
 	0,
 	0,
-	1152u,
-	0u,
-	10u,
-	20u,
+	1152,
+	0,
+	10,
+	20,
 	80,
 	0,
 	0,
@@ -432,10 +432,10 @@ FixedEvent rioDoor[6] =
 	{ -123328, -177, -254720, 0 },
 	0,
 	0,
-	3200u,
-	4096u,
-	25u,
-	50u,
+	3200,
+	4096,
+	25,
+	50,
 	96,
 	0,
 	0,
@@ -446,10 +446,10 @@ FixedEvent rioDoor[6] =
 	{ -125248, -17, -256208, 0 },
 	0,
 	0,
-	1600u,
-	0u,
-	25u,
-	50u,
+	1600,
+	0,
+	25,
+	50,
 	80,
 	0,
 	0,
@@ -460,10 +460,10 @@ FixedEvent rioDoor[6] =
 	{ -274000, -17, -321408, 0 },
 	0,
 	0,
-	1748u,
-	3072u,
-	25u,
-	50u,
+	1748,
+	3072,
+	25,
+	50,
 	80,
 	0,
 	0,
@@ -474,10 +474,10 @@ FixedEvent rioDoor[6] =
 	{ -274000, -17, -322432, 0 },
 	0,
 	0,
-	2348u,
-	1024u,
-	25u,
-	50u,
+	2348,
+	1024,
+	25,
+	50,
 	80,
 	0,
 	0,
@@ -488,10 +488,10 @@ FixedEvent rioDoor[6] =
 	{ -40432, -17, 383328, 0 },
 	0,
 	0,
-	700u,
-	2048u,
-	25u,
-	50u,
+	700,
+	2048,
+	25,
+	50,
 	80,
 	0,
 	0,
@@ -502,10 +502,10 @@ FixedEvent rioDoor[6] =
 	{ -39424, -17, 383328, 0 },
 	0,
 	0,
-	900u,
-	0u,
-	25u,
-	50u,
+	900,
+	0,
+	25,
+	50,
 	80,
 	0,
 	0,
@@ -517,17 +517,6 @@ FixedEvent rioDoor[6] =
 Helicopter HelicopterData =
 {
   400,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  { { 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u }, 0u, 0u, 0, 0 },
-  0,
-  0,
-  0,
-  0
 };
 
 static Foam foam;
@@ -673,10 +662,9 @@ void VisibilityLists(VisType type, int i)
 	if (type == VIS_SORT)
 	{
 		num = 0;
-		do {
-			j = 0;
-
-			while (j < count)
+		do
+		{
+			for (j = 0; j < count; j++)
 			{
 				vis = GetVisValue(list[num][j], num);
 
@@ -689,6 +677,7 @@ void VisibilityLists(VisType type, int i)
 					tempList = list[num][j];
 
 					k = j - 1;
+
 					do {
 						n = k;
 
@@ -704,14 +693,10 @@ void VisibilityLists(VisType type, int i)
 					table[n] = vis;
 					list[num][n] = tempList;
 				}
-
-				j++;
 			}
-			num++;
-		} while (num < 2);
+		} while (++num < 2);
 
-		num = 0;
-		while (num < NumPlayers)
+		for (num = 0; num < NumPlayers; num++)
 		{
 			if (num != 0)
 				camera = 0x4000;
@@ -726,8 +711,6 @@ void VisibilityLists(VisType type, int i)
 
 			do {
 			} while ((*(firstZ[num]++) & camera) == 0);
-
-			num++;
 		}
 	}
 	else if (type == VIS_INIT)
@@ -749,12 +732,10 @@ void VisibilityLists(VisType type, int i)
 			count = 4;
 		}
 
-		num = 0;
-		while (num < NumPlayers)
+		for (num = 0; num < NumPlayers; num++)
 		{
 			firstX[num] = xList;
 			firstZ[num] = zList;
-			num++;
 		}
 	}
 	else if (type == VIS_ADD)
@@ -1014,8 +995,7 @@ void SetUpEvents(int full)
 		p = &LiftingBridges[1];
 
 		// make lifting bridges
-		n = 0;
-		while (n < cBridges)
+		for (n = 0; n < cBridges; n++)
 		{
 			int timeOffset;
 			cameraEventsActive = 1;
@@ -1055,17 +1035,18 @@ void SetUpEvents(int full)
 			timeOffset = (Random2(0) >> (n & 31) & 255) * 32;
 
 			evt = &event[cEvents];
+
 			for (i = 0; i < 2; i++)
 			{
 				if (direction)
 				{
 					evt[i].flags = 0x1;
-					evt[i].position.vx = *p;
+					evt[i].position.vx = p[0];
 				}
 				else
 				{
 					evt[i].flags = 0x21;
-					evt[i].position.vz = *p;
+					evt[i].position.vz = p[0];
 				}
 
 				evt[i].node = p;
@@ -1089,30 +1070,28 @@ void SetUpEvents(int full)
 			cEvents += 2;
 
 			e = &evt->next->next;
-			n++;
 		}
 
 		if (full)
 			ElTrackModel = FindModelIdxWithName("ELTRAIN");
 
-		count = ElTrainData[0];
 		p = ElTrainData;
+		
+		count = p[0];
 
-		n = 0;
 		missionTrain[0].engine = &event[cEvents];
 		missionTrain[1].engine = missionTrain[0].engine;
 
 		// add trains
-		while (n < count-1)
+		for (n = 0; n < count - 1; n++)
 		{
 			// randomize carriage count
 			if (n != 0)
-				i = (Random2(0) >> (n & 0x1f) & 3U) + 2;
+				i = (Random2(0) >> (n & 0x1f) & 3) + 2;
 			else
 				i = 5;
 
 			direction = 1;
-			n++;
 			p++;
 
 			while (--i >= 0)
@@ -1141,11 +1120,9 @@ void SetUpEvents(int full)
 				cEvents++;
 			}
 
-			//i = *p;
-
-			do
-			{
-			} while (*++p + PATH_NODE_WRAP > 1);
+			// skip PATH_NODE_STATION, PATH_NODE_REVERSE
+			while (p[1] + PATH_NODE_WRAP > 1)
+				p++;
 		}
 
 		fixedEvent = chicagoDoor;
@@ -1239,9 +1216,9 @@ void SetUpEvents(int full)
 		e = &(*e)->next;
 		cEvents = 2;
 
-		if (full != 0)
+		if (full)
 		{
-			event->model = FindModelIdxWithName("FERRY");
+			event[0].model = FindModelIdxWithName("FERRY");
 			event[1].model = FindModelIdxWithName("LIFT");
 
 			havanaFixed[1].model = FindModelIdxWithName(havanaFixed[1].modelName);
@@ -3200,7 +3177,12 @@ void DrawEvents(int camera)
 									if (gTimeOfDay != TIME_DAY)
 										SetupPlaneColours(0x00282828);
 
-									RenderModel(foam.model, &matrix, &pos, 200, (foam.rotate & 0x8000) ? 0x3 : 0x1, 1, 0);
+									int flags = PLOT_TRANSPARENT;
+
+									if (foam.rotate & 0x8000)
+										flags |= PLOT_INV_CULL;
+
+									RenderModel(foam.model, &matrix, &pos, 200, flags, 1, 0);
 									SetupPlaneColours(combointensity);
 								}
 							}
