@@ -159,8 +159,8 @@ void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
 	copyVector(&subdiVerts.verts[0][3], &verts[src->v2]);
 	subdiVerts.verts[0][3].uv.val = *(ushort*)&src->uv2;
 
-	makeMesh((MVERTEX(*)[5][5])subdiVerts.verts, m, m);
-	drawMesh((MVERTEX(*)[5][5])subdiVerts.verts, m, m, &plotContext);
+	makeMesh(&subdiVerts.verts, m, m);
+	drawMesh(&subdiVerts.verts, m, m, &plotContext);
 
 	plotContext.ot -= 28;
 }
@@ -216,8 +216,8 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 	}
 
 	plotContext.primptr = current->primptr;
-	plotContext.ptexture_pages = (ushort(*)[128])texture_pages;
-	plotContext.ptexture_cluts = (ushort(*)[128][32])texture_cluts;
+	plotContext.ptexture_pages = &texture_pages;
+	plotContext.ptexture_cluts = &texture_cluts;
 	plotContext.polySizes = PolySizes;
 	plotContext.ot = current->ot;
 	plotContext.colour = spriteColour;
@@ -279,8 +279,8 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 				copyVector(&subdiVerts.verts[0][3], &verts[src->v2]);
 				subdiVerts.verts[0][3].uv.val = *(ushort*)&src->uv2;
 
-				makeMesh((MVERTEX(*)[5][5])subdiVerts.verts, 4, 4);
-				drawMesh((MVERTEX(*)[5][5])subdiVerts.verts, 4, 4, &plotContext);
+				makeMesh(&subdiVerts.verts, 4, 4);
+				drawMesh(&subdiVerts.verts, 4, 4, &plotContext);
 
 				src++;
 			}
@@ -747,8 +747,7 @@ void PlotBuildingModel(MODEL* model, int rot, _pct* pc)
 
 	r = (rot >> 3) * 4;
 
-	i = model->num_polys;
-	while (i-- > 0)
+	for (i = model->num_polys; i > 0; i--)
 	{
 		ptype = polys->id & 31;
 
@@ -842,8 +841,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 
 	r = (rot >> 3) * 4;
 
-	i = model->num_polys;
-	while (i-- > 0)
+	for (i = model->num_polys; i > 0; i--)
 	{
 		// iterate through polygons
 		// with skipping
@@ -879,20 +877,10 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 			pc->tpage = (*pc->ptexture_pages)[polys->texture_set];
 			pc->clut = (*pc->ptexture_cluts)[polys->texture_set][polys->texture_id];
 
-			minZ = pc->scribble[2];
-			if (pc->scribble[1] < minZ)
-				minZ = pc->scribble[1];
-
-			if (pc->scribble[0] < minZ)
-				minZ = pc->scribble[0];
-
-			maxZ = pc->scribble[2];
-			if (maxZ < pc->scribble[1])
-				maxZ = pc->scribble[1];
-
+			minZ = MIN(pc->scribble[0], MIN(pc->scribble[1], pc->scribble[2]));
+			maxZ = MAX(pc->scribble[0], MAX(pc->scribble[1], pc->scribble[2]));
+			
 			diff = maxZ - minZ;
-			if (maxZ < pc->scribble[0])
-				diff = pc->scribble[0] - minZ;
 
 			ushort uv0, uv1, uv2, uv3;
 
@@ -913,7 +901,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 				uv3 = *(ushort*)&polys->uv3;
 			}
 
-			if (n == 0 || diff << 2 <= minZ - 350)
+			if (n == 0 || minZ - 350 >= (diff << 2))
 			{
 				prims = (POLY_FT4*)pc->primptr;
 
@@ -1081,8 +1069,7 @@ void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 	if (pc->flags & PLOT_TRANSPARENT)
 		combo |= 0x2000000;
 
-	i = model->num_polys;
-	while (i > 0)
+	for (i = model->num_polys; i > 0; i--)
 	{
 		// iterate through polygons
 		// with skipping
@@ -1091,7 +1078,6 @@ void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 		if (ptype != 11 && ptype != 21 && ptype != 23)
 		{
 			polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
-			i--;
 			continue;
 		}
 
@@ -1134,20 +1120,10 @@ void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 			if ((pc->flags & PLOT_CUSTOM_PALETTE) == 0) // [A] custom palette flag - for pedestrian heads
 				pc->clut = (*pc->ptexture_cluts)[polys->texture_set][polys->texture_id];
 
-			minZ = pc->scribble[2];
-			if (pc->scribble[1] < minZ)
-				minZ = pc->scribble[1];
-
-			if (pc->scribble[0] < minZ)
-				minZ = pc->scribble[0];
-
-			maxZ = pc->scribble[2];
-			if (maxZ < pc->scribble[1])
-				maxZ = pc->scribble[1];
+			minZ = MIN(pc->scribble[0], MIN(pc->scribble[1], pc->scribble[2]));
+			maxZ = MAX(pc->scribble[0], MAX(pc->scribble[1], pc->scribble[2]));
 
 			diff = maxZ - minZ;
-			if (maxZ < pc->scribble[0])
-				diff = pc->scribble[0] - minZ;
 
 			ushort uv0, uv1, uv2, uv3;
 
@@ -1168,7 +1144,7 @@ void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 				uv3 = *(ushort*)&polys->uv3;
 			}
 
-			if (n == 0 || diff << 2 <= minZ - 350)
+			if (n == 0 || minZ - 350 >= (diff << 2))
 			{
 				prims = (POLY_FT4*)pc->primptr;
 
@@ -1201,13 +1177,14 @@ void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 			}
 			else
 			{
-				r = n;
+				int sub;
+				sub = n;
 				if (n == 1)
 				{
 					if (minZ - 150 < (diff << 1))
-						r = 4;
+						sub = 4;
 					else
-						r = 2;
+						sub = 2;
 				}
 
 				copyVector(&subdiVerts.verts[0][0], &srcVerts[polys->v0]);
@@ -1222,13 +1199,12 @@ void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 				copyVector(&subdiVerts.verts[0][3], &srcVerts[polys->v2]);
 				subdiVerts.verts[0][3].uv.val = uv2;
 
-				makeMesh((MVERTEX(*)[5][5])subdiVerts.verts, r, r);
-				drawMesh((MVERTEX(*)[5][5])subdiVerts.verts, r, r, pc);
+				makeMesh((MVERTEX(*)[5][5])subdiVerts.verts, sub, sub);
+				drawMesh((MVERTEX(*)[5][5])subdiVerts.verts, sub, sub, pc);
 			}
 		}
 
 		polys = (PL_POLYFT4*)((char*)polys + pc->polySizes[ptype]);
-		i--;
 	}
 }
 
@@ -1440,15 +1416,11 @@ void DrawMapPSX(int* comp_val)
 								{
 									QuickUnpackCellObject(ppco, &ci.nearCell, &ground_debris[groundDebrisIndex]);
 
-									if (groundDebrisIndex < MAX_GROUND_DEBRIS - 1)
-										groundDebrisIndex++;
-									else
+									if (++groundDebrisIndex > MAX_GROUND_DEBRIS - 1)
 										groundDebrisIndex = 0;
 								}
 
-								if (treecount < 15)
-									treecount++;
-								else
+								if (++treecount > 15)
 									treecount = 0;
 							}
 						}
@@ -1474,15 +1446,11 @@ void DrawMapPSX(int* comp_val)
 							{
 								if (model->flags2 & MODEL_FLAG_ALLEY)
 								{
-									alleycount++;
-
-									if (alleycount == 13)
+									if (++alleycount == 13)
 									{
 										QuickUnpackCellObject(ppco, &ci.nearCell, &ground_debris[groundDebrisIndex]);
 
-										if (groundDebrisIndex < MAX_GROUND_DEBRIS - 1)
-											groundDebrisIndex++;
-										else
+										if (++groundDebrisIndex > MAX_GROUND_DEBRIS - 1)
 											groundDebrisIndex = 0;
 
 										alleycount = 0;
@@ -1594,7 +1562,7 @@ void AddDlight(VECTOR* position, CVECTOR* color, int radius)
 {
 	DLIGHT* pLight;
 	VECTOR lightPos;
-	if (gNumDlights + 1 >= MAX_DLIGHTS)
+	if (!gEnableDlights || gNumDlights + 1 >= MAX_DLIGHTS)
 	{
 		return;
 	}
@@ -1613,6 +1581,9 @@ void GetDLightLevel(SVECTOR* position, u_int* inOutColor)
 	DLIGHT* pLight;
 	int dx, dy, dz, dist, light;
 	u_int lightR, lightG, lightB;
+
+	if (!gEnableDlights || gNumDlights == 0)
+		return;
 
 	lightR = (*inOutColor & 255);
 	lightG = (*inOutColor >> 8 & 255);
