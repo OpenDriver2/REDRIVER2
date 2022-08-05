@@ -600,9 +600,7 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 				*(ushort*)&poly->u2 = *(ushort*)&light_pool_texture.coords.u2;
 				*(ushort*)&poly->u3 = *(ushort*)&light_pool_texture.coords.u3;
 
-				poly->r0 = col->r / 2;
-				poly->g0 = col->g / 2;
-				poly->b0 = col->b / 2;
+				setRGB0(poly, col->r / 2, col->g / 2, col->b / 2);
 
 				gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
 
@@ -1251,10 +1249,8 @@ void DisplayLightReflections(VECTOR* v1, CVECTOR* col, short size, TEXTURE_DETAI
 			poly->tpage = texture->tpageid | 0x20;
 			poly->clut = texture->clutid;
 
-			poly->r0 = thiscol.r;
-			poly->g0 = thiscol.g;
-			poly->b0 = thiscol.b;
-
+			setRGB0(poly, thiscol.r, thiscol.g, thiscol.b);
+			
 			addPrim(current->ot + (z >> 4), poly);
 			current->primptr += sizeof(POLY_FT4);
 		}
@@ -1319,8 +1315,7 @@ void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 		size = 300;
 	}
 
-	count = 0;
-	for(count = 0; count < 4; count++)
+	for(count = 0; count < MAX_DAMAGED_LAMPS; count++)
 	{
 		if (dam->index == cop->pos.vx + cop->pos.vz) 
 		{
@@ -1705,10 +1700,8 @@ void ShowFlare(VECTOR* v1, CVECTOR* col, short size, int rotation)
 	setPolyFT4(poly);
 	setSemiTrans(poly, 1);
 
-	poly->r0 = col->r >> 1;
-	poly->g0 = col->g >> 1;
-	poly->b0 = col->b >> 1;
-
+	setRGB0(poly, col->r >> 1, col->g >> 1, col->b >> 1);
+	
 	gte_stsz(&z);
 
 	if (z >> 3 > 39)
@@ -1739,12 +1732,16 @@ void AddTrafficLight(CELL_OBJECT *cop, int x, int y, int z, int flag, int yang)
 	int tempfade;
 	int lDiffAnglesX, lDiffAnglesY;
 	int AbsX, AbsY;
+	int cy, sy;
 	CVECTOR a, c;
 	VECTOR v1, v2;
 
+	cy = RCOS(yang);
+	sy = RSIN(yang);
+
 	v1.vy = (cop->pos.vy - camera_position.vy) + y;
-	v1.vx = (cop->pos.vx - camera_position.vx) + FIXEDH(RCOS(yang) * x + RSIN(yang) * z);
-	v1.vz = (cop->pos.vz - camera_position.vz) + FIXEDH(RCOS(yang) * z - RSIN(yang) * x);
+	v1.vx = (cop->pos.vx - camera_position.vx) + FIXEDH(cy * x + sy * z);
+	v1.vz = (cop->pos.vz - camera_position.vz) + FIXEDH(cy * z - sy * x);
 
 	a.cd = 0;
 	
@@ -1949,10 +1946,8 @@ void ShowLight1(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 	setPolyFT4(poly);
 	SetSemiTrans(poly, 1);
 
-	poly->r0 = col->r;
-	poly->g0 = col->g;
-	poly->b0 = col->b;
-
+	setRGB0(poly, col->r, col->g, col->b);
+	
 	gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
 
 	gte_stsz(&z);
@@ -2039,9 +2034,7 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 	poly->u3 = texture->coords.u3;
 	poly->v3 = texture->coords.v3;
 
-	poly->r0 = col->r;
-	poly->g0 = col->g;
-	poly->b0 = col->b;
+	setRGB0(poly, col->r, col->g, col->b);
 
 	gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
 
@@ -2284,10 +2277,8 @@ void ShowGroundLight(VECTOR *v1, CVECTOR *col, short size)
 		poly->tpage = light_texture.tpageid | 0x20;
 		poly->clut = light_texture.clutid;;
 
-		poly->r0 = col->r;
-		poly->g0 = col->g;
-		poly->b0 = col->b;
-
+		setRGB0(poly, col->r, col->g, col->b);
+		
 		gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
 
 		gte_ldv0(&vert[3]);
@@ -2352,10 +2343,8 @@ void RoundShadow(VECTOR *v1, CVECTOR *col, short size)
 	setPolyFT4(poly);
 	setSemiTrans(poly, 1);
 
-	poly->r0 = col->r;
-	poly->g0 = col->g;
-	poly->b0 = col->b;
-
+	setRGB0(poly, col->r, col->g, col->b);
+	
 	gte_stsz(&z);
 
 	if (z - 150 < 9851)
@@ -2511,13 +2500,15 @@ void DisplaySpark(SMOKE *spark)
 		{
 			poly->r0 = 0;
 			poly->g0 = (spark->transparency >> 3);
-			poly->r1 = 0;
 			poly->b0 = (spark->transparency >> 4);
+
+			poly->r1 = 0;
 			poly->g1 = (spark->transparency >> 3);
+			poly->b1 = (spark->transparency >> 4);
+
 			poly->r2 = 12;
 			poly->g2 = 4;
 			poly->b2 = 4;
-			poly->b1 = (spark->transparency >> 4);
 		}
 	}
 	else
@@ -2525,9 +2516,11 @@ void DisplaySpark(SMOKE *spark)
 		poly->r0 = spark->transparency;
 		poly->g0 = spark->transparency;
 		poly->b0 = spark->transparency / 2;
+
 		poly->r1 = spark->transparency;
 		poly->g1 = spark->transparency;
 		poly->b1 = spark->transparency / 2;
+
 		poly->r2 = spark->transparency;
 		poly->g2 = 0;
 		poly->b2 = 0;
@@ -2794,7 +2787,7 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 		mysmoke->drift.vy = 0;
 		mysmoke->drift.vz = 0;
 
-		if (mysmoke->life < 40 || SmokeType == 4)
+		if (mysmoke->life < 40 || SmokeType == SMOKE_FIRE)
 		{
 			mysmoke->drift_change.vx = 0;
 			mysmoke->drift_change.vy = 1;
@@ -3063,7 +3056,7 @@ void DisplaySmoke(SMOKE* smoke)
 	}
 	else if (smoke->flags & 0x1000)
 	{
-		if ((smoke->transparency >> 3) + 50 & 0xff < 60)
+		if (((smoke->transparency >> 3) + 50 & 0xff) < 60)
 			poly->g0 = (smoke->transparency >> 3);
 		else
 			poly->g0 = smoke->transparency >> 2;
