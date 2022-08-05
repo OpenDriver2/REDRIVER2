@@ -770,6 +770,8 @@ typedef struct _TARGET
 				} event;
 			};
 		} s;
+
+		int data[15];
 	};
 } MS_TARGET;
 
