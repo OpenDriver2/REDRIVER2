@@ -854,6 +854,22 @@ void InitTrain(EVENT* ev, int count, int type)
 	}
 }
 
+// [A]
+void AddEvent(EVENT *ev, EVENT*** e)
+{
+	**e = ev;
+	*e = &ev->next;
+}
+
+// [A]
+void NewEvent(EVENT *ev, EVENT*** e)
+{
+	**e = ev;
+	ev->next = &ev[1];
+	
+	*e = &(ev->next)->next;
+}
+
 // [D] [T]
 void InitDoor(FixedEvent* ev, EVENT*** e, int* cEvents)
 {
@@ -861,8 +877,7 @@ void InitDoor(FixedEvent* ev, EVENT*** e, int* cEvents)
 	ev->rotation = ev->finalRotation;
 	ev->flags |= 0x200;
 
-	*(FixedEvent**)*e = ev;	// [A] is that gonna work?
-	*e = &(**e)->next;
+	AddEvent((EVENT*)ev, e);
 
 	VisibilityLists(VIS_ADD, (ev - fixedEvent) | 0x80);
 }
@@ -1062,14 +1077,9 @@ void SetUpEvents(int full)
 				p++;
 			}
 
-			*e = &event[cEvents];
-
-			evt = *e;
-			evt->next = &event[cEvents + 1];
-
+			NewEvent(evt, &e);
+			
 			cEvents += 2;
-
-			e = &evt->next->next;
 		}
 
 		if (full)
@@ -1112,9 +1122,8 @@ void SetUpEvents(int full)
 				if (full)
 					evt->model = ElTrackModel;
 
-				*e = evt;
-				e = &(*e)->next;
-
+				AddEvent(evt, &e);
+				
 				VisibilityLists(VIS_ADD, cEvents);
 
 				cEvents++;
@@ -1130,9 +1139,8 @@ void SetUpEvents(int full)
 		InitDoor(&chicagoDoor[0], &e, &cEvents);
 		InitDoor(&chicagoDoor[1], &e, &cEvents);
 
-		*e = (EVENT*)&chicagoDoor[2];
-		e = &(*e)->next;
-
+		AddEvent((EVENT*)&chicagoDoor[2], &e);
+		
 		VisibilityLists(VIS_ADD, 130);
 
 		if (full)
@@ -1187,18 +1195,17 @@ void SetUpEvents(int full)
 		evt->data[2] = RCOS(CameraCnt * 16) + 4096 >> 7;
 
 		VisibilityLists(VIS_ADD, 0);
-		MakeEventTrackable(evt);
+		MakeEventTrackable(event);
 
-		*e = evt;
+		AddEvent(event, &e);
+
 		fixedEvent = havanaFixed;
-		e = &(*e)->next;
+		
+		InitDoor(&havanaFixed[0], &e, &cEvents);
+		InitDoor(&havanaFixed[2], &e, &cEvents);
 
-		InitDoor(havanaFixed, &e, &cEvents);
-		InitDoor(havanaFixed + 2, &e, &cEvents);
-
-		*e = (EVENT*)(&havanaFixed[1]);
-		e = &(*e)->next;
-
+		AddEvent((EVENT*)&havanaFixed[1], &e);
+		
 		VisibilityLists(VIS_ADD, 129);
 
 		evt[1].flags = 0x4212;
@@ -1212,8 +1219,9 @@ void SetUpEvents(int full)
 		evt[1].data = HavanaMiniData;
 
 		VisibilityLists(VIS_ADD, 1);
-		*e = event + 1;
-		e = &(*e)->next;
+
+		AddEvent(&event[1], &e);
+		
 		cEvents = 2;
 
 		if (full)
@@ -1263,8 +1271,7 @@ void SetUpEvents(int full)
 			if (full)
 				evt[i].model = trainModel;
 
-			*e = &evt[i];
-			e = &(*e)->next;
+			AddEvent(&evt[i], &e);			
 		}
 
 		// zero first and last train links
@@ -1305,8 +1312,7 @@ void SetUpEvents(int full)
 			if (full)
 				evt[i].model = trainModel;
 
-			*e = &evt[i];
-			e = &(*e)->next;
+			AddEvent(&evt[i], &e);
 		}
 
 		evt->flags |= 0x500;
@@ -1380,11 +1386,11 @@ void SetUpEvents(int full)
 		VisibilityLists(VIS_ADD, 0);
 
 		MakeEventTrackable(event);
-		*e = event;
+
+		AddEvent(event, &e);
 
 		cEvents = 1;
 		fixedEvent = rioDoor;
-		e = &(*e)->next;
 
 		for (i = 0; i < 6; i++)
 		{
@@ -1486,9 +1492,7 @@ void SetUpEvents(int full)
 			VisibilityLists(VIS_ADD, cEvents);
 			MakeEventTrackable(event + cEvents);
 
-			*e = &evt[cEvents++];
-
-			e = &(*e)->next;
+			AddEvent(&event[cEvents++], &e);
 		}
 	}
 
@@ -3396,11 +3400,12 @@ void MakeEventTrackable(EVENT* ev)
 	EVENT** p;
 
 	p = trackingEvent;
+
 	while (*p)
 		p++;
 
-	*p = ev;
-	p[1] = NULL;	// WTF?
+	*p++ = ev;
+	*p = NULL; // mark next free trackable event
 }
 
 // [D] [T]
