@@ -424,6 +424,8 @@ void CheckPlayerMiscFelonies(void)
 	else 
 		limit = (maxSpeed * 3) >> 1;
 
+	speedLimits[3] = limit;
+
 	if (FIXEDH(cp->hd.wheel_speed) > limit)
 		NoteFelony(&felonyData, 2, 4096);
 }
