@@ -840,7 +840,6 @@ void StepSim(void)
 	static char t2; // offset 0x5
 
 	char padAcc;
-	short* playerFelony;
 	int stream;
 	CAR_DATA* cp;
 	PLAYER* pl;
@@ -871,13 +870,8 @@ void StepSim(void)
 
 	lead_pad = (u_int)controller_bits;
 
-	if (player[0].playerCarId < 0)
-		playerFelony = &pedestrianFelony;
-	else
-		playerFelony = &car_data[player[0].playerCarId].felonyRating;
-
 	// control cop roadblocks
-	if (*playerFelony <= FELONY_ROADBLOCK_MIN_VALUE || numRoadblockCars != 0)
+	if (*GetPlayerFelonyData() <= FELONY_ROADBLOCK_MIN_VALUE || numRoadblockCars != 0)
 	{
 		if (roadblockCount != 0)
 		{
@@ -2133,15 +2127,7 @@ void UpdatePlayerInformation(void)
 	PlayerDamageBar.max = MaxPlayerDamage[0];
 	Player2DamageBar.max = MaxPlayerDamage[1];
 
-	if (player[0].playerCarId < 0)
-		playerFelony = &pedestrianFelony;
-	else
-		playerFelony = &car_data[player[0].playerCarId].felonyRating;
-
-	if (gPlayerImmune != 0)
-		*playerFelony = 0;
-
-	FelonyBar.position = *playerFelony;
+	UpdatePlayerFelonyData();
 
 	for (i = 0; i < NumPlayers; i++)
 	{

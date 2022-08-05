@@ -1074,7 +1074,6 @@ void DrawMultiplayerMap(void)
 void DrawOverheadMap(void)
 {
 	u_char tmp;
-	short *playerFelony;
 	TILE_1 *tile1;
 	POLY_F4 *sptb;
 	POLY_FT4 *spt;
@@ -1139,12 +1138,7 @@ void DrawOverheadMap(void)
 	// flash the overhead map
 	if (player_position_known > 0) 
 	{
-		if (player[0].playerCarId < 0)
-			playerFelony = &pedestrianFelony;
-		else 
-			playerFelony = &car_data[player[0].playerCarId].felonyRating;
-
-		if (*playerFelony > FELONY_PURSUIT_MIN_VALUE)
+		if (*GetPlayerFelonyData() > FELONY_PURSUIT_MIN_VALUE)
 			FlashOverheadMap(ptab[CameraCnt & 0xf], 0, ptab[CameraCnt + 8U & 0xf]);
 	}
 	else 
@@ -1153,12 +1147,7 @@ void DrawOverheadMap(void)
 		{
 			if (flashtimer == 0)
 			{
-				if (player[0].playerCarId < 0) 
-					playerFelony = &pedestrianFelony;
-				else
-					playerFelony = &car_data[player[0].playerCarId].felonyRating;
-
-				if (*playerFelony > FELONY_PURSUIT_MIN_VALUE)
+				if (*GetPlayerFelonyData() > FELONY_PURSUIT_MIN_VALUE)
 					flashtimer = 48;
 			}
 		}

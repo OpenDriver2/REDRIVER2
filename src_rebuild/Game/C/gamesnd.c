@@ -1000,7 +1000,6 @@ char force_siren[8] = { 0 };
 void DoDopplerSFX(void)
 {
 	int pitch, volume, sample;
-	short* playerFelony;
 	int i, j;
 	int car;
 #ifdef PSX
@@ -1401,12 +1400,7 @@ void DoDopplerSFX(void)
 	// bark on player
 	if (CopsCanSeePlayer)
 	{
-		if (player[0].playerCarId < 0)
-			playerFelony = &pedestrianFelony;
-		else
-			playerFelony = &car_data[player[0].playerCarId].felonyRating;
-
-		if (*playerFelony > FELONY_PURSUIT_MIN_VALUE)
+		if (*GetPlayerFelonyData() > FELONY_PURSUIT_MIN_VALUE)
 			DoPoliceLoudhailer(num_noisy_cars, indexlist, car_dist);
 	}
 
@@ -1639,19 +1633,13 @@ void JerichoSpeak(void)
 {
 	static u_int j_said = 0;
 	int rnd;
-	short* playerFelony;
 
 	rnd = Random2(3);
 
 	if (CopsCanSeePlayer == 0)
 		return;
 
-	if (player[0].playerCarId < 0)
-		playerFelony = &pedestrianFelony;
-	else
-		playerFelony = &car_data[player[0].playerCarId].felonyRating;
-
-	if (*playerFelony > FELONY_PURSUIT_MIN_VALUE && rnd == rnd / 5 * 5)
+	if (*GetPlayerFelonyData() > FELONY_PURSUIT_MIN_VALUE && rnd == rnd / 5 * 5)
 	{
 		if (j_said > 60)
 		{

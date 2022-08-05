@@ -673,8 +673,6 @@ void DrawDrivingGameOverlays(void)
 // [D] [T]
 void DisplayOverlays(void)
 {
-	short* felony;
-
 #ifndef PSX
 	if (gWidescreenOverlayAlign)
 	{
@@ -734,12 +732,7 @@ void DisplayOverlays(void)
 
 		if (CopsCanSeePlayer)
 		{
-			if (player[0].playerCarId < 0)
-				felony = &pedestrianFelony;
-			else
-				felony = &car_data[player[0].playerCarId].felonyRating;
-
-			if (*felony > FELONY_PURSUIT_MIN_VALUE)
+			if (*GetPlayerFelonyData() > FELONY_PURSUIT_MIN_VALUE)
 				DrawCopIndicators();
 		}
 	}

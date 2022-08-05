@@ -68,6 +68,28 @@ void InitFelonyData(FELONY_DATA *pFelonyData)
 	memcpy((u_char*)&pFelonyData->value, (u_char*)&initialFelonyValue, sizeof(initialFelonyValue));
 }
 
+// [A]
+short * GetPlayerFelonyData()
+{
+	short *playerFelony;
+
+	if (player[0].playerCarId < 0)
+		return &pedestrianFelony;
+	else
+		return &car_data[player[0].playerCarId].felonyRating;
+}
+
+// [A]
+void UpdatePlayerFelonyData()
+{
+	short *playerFelony = GetPlayerFelonyData();
+
+	if (gPlayerImmune != 0)
+		*playerFelony = 0;
+
+	FelonyBar.position = *playerFelony;
+}
+
 // [D] [T]
 int GetCarHeading(int direction)
 {
@@ -97,10 +119,7 @@ void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale)
 	int phrase;
 	int additionalFelonyPoints;
 
-	if (player[0].playerCarId < 0)
-		felony = &pedestrianFelony;
-	else
-		felony = &car_data[player[0].playerCarId].felonyRating;
+	felony = GetPlayerFelonyData();
 
 	felonyTooLowForRoadblocks = *felony;
 
@@ -233,10 +252,7 @@ void AdjustFelony(FELONY_DATA *pFelonyData)
 	FELONY_DELAY *pFelonyDelay;
 	short *felony;
 
-	if (player[0].playerCarId < 0)
-		felony = &pedestrianFelony;
-	else
-		felony = &car_data[player[0].playerCarId].felonyRating;
+	felony = GetPlayerFelonyData();
 
 	if (*felony != 0 && *felony <= FELONY_PURSUIT_MIN_VALUE)
 	{
