@@ -1088,9 +1088,16 @@ void newShowTanner(LPPEDESTRIAN pDrawingPed)
 	// do not draw the root
 	Skel[ROOT].id = (LIMBS)(Skel[ROOT].id | 0x80);
 
-	draw = (pDrawingPed->padId > -1 && pDrawingPed->padId == CurrentPlayerView)
-		? player[pDrawingPed->padId].cameraView != 2
-		: 1;
+	// draw the main body?
+	draw = 1;
+
+	if (pDrawingPed->pedType != CIVILIAN)
+	{
+		char padId = pDrawingPed->padId;
+
+		if (padId == CurrentPlayerView && player[padId].cameraView == 2)
+			draw = 0;
+	}
 
 	for (i = 0; i < 5; i++)
 	{
