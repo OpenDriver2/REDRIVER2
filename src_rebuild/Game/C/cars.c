@@ -898,10 +898,7 @@ void plotNewCarModel(CAR_MODEL* car, int palette)
 
 	setupLightingMatrices();
 
-	gte_ldv0(&v);
-	gte_ldrgb(&lightlevel);
-
-	gte_nccs();
+	gte_NormalColorCol(&v, &lightlevel, &underIntensity);
 
 	_pg.primptr = (u_char*)current->primptr;
 	_pg.intensity = 0;
@@ -909,8 +906,6 @@ void plotNewCarModel(CAR_MODEL* car, int palette)
 	_pg.damageLevel = (u_char*)gTempCarUVPtr;
 
 	_pg.ot = (OTTYPE*)(current->ot + 28);
-
-	gte_strgb(&underIntensity);
 
 	// draw wheel arcs
 	plotCarPolyB3(car->numB3, car->pB3, car->vlist, &_pg);
