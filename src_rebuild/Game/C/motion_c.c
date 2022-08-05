@@ -563,6 +563,10 @@ void DrawBodySprite(LPPEDESTRIAN pDrawingPed, int boneId, VERTTYPE v1[2], VERTTY
 	{
 		width -= 5;
 	}
+#ifndef PSX
+	else if (bDoingShadow && (bone == HEAD) && pDrawingPed->pedType == OTHER_SPRITE)
+		width += 7;
+#endif
 
 	x = v1[0] - v2[0];
 	y = v1[1] - v2[1];
@@ -1065,6 +1069,10 @@ void newShowTanner(LPPEDESTRIAN pDrawingPed)
 	playerPos->vy = pDrawingPed->position.vy - 15;	// [A] elevate Tanner model a little bit so his legs are not in the ground (when Z-buffer enabled)
 	playerPos->vz = pDrawingPed->position.vz;
 
+	// [A] lift sprites feet out of the ground
+	if (pDrawingPed->pedType == OTHER_SPRITE)
+		playerPos->vy -= 80;
+
 	cameraPos->vx = camera_position.vx;
 	cameraPos->vy = camera_position.vy;
 	cameraPos->vz = camera_position.vz;
@@ -1107,7 +1115,7 @@ void newShowTanner(LPPEDESTRIAN pDrawingPed)
 				vJPos[pBone->id].vy = vJPos[lval].vy + pBone->vCurrPos.vy;
 				vJPos[pBone->id].vz = vJPos[lval].vz + pBone->vCurrPos.vz;
 
-				if (pDrawingPed->pedType == TANNER_MODEL && pBone->id == HEAD)
+				if (pDrawingPed->pedType != CIVILIAN && pBone->id == HEAD)
 					pDrawingPed->head_pos = vJPos[lval].vy;
 
 				if (pBone->pModel != NULL
@@ -1247,7 +1255,11 @@ void newShowTanner(LPPEDESTRIAN pDrawingPed)
 				v2.vz = vJPos[pBone->pParent->id & 127].vz;
 
 				bAllreadyRotated = 1;
+#ifndef PSX
+				DoCivHead(pDrawingPed, &v2, &v1, vJPos);
+#else
 				DoCivHead(pDrawingPed, &v2, &v1);
+#endif
 				bAllreadyRotated = 0;
 			}
 		}
@@ -1551,7 +1563,11 @@ void DrawCiv(LPPEDESTRIAN pPed)
 	if (bHeadModel)
 	{
 		bAllreadyRotated = 0;
+#ifndef PSX
+		DoCivHead(pPed, &srLerpData[5], &srLerpData[4], srLerpData);
+#else
 		DoCivHead(pPed, &srLerpData[5], &srLerpData[4]);
+#endif
 
 		ppos.vx = 0;
 		ppos.vy = 0;
@@ -1691,7 +1707,13 @@ int DrawCharacter(LPPEDESTRIAN pPed)
 	iCurrBone = 0;
 	newShowTanner(pPed);
 
+#ifdef PSX
+	// only draw a shadow for tanner (who must be the last ped)
 	if (pUsedPeds->pNext == NULL && pPed->pedType == TANNER_MODEL)
+#else
+	// draw a nice shadow for non-civilian peds :)
+	if (pPed->pedType != CIVILIAN)
+#endif
 	{
 		v.vx = (pPed->position.vx - camera_position.vx) + Skel[ROOT].pvOrigPos->vx;
 		v.vz = (pPed->position.vz - camera_position.vz) + Skel[ROOT].pvOrigPos->vz;
@@ -1712,7 +1734,11 @@ int DrawCharacter(LPPEDESTRIAN pPed)
 
 		bDoingShadow = 0;
 	}
-	else if (pPed->pedType == CIVILIAN)
+	else
+#ifdef PSX
+	// draw a round shadow for civilians
+	if (pPed->pedType == CIVILIAN)
+#endif
 	{
 		pos.vx = pPed->position.vx;
 		pos.vy = pPed->position.vy;
@@ -1962,7 +1988,11 @@ void TannerShadow(LPPEDESTRIAN pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos,
 }
 
 // [A] - totally custom function but it works pretty much same as original
+#ifndef PSX
+void DoCivHead(LPPEDESTRIAN pPed, SVECTOR* vert1, SVECTOR* vert2, SVECTOR* vJPos)
+#else
 void DoCivHead(LPPEDESTRIAN pPed, SVECTOR* vert1, SVECTOR* vert2)
+#endif
 {
 	SVECTOR spos;
 	VECTOR pos;
@@ -1995,6 +2025,11 @@ void DoCivHead(LPPEDESTRIAN pPed, SVECTOR* vert1, SVECTOR* vert2)
 	spos.vy = headpos.vy + pPed->position.vy - camera_position.vy;
 	spos.vz = headpos.vz + pPed->position.vz - camera_position.vz;
 
+#ifndef PSX
+	if (bDoingShadow && pPed->pedType == OTHER_SPRITE)
+		spos.vy -= 20;
+#endif
+
 	gte_SetRotMatrix(&inv_camera_matrix);
 	gte_ldv0(&spos);
 	gte_rtv0();
@@ -2016,7 +2051,18 @@ void DoCivHead(LPPEDESTRIAN pPed, SVECTOR* vert1, SVECTOR* vert2)
 	if (gNight)
 		combointensity = 0x404040;
 
+#ifndef PSX
+	if (bDoingShadow)
+	{
+		DrawSprite(pPed, &Skel[HEAD], vJPos);
+	}
+	else
+	{
+		RenderModel(gPed1HeadModelPtr, pHeadRot, &pos, 1, flags, 0, 0);
+	}
+#else
 	RenderModel(gPed1HeadModelPtr, pHeadRot, &pos, 1, flags, 0, 0);
+#endif
 
 	combointensity = oldcombointensity;
 }

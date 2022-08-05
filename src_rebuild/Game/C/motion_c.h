@@ -30,7 +30,11 @@ extern int DrawCharacter(LPPEDESTRIAN pPed); // 0x00067D44
 extern void InitTannerShadow(); // 0x000681EC
 extern void TannerShadow(LPPEDESTRIAN pDrawingPed, VECTOR *pPedPos, SVECTOR *pLightPos, CVECTOR *col, short angle); // 0x00068358
 
+#ifndef PSX
+// [A] extra parameter for proper sprite shadow support
+extern void DoCivHead(LPPEDESTRIAN pPed, SVECTOR *vert1, SVECTOR *vert2, SVECTOR *vJPos); // 0x00068B2C
+#else
 extern void DoCivHead(LPPEDESTRIAN pPed, SVECTOR *vert1, SVECTOR *vert2); // 0x00068B2C
-
+#endif
 
 #endif
