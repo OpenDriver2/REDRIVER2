@@ -32,6 +32,8 @@ struct EventGlobal
 	EVENT* cameraEvent;
 };
 
+#define HARDCODED_CAMERA_EVENT (EVENT*)0x1
+
 extern EventGlobal events;
 
 extern CELL_OBJECT *EventCop;

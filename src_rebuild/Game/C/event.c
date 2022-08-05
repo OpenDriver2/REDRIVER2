@@ -176,7 +176,7 @@ int VegasMonorailData[] = {
 	-70500, -67510, -111000, PATH_NODE_REVERSE, -70500, PATH_NODE_WRAP,
 };
 
-int HavanaFerryData[12] = {
+int HavanaFerryData[] = {
 	40, 0, 64, 425555, -452, 20000,		// Ferry 1
 	25, 0, 64, 315750, 130740, 135960	// Ferry 2
 };
@@ -978,6 +978,7 @@ void SetUpEvents(int full)
 	int carModel;
 
 	firstEvent = NULL;
+
 	e = &firstEvent;
 
 	// Multiplayer level loaded?
@@ -1090,7 +1091,7 @@ void SetUpEvents(int full)
 		count = p[0];
 
 		missionTrain[0].engine = &event[cEvents];
-		missionTrain[1].engine = missionTrain[0].engine;
+		missionTrain[1].engine = &event[cEvents];
 
 		// add trains
 		for (n = 0; n < count - 1; n++)
@@ -1176,23 +1177,21 @@ void SetUpEvents(int full)
 	}
 	else if (GameLevel == 1)
 	{
-		evt = event;
-
 		cameraEventsActive = 1;
 
-		evt->radius = 0;
-		evt->position.vy = 111;
-		evt->position.vx = HavanaFerryData[3];
-		evt->position.vz = HavanaFerryData[4];;
-		evt->rotation = 3072;
-		evt->flags = -0x77ad;
-		evt->timer = -1;
-		evt->node = HavanaFerryData + 4;
-		evt->data = HavanaFerryData;
+		event[0].radius = 0;
+		event[0].position.vy = 111;
+		event[0].position.vx = HavanaFerryData[3];
+		event[0].position.vz = HavanaFerryData[4];
+		event[0].rotation = 3072;
+		event[0].flags = -0x77ad;
+		event[0].timer = -1;
+		event[0].node = HavanaFerryData + 4;
+		event[0].data = HavanaFerryData;
 
 		// [A] reset Ferry angles
-		evt->data[1] = RSIN(CameraCnt * 32) >> 9;
-		evt->data[2] = RCOS(CameraCnt * 16) + 4096 >> 7;
+		event[0].data[1] = RSIN(CameraCnt * 32) >> 9;
+		event[0].data[2] = RCOS(CameraCnt * 16) + 4096 >> 7;
 
 		VisibilityLists(VIS_ADD, 0);
 		MakeEventTrackable(event);
@@ -1208,15 +1207,15 @@ void SetUpEvents(int full)
 		
 		VisibilityLists(VIS_ADD, 129);
 
-		evt[1].flags = 0x4212;
-		evt[1].node = HavanaMiniData + 1;
-		evt[1].position.vy = 3995;
-		evt[1].position.vx = -455167;
-		evt[1].position.vz = -125439;
-		evt[1].rotation = 0;
-		evt[1].timer = -1;
-		evt[1].radius = 0;
-		evt[1].data = HavanaMiniData;
+		event[1].flags = 0x4212;
+		event[1].node = HavanaMiniData + 1;
+		event[1].position.vy = 3995;
+		event[1].position.vx = -455167;
+		event[1].position.vz = -125439;
+		event[1].rotation = 0;
+		event[1].timer = -1;
+		event[1].radius = 0;
+		event[1].data = HavanaMiniData;
 
 		VisibilityLists(VIS_ADD, 1);
 
@@ -3465,240 +3464,247 @@ VECTOR* TriggerEvent(int i)
 			detonator.count++;
 		}
 	}
-	else
+	else if (GameLevel == 0) // Chicago events
 	{
-		if (GameLevel == 0)
+		switch (i)
 		{
-			switch (i)
-			{
-				case 0:
-				case 1:
-					if (stage[i] == 0)
-					{
-						int offset, nodePos;
-						
-						ev = missionTrain[i].engine;
-						
-						MakeEventTrackable(ev);
-						ev->flags |= 0x180;
+			case 0:
+			case 1:
+				if (stage[i] == 0)
+				{
+					int offset, nodePos;
 
-						if (*missionTrain[i].node - missionTrain[i].start > -1)
-							offset = 1600;
-						else
-							offset = -1600;
-
-						loop = 0;
-
-						do {
-							if (missionTrain[i].node[0] == PATH_NODE_STATION)
-								nodePos = missionTrain[i].node[-1];
-							else
-								nodePos = missionTrain[i].node[1];
-
-							if (missionTrain[i].startDir == 0x8000)
-							{
-								ev->flags |= 0x8000;
-								ev->position.vx = nodePos;
-								ev->position.vz = missionTrain[i].start + loop * offset;
-							}
-							else
-							{
-								ev->flags &= ~0x8000;
-								ev->position.vz = nodePos;
-								ev->position.vx = missionTrain[i].start + loop * offset;
-							}
-
-							ev->node = missionTrain[i].node;
-							ev->data = &missionTrain[i].cornerSpeed;
-							ev->timer = 0;
-							
-							ev->flags &= ~0x7000;
-							ev->flags |= 0x3000;
-
-							SetElTrainRotation(ev);
-
-							loop++;
-							ev = ev->next;
-						} while (ev && (ev->flags & 0x400U) == 0);
-					}
-					else
-					{
-						ev = missionTrain[i].engine;
-						
-						pos = &ev->position;
-						
-						if (ev->timer != 0)
-							ev->timer = 1;
-
-					}
-					break;
-				case 2:
-				case 3:
-				case 4:
-					if (stage[i] == 0)
-					{
-						// start bridges raised
-						ev = firstMissionEvent;
-						for (loop = 0; loop < 10; loop++)
-						{
-							ev->flags |= 0x100;
-
-							if (i == 4)
-								ev->timer = 2600;
-							else
-								ev->timer = 1000;
-							
-							ev++;
-						}
-
-						if (i == 2)
-						{
-							firstMissionEvent[9].timer = 2600;
-							firstMissionEvent[8].timer = 2600;
-						}
-					}
-					else
-					{
-						// raise bridges
-						firstMissionEvent[8].timer = 0;
-						firstMissionEvent[9].timer = 0;
-					}
-					break;
-				case 5:
-					PrepareSecretCar();
-					events.cameraEvent = (EVENT*)&chicagoDoor[0];
-				case 6:
-					TriggerDoor(&chicagoDoor[i - 5], &stage[i], 1);
-			}
-		}
-		else if (GameLevel == 1)
-		{
-			switch (i)
-			{
-				case 0:
-					event->timer = 1;
-					break;
-				case 1:
-					event->position.vx = HavanaFerryData[9];
-					event->position.vz = HavanaFerryData[10];
-				
-					event->timer = 1;
-				
-					event->node = &HavanaFerryData[10];
-					event->data = &HavanaFerryData[6];
-
-					// [A] reset Ferry angles
-					event->data[1] = RSIN(CameraCnt * 32) >> 9;
-					event->data[2] = RCOS(CameraCnt * 16) + 4096 >> 7;
-				
-					break;
-				case 2:
-					TriggerDoor(&havanaFixed[0], &stage[i], 1);
-					break;
-				case 3:
-					PrepareSecretCar();
-					events.cameraEvent = (EVENT*)&havanaFixed[2];
-					TriggerDoor(&havanaFixed[2], &stage[i], 0);
-					break;
-				case 4:
-					if (stage[i] != 0)
-					{
-						SetSpecialCamera(SPECIAL_CAMERA_WAIT, 0);
-						event[1].node++;
-					}
-
-					SetMSoundVar(1, &event[1].position);
-
-					event[1].timer = 0;
-					events.cameraEvent = &event[1];
-			}
-		}
-		else if (GameLevel == 2)
-		{
-			switch (i)
-			{
-				case 0:
-					loop = 0;
-
-					// start train
-					do {
-						ev = &event[loop];
-
-						ev->data = VegasTrainData;
-						
-						InitTrain(ev, loop, 1);
-						
-						ev->flags |= 0x200;
-
-						if (loop > 1)
-							VisibilityLists(VIS_ADD, loop);
-
-						loop++;
-					} while (loop < 9);
-
-					event->flags |= 0x500;
+					ev = missionTrain[i].engine;
 
 					MakeEventTrackable(ev);
+					ev->flags |= 0x180;
 
-					event[1].next = &event[2];
-					break;
-				case 4:
-					TriggerDoor(&vegasDoor[i - 4], &stage[i], 0);
-					break;
-				case 8:
-					events.cameraEvent = (EVENT*)&vegasDoor[4];
-					PrepareSecretCar();
-				case 5:
-				case 6:
-				case 7:
-					TriggerDoor(&vegasDoor[i - 4], &stage[i], 1);
-					break;
-				case 9:
-					SetMSoundVar(5, NULL);
-			}
-		}
-		else if (GameLevel == 3)
-		{
-			switch (i)
-			{
-				case 0:
-					event->timer = 1;
-					break;
-				case 4:
-					// open race track gates
-					TriggerDoor(&rioDoor[2], &stage[i], 0);
-					TriggerDoor(&rioDoor[3], &stage[i], 0);
-
-					events.cameraEvent = (EVENT*)&rioDoor[2];
-					break;
-				case 5:
-				case 6:
-					TriggerDoor(&rioDoor[i - 5], &stage[i], (i == 5));
-					break;
-				case 7:
-					if (stage[i] == 0)
-					{
-						pos = &event[1].position;
-					}
+					if (missionTrain[i].node[0] - missionTrain[i].start > -1)
+						offset = 1600;
 					else
+						offset = -1600;
+
+					loop = 0;
+
+					do {
+						if (missionTrain[i].node[0] == PATH_NODE_STATION)
+							nodePos = missionTrain[i].node[-1];
+						else
+							nodePos = missionTrain[i].node[1];
+
+						if (missionTrain[i].startDir == 0x8000)
+						{
+							ev->flags |= 0x8000;
+							ev->position.vx = nodePos;
+							ev->position.vz = missionTrain[i].start + loop * offset;
+						}
+						else
+						{
+							ev->flags &= ~0x8000;
+							ev->position.vz = nodePos;
+							ev->position.vx = missionTrain[i].start + loop * offset;
+						}
+
+						ev->node = missionTrain[i].node;
+						ev->data = &missionTrain[i].cornerSpeed;
+						ev->timer = 0;
+
+						ev->flags &= ~0x7000;
+						ev->flags |= 0x3000;
+
+						SetElTrainRotation(ev);
+
+						loop++;
+						ev = ev->next;
+					} while (ev && (ev->flags & 0x400U) == 0);
+				}
+				else
+				{
+					ev = missionTrain[i].engine;
+
+					pos = &ev->position;
+
+					if (ev->timer != 0)
+						ev->timer = 1;
+
+				}
+				break;
+			case 2:
+			case 3:
+			case 4:
+				if (stage[i] == 0)
+				{
+					// start bridges raised
+					ev = firstMissionEvent;
+					for (loop = 0; loop < 10; loop++)
 					{
-						event[1].position.vy = -17;
-						event[1].position.vx = -241619;
-						event[1].position.vz = -212638;
-						event[1].timer = -2;
-						event[1].model = HelicopterData.deadModel;
+						ev->flags |= 0x100;
+
+						if (i == 4)
+							ev->timer = 2600;
+						else
+							ev->timer = 1000;
+
+						ev++;
 					}
 
-					break;
-				case 8:
-					// open gate to secret car
-					PingOutAllSpecialCivCars();
-				
-					TriggerDoor(&rioDoor[4], &stage[i], 0);
-					TriggerDoor(&rioDoor[5], &stage[i], 0);
-				
-					events.cameraEvent = (EVENT*)&rioDoor[4];
-			}
+					if (i == 2)
+					{
+						firstMissionEvent[9].timer = 2600;
+						firstMissionEvent[8].timer = 2600;
+					}
+				}
+				else
+				{
+					// raise bridges
+					firstMissionEvent[8].timer = 0;
+					firstMissionEvent[9].timer = 0;
+				}
+				break;
+			case 5:
+				PrepareSecretCar();
+				events.cameraEvent = (EVENT*)&chicagoDoor[0];
+				TriggerDoor(&chicagoDoor[0], &stage[i], 1);
+				break;
+			case 6:
+				TriggerDoor(&chicagoDoor[1], &stage[i], 1);
+				break;
+		}
+	}
+	else if (GameLevel == 1) // Havana events
+	{
+		switch (i)
+		{
+			case 0:
+				event->timer = 1;
+				break;
+			case 1:
+				event->position.vx = HavanaFerryData[9];
+				event->position.vz = HavanaFerryData[10];
+
+				event->timer = 1;
+
+				event->node = &HavanaFerryData[10];
+				event->data = &HavanaFerryData[6];
+
+				// [A] reset Ferry angles
+				event->data[1] = RSIN(CameraCnt * 32) >> 9;
+				event->data[2] = RCOS(CameraCnt * 16) + 4096 >> 7;
+
+				break;
+			case 2:
+				TriggerDoor(&havanaFixed[0], &stage[i], 1);
+				break;
+			case 3:
+				PrepareSecretCar();
+				events.cameraEvent = (EVENT*)&havanaFixed[2];
+				TriggerDoor(&havanaFixed[2], &stage[i], 0);
+				break;
+			case 4:
+				if (stage[i] != 0)
+				{
+					SetSpecialCamera(SPECIAL_CAMERA_WAIT, 0);
+					event[1].node++;
+				}
+
+				SetMSoundVar(1, &event[1].position);
+
+				event[1].timer = 0;
+				events.cameraEvent = &event[1];
+				break;
+		}
+	}
+	else if (GameLevel == 2) // Vegas events
+	{
+		switch (i)
+		{
+			case 0:
+				// start train
+				for (loop = 0; loop < 9; loop++)
+				{
+					ev = &event[loop];
+
+					ev->data = VegasTrainData;
+
+					InitTrain(ev, loop, 1);
+
+					ev->flags |= 0x200;
+
+					if (loop > 1)
+						VisibilityLists(VIS_ADD, loop);
+				}
+
+				event->flags |= 0x500;
+
+				MakeEventTrackable(ev);
+
+				event[1].next = &event[2];
+				break;
+			case 4:
+				TriggerDoor(&vegasDoor[0], &stage[i], 0);
+				break;
+			case 5:
+			case 6:
+			case 7:
+				// trigger doors 1-3
+				TriggerDoor(&vegasDoor[i - 4], &stage[i], 1);
+				break;
+			case 8:
+				events.cameraEvent = (EVENT*)&vegasDoor[4];
+				PrepareSecretCar();
+				TriggerDoor(&vegasDoor[4], &stage[i], 1);
+				break;
+			case 9:
+				SetMSoundVar(5, NULL);
+				break;
+		}
+	}
+	else if (GameLevel == 3) // Rio events
+	{
+		switch (i)
+		{
+			case 0:
+				event->timer = 1;
+				break;
+			case 4:
+				// open race track gates
+				TriggerDoor(&rioDoor[2], &stage[i], 0);
+				TriggerDoor(&rioDoor[3], &stage[i], 0);
+
+				events.cameraEvent = (EVENT*)&rioDoor[2];
+				break;
+			case 5:
+				// police station garage
+				TriggerDoor(&rioDoor[0], &stage[i], 1);
+				break;
+			case 6:
+				// police station door
+				TriggerDoor(&rioDoor[1], &stage[i], 0);
+				break;
+			case 7:
+				if (stage[i] == 0)
+				{
+					pos = &event[1].position;
+				}
+				else
+				{
+					event[1].position.vy = -17;
+					event[1].position.vx = -241619;
+					event[1].position.vz = -212638;
+					event[1].timer = -2;
+					event[1].model = HelicopterData.deadModel;
+				}
+
+				break;
+			case 8:
+				// open gate to secret car
+				PingOutAllSpecialCivCars();
+
+				TriggerDoor(&rioDoor[4], &stage[i], 0);
+				TriggerDoor(&rioDoor[5], &stage[i], 0);
+
+				events.cameraEvent = (EVENT*)&rioDoor[4];
+				break;
 		}
 	}
 
@@ -3773,7 +3779,7 @@ void SetSpecialCamera(SpecialCamera type, int change)
 			if (gCurrentMissionNumber == 15)
 			{
 				boat = boatCamera;
-				events.cameraEvent = (EVENT*)0x1;
+				events.cameraEvent = HARDCODED_CAMERA_EVENT;
 			}
 			else
 			{
@@ -3802,7 +3808,7 @@ void SetSpecialCamera(SpecialCamera type, int change)
 				if (type != SPECIAL_CAMERA_SET2)
 				{
 					hackCamera = &VegasCameraHack[6];
-					events.cameraEvent = (EVENT*)0x1;
+					events.cameraEvent = HARDCODED_CAMERA_EVENT;
 				}
 				else
 				{
@@ -3813,7 +3819,7 @@ void SetSpecialCamera(SpecialCamera type, int change)
 			{
 				hackCamera = &VegasCameraHack[13];
 
-				events.cameraEvent = (EVENT*)0x1;
+				events.cameraEvent = HARDCODED_CAMERA_EVENT;
 				camera_position.vy = -1800;
 			}
 			else if (gCurrentMissionNumber == 30)
@@ -3884,7 +3890,6 @@ int DetonatorTimer(void)
 	static SVECTOR rememberCameraAngle; // offset 0x30
 	static int count = 0; // offset 0x38
 
-	int cnt;
 	EVENT* ev;
 	VECTOR pos;
 
@@ -3896,7 +3901,12 @@ int DetonatorTimer(void)
 		}
 		else if (detonator.timer <= 30 || detonator.timer >= 40)
 		{
-			if (detonator.timer == 21)
+			if (detonator.timer == 0)
+			{
+				SetSpecialCamera(SPECIAL_CAMERA_SET, 0);
+				detonator.timer = 70;
+			}
+			else if (detonator.timer == 21)
 			{
 				count++;
 
@@ -3923,15 +3933,10 @@ int DetonatorTimer(void)
 				}
 				else
 				{
-					detonator.timer = detonator.timer + 1;
+					detonator.timer++;
 				}
 
 				player[0].cameraPos.vz = camera_position.vz;
-			}
-			else if (detonator.timer == 0)
-			{
-				SetSpecialCamera(SPECIAL_CAMERA_SET, 0);
-				detonator.timer = 70;
 			}
 			else if (detonator.timer == 22)
 			{
@@ -3963,55 +3968,49 @@ int DetonatorTimer(void)
 				ev = &firstMissionEvent[1];
 				ev++;
 			}
-			else
+			else if (detonator.timer < 168)
 			{
-				if (detonator.timer < 168)
+				if (detonator.timer == 0)
 				{
-					if (detonator.timer == 0)
+					ev = &firstMissionEvent[0];
+
+					if (detonator.count < 3)
 					{
-						cnt = detonator.count - 1;
-						ev = &firstMissionEvent[0];
-
-						if (detonator.count < 3)
+						while (--detonator.count != -1)
 						{
-							while (detonator.count = cnt, detonator.count != -1)
-							{
-								AddExplosion(ev->position, BIG_BANG);
-								cnt = detonator.count - 1;
-								ev++;
-							}
-
-							return 0;
+							AddExplosion(ev->position, BIG_BANG);
+							ev++;
 						}
 
-						detonator.timer = 200;
-						SetSpecialCamera(SPECIAL_CAMERA_SET, 0);
-						events.cameraEvent = (EVENT*)0x1;
-
-						rememberCameraAngle = camera_angle;
-					}
-					else if (detonator.timer == 160)
-					{
-
-						if (GameLevel == 3)
-						{
-							event->flags &= ~0x1;
-							event->flags |= 0x20;
-
-							AddExplosion(event[0].position, HEY_MOMMA);
-						}
-						else
-						{
-							AddExplosion(firstMissionEvent[1].position, HEY_MOMMA);
-						}
-
-
+						return 0;
 					}
 
-					detonator.timer--;
-					return 1;
+					detonator.timer = 200;
+					SetSpecialCamera(SPECIAL_CAMERA_SET, 0);
+					events.cameraEvent = HARDCODED_CAMERA_EVENT;
+
+					rememberCameraAngle = camera_angle;
+				}
+				else if (detonator.timer == 160)
+				{
+					if (GameLevel == 3)
+					{
+						event->flags &= ~0x1;
+						event->flags |= 0x20;
+
+						AddExplosion(event[0].position, HEY_MOMMA);
+					}
+					else
+					{
+						AddExplosion(firstMissionEvent[1].position, HEY_MOMMA);
+					}
 				}
 
+				detonator.timer--;
+				return 1;
+			}
+			else
+			{
 				ev = &firstMissionEvent[0];
 
 				if (detonator.timer == 180)

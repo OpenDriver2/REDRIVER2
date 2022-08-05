@@ -1260,7 +1260,7 @@ void HandleTimer(MR_TIMER *timer)
 
 					if (timer->flags & TIMER_FLAG_BOMB_COUNTDOWN)
 					{
-						events.cameraEvent = (EVENT*)0x1;
+						events.cameraEvent = HARDCODED_CAMERA_EVENT;
 
 						BombThePlayerToHellAndBack(gCarWithABerm);
 					}
