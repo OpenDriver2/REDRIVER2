@@ -261,6 +261,12 @@ void FixCarCos(CAR_COSMETICS* carCos, int externalModelNumber)
 	{
 		car_cosmetics[2].mass *= 3;
 	}
+
+	// [A] vegas box truck
+	if (GameLevel == 2 && externalModelNumber == 10)
+	{
+		carCos->extraInfo |= 4; // wibbly wobbly fuckery hack...
+	}
 }
 
 int ghost_mode = 0;
