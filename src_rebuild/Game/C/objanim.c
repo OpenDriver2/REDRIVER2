@@ -628,10 +628,12 @@ void animate_object(CELL_OBJECT* cop, int type)
 				if (gLightsOn == 0)
 					break;
 
-				// spooled?
-				if (cop->pos.vx - 137190U < 50687 && cop->pos.vz > 713372 && cop->pos.vz < 719516)
+				// fremont lights by the parking garage
+				// coordinates were incorrect before
+				if (cop->pos.vx >= 147190 && cop->pos.vx <= 197878)
 				{
-					AddSmallStreetLight(cop, -620, -101, 0, 0);
+					if (cop->pos.vz > 701372 && cop->pos.vz < 709516)
+						AddSmallStreetLight(cop, -620, -1618, 0, 0);
 					break;
 				}
 			
