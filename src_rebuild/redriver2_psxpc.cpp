@@ -201,6 +201,11 @@ void GameDebugKeys(int nKey, char down)
 		extern void CreateRoadblock();
 		CreateRoadblock();
 	}
+	else if (nKey == SDL_SCANCODE_KP_5)
+	{
+		extern int gNewHeadlights;
+		gNewHeadlights ^= 1;
+	}
 	else if (nKey == SDL_SCANCODE_KP_PLUS)
 	{
 		extern LEAD_PARAMETERS LeadValues;

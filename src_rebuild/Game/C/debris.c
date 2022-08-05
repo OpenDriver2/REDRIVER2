@@ -21,6 +21,7 @@
 #include "cosmetic.h"
 #include "denting.h"
 #include "gamesnd.h"
+#include "glaunch.h"
 
 #include "ASM/rndrasm.h"
 
@@ -402,6 +403,8 @@ DAMAGED_LAMP damaged_lamp[MAX_DAMAGED_LAMPS];
 MATRIX debris_mat;
 MATRIX leaf_mat;
 
+int gNewHeadlights = 1;
+
 // [D] [T]
 void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 {
@@ -428,77 +431,93 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 
 	if (front) 
 	{
-		s1[3].vz = -(car_cos->colBox.vz + 50);
-		s1[8].vz = s1[3].vz - 1160;
+		// make headlight polys
+		if (gNewHeadlights)
+		{
+			s1[3].vz = car_cos->cPoints[4].vz - 20;
+			s1[3].vz -= (ActiveCheats.cheat13) ? 25 : 50;
+			s1[0].vx = car_cos->colBox.vx;
+			s1[1].vx = MAX(car_cos->headLight.vz, -380);
+			s1[6].vx = car_cos->headLight.vx + 60;
+			s1[7].vx = 21;
+			s1[10].vx = car_cos->colBox.vx;
+			s1[11].vx = car_cos->headLight.vx;
+		}
+		else
+		{
+			s1[3].vz = -(car_cos->colBox.vz + 50);
+			s1[0].vx = 136;
+			s1[1].vx = -344;
+			s1[6].vx = 143;
+			s1[7].vx = 21;
+			s1[10].vx = 82;
+			s1[11].vx = 82;
+		}
+
 		s1[6].vz = s1[3].vz;
 		s1[7].vz = s1[3].vz;
+		s1[8].vz = s1[3].vz - 1160;
+		s1[9].vz = s1[3].vz;
+
+		// mirror onto other side
+		s1[5].vx = -s1[0].vx;
+		s1[4].vx = -s1[1].vx;
+		s1[3].vx = -s1[6].vx;
+		s1[2].vx = -s1[7].vx;
+		s1[8].vx = -s1[10].vx;
+		s1[9].vx = -s1[11].vx;
 
 		if (in_car) 
 		{
 			// slightly shifted vertices to make it look more beautiful
 			s1[1].vz = s1[8].vz + 600;
-			s1[0].vx = 136;
-			s1[1].vx = -344;
-			s1[2].vx = -21;
-			s1[3].vx = -143;
-			s1[4].vx = 344;
-			s1[5].vx = -136;
-			s1[6].vx = 143;
-			s1[7].vx = 21;
-			s1[8].vz = s1[8].vz - 400;
-			s1[9].vz = s1[3].vz + 10;
-			s1[8].vx = -82;
-			s1[10].vx = 82;
-			s1[9].vx = -82;
-			s1[11].vx = 82;
-			s1[4].vz = s1[1].vz;
-			s1[5].vz = s1[1].vz;
-			s1[10].vz = s1[8].vz;
-			s1[11].vz = s1[9].vz;
+			s1[8].vz -= 400;
+			s1[9].vz += 10;
 
-			LightSortCorrect = -800;
-			
+			if (in_car == 2)
+				LightSortCorrect = -500;
+			else
+				LightSortCorrect = -800;
+
 			sub_level = 3;
 		}
 		else 
 		{
 			s1[1].vz = s1[8].vz + 100;
-			s1[0].vx = 136;
-			s1[1].vx = -344;
-			s1[2].vx = -21;
-			s1[3].vx = -143;
-			s1[4].vx = 344;
-			s1[5].vx = -136;
-			s1[6].vx = 143;
-			s1[7].vx = 21;
-			s1[10].vx = 82;
-			s1[11].vx = 82;
-			s1[8].vx = -82;
-			s1[9].vx = -82;
-			s1[4].vz = s1[1].vz;
-			s1[5].vz = s1[1].vz;
-			s1[9].vz = s1[3].vz;
-			s1[10].vz = s1[8].vz;
-			s1[11].vz = s1[3].vz;
-
-			sub_level = 3;
 
 			if (player[CurrentPlayerView].cameraView == 2 && cp == &car_data[player[CurrentPlayerView].playerCarId])
 				LightSortCorrect = -320;
 			else
 				LightSortCorrect = -200;
+
+			sub_level = 3;
 		}
+
+		// merge cross polys together
+		s1[4].vz = s1[1].vz;
+		s1[5].vz = s1[4].vz;
+		s1[10].vz = s1[8].vz;
+		s1[11].vz = s1[9].vz;
 	}
 	else
 	{
 		// back light
-	
-		s1[0].vx = -204;
-		s1[1].vx = 204;
-		s1[2].vx = -204;
-		s1[3].vx = 204;
-		s1[3].vz = (car_cos->colBox.vz - 10);
-		s1[1].vz = s1[3].vz + 204;
+
+		if (gNewHeadlights)
+			s1[0].vx = car_cos->cPoints[4].vx - 80;
+		else
+			s1[0].vx = -204;
+
+		s1[1].vx = -s1[0].vx;
+		s1[2].vx = s1[0].vx;
+		s1[3].vx = s1[1].vx;
+
+		if (gNewHeadlights)
+			s1[3].vz = -(car_cos->cPoints[4].vz + 25);
+		else
+			s1[3].vz = car_cos->colBox.vz - 10;
+
+		s1[1].vz = s1[3].vz + s1[1].vx;
 
 		sub_level = 0;
 	}
@@ -510,7 +529,10 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 
 	mid_position.vx = 0;
 	mid_position.vy = 0;
-	mid_position.vz = -500;
+	if (gNewHeadlights)
+		mid_position.vz = -(car_cos->cPoints[4].vz + car_cos->cPoints[8].vz / 2);
+	else
+		mid_position.vz = -500;
 
 	_MatrixRotate(&mid_position);
 
