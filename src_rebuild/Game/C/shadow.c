@@ -69,7 +69,7 @@ void ResetTyreTracks(CAR_DATA* cp, int player_id)
 // [D] [T]
 void GetTyreTrackPositions(CAR_DATA *cp, int player_id)
 {
-	int loop, track, steps;
+	int loop, track;
 	CAR_COSMETICS *car_cos;
 	VECTOR WheelPos;
 	VECTOR CarPos;
@@ -81,9 +81,8 @@ void GetTyreTrackPositions(CAR_DATA *cp, int player_id)
 	car_cos = cp->ap.carCos;
 	SetRotMatrix(&cp->hd.where);
 
-	steps = 4 / MAX_TYRE_TRACK_WHEELS;
-
-	for (loop = 0; loop < 4; loop += steps)
+	track = 0;
+	for (loop = (2 / MAX_TYRE_TRACK_WHEELS); loop < 4; loop += (4 / MAX_TYRE_TRACK_WHEELS), track++)
 	{
 		WheelPos.vx = car_cos->wheelDisp[loop].vx;
 		if (loop & 2) 
@@ -92,15 +91,13 @@ void GetTyreTrackPositions(CAR_DATA *cp, int player_id)
 			WheelPos.vx -= 17;
 
 		WheelPos.vy = 0;
-		WheelPos.vz = car_cos->wheelDisp[loop + 1 & 3].vz;
+		WheelPos.vz = car_cos->wheelDisp[loop].vz;
 
 		_MatrixRotate(&WheelPos);
 
 		WheelPos.vx += CarPos.vx;
 		WheelPos.vy = CarPos.vy;
 		WheelPos.vz += CarPos.vz;
-
-		track = loop / steps;
 
 		tyre_new_positions[player_id][track].vx = WheelPos.vx;
 		tyre_new_positions[player_id][track].vz = WheelPos.vz;

@@ -3194,6 +3194,7 @@ void DrawEvents(int camera)
 						{
 							SetCamera(ev);
 							DrawMapPSX(&ObjectDrawnValue);
+							ObjectDrawnValue += 16;
 						}
 					}
 				}

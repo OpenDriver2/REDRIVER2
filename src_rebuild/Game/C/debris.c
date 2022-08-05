@@ -403,6 +403,8 @@ DAMAGED_LAMP damaged_lamp[MAX_DAMAGED_LAMPS];
 MATRIX debris_mat;
 MATRIX leaf_mat;
 
+#define LAMP_STREAK_ID(x,y) (((x) & 0xffff) | (((y) & 0xffff) << 16))
+
 int gNewHeadlights = 1;
 
 // [D] [T]
@@ -1389,7 +1391,7 @@ void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 
 	v3 = v1;
 
-	LightIndex = find_lamp_streak(cop->pos.vx + cop->pos.vz + x); // [A] was pointer.
+	LightIndex = find_lamp_streak(LAMP_STREAK_ID(cop->pos.vx + x, cop->pos.vz)); // [A] was pointer.
 
 	if (LightIndex > -1)
 		col.cd = 0x60;
@@ -1795,7 +1797,7 @@ void AddTrafficLight(CELL_OBJECT *cop, int x, int y, int z, int flag, int yang)
 			a.g = (a.g * tempfade) >> 10;
 
 			LightSortCorrect = -140;
-			LightIndex = find_lamp_streak(cop->pos.vx + cop->pos.vz + x + y); // [A] was pointer.
+			LightIndex = find_lamp_streak(LAMP_STREAK_ID(cop->pos.vx + x, cop->pos.vz + y)); // [A] was pointer.
 
 			if (LightIndex < 0)
 				a.cd = 0;
