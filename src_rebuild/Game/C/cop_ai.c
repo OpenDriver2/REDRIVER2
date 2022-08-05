@@ -217,24 +217,18 @@ void WibbleDownTheRoad(VECTOR *from, int distance, VECTOR *to)
 // [D] [T]
 void UpdateCopSightData(void)
 {
-	short* playerFelony;
-
-	if (player[0].playerCarId < 0)
-		playerFelony = &pedestrianFelony;
-	else
-		playerFelony = &car_data[player[0].playerCarId].felonyRating;
-
-	if (*playerFelony > FELONY_PURSUIT_MIN_VALUE)
+	if (*GetPlayerFelonyData() > FELONY_PURSUIT_MIN_VALUE)
 	{
 		copSightData.surroundViewDistance = 5440;
 		copSightData.frontViewDistance = 16320;
 		copSightData.frontViewAngle = 1024;
-		return;
 	}
-
-	copSightData.surroundViewDistance = 2720;
-	copSightData.frontViewDistance = 7820;
-	copSightData.frontViewAngle = 512;
+	else
+	{
+		copSightData.surroundViewDistance = 2720;
+		copSightData.frontViewDistance = 7820;
+		copSightData.frontViewAngle = 512;
+	}
 }
 
 // [D] [T]
@@ -351,10 +345,7 @@ void CopControl1(CAR_DATA *cp)
 	iVectNT path[2];
 	AIZone targetZone;
 
-	if (player[0].playerCarId < 0)
-		playerFelony = &pedestrianFelony;
-	else
-		playerFelony = &car_data[player[0].playerCarId].felonyRating;
+	playerFelony = GetPlayerFelonyData();
 
 	desiredSteerAngle = 0;
 
@@ -715,11 +706,6 @@ void CopControl1(CAR_DATA *cp)
 	if (pathStraight != 0)
 		maxPower += (gCopDifficultyLevel + 4) * 1024;
 
-	if (player[0].playerCarId < 0)
-		playerFelony = &pedestrianFelony;
-	else
-		playerFelony = &car_data[player[0].playerCarId].felonyRating;
-
 	maxPower = FIXEDH(maxPower * (gCopMaxPowerScale + FIXEDH(*playerFelony * gCopData.autoMaxPowerScaleLimit)));
 
 	if (currentSpeed < -50)
@@ -972,14 +958,7 @@ void ControlCopDetection(void)
 // [D] [T]
 void PassiveCopTasks(CAR_DATA *cp)
 {
-	short *playerFelony;
-
-	if (player[0].playerCarId < 0)
-		playerFelony = &pedestrianFelony;
-	else 
-		playerFelony = &car_data[player[0].playerCarId].felonyRating;
-
-	if (*playerFelony <= FELONY_PURSUIT_MIN_VALUE)
+	if (*GetPlayerFelonyData() <= FELONY_PURSUIT_MIN_VALUE)
 		return;
 
 	// [A] make an ambush on player in Destroy the yard
@@ -1010,13 +989,10 @@ void ControlNumberOfCops(void)
 	pTrigger = gCopData.trigger;
 	numWantedCops = 0;
 
+	playerFelony = GetPlayerFelonyData();
+
 	while( true ) 
 	{
-		if (player[0].playerCarId < 0)
-			playerFelony = &pedestrianFelony;
-		else
-			playerFelony = &car_data[player[0].playerCarId].felonyRating;
-
 		if (*playerFelony < *pTrigger) 
 			break;
 
@@ -1115,10 +1091,7 @@ void ControlCops(void)
 	}
 #endif
 
-	if (player[0].playerCarId < 0)
-		playerFelony = &pedestrianFelony;
-	else
-		playerFelony = &car_data[player[0].playerCarId].felonyRating;
+	playerFelony = GetPlayerFelonyData();
 
 	gCopData.autoBatterPlayerTrigger = 2048;
 
