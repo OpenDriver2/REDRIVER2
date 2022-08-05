@@ -96,7 +96,7 @@ void plotCarPolyB3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *p
 {
 	int Z;
 	int indices;
-	u_int FT3rgb;
+	u_int F3rgb;
 	SVECTOR *v2;
 	SVECTOR *v1;
 	SVECTOR *v0;
@@ -104,7 +104,7 @@ void plotCarPolyB3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *p
 	OTTYPE *ot;
 
 	prim = (POLY_F3 *)pg->primptr;
-	FT3rgb = pg->intensity;
+	F3rgb = pg->intensity | 0x20000000;
 	ot = pg->ot;
 
 	while (numTris > 0)
@@ -124,7 +124,7 @@ void plotCarPolyB3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *p
 
 		if (Z > -1) 
 		{
-			*(u_int*)&prim->r0 = FT3rgb | 0x20000000;
+			*(u_int*)&prim->r0 = F3rgb;
 
 			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
 
