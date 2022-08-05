@@ -18,6 +18,10 @@ extern void InitButtonTextures(); // 0x00074E54
 
 extern void LoadFont(char *buffer); // 0x00073CC8
 
+// [A]
+extern void SetTextScale(int scale, int saveLastScale);
+extern void ResetTextScale();
+
 extern void SetTextColour(u_char Red, u_char Green, u_char Blue); // 0x00074A10
 extern int StringWidth(char *pString); // 0x00074A24
 
