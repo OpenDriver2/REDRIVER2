@@ -202,20 +202,17 @@ void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale)
 			case 11:
 				break;
 			case 3:
-				if ((rnd & 3) != 0)
-					break;
+				if ((rnd & 3) == 0)
+					CopSay(5, 0);
 
-				CopSay(5, 0);
 				break;
 			case 4:
-				if ((rnd % 3) & 0xff != 0)
-					break;
-
-				CopSay((rnd & 1) + 7, 0);
+				if ((rnd % 3) == 0)
+					CopSay((rnd & 1) + 7, 0);
 
 				break;
 			default:
-				if ((rnd % 17) & 0xFF == 0)
+				if ((rnd % 17) == 0)
 				{
 					if (MaxPlayerDamage[0] * 3 / 4 < car_data[player[0].playerCarId].totalDamage)
 						phrase = rnd % 4;
@@ -278,7 +275,7 @@ void AdjustFelony(FELONY_DATA *pFelonyData)
 
 	pFelonyDelay = pFelonyData->reoccurrenceDelay;
 
-	while (pFelonyDelay <= &pFelonyData->reoccurrenceDelay[11]) 
+	while (pFelonyDelay < &pFelonyData->reoccurrenceDelay[12]) 
 	{
 		if (pFelonyDelay->current != 0)
 			pFelonyDelay->current--;
@@ -422,7 +419,7 @@ void CheckPlayerMiscFelonies(void)
 	NoteFelony(&felonyData, 10, 4096);
 
 	// check the speed limit
-	if (speedLimits[2] == maxSpeed)
+	if (maxSpeed == speedLimits[2])
 		limit = (maxSpeed * 19) >> 4;
 	else 
 		limit = (maxSpeed * 3) >> 1;
