@@ -32,6 +32,7 @@
 #define MAX_PLACED_PEDS			15
 #endif
 
+#define MAX_PED_COLLISIONS		8
 #define MAX_EXPLOSION_OBJECTS	5
 #define MAX_THROWN_BOMBS		5
 #define MAX_MOTION_CAPTURE		24
