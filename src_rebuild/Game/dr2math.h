@@ -39,6 +39,8 @@ extern short rcossin_tbl[8192];
 #define isin(a)			(rcossin_tbl[( ( a ) & 4095) * 2])
 #define icos(a)			(rcossin_tbl[((( a )+1024) & 4095) * 2])
 
+#define RAND(seed)		((seed) * 0x19660D + 0x3C6EF35F)
+
 #define DIFF_ANGLES_R( A, B, RANGE ) \
 	(((((B) - (A)) + (RANGE>>1)) & RANGE-1) - (RANGE>>1))
 
