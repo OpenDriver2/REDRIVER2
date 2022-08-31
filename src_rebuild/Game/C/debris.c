@@ -1778,6 +1778,7 @@ void AddTrafficLight(CELL_OBJECT *cop, int x, int y, int z, int flag, int yang)
 
 	v2.vx = v1.vx;
 	v2.vz = v1.vz;
+	v2.vy = v1.vy;
 	v2.vy = -camera_position.vy - MapHeight((VECTOR*)&cop->pos);
 
 	if (gNight)
@@ -3500,43 +3501,49 @@ void DisplaySplashes(void)
 	if (pauseflag != 0)
 		return;
 
-	if (gRainCount >> 2 > 30)
+	SplashNo = gRainCount >> 1;
+
+	if (SplashNo > 30)
 		SplashNo = 30;
-	else
-		SplashNo = (gRainCount >> 2);
 
 	SplashFrac = FIXEDH(SplashNo * FrAng * 3);
 
 	gte_SetRotMatrix(&identity); // [A] norot
 
 	CamGnd.vx = camera_position.vx;
+	CamGnd.vy = camera_position.vy;
 	CamGnd.vz = camera_position.vz;
+
 	CamGnd.vy = -camera_position.vy - MapHeight(&CamGnd);
 
 	ang = FrAng - camera_angle.vy;
+	 
+	Gnd1.vx = (RSIN(ang) >> 1) + camera_position.vx;
+	Gnd1.vy = CamGnd.vy;
+	Gnd1.vz = (RCOS(ang) >> 1) + camera_position.vz;
 
-	Gnd1.vx = RSIN(ang) + camera_position.vx;
-	Gnd1.vz = RCOS(ang) + camera_position.vz;
-
-	Gnd1.vx = Gnd1.vx - CamGnd.vx;
-	Gnd1.vy = -camera_position.vy - MapHeight(&Gnd1) - CamGnd.vy;
-	Gnd1.vz = Gnd1.vz - CamGnd.vz;
+	Gnd1.vy = -camera_position.vy - MapHeight(&Gnd1);
+	Gnd1.vx -= CamGnd.vx;
+	Gnd1.vy -= CamGnd.vy;
+	Gnd1.vz -= CamGnd.vz;
 
 	ang = -FrAng - camera_angle.vy;
 
-	Gnd2.vx = RSIN(ang) + camera_position.vx;
-	Gnd2.vz = RCOS(ang) + camera_position.vz;
+	Gnd2.vx = (RSIN(ang) >> 1) + camera_position.vx;
+	Gnd2.vy = CamGnd.vy;
+	Gnd2.vz = (RCOS(ang) >> 1) + camera_position.vz;
 
-	Gnd2.vx = Gnd2.vx - CamGnd.vx;
-	Gnd2.vy = (-camera_position.vy - MapHeight(&Gnd2)) - CamGnd.vy;
-	Gnd2.vz = Gnd2.vz - CamGnd.vz;
+	Gnd2.vy = -camera_position.vy - MapHeight(&Gnd2);
+	Gnd2.vx -= CamGnd.vx;
+	Gnd2.vy -= CamGnd.vy;
+	Gnd2.vz -= CamGnd.vz;
 
 	while (--SplashFrac >= 0)
 	{
-		d2 = rand * 0x19660d + 0x3c6ef35f;
-		d1 = d2 >> 4 & 0xfff;
-		rand = d2 * 0x19660d + 0x3c6ef35f;
-		d2 = rand >> 0xe & 0xfff;
+		d2 = RAND(rand);
+		d1 = d2 >> 4 & 4095;
+		rand = RAND(d2);
+		d2 = rand >> 14 & 4095;
 
 		Position.vx = FIXEDH(Gnd1.vx * d1 + Gnd2.vx * d2);
 		Position.vy = FIXEDH(Gnd1.vy * d1 + Gnd2.vy * d2) + CamGnd.vy;
@@ -3610,7 +3617,6 @@ void DrawRainDrops(void)
 			RainPtr->position.vy += RAIN_DROP_SPEED;
 			RainPtr->position.vx -= drift.vx * 2;
 			RainPtr->position.vz -= drift.vz * 2;
-
 			*(u_int *)&poly->x0 = *(u_int *)&RainPtr->oldposition;
 		}
 
@@ -3653,10 +3659,9 @@ void DrawRainDrops(void)
 			else
 				*(u_int *)&RainPtr->oldposition = *(u_int *)&poly->x2;
 		}
-		else 
+		else if (pauseflag == 0)
 		{
-			if(pauseflag == 0)
-				ReleaseRainDrop(RainPtr->oldposition.pad);
+			ReleaseRainDrop(RainPtr->oldposition.pad);
 		}
 
 		RainPtr++;
@@ -3705,14 +3710,14 @@ void AddRainDrops(void)
 		if (RainIndex < 0)
 			return;
 
-		tmp = rand * 0x19660d + 0x3c6ef35f;
-		v.vz = (tmp >> 0x14 & 0x1ffU) + 400;
+		tmp = RAND(rand);
+		v.vz = (tmp >> 20 & 511) + 400;
 	
-		tmp = tmp * 0x19660d + 0x3c6ef35f;
-		v.vy = -((tmp >> 0x14) & 0x1ff);
+		tmp = RAND(tmp);
+		v.vy = -((tmp >> 20) & 511);
 	
-		rand = tmp * 0x19660d + 0x3c6ef35f;
-		v.vx = ((rand >> 0x14) & 0x1ff) - 256;
+		rand = RAND(tmp);
+		v.vx = ((rand >> 20) & 511) - 256;
 
 		if (v.vz > 512) 
 		{
