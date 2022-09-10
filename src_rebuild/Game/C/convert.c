@@ -163,5 +163,5 @@ extern int frameStart;
 // [D] [T]
 int Random2(int step)
 {
-	return (CameraCnt - frameStart) * (CameraCnt - frameStart) * 0x19660d + 0x3c6ef35fU >> 8 & 0xffff;
+	return RAND((CameraCnt - frameStart) * (CameraCnt - frameStart)) >> 8 & 65535;
 }
