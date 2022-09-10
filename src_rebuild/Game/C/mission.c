@@ -1280,7 +1280,7 @@ void HandleTimer(MR_TIMER *timer)
 // [D] [T]
 void RegisterChaseHit(int car1, int car2)
 {
-	if (!Mission.ChaseTarget || Mission.ChaseHitDelay == 0)
+	if (!Mission.ChaseTarget || Mission.ChaseHitDelay != 0)
 		return;
 
 	int player_id;
