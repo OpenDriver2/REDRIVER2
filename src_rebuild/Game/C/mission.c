@@ -383,7 +383,7 @@ void SetupResidentModels()
 			// force palette
 			if (singlePal)
 				PlayerStartInfo[i]->palette = 0;
-			else
+			else if (wantedColour[i] != -1)
 				PlayerStartInfo[i]->palette = wantedColour[i];
 
 			// store for replay if necessary
