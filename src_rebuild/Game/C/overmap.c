@@ -1001,7 +1001,12 @@ void DrawMultiplayerMap(void)
 	map_z_offset = 0;
 
 	xPos = gMapXOffset;
+#ifndef PSX
+	// [A] add room for speedometer
+	yPos = gMapYOffset - 4;
+#else
 	yPos = gMapYOffset;
+#endif
 
 	DrawMultiplayerTargets();
 
