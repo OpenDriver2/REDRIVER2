@@ -4324,8 +4324,8 @@ int StopUserMissionEvents(MR_THREAD *thread)
 
 int RunUserMissionEvents(MR_THREAD *thread)
 {
-	if (gCurrentMissionNumber >= 50 && gCurrentMissionNumber <= 65)
-		maxCopCars = 32;
+	//if (gCurrentMissionNumber >= 50 && gCurrentMissionNumber <= 65)
+	//	maxCopCars = 32;
 
 	return (*fnMissionEventHandlers)[GameLevel](thread, 0);
 }
