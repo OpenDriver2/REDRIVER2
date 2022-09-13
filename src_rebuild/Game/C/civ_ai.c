@@ -2943,7 +2943,7 @@ void SetUpCivCollFlags(void)
 
 			if (ABS(cd[0].x.vx - cd[1].x.vx) >= dist ||
 				ABS(cd[0].x.vz - cd[1].x.vz) >= dist ||
-				isTanner && ABS(cd[0].x.vy - cd[1].x.vy) >= 500)
+				ABS(cd[0].x.vy - cd[1].x.vy) >= 500)
 			{
 				continue;
 			}
