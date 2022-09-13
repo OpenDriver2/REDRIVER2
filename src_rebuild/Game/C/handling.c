@@ -262,10 +262,11 @@ void FixCarCos(CAR_COSMETICS* carCos, int externalModelNumber)
 		car_cosmetics[2].mass *= 3;
 	}
 
-	// [A] vegas box truck
-	if (GameLevel == 2 && externalModelNumber == 10)
+	// [A] wibbly wobbly fuckery hacks...
+	// flag certain cars that have a tendency to go CRAZY at a stand-still
+	if (GameLevel == 2 && externalModelNumber == 10) // vegas box truck
 	{
-		carCos->extraInfo |= 4; // wibbly wobbly fuckery hack...
+		carCos->extraInfo |= 4;
 	}
 }
 
@@ -333,6 +334,22 @@ void GlobalTimeStep(void)
 		cp = active_car_list[i];
 
 		st = &cp->st;
+
+		// [A] bugfix: wibbly wobbly cars
+		// (see end of FixCarCos for cars that have this flag)
+		if (car_cosmetics[cp->ap.model].extraInfo & 4)
+		{			
+			if (cp->handbrake && cp->wasOnGround && cp->hd.speed < 3)
+			{
+				cp->hd.aacc[0] >>= 1;
+				cp->hd.aacc[1] >>= 1;
+				cp->hd.aacc[2] >>= 1;
+
+				cp->hd.acc[0] >>= 1;
+				cp->hd.acc[1] >>= 1;
+				cp->hd.acc[2] >>= 1;
+			}
+		}
 
 		st->n.linearVelocity[0] += cp->hd.acc[0];
 		st->n.linearVelocity[1] += cp->hd.acc[1];
