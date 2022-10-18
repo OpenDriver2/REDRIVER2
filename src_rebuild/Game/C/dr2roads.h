@@ -17,14 +17,14 @@
 	((*(ushort*)&(rd)->NumLanes & 0xFFFF) == 0xFF01)
 
 // those macros can be applied to straights and junctions
-#define ROAD_LANES_COUNT(rd)							((u_int)(rd)->NumLanes & 0xF)					// lane count
-#define ROAD_WIDTH_IN_LANES(rd)							(ROAD_LANES_COUNT(rd) * 2)					// width in lanes
-#define ROAD_IS_AI_LANE(rd, lane)						((u_char)(rd)->AILanes >> ((lane) / 2) & 1U)	// lane AI driveable flag
-#define ROAD_IS_LEFTMOST_LANE_PARKING(rd)				(((u_char)(rd)->NumLanes & 0x40) != 0)				// allows parking on leftmost lane
-#define ROAD_IS_RIGHTMOST_LANE_PARKING(rd)				(((u_char)(rd)->NumLanes & 0x80) != 0)				// allows parking on rightmost lane
-#define ROAD_LANE_DIRECTION_BIT(rd, lane)				((u_char)(rd)->LaneDirs >> ((lane) / 2) & 1U)	// direction bit
-#define ROAD_SPEED_LIMIT(rd)							(((u_char)(rd)->NumLanes >> 4) & 3)			// speed limit id
-#define ROAD_HAS_FAST_LANES(rd)							(((u_char)(rd)->NumLanes >> 6) & 1)			// & 0x20; in fact speed limit check too
+#define ROAD_LANES_COUNT(rd)				((u_int)(rd)->NumLanes & 0xF)					// lane count
+#define ROAD_WIDTH_IN_LANES(rd)				(ROAD_LANES_COUNT(rd) * 2)						// width in lanes
+#define ROAD_IS_AI_LANE(rd, lane)			((u_char)(rd)->AILanes >> ((lane) / 2) & 1U)	// lane AI driveable flag
+#define ROAD_IS_LEFTMOST_LANE_PARKING(rd)	(((u_char)(rd)->NumLanes & 0x40) != 0)			// allows parking on leftmost lane
+#define ROAD_IS_RIGHTMOST_LANE_PARKING(rd)	(((u_char)(rd)->NumLanes & 0x80) != 0)			// allows parking on rightmost lane
+#define ROAD_LANE_DIRECTION_BIT(rd, lane)	((u_char)(rd)->LaneDirs >> ((lane) / 2) & 1U)	// direction bit
+#define ROAD_SPEED_LIMIT(rd)				(((u_char)(rd)->NumLanes >> 4) & 3)				// speed limit id
+#define ROAD_HAS_FAST_LANES(rd)				(((u_char)(rd)->NumLanes >> 6) & 1)				// & 0x20; in fact speed limit check too
 
 
 #define ROAD_LANE_DIR(rd, lane) \
@@ -38,7 +38,7 @@ struct DRIVER2_ROAD_INFO
 {
 	int surfId;
 
-	short (*ConnectIdx)[4];
+	short* ConnectIdx; // [4]
 	char NumLanes;
 	char LaneDirs;
 	char AILanes;
