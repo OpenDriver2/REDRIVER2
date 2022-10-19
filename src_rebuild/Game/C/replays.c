@@ -278,49 +278,10 @@ int LoadReplayFromBuffer(char *buffer)
 	return 1;
 }
 
-#ifndef PSX
-int LoadUserAttractReplay(int mission, int userId)
-{
-	char customFilename[64];
-	
-	if (userId >= 0 && userId < gNumUserChases)
-	{
-		sprintf(customFilename, "REPLAYS\\User\\%s\\ATTRACT.%d", gUserReplayFolderList[userId], mission);
-
-		if (FileExists(customFilename))
-		{
-			if (Loadfile(customFilename, (char*)_other_buffer))
-				return LoadReplayFromBuffer((char*)_other_buffer);
-		}
-	}
-
-	return 0;
-}
-#endif
-
 // [D] [T]
 int LoadAttractReplay(int mission)
 {
 	char filename[32];
-
-#ifndef PSX
-	int userId = -1;
-	
-	// [A] REDRIVER2 PC - custom attract replays
-	if (gNumUserChases)
-	{
-		userId = rand() % (gNumUserChases + 1);
-
-		if (userId == gNumUserChases)
-			userId = -1;
-	}
-
-	if (LoadUserAttractReplay(mission, userId))
-	{
-		printInfo("Loaded custom attract replay (%d) by %s\n", mission, gUserReplayFolderList[userId]);
-		return 1;
-	}
-#endif
 
 	sprintf(filename, "REPLAYS\\ATTRACT.%d", mission);
 

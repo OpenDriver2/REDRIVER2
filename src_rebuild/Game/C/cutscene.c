@@ -86,55 +86,6 @@ void FreeCutsceneBuffer();
 int IsCutsceneResident(int cutscene);
 
 
-#ifndef PSX
-char gUserReplayFolderList[MAX_USER_REPLAYS][48];
-int gNumUserChases = 0;
-int gUserChaseLoaded = -1;
-
-// [A] user replay folders initialization
-void InitUserReplays(const char* str)
-{
-	int quit;
-	char* ptr;
-	char* strStart;
-	gNumUserChases = 0;
-
-	if (!str)
-		return;
-
-	ptr = (char*)str;
-	strStart = NULL;
-	memset(gUserReplayFolderList, 0, sizeof(gUserReplayFolderList));
-
-	quit = 0;
-
-	while(true)
-	{
-		if (strStart == NULL)
-			strStart = ptr;
-
-		// if we're encountered string end go on
-		if(*ptr == ',' || *ptr == ' ' || *ptr == '\0')
-		{
-			if (*ptr == '\0')
-				quit = 1;
-
-			*ptr = '\0';
-			strcpy(gUserReplayFolderList[gNumUserChases++], strStart);
-			strStart = NULL;
-		}
-
-		ptr++;
-
-		if (quit)
-			break;
-	}
-}
-
-
-#endif
-
-
 // [D] [T]
 void InitInGameCutsceneVariables(void)
 {
@@ -158,10 +109,6 @@ void InitInGameCutsceneVariables(void)
 	JustReturnedFromCutscene = 0;
 
 	gSkipInGameCutscene = 0;
-
-#ifndef PSX
-	gUserChaseLoaded = -1;
-#endif
 
 	FreeCutsceneBuffer();
 }
@@ -236,18 +183,6 @@ void DrawInGameCutscene(void)
 	
 	if (gInGameCutsceneActive == 0 && gInGameCutsceneDelay == 0)
 	{
-#ifndef PSX
-		if(gInGameChaseActive && gUserChaseLoaded != -1 && (CameraCnt - frameStart) < 200)
-		{
-			// [A] print user chaser name on screen
-			char tempStr[80];
-
-			sprintf(tempStr, "%s %s", G_LTXT(GTXT_GetawayIs), gUserReplayFolderList[gUserChaseLoaded]);
-
-			SetTextColour(128, 128, 64);
-			PrintString(tempStr, gOverlayXPos, 230);
-		}
-#endif
 		return;
 	}
 
@@ -392,34 +327,8 @@ int SelectCutsceneFile(char* filename, int init, int subindex)
 	if (init)
 	{
 		// try load replacement bundle
-#ifndef PSX
-		int userId = -1;
-
-		// [A] REDRIVER2 PC - custom user chases
-		if (gNumUserChases)
-		{
-			userId = rand() % (gNumUserChases + 1);
-
-			// if random decides to have no user chase - get og or replacement one
-			if (userId == gNumUserChases)
-				userId = -1;
-		}
-
-		// try loading user chase
-		if (userId != -1)
-			sprintf(filename, "REPLAYS\\UserChases\\%s\\CUT%d_N.R", (char*)gUserReplayFolderList[userId], gCurrentMissionNumber);
-
-		if (FileExists(filename))
-		{
-			gUserChaseLoaded = userId;
-			gReChaseAvailable = 0;
-		}
-		else
-#endif
-		{
-			sprintf(filename, "REPLAYS\\ReChases\\CUT%d_N.R", gCurrentMissionNumber);
-			gReChaseAvailable = FileExists(filename);
-		}
+		sprintf(filename, "REPLAYS\\ReChases\\CUT%d_N.R", gCurrentMissionNumber);
+		gReChaseAvailable = FileExists(filename);
 	}
 
 	if (subindex >= 2)
@@ -427,21 +336,14 @@ int SelectCutsceneFile(char* filename, int init, int subindex)
 		if (gReChaseAvailable == 1)
 		{
 			sprintf(filename, "REPLAYS\\ReChases\\CUT%d_N.R", gCurrentMissionNumber);
+			return FileExists(filename);
 		}
-#ifndef PSX
-		else if (gUserChaseLoaded != -1)
-		{
-			sprintf(filename, "REPLAYS\\UserChases\\%s\\CUT%d_N.R", (char*)gUserReplayFolderList[gUserChaseLoaded], gCurrentMissionNumber);
-		}
-#endif
 	}
+
+	if (gCurrentMissionNumber < 21)
+		sprintf(filename, "REPLAYS\\CUT%d.R", gCurrentMissionNumber);
 	else
-	{
-		if (gCurrentMissionNumber < 21)
-			sprintf(filename, "REPLAYS\\CUT%d.R", gCurrentMissionNumber);
-		else
-			sprintf(filename, "REPLAYS\\A\\CUT%d.R", gCurrentMissionNumber);
-	}
+		sprintf(filename, "REPLAYS\\A\\CUT%d.R", gCurrentMissionNumber);
 
 	return FileExists(filename);
 }
@@ -462,7 +364,7 @@ int CalcInGameCutsceneSize(void)
 			LoadfileSeg(filename, (char*)&CutsceneHeader, 0, sizeof(CUTSCENE_HEADER));
 
 		// load re-chase file header
-		if(SelectCutsceneFile(filename, 0, 2))
+		if (SelectCutsceneFile(filename, 0, 2))
 			LoadfileSeg(filename, (char*)&ChaseHeader, 0, sizeof(CUTSCENE_HEADER));
 
 		maxSize = 0;
