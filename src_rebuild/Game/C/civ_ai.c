@@ -244,7 +244,7 @@ int GetLeftBoundLane(DRIVER2_ROAD_INFO& roadInfo, int oppDir)
 	int i, laneCount, laneNo;
 
 	laneCount = ROAD_WIDTH_IN_LANES(&roadInfo);
-	laneNo = laneCount - ROAD_HAS_FAST_LANES(&roadInfo);
+	laneNo = laneCount;
 
 	for (i = laneNo - 1; i >= 0; i--)
 	{
@@ -253,9 +253,15 @@ int GetLeftBoundLane(DRIVER2_ROAD_INFO& roadInfo, int oppDir)
 			test42 = ROAD_LANE_DIR(&roadInfo, i) ^ 1;
 			laneNo = i;
 
-			if (oppDir != 0)
+			if (test42 == 0)
 			{
-				break;
+				if (oppDir != 0)
+					break;
+			}
+			else
+			{
+				if (oppDir == 0)
+					break;
 			}
 		}
 	}
@@ -267,8 +273,8 @@ int GetRightBoundLane(DRIVER2_ROAD_INFO& roadInfo, int oppDir)
 {
 	int i, laneCount, laneNo;
 
-	laneCount = ROAD_WIDTH_IN_LANES(&roadInfo);
-	laneNo = ROAD_HAS_FAST_LANES(&roadInfo);
+	laneCount = ROAD_WIDTH_IN_LANES(&roadInfo) - ROAD_IS_RIGHTMOST_LANE_OPEN(&roadInfo);
+	laneNo = 0;
 
 	for (i = 0; i < laneCount; i++)
 	{
@@ -489,14 +495,14 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 
 		if (leftLane != rightLane && numExits != 1 && ROAD_LANES_COUNT(&currentRoadInfo) > 1)
 		{
-			if (cp->ai.c.currentLane == rightLane)
+			if (cp->ai.c.currentLane == leftLane)
 			{
 				if (validExitIdx[2] != 42)
 					numExits--;
 				
 				validExitIdx[2] = 42;
 			}
-			else if (cp->ai.c.currentLane == leftLane)
+			else if (cp->ai.c.currentLane == rightLane)
 			{
 				if (validExitIdx[0] != 42)
 					numExits--;
@@ -2111,12 +2117,12 @@ int PingInCivCar(int minPingInDist)
 				allowedToPark = ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, i);
 
 				// this is closest to OG decompiled. Works different!
-				//if ((
-				//	((tryPingInParkedCars && allowedToPark))) ||
-				//	((ROAD_IS_AI_LANE(straight, i) && (((i != 0 || ((straight->NumLanes & 0x40U) == 0)) && (((straight->NumLanes & 0xffffff0f) * 2 - 1 != i || ((straight->NumLanes & 0x80U) == 0))))))))
+				if ((
+					((tryPingInParkedCars && allowedToPark))) ||
+					((ROAD_IS_AI_LANE(&roadInfo, i) && (((i != 0 || ((roadInfo.NumLanes & 0x40U) == 0)) && (((roadInfo.NumLanes & 0xffffff0f) * 2 - 1 != i || ((roadInfo.NumLanes & 0x80U) == 0))))))))
 
 				// pick only non-parkable driveable lanes if parked cars not requested
-				if (tryPingInParkedCars && allowedToPark || ROAD_IS_AI_LANE(&roadInfo, i) && !allowedToPark)
+				//if (tryPingInParkedCars && allowedToPark || ROAD_IS_AI_LANE(&roadInfo, i) && !allowedToPark)
 					possibleLanes[numPossibleLanes++] = i;
 			}
 

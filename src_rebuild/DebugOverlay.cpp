@@ -172,11 +172,14 @@ void DrawDebugOverlays()
 
 				PrintString(tempBuf, 10, 180);
 
-				sprintf(tempBuf, "dir %d lane %d/%d AI %d dist: %d",
+				sprintf(tempBuf, "dir %d lane %d/%d AI %d P(%d-%d) R(%d) dist: %d",
 					ROAD_LANE_DIR(&roadInfo, lane),					// direction bit
 					lane + 1,
 					ROAD_WIDTH_IN_LANES(&roadInfo),					// lane count. * 2 for both sides as roads are symmetric
 					ROAD_IS_AI_LANE(&roadInfo, lane),				// lane AI driveable flag
+					ROAD_IS_LEFTMOST_LANE_PARKING(&roadInfo),
+					ROAD_IS_RIGHTMOST_LANE_PARKING(&roadInfo),
+					ROAD_IS_RIGHTMOST_LANE_OPEN(&roadInfo),					// fast lane flag
 					distAlongSegment
 				);
 
