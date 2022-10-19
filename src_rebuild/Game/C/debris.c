@@ -2034,16 +2034,15 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 	if (z < 0)
 		z = 0;
 
-	if (z < 10000)
-		tail_width = (10000 - z) >> 0xd;
-	else
-		tail_width = 0;
-
 	addPrim(current->ot + z, poly);
 	current->primptr += sizeof(POLY_FT4);
 
-	
 	if (CameraCnt <= 4 || NumPlayers > 1)	// [A] don't draw trails in multiplayer
+		return;
+
+	if (z < 10000)
+		tail_width = (10000 - z) >> 13;
+	else
 		return;
 
 	if ((col->cd & 0x20) && gLightsOn) 
@@ -2073,15 +2072,15 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 	}
 
 #ifndef PSX
-	x = (poly->x0 + poly->x3) / 2.0f;
-	y = (poly->y0 + poly->y3) / 2.0f;
+	x = (poly->x0 + poly->x3) * 0.5f;
+	y = (poly->y0 + poly->y3) * 0.5f;
 #else
 	x = (poly->x0 + poly->x3) / 2;
 	y = (poly->y0 + poly->y3) / 2;
 #endif
 	
 	// unified drawing both for car and lamps
-	if (CameraChanged == 0 && *clock == (FrameCnt & 0xffffU)-1)
+	if (CameraChanged == 0 && *clock == (FrameCnt & 0xffffU) - 1)
 	{
 		int old_x, old_y;
 
@@ -2094,7 +2093,11 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 		if (size > 1 && ABS(old_x - x) + ABS(old_y - y) > 1)
 		{
 			int angle, width;
-			VERTTYPE dx, dy;
+#ifdef PSX
+			int dx, dy;
+#else
+			float dx, dy;
+#endif
 
 			trail = (POLY_G4 *)current->primptr;
 
@@ -2104,21 +2107,20 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 			angle = -ratan2(old_x - x,old_y - y) & 0xfff;
 			width = ABS(poly->x0 - poly->x3);
 
-#ifdef PSX
 			dx = RCOS(angle) * width * 3;
 			dy = RSIN(angle) * width * 3;
-			
+
 			if (col->cd & 0x40)
 			{
-				dx >>= 0x10;
-				dy >>= 0x10;
+				dx /= 1 << 16;
+				dy /= 1 << 16;
 			}
 			else
 			{
-				dx >>= 0xf;
-				dy >>= 0xf;
+				dx /= 1 << 15;
+				dy /= 1 << 15;
 			}
-			
+
 			trail->x0 = x + dx * tail_width;
 			trail->y0 = y + dy * tail_width;
 
@@ -2130,34 +2132,6 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 
 			trail->x3 = old_x - dx;
 			trail->y3 = old_y - dy;
-#else
-			// [A] slightly bigger light trail
-			dx = RCOS(angle);
-			dy = RSIN(angle);
-			
-			if (col->cd & 0x40)
-			{
-				dx = dx / 40000.0f;
-				dy = dy / 40000.0f;
-			}
-			else
-			{
-				dx = dx / 32768.0f;
-				dy = dy / 32768.0f;
-			}
-
-			trail->x0 = x + dx * width * 3 * tail_width;
-			trail->y0 = y + dy * width * 3 * tail_width;
-
-			trail->x1 = x - dx * width * 3 * tail_width;
-			trail->y1 = y - dy * width * 3 * tail_width;
-
-			trail->x2 = old_x + dx * width * 3;
-			trail->y2 = old_y + dy * width * 3;
-
-			trail->x3 = old_x - dx * width * 3;
-			trail->y3 = old_y - dy * width * 3;
-#endif
 
 			if (col->cd & 0x18) 
 			{
@@ -2192,8 +2166,8 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 
 			addPrim(current->ot + z, null);
 			current->primptr += sizeof(POLY_FT3);
-	}
 		}
+	}
 	else
 	{
 		for (i = 0; i < 4; i++)
