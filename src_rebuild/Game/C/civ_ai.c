@@ -399,28 +399,28 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 			
 			if (exitSurfId != -1)
 			{
+				int turnAng;
 				int exitDir;
 				exitDir = ((exitIdx + 4) - exitFrom) % 4;
 
 				if (exitDir == 1)
-					*turnAngle = -1024;	// left
+					turnAng = -1024;	// left
 				else if (exitDir == 2)
-					*turnAngle = 0;		// forward
+					turnAng = 0;		// forward
 				else if (exitDir == 3)
-					*turnAngle = 1024;	// right
+					turnAng = 1024;	// right
 				else
-					*turnAngle = 0;		// forward again?
+					turnAng = 0;		// forward again?
 
 				test123 = 666;
 				test555 = 666;
 				test42 = 666;
 
 				// current node direction and new direction
-				turnDir = oldNode->dir + *turnAngle;
+				turnDir = oldNode->dir + turnAng;
 
 				if (GetSurfaceRoadInfo(&roadInfo, exitSurfId))
 				{
-					int turnAng;
 					int dx, dz;
 					int numLanes;
 
@@ -438,8 +438,6 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 						oppDir = DIFF_ANGLES(ratan2(dx, dz), turnDir);
 						oppDir = (oppDir < 1) * 2048;
 					}
-
-					turnAng = *turnAngle;
 					
 					if (oppDir == 0)
 						turnAng = -turnAng;
@@ -447,14 +445,19 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 					if (turnAng == 0) // going forward
 					{
 						if (oppDir != oldOppDir) // next road is flipped
+						{
 							newLane = numLanes - (cp->ai.c.currentLane + 1);
+
+							if (currentLaneDir == ROAD_LANE_DIR(&roadInfo, newLane))
+								newLane = -1;
+						}
 						else
+						{
 							newLane = cp->ai.c.currentLane;
 
-						// goes on invalid lane?
-						// [A] bug fix with exitDir == 0
-						if (oppDir == 0 && exitDir == 0 || !ROAD_IS_AI_LANE(&roadInfo, newLane))
-							newLane = -1;
+							if (currentLaneDir != ROAD_LANE_DIR(&roadInfo, newLane))
+								newLane = -1;
+						}
 					}
 					else if (turnAng == -1024) // going left
 					{
@@ -466,7 +469,7 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 					}
 
 					// validate lane
-					if (turnAng == 0 || newLane >= 0 && newLane < numLanes)
+					if (newLane >= 0 && newLane < numLanes)
 					{
 						valid = ROAD_IS_AI_LANE(&roadInfo, newLane) && !ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, newLane);
 					}
@@ -486,14 +489,14 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 
 		if (leftLane != rightLane && numExits != 1 && ROAD_LANES_COUNT(&currentRoadInfo) > 1)
 		{
-			if (cp->ai.c.currentLane == leftLane)
+			if (cp->ai.c.currentLane == rightLane)
 			{
 				if (validExitIdx[2] != 42)
 					numExits--;
 				
 				validExitIdx[2] = 42;
 			}
-			else if (cp->ai.c.currentLane == rightLane)
+			else if (cp->ai.c.currentLane == leftLane)
 			{
 				if (validExitIdx[0] != 42)
 					numExits--;
@@ -530,7 +533,6 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 		
 		newRoad = jn->ExitIdx[bestExit];
 
-		if (turnAngle != NULL)
 		{
 			int invExit;
 			invExit = (bestExit + 4 - exitFrom) % 4;
@@ -772,7 +774,6 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 						continue;
 					}
 				}
-
 
 				// fit new lane
 				newLane = tmpNewLane[roadCnt];
@@ -3607,8 +3608,8 @@ int CivControl(CAR_DATA* cp)
 
 #if 0
 		{
-			// maxCivCars = 2;
-			// maxCopCars = 0;
+			//maxCivCars = 2;
+			//maxCopCars = 0;
 
 			extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
 			extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
