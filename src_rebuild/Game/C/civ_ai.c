@@ -2117,12 +2117,12 @@ int PingInCivCar(int minPingInDist)
 				allowedToPark = ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, i);
 
 				// this is closest to OG decompiled. Works different!
-				if ((
-					((tryPingInParkedCars && allowedToPark))) ||
-					((ROAD_IS_AI_LANE(&roadInfo, i) && (((i != 0 || ((roadInfo.NumLanes & 0x40U) == 0)) && (((roadInfo.NumLanes & 0xffffff0f) * 2 - 1 != i || ((roadInfo.NumLanes & 0x80U) == 0))))))))
+				//if ((
+				//	((tryPingInParkedCars && allowedToPark))) ||
+				//	((ROAD_IS_AI_LANE(&roadInfo, i) && (((i != 0 || ((roadInfo.NumLanes & 0x40U) == 0)) && (((roadInfo.NumLanes & 0xffffff0f) * 2 - 1 != i || ((roadInfo.NumLanes & 0x80U) == 0))))))))
 
 				// pick only non-parkable driveable lanes if parked cars not requested
-				//if (tryPingInParkedCars && allowedToPark || ROAD_IS_AI_LANE(&roadInfo, i) && !allowedToPark)
+				if (tryPingInParkedCars && allowedToPark || ROAD_IS_AI_LANE(&roadInfo, i) && !allowedToPark)
 					possibleLanes[numPossibleLanes++] = i;
 			}
 
