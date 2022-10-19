@@ -718,22 +718,7 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 				// [A] fix lane changingg issues
 				if(cp->ai.c.changeLaneCount > 0)
 				{
-					int distAlongPath;
-					if (roadInfo.straight)
-					{
-						if (ROAD_LANE_DIR(&roadInfo, newLane))
-							distAlongPath = roadInfo.straight->length;
-						else
-							distAlongPath = 0;
-					}
-					else
-					{
-						if (ROAD_LANE_DIR(&roadInfo, newLane))
-							distAlongPath = roadInfo.curve->end - roadInfo.curve->start & 0xfff;
-						else
-							distAlongPath = 0;
-					}
-					GetNodePos(currentRoadInfo.straight, NULL, currentRoadInfo.curve, distAlongPath, NULL, &px, &pz, cp->ai.c.currentLane);
+					GetNodePos(currentRoadInfo.straight, NULL, currentRoadInfo.curve, oldNode->distAlongSegment, NULL, &px, &pz, cp->ai.c.currentLane);
 				}
 				else
 				{
