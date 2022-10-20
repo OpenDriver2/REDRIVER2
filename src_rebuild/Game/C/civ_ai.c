@@ -348,14 +348,14 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 		tmpNewRoad[1] = currentRoadInfo.ConnectIdx[(currentLaneDir > 0) ? 3 : 1];
 		laneNo = GetLeftBoundLane(currentRoadInfo, currentLaneDir);
 
-		if (currentLaneDir == 0)
+		if (oldOppDir == 0)
 			leftLane = laneNo;
 		else
 			rightLane = laneNo;
 
 		laneNo = GetRightBoundLane(currentRoadInfo, currentLaneDir);
 
-		if (currentLaneDir != 0)
+		if (oldOppDir != 0)
 			leftLane = laneNo;
 		else
 			rightLane = laneNo;
