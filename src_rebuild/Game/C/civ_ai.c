@@ -444,26 +444,13 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 						oppDir = DIFF_ANGLES(ratan2(dx, dz), turnDir);
 						oppDir = (oppDir < 1) * 2048;
 					}
-					
-					if (oppDir == 0)
-						turnAng = -turnAng;
-
+			
 					if (turnAng == 0) // going forward
 					{
 						if (oppDir != oldOppDir) // next road is flipped
-						{
 							newLane = numLanes - (cp->ai.c.currentLane + 1);
-
-							if (currentLaneDir == ROAD_LANE_DIR(&roadInfo, newLane))
-								newLane = -1;
-						}
 						else
-						{
 							newLane = cp->ai.c.currentLane;
-
-							if (currentLaneDir != ROAD_LANE_DIR(&roadInfo, newLane))
-								newLane = -1;
-						}
 					}
 					else if (turnAng == -1024) // going left
 					{
@@ -478,6 +465,17 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 					if (newLane >= 0 && newLane < numLanes)
 					{
 						valid = ROAD_IS_AI_LANE(&roadInfo, newLane) && !ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, newLane);
+					}
+
+					if (oppDir != oldOppDir)
+					{
+						if (currentLaneDir == ROAD_LANE_DIR(&roadInfo, newLane))
+							valid = 0;
+					}
+					else
+					{
+						if (currentLaneDir != ROAD_LANE_DIR(&roadInfo, newLane))
+							valid = 0;
 					}
 				}
 			}
