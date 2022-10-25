@@ -273,10 +273,10 @@ int GetRightBoundLane(DRIVER2_ROAD_INFO& roadInfo, int oppDir)
 {
 	int i, laneCount, laneNo;
 
-	laneCount = ROAD_WIDTH_IN_LANES(&roadInfo) - ROAD_IS_RIGHTMOST_LANE_OPEN(&roadInfo);
-	laneNo = 0;
+	laneCount = ROAD_WIDTH_IN_LANES(&roadInfo);
+	laneNo = ROAD_IS_LEFTMOST_LANE_PARKING(&roadInfo);
 
-	for (i = 0; i < laneCount; i++)
+	for (i = laneNo; i < laneCount; i++)
 	{
 		if (ROAD_IS_AI_LANE(&roadInfo, i) && !ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, i))
 		{

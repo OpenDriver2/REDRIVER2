@@ -12,20 +12,25 @@
 #define GET_CURVE(surfid)					(Driver2CurvesPtr + ((surfid) & 0x1FFF))
 #define GET_JUNCTION(surfid)				(Driver2JunctionsPtr + ((surfid) & 0x1FFF))
 
+// AI lanes     - each bit represents lane being enabled for Civ AI to be driven
+// Lane dirs    - each bit represents lane direction invertion
+// NumLanes     - | Lane count (4 bits - max 15) | speed limit id (2 bits - max 3) | Leftmost Lane parking | Rightmost Lane parking
+
 // $DEPRECATED: as it's used to detect lane direction, use ROAD_LANE_DIR instead
 #define IS_NARROW_ROAD(rd) \
 	((*(ushort*)&(rd)->NumLanes & 0xFFFF) == 0xFF01)
 
 // those macros can be applied to straights and junctions
-#define ROAD_LANES_COUNT(rd)				((u_int)(rd)->NumLanes & 0xF)					// lane count
-#define ROAD_WIDTH_IN_LANES(rd)				(ROAD_LANES_COUNT(rd) * 2)						// width in lanes
 #define ROAD_IS_AI_LANE(rd, lane)			((u_char)(rd)->AILanes >> ((lane) / 2) & 1U)	// lane AI driveable flag
-#define ROAD_IS_RIGHTMOST_LANE_OPEN(rd)		(((u_char)(rd)->NumLanes & 0x80) != 0)
-#define ROAD_IS_LEFTMOST_LANE_PARKING(rd)	(((u_char)(rd)->NumLanes & 0x40) != 0)			// allows parking on leftmost lane
-#define ROAD_IS_RIGHTMOST_LANE_PARKING(rd)	(((u_char)(rd)->NumLanes & 0x80) != 0)			// allows parking on rightmost lane
 #define ROAD_LANE_DIRECTION_BIT(rd, lane)	((u_char)(rd)->LaneDirs >> ((lane) / 2) & 1U)	// direction bit
-#define ROAD_SPEED_LIMIT(rd)				(((u_char)(rd)->NumLanes >> 4) & 3)				// speed limit id
 
+#define ROAD_LANES_COUNT(rd)				((u_int)(rd)->NumLanes & 15)					// lane count
+#define ROAD_WIDTH_IN_LANES(rd)				(ROAD_LANES_COUNT(rd) * 2)						// width in lanes
+
+#define ROAD_IS_LEFTMOST_LANE_PARKING(rd)	(((u_char)(rd)->NumLanes & 0x40) != 0)			// bit 7 allows parking on leftmost lane
+#define ROAD_IS_RIGHTMOST_LANE_PARKING(rd)	(((u_char)(rd)->NumLanes & 0x80) != 0)			// bit 8 allows parking on rightmost lane
+
+#define ROAD_SPEED_LIMIT(rd)				(((u_char)(rd)->NumLanes >> 4) & 3)				// speed limit id
 
 #define ROAD_LANE_DIR(rd, lane) \
 	(((u_char)(rd)->LaneDirs == 0xFF && (rd)->NumLanes == 1) ? ((lane) & 1) : ROAD_LANE_DIRECTION_BIT(rd, lane))
