@@ -273,7 +273,7 @@ void WunCell(VECTOR* pbase)
 #if ENABLE_GAME_FIXES
 	// start with the base (player) height
 	height1 = pbase->vy;
-	
+
 	pbase->vx += 512;
 	pbase->vz += 512;
 
@@ -303,6 +303,17 @@ void WunCell(VECTOR* pbase)
 		}
 	}
 #else
+	pbase->vx = pbase->vx + 512;
+	pbase->vz = pbase->vz + 512;
+
+	height1 = MapHeight(pbase);
+
+	v[0].vy = height1 + 60;
+
+	pbase->vx = pbase->vx - 512;
+	pbase->vz = pbase->vz - 512;
+	v[1].vy = v[0].vy;
+
 	for (i = 0; i < 2; i++) 
 	{
 		if (i != 0)
@@ -324,14 +335,10 @@ void WunCell(VECTOR* pbase)
 			dz = v[0].vz + v[1].vz >> 1;
 
 			OMapSet(dx >> 8, dz >> 8, lineClear(&v[0], &v[1]) == 0);
-
-			j++;
 		}
 
 		if (i != 0)
 			pbase->vx -= 512;
-
-		i++;
 	}
 #endif
 }
@@ -595,7 +602,7 @@ int iterate(void)
 			nr = pathNodes[0].dist;
 
 		if (dir != 0)
-			nl = pathNodes[dir].dist;
+			nl = pathNodes[dir - 1].dist;
 		else
 			nl = pathNodes[5].dist;
 
