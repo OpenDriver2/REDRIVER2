@@ -33,6 +33,7 @@ struct XZDIR
 	short dx, dz;
 };
 
+// Fast Marching method
 ushort distanceCache[16384];
 char omap[128][16];				// obstacle map 128x128 (bit field)
 int dunyet[32][2];				// scanned cell map (32x32, multi-level bitfield)
@@ -147,7 +148,7 @@ void DebugDisplayObstacleMap()
 	n.vx = player[0].pos[0];
 	n.vz = player[0].pos[2];
 	n.vy = pos_y;
-	n.vy = MapHeight((VECTOR*)&n);
+	//n.vy = MapHeight((VECTOR*)&n);
 
 	for (int i = 0; i < 128; i++)
 	{
@@ -179,7 +180,7 @@ void DebugDisplayObstacleMap()
 
 			n.vx = px << 8;
 			n.vz = pz << 8;
-			n.vy = MapHeight((VECTOR*)&n);
+			n.vy = 0;// MapHeight((VECTOR*)&n);
 
 			int dist = distanceCache[(n.vx >> 2 & 0x3f80U | n.vz >> 9 & 0x7fU) ^ (n.vy & 1U) * 0x2040 ^ (n.vy & 2U) << 0xc];// distanceCache[((pos_x+i & 127) * 128) + (j + pos_z & 127)];
 
@@ -270,8 +271,8 @@ void WunCell(VECTOR* pbase)
 	int i, j;
 
 #if ENABLE_GAME_FIXES
-	// [A] hack with height map (fixes some bits in Havana)
-	height1 = MapHeight(pbase);
+	// start with the base (player) height
+	height1 = pbase->vy;
 	
 	pbase->vx += 512;
 	pbase->vz += 512;
@@ -281,7 +282,9 @@ void WunCell(VECTOR* pbase)
 	pbase->vx -= 512;
 	pbase->vz -= 512;
 
-	if (height1 - v[0].vy > 100)
+	// if base height differs from map height too much (we are on bridge etc)
+	// we then use base height to ensure that obstacles are locally correct
+	if (ABS(height1 - v[0].vy) > 100)
 		v[0].vy = height1;
 
 	v[0].vy += 32;
@@ -501,8 +504,14 @@ int blocked(tNode* v1, tNode* v2)
 	if (slowWallTests != 0)
 		return lineClear((VECTOR*)v1, (VECTOR*)v2) == 0;
 
-	x = v1->vx + v1->vx >> 9;
+	x = v1->vx + v2->vx >> 9;
 	z = v1->vz + v2->vz >> 9;
+
+	int prev = DONEMAP_V(x >> 2, z >> 2);
+	int val = DONEMAP_GETVALUE(x >> 2, z >> 2, prev, 0);
+	
+	if (val != 0)
+		return 1;
 
 	return OMAP_GETVALUE(x, z);
 }
@@ -516,10 +525,10 @@ void setDistance(tNode* n, ushort dist)
 }
 
 // [A]
-void SetNodeDistanceWithParents(tNode* startNode, ushort dist);
+void pushNode(tNode* startNode, ushort dist);
 
 // [D] [T]
-void iterate(void)
+int iterate(void)
 {
 	tNode pathNodes[8];
 
@@ -536,16 +545,14 @@ void iterate(void)
 	int r;
 
 	if (numHeapEntries == 0)
-		return;
+		return 0;
 
 	popNode(&itHere);
 	nbr = pathNodes;
 
 	// check directions
-	for(dir = 0; dir < 6; dir++)
+	for(dir = 0; dir < 6; dir++, nbr++)
 	{
-		nbr++;
-
 		nbr->vx = itHere.vx + dirs[dir].dx;
 		nbr->vy = itHere.vy;
 		nbr->vz = itHere.vz + dirs[dir].dz;
@@ -560,9 +567,7 @@ void iterate(void)
 			{
 				if (ABS(nbr->vy - itHere.vy) < 201)
 				{
-					if ((dist & 1) == 0)
-						nbr->dist = 0;
-
+					nbr->dist = 0;
 					continue;
 				}
 			}
@@ -571,7 +576,7 @@ void iterate(void)
 		}
 		else
 		{
-			if (dist <= itHere.dist - 288)
+			//if (dist <= itHere.dist - 288)
 			{
 				nbr->dist = 1;
 			}
@@ -581,18 +586,18 @@ void iterate(void)
 	// now we have distance let's compute the rest of the map
 	for(dir = 0; dir < 6; dir++)
 	{
-		if (pathNodes[dir + 1].dist != 0)
+		if (pathNodes[dir].dist != 0)
 			continue;
 
 		if (dir != 5)
-			nr = pathNodes[dir + 2].dist;
+			nr = pathNodes[dir + 1].dist;
 		else
-			nr = pathNodes[1].dist;
+			nr = pathNodes[0].dist;
 
 		if (dir != 0)
 			nl = pathNodes[dir].dist;
 		else
-			nl = pathNodes[6].dist;
+			nl = pathNodes[5].dist;
 
 		// uhhmm... distance function selection?
 		if (nl < 2)
@@ -627,8 +632,10 @@ void iterate(void)
 			}
 		}
 
-		SetNodeDistanceWithParents(&pathNodes[dir + 1], dist);
+		pushNode(&pathNodes[dir], dist);
 	}
+
+	return numHeapEntries > 0;
 }
 
 // [D] [T]
@@ -853,7 +860,7 @@ void addCivs(void)
 }
 
 // [A]
-void SetNodeDistanceWithParents(tNode* startNode, ushort dist)
+void pushNode(tNode* startNode, ushort dist)
 {
 	int i;
 	u_int pnode, parent;
@@ -863,6 +870,7 @@ void SetNodeDistanceWithParents(tNode* startNode, ushort dist)
 
 	setDistance(startNode, dist);
 
+	// up heap
 	i = numHeapEntries + 1;
 
 	pnode = i;
@@ -881,7 +889,7 @@ void SetNodeDistanceWithParents(tNode* startNode, ushort dist)
 }
 
 // [A]
-void ComputeDistanceFromSearchTarget(tNode* startNode)
+void pushSeedNode(tNode* startNode)
 {
 	u_short dist;
 	int i, dx, dz;
@@ -894,7 +902,7 @@ void ComputeDistanceFromSearchTarget(tNode* startNode)
 
 	dist = SquareRoot0(	dx * dx + dz * dz ) >> 1;
 
-	SetNodeDistanceWithParents(startNode, dist);
+	pushNode(startNode, dist);
 }
 
 // [D] [T]
@@ -939,7 +947,13 @@ void UpdateCopMap(void)
 			i = 36;
 
 		while (--i >= 0)
-			iterate();
+		{
+			if (!iterate())
+			{
+				pathFrames = -1;
+				break;
+			}
+		}
 
 		DebugDisplayObstacleMap();
 		
@@ -1001,30 +1015,30 @@ void UpdateCopMap(void)
 
 		if (dz < dx + dz / 2)
 		{
-			ComputeDistanceFromSearchTarget(&startNode);
+			pushSeedNode(&startNode);
 
 			startNode.vx += 256;
 			startNode.vz += 512;
 			
-			ComputeDistanceFromSearchTarget(&startNode);
+			pushSeedNode(&startNode);
 
 			startNode.vx += 256;
 			startNode.vz -= 512;
 
-			ComputeDistanceFromSearchTarget(&startNode);
+			pushSeedNode(&startNode);
 		}
 		else
 		{
-			ComputeDistanceFromSearchTarget(&startNode);
+			pushSeedNode(&startNode);
 
 			startNode.vx += 256;
 			startNode.vz += 512;
 	
-			ComputeDistanceFromSearchTarget(&startNode);
+			pushSeedNode(&startNode);
 			
 			startNode.vx -= 512;
 			
-			ComputeDistanceFromSearchTarget(&startNode);
+			pushSeedNode(&startNode);
 		}
 	}
 
