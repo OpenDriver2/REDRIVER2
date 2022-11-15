@@ -583,7 +583,7 @@ int iterate(void)
 		}
 		else
 		{
-			//if (dist <= itHere.dist - 288)
+			if (dist <= itHere.dist - 288)
 			{
 				nbr->dist = 1;
 			}
@@ -957,7 +957,7 @@ void UpdateCopMap(void)
 		{
 			if (!iterate())
 			{
-				pathFrames = -1;
+				pathFrames = 0;
 				break;
 			}
 		}
@@ -967,7 +967,8 @@ void UpdateCopMap(void)
 		// remove cars
 		addCivs();
 	}
-	else
+	
+	if(pathFrames == 0)
 	{
 		// restart from new search target position
 		if (player[0].playerType == 1 && (CopsCanSeePlayer != 0 || numActiveCops == 0))
