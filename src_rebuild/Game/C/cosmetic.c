@@ -25,6 +25,22 @@ CAR_COSMETICS car_cosmetics[MAX_CAR_MODELS];
 CAR_COSMETICS levelSpecCosmetics[5];
 #endif
 
+#ifndef PSX
+// [A] loads car cosmetics from file
+void LoadCustomCarCosmetics(CAR_COSMETICS* dest, int modelNumber)
+{
+	char filename[64];
+
+	sprintf(filename, "LEVELS\\%s\\CARMODEL_%d.COS", LevelNames[GameLevel], modelNumber);
+	if (!FileExists(filename))
+	{
+		return;
+	}
+
+	LoadfileSeg(filename, (char*)dest, 0, sizeof(CAR_COSMETICS));
+}
+#endif
+
 // [D] [T]
 void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 {
@@ -51,6 +67,9 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 			offset = *(int*)(lump_ptr + model * sizeof(int));
 			car_cosmetics[i] = *(CAR_COSMETICS*)((u_char*)lump_ptr + offset);
 
+#ifndef PSX
+			LoadCustomCarCosmetics(&car_cosmetics[i], model);
+#endif
 			FixCarCos(&car_cosmetics[i], model);
 		}
 	}
