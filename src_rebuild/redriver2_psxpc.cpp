@@ -565,12 +565,9 @@ int main(int argc, char** argv)
 	{
 		int newScrZ = gCameraDefaultScrZ;
 		const char* dataFolderStr = ini_get(config, "fs", "dataFolder");
-		const char* userReplaysStr = ini_get(config, "game", "userChases");
 
 		if(!cdImageFileName)
 			cdImageFileName = ini_get(config, "cdfs", "image");
-
-		InitUserReplays(userReplaysStr);
 		
 		// configure Psy-X pads
 		ini_sget(config, "pad", "pad1device", "%d", &g_cfg_controllerToSlotMapping[0]);
