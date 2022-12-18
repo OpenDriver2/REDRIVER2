@@ -3,6 +3,8 @@
 require "premake_modules/usage"
 require "premake_modules/emscripten"
 
+IS_ANDROID = (_ACTION == "androidndk")
+
 ------------------------------------------
 
 newoption {
@@ -58,6 +60,7 @@ workspace "REDRIVER2"
 			"-Wno-parentheses",
 			"-Wno-format",
 		}
+
 		linkoptions  { 
 			"-s TOTAL_MEMORY=1073741824",
 			"-s USE_SDL=2",
@@ -80,6 +83,51 @@ workspace "REDRIVER2"
 			"{COPY} " .. WEBSHELL_PATH .. "/lsfs.js %{cfg.buildtarget.directory}"
 		}
 
+	elseif IS_ANDROID then		
+		system "android"
+		shortcommands "On"
+		
+		platforms {
+			"android-arm", "android-arm64"
+		}
+		
+		disablewarnings {
+			"c++11-narrowing",
+			"constant-conversion",
+			"writable-strings",
+			"unused-value",
+			"switch",
+			"shift-op-parentheses",
+			"parentheses",
+			"format",
+		}
+		
+		buildoptions {
+			"-fpermissive",
+			"-fexceptions",
+			"-pthread",
+		}
+		
+		linkoptions {
+			"--no-undefined",
+			"-fexceptions",
+			"-pthread",
+			
+			"-mfloat-abi=softfp",	-- force NEON to be used
+			"-mfpu=neon"
+		}
+
+		filter "platforms:*-x86"
+			architecture "x86"
+
+		filter "platforms:*-x86_64"
+			architecture "x86_64"
+
+		filter "platforms:*-arm"
+			architecture "arm"
+
+		filter "platforms:*-arm64"
+			architecture "arm64"
 	else
 		platforms { "x86" } --, "x86_64" }
 	end
@@ -137,6 +185,9 @@ end
 -- Psy-Cross layer
 include "premake5_psycross.lua"
 
+-- font tool
+include "premake5_font_tool.lua"
+
 -- game iteslf
 project "REDRIVER2"
     kind "WindowedApp"
@@ -175,7 +226,6 @@ project "REDRIVER2"
 			"utils/**.cpp",
 			"utils/**.c",
 			"redriver2_psxpc.cpp",
-			"DebugOverlay.cpp",
 		}
 		
 	filter "platforms:emscripten"

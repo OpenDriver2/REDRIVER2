@@ -179,3 +179,59 @@ bool LoadTGAImage(const char* filename, u_char** data, int& width, int& height, 
 
 	return true;
 }
+
+bool SaveTGAImage(const char* filename, u_char* data, int width, int height, int bpp)
+{
+	TGAHeader tgaHeader;
+
+	// Initialize the Targa header
+	tgaHeader.descriptionlen = 0;
+	tgaHeader.cmaptype = 0;
+	tgaHeader.imagetype = 2;
+	tgaHeader.cmapstart = 0;
+	tgaHeader.cmapentries = 0;
+	tgaHeader.cmapbits = 0;
+	tgaHeader.xoffset = 0;
+	tgaHeader.yoffset = 0;
+	tgaHeader.width = width;
+	tgaHeader.height = height;
+	tgaHeader.bpp = bpp;
+	tgaHeader.attrib = 0;
+
+	int imageSize = width * height * (bpp / 8);
+
+	FILE* fp = fopen(filename, "wb");
+	if (!fp)
+		return false;
+
+	// Write the header
+	fwrite(&tgaHeader, sizeof(TGAHeader), 1, fp);
+
+	// Write the image data
+	u_char* src = data + (bpp / 8) * width * (height - 1);
+
+	switch (bpp)
+	{
+		case 32:
+			for (int y = 0; y < height; y++)
+			{
+				for (int x = 0; x < width; x++)
+				{
+					u_char pixel[4];
+					pixel[0] = src[2];
+					pixel[1] = src[1];
+					pixel[2] = src[0];
+					pixel[3] = src[3];
+
+					fwrite(pixel, sizeof(pixel), 1, fp);
+					src += 4;
+				}
+				src -= 8 * width;
+			}
+			break;
+	}
+
+	fclose(fp);
+
+	return true;
+}
