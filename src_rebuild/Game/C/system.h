@@ -139,7 +139,7 @@ extern DRAW_MODE draw_mode_ntsc;
 #define	OTSIZE	0x2000
 #endif
 
-#ifdef USE_EXTENDED_PRIM_POINTERS
+#if USE_EXTENDED_PRIM_POINTERS
 #	define PRIMTAB_SIZE 0x50000
 #else
 #	define PRIMTAB_SIZE 0x1e000

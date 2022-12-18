@@ -180,7 +180,7 @@ void SetupMovieRectangle(int image_w, int image_h)
 	u_char r = 1;
 	u_char b = 1;
 
-#ifdef USE_PGXP
+#if USE_PGXP
 	GR_SetViewPort(0, 0, windowWidth, windowHeight);
 
 	GrVertex blit_vertices[] =
