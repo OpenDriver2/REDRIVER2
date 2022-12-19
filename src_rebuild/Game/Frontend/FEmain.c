@@ -22,6 +22,258 @@
 #include "C/spool.h"
 #include "C/state.h"
 
+#ifndef PSX
+
+#include "PsyX/PsyX_render.h"
+#include "../utils/targa.h"
+#include "../utils/hqfont.h"
+
+#pragma optimize("", off)
+
+#define HIRES_FONTS
+
+struct FEFONT_QUAD
+{
+	float x0, y0, s0, t0; // top-left
+	float x1, y1, s1, t1; // bottom-right
+};
+
+TextureID gHiresFEFontTexture = 0;
+OUT_FN2RANGE gHiresFEFontRanges[4];
+OUT_FN2INFO gHiresFEFontCharData[4][224];
+int gHiresFEFontRangeCount = 0;
+
+void InitHiresFEFont()
+{
+	char namebuffer[64];
+	u_char* data;
+
+	// init font2
+	if (!gHiresFEFontTexture)
+	{
+		gHiresFEFontRangeCount = 0;
+
+		int width, height, bpp;
+		int x, y;
+		int size;
+		FILE* fp;
+		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\fefont.fn2");
+
+		fp = fopen(namebuffer, "rb");
+		if (fp)
+		{
+			int i;
+
+			// read fn2 step by step
+			OUT_FN2HEADER fn2hdr;
+			fread(&fn2hdr, sizeof(fn2hdr), 1, fp);
+
+			gHiresFEFontRangeCount = fn2hdr.range_count;
+			for (i = 0; i < fn2hdr.range_count; ++i)
+			{
+				fread(&gHiresFEFontRanges[i], sizeof(gHiresFEFontRanges[i]), 1, fp);
+				fread(gHiresFEFontCharData[i], sizeof(OUT_FN2INFO), gHiresFEFontRanges[i].count, fp);
+			}
+
+			fclose(fp);
+		}
+
+		// load TGA file
+		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\fefont.tga");
+		if (LoadTGAImage(namebuffer, &data, width, height, bpp))
+		{
+			if (bpp == 32)
+			{
+				gHiresFEFontTexture = GR_CreateRGBATexture(HIRES_FONT_SIZE_W, HIRES_FONT_SIZE_H, data);
+			}
+			free(data);
+		}
+	}
+}
+
+void FEGetHiresBakedQuad(int char_index, float scale, float* xpos, float* ypos, FEFONT_QUAD* q)
+{
+	float ipw = 1.0f / (float)HIRES_FONT_SIZE_W;
+	float iph = 1.0f / (float)HIRES_FONT_SIZE_H;
+
+	const OUT_FN2INFO* b = gHiresFEFontCharData[0] + char_index - gHiresFEFontRanges[0].start;
+
+	float fscale = 0.5f * scale;
+
+	float s_x = b->x1 - b->x0;
+	float s_y = b->y1 - b->y0;
+
+	q->x0 = *xpos + b->xoff * fscale;
+	q->y0 = *ypos + b->yoff * fscale;
+	q->x1 = (b->xoff2 - b->xoff) * fscale;
+	q->y1 = (b->yoff2 - b->yoff) * fscale;
+
+	q->s0 = b->x0 * 255.0f * ipw;
+	q->t0 = b->y0 * 255.0f * iph;
+	q->s1 = s_x * 255.0f * ipw;
+	q->t1 = s_y * 255.0f * iph;
+
+	q->y0 += 32.0f;
+
+	*xpos += b->xadvance * fscale;
+}
+
+void SetHiresFEFontTexture(int enabled)
+{
+	if (gHiresFEFontTexture == 0)
+	{
+		return;
+	}
+
+	DR_PSYX_TEX* tex = (DR_PSYX_TEX*)current->primptr;
+	if (enabled)
+		SetPsyXTexture(tex, gHiresFEFontTexture, 255, 255);
+	else
+		SetPsyXTexture(tex, 0, 0, 0);
+
+	addPrim(current->ot + 1, tex);
+	current->primptr += sizeof(DR_PSYX_TEX);
+}
+
+int FEStringWidthHires(char* string)
+{
+	char* pString = string;
+	u_char c = 0;
+
+	int w = 0;
+
+	while ((c = *pString++) != 0)
+	{
+		float fx, fy;
+		fx = 0;
+		fy = 0;
+		FEFONT_QUAD q;
+		FEGetHiresBakedQuad(c, 1.0f, &fx, &fy, &q);
+
+		w += fx;
+	}
+
+	return w;
+}
+
+int FEPrintStringSizedHires(char* string, int x, int y, int scale, int transparent, int r, int g, int b)
+{
+	if (current == NULL || string == NULL)
+		return -1;
+
+	POLY_FT4* shadow;
+	POLY_FT4* font;
+	u_char let;
+	int w;
+	int h;
+
+	SetHiresFEFontTexture(0);
+	font = (POLY_FT4*)current->primptr;
+
+	while ((let = *string++) != 0)
+	{
+		if (let == '\n')
+			continue;
+
+		float fx, fy;
+		fx = x;
+		fy = y;
+		FEFONT_QUAD q;
+		FEGetHiresBakedQuad(let, scale / 4096.0f, &fx, &fy, &q);
+
+		setPolyFT4(font);
+		setSemiTrans(font, 1);
+
+		setRGB0(font, r, g, b);
+		setUVWH(font, q.s0, q.t0, q.s1, q.t1);
+		setXYWH(font, q.x0, q.y0, q.x1, q.y1);
+
+		font->clut = 0;
+		font->tpage = 0;
+
+		addPrim(current->ot + 1, font);
+		shadow = font + 1;
+
+		// add shadow poly
+		memcpy(shadow, font, sizeof(POLY_FT4));
+		setRGB0(shadow, 10, 10, 10);
+		setXYWH(shadow, q.x0 + 1.0f, q.y0 + 1.0f, q.x1, q.y1);
+
+		addPrim(current->ot + 1, shadow);
+		font += 2;
+
+		// make room for next character
+		x += fx - x;
+	}
+
+	// set tail
+	current->primptr = (char*)font;
+	SetHiresFEFontTexture(1);
+
+	return x;
+}
+
+int FEPrintStringHires(char* string, float x, float y, int justification, int r, int g, int b)
+{
+	POLY_FT4* shadow;
+	POLY_FT4* font;
+	u_char let;
+
+	if (justification & 4)
+	{
+		x -= FEStringWidthHires(string);
+	}
+
+	SetHiresFEFontTexture(0);
+	font = (POLY_FT4*)current->primptr;
+
+	int counter = 0;
+
+	while ((let = *string++) != 0)
+	{
+		float fx, fy;
+		fx = x;
+		fy = y;
+		FEFONT_QUAD q;
+		FEGetHiresBakedQuad(let, 1.0f, &fx, &fy, &q);
+
+		setPolyFT4(font);
+		setSemiTrans(font, 1);
+
+		setRGB0(font, r, g, b);
+		setUVWH(font, q.s0, q.t0, q.s1, q.t1);
+		setXYWH(font, q.x0, q.y0, q.x1, q.y1);
+
+		font->clut = 0;
+		font->tpage = 0;
+
+		addPrim(current->ot + 1, font);
+		shadow = font + 1;
+
+		// add shadow poly
+		memcpy(shadow, font, sizeof(POLY_FT4));
+		setRGB0(shadow, 10, 10, 10);
+		setXYWH(shadow, q.x0 + 1.0f, q.y0 + 1.0f, q.x1, q.y1);
+
+		addPrim(current->ot + 1, shadow);
+		font += 2;
+
+		// add space for next character
+		x += fx - x;
+
+		if (++counter >= 32)
+			break;
+	}
+
+	// set tail
+	current->primptr = (char *)font;
+
+	SetHiresFEFontTexture(1);
+
+	return x;
+}
+
+#endif // PSX
 
 struct PSXBUTTON
 {
@@ -703,7 +955,7 @@ void DisplayOnScreenText(void)
 			text = "Incompatible controller in Port 1";
 		}
 
-		FEPrintStringSized(text, 40, 400, 0xc00, transparent, 64, 64, 64);
+		FEPrintStringSized(text, 40, 400, 3072, transparent, 64, 64, 64);
 	}
 	else
 	{
@@ -717,14 +969,14 @@ void DisplayOnScreenText(void)
 				strcat(ScreenTitle, ScreenNames[i]);
 			}
 
-			FEPrintStringSized(ScreenTitle, 40, 400, 0xc00, 1, 64, 64, 64);
+			FEPrintStringSized(ScreenTitle, 40, 400, 3072, 1, 64, 64, 64);
 		}
 
 		if (iScreenSelect == SCREEN_CUTSCENE)
 		{
 			text = GET_MISSION_TXT(CutSceneNames[cutSelection + CutAmountsTotal[currCity]]);
 
-			FEPrintStringSized(text, 100, 226, 0xc00, 1, 64, 64, 64);
+			FEPrintStringSized(text, 100, 226, 3072, 1, 64, 64, 64);
 		}
 	}
 }
@@ -1554,6 +1806,9 @@ void SetFEDrawMode(void)
 void InitFrontend(void)
 {
 	InitCdIcon();
+#ifdef HIRES_FONTS
+	InitHiresFEFont();
+#endif
 
 	ResetGraph(1);
 	SetDispMask(0);
@@ -1706,8 +1961,14 @@ int FEStringWidth(char* string)
 {
 	char* pString = string;
 	u_char c = 0;
-
 	int w = 0;
+
+#ifdef HIRES_FONTS
+	if (gHiresFEFontTexture)
+	{
+		return FEStringWidthHires(string);
+	}
+#endif
 
 	while ((c = *pString++) != 0)
 	{
@@ -1726,29 +1987,23 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 	if (current == NULL || string == NULL)
 		return -1;
 
+#ifdef HIRES_FONTS
+	if (gHiresFEFontTexture)
+	{
+		return FEPrintStringHires(string, x, y, justification, r, g, b);
+	}
+#endif
+
 	FE_CHARDATA *pFontInfo;
 	SPRT *font;
 	u_char let;
 
-	font = (SPRT *)current->primptr;
-
 	if (justification & 4)
 	{
-		char *pString = string;
-		u_char c = 0;
-
-		int w = 0;
-
-		while ((c = *pString++) != 0)
-		{
-			if (c == ' ')
-				w += 4;
-			else
-				w += feFont.CharInfo[c].w;
-		}
-
-		x -= w;
+		x -= FEStringWidth(string);
 	}
+
+	font = (SPRT*)current->primptr;
 
 	int counter = 0;
 
@@ -1806,6 +2061,13 @@ int FEPrintStringSized(char *string, int x, int y, int scale, int transparent, i
 {
 	if (current == NULL || string == NULL)
 		return -1;
+
+#ifdef HIRES_FONTS
+	if (gHiresFEFontTexture)
+	{
+		return FEPrintStringSizedHires(string, x, y, scale, transparent, r, g, b);
+	}
+#endif
 
 	POLY_FT4 *font;
 	FE_CHARDATA *pFontInfo;
@@ -1875,10 +2137,10 @@ int CentreScreen(int bSetup)
 	char text[32];
 
 	sprintf(text, "X1: %d, Y1: %d", current->disp.screen.x, current->disp.screen.y);
-	FEPrintStringSized(text, 25, 50, 0xC00, 0, 128, 0, 0);
+	FEPrintStringSized(text, 25, 50, 3072, 0, 128, 0, 0);
 
 	sprintf(text, "X2: %d, Y2: %d", last->disp.screen.x, last->disp.screen.y);
-	FEPrintStringSized(text, 25, 75, 0xC00, 0, 128, 0, 0);
+	FEPrintStringSized(text, 25, 75, 3072, 0, 128, 0, 0);
 #endif
 
 	if (feNewPad & MPAD_CROSS)
