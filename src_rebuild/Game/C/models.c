@@ -292,7 +292,7 @@ char* LoadCarModelFromFile(char* dest, int modelNumber, int type)
 	char* mem;
 	char filename[64];
 
-	sprintf(filename, "LEVELS\\%s\\CARMODEL_%d_%s.DMODEL", LevelNames[GameLevel], modelNumber, CarModelTypeNames[type-1]);
+	sprintf(filename, "LEVELS\\%s\\CARMODEL_%d_%s.MDL", LevelNames[GameLevel], modelNumber, CarModelTypeNames[type-1]);
 	if(FileExists(filename))
 	{
 		mem = (char*)(dest ? dest : (_other_buffer + modelNumber * 0x10000 + (type-1) * 0x4000));
