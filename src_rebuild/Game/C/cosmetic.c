@@ -68,7 +68,9 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 			car_cosmetics[i] = *(CAR_COSMETICS*)((u_char*)lump_ptr + offset);
 
 #ifndef PSX
-			LoadCustomCarCosmetics(&car_cosmetics[i], model);
+			extern int gContentOverride;
+			if(gContentOverride)
+				LoadCustomCarCosmetics(&car_cosmetics[i], model);
 #endif
 			FixCarCos(&car_cosmetics[i], model);
 		}

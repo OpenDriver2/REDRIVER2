@@ -457,11 +457,15 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 			offset = *(int *)(lump_ptr + model * 4);
 			mem = (u_char*)lump_ptr;
 #ifndef PSX
-			char* newDenting = LoadCarDentingFromFile(NULL, model);
-			if(newDenting)
+			extern int gContentOverride;
+			if (gContentOverride)
 			{
-				mem = (u_char*)newDenting;
-				offset = 0;
+				char* newDenting = LoadCarDentingFromFile(NULL, model);
+				if (newDenting)
+				{
+					mem = (u_char*)newDenting;
+					offset = 0;
+				}
 			}
 #endif
 

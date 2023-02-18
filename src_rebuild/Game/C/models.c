@@ -314,10 +314,18 @@ MODEL* GetCarModel(char *src, char **dest, int KeepNormals, int modelNumber, int
 	char* mem;
 
 #ifndef PSX
-	mem = LoadCarModelFromFile(NULL, modelNumber, type);
+	extern int gContentOverride;
+	if (gContentOverride)
+	{
+		mem = LoadCarModelFromFile(NULL, modelNumber, type);
 
-	if (!mem) // fallback to lump
+		if (!mem) // fallback to lump
+			mem = src;
+	}
+	else
+	{
 		mem = src;
+	}
 #else
 	mem = src;
 #endif
