@@ -1,7 +1,7 @@
 ---
 app-id: io.github.opendriver2.Redriver2
 runtime: org.freedesktop.Platform
-runtime-version: '20.08'
+runtime-version: '22.08'
 rename-icon: 'icon'
 sdk: org.freedesktop.Sdk
 command: start.sh
@@ -17,14 +17,14 @@ finish-args:
 add-extensions:
   org.freedesktop.Platform.Compat.i386:
     directory: lib/i386-linux-gnu
-    version: '20.08'
+    version: '22.08'
   org.freedesktop.Platform.Compat.i386.Debug:
     directory: lib/debug/lib/i386-linux-gnu
-    version: '20.08'
+    version: '22.08'
     no-autodownload: true
   org.freedesktop.Platform.GL32:
     directory: lib/i386-linux-gnu/GL
-    version: '20.08'
+    version: '22.08'
     subdirectories: true
     no-autodownload: true
     autodelete: false
