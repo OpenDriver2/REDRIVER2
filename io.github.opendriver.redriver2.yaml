@@ -1,9 +1,11 @@
----
 app-id: io.github.opendriver2.Redriver2
 runtime: org.freedesktop.Platform
-runtime-version: '22.08'
-rename-icon: 'icon'
+runtime-version: &runtime-version '22.08'
+x-gl-version: &gl-version '1.4'
+x-gl-versions: &gl-versions 22.08;22.08-extra;1.4
 sdk: org.freedesktop.Sdk
+separate-locales: false
+rename-icon: 'icon'
 command: start.sh
 finish-args:
 - "--socket=x11"
@@ -14,38 +16,47 @@ finish-args:
 - "--persist=."
 - "--allow=multiarch"
 - "--env=SDL_DYNAMIC_API=/app/lib/i386-linux-gnu/libSDL2-2.0.so.0"
+
 add-extensions:
   org.freedesktop.Platform.Compat.i386:
     directory: lib/i386-linux-gnu
-    version: '22.08'
+    version: *runtime-version
+
   org.freedesktop.Platform.Compat.i386.Debug:
     directory: lib/debug/lib/i386-linux-gnu
-    version: '22.08'
+    version: *runtime-version
     no-autodownload: true
+
   org.freedesktop.Platform.GL32:
     directory: lib/i386-linux-gnu/GL
-    version: '22.08'
+    version: *gl-version
+    versions: *gl-versions
     subdirectories: true
     no-autodownload: true
     autodelete: false
     add-ld-path: lib
-    merge-dirs: vulkan/icd.d;glvnd/egl_vendor.d
+    merge-dirs: vulkan/icd.d;glvnd/egl_vendor.d;OpenCL/vendors;lib/dri;lib/d3d;vulkan/explicit_layer.d;vulkan/implicit_layer.d
     download-if: active-gl-driver
     enable-if: active-gl-driver
+
 sdk-extensions:
 - org.freedesktop.Sdk.Compat.i386
 - org.freedesktop.Sdk.Extension.toolchain-i386
+
 build-options:
-  prepend-pkg-config-path: "/app/lib32/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig"
-  ldflags: "-L/app/lib32"
-  append-path: "/usr/lib/sdk/toolchain-i386/bin"
+  prepend-pkg-config-path: /app/lib32/pkgconfig:/usr/lib/i386-linux-gnu/pkgconfig
+  ldflags: -L/app/lib32
+  prepend-path: /usr/lib/sdk/toolchain-i386/bin
   env:
     CC: i686-unknown-linux-gnu-gcc
     CXX: i686-unknown-linux-gnu-g++
-  libdir: "/app/lib32"
+  libdir: /app/lib32
+
 cleanup:
 - "/include"
+
 modules:
+
 - name: ld-i386
   buildsystem: simple
   build-commands:
@@ -55,6 +66,7 @@ modules:
     - type: shell
       commands:
         - echo "/app/lib32" > ld.so.conf
+
 - name: game
   buildsystem: simple
   build-commands:
