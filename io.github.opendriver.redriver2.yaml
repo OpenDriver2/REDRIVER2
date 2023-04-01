@@ -57,15 +57,24 @@ cleanup:
 
 modules:
 
-- name: ld-i386
+- name: platform-bootstrap
   buildsystem: simple
   build-commands:
-  - mkdir -p /app/lib/i386-linux-gnu /app/lib/debug/lib/i386-linux-gnu
-  - install -Dm644 -t /app/etc ld.so.conf 
+  - |
+    set -e
+    mkdir -p /app/bin
+    mkdir -p /app/lib/i386-linux-gnu
+    mkdir -p /app/lib/debug/lib/i386-linux-gnu
+    mkdir -p /app/lib/i386-linux-gnu/GL
+    cp /usr/bin/addr2line /app/bin/
+    cp /usr/lib/x86_64-linux-gnu/libbfd-*.so /app/lib/
+    install -Dm644 -t /app/etc ld.so.conf
+    mkdir -p /app/links/lib
+    ln -srv /app/lib /app/links/lib/x86_64-linux-gnu
+    ln -srv /app/lib32 /app/links/lib/i386-linux-gnu
   sources:
-    - type: shell
-      commands:
-        - echo "/app/lib32" > ld.so.conf
+    - type: dir
+      path: .flatpak
 
 - name: game
   buildsystem: simple
