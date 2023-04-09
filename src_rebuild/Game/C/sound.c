@@ -475,40 +475,38 @@ int CompleteSoundSetup(int channel, int bank, int sample, int pitch, int proximi
 
 	if (bpf == 0) 
 	{
-		channel = -1;
+		return -1;
 	}
-	else
-	{
-		chan = &channels[channel];
+
+	chan = &channels[channel];
 		
-		if (gSoundMode == 1 && proximity != -1) 
-			UpdateVolumeAttributesS(channel, proximity);
-		else
-			UpdateVolumeAttributesM(channel);
+	if (gSoundMode == 1 && proximity != -1) 
+		UpdateVolumeAttributesS(channel, proximity);
+	else
+		UpdateVolumeAttributesM(channel);
 
-		stop_sound_handler = 1;
+	stop_sound_handler = 1;
 
-		chan->attr.mask =  SPU_VOICE_VOLL | SPU_VOICE_VOLR | SPU_VOICE_VOLMODEL | SPU_VOICE_VOLMODER | SPU_VOICE_PITCH | SPU_VOICE_WDSA;
-		chan->attr.addr = samp->address;
-		chan->attr.pitch = MIN(rate / 44100, 16383);
-		chan->time = (samp->length / bpf) * 2 + 2;
+	chan->attr.mask =  SPU_VOICE_VOLL | SPU_VOICE_VOLR | SPU_VOICE_VOLMODEL | SPU_VOICE_VOLMODER | SPU_VOICE_PITCH | SPU_VOICE_WDSA;
+	chan->attr.addr = samp->address;
+	chan->attr.pitch = MIN(rate / 44100, 16383);
+	chan->time = (samp->length / bpf) * 2 + 2;
 
-		chan->flags &= ~CHAN_LOOP;
-		chan->flags |= samp->loop ? CHAN_LOOP : 0;
+	chan->flags &= ~CHAN_LOOP;
+	chan->flags |= samp->loop ? CHAN_LOOP : 0;
 
-		chan->samplerate = samp->samplerate;
+	chan->samplerate = samp->samplerate;
 
-		if (sound_paused != 0)
-		{
-			chan->attr.volume.left = 0;
-			chan->attr.volume.right = 0;
-		}
-
-		SpuSetVoiceAttr(&chan->attr);
-		SpuSetKey(1, chan->attr.voice);
-
-		stop_sound_handler = 0;
+	if (sound_paused != 0)
+	{
+		chan->attr.volume.left = 0;
+		chan->attr.volume.right = 0;
 	}
+
+	SpuSetVoiceAttr(&chan->attr);
+	SpuSetKey(1, chan->attr.voice);
+
+	stop_sound_handler = 0;
 
 	return channel;
 }
@@ -593,6 +591,9 @@ int Start3DTrackingSound(int channel, int bank, int sample, VECTOR *position, LO
 
 	channel = CompleteSoundSetup(channel, bank, sample, 4096, 0);
 
+	if (channel < 0)
+		return -1;
+
 	ComputeDoppler(&channels[channel]);
 	SetChannelPitch(channel, 4096);
 
@@ -620,6 +621,9 @@ int Start3DSoundVolPitch(int channel, int bank, int sample, int x, int y, int z,
 	chan->srcpitch = pitch;
 
 	channel = CompleteSoundSetup(channel, bank, sample, pitch, 0);
+
+	if (channel < 0)
+		return -1;
 
 	ComputeDoppler(&channels[channel]);
 	SetChannelPitch(channel, pitch);
