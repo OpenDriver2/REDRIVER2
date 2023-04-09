@@ -259,7 +259,6 @@ MENU_HEADER DebugJustForFunHeader =
 MENU_ITEM DebugOptionsItems[] =
 {
 #ifdef CUTSCENE_RECORDER
-	//{ gCutsceneRecorderPauseText, 5u, 2u, (pauseFunc)&NextCutsceneRecorderPlayer, MENU_QUIT_NONE, NULL },
 	{ gCurrentChasePauseText, 5u, 2u, (pauseFunc)&CutRec_NextChase, MENU_QUIT_NONE, NULL },
 #endif
 	{ "Display position", PAUSE_TYPE_FUNC, 	2,	SetDisplayPosition,		MENU_QUIT_NONE,		NULL},
