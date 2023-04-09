@@ -260,7 +260,7 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 
 			ofse = pg->damageLevel[src->originalindex];
 
-			*(u_int*)&prim->u0 = (src->clut_uv0 & 0xffffU | pg->pciv_clut[palette + (src->clut_uv0 >> 0x10)] << 0x10) + ofse;
+			*(u_int*)&prim->u0 = pg->pciv_clut[(src->clut_uv0 >> 0x10) + palette] << 0x10 | (src->clut_uv0 & 0xffff) + ofse;
 			*(u_int*)&prim->u1 = src->tpage_uv1 + ofse;
 			*(u_int*)&prim->u2 = src->uv3_uv2 + ofse;
 
@@ -331,7 +331,7 @@ void plotCarPolyGT3Lit(int numTris, CAR_POLY* src, SVECTOR* vlist, SVECTOR* nlis
 
 			ofse = pg->damageLevel[src->originalindex];
 
-			*(u_int*)&prim->u0 = (src->clut_uv0 & 0xffffU | pg->pciv_clut[palette + (src->clut_uv0 >> 0x10)] << 0x10) + ofse;
+			*(u_int*)&prim->u0 = pg->pciv_clut[(src->clut_uv0 >> 0x10) + palette] << 0x10 | (src->clut_uv0 & 0xffff) + ofse;
 			*(u_int*)&prim->u1 = src->tpage_uv1 + ofse;
 			*(u_int*)&prim->u2 = src->uv3_uv2 + ofse;
 
@@ -408,7 +408,7 @@ void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGl
 
 			ofse = pg->damageLevel[src->originalindex];
 
-			*(u_int*)&prim->u0 = (src->clut_uv0 & 0xffffU | pg->pciv_clut[palette + (src->clut_uv0 >> 0x10)] << 0x10) + ofse;
+			*(u_int*)&prim->u0 = pg->pciv_clut[(src->clut_uv0 >> 0x10) + palette] << 0x10 | (src->clut_uv0 & 0xffff) + ofse;
 			*(u_int*)&prim->u1 = src->tpage_uv1 + ofse;
 			*(u_int*)&prim->u2 = src->uv3_uv2 + ofse;
 
@@ -971,7 +971,8 @@ void buildNewCars(void)
 // [D] [T]
 void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 {
-	u_char ptype, clut;
+	ushort clut;
+	u_char ptype, carid;
 	u_char *polyList;
 	CAR_POLY *cp;
 
@@ -1080,12 +1081,14 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 						{
 							POLYGT3* pgt3 = (POLYGT3*)polyList;
 							
-							clut = GetCarPalIndex(pgt3->texture_set);
-							civ_clut[clut][pgt3->texture_id][0] = texture_cluts[pgt3->texture_set][pgt3->texture_id];
+							carid = GetCarPalIndex(pgt3->texture_set);
+							clut = (carid - 1) * 6 * 32 + pgt3->texture_id * 6;
+
+							civ_clut[carid][pgt3->texture_id][0] = texture_cluts[pgt3->texture_set][pgt3->texture_id];
 						
 							cp->vindices = M_INT_4R(pgt3->v0, pgt3->v1, pgt3->v2, 0);
 							cp->nindices = M_INT_4R(pgt3->n0, pgt3->n1, pgt3->n2, 0);
-							cp->clut_uv0 = M_INT_2((clut * 384 + pgt3->texture_id * 12 - 384) >> 1, * (ushort*)&pgt3->uv0);
+							cp->clut_uv0 = M_INT_2(clut, *(ushort*)&pgt3->uv0);
 							cp->tpage_uv1 = M_INT_2(texture_pages[pgt3->texture_set], *(ushort *)&pgt3->uv1);
 							cp->uv3_uv2 = *(ushort *)&pgt3->uv2;
 							cp->originalindex = i;
@@ -1098,12 +1101,14 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 						{
 							POLYGT4* pgt4 = (POLYGT4*)polyList;
 
-							clut = GetCarPalIndex(pgt4->texture_set);
-							civ_clut[clut][pgt4->texture_id][0] = texture_cluts[pgt4->texture_set][pgt4->texture_id];
+							carid = GetCarPalIndex(pgt4->texture_set);
+							clut = (carid - 1) * 6 * 32 + pgt4->texture_id * 6;
+
+							civ_clut[carid][pgt4->texture_id][0] = texture_cluts[pgt4->texture_set][pgt4->texture_id];
 
 							cp->vindices = M_INT_4R(pgt4->v0, pgt4->v1, pgt4->v2, 0);
 							cp->nindices = M_INT_4R(pgt4->n0, pgt4->n1, pgt4->n2, 0);
-							cp->clut_uv0 = M_INT_2((clut * 384 + pgt4->texture_id * 12 - 384) >> 1, *(ushort*)&pgt4->uv0);
+							cp->clut_uv0 = M_INT_2(clut, *(ushort*)&pgt4->uv0);
 							cp->tpage_uv1 = M_INT_2(texture_pages[pgt4->texture_set], *(ushort*)&pgt4->uv1);
 							cp->uv3_uv2 = *(ushort*)&pgt4->uv2;
 							cp->originalindex = i;
@@ -1112,7 +1117,7 @@ void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first)
 
 							cp->vindices = M_INT_4R(pgt4->v0, pgt4->v2, pgt4->v3, 0);
 							cp->nindices = M_INT_4R(pgt4->n0, pgt4->n2, pgt4->n3, 0);
-							cp->clut_uv0 = M_INT_2((clut * 384 + pgt4->texture_id * 12 - 384) >> 1, *(ushort*)&pgt4->uv0);
+							cp->clut_uv0 = M_INT_2(clut, *(ushort*)&pgt4->uv0);
 							cp->tpage_uv1 = M_INT_2(texture_pages[pgt4->texture_set], *(ushort *)&pgt4->uv2);
 							cp->uv3_uv2 = *(ushort *)&pgt4->uv3;
 							cp->originalindex = i;
