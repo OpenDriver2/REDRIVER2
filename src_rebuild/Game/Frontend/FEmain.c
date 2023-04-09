@@ -58,6 +58,7 @@ void InitHiresFEFont()
 		int size;
 		FILE* fp;
 		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\fefont.fn2");
+		FS_FixPathSlashes(namebuffer);
 
 		fp = fopen(namebuffer, "rb");
 		if (fp)
@@ -80,6 +81,8 @@ void InitHiresFEFont()
 
 		// load TGA file
 		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\fefont.tga");
+		FS_FixPathSlashes(namebuffer);
+		
 		if (LoadTGAImage(namebuffer, &data, width, height, bpp))
 		{
 			if (bpp == 32)

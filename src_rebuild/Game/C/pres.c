@@ -36,7 +36,7 @@ void InitHiresFonts()
 	{
 		int width, height, bpp;
 
-		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\DIGITS.TGA");
+		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\digits.tga");
 		FS_FixPathSlashes(namebuffer);
 
 		if (LoadTGAImage(namebuffer, &data, width, height, bpp))
@@ -60,6 +60,7 @@ void InitHiresFonts()
 		int size;
 		FILE* fp;
 		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\font2.fn2");
+		FS_FixPathSlashes(namebuffer);
 
 		fp = fopen(namebuffer, "rb");
 		if (fp) 
@@ -82,6 +83,8 @@ void InitHiresFonts()
 
 		// load TGA file
 		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\font2.tga");
+		FS_FixPathSlashes(namebuffer);
+
 		if (LoadTGAImage(namebuffer, &data, width, height, bpp))
 		{
 			if (bpp == 32)
