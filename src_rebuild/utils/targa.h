@@ -24,5 +24,6 @@ struct TGAHeader
 #pragma pack (pop)
 
 bool LoadTGAImage(const char* filename, u_char** data, int& width, int& height, int& bpp);
+bool SaveTGAImage(const char* filename, u_char* data, int width, int height, int bpp);
 
 #endif // TARGA_H

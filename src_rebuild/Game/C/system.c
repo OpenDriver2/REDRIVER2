@@ -850,7 +850,7 @@ void InitaliseDrawEnv(DB* pBuff, int x, int y, int w, int h)
 	pBuff[1].id = 1;
 	pBuff[1].draw.dfe = 1;
 
-#ifdef USE_PGXP
+#if USE_PGXP
 	if(NumPlayers == 2)
 	{
 		pBuff[0].draw.clip.x -= 256;

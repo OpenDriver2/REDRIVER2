@@ -38,7 +38,7 @@ void Tile1x1Lit(MODEL* model)
 	else
 		ofse = 133;
 
-#ifdef USE_PGXP
+#if USE_PGXP
 	PGXP_SetZOffsetScale(0.0f, ofse > 200 ? 1.005f : 0.995f);
 #endif
 
@@ -116,7 +116,7 @@ void Tile1x1Lit(MODEL* model)
 		polys = (PL_POLYFT4*)((char*)polys + plotContext.polySizes[ptype]);
 	}
 
-#ifdef USE_PGXP
+#if USE_PGXP
 	PGXP_SetZOffsetScale(0.0f, 1.0f);
 #endif
 
@@ -145,7 +145,7 @@ void Tile1x1(MODEL *model)
 	else
 		ofse = 133;
 
-#ifdef USE_PGXP
+#if USE_PGXP
 	PGXP_SetZOffsetScale(0.0f, ofse > 200 ? 1.005f : 0.995f);
 #endif
 
@@ -199,7 +199,7 @@ void Tile1x1(MODEL *model)
 		polys = (PL_POLYFT4*)((char*)polys + plotContext.polySizes[ptype]);
 	}
 
-#ifdef USE_PGXP
+#if USE_PGXP
 	PGXP_SetZOffsetScale(0.0f, 1.0f);
 #endif
 
@@ -664,7 +664,7 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 	ttype = 0;
 	while (i--)
 	{
-#ifdef USE_PGXP
+#if USE_PGXP
 		switch (ttype)
 		{
 		case 0:
@@ -688,7 +688,7 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 		polys += plotContext.polySizes[*polys];
 	}
 
-#ifdef USE_PGXP
+#if USE_PGXP
 	PGXP_SetZOffsetScale(0.0f, 1.0f);
 #endif
 }

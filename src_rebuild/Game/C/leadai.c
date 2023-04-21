@@ -2816,8 +2816,9 @@ u_int hypot(int x, int y)
 
 	if (x < y)
 	{
+		t = y;
 		y = x;
-		x = y;
+		x = t;
 	}
 
 	if (x < 0x8000)

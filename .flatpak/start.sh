@@ -13,7 +13,7 @@ function importDefaultData {
 }
 
 if [ ! -d /var/data/DRIVER2 ]; then
-	zenity --error --no-wrap --text="`printf "DRIVER2 files are missing! Add the folder in:\n ${HOME}/.var/io.github.opendriver2.Redriver2/data"`"
+	zenity --error --no-wrap --text="`printf "DRIVER2 files are missing! Please provide DRIVER2 folder in:\n ${HOME}/.var/app/io.github.opendriver2.Redriver2/data"`"
 	exit 0
 fi
 

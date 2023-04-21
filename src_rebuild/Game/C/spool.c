@@ -715,6 +715,7 @@ void CheckValidSpoolData(void)
 	if (models_ready)
 		init_spooled_models();
 	
+#ifdef PSX
 	if (spoolactive && check_regions_present())
 	{
 		stopgame();
@@ -727,6 +728,7 @@ void CheckValidSpoolData(void)
 
 		startgame();
 	}
+#endif // PSX
 }
 
 // [D] [T]
@@ -759,14 +761,6 @@ void CheckLoadAreaData(int cellx, int cellz)
 
 	spoolptr = (Spool *)(RegionSpoolInfo + spoolinfo_offsets[current_region]);
 
-#ifndef PSX
-	// [A] this fixes spooling not activated bug (reversing bug?)
-	if (LoadedArea != spoolptr->super_region && spoolptr->super_region != 0xFF && old_region != -1)
-	{
-		LoadedArea = spoolptr->super_region;
-	}
-	else
-#endif
 	if (old_region == -1 && spoolptr->super_region != 0xFF)
 	{
 		// just load the area if no
@@ -778,7 +772,7 @@ void CheckLoadAreaData(int cellx, int cellz)
 
 		if (old_region == -1)
 			LoadedArea = -1;
-		else if (/*spoolptr->super_region == 0xFF ||*/ nAreas == 0)
+		else if (spoolptr->super_region == 0xFF && nAreas == 0)
 			return;
 
 #define BOUNDARY_MIN 15

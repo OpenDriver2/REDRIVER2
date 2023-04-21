@@ -16,7 +16,7 @@
 #include "cars.h"
 #include "convert.h"
 
-#ifdef USE_PGXP
+#if USE_PGXP
 #include <math.h>
 #endif
 
@@ -611,7 +611,7 @@ void DrawBodySprite(LPPEDESTRIAN pDrawingPed, int boneId, VERTTYPE v1[2], VERTTY
 	prims->x3 = v2[0] - FIXEDH(cs) - dx1;
 	prims->y3 = v2[1] - FIXEDH(sn) - dy1;
 
-#ifdef USE_PGXP
+#if USE_PGXP
 	if (!bDoingShadow) // [A] Psy-X is currently incorrectly offsets the offscreen PGXP geometry. We don't need it anyway.
 	{
 		ushort pgxpIdx = PGXP_GetIndex(0) - 64;

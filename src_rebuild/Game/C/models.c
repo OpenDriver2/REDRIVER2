@@ -292,7 +292,7 @@ char* LoadCarModelFromFile(char* dest, int modelNumber, int type)
 	char* mem;
 	char filename[64];
 
-	sprintf(filename, "LEVELS\\%s\\CARMODEL_%d_%s.DMODEL", LevelNames[GameLevel], modelNumber, CarModelTypeNames[type-1]);
+	sprintf(filename, "LEVELS\\%s\\CARMODEL_%d_%s.MDL", LevelNames[GameLevel], modelNumber, CarModelTypeNames[type-1]);
 	if(FileExists(filename))
 	{
 		mem = (char*)(dest ? dest : (_other_buffer + modelNumber * 0x10000 + (type-1) * 0x4000));
@@ -314,10 +314,18 @@ MODEL* GetCarModel(char *src, char **dest, int KeepNormals, int modelNumber, int
 	char* mem;
 
 #ifndef PSX
-	mem = LoadCarModelFromFile(NULL, modelNumber, type);
+	extern int gContentOverride;
+	if (gContentOverride)
+	{
+		mem = LoadCarModelFromFile(NULL, modelNumber, type);
 
-	if (!mem) // fallback to lump
+		if (!mem) // fallback to lump
+			mem = src;
+	}
+	else
+	{
 		mem = src;
+	}
 #else
 	mem = src;
 #endif
