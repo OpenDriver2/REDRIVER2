@@ -961,18 +961,18 @@ void SetVariable(int var, int &action)
 		case VAR_CHOOSE_TYPE: // [A] chooser type
 		{
 			static char* ChooseQualityItems[] = {
-				"Low",
-				"Medium",
-				"High",
-				"Ultra",
+				G_LTXT(GTXT_Low),
+				G_LTXT(GTXT_Medium),
+				G_LTXT(GTXT_High),
+				G_LTXT(GTXT_Ultra),
 				NULL,
 			};
 
 			static char* ChoosePGXPItems[] = {
-				"Disabled",
-				"Textures only",
-				"ZBuffer only",
-				"Enabled",
+				G_LTXT(GTXT_Off),
+				G_LTXT(GTXT_TexturesOnly),
+				G_LTXT(GTXT_ZBufferOnly),
+				G_LTXT(GTXT_All),
 				NULL,
 			};
 
@@ -1251,7 +1251,8 @@ void DisplayOnScreenText(void)
 			text = "Please insert controller into Port 1";
 			transparent = 1;
 		}
-		else {
+		else 
+		{
 			if (Pads[0].type != 1)
 				return;
 
@@ -1306,7 +1307,7 @@ void DisplayOnScreenText(void)
 
 			CVECTOR *col = &debris_colour[GameLevel][car_colour];
 
-			FEPrintString("Color", btn->x + 190, btn->y + 270, 4, 128, 128, 128);
+			FEPrintString(G_LTXT(GTXT_Color), btn->x + 190, btn->y + 270, 4, 128, 128, 128);
 
 			POLY_F4 *f4 = (POLY_F4*)current->primptr;
 			current->primptr += sizeof(POLY_F4);
@@ -1750,14 +1751,14 @@ void InitDetailsScreen(FE_SCREEN *screen)
 	};
 
 	static char *ButtonNames[] = {
-		"FullScreen",
-		"VSync",
-		"PGXP",
-		"Texture Filter",
-		"Draw Distance",
-		"Dynamic Lights",
-		"Traffic Density",
-		"Peds Density",
+		G_LTXT(GTXT_FullScreen),
+		G_LTXT(GTXT_VSync),
+		G_LTXT(GTXT_PGXP),
+		G_LTXT(GTXT_TextureFilter),
+		G_LTXT(GTXT_DrawDistance),
+		G_LTXT(GTXT_DynamicLights),
+		G_LTXT(GTXT_TrafficDensity),
+		G_LTXT(GTXT_PedsDensity),
 	};
 
 	int numButtons = BuildButtonsVertical(screen, 8, 156, 190);
@@ -1765,13 +1766,9 @@ void InitDetailsScreen(FE_SCREEN *screen)
 	for (int i = 0; i < numButtons; i++)
 	{
 		FE_BUTTON& btn = screen->buttons[i];
-		
 		int type = ButtonTypeMap[i];
-		char *name = ButtonNames[i];
 
-		int index = ButtonScreenMap[i];
-
-		strcpy(btn.Name, name);
+		strcpy(btn.Name, ButtonNames[i]);
 
 		if (type < 0)
 		{
@@ -1780,7 +1777,7 @@ void InitDetailsScreen(FE_SCREEN *screen)
 		}
 		else
 		{
-			btn.action = FE_MAKEVAR(BTN_NEXT_SCREEN, index);
+			btn.action = FE_MAKEVAR(BTN_NEXT_SCREEN, ButtonScreenMap[i]);
 		}
 
 		btn.var = FE_MAKEVAR(VAR_CHOOSE_TYPE, type);
@@ -1813,7 +1810,7 @@ void InitCustomScreens()
 	InitDetailsScreen(&PsxScreens[Sc_DetailOptions]);
 
 	// insert link in Options
-	InsertButtonVertical(&PsxScreens[Sc_Options], 2, "Details");
+	InsertButtonVertical(&PsxScreens[Sc_Options], 2, G_LTXT(GTXT_Details));
 
 	FE_BUTTON &btn = PsxScreens[Sc_Options].buttons[2];
 
@@ -4851,7 +4848,7 @@ int ChooseOptionScreen(int bSetup)
 
 				if (value >= 0)
 				{
-					extraBtn = InsertButtonVertical(pCurrScreen, numButtons, "Custom");
+					extraBtn = InsertButtonVertical(pCurrScreen, numButtons, G_LTXT(GTXT_Custom));
 
 					if (extraBtn != NULL)
 					{
@@ -4874,7 +4871,7 @@ int ChooseOptionScreen(int bSetup)
 
 			if (defaultValue >= 0)
 			{
-				resetBtn = InsertButtonVertical(pCurrScreen, numButtons, "Reset to Default");
+				resetBtn = InsertButtonVertical(pCurrScreen, numButtons, G_LTXT(GTXT_ResetToDefault));
 
 				if (resetBtn != NULL)
 				{
