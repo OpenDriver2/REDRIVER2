@@ -162,13 +162,12 @@ void DrawDebugOverlays()
 				
 				int lane = GetLaneByPositionOnRoad(&roadInfo, carPos);
 
-				sprintf(tempBuf, "%s %d flg %d%d%d spd %d len %d",
+				sprintf(tempBuf, "%s %d PRK(%d-%d) SPD(%d) LEN(%d)",
 					roadInfo.straight ? "STR" : "CRV",
 					roadInfo.surfId,
-					(roadInfo.NumLanes & 0x20) > 0,					// flag 0 - first lane?
-					(roadInfo.NumLanes & 0x40) > 0,					// flag 1 - leftmost park
-					(roadInfo.NumLanes & 0x80) > 0,					// flag 2 - rightmost park
-					ROAD_SPEED_LIMIT(&roadInfo),					// speed limit id
+					ROAD_IS_LEFTMOST_LANE_PARKING(&roadInfo),
+					ROAD_IS_RIGHTMOST_LANE_PARKING(&roadInfo),
+					ROAD_SPEED_LIMIT(&roadInfo),
 					segLen
 					);
 
@@ -185,7 +184,7 @@ void DrawDebugOverlays()
 				PrintString(tempBuf, 10, 195);
 
 				sprintf(tempBuf, "c %d %d %d %d",
-					(int)(*roadInfo.ConnectIdx)[0], (int)(*roadInfo.ConnectIdx)[1], (int)(*roadInfo.ConnectIdx)[2], (int)(*roadInfo.ConnectIdx)[3]);
+					(int)roadInfo.ConnectIdx[0], (int)roadInfo.ConnectIdx[1], (int)roadInfo.ConnectIdx[2], (int)roadInfo.ConnectIdx[3]);
 
 				PrintString(tempBuf, 10, 205);
 			}
@@ -193,10 +192,16 @@ void DrawDebugOverlays()
 			{
 				DRIVER2_JUNCTION* junc = GET_JUNCTION(roadInfo.surfId);
 				
-				sprintf(tempBuf, "JUN %d flg %d - c %d %d %d %d",roadInfo.surfId, junc->flags, 
-					(int)(*roadInfo.ConnectIdx)[0], (int)(*roadInfo.ConnectIdx)[1], (int)(*roadInfo.ConnectIdx)[2], (int)(*roadInfo.ConnectIdx)[3]);
+				sprintf(tempBuf, "JUN %d TL(%d) YLD(%d)",
+					roadInfo.surfId, 
+					(junc->flags & 1), (junc->flags & 2));
 				
 				PrintString(tempBuf, 10, 180);
+
+				sprintf(tempBuf, "c %d %d %d %d",
+					(int)roadInfo.ConnectIdx[0], (int)roadInfo.ConnectIdx[1], (int)roadInfo.ConnectIdx[2], (int)roadInfo.ConnectIdx[3]);
+
+				PrintString(tempBuf, 10, 205);
 			}
 
 			

@@ -111,8 +111,10 @@ int FrustrumCheck16(PACKED_CELL_OBJECT* pcop, int bounding_sphere)
 
 	ang = FRUSTUM_THRESHOLD - bounding_sphere;
 
-	if (ang <= MIN(result.vx, result.vz))
+	if (ang <= result.vx && ang <= result.vy && ang <= result.vz) 
+	{
 		return 0;
+	}
 
 	return -1;
 }
@@ -132,8 +134,10 @@ int FrustrumCheck(VECTOR* pos, int bounding_sphere)
 
 	ang = FRUSTUM_THRESHOLD - bounding_sphere;
 
-	if (ang <= MIN(result.vx, result.vz))
+	if (ang <= result.vx && ang <= result.vy && ang <= result.vz) 
+	{
 		return 0;
+	}
 
 	return -1;
 }

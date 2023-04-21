@@ -1719,7 +1719,7 @@ int DrawCharacter(LPPEDESTRIAN pPed)
 	if (pUsedPeds->pNext == NULL && pPed->pedType == TANNER_MODEL)
 #else
 	// draw a nice shadow for non-civilian peds :)
-	if (pPed->pedType != CIVILIAN)
+	if (pPed->pedType == TANNER_MODEL || pPed->pedType == OTHER_MODEL)
 #endif
 	{
 		v.vx = (pPed->position.vx - camera_position.vx) + Skel[ROOT].pvOrigPos->vx;

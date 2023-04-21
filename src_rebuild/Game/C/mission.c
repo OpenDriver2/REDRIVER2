@@ -383,7 +383,7 @@ void SetupResidentModels()
 			// force palette
 			if (singlePal)
 				PlayerStartInfo[i]->palette = 0;
-			else
+			else if (wantedColour[i] != -1)
 				PlayerStartInfo[i]->palette = wantedColour[i];
 
 			// store for replay if necessary
@@ -1280,7 +1280,7 @@ void HandleTimer(MR_TIMER *timer)
 // [D] [T]
 void RegisterChaseHit(int car1, int car2)
 {
-	if (!Mission.ChaseTarget || Mission.ChaseHitDelay == 0)
+	if (!Mission.ChaseTarget || Mission.ChaseHitDelay != 0)
 		return;
 
 	int player_id;

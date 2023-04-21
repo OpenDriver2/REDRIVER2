@@ -13,16 +13,6 @@ struct CUTSCENE_HEADER
 	CUTSCENE_INFO data[15];
 };
 
-#ifndef PSX
-#define MAX_USER_REPLAYS 16
-
-extern char gUserReplayFolderList[MAX_USER_REPLAYS][48];
-extern int gNumUserChases;
-
-extern void InitUserReplays(const char* str);
-
-#endif // PSX
-
 extern int NumCutsceneStreams;
 extern int gSkipInGameCutscene;
 extern int gInGameCutsceneID;

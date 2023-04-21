@@ -1282,7 +1282,7 @@ void SetupGetInCar(LPPEDESTRIAN pPed)
 
 			// HEY!
 			CreatePedAtLocation(&pos, 8);
-			Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, sample, pos[0], pos[1], pos[2], 0, 4096);
+			Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 5, pos[0], pos[1], pos[2], 0, 4096);
 
 			carToGetIn->controlFlags |= CONTROL_FLAG_WAS_PARKED;
 		}

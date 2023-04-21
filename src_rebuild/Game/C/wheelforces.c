@@ -213,12 +213,15 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 	int player_id;
 	int oldCutRoughness;
 
-	oldSpeed = cp->hd.speed * 3 >> 1;
+	// NB: skips precision every 3rd increment or so
+	int speed = cp->hd.speed * 3 >> 1;
 
-	if (oldSpeed < 32)
-		oldSpeed = oldSpeed * -72 + 3696;
+	if (speed < 32)
+		oldSpeed = 4096 - (72 * speed);
 	else
-		oldSpeed = 1424 - oldSpeed;
+		oldSpeed = 1824 - speed;
+
+	oldSpeed -= 400;
 
 	dir = cp->hd.direction;
 	cdx = RSIN(dir);
@@ -528,32 +531,6 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 	else
 	{
 		cp->hd.wheel_speed = cdz / 64 * (cl->vel[2] / 64) + cdx / 64 * (cl->vel[0] / 64);
-
-		// [A] wibbly wobbly fuckery hack...
-		if (car_cos->extraInfo & 4)
-		{
-			if (cp->thrust == 0 && cp->handbrake && (cp->hd.speed > 0 && cp->hd.speed < 4))
-			{
-				cp->hd.speed--;
-				cp->hd.wheel_speed >>= 1;
-
-				cp->hd.acc[0] >>= 1;
-				cp->hd.acc[1] >>= 1;
-				cp->hd.acc[2] >>= 1;
-
-				cp->hd.aacc[0] >>= 2;
-				cp->hd.aacc[1] >>= 2;
-				cp->hd.aacc[2] >>= 2;
-
-				//cp->st.n.linearVelocity[0] >>= 1;
-				//cp->st.n.linearVelocity[1] >>= 1;
-				//cp->st.n.linearVelocity[2] >>= 1;
-
-				cp->st.n.angularVelocity[0] >>= 2;
-				cp->st.n.angularVelocity[1] >>= 2;
-				cp->st.n.angularVelocity[2] >>= 2;
-			}
-		}
 	}
 }
 
