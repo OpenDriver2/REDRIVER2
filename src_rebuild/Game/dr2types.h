@@ -351,7 +351,7 @@ typedef struct _HANDLING_DATA
 	int direction;
 	int front_vel;
 	int rear_vel;
-	int mayBeColliding;		// [A] now used as a bitfield to create collision pairs
+	int mayBeColliding;		// [A][PSX] now used as a bitfield to create collision pairs
 	short revs;
 	char gear;
 	char changingGear;
@@ -494,6 +494,7 @@ enum ECarControlFlags
 	CONTROL_FLAG_COP_SLEEPING = (1 << 1),		// passive cop flag (roadblocks). Hitting car with that flag results it's activation
 	CONTROL_FLAG_WAS_PARKED = (1 << 2),			// car pinged in as parked. Really nothing to do with it
 	CONTROL_FLAG_PLAYER_START_CAR = (1 << 3),	// car owned by player
+	CONTROL_FLAG_DONT_USE_LOW_LOD = (1 << 4),	// [A] car is too ugly for its own good
 };
 
 typedef struct _CAR_DATA
@@ -769,6 +770,8 @@ typedef struct _TARGET
 				} event;
 			};
 		} s;
+
+		int data[15];
 	};
 } MS_TARGET;
 
@@ -836,14 +839,33 @@ struct MR_MISSION
 	char* StealMessage;
 };
 
+typedef int threadFunc(struct MR_THREAD *thread);
+
 struct MR_THREAD
 {
 	u_char active;
 	u_char player;
-	u_int* initial_sp;
-	u_int* pc;
-	u_int* sp;
+	u_char type;
+	u_char flags;
+	union
+	{
+		struct
+		{
+			u_int* initial_sp;
+			u_int* pc;
+			u_int* sp;
+		};
+
+		struct
+		{
+			MR_THREAD *owner;
+			threadFunc *stepFunc;
+			threadFunc *stopFunc;
+		};
+	};
 };
+
+assert_sizeof(MR_THREAD, 16);
 
 //---------------------------------------------------------------------------------------
 // TODO: SCORES.H
@@ -1035,6 +1057,111 @@ struct REPLAY_PARAMETER_BLOCK
 	u_char weather;
 };
 
+#define EXTRA_DATA_MAGIC			0xF12EB12D
+
+struct MISSION_OVERRIDES
+{
+	u_char TimeOfDay;
+	u_char Weather;
+	u_char pad1[2];
+
+	union
+	{
+		SAVED_CAR_POS* SavedPos[2];
+		int SavedSlot[2];
+	}; // valid if mfStartPos = 1
+
+	struct
+	{
+		// special feature flags
+		u_char AllowParkedTurnedWheels : 1;
+		u_char extraFlag2 : 1;
+		u_char extraFlag3 : 1;
+		u_char extraFlag4 : 1;
+		u_char extraFlag5 : 1;
+		u_char extraFlag6 : 1;
+		u_char extraFlag7 : 1;
+		u_char extraFlag8 : 1;
+		u_char extraFlag9 : 1;
+		u_char extraFlag10 : 1;
+		u_char extraFlag11 : 1;
+		u_char extraFlag12 : 1;
+		u_char extraFlag13 : 1;
+		u_char extraFlag14 : 1;
+		u_char extraFlag15 : 1;
+		u_char extraFlag16 : 1;
+	};
+
+	u_char pad2[2];
+};
+
+struct PROFILE_OVERRIDES
+{
+	// NB: not implemented yet
+	u_char Language;
+	u_char FullScreen;
+	//------------------------
+
+	u_char VSync;
+	u_char Bilinear;
+	u_char PGXPMode;
+	u_char DrawDistance;
+	u_char DynamicLights;
+	u_char pad1;
+	
+	// NB: not implemented yet
+	u_short DisplayWidth;
+	u_short DisplayHeight;
+	//------------------------
+};
+
+struct EXTRA_CONFIG_DATA
+{
+	u_int magic;
+
+	// configuration options
+	u_char gTrafficDensity;
+	u_char gPedestrianDensity;
+	u_char pad1;
+
+	// flags to determine what data we hold
+	union
+	{
+		struct
+		{
+			u_char sdType		: 2; // the type of data we have
+			u_char sdFlags		: 6; // reserved
+		};
+		struct /* type 1 - PROFILE */
+		{
+			u_char				: 2; // reserved for type
+			u_char pfReserved	: 6;
+		};
+		struct /* type 2 - MISSION */
+		{
+			u_char				: 2; // reserved for type
+			u_char				: 5;
+			u_char mfStartPos	: 1;
+		};
+		u_char cookie;
+	};
+	
+	union
+	{
+		MISSION_OVERRIDES m; // type 2
+
+		PROFILE_OVERRIDES p; // type 1
+
+		struct
+		{
+			int zeropad[4];
+		} data; // type 0
+	};
+};
+
+// NB: necessary to fit at the end of certain fixed-size structs
+assert_sizeof(EXTRA_CONFIG_DATA, 24);
+
 struct REPLAY_SAVE_HEADER
 {
 	u_int magic;
@@ -1051,7 +1178,7 @@ struct REPLAY_SAVE_HEADER
 	int wantedCar[2];
 	int MissionNumber;
 	int HaveStoredData;
-	int reserved2[6];
+	EXTRA_CONFIG_DATA ExtraData; // [A] use reserved space to store extra config data
 };
 
 struct STREAM_SOURCE

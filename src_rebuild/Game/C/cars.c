@@ -29,13 +29,6 @@ struct plotCarGlobals
 	u_char* damageLevel;
 };
 
-
-#ifndef PSX
-#define CAR_LOD_SWITCH_DISTANCE switch_detail_distance
-#else
-#define CAR_LOD_SWITCH_DISTANCE 5500
-#endif
-
 MATRIX light_matrix =
 { 
 	{ 
@@ -103,7 +96,7 @@ void plotCarPolyB3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *p
 {
 	int Z;
 	int indices;
-	u_int FT3rgb;
+	u_int F3rgb;
 	SVECTOR *v2;
 	SVECTOR *v1;
 	SVECTOR *v0;
@@ -111,7 +104,7 @@ void plotCarPolyB3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *p
 	OTTYPE *ot;
 
 	prim = (POLY_F3 *)pg->primptr;
-	FT3rgb = pg->intensity;
+	F3rgb = pg->intensity | 0x20000000;
 	ot = pg->ot;
 
 	while (numTris > 0)
@@ -131,7 +124,7 @@ void plotCarPolyB3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *p
 
 		if (Z > -1) 
 		{
-			*(u_int*)&prim->r0 = FT3rgb | 0x20000000;
+			*(u_int*)&prim->r0 = F3rgb;
 
 			gte_stsxy3(&prim->x0, &prim->x1, &prim->x2);
 
@@ -283,6 +276,12 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 #ifdef DYNAMIC_LIGHTING
 void plotCarPolyGT3Lit(int numTris, CAR_POLY* src, SVECTOR* vlist, SVECTOR* nlist, plotCarGlobals* pg, int palette)
 {
+	if (gNumDlights == 0)
+	{
+		plotCarPolyGT3(numTris, src, vlist, nlist, pg, palette);
+		return;
+	}
+
 	int Z;
 	int otz;
 	SVECTOR* v2;
@@ -899,10 +898,7 @@ void plotNewCarModel(CAR_MODEL* car, int palette)
 
 	setupLightingMatrices();
 
-	gte_ldv0(&v);
-	gte_ldrgb(&lightlevel);
-
-	gte_nccs();
+	gte_NormalColorCol(&v, &lightlevel, &underIntensity);
 
 	_pg.primptr = (u_char*)current->primptr;
 	_pg.intensity = 0;
@@ -910,8 +906,6 @@ void plotNewCarModel(CAR_MODEL* car, int palette)
 	_pg.damageLevel = (u_char*)gTempCarUVPtr;
 
 	_pg.ot = (OTTYPE*)(current->ot + 28);
-
-	gte_strgb(&underIntensity);
 
 	// draw wheel arcs
 	plotCarPolyB3(car->numB3, car->pB3, car->vlist, &_pg);
@@ -1512,11 +1506,22 @@ void DrawCar(CAR_DATA* cp, int view)
 			AddSmokingEngine(cp, doSmoke - 1, WheelSpeed);
 
 #if ENABLE_GAME_ENCHANCEMENTS
-		AddExhaustSmoke(cp, doSmoke > 1, WheelSpeed);
+		if (pos.vz < (CAR_LOD_SWITCH_DISTANCE / 2) + 750)
+			AddExhaustSmoke(cp, doSmoke > 1, WheelSpeed);
 #endif
 
+#ifndef PSX
+		SetShadowPoints(cp, corners);
+
+		// do simple shadows when further away
+		if (pos.vz >= CAR_LOD_SWITCH_DISTANCE / 4)
+			PlaceShadowForCar(corners, 0, 10, yVal < 0 ? 0 : 2);
+		else
+			PlaceShadowForCar(corners, 4, 10, yVal < 0 ? 0 : 2);
+#else
 		SetShadowPoints(cp, corners);
 		PlaceShadowForCar(corners, 4, 10, yVal < 0 ? 0 : 2);
+#endif
 
 		ComputeCarLightingLevels(cp, 1);
 
@@ -1577,7 +1582,7 @@ void DrawCar(CAR_DATA* cp, int view)
 	if(CarHasSiren(cp->ap.model))
 	{
 		if ((IS_ROADBLOCK_CAR(cp) || cp->controlType == CONTROL_TYPE_PURSUER_AI) ||		// any regular cop car including roadblock
-			gInGameCutsceneActive && cp->controlType == CONTROL_TYPE_CUTSCENE && force_siren[CAR_INDEX(cp)] != 0 ||		// any car with siren in cutscene
+			gInGameCutsceneActive && cp->controlType == CONTROL_TYPE_CUTSCENE && CARNOISE_HAS_FORCED_SIREN(CAR_INDEX(cp)) ||		// any car with siren in cutscene
 			gCurrentMissionNumber == 26 && cp->controlType == CONTROL_TYPE_CUTSCENE && cp->ap.model == 4)				// Vegas ambulance
 		{
 			if (cp->ai.p.dying < 75)

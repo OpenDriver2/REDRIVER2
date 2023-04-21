@@ -68,6 +68,28 @@ void InitFelonyData(FELONY_DATA *pFelonyData)
 	memcpy((u_char*)&pFelonyData->value, (u_char*)&initialFelonyValue, sizeof(initialFelonyValue));
 }
 
+// [A]
+short * GetPlayerFelonyData()
+{
+	short *playerFelony;
+
+	if (player[0].playerCarId < 0)
+		return &pedestrianFelony;
+	else
+		return &car_data[player[0].playerCarId].felonyRating;
+}
+
+// [A]
+void UpdatePlayerFelonyData()
+{
+	short *playerFelony = GetPlayerFelonyData();
+
+	if (gPlayerImmune != 0)
+		*playerFelony = 0;
+
+	FelonyBar.position = *playerFelony;
+}
+
 // [D] [T]
 int GetCarHeading(int direction)
 {
@@ -97,10 +119,7 @@ void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale)
 	int phrase;
 	int additionalFelonyPoints;
 
-	if (player[0].playerCarId < 0)
-		felony = &pedestrianFelony;
-	else
-		felony = &car_data[player[0].playerCarId].felonyRating;
+	felony = GetPlayerFelonyData();
 
 	felonyTooLowForRoadblocks = *felony;
 
@@ -183,20 +202,17 @@ void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale)
 			case 11:
 				break;
 			case 3:
-				if ((rnd & 3) != 0)
-					break;
+				if ((rnd & 3) == 0)
+					CopSay(5, 0);
 
-				CopSay(5, 0);
 				break;
 			case 4:
-				if ((rnd % 3) & 0xff != 0)
-					break;
-
-				CopSay((rnd & 1) + 7, 0);
+				if ((rnd % 3) == 0)
+					CopSay((rnd & 1) + 7, 0);
 
 				break;
 			default:
-				if ((rnd % 17) & 0xFF == 0)
+				if ((rnd % 17) == 0)
 				{
 					if (MaxPlayerDamage[0] * 3 / 4 < car_data[player[0].playerCarId].totalDamage)
 						phrase = rnd % 4;
@@ -233,10 +249,7 @@ void AdjustFelony(FELONY_DATA *pFelonyData)
 	FELONY_DELAY *pFelonyDelay;
 	short *felony;
 
-	if (player[0].playerCarId < 0)
-		felony = &pedestrianFelony;
-	else
-		felony = &car_data[player[0].playerCarId].felonyRating;
+	felony = GetPlayerFelonyData();
 
 	if (*felony != 0 && *felony <= FELONY_PURSUIT_MIN_VALUE)
 	{
@@ -262,7 +275,7 @@ void AdjustFelony(FELONY_DATA *pFelonyData)
 
 	pFelonyDelay = pFelonyData->reoccurrenceDelay;
 
-	while (pFelonyDelay <= &pFelonyData->reoccurrenceDelay[11]) 
+	while (pFelonyDelay < &pFelonyData->reoccurrenceDelay[12]) 
 	{
 		if (pFelonyDelay->current != 0)
 			pFelonyDelay->current--;
@@ -406,10 +419,12 @@ void CheckPlayerMiscFelonies(void)
 	NoteFelony(&felonyData, 10, 4096);
 
 	// check the speed limit
-	if (speedLimits[2] == maxSpeed)
+	if (maxSpeed == speedLimits[2])
 		limit = (maxSpeed * 19) >> 4;
 	else 
 		limit = (maxSpeed * 3) >> 1;
+
+	speedLimits[3] = limit;
 
 	if (FIXEDH(cp->hd.wheel_speed) > limit)
 		NoteFelony(&felonyData, 2, 4096);

@@ -32,12 +32,24 @@ struct EventGlobal
 	EVENT* cameraEvent;
 };
 
+#define HARDCODED_CAMERA_EVENT (EVENT*)0x1
+
 extern EventGlobal events;
 
 extern CELL_OBJECT *EventCop;
 extern int event_models_active;
 
+#ifndef PSX
+struct BOAT_CARS
+{
+	int count;
+	char cars[MAX_CARS+2];
+};
+
+extern BOAT_CARS carsOnBoat;
+#else
 extern int carsOnBoat;
+#endif
 
 extern void InitEvents(); // 0x0004BBD4
 extern void SetUpEvents(int full); // 0x00046258
@@ -60,6 +72,8 @@ extern void SetSpecialCamera(SpecialCamera type, int change); // 0x0004B29C
 extern int DetonatorTimer(); // 0x0004B5FC
 
 extern void MultiCarEvent(MS_TARGET *target); // 0x0004BAB0
+
+extern int InitUserMissionEvents(MR_THREAD *thread);
 
 
 #endif

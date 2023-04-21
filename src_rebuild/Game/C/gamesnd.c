@@ -203,53 +203,52 @@ int SpecialVehicleKludge(char vehicle2)
 // [D] [T]
 int ResidentModelsBodge(void)
 {
-	int i;
-	int j;
+	int i, j;
 
-	j = MissionHeader->residentModels[4];
-
-	if (gCurrentMissionNumber == 24 || gCurrentMissionNumber == 27 ||
-		gCurrentMissionNumber == 29 ||
-		(gCurrentMissionNumber == 30 || gCurrentMissionNumber == 35))
+	i = MissionHeader->residentModels[4];
+	j = 3;
+	
+	// mission-specific bodges
+	switch (gCurrentMissionNumber)
 	{
-		return 3;
+		case 24:
+		case 27:
+		case 29:
+		case 30:
+		case 35:
+			return 3;
+		default:
+			if (gCurrentMissionNumber >= 50 && gCurrentMissionNumber <= 65)
+			{
+				if (i == 12)
+					return 5;
+			}
+			break;
 	}
 
-	if (gCurrentMissionNumber - 50U < 16 && j == 12)
-	{
-		return 5;
-	}
-
+	// level-specific bodges
 	if (GameLevel == 0)
 	{
-		i = 11;
-
-		if (j != 9)
-			return 3;
+		if (i == 9 || i == 11)
+			j = 4;
 	}
-	else if (GameLevel == 1) 
+	else if (GameLevel == 1)
 	{
-		if (j - 8U > 1) 
-			return 3;
+		if (i == 8 || i == 9)
+			j = 4;
 	}
 	else if (GameLevel == 2)
 	{
-		i = 8;
-
-		if (j != i)
-			return 3;
+		if (i == 8)
+			j = 4;
 	}
 	else if (GameLevel == 3)
 	{
-		i = 11;
-
-		if (j != i)
-			return 3;
+		if (i == 11)
+			j = 4;
 	}
-	else
-		return 3;
 
-	return 4;
+	return j;
 }
 
 // [D] [T]
@@ -270,25 +269,29 @@ int MapCarIndexToBank(int index)
 	RM = MissionHeader->residentModels;
 
 	model = RM[index];
+	ret = 1;
 
-	if (gCurrentMissionNumber - 39U < 2 && RM[index] == 13)
+	if (model != 0)
 	{
-		model = 10 - (RM[0] + RM[1] + RM[2]);
+		if (gCurrentMissionNumber == 39 || gCurrentMissionNumber == 40)
+		{
+			if (model == 13)
+			{
+				model = 10 - (RM[0] + RM[1] + RM[2]);
 
-		if (model < 1)
-			model = 1;
+				if (model < 1)
+					model = 1;
 
-		if (model > 4)
-			model = 4;
+				if (model > 4)
+					model = 4;
+			}
+		}
+
+		ret = model - 1;
+
+		if (ret > 6)
+			ret -= 3;
 	}
-
-	ret = model - 1;
-
-	if (model == 0)
-		ret = 1;
-
-	if (ret > 6)
-		ret -= 3;
 
 	return car_banks[GameLevel][ret];
 }
@@ -323,31 +326,53 @@ void LoadLevelSFX(int missionNum)
 	LoadBankFromLump(SOUND_BANK_TANNER, SBK_ID_TANNER );
 
 	if (GameLevel & 2)
-		LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_SIREN_START + (GameLevel & 1) * 2);
+		LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_SIREN_START + (GameLevel & 1) * 2); // Vegas, Rio
 	else
-		LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_SIREN_START + (GameLevel & 3));
+		LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_SIREN_START + (GameLevel & 3)); // Chicago, Havana
 
-	// Load cop voices except those missions
-	if (missionNum - 1U > 3 && missionNum != 6 && missionNum != 7 &&
-		missionNum != 9 && missionNum != 10 && missionNum != 11 &&
-		missionNum != 13 && missionNum != 14 && missionNum != 18 &&
-		missionNum != 19 && missionNum != 20 && missionNum != 22 &&
-		missionNum != 26 && missionNum != 28 && missionNum != 31 &&
-		missionNum != 33 && missionNum != 34 && missionNum != 38 &&
-		missionNum != 40)
+	// Load cop voices except for certain missions
+	switch (missionNum)
 	{
-		// first bank - directions
-		// second bank - 
-		if (GameLevel & 2)
-		{
-			LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_PHRASES_START + (GameLevel & 1) * 8 + (GameLevel & 1) * 2);
-			LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_PHRASES_START + (GameLevel & 1) * 10 + cop_bank);
-		}
-		else
-		{
-			LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_PHRASES_START + (GameLevel & 3) * 4 + (GameLevel & 3));
-			LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_PHRASES_START + (GameLevel & 3) * 5 + cop_bank);
-		}
+		case 1:
+		case 2:
+		case 3:
+		case 4:
+		case 6:
+		case 7:
+		case 9:
+		case 10:
+		case 11:
+		case 13:
+		case 14:
+		case 18:
+		case 19:
+		case 20:
+		case 22:
+		case 26:
+		case 28:
+		case 31:
+		case 33:
+		case 34:
+		case 38:
+		case 40:
+			// don't load
+			break;
+		default:
+			// first bank - directions
+			// second bank - 
+			if (GameLevel & 2)
+			{
+				// Vegas, Rio
+				LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_PHRASES_START + (GameLevel & 1) * 8 + (GameLevel & 1) * 2);
+				LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_PHRASES_START + (GameLevel & 1) * 10 + cop_bank);
+			}
+			else
+			{
+				// Chicago, Havana
+				LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_PHRASES_START + (GameLevel & 3) * 4 + (GameLevel & 3));
+				LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_PHRASES_START + (GameLevel & 3) * 5 + cop_bank);
+			}
+			break;
 	}
 
 	ShowLoading();
@@ -355,29 +380,38 @@ void LoadLevelSFX(int missionNum)
 	// load ambient effects
 	if (NumPlayers < 2 || NoPlayerControl != 0)
 	{
-		if (GameLevel == 0)
-			LoadBankFromLump(SOUND_BANK_ENVIRONMENT, SBK_CITY_EFFECTS_START + city_night_fx);
-		else if (GameLevel == 1)
-			LoadBankFromLump(SOUND_BANK_ENVIRONMENT, SBK_CITY_EFFECTS_START + city_night_fx + 2);
-		else if (GameLevel == 2)
-			LoadBankFromLump(SOUND_BANK_ENVIRONMENT, SBK_CITY_EFFECTS_START + city_night_fx + 4);
-		else if (GameLevel == 3)
-			LoadBankFromLump(SOUND_BANK_ENVIRONMENT, SBK_CITY_EFFECTS_START + city_night_fx + 6);
+		// NB: 2 ambient effects per city
+		LoadBankFromLump(SOUND_BANK_ENVIRONMENT, SBK_CITY_EFFECTS_START + city_night_fx + (GameLevel * 2));
 	}
 
 	// total phrases
 	phrase_top = 0;
 
-	if (missionNum - 2U < 3 || missionNum == 9 || missionNum == 10 || missionNum == 27)
+	// in-car voices
+	switch (missionNum)
 	{
-		LoadBankFromLump(SOUND_BANK_MISSION, SBK_ID_JONES);
-		phrase_top = 7;
+		case 2:
+		case 3:
+		case 4:
+		case 9:
+		case 10:
+		case 27:
+			// jones in the car
+			LoadBankFromLump(SOUND_BANK_MISSION, SBK_ID_JONES);
+			phrase_top = 7;
+			break;
+		case 20:
+		case 21:
+		case 25:
+		case 39:
+			// jericho in the car
+			LoadBankFromLump(SOUND_BANK_MISSION, SBK_ID_JERICHO);
+			phrase_top = 3;
+			break;
 	}
-	else if (missionNum - 20U < 2 || missionNum == 25 || missionNum == 39)
-	{
-		LoadBankFromLump(SOUND_BANK_MISSION, SBK_ID_JERICHO);
-		phrase_top = 3;
-	}
+	
+	// [A] pedestrian sounds
+	LoadBankFromLump(SOUND_BANK_TANNER, SBK_ID_JONES);
 
 	switch (missionNum)
 	{
@@ -463,53 +497,84 @@ void LoadLevelSFX(int missionNum)
 		LoadBankFromLump(SOUND_BANK_MISSION, index);
 
 	// special siren bank
-	if (GameLevel == 0 || GameLevel == 3)
-		LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_SPECIAL_SIREN1);
-	else if (GameLevel == 2)
-		LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_SPECIAL_SIREN2);
-
+	switch (GameLevel)
+	{
+		case 0:
+		case 3:
+			LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_SPECIAL_SIREN1);
+			break;
+		case 2:
+			LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_SPECIAL_SIREN2);
+			break;
+	}
+	
 	// [A] padding?
 	LoadSoundBankDynamic(NULL, 1, SOUND_BANK_DUMMY);
 	LoadSoundBankDynamic(NULL, 3, SOUND_BANK_CARS);
 
 	// special vehicle 1 bank
-	if (missionNum - 39U < 2 || missionNum >= 400 && missionNum <= 404)
-		LoadBankFromLump(SOUND_BANK_CARS, MapCarIndexToBank(4));
-	else
-		LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(0));
+	switch (missionNum)
+	{
+		case 39:
+		case 40:
+		// [A]
+		case 400:
+		case 401:
+		case 402:
+		case 403:
+		case 404:
+			LoadBankFromLump(SOUND_BANK_CARS, MapCarIndexToBank(4));
+			break;
+		default:
+			LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(0));
+			break;
+	}
 
 	// special vehicle 2 bank
-	if (missionNum != 24 && missionNum != 27 &&
-		missionNum != 29 && missionNum != 30 &&
-		missionNum != 35)
+	switch (missionNum)
 	{
-		LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(1));
+		case 24:
+		case 27:
+		case 29:
+		case 30:
+		case 35:
+			// don't load
+			break;
+		default:
+			LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(1));
+			break;
 	}
 
 	// secret car sound bank
-	if (missionNum - 50U < 16 || missionNum >= 400)
+	if ((missionNum >= 50 && missionNum <= 65) ||
+		missionNum >= 400 /*[A]*/)
 	{
 		LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(2));
 	}
 
 	// disable cop speech on specific missions (gangs)
 	// and set cop model (car sound bank)
-	if (missionNum == 7 || missionNum == 9 ||
-		missionNum == 11 || missionNum == 20 ||
-		missionNum == 26 || missionNum == 31 ||
-		missionNum == 33 || missionNum == 40)
+	switch (missionNum)
 	{
-		gDoCopSpeech = 0;
+		case 7:
+		case 9:
+		case 11:
+		case 20:
+		case 26:
+		case 31:
+		case 33:
+		case 40:
+			gDoCopSpeech = 0;
 
-		for (i = 0; i < 3; i++)
-		{
-			if (MissionHeader->residentModels[i] == MissionHeader->residentModels[3])
-				cop_model = i;
-		}
-	}
-	else
-	{
-		gDoCopSpeech = 1;
+			for (i = 0; i < 3; i++)
+			{
+				if (MissionHeader->residentModels[i] == MissionHeader->residentModels[3])
+					cop_model = i;
+			}
+			break;
+		default:
+			gDoCopSpeech = 1;
+			break;
 	}
 }
 
@@ -613,7 +678,6 @@ void StartGameSounds(void)
 ushort GetEngineRevs(CAR_DATA* cp)
 {
 	int acc;
-	GEAR_DESC* gd;
 	int gear;
 	int lastgear;
 	int ws, lws;
@@ -631,49 +695,33 @@ ushort GetEngineRevs(CAR_DATA* cp)
 		if (gear > 3)
 			gear = 3;
 
-		gd = &geard[type][gear];
-
 		do {
-			if (acc < 1)
-				lws = gd->lowidl_ws;
-			else
-				lws = gd->low_ws;
-
 			lastgear = gear;
 
+			if (acc < 1)
+				lws = geard[type][gear].lowidl_ws;
+			else
+				lws = geard[type][gear].low_ws;
+
 			if (ws < lws)
-			{
-				gd--;
-				lastgear = gear - 1;
-			}
+				gear--;
 
-			if (gd->hi_ws < ws)
-			{
-				gd++;
-				lastgear++;
-			}
-
-			if (gear == lastgear)
-				break;
-
-			gear = lastgear;
-
-		} while (true);
-
-		cp->hd.gear = lastgear;
+			if (ws > geard[type][gear].hi_ws)
+				gear++;
+		} while (gear != lastgear);
 	}
 	else
 	{
 		ws = -ws / 2048;
-		lastgear = 0;
-
-		cp->hd.gear = 0;
+		gear = 0;
 	}
 
-	if (acc != 0)
-		return ws * geard[type][lastgear].ratio_ac;
+	cp->hd.gear = gear;
 
-	return ws * geard[type][lastgear].ratio_id;
+	if (acc != 0)
+		return ws * geard[type][gear].ratio_ac;
+
+	return ws * geard[type][gear].ratio_id;
 }
 
 const int maxrevdrop = 1440;
@@ -716,7 +764,7 @@ void ControlCarRevs(CAR_DATA* cp)
 	newRevs = desiredRevs;
 	desiredRevs = (oldRevs - newRevs);
 
-	if (maxrevdrop < desiredRevs)
+	if (desiredRevs > maxrevdrop)
 	{
 		acc = 0;
 		cp->hd.changingGear = 1;
@@ -725,18 +773,17 @@ void ControlCarRevs(CAR_DATA* cp)
 
 	desiredRevs = newRevs - oldRevs;
 
-	if (maxrevrise < desiredRevs)
+	if (desiredRevs > maxrevrise)
 		newRevs = oldRevs + maxrevrise;
 
 	cp->hd.revs = newRevs;
+
 	if (player_id != -1)
 	{
-		if (acc == 0 && newRevs < 7001)
+		if (acc == 0 && newRevs <= 7000)
 		{
-			acc = player[player_id].revsvol;
-
 			player[player_id].idlevol += 200;
-			player[player_id].revsvol = acc - 200;
+			player[player_id].revsvol -= 200;
 
 			if (player[player_id].idlevol > -6000)
 				player[player_id].idlevol = -6000;
@@ -760,15 +807,15 @@ void ControlCarRevs(CAR_DATA* cp)
 
 			player[player_id].idlevol += acc;
 
+			if (player[player_id].idlevol < -10000)
+				player[player_id].idlevol = -10000;
+
 			if (spin == 0)
 				acc = 175;
 			else
 				acc = 700;
 
-			player[player_id].revsvol = player[player_id].revsvol + acc;
-
-			if (player[player_id].idlevol < -10000)
-				player[player_id].idlevol = -10000;
+			player[player_id].revsvol += acc;
 
 			if (player[player_id].revsvol > revsmax)
 				player[player_id].revsvol = revsmax;
@@ -794,14 +841,10 @@ char PlaySpeech(SPEECH_QUEUE* pSpeechQueue, int sound)
 	if (pSpeechQueue->count >= 7)
 		return 0;
 
-	i = pSpeechQueue->count - 1;
-
-	while (i >= 0)
-	{
-		pSpeechQueue->slot[i + 1] = pSpeechQueue->slot[i];
-		i--;
-	}
-
+	// move speech queue back
+	for (i = pSpeechQueue->count; i != 0; i--)
+		pSpeechQueue->slot[i] = pSpeechQueue->slot[i - 1];
+	
 	pSpeechQueue->slot[0] = sound;
 	pSpeechQueue->count++;
 
@@ -857,16 +900,12 @@ void ControlSpeech(SPEECH_QUEUE* pSpeechQueue)
 
 		channels[pSpeechQueue->chan].time = 0;
 
-		pSpeechQueue->count--;
-
-		DoSpeech(pSpeechQueue->chan, pSpeechQueue->slot[pSpeechQueue->count]);
+		DoSpeech(pSpeechQueue->chan, pSpeechQueue->slot[--pSpeechQueue->count]);
 		TimeSinceLastSpeech = 0;
 	}
 	else if (SpuGetKeyStatus(SPU_VOICECH(pSpeechQueue->chan)) == 0)
 	{
-		pSpeechQueue->count--;
-
-		DoSpeech(pSpeechQueue->chan, pSpeechQueue->slot[pSpeechQueue->count]);
+		DoSpeech(pSpeechQueue->chan, pSpeechQueue->slot[--pSpeechQueue->count]);
 		TimeSinceLastSpeech = 0;
 	}
 }
@@ -934,16 +973,17 @@ void InitDopplerSFX(void)
 	for (i = 0; i < MAX_SIREN_NOISES; i++)
 	{
 		siren_noise[i].chan = -1;
-		siren_noise[i].car = 20;
+		siren_noise[i].car = MAX_CARS;
 		siren_noise[i].in_use = 0;
+		siren_noise[i].stopped = 1; // [A] initially stopped
 	}
 
 	for (i = 0; i < MAX_CAR_NOISES; i++)
 	{
 		car_noise[i].chan = -1;
-		car_noise[i].chan = -1;
-		car_noise[i].car = 20;
+		car_noise[i].car = MAX_CARS;
 		car_noise[i].in_use = 0;
+		car_noise[i].stopped = 1; // [A] initially stopped
 	}
 
 	if (GameType == GAME_GETAWAY)
@@ -952,17 +992,26 @@ void InitDopplerSFX(void)
 		loudhail_time = 75;
 }
 
+#ifndef PSX
+char noisy_cars[MAX_CARS] = { 0 };
+#else
 char force_idle[8] = { 0 };
 char force_siren[8] = { 0 };
+#endif
 
 // [D] [T]
 void DoDopplerSFX(void)
 {
 	int pitch, volume, sample;
-	short* playerFelony;
 	int i, j;
 	int car;
+#ifdef PSX
 	u_int car_flags;
+
+#define CARNOISE_IS_ACTIVE(id) (car_flags & (1 << id))
+#define CARNOISE_ENABLE(id) (car_flags |= (1 << id))
+#define CARNOISE_DISABLE(id) (car_flags &= ~(1 << id))
+#endif
 	int num_noisy_cars;
 	int sirens;
 
@@ -979,7 +1028,10 @@ void DoDopplerSFX(void)
 	for (i = 0; i < MAX_CARS; i++)
 	{
 		car_ptr = &car_data[i];
-
+#ifndef PSX
+		// we don't use car_flags; reset it now since we're going through all cars
+		CARNOISE_DISABLE(i);
+#endif
 		dx = car_ptr->hd.where.t[0] - camera_position.vx;
 		dz = car_ptr->hd.where.t[2] - camera_position.vz;
 
@@ -998,9 +1050,8 @@ void DoDopplerSFX(void)
 			else
 				continue;
 
-			indexlist[num_noisy_cars] = i;
 			car_dist[i] = dist;
-			num_noisy_cars++;
+			indexlist[num_noisy_cars++] = i;
 		}
 	}
 
@@ -1010,16 +1061,15 @@ void DoDopplerSFX(void)
 		int tmpi;
 		tmpi = indexlist[i];
 
-		j = i - 1;
-		while (j >= 0 && car_dist[indexlist[j]] > car_dist[tmpi])
-		{
+		for (j = i - 1; j >= 0 && car_dist[indexlist[j]] > car_dist[tmpi]; j--)
 			indexlist[j + 1] = indexlist[j];
-			j = j - 1;
-		}
+
 		indexlist[j + 1] = tmpi;
 	}
 
+#ifdef PSX
 	car_flags = 0;
+#endif
 	sirens = 0;
 
 	// collect cop cars for siren sound
@@ -1047,7 +1097,7 @@ void DoDopplerSFX(void)
 		}
 
 		// any cutscene cop car or car with forced siren
-		if (gInGameCutsceneActive != 0 && car_ptr->controlType == CONTROL_TYPE_CUTSCENE && force_siren[indexlist[i]] != 0)
+		if (gInGameCutsceneActive != 0 && car_ptr->controlType == CONTROL_TYPE_CUTSCENE && CARNOISE_HAS_FORCED_SIREN(indexlist[i]))
 		{
 			siren = 1;
 		}
@@ -1062,72 +1112,92 @@ void DoDopplerSFX(void)
 			siren = 1;
 		}
 
-		if (!siren)
-			continue;
-
-		car_flags |= 1 << indexlist[i];
-
-		if (gInGameCutsceneActive == 0)
-			sirens++;
-	}
-
-	// stop unused siren noises
-	for (i = 0; i < MAX_SIREN_NOISES; i++)
-	{
-		int siren;
-		siren = (car_flags & 1 << siren_noise[i].car) != 0;
-
-		siren_noise[i].in_use = siren;
-		car_flags &= ~(siren << siren_noise[i].car);
-
-		if (siren == 0 && siren_noise[i].stopped == 0)
+		if (siren)
 		{
-			StopChannel(siren_noise[i].chan);
-			UnlockChannel(siren_noise[i].chan);
+			CARNOISE_ENABLE(indexlist[i]);
 
-			siren_noise[i].chan = -1;
-			siren_noise[i].car = 20;
-			siren_noise[i].stopped = 1;
+			if (gInGameCutsceneActive == 0)
+				sirens++;	
 		}
 	}
 
-	// start sirens
-	for (i = 0; i < num_noisy_cars; i++)
+	int noises = 0;
+
+	// update siren noise status
+	for (i = 0; i < MAX_SIREN_NOISES; i++)
 	{
-		if (car_flags & 1 << indexlist[i])
+		car = siren_noise[i].car;
+
+#ifndef PSX
+		// [A] fix memory overflow reads
+		if (car < MAX_CARS && CARNOISE_IS_ACTIVE(car))
+#else
+		if (CARNOISE_IS_ACTIVE(car))
+#endif
 		{
-			car = indexlist[i];
+			// already in use, no need to start again
+			CARNOISE_DISABLE(car);
 
-			// dispatch siren sounds
-			for (j = 0; j < MAX_SIREN_NOISES; j++)
+			siren_noise[i].in_use = 1;
+			noises++;
+		}
+		else
+		{
+			// stop unused siren noises
+			if (siren_noise[i].stopped == 0)
 			{
-				if (siren_noise[j].in_use != 0)
-					continue;
+				StopChannel(siren_noise[i].chan);
+				UnlockChannel(siren_noise[i].chan);
 
-				siren_noise[j].in_use = 1;
-				siren_noise[j].stopped = 0;
-				siren_noise[j].car = car;
-
-				if (car_data[car].controlType != CONTROL_TYPE_CIV_AI)
-				{
-					int siren;
-					siren = CarHasSiren(car_data[car].ap.model);
-
-					siren_noise[j].chan = Start3DTrackingSound(-1, (siren & 0xff00) >> 8, siren & 0xff,
-						(VECTOR*)car_data[car].hd.where.t,
-						(LONGVECTOR3*)car_data[car].st.n.linearVelocity);
-				}
-				else
-				{
-					// play music
-					siren_noise[j].chan = Start3DTrackingSound(-1, SOUND_BANK_ENVIRONMENT, 5,
-						(VECTOR*)car_data[car].hd.where.t,
-						(LONGVECTOR3*)car_data[car].st.n.linearVelocity);
-				}
-
-				LockChannel(siren_noise[j].chan);
-				break;
+				siren_noise[i].chan = -1;
+				siren_noise[i].car = MAX_CARS;
+				siren_noise[i].stopped = 1;
 			}
+			siren_noise[i].in_use = 0;
+		}
+	}
+
+	// start new sirens
+	// pick free car noise slot and play
+	// [A] stop if no more sounds are available
+	for (i = 0; i < num_noisy_cars && noises < MAX_SIREN_NOISES; i++)
+	{
+		car = indexlist[i];
+
+		if (!CARNOISE_IS_ACTIVE(car))
+			continue;
+
+		// dispatch siren sounds
+		for (j = 0; j < MAX_SIREN_NOISES; j++)
+		{
+			if (siren_noise[j].in_use != 0)
+				continue;
+
+			siren_noise[j].in_use = 1;
+			siren_noise[j].stopped = 0;
+			siren_noise[j].car = car;
+
+			if (car_data[car].controlType != CONTROL_TYPE_CIV_AI)
+			{
+				int siren;
+				siren = CarHasSiren(car_data[car].ap.model);
+
+				siren_noise[j].chan = Start3DTrackingSound(-1, (siren & 0xff00) >> 8, siren & 0xff,
+					(VECTOR*)car_data[car].hd.where.t,
+					(LONGVECTOR3*)car_data[car].st.n.linearVelocity);
+			}
+			else
+			{
+				// play music
+				siren_noise[j].chan = Start3DTrackingSound(-1, SOUND_BANK_ENVIRONMENT, 5,
+					(VECTOR*)car_data[car].hd.where.t,
+					(LONGVECTOR3*)car_data[car].st.n.linearVelocity);
+			}
+
+			LockChannel(siren_noise[j].chan);
+			noises++;
+
+			break;
 		}
 	}
 
@@ -1153,88 +1223,112 @@ void DoDopplerSFX(void)
 	// siren noises occupy car noise channels
 	num_noisy_cars = MIN(num_noisy_cars, MAX_CAR_NOISES - sirens);
 
+#ifndef PSX
+	// reset all cars' noisy status
+	for (i = 0; i < MAX_CARS; i++)
+		CARNOISE_DISABLE(i);
+#else
 	car_flags = 0;
+#endif
 
+	// collect noisy cars
 	for (j = 0; j < num_noisy_cars; j++)
 	{
 		car = indexlist[j];
 
 		if (car_data[car].controlType != CONTROL_TYPE_PURSUER_AI || car_data[car].ai.p.dying == 0)
-			car_flags |= 1 << car;
+			CARNOISE_ENABLE(car);
 	}
 
+	noises = 0;
+
+	// update noisy cars' status
 	for (j = 0; j < MAX_CAR_NOISES; j++)
 	{
-		int noise;
+		car = car_noise[j].car;
 
-		noise = (car_flags & (1 << car_noise[j].car)) != 0;
-		car_noise[j].in_use = noise;
-
-		car_flags &= ~(noise << car_noise[j].car);
-	}
-
-	for (j = 0; j < MAX_CAR_NOISES; j++)
-	{
-		if (car_noise[j].in_use == 0 && car_noise[j].stopped == 0)
+#ifndef PSX
+		// [A] fix memory overflow reads
+		if (car < MAX_CARS && CARNOISE_IS_ACTIVE(car))
+#else
+		if (CARNOISE_IS_ACTIVE(car))
+#endif
 		{
-			StopChannel(car_noise[j].chan);
-			UnlockChannel(car_noise[j].chan);
+			// already in use, no need to start again
+			CARNOISE_DISABLE(car);
 
-			car_noise[j].chan = -1;
-			car_noise[j].car = 20;
-			car_noise[j].stopped = 1;
+			car_noise[j].in_use = 1;
+			noises++;
 		}
+		else
+		{
+			// stop unused car noises
+			if (car_noise[j].stopped == 0)
+			{
+				StopChannel(car_noise[j].chan);
+				UnlockChannel(car_noise[j].chan);
+
+				car_noise[j].chan = -1;
+				car_noise[j].car = MAX_CARS;
+				car_noise[j].stopped = 1;
+			}
+			car_noise[j].in_use = 0;
+		}	
 	}
 
 	// start new sounds
 	// pick free car noise slot and play
-	for (i = 0; i < num_noisy_cars; i++)
+	// [A] stop if no more sounds are available
+	for (i = 0; i < num_noisy_cars && noises < MAX_CAR_NOISES; i++)
 	{
-		if (car_flags & 1 << indexlist[i])
+		car = indexlist[i];
+
+		if (!CARNOISE_IS_ACTIVE(car))
+			continue;
+		
+		for (j = 0; j < MAX_CAR_NOISES; j++)
 		{
-			car = indexlist[i];
-			for (j = 0; j < MAX_CAR_NOISES; j++)
-			{
-				int bank, model;
+			int bank, model;
 
-				if (car_noise[j].in_use)
-					continue;
+			if (car_noise[j].in_use)
+				continue;
 
-				car_noise[j].in_use = 1;
-				car_noise[j].stopped = 0;
-				car_noise[j].car = car;
+			car_noise[j].in_use = 1;
+			car_noise[j].stopped = 0;
+			car_noise[j].car = car;
 
-				// determine which sound type it has to play
-				if (gInGameCutsceneActive != 0 && force_idle[car] > -1)
-					car_noise[j].idle = force_idle[car];
-				else
-					car_noise[j].idle = (car_data[car].hd.speed < 17);
+			// determine which sound type it has to play
+			if (gInGameCutsceneActive != 0 && CARNOISE_HAS_FORCED_IDLE(car))
+				car_noise[j].idle = 0;
+			else
+				car_noise[j].idle = (car_data[car].hd.speed < 17);
 
-				model = car_data[car].ap.model;
+			model = car_data[car].ap.model;
 
-				if (model == 3)
-					model = cop_model;
+			if (model == 3)
+				model = cop_model;
 
-				// get bank id
-				if (model == 4)
-					bank = ResidentModelsBodge();
-				else if (model < 3)
-					bank = model;
-				else
-					bank = model - 1;
+			// get bank id
+			if (model == 4)
+				bank = ResidentModelsBodge();
+			else if (model < 3)
+				bank = model;
+			else
+				bank = model - 1;
 
-				if (car_noise[j].idle)
-					sample = bank * 3 + 1;
-				else
-					sample = bank * 3;
+			if (car_noise[j].idle)
+				sample = bank * 3 + 1;
+			else
+				sample = bank * 3;
 
-				car_noise[j].chan = Start3DTrackingSound(-1, SOUND_BANK_CARS, sample, 
-					(VECTOR*)car_data[car].hd.where.t, 
-					(LONGVECTOR3*)car_data[car].st.n.linearVelocity);
+			car_noise[j].chan = Start3DTrackingSound(-1, SOUND_BANK_CARS, sample, 
+				(VECTOR*)car_data[car].hd.where.t, 
+				(LONGVECTOR3*)car_data[car].st.n.linearVelocity);
 
-				LockChannel(car_noise[j].chan);
-				break;
-			}
+			LockChannel(car_noise[j].chan);
+			noises++;
+
+			break;
 		}
 	}
 
@@ -1253,8 +1347,8 @@ void DoDopplerSFX(void)
 		cp = &car_data[car];
 
 		// determine which sound type it has to play
-		if (gInGameCutsceneActive != 0 && force_idle[car] > -1)
-			car_noise[j].idle = force_idle[car];
+		if (gInGameCutsceneActive != 0 && CARNOISE_HAS_FORCED_IDLE(car))
+			car_noise[j].idle = 0; // [A] only one idle type anyways
 		else
 			car_noise[j].idle = (cp->hd.speed < 17);
 
@@ -1294,7 +1388,7 @@ void DoDopplerSFX(void)
 		else
 			volume = -6250;
 
-		pitch = (car_data[car].hd.revs << 0x10) >> 0x12;
+		pitch = car_data[car].hd.revs / 4;
 
 		if (car_noise[j].idle != 0)
 			pitch += 4096;
@@ -1309,12 +1403,7 @@ void DoDopplerSFX(void)
 	// bark on player
 	if (CopsCanSeePlayer)
 	{
-		if (player[0].playerCarId < 0)
-			playerFelony = &pedestrianFelony;
-		else
-			playerFelony = &car_data[player[0].playerCarId].felonyRating;
-
-		if (*playerFelony > FELONY_PURSUIT_MIN_VALUE)
+		if (*GetPlayerFelonyData() > FELONY_PURSUIT_MIN_VALUE)
 			DoPoliceLoudhailer(num_noisy_cars, indexlist, car_dist);
 	}
 
@@ -1449,43 +1538,45 @@ void CollisionSound(char player_id, CAR_DATA* cp, int impact, int car_car)
 
 	player[playerid].crash_timer = 2;
 
-	if ((impact & 5) && 
-		GetPlayerId(cp) == 0 &&
-		(gCurrentMissionNumber - 2 <= 2 || gCurrentMissionNumber == 9 || gCurrentMissionNumber == 10 || gCurrentMissionNumber == 27))
+	if ((impact & 5) && GetPlayerId(cp) == 0)
 	{
-		rnd = Random2(1);
+		switch (gCurrentMissionNumber)
+		{
+			case 2:
+			case 3:
+			case 4:
+			case 9:
+			case 10:
+			case 27:
+				rnd = Random2(1);
 
-		if (rnd == (rnd / 3) * 3)
-		{
-			phrase |= 4;
-		}
-		else
-		{
-			if (car_car != 2)
-			{
-				if (phrase != 0)
+				if (rnd == (rnd / 3) * 3)
 				{
-					if ((Random2(1) & 1) == 0)
-						sample = 3;
-					else
-						sample = 0;
-
-					BodSay(sample);
+					phrase |= 4;
 				}
+				else if (car_car != 2)
+				{
+					if (phrase != 0)
+					{
+						if ((rnd & 1) != 0)
+							sample = 0;
+						else
+							sample = 3;
 
-				return;
-			}
+						BodSay(sample);
+					}
+				}
+				else if (phrase != 0)
+				{
+					if ((rnd & 1) != 0)
+						phrase = 1;
+					else
+						phrase = 2;
 
-			if (phrase == 0)
-				return;
-
-			if ((Random2(1) & 1) != 0)
-				phrase = 1;
-			else
-				phrase = 2;
+					BodSay(phrase);
+				}
+				break;
 		}
-
-		BodSay(phrase);
 	}
 }
 
@@ -1498,7 +1589,7 @@ void ExplosionSound(VECTOR* pos, int type)
 	int bang;
 	VECTOR P;
 
-	bang = 255;
+	bang = -1;
 	rnd = Random2(4);
 
 	if (gCurrentMissionNumber == 13 || gCurrentMissionNumber == 23)
@@ -1510,7 +1601,7 @@ void ExplosionSound(VECTOR* pos, int type)
 		bang = GetMissionSound(29);
 	}
 
-	if (bang == 255)
+	if (bang == -1)
 		return;
 
 	if (type == BIG_BANG)
@@ -1545,19 +1636,13 @@ void JerichoSpeak(void)
 {
 	static u_int j_said = 0;
 	int rnd;
-	short* playerFelony;
 
 	rnd = Random2(3);
 
 	if (CopsCanSeePlayer == 0)
 		return;
 
-	if (player[0].playerCarId < 0)
-		playerFelony = &pedestrianFelony;
-	else
-		playerFelony = &car_data[player[0].playerCarId].felonyRating;
-
-	if (*playerFelony > FELONY_PURSUIT_MIN_VALUE && rnd == rnd / 5 * 5)
+	if (*GetPlayerFelonyData() > FELONY_PURSUIT_MIN_VALUE && rnd == rnd / 5 * 5)
 	{
 		if (j_said > 60)
 		{
@@ -1572,20 +1657,20 @@ void JerichoSpeak(void)
 // [D] [T]
 void FunkUpDaBGMTunez(int funk)
 {
-	if (funk == 0)
-	{
-		if (copmusic != 0)
-		{
-			copmusic = 0;
-			Song_SetPos = 0;
-		}
-	}
-	else
+	if (funk)
 	{
 		if (copmusic == 0)
 		{
 			copmusic = 1;
 			Song_SetPos = xm_coptrackpos[current_music_id];
+		}
+	}
+	else
+	{
+		if (copmusic != 0)
+		{
+			copmusic = 0;
+			Song_SetPos = 0;
 		}
 	}
 }

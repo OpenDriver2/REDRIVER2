@@ -53,6 +53,8 @@ void DisplayPlayerPosition(void)
 	char string[40];
 
 	sprintf(string, "X: %d, Y: %d, Z: %d", player[0].pos[0], player[0].pos[1], player[0].pos[2]);
+	
+	SetTextColour(128, 128, 64);
 	PrintString(string, 20, 210);
 }
 
@@ -323,9 +325,6 @@ void DrawWorldTarget(MS_TARGET *target)
 // [D] [T]
 void DrawMultiplayerTarget(MS_TARGET *target)
 {
-	u_char b;
-	u_char g;
-	u_char r;
 	VECTOR tv;
 	int activeTargets;
 
@@ -338,9 +337,9 @@ void DrawMultiplayerTarget(MS_TARGET *target)
 	if (activeTargets == 0)
 		return;
 
-	r = 64;
-	g = 64;
-	b = 64;
+	u_char r = 64;
+	u_char g = 64;
+	u_char b = 64;
 
 	if(activeTargets == 1)
 	{
@@ -431,12 +430,10 @@ void DrawMultiplayerTarget(MS_TARGET *target)
 // [D] [T]
 void DrawWorldTargets(void)
 {
-	int i;
-
 	if (!Mission.active)
 		return;
 
-	for (i = 0; i < MAX_MISSION_TARGETS; i++)
+	for (int i = 0; i < MAX_MISSION_TARGETS; i++)
 		DrawWorldTarget(&MissionTargets[i]);
 }
 
@@ -444,12 +441,10 @@ void DrawWorldTargets(void)
 // [D] [T]
 void DrawOverheadTargets(void)
 {
-	int i;
-
 	if (!Mission.active)
 		return;
 
-	for (i = 0; i < MAX_MISSION_TARGETS; i++)
+	for (int i = 0; i < MAX_MISSION_TARGETS; i++)
 		DrawOverheadTarget(&MissionTargets[i]);
 }
 

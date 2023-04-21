@@ -10,6 +10,7 @@
 #include "debris.h"
 #include "handling.h"
 #include "convert.h"
+#include "debris.h"
 
 #include "mission.h"
 #include "tile.h"
@@ -25,6 +26,8 @@ struct TYRE_TRACK
 	SVECTOR_NOPAD p3;
 	SVECTOR_NOPAD p4;
 };
+
+POLY_F3 *spolys;
 
 int gShadowTexturePage;
 int gShadowTextureNum;
@@ -515,88 +518,70 @@ static int numcv;
 static int lastcv;
 static SVECTOR cv[12];
 
-// [D] - refactored - NOT TESTED YET
+// [D] [T]
 int clipAgainstZ(void)
+
 {
-	SVECTOR *curr;
-	SVECTOR *prev;
-	int _tmp;
-	int temp;
-	int d;
-	SVECTOR *dst;
-	int flags;
 	int srccount;
 	int dstcount;
+	SVECTOR *current;
+	SVECTOR *previous;
+	SVECTOR *dst;
+	int flags;
+	int q;
 
 	dstcount = 0;
-
-	curr = cv + lastcv;
-	dst = cv + lastcv + 2;
-	srccount = numcv-1;
-
-	flags = ((curr + numcv * 0x1fffffff)[1].vz > 0) << 1;
-	prev = curr + numcv * 0x1fffffff + 1;
-
-	do {
-
-		if (srccount < 0) 
-		{
-			numcv = dstcount;
-			lastcv = lastcv + 2;
-			return 0;
-		}
-
+	current = cv + lastcv;
+	dst = current + 2;
+	srccount = numcv - 1;
+	previous = current + (1 - numcv);
+	flags = (0 < previous->vz) << 1;
+	
+	while(srccount > 0) {
 		flags >>= 1;
 
-		if (curr->vz > 0)
+		if (current->vz > 0)
 			flags |= 2;
 
-		if (flags == 1) 
+		if (flags == 1)
 		{
-			d = prev->vz - curr->vz;
+			q = previous->vz - current->vz;
 			
-			dst->vx = (curr->vx * prev->vz - prev->vx * curr->vz) / d;
-			dst->vy = (curr->vy * prev->vz - prev->vy * curr->vz) / d;
-			dst->pad = (curr->pad * prev->vz - prev->pad * curr->vz) / d;
+			dst->vx = (short)((current->vx * previous->vz - previous->vx * current->vz) / q);
+			dst->vy = (short)((current->vy * previous->vz - previous->vy * current->vz) / q);
+			dst->pad = (short)((current->pad * previous->vz - previous->pad * current->vz) / q);
 			dst->vz = 0;
-		LAB_00076ca4:
+
 			dst--;
 			dstcount++;
 		}
-		else if (flags < 2)
+		else if (flags == 2)
 		{
-			if (flags != 0)
-			{
-			LAB_00076c84:
-				temp = curr->vz;
-				dst->vx = prev->vx;
-				dst->vz = temp;
-				goto LAB_00076ca4;
-			}
-		}
-		else
-		{
-			if (flags != 2)
-			{
-				goto LAB_00076c84;
-			}
-
-			d = prev->vz - curr->vz;
-
-			dst->vx = (curr->vx * prev->vz - prev->vx * curr->vz) / d;
-			dst->vy = (curr->vy * prev->vz - prev->vy * curr->vz) / d;
-			dst->pad = (curr->pad * prev->vz - prev->pad * curr->vz) / d;
+			q = previous->vz - current->vz;
+			
+			dst->vx = (short)((current->vx * previous->vz - previous->vx * current->vz) / q);
+			dst->vy = (short)((current->vy * previous->vz - previous->vy * current->vz) / q);
+			dst->pad = (short)((current->pad * previous->vz - previous->pad * current->vz) / q);
 			dst->vz = 0;
-			_tmp = curr->vz;
-			dst[-1].vx = prev->vx;
-			dst[-1].vz = _tmp;
+
+			dst[-1] = *current;
 			dst -= 2;
-			dstcount += 2;
+			dstcount += 2;	
+		}
+		else 
+		{
+			*dst-- = *current;
+			dstcount++;
 		}
 
 		srccount--;
-		prev = curr--;
-	} while (true);
+		previous = current--;
+	};
+
+	numcv = dstcount;
+	lastcv += 2;
+
+	return 0;
 }
 
 
@@ -639,157 +624,160 @@ int clipAgainstZ(void)
 
 /* WARNING: Unknown calling convention yet parameter storage is locked */
 
+
+// [D] - refactored - nothing is showing up... wtf??
 void clippedPoly(void)
 {
-	UNIMPLEMENTED();
-	/*
-	undefined4 uVar1;
-	int track;
-	int iVar3;
-	POLY_F3 *pPVar4;
-	DB *pDVar5;
-	undefined4 in_zero;
-	undefined4 in_at;
-	int iVar6;
-	SVECTOR *pSVar7;
-	short *psVar8;
-	ulong *in_a1;
-	short *psVar9;
-	int iVar10;
-	int iVar11;
-	u_int *puVar12;
+	int iVar2;
+	DB *pDVar3;
+	short *psVar4;
+	int z1;
+	SVECTOR *psVar8;
+	SVECTOR *pSVar5;
+	SVECTOR *psVar5;
+	SVECTOR *psVar9;
+	SVECTOR *in_a1;
+	short *psVar6;
+	int iVar7;
+	POLY_G3 *pPVar8;
+	int z[3];
+	POLY_G3 *pg3;
+	
+	pg3 = (POLY_G3*)spolys;
+	{
+		iVar2 = lastcv;
+		for (iVar7 = numcv - 1; iVar7 >= 0; iVar7--)
+		{
+			// FIXME: bad math??
+			cv[iVar2].vz *= 2 - cv[iVar2].vx;
+			iVar2--;
+		}
+	}
 
-	pPVar4 = spolys;
-	iVar11 = numcv + -1;
-	if (iVar11 != -1) {
-		in_a1 = (ulong *)0xffffffff;
-		psVar8 = &(&cv)[lastcv].vz;
-		do {
-			iVar11 = iVar11 + -1;
-			*psVar8 = *psVar8 * 2 - psVar8[-2];
-			psVar8 = psVar8 + -4;
-		} while (iVar11 != -1);
-	}
 	clipAgainstZ();
-	if (2 < numcv) {
-		iVar11 = numcv + -1;
-		if (numcv != 0) {
-			in_a1 = (ulong *)0xffffffff;
-			pSVar7 = &cv + lastcv;
-			do {
-				iVar11 = iVar11 + -1;
-				pSVar7->vz = pSVar7->vz + pSVar7->vx * 2;
-				pSVar7 = pSVar7 + -1;
-			} while (iVar11 != -1);
-		}
-		clipAgainstZ();
-		if (2 < numcv) {
-			iVar11 = numcv + -1;
-			if (numcv != 0) {
-				in_a1 = (ulong *)&(&cv)[lastcv].vy;
-				do {
-					iVar11 = iVar11 + -1;
-					*(short *)((int)in_a1 + 2) =
-						*(short *)((int)in_a1 + 2) - (*(short *)((int)in_a1 + -2) + *(short *)in_a1 * 2);
-					in_a1 = in_a1 + -2;
-				} while (iVar11 != -1);
-			}
-			clipAgainstZ();
-			if (2 < numcv) {
-				iVar11 = numcv + -1;
-				if (numcv != 0) {
-					in_a1 = (ulong *)0xffffffff;
-					psVar8 = &(&cv)[lastcv].vy;
-					do {
-						iVar11 = iVar11 + -1;
-						psVar8[1] = psVar8[1] + *psVar8 * 4;
-						psVar8 = psVar8 + -4;
-					} while (iVar11 != -1);
-				}
-				clipAgainstZ();
-				if (2 < numcv) {
-					iVar11 = numcv + -1;
-					if (numcv != 0) {
-						in_a1 = (ulong *)0xffffffff;
-						psVar8 = &(&cv)[lastcv].vy;
-						do {
-							iVar11 = iVar11 + -1;
-							psVar8[1] = (short)((int)(((u_int)(ushort)psVar8[1] + (int)*psVar8 * -2) * 0x10000) >>
-								0x11);
-							psVar8 = psVar8 + -4;
-						} while (iVar11 != -1);
-					}
-					iVar11 = numcv + -3;
-					iVar3 = lastcv;
-					spolys = pPVar4;
-					while (-1 < iVar11) {
-						iVar6 = iVar3 * 8;
-						setCopReg(2, in_zero, *(undefined4 *)(&cv + lastcv));
-						setCopReg(2, in_at, *(undefined4 *)&(&cv)[lastcv].vz);
-						setCopReg(2, &DAT_000da928 + iVar6, *(undefined4 *)(&DAT_000da928 + iVar6));
-						setCopReg(2, &Cont_12 + iVar6, *(undefined4 *)(&DAT_000da92c + iVar6));
-						setCopReg(2, &cv + lastcv, *(undefined4 *)(&Cont_12 + iVar6));
-						setCopReg(2, in_a1, *(undefined4 *)(&DAT_000da924 + iVar6));
-						copFunction(2, 0x280030);
-						*(undefined *)((int)&spolys->tag + 3) = 6;
-						spolys->code = '2';
-						spolys->r0 = *(uchar *)&(&cv)[lastcv].pad;
-						spolys->g0 = *(uchar *)&(&cv)[lastcv].pad;
-						psVar9 = &(&cv)[iVar3 + -1].pad;
-						spolys->b0 = *(uchar *)&(&cv)[lastcv].pad;
-						*(undefined *)&spolys->x1 = *(undefined *)psVar9;
-						*(undefined *)((int)&spolys->x1 + 1) = *(undefined *)psVar9;
-						psVar8 = &(&cv)[iVar3 + -2].pad;
-						*(undefined *)&spolys->y1 = *(undefined *)psVar9;
-						*(undefined *)&spolys[1].tag = *(undefined *)psVar8;
-						*(undefined *)((int)&spolys[1].tag + 1) = *(undefined *)psVar8;
-						*(undefined *)((int)&spolys[1].tag + 2) = *(undefined *)psVar8;
-						uVar1 = getCopReg(2, 0xc);
-						*(undefined4 *)&spolys->x0 = uVar1;
-						uVar1 = getCopReg(2, 0xd);
-						*(undefined4 *)&spolys->x2 = uVar1;
-						uVar1 = getCopReg(2, 0xe);
-						*(undefined4 *)&spolys[1].r0 = uVar1;
-						pDVar5 = current;
-						iVar6 = getCopReg(2, 0x11);
-						iVar10 = getCopReg(2, 0x12);
-						track = getCopReg(2, 0x13);
-						iVar6 = (iVar6 + iVar10 + track) / 3 + LightSortCorrect;
-						iVar10 = iVar6 >> 3;
-						if (iVar6 < 0x40) {
-							iVar10 = 8;
-						}
-						spolys->tag = spolys->tag & 0xff000000 | current->ot[iVar10] & 0xffffff;
-						puVar12 = (u_int *)&spolys[1].x0;
-						pDVar5->ot[iVar10] = pDVar5->ot[iVar10] & 0xff000000 | (u_int)spolys & 0xffffff;
-						*(undefined *)((int)&spolys[1].y0 + 1) = 7;
-						*(undefined *)((int)&spolys[1].y1 + 1) = 0x24;
-						pDVar5 = current;
-						spolys[1].x2 = -1;
-						spolys[1].y2 = -1;
-						*(undefined2 *)&spolys[2].r0 = 0xffff;
-						*(undefined2 *)&spolys[2].b0 = 0xffff;
-						spolys[2].x1 = -1;
-						spolys[2].y1 = -1;
-						spolys[2].y0 = 0x20;
-						*puVar12 = *puVar12 & 0xff000000 | pDVar5->ot[iVar10] & 0xffffff;
-						iVar11 = iVar11 + -1;
-						in_a1 = pDVar5->ot + iVar10;
-						*in_a1 = *in_a1 & 0xff000000 | (u_int)puVar12 & 0xffffff;
-						spolys = (POLY_F3 *)&spolys[2].x2;
-						pDVar5->primptr = pDVar5->primptr + 0x20;
-						iVar3 = iVar3 + -1;
-					}
-				}
-			}
+
+	if (numcv < 3)
+		return;
+
+	{
+		iVar2 = lastcv;
+		for (iVar7 = numcv - 1; iVar7 > 0; iVar7--)
+		{
+			// FIXME: bad math??
+			cv[iVar2].vz += cv[iVar2].vx * 2;
+			iVar2--;
 		}
 	}
-	return;*/
+
+	clipAgainstZ();
+
+	if (numcv < 3)
+		return;
+
+	{
+		iVar2 = lastcv;
+		for (iVar7 = numcv - 1; iVar7 > 0; iVar7--)
+		{
+			// FIXME: bad math??
+			cv[iVar2].vz -= (cv[iVar2].vx + cv[iVar2].vy * 2);
+			iVar2--;
+		}
+	}
+
+	clipAgainstZ();
+
+	if (numcv < 3)
+		return;
+
+	{
+		iVar2 = lastcv;
+		for (iVar7 = numcv - 1; iVar7 > 0; iVar7--)
+		{
+			// FIXME: bad math??
+			cv[iVar2].vz += cv[iVar2].vy * 4;
+			iVar2--;
+		}
+	}
+
+	clipAgainstZ();
+
+	if (numcv < 3)
+		return;
+
+	{
+		iVar2 = lastcv;
+		for (iVar7 = numcv - 1; iVar7 > 0; iVar7--)
+		{
+			// FIXME: bad math??
+			cv[iVar2].vz = (short)(cv[iVar2].vz + cv[iVar2].vy * -2) >> 1;
+			iVar2--;
+		}
+	}
+
+	iVar2 = lastcv;
+	for (iVar7 = numcv - 3; iVar7 >= 0; iVar7--) {
+		//
+		// FIXME: NOTHING GETS DRAWN?!
+		//
+
+		gte_ldv3(&cv[lastcv], &cv[iVar2 - 2], &cv[iVar2 - 1]);
+
+		gte_rtpt();
+
+		setPolyG3(pg3);
+		setSemiTrans(pg3, 1);
+
+		pg3->r0 = cv[lastcv].pad;
+		pg3->g0 = cv[lastcv].pad;
+		pg3->b0 = cv[lastcv].pad;
+
+		pg3->r1 = cv[iVar2 - 1].pad;
+		pg3->g1 = cv[iVar2 - 1].pad;
+		pg3->b1 = cv[iVar2 - 1].pad;
+
+		pg3->r2 = cv[iVar2 - 2].pad;
+		pg3->g2 = cv[iVar2 - 2].pad;
+		pg3->b2 = cv[iVar2 - 2].pad;
+
+		gte_stsxy3(&pg3->x0, &pg3->x1, &pg3->x2);
+
+		gte_stsz3(&z[0], &z[1], &z[2]);
+
+		z1 = (z[0] + z[1] + z[2]) / 3 + LightSortCorrect;
+
+		if (z1 < 64)
+			z1 = 64;
+
+		z1 >>= 3;
+
+		addPrim(current->ot + z1, pg3);
+		current->primptr += sizeof(POLY_G3);
+
+		POLY_FT3* null = (POLY_FT3*)current->primptr;
+
+		setPolyFT3(null);
+		null->x0 = -1;
+		null->y0 = -1;
+		null->x1 = -1;
+		null->y1 = -1;
+		null->x2 = -1;
+		null->y2 = -1;
+		null->tpage = 0x20;
+
+		addPrim(current->ot + z1, null);
+		current->primptr += sizeof(POLY_FT3);
+
+		spolys = (POLY_F3*)current->primptr;
+
+		iVar2--;
+	}
 }
 
 
+
+
 // [D] [T]
-void sQuad(SVECTOR *v0, SVECTOR *v1, SVECTOR *v2, SVECTOR *v3, CVECTOR* light_col, int LightSortCorrect)
+void sQuad(SVECTOR *v0, SVECTOR *v1, SVECTOR *v2, SVECTOR *v3, CVECTOR* color)
 {
 	int z1;
 	int z[4];
@@ -834,9 +822,9 @@ void sQuad(SVECTOR *v0, SVECTOR *v1, SVECTOR *v2, SVECTOR *v3, CVECTOR* light_co
 		setPolyG4(poly);
 		setSemiTrans(poly, 1);
 
-		poly->r1 = light_col->r;
-		poly->g1 = light_col->g;
-		poly->b1 = light_col->b;
+		poly->r1 = color->r;
+		poly->g1 = color->g;
+		poly->b1 = color->b;
 
 		poly->r0 = 0;
 		poly->g0 = 0;
@@ -885,6 +873,8 @@ void sQuad(SVECTOR *v0, SVECTOR *v1, SVECTOR *v2, SVECTOR *v3, CVECTOR* light_co
 
 		addPrim(current->ot + z1, null);
 		current->primptr += sizeof(POLY_FT3);
+
+		spolys = (POLY_F3*)current->primptr;
 	}
 }
 

@@ -22,6 +22,8 @@
 #include "dr2roads.h"
 #include "ASM/rndrasm.h"
 #include "cutrecorder.h"
+#include "overmap.h"
+#include "mission.h"
 
 struct FixedEvent // same as EVENT but different fields
 {
@@ -174,7 +176,7 @@ int VegasMonorailData[] = {
 	-70500, -67510, -111000, PATH_NODE_REVERSE, -70500, PATH_NODE_WRAP,
 };
 
-int HavanaFerryData[12] = {
+int HavanaFerryData[] = {
 	40, 0, 64, 425555, -452, 20000,		// Ferry 1
 	25, 0, 64, 315750, 130740, 135960	// Ferry 2
 };
@@ -263,10 +265,10 @@ FixedEvent chicagoDoor[3] =
 	{ -207616, 0, 659706, 0 },
 	0,
 	0,
-	800u,
-	0u,
-	25u,
-	50u,
+	800,
+	0,
+	25,
+	50,
 	80,
 	0,
 	0,
@@ -277,10 +279,10 @@ FixedEvent chicagoDoor[3] =
 	{ -209152, -512, 668928, 0 },
 	0,
 	0,
-	2496u,
-	4096u,
-	25u,
-	50u,
+	2496,
+	4096,
+	25,
+	50,
 	64,
 	0,
 	0,
@@ -291,10 +293,10 @@ FixedEvent chicagoDoor[3] =
 	{ 195264, -3728, 74752, 0 },
 	0,
 	0,
-	0u,
-	0u,
-	0u,
-	0u,
+	0,
+	0,
+	0,
+	0,
 	1088,
 	0,
 	0,
@@ -323,10 +325,10 @@ FixedEvent havanaFixed[3] =
 	{ -455168, 1529, -125440, 0 },
 	0,
 	0,
-	0u,
-	0u,
-	0u,
-	0u,
+	0,
+	0,
+	0,
+	0,
 	1536,
 	0,
 	0,
@@ -337,10 +339,10 @@ FixedEvent havanaFixed[3] =
 	{ -487936, 0, -136689, 0 },
 	0,
 	0,
-	1152u,
-	0u,
-	10u,
-	20u,
+	1152,
+	0,
+	10,
+	20,
 	80,
 	0,
 	0,
@@ -430,10 +432,10 @@ FixedEvent rioDoor[6] =
 	{ -123328, -177, -254720, 0 },
 	0,
 	0,
-	3200u,
-	4096u,
-	25u,
-	50u,
+	3200,
+	4096,
+	25,
+	50,
 	96,
 	0,
 	0,
@@ -444,10 +446,10 @@ FixedEvent rioDoor[6] =
 	{ -125248, -17, -256208, 0 },
 	0,
 	0,
-	1600u,
-	0u,
-	25u,
-	50u,
+	1600,
+	0,
+	25,
+	50,
 	80,
 	0,
 	0,
@@ -458,10 +460,10 @@ FixedEvent rioDoor[6] =
 	{ -274000, -17, -321408, 0 },
 	0,
 	0,
-	1748u,
-	3072u,
-	25u,
-	50u,
+	1748,
+	3072,
+	25,
+	50,
 	80,
 	0,
 	0,
@@ -472,10 +474,10 @@ FixedEvent rioDoor[6] =
 	{ -274000, -17, -322432, 0 },
 	0,
 	0,
-	2348u,
-	1024u,
-	25u,
-	50u,
+	2348,
+	1024,
+	25,
+	50,
 	80,
 	0,
 	0,
@@ -486,10 +488,10 @@ FixedEvent rioDoor[6] =
 	{ -40432, -17, 383328, 0 },
 	0,
 	0,
-	700u,
-	2048u,
-	25u,
-	50u,
+	700,
+	2048,
+	25,
+	50,
 	80,
 	0,
 	0,
@@ -500,10 +502,10 @@ FixedEvent rioDoor[6] =
 	{ -39424, -17, 383328, 0 },
 	0,
 	0,
-	900u,
-	0u,
-	25u,
-	50u,
+	900,
+	0,
+	25,
+	50,
 	80,
 	0,
 	0,
@@ -515,17 +517,6 @@ FixedEvent rioDoor[6] =
 Helicopter HelicopterData =
 {
   400,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  { { 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u }, 0u, 0u, 0, 0 },
-  0,
-  0,
-  0,
-  0
 };
 
 static Foam foam;
@@ -542,9 +533,14 @@ static CameraDelay cameraDelay;
 static Detonator detonator;
 static int eventHaze = 0;
 static int doneFirstHavanaCameraHack = 0;
-static SVECTOR boatOffset;
+SVECTOR boatOffset;
 static FixedEvent* fixedEvent = NULL;
+
+#ifndef PSX
+BOAT_CARS carsOnBoat;
+#else
 int carsOnBoat = 0;
+#endif
 
 MultiCar multiCar;
 
@@ -666,10 +662,9 @@ void VisibilityLists(VisType type, int i)
 	if (type == VIS_SORT)
 	{
 		num = 0;
-		do {
-			j = 0;
-
-			while (j < count)
+		do
+		{
+			for (j = 0; j < count; j++)
 			{
 				vis = GetVisValue(list[num][j], num);
 
@@ -682,6 +677,7 @@ void VisibilityLists(VisType type, int i)
 					tempList = list[num][j];
 
 					k = j - 1;
+
 					do {
 						n = k;
 
@@ -697,14 +693,10 @@ void VisibilityLists(VisType type, int i)
 					table[n] = vis;
 					list[num][n] = tempList;
 				}
-
-				j++;
 			}
-			num++;
-		} while (num < 2);
+		} while (++num < 2);
 
-		num = 0;
-		while (num < NumPlayers)
+		for (num = 0; num < NumPlayers; num++)
 		{
 			if (num != 0)
 				camera = 0x4000;
@@ -719,8 +711,6 @@ void VisibilityLists(VisType type, int i)
 
 			do {
 			} while ((*(firstZ[num]++) & camera) == 0);
-
-			num++;
 		}
 	}
 	else if (type == VIS_INIT)
@@ -742,12 +732,10 @@ void VisibilityLists(VisType type, int i)
 			count = 4;
 		}
 
-		num = 0;
-		while (num < NumPlayers)
+		for (num = 0; num < NumPlayers; num++)
 		{
 			firstX[num] = xList;
 			firstZ[num] = zList;
-			num++;
 		}
 	}
 	else if (type == VIS_ADD)
@@ -866,6 +854,22 @@ void InitTrain(EVENT* ev, int count, int type)
 	}
 }
 
+// [A]
+void AddEvent(EVENT *ev, EVENT*** e)
+{
+	**e = ev;
+	*e = &ev->next;
+}
+
+// [A]
+void NewEvent(EVENT *ev, EVENT*** e)
+{
+	**e = ev;
+	ev->next = &ev[1];
+	
+	*e = &(ev->next)->next;
+}
+
 // [D] [T]
 void InitDoor(FixedEvent* ev, EVENT*** e, int* cEvents)
 {
@@ -873,8 +877,7 @@ void InitDoor(FixedEvent* ev, EVENT*** e, int* cEvents)
 	ev->rotation = ev->finalRotation;
 	ev->flags |= 0x200;
 
-	*(FixedEvent**)*e = ev;	// [A] is that gonna work?
-	*e = &(**e)->next;
+	AddEvent((EVENT*)ev, e);
 
 	VisibilityLists(VIS_ADD, (ev - fixedEvent) | 0x80);
 }
@@ -897,7 +900,11 @@ void InitEvents(void)
 
 	cameraDelay.delay = 0;
 	eventHaze = 0;
+#ifndef PSX
+	ClearMem((char*)&carsOnBoat, sizeof(BOAT_CARS)); // clear count + array
+#else
 	carsOnBoat = 0;
+#endif
 	doneFirstHavanaCameraHack = 0;
 
 	boatOffset.vx = 0;
@@ -971,6 +978,7 @@ void SetUpEvents(int full)
 	int carModel;
 
 	firstEvent = NULL;
+
 	e = &firstEvent;
 
 	// Multiplayer level loaded?
@@ -1003,8 +1011,7 @@ void SetUpEvents(int full)
 		p = &LiftingBridges[1];
 
 		// make lifting bridges
-		n = 0;
-		while (n < cBridges)
+		for (n = 0; n < cBridges; n++)
 		{
 			int timeOffset;
 			cameraEventsActive = 1;
@@ -1044,17 +1051,18 @@ void SetUpEvents(int full)
 			timeOffset = (Random2(0) >> (n & 31) & 255) * 32;
 
 			evt = &event[cEvents];
+
 			for (i = 0; i < 2; i++)
 			{
 				if (direction)
 				{
 					evt[i].flags = 0x1;
-					evt[i].position.vx = *p;
+					evt[i].position.vx = p[0];
 				}
 				else
 				{
 					evt[i].flags = 0x21;
-					evt[i].position.vz = *p;
+					evt[i].position.vz = p[0];
 				}
 
 				evt[i].node = p;
@@ -1070,38 +1078,31 @@ void SetUpEvents(int full)
 				p++;
 			}
 
-			*e = &event[cEvents];
-
-			evt = *e;
-			evt->next = &event[cEvents + 1];
-
+			NewEvent(evt, &e);
+			
 			cEvents += 2;
-
-			e = &evt->next->next;
-			n++;
 		}
 
 		if (full)
 			ElTrackModel = FindModelIdxWithName("ELTRAIN");
 
-		count = ElTrainData[0];
 		p = ElTrainData;
+		
+		count = p[0];
 
-		n = 0;
 		missionTrain[0].engine = &event[cEvents];
-		missionTrain[1].engine = missionTrain[0].engine;
+		missionTrain[1].engine = &event[cEvents];
 
 		// add trains
-		while (n < count-1)
+		for (n = 0; n < count - 1; n++)
 		{
 			// randomize carriage count
 			if (n != 0)
-				i = (Random2(0) >> (n & 0x1f) & 3U) + 2;
+				i = (Random2(0) >> (n & 0x1f) & 3) + 2;
 			else
 				i = 5;
 
 			direction = 1;
-			n++;
 			p++;
 
 			while (--i >= 0)
@@ -1122,19 +1123,16 @@ void SetUpEvents(int full)
 				if (full)
 					evt->model = ElTrackModel;
 
-				*e = evt;
-				e = &(*e)->next;
-
+				AddEvent(evt, &e);
+				
 				VisibilityLists(VIS_ADD, cEvents);
 
 				cEvents++;
 			}
 
-			//i = *p;
-
-			do
-			{
-			} while (*++p + PATH_NODE_WRAP > 1);
+			// skip PATH_NODE_STATION, PATH_NODE_REVERSE
+			while (p[1] + PATH_NODE_WRAP > 1)
+				p++;
 		}
 
 		fixedEvent = chicagoDoor;
@@ -1142,9 +1140,8 @@ void SetUpEvents(int full)
 		InitDoor(&chicagoDoor[0], &e, &cEvents);
 		InitDoor(&chicagoDoor[1], &e, &cEvents);
 
-		*e = (EVENT*)&chicagoDoor[2];
-		e = &(*e)->next;
-
+		AddEvent((EVENT*)&chicagoDoor[2], &e);
+		
 		VisibilityLists(VIS_ADD, 130);
 
 		if (full)
@@ -1180,57 +1177,55 @@ void SetUpEvents(int full)
 	}
 	else if (GameLevel == 1)
 	{
-		evt = event;
-
 		cameraEventsActive = 1;
 
-		evt->radius = 0;
-		evt->position.vy = 111;
-		evt->position.vx = HavanaFerryData[3];
-		evt->position.vz = HavanaFerryData[4];;
-		evt->rotation = 3072;
-		evt->flags = -0x77ad;
-		evt->timer = -1;
-		evt->node = HavanaFerryData + 4;
-		evt->data = HavanaFerryData;
+		event[0].radius = 0;
+		event[0].position.vy = 111;
+		event[0].position.vx = HavanaFerryData[3];
+		event[0].position.vz = HavanaFerryData[4];
+		event[0].rotation = 3072;
+		event[0].flags = -0x77ad;
+		event[0].timer = -1;
+		event[0].node = HavanaFerryData + 4;
+		event[0].data = HavanaFerryData;
 
 		// [A] reset Ferry angles
-		evt->data[1] = RSIN(CameraCnt * 32) >> 9;
-		evt->data[2] = RCOS(CameraCnt * 16) + 4096 >> 7;
+		event[0].data[1] = RSIN(CameraCnt * 32) >> 9;
+		event[0].data[2] = RCOS(CameraCnt * 16) + 4096 >> 7;
 
 		VisibilityLists(VIS_ADD, 0);
-		MakeEventTrackable(evt);
+		MakeEventTrackable(event);
 
-		*e = evt;
+		AddEvent(event, &e);
+
 		fixedEvent = havanaFixed;
-		e = &(*e)->next;
+		
+		InitDoor(&havanaFixed[0], &e, &cEvents);
+		InitDoor(&havanaFixed[2], &e, &cEvents);
 
-		InitDoor(havanaFixed, &e, &cEvents);
-		InitDoor(havanaFixed + 2, &e, &cEvents);
-
-		*e = (EVENT*)(&havanaFixed[1]);
-		e = &(*e)->next;
-
+		AddEvent((EVENT*)&havanaFixed[1], &e);
+		
 		VisibilityLists(VIS_ADD, 129);
 
-		evt[1].flags = 0x4212;
-		evt[1].node = HavanaMiniData + 1;
-		evt[1].position.vy = 3995;
-		evt[1].position.vx = -455167;
-		evt[1].position.vz = -125439;
-		evt[1].rotation = 0;
-		evt[1].timer = -1;
-		evt[1].radius = 0;
-		evt[1].data = HavanaMiniData;
+		event[1].flags = 0x4212;
+		event[1].node = HavanaMiniData + 1;
+		event[1].position.vy = 3995;
+		event[1].position.vx = -455167;
+		event[1].position.vz = -125439;
+		event[1].rotation = 0;
+		event[1].timer = -1;
+		event[1].radius = 0;
+		event[1].data = HavanaMiniData;
 
 		VisibilityLists(VIS_ADD, 1);
-		*e = event + 1;
-		e = &(*e)->next;
+
+		AddEvent(&event[1], &e);
+		
 		cEvents = 2;
 
-		if (full != 0)
+		if (full)
 		{
-			event->model = FindModelIdxWithName("FERRY");
+			event[0].model = FindModelIdxWithName("FERRY");
 			event[1].model = FindModelIdxWithName("LIFT");
 
 			havanaFixed[1].model = FindModelIdxWithName(havanaFixed[1].modelName);
@@ -1275,8 +1270,7 @@ void SetUpEvents(int full)
 			if (full)
 				evt[i].model = trainModel;
 
-			*e = &evt[i];
-			e = &(*e)->next;
+			AddEvent(&evt[i], &e);			
 		}
 
 		// zero first and last train links
@@ -1317,8 +1311,7 @@ void SetUpEvents(int full)
 			if (full)
 				evt[i].model = trainModel;
 
-			*e = &evt[i];
-			e = &(*e)->next;
+			AddEvent(&evt[i], &e);
 		}
 
 		evt->flags |= 0x500;
@@ -1392,11 +1385,11 @@ void SetUpEvents(int full)
 		VisibilityLists(VIS_ADD, 0);
 
 		MakeEventTrackable(event);
-		*e = event;
+
+		AddEvent(event, &e);
 
 		cEvents = 1;
 		fixedEvent = rioDoor;
-		e = &(*e)->next;
 
 		for (i = 0; i < 6; i++)
 		{
@@ -1498,9 +1491,7 @@ void SetUpEvents(int full)
 			VisibilityLists(VIS_ADD, cEvents);
 			MakeEventTrackable(event + cEvents);
 
-			*e = &evt[cEvents++];
-
-			e = &(*e)->next;
+			AddEvent(&event[cEvents++], &e);
 		}
 	}
 
@@ -1690,8 +1681,13 @@ void SetCamera(EVENT* ev)
 // [D] [T]
 void EventCollisions(CAR_DATA* cp, int type)
 {
+#ifndef PSX
+	if (carsOnBoat.count == 0 || carsOnBoat.cars[CAR_INDEX(cp)] == 0)
+		return;
+#else
 	if (carsOnBoat >> CAR_INDEX(cp) == 0)
 		return;
+#endif
 
 	if (type == 0)
 	{
@@ -2402,11 +2398,16 @@ void StepEvents(void)
 	VECTOR* vel;
 	CELL_OBJECT* cop;
 	CAR_DATA* cp;
+#ifndef PSX
+	static BOAT_CARS onBoatLastFrame;
+#else
 	int onBoatLastFrame;
+#endif
 	int dist;
 	int thisCamera, otherCamera;
 
 	onBoatLastFrame = carsOnBoat;
+
 	ev = firstEvent;
 
 	if (detonator.timer)
@@ -2423,22 +2424,43 @@ void StepEvents(void)
 				i = 0;
 				cp = car_data;
 
+#ifndef PSX
+				ClearMem((char*)&carsOnBoat, sizeof(BOAT_CARS)); // clear count + array
+#else
 				carsOnBoat = 0;
+#endif
 				do {
 
 					if (cp->controlType != CONTROL_TYPE_NONE &&
 						OnBoat((VECTOR*)cp->hd.where.t, ev, &dist))
 					{
+#ifndef PSX
+						carsOnBoat.cars[i] = 1;
+						carsOnBoat.count++;
+#else
 						carsOnBoat |= 1 << i;
+#endif
 					}
 
 					i++;
 					cp++;
+#ifndef PSX
+				} while (i < MAX_CARS);
+#else
 				} while (i < MAX_CARS && i < 32);
+#endif
 
 				// make Tanner on boat also
 				if (player[0].playerType == 2 && OnBoat((VECTOR*)player[0].pos, ev, &dist))
+				{
+#ifndef PSX
+					carsOnBoat.cars[TANNER_COLLIDER_CARID] = 1;
+					carsOnBoat.cars[CAMERA_COLLIDER_CARID] = 1;
+					carsOnBoat.count += 2;
+#else
 					carsOnBoat |= (1 << TANNER_COLLIDER_CARID) | 0x200000;// 0x300000;
+#endif
+				}
 
 				BoatOffset(&boatOffset, ev);
 
@@ -2472,18 +2494,27 @@ void StepEvents(void)
 			}
 
 			// move cars on boats
+#ifndef PSX
+			if ((ev->flags & 0x40) && (carsOnBoat.count != 0 || onBoatLastFrame.count != 0))
+			{
+#else	
 			if ((ev->flags & 0x40) && (carsOnBoat != 0 || onBoatLastFrame != 0))
 			{
 				int bit;
+#endif
 
 				speed.x = ev->position.vx - old.vx;
 				speed.z = ev->position.vz - old.vz;
 
 				// go thru cars
+#ifndef PSX
+				for (i = 0; i < MAX_CARS + 1; i++)
+				{
+#else
 				for (i = 0; i < MAX_CARS + 1 && i < 32; i++)
 				{
 					bit = (1 << i);
-
+#endif
 					if (i == TANNER_COLLIDER_CARID)
 					{
 						pos = (VECTOR*)player[0].pos;
@@ -2496,7 +2527,11 @@ void StepEvents(void)
 					}
 
 					// update position and add velocity
+#ifndef PSX
+					if (carsOnBoat.cars[i])
+#else
 					if (carsOnBoat & bit)
+#endif
 					{
 						pos->vx += speed.x;
 						pos->vz += speed.z;
@@ -2504,9 +2539,18 @@ void StepEvents(void)
 						if (i == TANNER_COLLIDER_CARID)
 						{
 							SetTannerPosition(pos);
+#ifndef PSX
+							carsOnBoat.cars[TANNER_COLLIDER_CARID] = 0;
+							carsOnBoat.count--;
+#else
 							carsOnBoat &= ~(1 << TANNER_COLLIDER_CARID);
+#endif
 						}
+#ifndef PSX
+						else if (onBoatLastFrame.cars[i] == 0)
+#else
 						else if ((onBoatLastFrame & bit) == 0)
+#endif
 						{
 							vel->vx -= speed.x * 4096;
 							vel->vz -= speed.z * 4096;
@@ -2516,7 +2560,11 @@ void StepEvents(void)
 						// car_data[i].st.n.fposition[0] = pos->vx << 4;
 						// car_data[i].st.n.fposition[2] = pos->vz << 4;
 					}
+#ifndef PSX
+					else if (vel && onBoatLastFrame.cars[i])
+#else
 					else if (vel && (onBoatLastFrame & bit))
+#endif
 					{
 						vel->vx += speed.x * 4096;
 						vel->vz += speed.z * 4096;
@@ -2965,16 +3013,8 @@ void DrawEvents(int camera)
 								pos.vy = ev->position.vy - camera_position.vy;
 								pos.vz = ev->position.vz - camera_position.vz;
 
-								matrix.m[0][0] = ONE;
-								matrix.m[1][0] = 0;
-								matrix.m[2][0] = 0;
-								matrix.m[0][1] = 0;
-								matrix.m[1][1] = ONE;
-								matrix.m[2][1] = 0;
-								matrix.m[0][2] = 0;
-								matrix.m[1][2] = 0;
-								matrix.m[2][2] = ONE;
-
+								InitMatrix(matrix);
+								
 								reflection = 0;
 
 								if ((ev->flags & 2U) == 0)
@@ -3140,7 +3180,12 @@ void DrawEvents(int camera)
 									if (gTimeOfDay != TIME_DAY)
 										SetupPlaneColours(0x00282828);
 
-									RenderModel(foam.model, &matrix, &pos, 200, (foam.rotate & 0x8000) ? 0x3 : 0x1, 1, 0);
+									int flags = PLOT_TRANSPARENT;
+
+									if (foam.rotate & 0x8000)
+										flags |= PLOT_INV_CULL;
+
+									RenderModel(foam.model, &matrix, &pos, 200, flags, 1, 0);
 									SetupPlaneColours(combointensity);
 								}
 							}
@@ -3355,11 +3400,12 @@ void MakeEventTrackable(EVENT* ev)
 	EVENT** p;
 
 	p = trackingEvent;
+
 	while (*p)
 		p++;
 
-	*p = ev;
-	p[1] = NULL;	// WTF?
+	*p++ = ev;
+	*p = NULL; // mark next free trackable event
 }
 
 // [D] [T]
@@ -3403,7 +3449,8 @@ VECTOR* TriggerEvent(int i)
 		return NULL;
 	}
 
-	if (GameLevel >= 2 && i > 0 && i < 4) // Vegas and Rio detonators
+	if ((GameLevel == 2 || GameLevel == 3) &&
+		(i >= 1 && i <= 3)) // Vegas and Rio detonators
 	{
 		if (stage[i] == 0)
 		{
@@ -3418,240 +3465,247 @@ VECTOR* TriggerEvent(int i)
 			detonator.count++;
 		}
 	}
-	else
+	else if (GameLevel == 0) // Chicago events
 	{
-		if (GameLevel == 0)
+		switch (i)
 		{
-			switch (i)
-			{
-				case 0:
-				case 1:
-					if (stage[i] == 0)
-					{
-						int offset, nodePos;
-						
-						ev = missionTrain[i].engine;
-						
-						MakeEventTrackable(ev);
-						ev->flags |= 0x180;
+			case 0:
+			case 1:
+				if (stage[i] == 0)
+				{
+					int offset, nodePos;
 
-						if (*missionTrain[i].node - missionTrain[i].start > -1)
-							offset = 1600;
-						else
-							offset = -1600;
-
-						loop = 0;
-
-						do {
-							if (missionTrain[i].node[0] == PATH_NODE_STATION)
-								nodePos = missionTrain[i].node[-1];
-							else
-								nodePos = missionTrain[i].node[1];
-
-							if (missionTrain[i].startDir == 0x8000)
-							{
-								ev->flags |= 0x8000;
-								ev->position.vx = nodePos;
-								ev->position.vz = missionTrain[i].start + loop * offset;
-							}
-							else
-							{
-								ev->flags &= ~0x8000;
-								ev->position.vz = nodePos;
-								ev->position.vx = missionTrain[i].start + loop * offset;
-							}
-
-							ev->node = missionTrain[i].node;
-							ev->data = &missionTrain[i].cornerSpeed;
-							ev->timer = 0;
-							
-							ev->flags &= ~0x7000;
-							ev->flags |= 0x3000;
-
-							SetElTrainRotation(ev);
-
-							loop++;
-							ev = ev->next;
-						} while (ev && (ev->flags & 0x400U) == 0);
-					}
-					else
-					{
-						ev = missionTrain[i].engine;
-						
-						pos = &ev->position;
-						
-						if (ev->timer != 0)
-							ev->timer = 1;
-
-					}
-					break;
-				case 2:
-				case 3:
-				case 4:
-					if (stage[i] == 0)
-					{
-						// start bridges raised
-						ev = firstMissionEvent;
-						for (loop = 0; loop < 10; loop++)
-						{
-							ev->flags |= 0x100;
-
-							if (i == 4)
-								ev->timer = 2600;
-							else
-								ev->timer = 1000;
-							
-							ev++;
-						}
-
-						if (i == 2)
-						{
-							firstMissionEvent[9].timer = 2600;
-							firstMissionEvent[8].timer = 2600;
-						}
-					}
-					else
-					{
-						// raise bridges
-						firstMissionEvent[8].timer = 0;
-						firstMissionEvent[9].timer = 0;
-					}
-					break;
-				case 5:
-					PrepareSecretCar();
-					events.cameraEvent = (EVENT*)&chicagoDoor[0];
-				case 6:
-					TriggerDoor(&chicagoDoor[i - 5], &stage[i], 1);
-			}
-		}
-		else if (GameLevel == 1)
-		{
-			switch (i)
-			{
-				case 0:
-					event->timer = 1;
-					break;
-				case 1:
-					event->position.vx = HavanaFerryData[9];
-					event->position.vz = HavanaFerryData[10];
-				
-					event->timer = 1;
-				
-					event->node = &HavanaFerryData[10];
-					event->data = &HavanaFerryData[6];
-
-					// [A] reset Ferry angles
-					event->data[1] = RSIN(CameraCnt * 32) >> 9;
-					event->data[2] = RCOS(CameraCnt * 16) + 4096 >> 7;
-				
-					break;
-				case 2:
-					TriggerDoor(&havanaFixed[0], &stage[i], 1);
-					break;
-				case 3:
-					PrepareSecretCar();
-					events.cameraEvent = (EVENT*)&havanaFixed[2];
-					TriggerDoor(&havanaFixed[2], &stage[i], 0);
-					break;
-				case 4:
-					if (stage[i] != 0)
-					{
-						SetSpecialCamera(SPECIAL_CAMERA_WAIT, 0);
-						event[1].node++;
-					}
-
-					SetMSoundVar(1, &event[1].position);
-
-					event[1].timer = 0;
-					events.cameraEvent = &event[1];
-			}
-		}
-		else if (GameLevel == 2)
-		{
-			switch (i)
-			{
-				case 0:
-					loop = 0;
-
-					// start train
-					do {
-						ev = &event[loop];
-
-						ev->data = VegasTrainData;
-						
-						InitTrain(ev, loop, 1);
-						
-						ev->flags |= 0x200;
-
-						if (loop > 1)
-							VisibilityLists(VIS_ADD, loop);
-
-						loop++;
-					} while (loop < 9);
-
-					event->flags |= 0x500;
+					ev = missionTrain[i].engine;
 
 					MakeEventTrackable(ev);
+					ev->flags |= 0x180;
 
-					event[1].next = &event[2];
-					break;
-				case 4:
-					TriggerDoor(&vegasDoor[i - 4], &stage[i], 0);
-					break;
-				case 8:
-					events.cameraEvent = (EVENT*)&vegasDoor[4];
-					PrepareSecretCar();
-				case 5:
-				case 6:
-				case 7:
-					TriggerDoor(&vegasDoor[i - 4], &stage[i], 1);
-					break;
-				case 9:
-					SetMSoundVar(5, NULL);
-			}
-		}
-		else if (GameLevel == 3)
-		{
-			switch (i)
-			{
-				case 0:
-					event->timer = 1;
-					break;
-				case 4:
-					// open race track gates
-					TriggerDoor(&rioDoor[2], &stage[i], 0);
-					TriggerDoor(&rioDoor[3], &stage[i], 0);
-
-					events.cameraEvent = (EVENT*)&rioDoor[2];
-					break;
-				case 5:
-				case 6:
-					TriggerDoor(&rioDoor[i - 5], &stage[i], (i == 5));
-					break;
-				case 7:
-					if (stage[i] == 0)
-					{
-						pos = &event[1].position;
-					}
+					if (missionTrain[i].node[0] - missionTrain[i].start > -1)
+						offset = 1600;
 					else
+						offset = -1600;
+
+					loop = 0;
+
+					do {
+						if (missionTrain[i].node[0] == PATH_NODE_STATION)
+							nodePos = missionTrain[i].node[-1];
+						else
+							nodePos = missionTrain[i].node[1];
+
+						if (missionTrain[i].startDir == 0x8000)
+						{
+							ev->flags |= 0x8000;
+							ev->position.vx = nodePos;
+							ev->position.vz = missionTrain[i].start + loop * offset;
+						}
+						else
+						{
+							ev->flags &= ~0x8000;
+							ev->position.vz = nodePos;
+							ev->position.vx = missionTrain[i].start + loop * offset;
+						}
+
+						ev->node = missionTrain[i].node;
+						ev->data = &missionTrain[i].cornerSpeed;
+						ev->timer = 0;
+
+						ev->flags &= ~0x7000;
+						ev->flags |= 0x3000;
+
+						SetElTrainRotation(ev);
+
+						loop++;
+						ev = ev->next;
+					} while (ev && (ev->flags & 0x400U) == 0);
+				}
+				else
+				{
+					ev = missionTrain[i].engine;
+
+					pos = &ev->position;
+
+					if (ev->timer != 0)
+						ev->timer = 1;
+
+				}
+				break;
+			case 2:
+			case 3:
+			case 4:
+				if (stage[i] == 0)
+				{
+					// start bridges raised
+					ev = firstMissionEvent;
+					for (loop = 0; loop < 10; loop++)
 					{
-						event[1].position.vy = -17;
-						event[1].position.vx = -241619;
-						event[1].position.vz = -212638;
-						event[1].timer = -2;
-						event[1].model = HelicopterData.deadModel;
+						ev->flags |= 0x100;
+
+						if (i == 4)
+							ev->timer = 2600;
+						else
+							ev->timer = 1000;
+
+						ev++;
 					}
 
-					break;
-				case 8:
-					// open gate to secret car
-					PingOutAllSpecialCivCars();
-				
-					TriggerDoor(&rioDoor[4], &stage[i], 0);
-					TriggerDoor(&rioDoor[5], &stage[i], 0);
-				
-					events.cameraEvent = (EVENT*)&rioDoor[4];
-			}
+					if (i == 2)
+					{
+						firstMissionEvent[9].timer = 2600;
+						firstMissionEvent[8].timer = 2600;
+					}
+				}
+				else
+				{
+					// raise bridges
+					firstMissionEvent[8].timer = 0;
+					firstMissionEvent[9].timer = 0;
+				}
+				break;
+			case 5:
+				PrepareSecretCar();
+				events.cameraEvent = (EVENT*)&chicagoDoor[0];
+				TriggerDoor(&chicagoDoor[0], &stage[i], 1);
+				break;
+			case 6:
+				TriggerDoor(&chicagoDoor[1], &stage[i], 1);
+				break;
+		}
+	}
+	else if (GameLevel == 1) // Havana events
+	{
+		switch (i)
+		{
+			case 0:
+				event->timer = 1;
+				break;
+			case 1:
+				event->position.vx = HavanaFerryData[9];
+				event->position.vz = HavanaFerryData[10];
+
+				event->timer = 1;
+
+				event->node = &HavanaFerryData[10];
+				event->data = &HavanaFerryData[6];
+
+				// [A] reset Ferry angles
+				event->data[1] = RSIN(CameraCnt * 32) >> 9;
+				event->data[2] = RCOS(CameraCnt * 16) + 4096 >> 7;
+
+				break;
+			case 2:
+				TriggerDoor(&havanaFixed[0], &stage[i], 1);
+				break;
+			case 3:
+				PrepareSecretCar();
+				events.cameraEvent = (EVENT*)&havanaFixed[2];
+				TriggerDoor(&havanaFixed[2], &stage[i], 0);
+				break;
+			case 4:
+				if (stage[i] != 0)
+				{
+					SetSpecialCamera(SPECIAL_CAMERA_WAIT, 0);
+					event[1].node++;
+				}
+
+				SetMSoundVar(1, &event[1].position);
+
+				event[1].timer = 0;
+				events.cameraEvent = &event[1];
+				break;
+		}
+	}
+	else if (GameLevel == 2) // Vegas events
+	{
+		switch (i)
+		{
+			case 0:
+				// start train
+				for (loop = 0; loop < 9; loop++)
+				{
+					ev = &event[loop];
+
+					ev->data = VegasTrainData;
+
+					InitTrain(ev, loop, 1);
+
+					ev->flags |= 0x200;
+
+					if (loop > 1)
+						VisibilityLists(VIS_ADD, loop);
+				}
+
+				event->flags |= 0x500;
+
+				MakeEventTrackable(ev);
+
+				event[1].next = &event[2];
+				break;
+			case 4:
+				TriggerDoor(&vegasDoor[0], &stage[i], 0);
+				break;
+			case 5:
+			case 6:
+			case 7:
+				// trigger doors 1-3
+				TriggerDoor(&vegasDoor[i - 4], &stage[i], 1);
+				break;
+			case 8:
+				events.cameraEvent = (EVENT*)&vegasDoor[4];
+				PrepareSecretCar();
+				TriggerDoor(&vegasDoor[4], &stage[i], 1);
+				break;
+			case 9:
+				SetMSoundVar(5, NULL);
+				break;
+		}
+	}
+	else if (GameLevel == 3) // Rio events
+	{
+		switch (i)
+		{
+			case 0:
+				event->timer = 1;
+				break;
+			case 4:
+				// open race track gates
+				TriggerDoor(&rioDoor[2], &stage[i], 0);
+				TriggerDoor(&rioDoor[3], &stage[i], 0);
+
+				events.cameraEvent = (EVENT*)&rioDoor[2];
+				break;
+			case 5:
+				// police station garage
+				TriggerDoor(&rioDoor[0], &stage[i], 1);
+				break;
+			case 6:
+				// police station door
+				TriggerDoor(&rioDoor[1], &stage[i], 0);
+				break;
+			case 7:
+				if (stage[i] == 0)
+				{
+					pos = &event[1].position;
+				}
+				else
+				{
+					event[1].position.vy = -17;
+					event[1].position.vx = -241619;
+					event[1].position.vz = -212638;
+					event[1].timer = -2;
+					event[1].model = HelicopterData.deadModel;
+				}
+
+				break;
+			case 8:
+				// open gate to secret car
+				PingOutAllSpecialCivCars();
+
+				TriggerDoor(&rioDoor[4], &stage[i], 0);
+				TriggerDoor(&rioDoor[5], &stage[i], 0);
+
+				events.cameraEvent = (EVENT*)&rioDoor[4];
+				break;
 		}
 	}
 
@@ -3726,7 +3780,7 @@ void SetSpecialCamera(SpecialCamera type, int change)
 			if (gCurrentMissionNumber == 15)
 			{
 				boat = boatCamera;
-				events.cameraEvent = (EVENT*)0x1;
+				events.cameraEvent = HARDCODED_CAMERA_EVENT;
 			}
 			else
 			{
@@ -3755,7 +3809,7 @@ void SetSpecialCamera(SpecialCamera type, int change)
 				if (type != SPECIAL_CAMERA_SET2)
 				{
 					hackCamera = &VegasCameraHack[6];
-					events.cameraEvent = (EVENT*)0x1;
+					events.cameraEvent = HARDCODED_CAMERA_EVENT;
 				}
 				else
 				{
@@ -3766,7 +3820,7 @@ void SetSpecialCamera(SpecialCamera type, int change)
 			{
 				hackCamera = &VegasCameraHack[13];
 
-				events.cameraEvent = (EVENT*)0x1;
+				events.cameraEvent = HARDCODED_CAMERA_EVENT;
 				camera_position.vy = -1800;
 			}
 			else if (gCurrentMissionNumber == 30)
@@ -3837,19 +3891,23 @@ int DetonatorTimer(void)
 	static SVECTOR rememberCameraAngle; // offset 0x30
 	static int count = 0; // offset 0x38
 
-	int cnt;
 	EVENT* ev;
 	VECTOR pos;
 
 	if (gCurrentMissionNumber == 23)
 	{
-		if (detonator.timer - 3U < 17)
+		if (detonator.timer > 2 && detonator.timer < 18)
 		{
 			ScreenShake(detonator.timer - 2, &rememberCameraAngle);
 		}
-		else if (detonator.timer - 31U > 8)
+		else if (detonator.timer <= 30 || detonator.timer >= 40)
 		{
-			if (detonator.timer == 21)
+			if (detonator.timer == 0)
+			{
+				SetSpecialCamera(SPECIAL_CAMERA_SET, 0);
+				detonator.timer = 70;
+			}
+			else if (detonator.timer == 21)
 			{
 				count++;
 
@@ -3876,15 +3934,10 @@ int DetonatorTimer(void)
 				}
 				else
 				{
-					detonator.timer = detonator.timer + 1;
+					detonator.timer++;
 				}
 
 				player[0].cameraPos.vz = camera_position.vz;
-			}
-			else if (detonator.timer == 0)
-			{
-				SetSpecialCamera(SPECIAL_CAMERA_SET, 0);
-				detonator.timer = 70;
 			}
 			else if (detonator.timer == 22)
 			{
@@ -3904,7 +3957,7 @@ int DetonatorTimer(void)
 	}
 	else
 	{
-		if (detonator.timer - 141U < 19)
+		if (detonator.timer > 140 && detonator.timer < 160)
 		{
 			ScreenShake(detonator.timer - 140, &rememberCameraAngle);
 			Setup_Smoke(&firstMissionEvent[0].position, 100, 500, SMOKE_BLACK, 0, &dummy, 0);
@@ -3916,55 +3969,49 @@ int DetonatorTimer(void)
 				ev = &firstMissionEvent[1];
 				ev++;
 			}
-			else
+			else if (detonator.timer < 168)
 			{
-				if (detonator.timer < 168)
+				if (detonator.timer == 0)
 				{
-					if (detonator.timer == 0)
+					ev = &firstMissionEvent[0];
+
+					if (detonator.count < 3)
 					{
-						cnt = detonator.count - 1;
-						ev = &firstMissionEvent[0];
-
-						if (detonator.count < 3)
+						while (--detonator.count != -1)
 						{
-							while (detonator.count = cnt, detonator.count != -1)
-							{
-								AddExplosion(ev->position, BIG_BANG);
-								cnt = detonator.count - 1;
-								ev++;
-							}
-
-							return 0;
+							AddExplosion(ev->position, BIG_BANG);
+							ev++;
 						}
 
-						detonator.timer = 200;
-						SetSpecialCamera(SPECIAL_CAMERA_SET, 0);
-						events.cameraEvent = (EVENT*)0x1;
-
-						rememberCameraAngle = camera_angle;
-					}
-					else if (detonator.timer == 160)
-					{
-
-						if (GameLevel == 3)
-						{
-							event->flags &= ~0x1;
-							event->flags |= 0x20;
-
-							AddExplosion(event[0].position, HEY_MOMMA);
-						}
-						else
-						{
-							AddExplosion(firstMissionEvent[1].position, HEY_MOMMA);
-						}
-
-
+						return 0;
 					}
 
-					detonator.timer--;
-					return 1;
+					detonator.timer = 200;
+					SetSpecialCamera(SPECIAL_CAMERA_SET, 0);
+					events.cameraEvent = HARDCODED_CAMERA_EVENT;
+
+					rememberCameraAngle = camera_angle;
+				}
+				else if (detonator.timer == 160)
+				{
+					if (GameLevel == 3)
+					{
+						event->flags &= ~0x1;
+						event->flags |= 0x20;
+
+						AddExplosion(event[0].position, HEY_MOMMA);
+					}
+					else
+					{
+						AddExplosion(firstMissionEvent[1].position, HEY_MOMMA);
+					}
 				}
 
+				detonator.timer--;
+				return 1;
+			}
+			else
+			{
 				ev = &firstMissionEvent[0];
 
 				if (detonator.timer == 180)
@@ -4039,4 +4086,261 @@ void MultiCarEvent(MS_TARGET* target)
 
 	//firstEvent->next = first; // [A] bug fix
 	multiCar.event[multiCar.count - 1].next = first;
+}
+
+extern int MRProcessTarget(MR_THREAD * thread, MS_TARGET * target);
+
+int user_events_allowed = 0;
+
+int FindFreeTargets(MS_TARGET **targets, int count, int index)
+{
+	if (targets == NULL || count == 0 || index >= MAX_MISSION_TARGETS)
+		return -1;
+
+	int found = 0;
+
+	for (int i = index; i < MAX_MISSION_TARGETS && found < count; i++)
+	{
+		MS_TARGET *target = &MissionTargets[i];
+
+		if (target->type == 0)
+			targets[found++] = target;
+	}
+
+	return found;
+}
+
+int EmptyMissionEvents(MR_THREAD *thread, int init)
+{
+	return 0;
+}
+
+int ChicagoTAREvents(MR_THREAD *thread, int init)
+{
+	if (init)
+	{
+		printInfo("**** CHICAGO TAR EVENT SETUP\n");
+
+		if (gCurrentMissionNumber == 50 || gCurrentMissionNumber == 51)
+			return 1;
+	}
+
+	return 0;
+}
+
+int HavanaTAREvents(MR_THREAD *thread, int init)
+{
+	static MS_TARGET *safehouse_targets[4];
+	static int targets;
+	static int cars_to_spawn;
+	static int door_state;
+
+	if (init)
+	{
+		printInfo("**** HAVANA TAR EVENT SETUP\n");
+
+		safehouse_targets[0] = NULL;
+		safehouse_targets[1] = NULL;
+		targets = 0;
+		cars_to_spawn = 0;
+		door_state = 0;
+		
+		if (gCurrentMissionNumber == 52 || gCurrentMissionNumber == 53)
+		{
+			targets = FindFreeTargets(safehouse_targets, 4, 0);
+
+			// need at least 2 free targets
+			if (targets < 2)
+				return 0;
+
+			MS_TARGET *target = safehouse_targets[0];
+
+			// outside switch
+			target->type = Target_Point;
+			target->s.target_flags = 0x400000;
+			target->s.display_flags = 0;
+			target->s.point.posX = -182450;
+			target->s.point.posZ = -41235;
+			target->s.point.radius = 150;
+			target->s.point.actionFlag = 0x310003;
+
+			// inside switch
+			target++;
+			target->type = Target_Point;
+			target->s.target_flags = 0x400000;
+			target->s.display_flags = 0;
+			target->s.point.posX = -182705;
+			target->s.point.posZ = -41723;
+			target->s.point.radius = 150;
+			target->s.point.actionFlag = 0x310003;
+
+			printInfo("**** Doors are ready!\n");
+
+			if (targets == 4)
+			{
+				// random car 1
+				target++;
+				target->type = Target_Car;
+				target->s.target_flags = 0;
+				target->s.display_flags = 0;
+				target->s.car.posX = -184200;
+				target->s.car.posZ = -43680;
+				target->s.car.rotation = 0;
+				target->s.car.slot = -1;
+				target->s.car.type = 1;
+				target->s.car.flags = 32;
+
+				// random car 2
+				target++;
+				target->type = Target_Car;
+				target->s.target_flags = 0;
+				target->s.display_flags = 0;
+				target->s.car.posX = -181920;
+				target->s.car.posZ = -43400;
+				target->s.car.rotation = -1536;
+				target->s.car.slot = -1;
+				target->s.car.type = 1;
+				target->s.car.flags = 32;
+
+				cars_to_spawn = 2;
+
+				printInfo("**** Cars are ready!\n");
+			}
+
+			return 1;
+		}
+
+		// setup failed!
+		return 0;
+	}
+
+	// doors
+	for (int i = 0; i < 2; i++)
+	{
+		if (MRProcessTarget(thread, safehouse_targets[i]))
+		{
+			TriggerEvent(2);
+			
+			if (i == 0)
+				door_state = (door_state == 0) ? 1 : 0;
+			else if (i == 1)
+				door_state = (door_state == 1) ? 0 : 1;
+
+			printWarning("**** DOOR IS NOW %s\n", (door_state == 1) ? "OPEN" : "CLOSED");
+		}
+	}
+
+	if (door_state == 1 && cars_to_spawn > 0)
+	{
+		VECTOR tv;
+
+		for (int j = 0; j < cars_to_spawn; j++)
+		{
+			MS_TARGET *target = safehouse_targets[j + 2];
+
+			if (!(target->s.target_flags & TARGET_FLAG_CAR_PINGED_IN))
+			{
+				printWarning("**** REQUESTING RANDOM SPAWN OF CAR %d\n", j);
+
+				int model = 0;
+				int pal = Random2(0) % 6;
+				int rm = Random2(0) % 3;
+
+				// only request available civ cars (no cops or specials)
+				if (rm > 2)
+					rm = 2;
+
+				model = MissionHeader->residentModels[rm];
+
+				target->s.car.model = model;
+				target->s.car.palette = pal;
+
+				MRProcessTarget(thread, target);
+				return 0;
+			}
+		}
+
+		// door is opened and all cars are spawned
+		cars_to_spawn = -cars_to_spawn;
+	}
+	else if (door_state == 0 && cars_to_spawn < 0)
+	{
+		// door is closed - check if all cars are spawned next time it opens
+		cars_to_spawn = -cars_to_spawn;
+	}
+
+	return 0;
+}
+
+int VegasTAREvents(MR_THREAD *thread, int init)
+{
+	if (init)
+	{
+		printInfo("**** VEGAS TAR EVENT SETUP\n");
+
+		if (gCurrentMissionNumber == 54 || gCurrentMissionNumber == 55)
+			return 1;
+	}
+
+	return 0;
+}
+
+int RioTAREvents(MR_THREAD *thread, int init)
+{
+	if (init)
+	{
+		printInfo("**** RIO TAR EVENT SETUP\n");
+
+		if (gCurrentMissionNumber == 56 || gCurrentMissionNumber == 57)
+			return 1;
+	}
+
+	return 0;
+}
+
+typedef int userEventFunc(MR_THREAD *thread, int init);
+typedef userEventFunc * (userEventFuncList)[4];
+
+userEventFuncList fnTAREventHandlers[] = {
+	ChicagoTAREvents,
+	HavanaTAREvents,
+	VegasTAREvents,
+	RioTAREvents,
+};
+
+userEventFuncList fnNullMissionEventHandlers[] = {
+	EmptyMissionEvents,
+	EmptyMissionEvents,
+	EmptyMissionEvents,
+	EmptyMissionEvents,
+};
+
+userEventFuncList * fnMissionEventHandlers;
+
+int StopUserMissionEvents(MR_THREAD *thread)
+{
+	return 1;
+}
+
+int RunUserMissionEvents(MR_THREAD *thread)
+{
+	//if (gCurrentMissionNumber >= 50 && gCurrentMissionNumber <= 65)
+	//	maxCopCars = 32;
+
+	return (*fnMissionEventHandlers)[GameLevel](thread, 0);
+}
+
+int InitUserMissionEvents(MR_THREAD *thread)
+{
+	thread->stepFunc = RunUserMissionEvents;
+	thread->stopFunc = StopUserMissionEvents;
+
+	if (gCurrentMissionNumber >= 50 && gCurrentMissionNumber <= 57)
+		fnMissionEventHandlers = fnTAREventHandlers;
+	else
+		fnMissionEventHandlers = fnNullMissionEventHandlers;
+
+	user_events_allowed = (*fnMissionEventHandlers)[GameLevel](thread, 1);
+
+	return 1;
 }

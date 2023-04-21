@@ -123,7 +123,8 @@ void ChangeCarPlayerToPed(int playerID)
 	}
 
 	lcp->controlType = CONTROL_TYPE_CIV_AI;
-	lcp->wheel_angle = 0;
+	if (!gExtraConfig.m.AllowParkedTurnedWheels)
+		lcp->wheel_angle = 0;
 	lcp->ai.c.thrustState = 3;
 	lcp->ai.c.ctrlState = 7;
 
@@ -246,7 +247,7 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 	}
 
 	// play door close sound
-	Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 3, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], 0, 0x1000);
+	Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 3, newCar->hd.where.t[0], newCar->hd.where.t[1], newCar->hd.where.t[2], 0, 4096);
 }
 
 // [D] [T]

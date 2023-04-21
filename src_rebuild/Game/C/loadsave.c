@@ -45,7 +45,7 @@ struct CONFIG_SAVE_HEADER
 	int NTSCAdjustY;
 	int gSubtitles;
 	ACTIVE_CHEATS AvailableCheats;
-	int reserved[6];
+	EXTRA_CONFIG_DATA ExtraData; // [A] use reserved space to store extra config data
 };
 
 // [A]
@@ -461,6 +461,8 @@ int SaveConfigData(char* buffer)
 
 	header->ScoreTables = ScoreTables;
 
+	SaveExtraData(&header->ExtraData, 1);
+
 	return sizeof(CONFIG_SAVE_HEADER);
 }
 
@@ -491,6 +493,8 @@ int LoadConfigData(char* buffer)
 	Pads[1].mappings = header->PadMapping[1];
 
 	ScoreTables = header->ScoreTables;
+
+	LoadExtraData(&header->ExtraData, 1);
 
 	return 1;
 }

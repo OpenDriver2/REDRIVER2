@@ -101,8 +101,20 @@ LPPEDESTRIAN pUsedPeds = NULL;	// linked list of pedestrians
 LPPEDESTRIAN pFreePeds = NULL;
 LPPEDESTRIAN pHold = NULL;
 
-int max_pedestrians;
+int max_pedestrians = 28;
 int num_pedestrians;
+
+int max_sitter_peds,max_placed_peds;
+
+int ped_speech_timer = 0;
+int ped_speech_last = -1;
+
+#ifndef PSX
+#define MAX_TANNER_PEDS 8
+#define NO_MORE_PEDS() (num_pedestrians >= max_placed_peds)
+#else
+#define NO_MORE_PEDS() (num_pedestrians >= MAX_PLACED_PEDS)
+#endif
 
 char ping_in_pedestrians = 0;
 
@@ -168,7 +180,7 @@ void SetTannerPosition(VECTOR* pVec)
 	pPed = pUsedPeds;
 	while (pPed)
 	{
-		if (pPed->pedType == TANNER_MODEL || ActiveCheats.cheat12 && pPed->pedType == OTHER_MODEL)
+		if (pPed->padId == 0)
 		{
 			pPed->position.vx = pVec->vx;
 			pPed->position.vy = -pVec->vy;
@@ -177,11 +189,21 @@ void SetTannerPosition(VECTOR* pVec)
 			player[0].pos[0] = pVec->vx;
 			player[0].pos[1] = pVec->vy;
 			player[0].pos[2] = pVec->vz;
+
+			break;
 		}
 
 		pPed = pPed->pNext;
 	}
 }
+
+#ifndef PSX
+static int PED_PING_RADIUS = (250000 << 6);
+
+int pedestrianDensityMap[] = { 28, 38, 48, 64 };
+#else
+const int PED_PING_RADIUS = (250000 << 6);
+#endif
 
 // [D] [T]
 void InitPedestrians(void)
@@ -191,6 +213,16 @@ void InitPedestrians(void)
 
 	memset((u_char*)pedestrians, 0, sizeof(pedestrians));
 	DestroyPedestrians();
+
+	ped_speech_timer = 0;
+	ped_speech_last = -1;
+
+	max_pedestrians = 28;
+
+#ifndef PSX
+	if (gExtraConfig.gPedestrianDensity != 0)
+		max_pedestrians = pedestrianDensityMap[gExtraConfig.gPedestrianDensity - 1];
+#endif
 
 	LPPEDESTRIAN lastPed = &pedestrians[0];
 
@@ -203,6 +235,17 @@ void InitPedestrians(void)
 		lastPed->pNext = currPed;
 		currPed->pPrev = lastPed++;
 	}
+
+#ifndef PSX
+	// terminate linked-list earlier if needed
+	if (max_pedestrians < MAX_PEDESTRIANS)
+	{
+		lastPed = &pedestrians[max_pedestrians - 1];
+
+		// break the chain
+		lastPed->pNext->pPrev = NULL;
+	}
+#endif
 
 	lastPed->pNext = NULL;
 
@@ -229,6 +272,23 @@ void InitPedestrians(void)
 	seated_count = 0;
 	ping_in_pedestrians = 1;
 	numCopPeds = 0;
+
+#ifndef PSX
+	int peds_available = (max_pedestrians-MAX_TANNER_PEDS);
+
+	if (peds_available > 20)
+	{
+		// smoothly ramp up clustering factor when not using defaults
+		PED_PING_RADIUS = ((250000 >> (peds_available / 20)) << 6);
+	}
+	else
+	{
+		PED_PING_RADIUS = (250000 << 6);
+	}
+
+	max_sitter_peds = peds_available / 4;
+	max_placed_peds = peds_available - max_sitter_peds;
+#endif
 }
 
 // [D] [T]
@@ -236,7 +296,7 @@ void DestroyPedestrians(void)
 {
 	while (pUsedPeds)
 	{
-		if (pUsedPeds->pedType == TANNER_MODEL || ActiveCheats.cheat12 && pUsedPeds->pedType == OTHER_MODEL)
+		if (pUsedPeds->pedType != CIVILIAN)
 			numTannerPeds--;
 
 		DestroyPedestrian(pUsedPeds);
@@ -423,7 +483,7 @@ int CreatePedAtLocation(LONGVECTOR4* pPos, int pedType)
 {
 	LPPEDESTRIAN pPed;
 
-	if (num_pedestrians >= MAX_PLACED_PEDS)
+	if ( NO_MORE_PEDS() )
 		return 0;
 
 	pPed = CreatePedestrian();
@@ -435,6 +495,7 @@ int CreatePedAtLocation(LONGVECTOR4* pPos, int pedType)
 	pPed->position.vy = (*pPos)[1];
 	pPed->position.vz = (*pPos)[2];
 
+	pPed->padId = -1;
 	pPed->pedType = CIVILIAN;
 
 	pPed->dir.vz = 0;
@@ -449,6 +510,9 @@ int CreatePedAtLocation(LONGVECTOR4* pPos, int pedType)
 	{
 		pPed->flags = 0;
 		pPed->fpRestState = fpPedPersonalityFunctions[7];
+		// [A] fix cops coming out of vehicles after roadblocks
+		if (pPed->pallet == 85)
+			pPed->pallet = (Random2(0) % 5) + (Random2(0) % 5) * 16;
 	}
 	else if (pedType >= 8 && pedType <= 13)
 	{
@@ -665,7 +729,7 @@ void AnimatePed(LPPEDESTRIAN pPed)
 			pPed->frame1 = 0;
 	}
 
-	if ((pPed->pedType == TANNER_MODEL || (ActiveCheats.cheat12 && pPed->pedType == OTHER_MODEL)) && pPed->type < PED_ACTION_BACK)
+	if (pPed->pedType != CIVILIAN && pPed->type < PED_ACTION_BACK)
 	{
 		int surfId;
 		surfId = PedSurfaceType(&vec);
@@ -677,17 +741,16 @@ void AnimatePed(LPPEDESTRIAN pPed)
 			surfId != SURF_DEEPWATER)
 		{
 			if (pPed->frame1 == 3)
-				Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 0, pPed->position.vx, -pPed->position.vy, pPed->position.vz, -5000, 0x1000);
+				Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 0, pPed->position.vx, -pPed->position.vy, pPed->position.vz, -5000, 4096);
 
 			if (pPed->frame1 == 11)
-				Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 1, pPed->position.vx, -pPed->position.vy, pPed->position.vz, -5000, 0x1000);
+				Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 1, pPed->position.vx, -pPed->position.vy, pPed->position.vz, -5000, 4096);
 		}
 	}
 
 	if (pPed->pedType != CIVILIAN)
 	{
-		int padId;
-		padId = ABS(pPed->padId);
+		int padId = pPed->padId;
 
 		player[padId].pos[0] = pPed->position.vx;
 		player[padId].pos[1] = -pPed->position.vy;
@@ -701,7 +764,7 @@ void SetupDoNowt(LPPEDESTRIAN pPed)
 {
 	pPed->speed = 0;
 	pPed->dir.vz = 0;
-	pPed->type = PED_ACTION_BACK;
+	pPed->type = PED_ACTION_TIME;
 
 	SetupPedMotionData(pPed);
 
@@ -888,6 +951,19 @@ void PedDoNothing(LPPEDESTRIAN pPed)
 
 		if (iAllowWatch != 0)
 			iAllowWatch--;
+	}
+	else if (pPed->speed == 0)
+	{
+		if (pPed->doing_turn != 0)
+		{
+			pPed->type = PED_ACTION_BACK;
+			SetupPedMotionData(pPed);
+		}
+		else if (pPed->interest != 0 && pPed->type != PED_ACTION_TIME)
+		{
+			pPed->type = PED_ACTION_TIME;
+			SetupPedMotionData(pPed);
+		}
 	}
 }
 
@@ -1206,7 +1282,7 @@ void SetupGetInCar(LPPEDESTRIAN pPed)
 
 			// HEY!
 			CreatePedAtLocation(&pos, 8);
-			Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 5, pos[0], pos[1], pos[2], 0, 0x1000);
+			Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 5, pos[0], pos[1], pos[2], 0, 4096);
 
 			carToGetIn->controlFlags |= CONTROL_FLAG_WAS_PARKED;
 		}
@@ -1216,8 +1292,6 @@ void SetupGetInCar(LPPEDESTRIAN pPed)
 // [D] [T]
 void PedGetInCar(LPPEDESTRIAN pPed)
 {
-	int playerID;
-
 	pPed->speed = 0;
 
 	if (pPed->frame1 < 0xf)
@@ -1226,14 +1300,12 @@ void PedGetInCar(LPPEDESTRIAN pPed)
 	}
 	else
 	{
-		playerID = ABS(pPed->padId);
-
 		pPed->speed = 0;
 		pPed->fpAgitatedState = NULL;
 
 		pPed->flags &= ~0x10;
 
-		ChangePedPlayerToCar(playerID, carToGetIn);
+		ChangePedPlayerToCar(pPed->padId, carToGetIn);
 		DestroyPedestrian(pPed);
 
 		numTannerPeds--;
@@ -1261,7 +1333,7 @@ void PedPressButton(LPPEDESTRIAN pPed)
 	}
 	else
 	{
-		pPed->type = PED_ACTION_BACK;
+		pPed->type = PED_ACTION_TIME;
 		pPed->fpAgitatedState = NULL;
 		pPed->frame1 = 0;
 
@@ -1427,7 +1499,7 @@ void PingInPedestrians(void)
 	VECTOR randomLoc;
 	VECTOR baseLoc;
 
-	if (num_pedestrians >= MAX_PLACED_PEDS || pFreePeds == NULL || pFreePeds->pNext == NULL)
+	if (NO_MORE_PEDS() || pFreePeds == NULL || pFreePeds->pNext == NULL)
 		return;
 
 	baseLoc.vx = player[0].pos[0];
@@ -1462,7 +1534,7 @@ void PingInPedestrians(void)
 
 				bFound = 0;
 
-				while (dx * dx + dz * dz > 15999999)
+				while (dx * dx + dz * dz >= PED_PING_RADIUS)
 				{
 					pPed = pPed->pNext;
 
@@ -1680,6 +1752,13 @@ int TannerCarCollisionCheck(VECTOR* pPos, int dir, int bQuick)
 	cp1 = &car_data[MAX_CARS - 1];
 
 	do {
+		// [A] skip sooner
+		if (cp1->controlType == CONTROL_TYPE_NONE)
+		{
+			cp1--;
+			continue;
+		}
+
 		car_cos = &car_cosmetics[cp1->ap.model];
 
 		cd[1].length[0] = car_cos->colBox.vz;
@@ -1700,15 +1779,18 @@ int TannerCarCollisionCheck(VECTOR* pPos, int dir, int bQuick)
 
 		gte_stlvnl(&cd[1].x);
 
-		if (cp1->controlType != CONTROL_TYPE_NONE &&
-			ABS(cp1->hd.where.t[1] + pPos->vy) < 500 &&
-			bcollided2d(cd))
+		int dist = ABS(cp1->hd.where.t[1] + pPos->vy);
+
+		if (dist < 500 && bcollided2d(cd))
 		{
 			if (bQuick != 0)
 				return 1;
 
 			if (FIXEDH(cp1->hd.wheel_speed) > 50)
-				return 1;
+			{
+				if (dist > 100) // [A] add dist check; testing usually showed 99 or 100 here
+					return 1;
+			}
 
 			bFindCollisionPoint(cd, &collisionResult);
 
@@ -1872,6 +1954,47 @@ void CivPedJump(LPPEDESTRIAN pPed)
 		pPed->speed *= 2;
 	else if (pPed->frame1 == 14)
 		pPed->speed /= 2;
+	else if (pPed->frame1 == 1 && pPed->interest != 0)
+	{
+		ped_speech_timer -= pPed->interest / 10;
+
+		if (ped_speech_timer < 200)
+		{
+			int pitch = 0x1000;
+
+			if (((CameraCnt - frameStart) % 16) == 0)
+			{
+				int rand = Random2(0) & 0x3f;
+				if (rand % 32)
+					rand = (-rand + (rand & 0x7f));
+				pitch -= rand;
+			}
+
+			int sample = Random2(0) % 5;
+
+			if (sample == 0)
+				sample = 5; // HEY!
+			else if ((CameraCnt % sample) == 0)
+				sample = 6; // DAMN!
+			else
+				sample += 7; // WOAH! / WHAT THE!?
+
+			if (sample != ped_speech_last)
+			{
+				pitch += ((sample >> 3) * 48);
+
+				Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, sample, pPed->position.vx, pPed->position.vy, pPed->position.vz, -4500, pitch);
+				
+				ped_speech_timer = pPed->interest;
+				ped_speech_last = sample;
+			}	
+			else
+			{
+				// give the next ped a chance to say something
+				ped_speech_timer = 0;
+			}
+		}
+	}
 
 	AnimatePed(pPed);
 
@@ -2259,13 +2382,31 @@ SEATEDPTR FindTannerASeat(LPPEDESTRIAN pPed)
 	return NULL;
 }
 
+#ifndef PSX
+int PedsAvailable()
+{
+	int peds_available = max_pedestrians - num_pedestrians;
+
+	if (peds_available <= MAX_TANNER_PEDS)
+		return 0;
+
+	peds_available -= MAX_TANNER_PEDS;
+
+	return peds_available;
+}
+#endif
+
 // [D] [T]
 void add_seated(SEATEDPTR seatedptr, int seat_index)
 {
 	LPPEDESTRIAN pedptr;
 	int rnd;
 
+#ifndef PSX
+	if (PedsAvailable() > 0)
+#else
 	if (num_pedestrians < MAX_SEATED_PEDS)
+#endif
 	{
 		pedptr = CreatePedestrian();
 
@@ -2303,8 +2444,8 @@ void add_seated(SEATEDPTR seatedptr, int seat_index)
 	}
 }
 
-CAR_COLLISION_BOX collision_box[8];
-CAR_DATA* collision_car_ptr[8];
+CAR_COLLISION_BOX collision_box[MAX_PED_COLLISIONS];
+CAR_DATA* collision_car_ptr[MAX_PED_COLLISIONS];
 
 // [D] [T]
 void set_coll_box(int index, CAR_DATA* cp, int offset)
@@ -2314,7 +2455,7 @@ void set_coll_box(int index, CAR_DATA* cp, int offset)
 
 	VECTOR BoxCentre;
 
-	if (index >= 8)
+	if (index >= MAX_PED_COLLISIONS)
 		return;
 
 	boxSize = 400;
@@ -2343,7 +2484,7 @@ void set_coll_box(int index, CAR_DATA* cp, int offset)
 	collision_box[index].max_z = BoxCentre.vz + boxSize;
 }
 
-CAR_COLLISION_BOX extra_collision_boxes[5];
+CAR_COLLISION_BOX extra_collision_boxes[MAX_EXPLOSION_OBJECTS];
 CAR_COLLISION_BOX tanner_collision_box;
 int num_extra_boxes_set;
 int collision_boxes_set;
@@ -2356,21 +2497,28 @@ void BuildCarCollisionBox(void)
 	int vx, vz;
 	int index;
 	EXOBJECT* expl;
-	CAR_DATA* cp;
+	CAR_DATA* cp, *lcp;
 
 	if (player[0].playerCarId != -1) // [A] ASan bug fix
 	{
-		set_coll_box(0, &car_data[player[0].playerCarId], 8);
-		set_coll_box(1, &car_data[player[0].playerCarId], 9);
+		lcp = &car_data[player[0].playerCarId];
+
+		set_coll_box(0, lcp, 8);
+		set_coll_box(1, lcp, 9);
+
+		collision_boxes_set = 2;
+	}
+	else
+	{
+		lcp = NULL;
+		collision_boxes_set = 0;
 	}
 
 	cp = &car_data[(CameraCnt & 3)];
 
-	collision_boxes_set = 2;
-
 	while (cp < &car_data[MAX_CARS])
 	{
-		if (cp != &car_data[player[0].playerCarId] && cp->controlType != CONTROL_TYPE_NONE)
+		if (cp != lcp && cp->controlType != CONTROL_TYPE_NONE)
 		{
 			set_coll_box(collision_boxes_set, cp, 8);
 			collision_boxes_set++;
@@ -2395,7 +2543,7 @@ void BuildCarCollisionBox(void)
 	num_extra_boxes_set = 0;
 	expl = explosion;
 	
-	index = 4;
+	index = MAX_EXPLOSION_OBJECTS-1;
 	do
 	{
 		if (expl->time >= 2048)
@@ -2479,6 +2627,7 @@ void CalculatePedestrianInterest(LPPEDESTRIAN pPed)
 
 	if (carId == -1) // [A] ASan bug fix
 	{
+		pPed->interest = 0;
 		pPed->head_rot = 0;
 		return;
 	}
@@ -2596,12 +2745,9 @@ void ProcessTannerPad(LPPEDESTRIAN pPed, u_int pad, char PadSteer, char use_anal
 	sdPlane* plane;
 	PLAYER* lcp;
 
-	int padId;
-
-	padId = ABS(pPed->padId);
 	plane = NULL;
 
-	lcp = &player[padId];
+	lcp = &player[pPed->padId];
 
 	// don't move dead Tanner
 	if (lcp->dying != 0)
@@ -2793,7 +2939,6 @@ int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVEC
 	if (padId == NULL)
 	{
 		playerId = GetPlayerId(pCar);
-		lp = &player[playerId];
 	}
 	else
 	{
@@ -2803,7 +2948,7 @@ int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVEC
 
 		while (pedptr != NULL)
 		{
-			if (ABS(pedptr->padId) == playerId)
+			if (pedptr->padId == playerId)
 			{
 				player[playerId].pPed = pedptr;
 				return 0;
@@ -2811,9 +2956,9 @@ int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVEC
 
 			pedptr = pedptr->pNext;
 		}
-
-		lp = &player[playerId];
 	}
+
+	lp = &player[playerId];
 
 	if (pCar == NULL)
 	{
@@ -2872,10 +3017,7 @@ int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVEC
 	pedptr->interest = 0;		// idle timer
 	pedptr->flags &= ~4;		// reverse animation
 
-	if (padId == NULL)
-		pedptr->padId = playerId;
-	else
-		pedptr->padId = *padId;
+	pedptr->padId = playerId;
 
 	if (pedptr)
 		pos = (VECTOR*)&pedptr->position;
@@ -2884,7 +3026,7 @@ int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVEC
 
 	if (pCar == NULL)
 	{
-		pedptr->type = PED_ACTION_BACK;
+		pedptr->type = PED_ACTION_TIME;
 		pedptr->fpAgitatedState = NULL;
 		pedptr->fpRestState = fpPedPersonalityFunctions[0];
 	}
@@ -2951,7 +3093,7 @@ int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVEC
 	else
 	{
 		MakeTheCarShutUp(playerId);
-		Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 2, lp->pos[0], lp->pos[1], lp->pos[2], 0, 0x1000);
+		Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 2, lp->pos[0], lp->pos[1], lp->pos[2], 0, 4096);
 		SetupGetOutCar(pedptr, pCar, side);
 
 		//pedptr->padId = 0;
@@ -2990,9 +3132,6 @@ void DeActivatePlayerPedestrian(LPPEDESTRIAN pPed)
 	getIn = 0;
 	playerId = pPed->padId;
 
-	if (playerId < 0)
-		playerId = -playerId;
-
 	cp = FindClosestCar(player[playerId].pos[0], player[playerId].pos[1], player[playerId].pos[2], &distToCarSq);
 
 	if (!cp)
@@ -3009,7 +3148,7 @@ void DeActivatePlayerPedestrian(LPPEDESTRIAN pPed)
 		pPed->type = PED_ACTION_GETINCAR;
 		pPed->fpAgitatedState = PedGetInCar;
 
-		Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 2, player[0].pos[0], player[0].pos[1], player[0].pos[2], 0, 0x1000);
+		Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 2, player[0].pos[0], player[0].pos[1], player[0].pos[2], 0, 4096);
 		SetupPedestrian(pPed);
 		SetupGetInCar(pPed);
 	}

@@ -15,6 +15,12 @@
 #ifdef DYNAMIC_LIGHTING
 void Tile1x1Lit(MODEL* model)
 {
+	if (gNumDlights == 0)
+	{
+		Tile1x1(model);
+		return;
+	}
+
 	int opz, Z;
 	int ofse;
 	PL_POLYFT4* polys;
@@ -244,7 +250,7 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 
 	previous_matrix = -1;
 
-	if (gWeather - 1U < 2)
+	if (gWeather == WEATHER_RAIN || gWeather == WEATHER_WET)
 	{
 		u_int col;
 		col = plotContext.colour >> 2 & 63;
@@ -492,6 +498,12 @@ void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 #ifdef DYNAMIC_LIGHTING
 void drawMeshLit(MVERTEX(*VSP)[5][5], int m, int n, _pct* pc)
 {
+	if (gNumDlights == 0)
+	{
+		drawMesh(VSP, m, n, pc);
+		return;
+	}
+
 	POLY_GT4* prim;
 	int z, opz;
 

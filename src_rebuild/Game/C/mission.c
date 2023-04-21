@@ -38,7 +38,7 @@
 
 char* MissionName[37] =
 {
-	// Chicago
+	// Chicago (0 - 7)
 	M_LTXT_ID(MTXT_Surveillancetipoff),
 	M_LTXT_ID(MTXT_Chasethewitness),
 	M_LTXT_ID(MTXT_Trainpursuit),
@@ -48,7 +48,7 @@ char* MissionName[37] =
 	M_LTXT_ID(MTXT_Cainescompound),
 	M_LTXT_ID(MTXT_LeavingChicago),
 
-	// Havana
+	// Havana (8 - 17)
 	M_LTXT_ID(MTXT_Followupthelead),
 	M_LTXT_ID(MTXT_Hijackthetruck),
 	M_LTXT_ID(MTXT_Stopthetruck),
@@ -60,7 +60,7 @@ char* MissionName[37] =
 	M_LTXT_ID(MTXT_PursueJericho),
 	M_LTXT_ID(MTXT_EscapetheBrazilians),
 
-	// Vegas
+	// Vegas (18 - 27)
 	M_LTXT_ID(MTXT_Casinogetaway),
 	M_LTXT_ID(MTXT_Beatthetrain),
 	M_LTXT_ID(MTXT_Carbomb),
@@ -72,7 +72,7 @@ char* MissionName[37] =
 	M_LTXT_ID(MTXT_C4deal),
 	M_LTXT_ID(MTXT_Destroytheyard),
 
-	// Rio
+	// Rio (28 - 36)
 	M_LTXT_ID(MTXT_Buscrash),
 	M_LTXT_ID(MTXT_Stealthecopcar),
 	M_LTXT_ID(MTXT_Cainescash),
@@ -158,10 +158,12 @@ int gDontPingInCops = 0;
 int gBatterPlayer = 1;
 
 int wantedCar[2] = { -1, -1 };
+int wantedColour[2] = { -1, -1 };
 
 // [A]
 int wantedTimeOfDay = -1;
 int wantedWeather = -1;
+int wantedStartPos = -1;
 
 MS_TARGET* MissionTargets;
 u_int* MissionScript;
@@ -180,7 +182,7 @@ static char NewLeadDelay = 0;
 
 MR_MISSION Mission;
 u_int MissionStack[MAX_MISSION_THREADS][16];
-MR_THREAD MissionThreads[MAX_MISSION_TARGETS];
+MR_THREAD MissionThreads[MAX_MISSION_THREADS];
 
 unsigned char playercollected[2] = { 0, 0 };
 
@@ -238,8 +240,15 @@ void InitialiseMissionDefaults(void)
 	tannerDeathTimer = 0;
 
 	maxPlayerCars = 1;
-	maxCivCars = 14;
-	maxParkedCars = 7;
+#ifndef PSX
+	// make sure we always have the bare minimum amount available
+	// (just in case InitCivCars didn't go first)
+	if (gExtraConfig.gTrafficDensity == 0)
+#endif
+	{
+		maxCivCars = 14;
+		maxParkedCars = 7;
+	}
 	maxCopCars = 4;
 
 	gPlayerDamageFactor = 4096;
@@ -374,6 +383,12 @@ void SetupResidentModels()
 			// force palette
 			if (singlePal)
 				PlayerStartInfo[i]->palette = 0;
+			else if (wantedColour[i] != -1)
+				PlayerStartInfo[i]->palette = wantedColour[i];
+
+			// store for replay if necessary
+			if (gExtraConfig.m.SavedPos[i] == NULL)
+				SetSavedCar(i, PlayerStartInfo[i]);
 		}
 	}
 }
@@ -482,7 +497,10 @@ void LoadMission(int missionnum)
 		PlayerStartInfo[0]->rotation = MissionHeader->playerStartRotation;
 		PlayerStartInfo[0]->position.vx = MissionHeader->playerStartPosition.x;
 		PlayerStartInfo[0]->position.vz = MissionHeader->playerStartPosition.y;
-	
+
+		PlayerStartInfo[0]->model = MissionHeader->playerCarModel;
+		PlayerStartInfo[0]->palette = MissionHeader->playerCarColour;
+
 #ifdef DEBUG_OPTIONS
 		if(gStartPos.x != 0 && gStartPos.z != 0)
 		{
@@ -491,9 +509,10 @@ void LoadMission(int missionnum)
 			PlayerStartInfo[0]->position.vz = gStartPos.z;
 		}
 #endif
-	
-		PlayerStartInfo[0]->model = MissionHeader->playerCarModel;
-		PlayerStartInfo[0]->palette = MissionHeader->playerCarColour;
+
+		// [A] override start position if available, otherwise store it for the replay
+		if (gExtraConfig.mfStartPos)
+			GetSavedCar(PlayerStartInfo[0], 0);
 	}
 
 	if (MissionHeader->maxDamage != 0) 
@@ -502,17 +521,32 @@ void LoadMission(int missionnum)
 		MaxPlayerDamage[0] = MissionHeader->maxDamage;
 	}
 
-	// setup weather and time of day
+	// setup weather and time of day using mission defaults
 	gTimeOfDay = MissionHeader->time;
 	gWeather = MissionHeader->weather;
 
-	// [A] custom time of day
-	if(wantedTimeOfDay > -1)
+	// [A] use overrides if available
+	if (gExtraConfig.m.TimeOfDay != 0)
+	{
+		gTimeOfDay = gExtraConfig.m.TimeOfDay - 1;
+	}
+	else if (wantedTimeOfDay > -1)
+	{
+		// [A] use custom time of day and store in replay
 		gTimeOfDay = wantedTimeOfDay;
+		gExtraConfig.m.TimeOfDay = gTimeOfDay + 1;
+	}
 
-	// [A] custom weather
-	if (wantedWeather > -1)
+	if (gExtraConfig.m.Weather != 0)
+	{
+		gWeather = gExtraConfig.m.Weather - 1;
+	}
+	else if (wantedWeather > -1)
+	{
+		// [A] use custom weather and store in replay
 		gWeather = wantedWeather;
+		gExtraConfig.m.Weather = gWeather + 1;
+	}
 
 	if (gTimeOfDay >= TIME_NIGHT)
 		gNight = 1;
@@ -714,9 +748,125 @@ void LoadMission(int missionnum)
 #if 0
 	{
 		// MISSION SCRIPT DUMP
-		u_int* script = MissionScript;
+		printInfo("== MISSION %d - SCRIPT DUMP ==\n\n", missionnum);
 
-		while (true)
+		for (int i = 0; i < MAX_MISSION_TARGETS; i++)
+		{
+			MS_TARGET *target = &MissionTargets[i];
+
+			printInfo("Target %d = ", i);
+
+			switch (target->type)
+			{
+				case Target_Point:
+					printInfo("Point\n");
+					break;
+				case Target_Car:
+					printInfo("Car\n");
+					break;
+				case Target_Event:
+					printInfo("Event\n");
+					break;
+				case Target_Player2Start:
+					printInfo("Player2Start\n");
+					break;
+				case Target_MultiCar:
+					printInfo("MultiCar\n");
+					break;
+				default:
+					printInfo("NULL\n");
+					continue;
+			}
+
+			printWarning("  Flags %x\n", target->s.target_flags);
+			printWarning("  DisplayFlags %x\n", target->s.display_flags);
+
+			switch (target->type)
+			{
+				case Target_Point:
+					printWarning("  Position %d, %d\n", target->s.point.posX, target->s.point.posZ);
+					printWarning("  Radius %d\n", target->s.point.radius);
+					printWarning("  YPos %d\n", target->s.point.posY);
+					printWarning("  Height %d\n", target->s.point.height);
+					if (target->s.point.loseTailMessage != -1)
+						printWarning("  LoseTailMessage \"%s\"\n", MissionStrings + target->s.point.loseTailMessage);
+					printWarning("  ActionFlag %X\n", target->s.point.actionFlag);
+					if (target->s.target_flags & TARGET_FLAG_POINT_ON_BOAT)
+						printWarning("  BoatOffset %d, %d\n", target->s.point.boatOffsetX, target->s.point.boatOffsetZ);
+					break;
+				case Target_Car:
+				case Target_Player2Start:
+					printWarning("  Position %d, %d\n", target->s.car.posX, target->s.car.posZ);
+					printWarning("  Rotation %d\n", target->s.car.rotation);
+					printWarning("  Slot %d\n", target->s.car.slot);
+					printWarning("  Model %d\n", target->s.car.model);
+					printWarning("  Palette %d\n", target->s.car.palette);
+					printWarning("  Type %d\n", target->s.car.type);
+					printWarning("  Flags %d\n", target->s.car.flags);
+					printWarning("  Cutscene %d\n", target->s.car.cutscene);
+					printWarning("  MaxDistance %d\n", target->s.car.maxDistance);
+					switch (target->s.target_flags & 0xf0)
+					{
+						case 0:
+							printWarning("  MaxDamage %d\n", target->s.car.chasing.maxDamage);
+							printWarning("  TooFarMessage \"%s\"\n", MissionStrings + target->s.car.chasing.tooFarMessage);
+							printWarning("  GettingFarMessage %d\n", target->s.car.chasing.gettingFarMessage);
+							break;
+						case CATTARGET_FLAG_PROXIMITY_TARGET:
+							printWarning("  CloseMessages %d\n", target->s.car.tail.closeMessages);
+							printWarning("  FarMessages %d\n", target->s.car.tail.closeMessages);
+							break;
+						case CARTARGET_FLAG_STEAL_TARGET:
+						case CARTARGET_FLAG_ESCAPE_TARGET:
+							break;
+						case CARTARGET_FLAG_CnR_TARGET:
+							printWarning("  MaxDamage %d\n", target->s.car.chasing.maxDamage);
+							printWarning("  TooFarMessage \"%s\"\n", MissionStrings + target->s.car.chasing.tooFarMessage);
+							break;
+					}
+					break;
+				case Target_Event:
+					printWarning("  Id %d\n", target->s.event.eventId);
+					if (target->s.event.loseMessage != -1)
+						printWarning("  LoseMessage \"%s\"\n", MissionStrings + target->s.event.loseMessage);
+					break;
+				case Target_MultiCar:
+					for (int j = 0; j < 5; j++)
+					{
+						MULTICAR_DATA *mcd = &target->multiCar[j];
+
+						if (mcd->x == 0x80000000)
+							break;
+
+						printInfo("  Car %d\n", j);
+
+						printWarning("    Position %d, %d\n", mcd->x, mcd->z);
+						printWarning("    Rotation %d\n", mcd->rot);
+						printWarning("    Model %d\n", mcd->model);
+						printWarning("    Palette %d\n", mcd->palette);
+
+						printInfo("  End\n");
+					}
+					break;
+			}
+
+			switch (target->type)
+			{
+				case Target_Point:
+				case Target_Car:
+				case Target_Event:
+				case Target_Player2Start:
+				case Target_MultiCar:
+					for (int j = 0; j < 15; j++)
+						printInfo("  Field %d = %08X\n", j, target->data[j]);
+					printInfo("End\n");
+					break;
+			}
+		}
+
+		u_int* script = MissionScript;
+		
+		while (script < (u_int*)MissionStrings)
 		{
 			u_int* value = script;
 
@@ -743,13 +893,13 @@ void LoadMission(int missionnum)
 						{
 							val1 = *--value;
 
-							printWarning("MR command: PlayCutscene(%d)\n", val1);
+							printWarning("PlayCutscene %d\n", val1);
 
 							break;
 						}
 						case 0x1000021:			// CompleteAllActiveTargets
 						{
-							printWarning("MR command: CompleteAllActiveTargets\n");
+							printWarning("CompleteAllActiveTargets\n");
 
 							break;
 						}
@@ -761,19 +911,19 @@ void LoadMission(int missionnum)
 							switch (val1)
 							{
 								case 0x2000008:
-									printWarning("MR command: SetVariable(Timer, %d)\n", val2);
+									printWarning("SET Timer %d\n", val2);
 									break;
 								case 0x2000100:
-									printWarning("MR command: SetVariable(gCopDesiredSpeedScale, %d)\n", val2);
+									printWarning("SET Cops_SpeedScale %d\n", val2);
 									break;
 								case 0x2000101:
-									printWarning("MR command: SetVariable(gCopMaxPowerScale, %d)\n", val2);
+									printWarning("SET Cops_PowerScale %d\n", val2);
 									break;
 								case 0x2000102:
-									printWarning("MR command: SetVariable(gMinimumCops, %d)\n", val2);
+									printWarning("SET Min_Cops %d\n", val2);
 									break;
 								case 0x2000103:
-									printWarning("MR command: SetVariable(maxCopCars, %d)\n", val2);
+									printWarning("SET Max_Cops %d\n", val2);
 									break;
 							}
 
@@ -783,7 +933,7 @@ void LoadMission(int missionnum)
 						{
 							val1 = *--value;
 
-							printWarning("MR command: Jump(%d)\n", val1);
+							printWarning("Jump %d\n", val1);
 
 							break;
 						}
@@ -792,7 +942,7 @@ void LoadMission(int missionnum)
 							val1 = *--value;
 							val2 = *--value;
 
-							printWarning("MR command: BranchIf result != 0 TO %d\n", val1, val2);
+							printWarning("WaitForObjectiveComplete(%d)\n", (script - MissionScript) + val1 + 1);
 
 							break;
 						}
@@ -800,7 +950,7 @@ void LoadMission(int missionnum)
 						{
 							val1 = *--value;
 
-							printWarning("MR command: MultiCarEvent(%d)\n", val1);
+							printWarning("MultiCarEvent %d\n", val1);
 
 							break;
 						}
@@ -808,7 +958,7 @@ void LoadMission(int missionnum)
 						{
 							val1 = *--value;
 
-							printWarning("MR command: SetPlayerFelony(%d)\n", val1);
+							printWarning("ForceFelonyRating %d\n", val1);
 
 							break;
 						}
@@ -817,7 +967,7 @@ void LoadMission(int missionnum)
 							val1 = *--value;
 							val2 = *--value;
 
-							printWarning("MR command: ShowPlayerMessage(%d, %d)\n", val1, val2);
+							printWarning("InformPlayer \"%s\", %d\n", MissionStrings + val1, val2);
 
 							break;
 						}
@@ -825,7 +975,7 @@ void LoadMission(int missionnum)
 						{
 							val1 = *--value;
 
-							printWarning("MR command: TriggerEvent(%d)\n", val1);
+							printWarning("TriggerEvent %d\n", val1);
 
 							break;
 						}
@@ -833,7 +983,7 @@ void LoadMission(int missionnum)
 						{
 							val1 = *--value;
 
-							printWarning("MR command: SetDoorsLocked(%d)\n", val1);
+							printWarning("SetDoorsLocked %d\n", val1);
 
 							break;
 						}
@@ -841,19 +991,19 @@ void LoadMission(int missionnum)
 						{
 							val1 = *--value;
 
-							printWarning("MR command: SetStealMessage(%d)\n", val1);
+							printWarning("SetStealMessage \"%s\"\n", MissionStrings + val1);
 
 							break;
 						}
 						case 0x1000055:			// ShowOutOfTimeMessage
 						{
-							printWarning("MR command: ShowOutOfTimeMessage\n");
+							printWarning("ShowOutOfTimeMessage\n");
 
 							break;
 						}
 						case 0x1001000:			// StopThread
 						{
-							printWarning("MR command: StopThread\n");
+							printWarning("Return\n");
 
 							break;
 						}
@@ -861,7 +1011,7 @@ void LoadMission(int missionnum)
 						{
 							val1 = *--value;
 
-							printWarning("MR command: StartThreadForPlayer(%d)\n", (value - MissionScript) + val1 + 1);
+							printWarning("StartThreadForPlayer(%d)\n", (script - MissionScript) + val1 + 1);
 
 							break;
 						}
@@ -869,25 +1019,25 @@ void LoadMission(int missionnum)
 						{
 							val1 = *--value;
 
-							printWarning("MR command: StartThread2(%d)\n", (value - MissionScript) + val1 + 1);
+							printWarning("StartThread2(%d)\n", (script - MissionScript) + val1 + 1);
 
 							break;
 						}
 						case 0x1000100:			// SetCameraEvent
 						{
-							printWarning("MR command: SetCameraEvent\n");
+							printWarning("SetCameraEvent\n");
 							break;
 						}
 						case 0x1000071:			// AwardPlayerCheat
 						{
 							val1 = *--value;
-							printWarning("MR command: AwardPlayerCheat %d\n", val1);
+							printWarning("AwardPlayerCheat %d\n", val1);
 
 							break;
 						}
 						case 0x1000090:			// SetRaining
 						{
-							printWarning("MR command: SetRaining\n");
+							printWarning("Raining\n");
 							break;
 						}
 						case 0x1000040:
@@ -907,7 +1057,7 @@ void LoadMission(int missionnum)
 						}
 						case 0x1001001:
 						{
-							printWarning("MR command: SetMissionComplete\n");
+							printWarning("MissionEnd\n");
 							break;
 						}
 					}
@@ -919,6 +1069,8 @@ void LoadMission(int missionnum)
 
 					char opValue1[32] = { 0 };
 					char opValue2[32] = { 0 };
+
+					int vars = 0;
 
 					val1 = *--value;
 
@@ -940,18 +1092,20 @@ void LoadMission(int missionnum)
 									sprintf(opValue1, "Timer");
 									break;
 								case 0x2000100:
-									sprintf(opValue1, "gCopDesiredSpeedScale");
+									sprintf(opValue1, "Cops_SpeedScale");
 									break;
 								case 0x2000101:
-									sprintf(opValue1, "gCopMaxPowerScale");
+									sprintf(opValue1, "Cops_PowerScale");
 									break;
 								case 0x2000102:
-									sprintf(opValue1, "gMinimumCops");
+									sprintf(opValue1, "Min_Cops");
 									break;
 								case 0x2000103:
-									sprintf(opValue1, "maxCopCars");
+									sprintf(opValue1, "Max_Cops");
 									break;
 							}
+
+							vars++;
 						}
 						default:
 							sprintf(opValue1, "result");
@@ -977,47 +1131,54 @@ void LoadMission(int missionnum)
 									sprintf(opValue2, "Timer");
 									break;
 								case 0x2000100:
-									sprintf(opValue2, "gCopDesiredSpeedScale");
+									sprintf(opValue2, "Cops_SpeedScale");
 									break;
 								case 0x2000101:
-									sprintf(opValue2, "gCopMaxPowerScale");
+									sprintf(opValue2, "Cops_PowerScale");
 									break;
 								case 0x2000102:
-									sprintf(opValue2, "gMinimumCops");
+									sprintf(opValue2, "Min_Cops");
 									break;
 								case 0x2000103:
-									sprintf(opValue2, "maxCopCars");
+									sprintf(opValue2, "Max_Cops");
 									break;
 							}
+
+							vars++;
 						}
 						default:
 							sprintf(opValue2, "result");
 					}
+
+					char opText[64] = { 0 };
+
+					if (vars != 0)
+						sprintf(opText, " %s, %s", opValue1, opValue2);
 
 					value += 2;
 
 					switch (*value)
 					{
 						case 0x3000003: // AND
-							printWarning("MR: operator %s && %s\n", opValue1, opValue2);
+							printWarning("AndIf%s\n", opText);
 							break;
 						case 0x3000004:	// OR
-							printWarning("MR: operator %s || %s\n", opValue1, opValue2);
+							printWarning("OrIf%s\n", opText);
 							break;
 						case 0x3000005:	// NEQ
-							printWarning("MR: operator %s != %s\n", opValue1, opValue2);
+							printWarning("IfNotEqual%s\n", opText);
 							break;
 						case 0x3000006:	// EQ
-							printWarning("MR: operator %s == %s\n", opValue1, opValue2);
+							printWarning("IfEqual%s\n", opText);
 							break;
 						case 0x3000007: // GT
-							printWarning("MR: operator %s > %s\n", opValue1, opValue2);
+							printWarning("IfGreaterThan%s\n", opText);
 							break;
 						case 0x3000008:	// LT
-							printWarning("MR: operator %s < %s\n", opValue1, opValue2);
+							printWarning("IfLessThan%s\n", opText);
 							break;
 						case 0x3000009: // ADD
-							printWarning("MR: operator %s + %s\n", opValue1, opValue2);
+							printWarning("Add%s\n", opText);
 							break;
 						default:
 							printWarning("MR: operator INVALID\n");
@@ -1032,7 +1193,7 @@ void LoadMission(int missionnum)
 					if (*value == 0x4000020)
 					{
 						val1 = *--value;
-						printWarning("MR: function MRProcessTarget %d\n", val1);
+						printWarning("ProcessTarget %d\n", val1);
 					}
 
 					
@@ -1076,7 +1237,7 @@ void HandleTimer(MR_TIMER *timer)
 				MissionHeader->timerFlags &= ~MISSIONTIMER_FLAG_BOMB_TIMER;
 
 				timer->count = 9000;
-				timer->flags |= 0x28;
+				timer->flags |= (TIMER_FLAG_BOMB_TRIGGERED | TIMER_FLAG_COMPLETE_ON_OUT);
 			}
 			else 
 			{
@@ -1099,7 +1260,7 @@ void HandleTimer(MR_TIMER *timer)
 
 					if (timer->flags & TIMER_FLAG_BOMB_COUNTDOWN)
 					{
-						events.cameraEvent = (EVENT*)0x1;
+						events.cameraEvent = HARDCODED_CAMERA_EVENT;
 
 						BombThePlayerToHellAndBack(gCarWithABerm);
 					}
@@ -1119,30 +1280,28 @@ void HandleTimer(MR_TIMER *timer)
 // [D] [T]
 void RegisterChaseHit(int car1, int car2)
 {
+	if (!Mission.ChaseTarget || Mission.ChaseHitDelay != 0)
+		return;
+
 	int player_id;
 
-	if (Mission.ChaseTarget && Mission.ChaseHitDelay == 0) 
+	if (gPlayerWithTheFlag == -1)
 	{
-		if (gPlayerWithTheFlag == -1) 
+		if (Mission.ChaseTarget->s.car.slot == car1 || Mission.ChaseTarget->s.car.slot == car2)
 		{
-			if (car1 == Mission.ChaseTarget->s.car.slot || car2 == Mission.ChaseTarget->s.car.slot)
-			{
-				Mission.ChaseTarget->s.car.chasing.maxDamage--;
-				Mission.ChaseHitDelay = 20;
-				DamageBar.position++;
-			}
-		}
-		else 
-		{
-			player_id = 1 - gPlayerWithTheFlag;
-			gPlayerWithTheFlag = player_id;
-
-			player[player_id].targetCarId = -1;
+			Mission.ChaseTarget->s.car.chasing.maxDamage--;
 			Mission.ChaseHitDelay = 20;
-			player[1 - player_id].targetCarId = gPlayerWithTheFlag;
-
-			SetPlayerMessage(player_id, G_LTXT(GTXT_YouGotTheFlag),2,1);
+			DamageBar.position++;
 		}
+	}
+	else
+	{
+		// swap flag between the 2 players
+		player[gPlayerWithTheFlag].targetCarId = (gPlayerWithTheFlag ^= 1);
+		player[gPlayerWithTheFlag].targetCarId = -1;
+		Mission.ChaseHitDelay = 20;
+
+		SetPlayerMessage(gPlayerWithTheFlag, G_LTXT(GTXT_YouGotTheFlag), 2, 1);
 	}
 }
 
@@ -1150,40 +1309,38 @@ void RegisterChaseHit(int car1, int car2)
 // [D] [T]
 void PauseMissionTimer(int pause)
 {
-	if (pause == 0) 
-	{
-		Mission.timer[0].flags &= ~TIMER_FLAG_PAUSED;
-		Mission.timer[1].flags &= ~TIMER_FLAG_PAUSED;
-	}
-	else 
+	if (pause != 0) 
 	{
 		Mission.timer[0].flags |= TIMER_FLAG_PAUSED;
 		Mission.timer[1].flags |= TIMER_FLAG_PAUSED;
+	}
+	else 
+	{
+		Mission.timer[0].flags &= ~TIMER_FLAG_PAUSED;
+		Mission.timer[1].flags &= ~TIMER_FLAG_PAUSED;
 	}
 }
 
 // [D] [T]
 void SetMissionMessage(char *message, int priority, int seconds)
 {
-	int i;
-
 	if (message == MissionStrings - 1 || message == NULL || NumPlayers == 0)
 		return;
 
-	for (i = 0; i < NumPlayers; i++)
+	for (int i = 0; i < NumPlayers; i++)
 	{
 		if (Mission.message_timer[i] == 0 || Mission.message_priority[i] <= priority)
 		{
 			Mission.message_string[i] = message;
 			Mission.message_priority[i] = priority;
 				
-			if (seconds == 0) 
+			if (seconds != 0) 
 			{
-				Mission.message_timer[i] = 5;
+				Mission.message_timer[i] = seconds * 30;
 			}
 			else 
 			{
-				Mission.message_timer[i] = seconds * 30;
+				Mission.message_timer[i] = 5;
 			}
 		}
 	}
@@ -1303,15 +1460,43 @@ int Swap2Cars(int curslot, int newslot)
 	memcpy((u_char*)&car_data[curslot], (u_char*)&cd, sizeof(CAR_DATA));
 
 	// [A] event - swap cars on boat
-	tmp = carsOnBoat & (1 << newslot);
-	carsOnBoat &= ~(1 << newslot);
+#ifndef PSX
+	tmp = carsOnBoat.cars[newslot];
 
+	if (carsOnBoat.cars[curslot])
+	{
+		if (!tmp)
+		{
+			carsOnBoat.cars[newslot] = 1;
+			carsOnBoat.count++;
+		}
+	}
+	else
+	{
+		if (tmp)
+		{
+			carsOnBoat.cars[newslot] = 0;
+			carsOnBoat.count--;
+		}
+	}
+
+	if (tmp && carsOnBoat.cars[curslot] == 0)
+	{
+		carsOnBoat.cars[curslot] = 1;
+		carsOnBoat.count++;
+	}
+
+#else
+	tmp = carsOnBoat & (1 << newslot);
+	
 	if (carsOnBoat & (1 << curslot))
 		carsOnBoat |= (1 << newslot);
+	else
+		carsOnBoat &= ~(1 << newslot);
 
 	if(tmp)
 		carsOnBoat |= (1 << curslot);
-
+#endif
 	// swap ids
 	car_data[newslot].id = newslot;
 	car_data[curslot].id = curslot;
@@ -1442,28 +1627,36 @@ void HandleMissionThreads(void)
 		while (running && (Mission.gameover_delay == -1)
 			&& (!gInGameCutsceneActive && gInGameCutsceneDelay == 0))
 		{
-			value = *thread->pc++;
-
-			switch (value & 0xff000000)
+			if (thread->type == 2)
 			{
-			case 0x0:
-			case 0x2000000:
-			case 0xff000000:
-				MR_DebugPrint("MR: push %d\n", value);
-				MRPush(thread, value);
-				break;
-			case 0x1000000:
-				MR_DebugPrint("MR: command %x\n", value);
-				running = MRCommand(thread, value);
-				break;
-			case 0x3000000:
-				MR_DebugPrint("MR: operator %x\n", value);
-				running = MROperator(thread, value);
-				break;
-			case 0x4000000:
-				MR_DebugPrint("MR: function %x\n", value);
-				running = MRFunction(thread, value);
-				break;
+				if (thread->stepFunc != NULL)
+					running = thread->stepFunc(thread);
+			}
+			else
+			{
+				value = *thread->pc++;
+
+				switch (value & 0xff000000)
+				{
+					case 0x0:
+					case 0x2000000:
+					case 0xff000000:
+						MR_DebugPrint("MR: push %d\n", value);
+						MRPush(thread, value);
+						break;
+					case 0x1000000:
+						MR_DebugPrint("MR: command %x\n", value);
+						running = MRCommand(thread, value);
+						break;
+					case 0x3000000:
+						MR_DebugPrint("MR: operator %x\n", value);
+						running = MROperator(thread, value);
+						break;
+					case 0x4000000:
+						MR_DebugPrint("MR: function %x\n", value);
+						running = MRFunction(thread, value);
+						break;
+				}
 			}
 		}
 
@@ -1772,11 +1965,38 @@ int MRFunction(MR_THREAD *thread, u_int fnc)
 void MRInitialiseThread(MR_THREAD *thread, u_int *pc, u_char player)
 {
 	thread->active = 1;
+	thread->type = 1;
+	thread->flags = 0;
 	thread->pc = pc;
 	thread->player = player;
 	thread->sp = thread->initial_sp;
 }
 
+void MRInitialiseUserThread(MR_THREAD *thread, MR_THREAD *callingthread, threadFunc *initFunc, u_char player)
+{
+	thread->active = 1;
+	thread->type = 2;
+	thread->flags = 0;
+	thread->player = player;
+
+	thread->owner = callingthread;
+	thread->stepFunc = NULL;
+	thread->stopFunc = NULL;
+
+	int handled = 0;
+
+	if (initFunc)
+		handled = initFunc(thread);
+
+	if (!handled)
+	{
+		if (thread->stepFunc == NULL || thread->stopFunc == NULL)
+		{
+			thread->active = 0;
+			thread->flags = -666;
+		}
+	}
+}
 
 // [D] [T]
 void MRStartThread(MR_THREAD *callingthread, u_int addr, unsigned char player)
@@ -1784,9 +2004,22 @@ void MRStartThread(MR_THREAD *callingthread, u_int addr, unsigned char player)
 	int i;
 	for (i = 0; i < MAX_MISSION_THREADS; i++)
 	{
-		if (!MissionThreads[i].active)
+		if (!MissionThreads[i].active && MissionThreads[i].type != 2)
 		{
 			MRInitialiseThread(&MissionThreads[i], callingthread->pc + addr, player);
+			break;
+		}
+	}
+}
+
+void MRStartUserThread(MR_THREAD *callingthread, threadFunc *initFunc, u_char player)
+{
+	// NB: make user threads run at the end
+	for (int i = 12; i < MAX_MISSION_THREADS; i++)
+	{
+		if (!MissionThreads[i].active && MissionThreads[i].type != 1)
+		{
+			MRInitialiseUserThread(&MissionThreads[i], callingthread, initFunc, player);
 			break;
 		}
 	}
@@ -1796,6 +2029,13 @@ void MRStartThread(MR_THREAD *callingthread, u_int addr, unsigned char player)
 int MRStopThread(MR_THREAD *thread)
 {
 	thread->active = 0;
+
+	if (thread->type == 2)
+	{
+		if (thread->stopFunc != NULL)
+			return thread->stopFunc(thread);
+	}
+
 	return 0;
 }
 
@@ -2736,15 +2976,21 @@ void PreProcessTargets(void)
 		{
 			PlayerStartInfo[1] = &ReplayStreams[1].SourceType;
 
-			ReplayStreams[1].SourceType.type = 1;
-			ReplayStreams[1].SourceType.position.vx = target->s.car.posX;
-			ReplayStreams[1].SourceType.position.vy = 0;
-			ReplayStreams[1].SourceType.position.vz = target->s.car.posZ;
-			ReplayStreams[1].SourceType.rotation = target->s.car.rotation;
-			ReplayStreams[1].SourceType.model = target->s.car.model;
-			ReplayStreams[1].SourceType.palette = target->s.car.palette;
-			ReplayStreams[1].SourceType.controlType = CONTROL_TYPE_PLAYER;
-			ReplayStreams[1].SourceType.flags = 0;
+			PlayerStartInfo[1]->type = 1;
+			
+			PlayerStartInfo[1]->position.vx = target->s.car.posX;
+			PlayerStartInfo[1]->position.vy = 0;
+			PlayerStartInfo[1]->position.vz = target->s.car.posZ;
+			PlayerStartInfo[1]->rotation = target->s.car.rotation;
+			PlayerStartInfo[1]->model = target->s.car.model;
+			PlayerStartInfo[1]->palette = target->s.car.palette;
+
+			// [A] override start position if available
+			if (gExtraConfig.mfStartPos)
+				GetSavedCar(PlayerStartInfo[1], 1);
+			
+			PlayerStartInfo[1]->controlType = CONTROL_TYPE_PLAYER;
+			PlayerStartInfo[1]->flags = 0;
 
 			if (target->s.car.type & 0x3)
 				target->s.car.cutscene = -1;
@@ -3070,48 +3316,34 @@ void SetMissionOver(PAUSEMODE mode)
 // [D] [T]
 void ActivateNextFlag(void)
 {
-	int j;
-	MS_TARGET *target;
-	int i;
-
 	if (last_flag == -1)
 		last_flag = 0;
 	else
 		MissionTargets[last_flag].s.target_flags |= TARGET_FLAG_COMPLETED_ALLP;
 
-	j = last_flag;
-	
-	for (i = 0; i < MAX_MISSION_TARGETS; i++)
+	for (int i = 0, j = last_flag + 1; i < MAX_MISSION_TARGETS; i++, j++)
 	{
-		j++;
+		j %= MAX_MISSION_TARGETS;
 
-		j = j % MAX_MISSION_TARGETS;
-
-		target = &MissionTargets[j];
+		MS_TARGET *target = &MissionTargets[j];
 
 		if (target->type == Target_Point && (target->s.target_flags & TARGET_FLAG_POINT_CTF_FLAG) == TARGET_FLAG_POINT_CTF_FLAG)
+		{
+			target->s.target_flags &= ~TARGET_FLAG_COMPLETED_ALLP;
+			last_flag = j;
 			break;
+		}
 	}
-
-	target->s.target_flags &= ~TARGET_FLAG_COMPLETED_ALLP;
-	last_flag = j;
 }
 
 // [D] [T]
 int CalcLapTime(int player, int time, int lap)
 {
-	int i;
-	int ptime;
+	int ptime = 0;
 
-	ptime = 0;
-
-	i = 0;
-	while (i < lap)
-	{
+	for (int i = 0; i < lap; i++)
 		ptime += gLapTimes[player][i];
-		i++;
-	}
-
+	
 	return time - ptime;
 }
 
@@ -3168,16 +3400,26 @@ void HandleMission(void)
 
 		switch (MissionHeader->type & 0x30)
 		{
-		case 0x20:
-			FelonyBar.flags |= 0x2;
 		case 0:
-			FelonyBar.active = 0x1;
+			// normal felony bar
+			FelonyBar.active = 1;
 			break;
 		case 0x10:
+			// no felony bar
 			FelonyBar.active = 0;
+			break;
+		case 0x20:
+			// felony bar with hidden felony
+			FelonyBar.active = 1;
+			FelonyBar.flags |= 0x2;
+			break;
 		default:
+			// invalid felony bar type
 			FelonyBar.active = 0;
+			break;
 		}
+
+		MRStartUserThread(&MissionThreads[0], InitUserMissionEvents, 0);
 	}
 
 	if (bMissionTitleFade)

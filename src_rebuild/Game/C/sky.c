@@ -255,7 +255,7 @@ void LoadSky(void)
 	else
 		skyNum = 0;
 
-	if (gWeather - 1U < 2)
+	if (gWeather == WEATHER_RAIN || gWeather == WEATHER_WET)
 	{
 		if (gTimeOfDay == TIME_NIGHT)
 			offset = 0x10000;
@@ -503,45 +503,50 @@ void DrawLensFlare(void)
 
 	source = sun_source;
 
-	if (gWeather - 1U <= 1 || (M_BIT(gTimeOfDay) & (M_BIT(TIME_DAWN) | M_BIT(TIME_DUSK))))
+	if (gWeather == WEATHER_RAIN || gWeather == WEATHER_WET)
 		return;
-	
-	if (gTimeOfDay == TIME_NIGHT)
-		col.r = 128;
-	else
-		col.r = 254;
+
+	if (gTimeOfDay == TIME_DAWN || gTimeOfDay == TIME_DUSK)
+		return;
 
 	flare_col = 0;
 
-	col.g = col.r;
-	col.b = col.r;
-
-	// get the sun brightness from framebuffer copy
-	if (gTimeOfDay != TIME_NIGHT && last_attempt_failed == 0)
+	if (gTimeOfDay == TIME_NIGHT)
 	{
-		pwBuffer = buffer;
-		StoreImage(&source, (u_long*)buffer);
+		col.r = 128;
+	}
+	else
+	{
+		col.r = 254;
 
-		bufferY = 0;
-		do
+		// get the sun brightness from framebuffer copy
+		if (!last_attempt_failed)
 		{
-			bufferY++;
-			bufferX = 0;
+			pwBuffer = buffer;
+			StoreImage(&source, (u_long*)buffer);
 
+			bufferY = 0;
 			do
 			{
-				if (*pwBuffer == 0xFFFF || *pwBuffer == 0x7fff)
-					flare_col++;
+				bufferY++;
+				bufferX = 0;
 
-				bufferX++;
-				pwBuffer++;
-			}
-			while (bufferX < 12);
+				do
+				{
+					if (*pwBuffer == 0xFFFF || *pwBuffer == 0x7fff)
+						flare_col++;
 
-			pwBuffer += 4;
+					bufferX++;
+					pwBuffer++;
+				} while (bufferX < 12);
+
+				pwBuffer += 4;
+			} while (bufferY < 10);
 		}
-		while (bufferY < 10);
 	}
+
+	col.g = col.r;
+	col.b = col.r;
 
 	gte_SetRotMatrix(&inv_camera_matrix);
 	gte_SetTransVector(&dummy);
@@ -695,21 +700,18 @@ void TunnelSkyFade(void)
 	int tun;
 	int px, pz;
 
-	if (GameLevel != 3 && gTunnelNum < 3)
-		tun = gTunnelNum;
-	else
+	if (GameLevel == 3 && gTunnelNum > 2)
 		tun = 2;
-
+	else
+		tun = gTunnelNum;
+	
 	v1 = NULL;
 	v2 = NULL;
 
-	// HMM?
-	// DIFF_ANGLES(camera_angle.vy, tunnelDir[tun][0]) + 1247 < 2495;
-
-	if (DIFF_ANGLES(camera_angle.vy, tunnelDir[tun][0]) + 1247 < 2495) // (((tunnelDir[tun][0] - camera_angle.vy) + 2048 & 4095) - 801 < 2495)
+	if (DIFF_ANGLES(camera_angle.vy, tunnelDir[tun][0]) + 1248 <= 2496) // (((tunnelDir[tun][0] - camera_angle.vy) + 2048 & 4095) - 801 < 2495)
 		v1 = &tunnelPos[tun][0];
 
-	if (DIFF_ANGLES(camera_angle.vy, tunnelDir[tun][1]) + 1247 < 2495) // (((tunnelDir[tun][1] - camera_angle.vy) + 2048 & 4095) - 801 < 2495)
+	if (DIFF_ANGLES(camera_angle.vy, tunnelDir[tun][1]) + 1248 <= 2496) // (((tunnelDir[tun][1] - camera_angle.vy) + 2048 & 4095) - 801 < 2495)
 		v2 = &tunnelPos[tun][1];
 
 	px = player[0].pos[0];
@@ -796,23 +798,24 @@ void calc_sky_brightness(RGB16* skycolor)
 		skycolor->r = 128;
 	}
 	
-	if (gTunnelNum == -1 || 
-		GameLevel == 0 ||
-		GameLevel == 1 && gTunnelNum == 2 ||
-		GameLevel == 2 ||
-		GameLevel == 3 && gTunnelNum != 1)
-		return;
+	if (gTunnelNum != -1)
+	{
+		// conditionally draw Havana and Rio tunnels
+		if (GameLevel == 1 && gTunnelNum != 2 ||
+			GameLevel == 3 && gTunnelNum == 1)
+		{
+			TunnelSkyFade();
 
-	TunnelSkyFade();
+			if (skycolor->r > skyFade)
+				skycolor->r = skyFade;
 
-	if (skycolor->r > skyFade)
-		skycolor->r = skyFade;
+			if (skycolor->g > skyFade)
+				skycolor->g = skyFade;
 
-	if (skycolor->g > skyFade)
-		skycolor->g = skyFade;
-
-	if (skycolor->b > skyFade)
-		skycolor->b = skyFade;
+			if (skycolor->b > skyFade)
+				skycolor->b = skyFade;
+		}
+	}
 }
 
 #if USE_PGXP

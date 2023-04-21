@@ -126,7 +126,31 @@ enum GameStrId
 
 	GTXT_Clear,
 	GTXT_Rainy,
-	GTXT_Wet
+	GTXT_Wet,
+
+	GTXT_Color,
+
+	GTXT_Details,
+	GTXT_FullScreen,
+	GTXT_VSync,
+	GTXT_PGXP,
+	GTXT_TextureFilter,
+	GTXT_DrawDistance,
+	GTXT_DynamicLights,
+	GTXT_TrafficDensity,
+	GTXT_PedsDensity,
+
+	GTXT_Low,
+	GTXT_Medium,
+	GTXT_High,
+	GTXT_Ultra,
+	GTXT_Off,
+	GTXT_On,
+	GTXT_TexturesOnly,
+	GTXT_ZBufferOnly,
+	GTXT_All,
+	GTXT_ResetToDefault,
+	GTXT_Custom
 };
 
 enum MissionStrId

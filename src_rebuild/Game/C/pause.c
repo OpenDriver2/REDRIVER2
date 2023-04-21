@@ -121,6 +121,20 @@ void SetDisplayPosition(int direction)
 	gDisplayPosition ^= 1;
 }
 
+void SetSpawnPosition(int direction)
+{
+	extern int SavePlayerCarSpawn(int slot);
+
+	SavePlayerCarSpawn(0);
+}
+
+void ResetSpawnPosition(int direction)
+{
+	extern int ResetPlayerCarSpawn(int slot);
+
+	ResetPlayerCarSpawn(0);
+}
+
 void ToggleInvincibility(int direction)
 {
 	extern int gInvincibleCar;
@@ -222,7 +236,10 @@ void DebugTimeOfDayRain(int direction)
 {
 	//extern int weather;
 	//weather ^= weather;
-	gWeather ^= 1;
+
+	if (gWeather++ == WEATHER_WET)
+		gWeather = WEATHER_NONE;
+
 	wantedWeather = gWeather;
 
 	if (gWeather == WEATHER_RAIN)
@@ -256,8 +273,19 @@ MENU_ITEM DebugJustForFunItems[] =
 MENU_HEADER DebugJustForFunHeader =
 { "Just for fun", { 0, 0, 0, 0 }, 0u, DebugJustForFunItems };
 
+MENU_ITEM DebugSpawnPositionItems[] =
+{
+	{ "Set To Player Car",	PAUSE_TYPE_FUNC,2,	SetSpawnPosition,	MENU_QUIT_RESTART,	NULL},
+	{ "Set To Default",		PAUSE_TYPE_FUNC,2,	ResetSpawnPosition, MENU_QUIT_RESTART,	NULL},
+	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
+};
+
+MENU_HEADER DebugSpawnPositionHeader =
+{ "Spawn Position", { 0, 0, 0, 0}, 0, DebugSpawnPositionItems };
+
 MENU_ITEM DebugOptionsItems[] =
 {
+	{ "Spawn position", PAUSE_TYPE_SUBMENU, 2,	NULL,				MENU_QUIT_NONE,		&DebugSpawnPositionHeader },
 #ifdef CUTSCENE_RECORDER
 	{ gCurrentChasePauseText, 5u, 2u, (pauseFunc)&CutRec_NextChase, MENU_QUIT_NONE, NULL },
 #endif

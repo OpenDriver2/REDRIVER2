@@ -21,6 +21,7 @@
 #include "cosmetic.h"
 #include "denting.h"
 #include "gamesnd.h"
+#include "glaunch.h"
 
 #include "ASM/rndrasm.h"
 
@@ -165,7 +166,7 @@ CVECTOR debris_colour[4][31] =
 		{ 150, 164, 184, 0 },
 		{ 102, 102, 102, 0 },
 		{ 140, 114, 99, 0 },
-		{ 75, 63, 134, 0 },
+		{ 160, 200, 140, 0 },
 	}, {
 		{ 100, 100, 100, 0 },
 		{ 83, 82, 97, 0 },
@@ -224,7 +225,7 @@ CVECTOR debris_colour[4][31] =
 		{ 183, 183, 183, 0 },
 		{ 126, 98, 84, 0 },
 		{ 126, 125, 156, 0 },
-		{ 36, 74, 203, 0 },
+		{ 251, 241, 175, 0 },
 		{ 105, 105, 105, 0 },
 		{ 162, 179, 183, 0 },
 		{ 102, 130, 162, 0 },
@@ -348,6 +349,7 @@ char PoolPrimData[16] = {
 	0xA,  0x5,  0xB,  0x7
 };
 
+short light_col = 0;
 int LightSortCorrect = 0;
 
 TEXTURE_DETAILS smoke_texture;
@@ -403,6 +405,8 @@ MATRIX leaf_mat;
 
 #define LAMP_STREAK_ID(x,y) (((x) & 0xffff) | (((y) & 0xffff) << 16))
 
+int gNewHeadlights = 1;
+
 // [D] [T]
 void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 {
@@ -429,77 +433,93 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 
 	if (front) 
 	{
-		s1[3].vz = -(car_cos->colBox.vz + 50);
-		s1[8].vz = s1[3].vz - 1160;
+		// make headlight polys
+		if (gNewHeadlights)
+		{
+			s1[3].vz = car_cos->cPoints[4].vz - 20;
+			s1[3].vz -= (ActiveCheats.cheat13) ? 25 : 50;
+			s1[0].vx = car_cos->colBox.vx;
+			s1[1].vx = MAX(car_cos->headLight.vz, -380);
+			s1[6].vx = car_cos->headLight.vx + 60;
+			s1[7].vx = 21;
+			s1[10].vx = car_cos->colBox.vx;
+			s1[11].vx = car_cos->headLight.vx;
+		}
+		else
+		{
+			s1[3].vz = -(car_cos->colBox.vz + 50);
+			s1[0].vx = 136;
+			s1[1].vx = -344;
+			s1[6].vx = 143;
+			s1[7].vx = 21;
+			s1[10].vx = 82;
+			s1[11].vx = 82;
+		}
+
 		s1[6].vz = s1[3].vz;
 		s1[7].vz = s1[3].vz;
+		s1[8].vz = s1[3].vz - 1160;
+		s1[9].vz = s1[3].vz;
+
+		// mirror onto other side
+		s1[5].vx = -s1[0].vx;
+		s1[4].vx = -s1[1].vx;
+		s1[3].vx = -s1[6].vx;
+		s1[2].vx = -s1[7].vx;
+		s1[8].vx = -s1[10].vx;
+		s1[9].vx = -s1[11].vx;
 
 		if (in_car) 
 		{
 			// slightly shifted vertices to make it look more beautiful
 			s1[1].vz = s1[8].vz + 600;
-			s1[0].vx = 136;
-			s1[1].vx = -344;
-			s1[2].vx = -21;
-			s1[3].vx = -143;
-			s1[4].vx = 344;
-			s1[5].vx = -136;
-			s1[6].vx = 143;
-			s1[7].vx = 21;
-			s1[8].vz = s1[8].vz - 400;
-			s1[9].vz = s1[3].vz + 10;
-			s1[8].vx = -82;
-			s1[10].vx = 82;
-			s1[9].vx = -82;
-			s1[11].vx = 82;
-			s1[4].vz = s1[1].vz;
-			s1[5].vz = s1[1].vz;
-			s1[10].vz = s1[8].vz;
-			s1[11].vz = s1[9].vz;
+			s1[8].vz -= 400;
+			s1[9].vz += 10;
 
-			LightSortCorrect = -800;
-			
+			if (in_car == 2)
+				LightSortCorrect = -500;
+			else
+				LightSortCorrect = -800;
+
 			sub_level = 3;
 		}
 		else 
 		{
 			s1[1].vz = s1[8].vz + 100;
-			s1[0].vx = 136;
-			s1[1].vx = -344;
-			s1[2].vx = -21;
-			s1[3].vx = -143;
-			s1[4].vx = 344;
-			s1[5].vx = -136;
-			s1[6].vx = 143;
-			s1[7].vx = 21;
-			s1[10].vx = 82;
-			s1[11].vx = 82;
-			s1[8].vx = -82;
-			s1[9].vx = -82;
-			s1[4].vz = s1[1].vz;
-			s1[5].vz = s1[1].vz;
-			s1[9].vz = s1[3].vz;
-			s1[10].vz = s1[8].vz;
-			s1[11].vz = s1[3].vz;
-
-			sub_level = 3;
 
 			if (player[CurrentPlayerView].cameraView == 2 && cp == &car_data[player[CurrentPlayerView].playerCarId])
 				LightSortCorrect = -320;
 			else
 				LightSortCorrect = -200;
+
+			sub_level = 3;
 		}
+
+		// merge cross polys together
+		s1[4].vz = s1[1].vz;
+		s1[5].vz = s1[4].vz;
+		s1[10].vz = s1[8].vz;
+		s1[11].vz = s1[9].vz;
 	}
 	else
 	{
 		// back light
-	
-		s1[0].vx = -204;
-		s1[1].vx = 204;
-		s1[2].vx = -204;
-		s1[3].vx = 204;
-		s1[3].vz = (car_cos->colBox.vz - 10);
-		s1[1].vz = s1[3].vz + 204;
+
+		if (gNewHeadlights)
+			s1[0].vx = car_cos->cPoints[4].vx - 80;
+		else
+			s1[0].vx = -204;
+
+		s1[1].vx = -s1[0].vx;
+		s1[2].vx = s1[0].vx;
+		s1[3].vx = s1[1].vx;
+
+		if (gNewHeadlights)
+			s1[3].vz = -(car_cos->cPoints[4].vz + 25);
+		else
+			s1[3].vz = car_cos->colBox.vz - 10;
+
+		s1[1].vz = s1[3].vz + s1[1].vx;
 
 		sub_level = 0;
 	}
@@ -511,7 +531,10 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 
 	mid_position.vx = 0;
 	mid_position.vy = 0;
-	mid_position.vz = -500;
+	if (gNewHeadlights)
+		mid_position.vz = -(car_cos->cPoints[4].vz + car_cos->cPoints[8].vz / 2);
+	else
+		mid_position.vz = -500;
 
 	_MatrixRotate(&mid_position);
 
@@ -579,9 +602,7 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 				*(ushort*)&poly->u2 = *(ushort*)&light_pool_texture.coords.u2;
 				*(ushort*)&poly->u3 = *(ushort*)&light_pool_texture.coords.u3;
 
-				poly->r0 = col->r / 2;
-				poly->g0 = col->g / 2;
-				poly->b0 = col->b / 2;
+				setRGB0(poly, col->r / 2, col->g / 2, col->b / 2);
 
 				gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
 
@@ -609,6 +630,8 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 			for(i = 0; i < 4; i++)
 			{
 				char* VertIdx;
+
+				spolys = (POLY_F3*)current->primptr;
 				
 				VertIdx = PoolPrimData + i * 4;
 
@@ -622,7 +645,7 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 
 				if (brightness)
 				{
-					int test = col->r * brightness;
+					light_col = brightness * 16;
 
 					color.r = MIN(255, col->r * brightness >> 4);
 					color.g = MIN(255, col->g * brightness >> 4);
@@ -633,15 +656,17 @@ void PlacePoolForCar(CAR_DATA *cp, CVECTOR *col, int front, int in_car)
 						sQuad(sout + VertIdx[0],
 						      sout + VertIdx[2],
 						      sout + VertIdx[3],
-						      sout + VertIdx[1], &color, LightSortCorrect);
+						      sout + VertIdx[1], &color);
 					}
 					else
 					{
 						sQuad(sout + VertIdx[1],
 						      sout + VertIdx[3],
 						      sout + VertIdx[2],
-						      sout + VertIdx[0], &color, LightSortCorrect);
+						      sout + VertIdx[0], &color);
 					}
+
+					current->primptr = (char*)spolys;
 				}
 			}
 		}
@@ -1094,7 +1119,7 @@ void DrawSmashable_sprites(void)
 				{
 					UNIMPLEMENTED();
 
-					if (gWeather - 1U < 2 || gTimeOfDay == TIME_NIGHT)
+					if (gWeather == WEATHER_RAIN || gWeather == WEATHER_WET || gTimeOfDay == TIME_NIGHT)
 					{
 						plotContext.colour = NightAmbient << 0x10 | NightAmbient << 8 | NightAmbient | 0x2c000000;
 					}
@@ -1226,10 +1251,8 @@ void DisplayLightReflections(VECTOR* v1, CVECTOR* col, short size, TEXTURE_DETAI
 			poly->tpage = texture->tpageid | 0x20;
 			poly->clut = texture->clutid;
 
-			poly->r0 = thiscol.r;
-			poly->g0 = thiscol.g;
-			poly->b0 = thiscol.b;
-
+			setRGB0(poly, thiscol.r, thiscol.g, thiscol.b);
+			
 			addPrim(current->ot + (z >> 4), poly);
 			current->primptr += sizeof(POLY_FT4);
 		}
@@ -1294,8 +1317,7 @@ void AddSmallStreetLight(CELL_OBJECT *cop, int x, int y, int z, int type)
 		size = 300;
 	}
 
-	count = 0;
-	for(count = 0; count < 4; count++)
+	for(count = 0; count < MAX_DAMAGED_LAMPS; count++)
 	{
 		if (dam->index == cop->pos.vx + cop->pos.vz) 
 		{
@@ -1680,10 +1702,8 @@ void ShowFlare(VECTOR* v1, CVECTOR* col, short size, int rotation)
 	setPolyFT4(poly);
 	setSemiTrans(poly, 1);
 
-	poly->r0 = col->r >> 1;
-	poly->g0 = col->g >> 1;
-	poly->b0 = col->b >> 1;
-
+	setRGB0(poly, col->r >> 1, col->g >> 1, col->b >> 1);
+	
 	gte_stsz(&z);
 
 	if (z >> 3 > 39)
@@ -1714,12 +1734,16 @@ void AddTrafficLight(CELL_OBJECT *cop, int x, int y, int z, int flag, int yang)
 	int tempfade;
 	int lDiffAnglesX, lDiffAnglesY;
 	int AbsX, AbsY;
+	int cy, sy;
 	CVECTOR a, c;
 	VECTOR v1, v2;
 
+	cy = RCOS(yang);
+	sy = RSIN(yang);
+
 	v1.vy = (cop->pos.vy - camera_position.vy) + y;
-	v1.vx = (cop->pos.vx - camera_position.vx) + FIXEDH(RCOS(yang) * x + RSIN(yang) * z);
-	v1.vz = (cop->pos.vz - camera_position.vz) + FIXEDH(RCOS(yang) * z - RSIN(yang) * x);
+	v1.vx = (cop->pos.vx - camera_position.vx) + FIXEDH(cy * x + sy * z);
+	v1.vz = (cop->pos.vz - camera_position.vz) + FIXEDH(cy * z - sy * x);
 
 	a.cd = 0;
 	
@@ -1925,10 +1949,8 @@ void ShowLight1(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 	setPolyFT4(poly);
 	SetSemiTrans(poly, 1);
 
-	poly->r0 = col->r;
-	poly->g0 = col->g;
-	poly->b0 = col->b;
-
+	setRGB0(poly, col->r, col->g, col->b);
+	
 	gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
 
 	gte_stsz(&z);
@@ -2015,9 +2037,7 @@ void ShowLight(VECTOR *v1, CVECTOR *col, short size, TEXTURE_DETAILS *texture)
 	poly->u3 = texture->coords.u3;
 	poly->v3 = texture->coords.v3;
 
-	poly->r0 = col->r;
-	poly->g0 = col->g;
-	poly->b0 = col->b;
+	setRGB0(poly, col->r, col->g, col->b);
 
 	gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
 
@@ -2234,10 +2254,8 @@ void ShowGroundLight(VECTOR *v1, CVECTOR *col, short size)
 		poly->tpage = light_texture.tpageid | 0x20;
 		poly->clut = light_texture.clutid;;
 
-		poly->r0 = col->r;
-		poly->g0 = col->g;
-		poly->b0 = col->b;
-
+		setRGB0(poly, col->r, col->g, col->b);
+		
 		gte_stsxy3(&poly->x0, &poly->x1, &poly->x2);
 
 		gte_ldv0(&vert[3]);
@@ -2302,10 +2320,8 @@ void RoundShadow(VECTOR *v1, CVECTOR *col, short size)
 	setPolyFT4(poly);
 	setSemiTrans(poly, 1);
 
-	poly->r0 = col->r;
-	poly->g0 = col->g;
-	poly->b0 = col->b;
-
+	setRGB0(poly, col->r, col->g, col->b);
+	
 	gte_stsz(&z);
 
 	if (z - 150 < 9851)
@@ -2461,13 +2477,15 @@ void DisplaySpark(SMOKE *spark)
 		{
 			poly->r0 = 0;
 			poly->g0 = (spark->transparency >> 3);
-			poly->r1 = 0;
 			poly->b0 = (spark->transparency >> 4);
+
+			poly->r1 = 0;
 			poly->g1 = (spark->transparency >> 3);
+			poly->b1 = (spark->transparency >> 4);
+
 			poly->r2 = 12;
 			poly->g2 = 4;
 			poly->b2 = 4;
-			poly->b1 = (spark->transparency >> 4);
 		}
 	}
 	else
@@ -2475,9 +2493,11 @@ void DisplaySpark(SMOKE *spark)
 		poly->r0 = spark->transparency;
 		poly->g0 = spark->transparency;
 		poly->b0 = spark->transparency / 2;
+
 		poly->r1 = spark->transparency;
 		poly->g1 = spark->transparency;
 		poly->b1 = spark->transparency / 2;
+
 		poly->r2 = spark->transparency;
 		poly->g2 = 0;
 		poly->b2 = 0;
@@ -2744,7 +2764,7 @@ void Setup_Smoke(VECTOR *ipos, int start_w, int end_w, int SmokeType, int WheelS
 		mysmoke->drift.vy = 0;
 		mysmoke->drift.vz = 0;
 
-		if (mysmoke->life < 40 || SmokeType == 4)
+		if (mysmoke->life < 40 || SmokeType == SMOKE_FIRE)
 		{
 			mysmoke->drift_change.vx = 0;
 			mysmoke->drift_change.vy = 1;
@@ -2831,7 +2851,7 @@ void Setup_Sparks(VECTOR *ipos, VECTOR *ispeed, int num_sparks, char SparkType)
 // [D] [T]
 void DisplayDebris(DEBRIS *debris, char type)
 {
-	int uVar3;
+	u_int cbgr;
 	TRI_POINT* tv;
 	POLY_GT4 *poly1;
 	POLY_FT3 *poly;
@@ -2891,15 +2911,17 @@ void DisplayDebris(DEBRIS *debris, char type)
 
 				gte_stsxy(&poly1->x3);
 
-				if (type == 2) 
-					uVar3 = (debris->rgb.b + combointensity) * 0x10000 | (debris->rgb.g + combointensity) * 0x100 | 0x3c000000 | debris->rgb.r + combointensity;
-				else
-					uVar3 = debris->rgb.b << 0x10 | debris->rgb.g << 8 | 0x3c000000 | debris->rgb.r;
+				cbgr = (u_char)combointensity;
 
-				*(u_int *)&poly1->r0 = uVar3;
-				*(u_int *)&poly1->r2 = uVar3;
-				*(u_int *)&poly1->r1 = uVar3 + 0x202020;
-				*(u_int *)&poly1->r3 = uVar3 + 0x303030;
+				if (type == 2) 
+					cbgr = 0x3c000000 | (debris->rgb.b + cbgr) << 16 | (debris->rgb.g + cbgr) << 8 | (debris->rgb.r + cbgr);
+				else
+					cbgr = 0x3c000000 | debris->rgb.b << 16 | debris->rgb.g << 8 | debris->rgb.r;
+
+				*(u_int *)&poly1->r0 = cbgr;
+				*(u_int *)&poly1->r2 = cbgr;
+				*(u_int *)&poly1->r1 = cbgr + 0x202020;
+				*(u_int *)&poly1->r3 = cbgr + 0x303030;
 
 				setPolyGT4(poly1);
 				addPrim(current->ot + (z >> 3), poly1);
@@ -3011,7 +3033,7 @@ void DisplaySmoke(SMOKE* smoke)
 	}
 	else if (smoke->flags & 0x1000)
 	{
-		if ((smoke->transparency >> 3) + 50 & 0xff < 60)
+		if (((smoke->transparency >> 3) + 50 & 0xff) < 60)
 			poly->g0 = (smoke->transparency >> 3);
 		else
 			poly->g0 = smoke->transparency >> 2;
