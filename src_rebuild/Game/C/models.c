@@ -241,6 +241,43 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 			int cleanOfs = offsets[0];
 			int damOfs = offsets[1];
 			int lowOfs = offsets[2];
+
+#if USE_PC_FILESYSTEM
+			extern int gContentOverride;
+			if (gContentOverride)
+			{
+				char* mem;
+				if (mem = LoadCarModelFromFile(NULL, model_number, CAR_MODEL_CLEAN))
+				{
+					D_MALLOC_BEGIN();
+					model = GetCarModel(mem, (char**)&mallocptr, 1, model_number, CAR_MODEL_CLEAN);
+					D_MALLOC_END();
+
+					gCarCleanModelPtr[i] = model;
+					cleanOfs = -1; // skip loading
+				}
+
+				if (mem = LoadCarModelFromFile(NULL, model_number, CAR_MODEL_DAMAGED))
+				{
+					D_MALLOC_BEGIN();
+					model = GetCarModel(mem, (char**)&mallocptr, 1, model_number, CAR_MODEL_DAMAGED);
+					D_MALLOC_END();
+
+					gCarDamModelPtr[i] = model;
+					damOfs = -1; // skip loading
+				}
+
+				if (mem = LoadCarModelFromFile(NULL, model_number, CAR_MODEL_LOWDETAIL))
+				{
+					D_MALLOC_BEGIN();
+					model = GetCarModel(mem, (char**)&mallocptr, 1, model_number, CAR_MODEL_LOWDETAIL);
+					D_MALLOC_END();
+
+					gCarLowModelPtr[i] = model;
+					lowOfs = -1; // skip loading
+				}
+			}
+#endif
 			
 			if (cleanOfs != -1)
 			{
@@ -285,7 +322,7 @@ char* CarModelTypeNames[] = {
 	"LOW",
 };
 
-#ifndef PSX
+#if USE_PC_FILESYSTEM
 // [A] loads car model from file
 char* LoadCarModelFromFile(char* dest, int modelNumber, int type)
 {
@@ -312,33 +349,16 @@ MODEL* GetCarModel(char *src, char **dest, int KeepNormals, int modelNumber, int
 	int size;
 	MODEL *model;
 	char* mem;
-
-#ifndef PSX
-	extern int gContentOverride;
-	if (gContentOverride)
-	{
-		mem = LoadCarModelFromFile(NULL, modelNumber, type);
-
-		if (!mem) // fallback to lump
-			mem = src;
-	}
-	else
-	{
-		mem = src;
-	}
-#else
-	mem = src;
-#endif
 	
 	model = (MODEL *)*dest;
 	
 	if (KeepNormals == 0)
-		size = ((MODEL*)mem)->normals;
+		size = ((MODEL*)src)->normals;
 	else 
-		size = ((MODEL*)mem)->poly_block;
+		size = ((MODEL*)src)->poly_block;
 
 	// if loaded externally don't copy from source lump
-	memcpy((u_char*)*dest, (u_char*)mem, size);
+	memcpy((u_char*)*dest, (u_char*)src, size);
 
 	if (KeepNormals == 0)
 		size = model->normals;
@@ -350,7 +370,7 @@ MODEL* GetCarModel(char *src, char **dest, int KeepNormals, int modelNumber, int
 
 	model->vertices += (int)model;
 	model->normals += (int)model;
-	model->poly_block = (int)mem + model->poly_block;
+	model->poly_block = (int)src + model->poly_block;
 
 	if (KeepNormals == 0)
 		model->point_normals = 0;
