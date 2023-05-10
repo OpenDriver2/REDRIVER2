@@ -619,7 +619,7 @@ void State_GameInit(void* param)
 	InitMap();
 	InitSpecSpool();
 
-	if ((NewLevel == 0 || gCarCleanModelPtr[4] == NULL) && allowSpecSpooling == 1) // [A] to load even more secret truck from Chicago
+	if (NewLevel == 0 && allowSpecSpooling == 1)
 	{
 		QuickSpoolSpecial();
 	}
