@@ -153,6 +153,13 @@ unsigned short *newmodels = NULL;
 
 SPOOLQ spooldata[48];
 
+#define CHECK_SWITCHSPOOL() \
+	if (switch_spooltype) \
+	{ \
+		changemode(&spooldata[spoolpos_writing]); \
+		return; \
+	} \
+
 // configure spooler
 #if USE_PC_FILESYSTEM
 
@@ -476,6 +483,7 @@ void SendTPage(void)
 
 	if (nTPchunks == 0) 
 	{
+		// Send palettes
 		if (slot != tpageloaded[tpage2send] - 1)
 		{
 			npalettes = *(int *)(model_spool_buffer + 0xE000);
@@ -516,7 +524,7 @@ void SendTPage(void)
 	{
 		if (slot != tpageloaded[tpage2send] - 1) 
 		{
-			LoadImage(&tpage, (u_long *)(model_spool_buffer + 0xA000 + (loadbank_write % 2) * 256 * 32));
+			LoadImage(&tpage, (u_long *)(model_spool_buffer + 0xA000 + (loadbank_write & 1) * 256 * 32));
 			tpage.y = tpage.y + tpage.h;
 		}
 
@@ -993,134 +1001,131 @@ void changemode(SPOOLQ *current);
 // [D] [T]
 void data_cb_textures(void)
 {
-	if (chunk_complete) 
+	if (chunk_complete == 0)
+		return;
+
+	chunk_complete = 0;
+	nTPchunks = nTPchunks_writing;
+
+	SendTPage();
+
+	if (nTPchunks != 0)
+		loadbank_write++;
+
+	nTPchunks_writing++;
+
+	if (nTPchunks_writing != 5)
+		return;
+
+	nTPchunks_writing = 0;
+	spoolpos_writing++;
+
+	if (ntpages != 0)
+		return;
+
+	CHECK_SWITCHSPOOL();
+
+	CdDataCallback(NULL);
+
+	if (spoolpos_writing == spoolcounter)
 	{
-		chunk_complete = 0;
-		nTPchunks = nTPchunks_writing;
+		SPOOL_WARNING("All SPOOL requests (%d) completed successfully on TEXTURES\n", spoolcounter);	// [A]
 
-		SendTPage();
-
-		if (nTPchunks != 0)
-			loadbank_write++;
-
-		nTPchunks_writing++;
-
-		if (nTPchunks_writing == 5)
-		{
-			nTPchunks_writing = 0;
-			spoolpos_writing++;
-
-			if (ntpages == 0)
-			{
-				if (!switch_spooltype)
-				{
-					CdDataCallback(NULL);
-
-					if (spoolpos_writing == spoolcounter)
-					{
-						SPOOL_WARNING("All SPOOL requests (%d) completed successfully on TEXTURES\n", spoolcounter);	// [A]
-
-						spoolcounter = 0;
-						spoolpos_writing = 0;
-						spoolpos_reading = 0;
-						spoolactive = 0;
-					}
-					else
-					{
-						UpdateSpool();
-					}
-				}
-				else
-				{
-					changemode(&spooldata[spoolpos_writing]);
-				}
-			}
-		}
+		spoolcounter = 0;
+		spoolpos_writing = 0;
+		spoolpos_reading = 0;
+		spoolactive = 0;
+	}
+	else
+	{
+		UpdateSpool();
 	}
 }
 
 // [D] [T]
 void ready_cb_textures(unsigned char intr, unsigned char *result)
 {
-	if (intr == 1)
+	if (intr != 1)
 	{
-		CdGetSector(target_address, SECTOR_SIZE);
+		FoundError("ready_cb_textures", intr, result);
+		return;
+	}
 
-		target_address += CDSECTOR_SIZE;
-		sectors_this_chunk--;
-		current_sector++;
-		sectors_to_read--;
+	CdGetSector(target_address, SECTOR_SIZE);
 
-		if (sectors_this_chunk == 0) 
+	target_address += CDSECTOR_SIZE;
+	sectors_this_chunk--;
+	current_sector++;
+	sectors_to_read--;
+
+	if (sectors_this_chunk != 0)
+		return;
+
+	if (nTPchunks_reading)
+		loadbank_read++;
+
+	nTPchunks_reading++;
+	chunk_complete = intr;
+
+	if (sectors_to_read == 0)
+	{
+		ntpages--;
+
+		if (ntpages == 0)
 		{
-			if (nTPchunks_reading)
-				loadbank_read++;
+			spoolpos_reading++;
+			test_changemode();
+		}
+		else
+		{
+			nTPchunks_reading = 0;
+			sectors_to_read = 17;
 
-			nTPchunks_reading++;
-			chunk_complete = intr;
+			target_address = spooldata[spoolpos_reading].addr + 0x4000;
+			spoolpos_reading++;
 
-			if (sectors_to_read == 0)
-			{
-				ntpages--;
-
-				if (ntpages == 0)
-				{
-					spoolpos_reading++;
-					test_changemode();
-				}
-				else
-				{
-					nTPchunks_reading = 0;
-					sectors_to_read = 17;
-
-					target_address = spooldata[spoolpos_reading].addr + 0x4000;
-					spoolpos_reading++;
-
-					sectors_this_chunk = intr;
-				}
-			}
-			else 
-			{
-				sectors_this_chunk = 4;
-				target_address = spooldata[spoolpos_reading].addr + (loadbank_read & 1U) * 0x2000;
-			}
+			sectors_this_chunk = intr;
 		}
 	}
 	else 
-		FoundError("ready_cb_textures", intr, result);
+	{
+		sectors_this_chunk = 4;
+		target_address = spooldata[spoolpos_reading].addr + (loadbank_read & 1U) * 0x2000;
+	}
 }
 
 // [D] [T]
 void ready_cb_regions(unsigned char intr, unsigned char *result)
 {
-	if (intr == 1) 
+	if (intr != 1)
 	{
-		CdGetSector(target_address, SECTOR_SIZE);
+		FoundError("ready_cb_regions", intr, result);
+		return;
+	}
 
-		target_address += CDSECTOR_SIZE;
-		sectors_this_chunk--;
-		current_sector++;
-		sectors_to_read--;
+	CdGetSector(target_address, SECTOR_SIZE);
 
-		if (sectors_this_chunk == 0) 
+	target_address += CDSECTOR_SIZE;
+	sectors_this_chunk--;
+	current_sector++;
+	sectors_to_read--;
+
+	if (sectors_this_chunk == 0) 
+	{
+		spoolpos_reading++;
+		chunk_complete = intr;
+
+		if (sectors_to_read == 0)
 		{
-			spoolpos_reading++;
-			chunk_complete = intr;
-
-			if (sectors_to_read == 0)
-			{
-				endchunk = intr;
-				test_changemode();
-			}
-			else 
-			{
-				target_address = spooldata[spoolpos_reading].addr;
-				sectors_this_chunk = spooldata[spoolpos_reading].nsectors;
-			}
+			endchunk = intr;
+			test_changemode();
+		}
+		else 
+		{
+			target_address = spooldata[spoolpos_reading].addr;
+			sectors_this_chunk = spooldata[spoolpos_reading].nsectors;
 		}
 	}
-	else 
-		FoundError("ready_cb_regions", intr, result);
 }
 
 // [D] [T]
@@ -1128,40 +1133,35 @@ void data_cb_regions(void)
 {
 	SPOOLQ* current = &spooldata[spoolpos_writing];
 
-	if (chunk_complete) 
+	if (chunk_complete == 0)
+		return;
+
+	chunk_complete = 0;
+
+	if (current->func != NULL)
+		(current->func)();
+
+	spoolpos_writing++;
+
+	if (endchunk == 0)
+		return;
+
+	CHECK_SWITCHSPOOL();
+
+	CdDataCallback(NULL);
+
+	if (spoolpos_writing == spoolcounter) 
 	{
-		chunk_complete = 0;
+		SPOOL_WARNING("All SPOOL requests (%d) completed successfully on REGIONS\n", spoolcounter);	// [A]
 
-		if (current->func != NULL)
-			(current->func)();
-
-		spoolpos_writing++;
-
-		if (endchunk)
-		{
-			if (!switch_spooltype) 
-			{
-				CdDataCallback(NULL);
-
-				if (spoolpos_writing == spoolcounter) 
-				{
-					SPOOL_WARNING("All SPOOL requests (%d) completed successfully on REGIONS\n", spoolcounter);	// [A]
-
-					spoolcounter = 0;
-					spoolpos_writing = 0;
-					spoolpos_reading = 0;
-					spoolactive = 0;
-				}
-				else 
-				{
-					UpdateSpool();
-				}
-			}
-			else 
-			{
-				changemode(&spooldata[spoolpos_writing]);
-			}
-		}
+		spoolcounter = 0;
+		spoolpos_writing = 0;
+		spoolpos_reading = 0;
+		spoolactive = 0;
+	}
+	else 
+	{
+		UpdateSpool();
 	}
 }
 
@@ -1171,37 +1171,32 @@ void data_cb_misc(void)
 {
 	SPOOLQ *current = &spooldata[spoolpos_writing];
 
-	if (chunk_complete) 
-	{
-		chunk_complete = 0;
+	if (chunk_complete == 0)
+		return;
 
-		if (current->func != NULL)
-			(*current->func)();
+	chunk_complete = 0;
 
-		spoolpos_writing++;
+	if (current->func != NULL)
+		(*current->func)();
 
-		if (!switch_spooltype)
-		{
-			CdDataCallback(NULL);
+	spoolpos_writing++;
+
+	CHECK_SWITCHSPOOL();
+
+	CdDataCallback(NULL);
 			
-			if (spoolpos_writing == spoolcounter)
-			{
-				SPOOL_WARNING("All SPOOL requests (%d) completed successfully on MISC\n", spoolcounter);	// [A]
+	if (spoolpos_writing == spoolcounter)
+	{
+		SPOOL_WARNING("All SPOOL requests (%d) completed successfully on MISC\n", spoolcounter);	// [A]
 
-				spoolcounter = 0;
-				spoolpos_writing = 0;
-				spoolpos_reading = 0;
-				spoolactive = 0;
-			}
-			else
-			{
-				UpdateSpool();
-			}
-		}
-		else
-		{
-			changemode(&spooldata[spoolpos_writing]);
-		}
+		spoolcounter = 0;
+		spoolpos_writing = 0;
+		spoolpos_reading = 0;
+		spoolactive = 0;
+	}
+	else
+	{
+		UpdateSpool();
 	}
 }
 
@@ -1500,7 +1495,6 @@ int UpdateSpoolPC(void)
 
 			break;
 		case 1:	// textures
-
 			// read cluts
 			nTPchunks = 0;
 			SPL_READ(current->addr + CDSECTOR_SIZE * 2 * 4, 1);
@@ -1511,9 +1505,10 @@ int UpdateSpoolPC(void)
 			// read tpage (4 sectors 4 times = 16)
 			for (int i = 0; i < 4; i++)
 			{
-				SPL_READ(current->addr + (loadbank_write & 1U) * 256 * 32, 4);
+				SPL_READ(current->addr + (loadbank_write & 1) * 256 * 32, 4);
 				SendTPage();
 
+				loadbank_write++;
 				nTPchunks++;
 			}
 
@@ -2159,6 +2154,7 @@ void CheckSpecialSpool(void)
 
 	if (allowSpecSpooling && 
 		specSpoolComplete != 1 && 
+		specialState == 0 &&
 		GameType != GAME_PURSUIT &&
 		LoadedArea != -1 &&
 		SpecialByRegion[GameLevel][LoadedArea] != MissionHeader->residentModels[4]-7) 
@@ -2185,8 +2181,7 @@ void CheckSpecialSpool(void)
 		specspooldata[2] = SpecialByRegion[GameLevel][LoadedArea];
 		MissionHeader->residentModels[4] = SpecialByRegion[GameLevel][LoadedArea] + 7;
 
-		if (specialState == 0)
-			SpecialStartNextBlock();
+		SpecialStartNextBlock();
 	}
 }
 
