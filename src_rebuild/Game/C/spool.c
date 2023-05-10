@@ -1973,51 +1973,28 @@ void Tada(void)
 	int spec_tpage;
 	RECT16 tpagerect;
 
-	if (specialState == 2)
+	switch (specialState)
 	{
-		tpagerect.w = 64;
-		tpagerect.h = 16;
+		case 1:
+		case 2:
+			spec_tpage = specialSlot + (specialState - 1);
+			tpagerect.w = 64;
+			tpagerect.h = 16;
 
-		spec_tpage = specialSlot + 1;
-		tpagerect.x = tpagepos[spec_tpage].x;
-		tpagerect.y = tpagepos[spec_tpage].y + (15 - specBlocksToLoad) * 16;
+			tpagerect.x = tpagepos[spec_tpage].x;
+			tpagerect.y = tpagepos[spec_tpage].y + (15 - specBlocksToLoad) * 16;
 
-		if (specBlocksToLoad == 15) 
-			update_slotinfo(specTpages[GameLevel][specspooldata[2]-1], specialSlot, &tpagerect);
+			if (specBlocksToLoad == 15)
+				update_slotinfo(specTpages[GameLevel][specspooldata[2] - 1], specialSlot, &tpagerect);
 
-		LoadImage(&tpagerect, (u_long *)specLoadBuffer);
-	}
-	else
-	{
-		if (specialState > 2) 
-		{
-			if (specialState != 4)
-				return;
-
+			LoadImage(&tpagerect, (u_long*)specLoadBuffer);
+			break;
+		case 4:
 			SetupSpecCosmetics(specLoadBuffer);
 			SetupSpecDenting(specLoadBuffer + sizeof(CAR_COSMETICS));
-
-			if (quickSpool == 1)
-				return;
-
-			DrawSyncCallback(SpecialStartNextBlock);
-			return;
-		}
-
-		if (specialState != 1)
-			return;
-
-		spec_tpage = specialSlot;
-		tpagerect.w = 64;
-		tpagerect.h = 16;
-
-		tpagerect.x = tpagepos[spec_tpage].x;
-		tpagerect.y = tpagepos[spec_tpage].y + (15 - specBlocksToLoad) * 16;
-
-		if (specBlocksToLoad == 15) 
-			update_slotinfo(specTpages[GameLevel][specspooldata[2]-1], spec_tpage, &tpagerect);
-
-		LoadImage(&tpagerect, (u_long *)specLoadBuffer);
+			break;
+		default:
+			printWarning("Tada: incorrect special state %d", specialState);
 	}
 
 	if (quickSpool != 1)
