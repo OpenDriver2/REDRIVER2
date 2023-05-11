@@ -206,14 +206,16 @@ int ResidentModelsBodge(void)
 	int i;
 	int j;
 
-	j = MissionHeader->residentModels[4];
-
-	if (gCurrentMissionNumber == 24 || gCurrentMissionNumber == 27 ||
+	if (gCurrentMissionNumber == 24 || 
+		gCurrentMissionNumber == 27 ||
 		gCurrentMissionNumber == 29 ||
-		(gCurrentMissionNumber == 30 || gCurrentMissionNumber == 35))
+		gCurrentMissionNumber == 30 ||
+		gCurrentMissionNumber == 35)
 	{
 		return 3;
 	}
+
+	j = MissionHeader->residentModels[4];
 
 	if (gCurrentMissionNumber - 50U < 16 && j == 12)
 	{
@@ -224,7 +226,7 @@ int ResidentModelsBodge(void)
 	{
 		i = 11;
 
-		if (j != 9)
+		if (j != 9 && j != i)
 			return 3;
 	}
 	else if (GameLevel == 1) 

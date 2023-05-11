@@ -5,6 +5,10 @@
 #include "mission.h"
 #include "cars.h"
 
+#if USE_PC_FILESYSTEM
+extern int gContentOverride;
+#endif
+
 MODEL dummyModel = { 0 };
 
 char* modelname_buffer = NULL;
@@ -243,14 +247,13 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 			int lowOfs = offsets[2];
 
 #if USE_PC_FILESYSTEM
-			extern int gContentOverride;
 			if (gContentOverride)
 			{
 				char* mem;
 				if (mem = LoadCarModelFromFile(NULL, model_number, CAR_MODEL_CLEAN))
 				{
 					D_MALLOC_BEGIN();
-					model = GetCarModel(mem, (char**)&mallocptr, 1, model_number, CAR_MODEL_CLEAN);
+					model = GetCarModel(mem, (char**)&mallocptr, 1);
 					D_MALLOC_END();
 
 					gCarCleanModelPtr[i] = model;
@@ -260,7 +263,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 				if (mem = LoadCarModelFromFile(NULL, model_number, CAR_MODEL_DAMAGED))
 				{
 					D_MALLOC_BEGIN();
-					model = GetCarModel(mem, (char**)&mallocptr, 1, model_number, CAR_MODEL_DAMAGED);
+					model = GetCarModel(mem, (char**)&mallocptr, 1);
 					D_MALLOC_END();
 
 					gCarDamModelPtr[i] = model;
@@ -270,7 +273,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 				if (mem = LoadCarModelFromFile(NULL, model_number, CAR_MODEL_LOWDETAIL))
 				{
 					D_MALLOC_BEGIN();
-					model = GetCarModel(mem, (char**)&mallocptr, 1, model_number, CAR_MODEL_LOWDETAIL);
+					model = GetCarModel(mem, (char**)&mallocptr, 1);
 					D_MALLOC_END();
 
 					gCarLowModelPtr[i] = model;
@@ -282,7 +285,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 			if (cleanOfs != -1)
 			{
 				D_MALLOC_BEGIN();
-				model = GetCarModel(models_offset + cleanOfs, (char**)&mallocptr, 1, model_number, CAR_MODEL_CLEAN);
+				model = GetCarModel(models_offset + cleanOfs, (char**)&mallocptr, 1);
 				gCarCleanModelPtr[i] = model;
 				D_MALLOC_END();
 			}
@@ -290,7 +293,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 			if (damOfs != -1)
 			{
 				D_MALLOC_BEGIN();
-				model = GetCarModel(models_offset + damOfs, (char**)&mallocptr, 0, model_number, CAR_MODEL_DAMAGED);
+				model = GetCarModel(models_offset + damOfs, (char**)&mallocptr, 0);
 				gCarDamModelPtr[i] = model;
 				D_MALLOC_END();
 			}
@@ -298,7 +301,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 			if (lowOfs != -1)
 			{
 				D_MALLOC_BEGIN();
-				model = GetCarModel(models_offset + lowOfs, (char**)&mallocptr, 1, model_number, CAR_MODEL_LOWDETAIL);
+				model = GetCarModel(models_offset + lowOfs, (char**)&mallocptr, 1);
 				gCarLowModelPtr[i] = model;
 				D_MALLOC_END();
 			}
@@ -306,6 +309,15 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 	}
 
 	D_MALLOC_BEGIN();
+
+#if USE_PC_FILESYSTEM
+	if (gContentOverride)
+	{
+		// extra spool memory needed
+		specMemReq += 4096;
+	}
+#endif
+
 	mallocptr = specmallocptr + specMemReq;
 	specLoadBuffer = specmallocptr + specMemReq - 2048;
 	D_MALLOC_END();
@@ -344,7 +356,7 @@ char* LoadCarModelFromFile(char* dest, int modelNumber, int type)
 #endif
 
 // [D] [T]
-MODEL* GetCarModel(char *src, char **dest, int KeepNormals, int modelNumber, int type)
+MODEL* GetCarModel(char *src, char **dest, int KeepNormals)
 {
 	int size;
 	MODEL *model;

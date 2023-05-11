@@ -46,8 +46,8 @@ int bcollided2d(CDATA2D *body, int* boxOverlap)
 	}
 
 	// hmmm, why?
-	as = RSIN(dtheta & 0x7ff);			// rcossin_tbl[(dtheta & 0x7ff) * 2];
-	ac = RSIN(dtheta + 1024 & 0x7ff);	// rcossin_tbl[(dtheta + 1024 & 0x7ff) * 2];
+	as = RSIN(dtheta & 2047);			// rcossin_tbl[(dtheta & 0x7ff) * 2];
+	ac = RSIN(dtheta + 1024 & 2047);	// rcossin_tbl[(dtheta + 1024 & 0x7ff) * 2];
 
 	delta.vx = body[0].x.vx - body[1].x.vx;
 	delta.vz = body[0].x.vz - body[1].x.vz;
