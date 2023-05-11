@@ -2240,9 +2240,17 @@ int CarSelectScreen(int bSetup)
 		{
 			for (int i = 4; i < 9; i++)
 			{
+#if USE_PC_FILESYSTEM
+				// [A] minimal requirement for this car to be selectable
+				extern int gContentOverride;
+				if (i == 8)
+					CarAvailability[0][i] = gContentOverride && FileExists("LEVELS\\CHICAGO\\CARMODEL_11_clean.MDL");	// remove truck
+				else
+					CarAvailability[0][i] = 1;
+#else
 				if (i != 8)
 					CarAvailability[0][i] = 1;	// remove truck
-
+#endif
 				CarAvailability[1][i] = 1;
 				CarAvailability[2][i] = 1;
 				CarAvailability[3][i] = 1;
