@@ -68,6 +68,7 @@ enum GameStrId
 	GTXT_FilmDirector,
 	GTXT_QuickReplay,
 	GTXT_Exit,
+	GTXT_Back,
 	GTXT_Rotation,
 	GTXT_Move,
 	GTXT_SkipCutscene,
