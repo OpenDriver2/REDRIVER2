@@ -1061,7 +1061,7 @@ void DrawVisibleMenus(void)
 
 	if (NumPlayers > 1)
 	{
-		SetFullscreenDrawing();
+		SetFullscreenDrawing(2);
 	}
 
 	pActive = VisibleMenus[VisibleMenu];

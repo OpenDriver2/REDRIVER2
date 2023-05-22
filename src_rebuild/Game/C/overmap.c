@@ -1173,12 +1173,7 @@ void DrawOverheadMap(void)
 		}
 	}
 
-	// for restoring
-	drarea = (DR_AREA *)current->primptr;
-	SetDrawArea(drarea, &current->draw.clip);
-
-	addPrim(current->ot + 1, drarea);
-	current->primptr += sizeof(DR_AREA);
+	SetFullscreenDrawing(1);
 
 	WorldToOverheadMapPositions((VECTOR *)player->pos, &vec, 1, 0, 0);
 
@@ -1448,7 +1443,7 @@ void DrawOverheadMap(void)
 	clipped_size.x = map_minX + 1;
 	clipped_size.w = MAP_SIZE_W - 1;
 	clipped_size.h = MAP_SIZE_H;
-	clipped_size.y = current->draw.clip.y + map_minY;// +1;
+	clipped_size.y = (current->draw.clip.y & 256) + map_minY;
 
 	drarea = (DR_AREA*)current->primptr;
 
