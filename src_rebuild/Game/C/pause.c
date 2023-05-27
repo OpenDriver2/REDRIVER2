@@ -204,16 +204,16 @@ void DebugTimeOfDayNight(int direction)
 
 void DebugTimeOfDayDusk(int direction)
 {
-	wantedTimeOfDay = TIME_DAWN;
-	gTimeOfDay = TIME_DAWN;
+	wantedTimeOfDay = TIME_DUSK;
+	gTimeOfDay = TIME_DUSK;
 	gWantNight = 0;
 	LoadSky();
 }
 
 void DebugTimeOfDayDawn(int direction)
 {
-	wantedTimeOfDay = TIME_DUSK;
-	gTimeOfDay = TIME_DUSK;
+	wantedTimeOfDay = TIME_DAWN;
+	gTimeOfDay = TIME_DAWN;
 	gWantNight = 0;
 	LoadSky();
 }
