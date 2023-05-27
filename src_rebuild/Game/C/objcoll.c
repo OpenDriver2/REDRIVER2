@@ -396,13 +396,13 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 						dx = va.vx - (tempCO.pos.vx + FIXEDH(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
 						dz = va.vz - (tempCO.pos.vz + FIXEDH(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
 						
-						box.slab[0].upper = collide->xsize / 2 +testRadius;
+						box.slab[0].upper = collide->xsize / 2 + testRadius;
 						box.slab[0].lower = -box.slab[0].upper;
-					
-						box.slab[1].upper = collide->ysize / 2 +testRadius;
+
+						box.slab[1].upper = collide->ysize / 2 + testRadius;
 						box.slab[1].lower = -box.slab[1].upper;
-						
-						box.slab[2].upper = collide->zsize / 2 +testRadius;
+
+						box.slab[2].upper = collide->zsize / 2 + testRadius;
 						box.slab[2].lower = -box.slab[2].upper;
 
 						ray.org[0] = FIXEDH(cs * dx - sn * dz);
@@ -606,7 +606,6 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 {
 	int count;
 	int num_cb;
-	int coll_test_count;
 	int yang;
 	int minDist;
 	COLLISION_PACKET *collide;
@@ -727,11 +726,12 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 					}
 					else if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER)
 					{
-						if ((model->flags2 & (MODEL_FLAG_CHAIR | MODEL_FLAG_SMASHABLE)) == 0 && 
-							(bbox.xsize > 100 || (bbox.zsize > 100)))
+						if ((model->flags2 & (MODEL_FLAG_CHAIR | MODEL_FLAG_SMASHABLE)) == 0 && (bbox.xsize > 100 || bbox.zsize > 100))
 						{
-							coll_test_count = 5;
-							
+							int diff;
+							int coll_test_count = 2; // [A] only two tests needed
+							int prevDistance = gCameraDistance;
+
 							bbox.xsize += 100;
 							bbox.zsize += 100;
 
@@ -739,16 +739,15 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 
 							minDist = lbody / 2;
 							
-							while (coll_test_count > 0 && minDist <= gCameraDistance && CarBuildingCollision(cp, &bbox, cop, 0))
+							while (coll_test_count > 0 && gCameraDistance > minDist && CarBuildingCollision(cp, &bbox, cop, 0))
 							{
-								gCameraDistance -= gCameraBoxOverlap;
-										
-								if (gCameraDistance < minDist)
-									gCameraDistance = minDist;
+								gCameraDistance = MAX(minDist, gCameraDistance - gCameraBoxOverlap);
+								diff = prevDistance - gCameraDistance;
+								prevDistance = gCameraDistance;
 
-								cp->hd.where.t[0] = car_data[0].hd.where.t[0] + FIXEDH((gCameraDistance * RSIN(cp->hd.direction)) / 2);
-								cp->hd.where.t[2] = car_data[0].hd.where.t[2] + FIXEDH((gCameraDistance * RCOS(cp->hd.direction)) / 2);
-								
+								cp->hd.where.t[0] -= FIXEDH((diff * RSIN(cp->hd.direction)) / 2);
+								cp->hd.where.t[2] -= FIXEDH((diff * RCOS(cp->hd.direction)) / 2);
+
 								coll_test_count--;
 							}
 						}

@@ -668,94 +668,90 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 	cd[1].vel.vz = 0;
 	cd[1].avel = 0;
 
-	if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER) 
-	{
-		collided = bcollided2d(cd, &gCameraBoxOverlap);
-	}
-	else 
-	{
-		collided = bcollided2d(cd);
+	collided = bcollided2d(cd, cp->controlType == CONTROL_TYPE_CAMERACOLLIDER ? &gCameraBoxOverlap : 0);
 
 #if defined(COLLISION_DEBUG) && !defined(PSX)
-		extern int gShowCollisionDebug;
-		if (gShowCollisionDebug == 1)
+	extern int gShowCollisionDebug;
+	if (gShowCollisionDebug == 1)
+	{
+		extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
+		extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
+
+		CVECTOR bbcv = { 0, 0, 250 };
+		CVECTOR rrcv = { 250, 0, 0 };
+		CVECTOR yycv = { 250, 250, 0 };
+
+		// show both box axes
 		{
-			extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
-			extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
+			VECTOR _zero = { 0 };
+			VECTOR b1p = cd[0].x;
+			VECTOR b2p = cd[1].x;
+			b2p.vy = b1p.vy;
 
-			CVECTOR bbcv = { 0, 0, 250 };
-			CVECTOR rrcv = { 250, 0, 0 };
-			CVECTOR yycv = { 250, 250, 0 };
+			// show position to position
+			//Debug_AddLine(b1p1, b2p1, yycv);
 
-			// show both box axes
+			VECTOR b1ax[2] = { {0} , {0} };
+			b1ax[0].vx = FIXEDH(cd[0].axis[0].vx * cd[0].length[0]);
+			b1ax[0].vz = FIXEDH(cd[0].axis[0].vz * cd[0].length[0]);
+			b1ax[1].vx = FIXEDH(cd[0].axis[1].vx * cd[0].length[1]);
+			b1ax[1].vz = FIXEDH(cd[0].axis[1].vz * cd[0].length[1]);
+
+			// show axis of body 1
+			Debug_AddLineOfs(_zero, b1ax[0], b1p, rrcv);
+			Debug_AddLineOfs(_zero, b1ax[1], b1p, yycv);
+
+			// display 2D box 1
 			{
-				VECTOR _zero = { 0 };
-				VECTOR b1p = cd[0].x;
-				VECTOR b2p = cd[1].x;
-				b2p.vy = b1p.vy;
+				int h = b1ax[0].vy;
+				VECTOR box_points[4] = {
+					{b1ax[0].vx - b1ax[1].vx, h, b1ax[0].vz - b1ax[1].vz, 0},	// front left
+					{b1ax[0].vx + b1ax[1].vx, h, b1ax[0].vz + b1ax[1].vz, 0},	// front right
 
-				// show position to position
-				//Debug_AddLine(b1p1, b2p1, yycv);
+					{-b1ax[0].vx + b1ax[1].vx, h, -b1ax[0].vz + b1ax[1].vz, 0},	// back right
+					{-b1ax[0].vx - b1ax[1].vx, h, -b1ax[0].vz - b1ax[1].vz, 0}	// back left
+				};
 
-				VECTOR b1ax[2] = { {0} , {0} };
-				b1ax[0].vx = FIXEDH(cd[0].axis[0].vx * cd[0].length[0]);
-				b1ax[0].vz = FIXEDH(cd[0].axis[0].vz * cd[0].length[0]);
-				b1ax[1].vx = FIXEDH(cd[0].axis[1].vx * cd[0].length[1]);
-				b1ax[1].vz = FIXEDH(cd[0].axis[1].vz * cd[0].length[1]);
+				Debug_AddLineOfs(box_points[0], box_points[1], b1p, bbcv);
+				Debug_AddLineOfs(box_points[1], box_points[2], b1p, bbcv);
+				Debug_AddLineOfs(box_points[2], box_points[3], b1p, bbcv);
+				Debug_AddLineOfs(box_points[3], box_points[0], b1p, bbcv);
+			}
 
-				// show axis of body 1
-				Debug_AddLineOfs(_zero, b1ax[0], b1p, rrcv);
-				Debug_AddLineOfs(_zero, b1ax[1], b1p, yycv);
+			VECTOR b2ax[2] = { {0} , {0} };
+			b2ax[0].vx += FIXEDH(cd[1].axis[0].vx * cd[1].length[0]);
+			b2ax[0].vz += FIXEDH(cd[1].axis[0].vz * cd[1].length[0]);
+			b2ax[1].vx += FIXEDH(cd[1].axis[1].vx * cd[1].length[1]);
+			b2ax[1].vz += FIXEDH(cd[1].axis[1].vz * cd[1].length[1]);
 
-				// display 2D box 1
-				{
-					int h = b1ax[0].vy;
-					VECTOR box_points[4] = {
-						{b1ax[0].vx - b1ax[1].vx, h, b1ax[0].vz - b1ax[1].vz, 0},	// front left
-						{b1ax[0].vx + b1ax[1].vx, h, b1ax[0].vz + b1ax[1].vz, 0},	// front right
+			// show axis of body 2
+			Debug_AddLineOfs(_zero, b2ax[0], b2p, rrcv);
+			Debug_AddLineOfs(_zero, b2ax[1], b2p, yycv);
 
-						{-b1ax[0].vx + b1ax[1].vx, h, -b1ax[0].vz + b1ax[1].vz, 0},	// back right
-						{-b1ax[0].vx - b1ax[1].vx, h, -b1ax[0].vz - b1ax[1].vz, 0}	// back left
-					};
+			CVECTOR& collColor = collided ? rrcv : yycv;
 
-					Debug_AddLineOfs(box_points[0], box_points[1], b1p, bbcv);
-					Debug_AddLineOfs(box_points[1], box_points[2], b1p, bbcv);
-					Debug_AddLineOfs(box_points[2], box_points[3], b1p, bbcv);
-					Debug_AddLineOfs(box_points[3], box_points[0], b1p, bbcv);
-				}
+			// display 2D box 2
+			{
+				int h = b2ax[0].vy;
+				VECTOR box_points[4] = {
+					{b2ax[0].vx - b2ax[1].vx, h, b2ax[0].vz - b2ax[1].vz, 0},	// front left
+					{b2ax[0].vx + b2ax[1].vx, h, b2ax[0].vz + b2ax[1].vz, 0},	// front right
 
-				VECTOR b2ax[2] = { {0} , {0} };
-				b2ax[0].vx += FIXEDH(cd[1].axis[0].vx * cd[1].length[0]);
-				b2ax[0].vz += FIXEDH(cd[1].axis[0].vz * cd[1].length[0]);
-				b2ax[1].vx += FIXEDH(cd[1].axis[1].vx * cd[1].length[1]);
-				b2ax[1].vz += FIXEDH(cd[1].axis[1].vz * cd[1].length[1]);
+					{-b2ax[0].vx + b2ax[1].vx, h, -b2ax[0].vz + b2ax[1].vz, 0},	// back right
+					{-b2ax[0].vx - b2ax[1].vx, h, -b2ax[0].vz - b2ax[1].vz, 0}	// back left
+				};
 
-				// show axis of body 2
-				Debug_AddLineOfs(_zero, b2ax[0], b2p, rrcv);
-				Debug_AddLineOfs(_zero, b2ax[1], b2p, yycv);
-
-				CVECTOR& collColor = collided ? rrcv : yycv;
-
-				// display 2D box 2
-				{
-					int h = b2ax[0].vy;
-					VECTOR box_points[4] = {
-						{b2ax[0].vx - b2ax[1].vx, h, b2ax[0].vz - b2ax[1].vz, 0},	// front left
-						{b2ax[0].vx + b2ax[1].vx, h, b2ax[0].vz + b2ax[1].vz, 0},	// front right
-
-						{-b2ax[0].vx + b2ax[1].vx, h, -b2ax[0].vz + b2ax[1].vz, 0},	// back right
-						{-b2ax[0].vx - b2ax[1].vx, h, -b2ax[0].vz - b2ax[1].vz, 0}	// back left
-					};
-
-					Debug_AddLineOfs(box_points[0], box_points[1], b2p, collColor);
-					Debug_AddLineOfs(box_points[1], box_points[2], b2p, collColor);
-					Debug_AddLineOfs(box_points[2], box_points[3], b2p, collColor);
-					Debug_AddLineOfs(box_points[3], box_points[0], b2p, collColor);
-				}
+				Debug_AddLineOfs(box_points[0], box_points[1], b2p, collColor);
+				Debug_AddLineOfs(box_points[1], box_points[2], b2p, collColor);
+				Debug_AddLineOfs(box_points[2], box_points[3], b2p, collColor);
+				Debug_AddLineOfs(box_points[3], box_points[0], b2p, collColor);
 			}
 		}
+	}
 #endif
 
+	if (cp->controlType != CONTROL_TYPE_CAMERACOLLIDER) 
+	{
 		if (collided)
 		{
 			bFindCollisionTime(cd, &collisionResult);
