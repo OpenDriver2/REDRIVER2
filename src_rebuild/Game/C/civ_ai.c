@@ -78,7 +78,7 @@ int test555 = 0;
 
 #ifdef _DEBUG
 #define CIV_STATE_SET_CONFUSED(cp) \
-	printInfo("CIV confused: at %s, %d\n", __FUNCTION__, __LINE__);\
+	printInfo("CIV confused: at %s, %d\n", FUNCNAME, __LINE__);\
 	cp->ai.c.thrustState = 3; cp->ai.c.ctrlState = 7;
 #else
 #define CIV_STATE_SET_CONFUSED(cp) \

@@ -58,7 +58,7 @@ volatile char* _replay_buffer = NULL;		// 0x1FABBC
 
 #if defined(USE_CRT_MALLOC)
 
-char* mallocptr = NULL;
+volatile char* mallocptr = NULL;
 volatile char* malloctab = NULL;
 
 void* g_dynamicAllocs[1024] = { 0 };
