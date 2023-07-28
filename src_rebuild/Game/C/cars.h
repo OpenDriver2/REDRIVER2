@@ -11,7 +11,6 @@ extern CAR_DATA car_data[MAX_CARS + 2];	// all cars + Tanner cbox + Camera cbox
 
 // active cars
 extern CAR_DATA* active_car_list[MAX_CARS];
-extern BOUND_BOX bbox[MAX_CARS];
 extern unsigned char lightsOnDelay[MAX_CARS];
 
 extern CAR_MODEL NewCarModel[MAX_CAR_MODELS];

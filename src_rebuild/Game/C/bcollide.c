@@ -958,34 +958,13 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 				// angular impulse calculation and modifiers
 				if (cp->controlType != CONTROL_TYPE_LEAD_AI)
 				{
-					int temp;
-					temp = FIXEDH(lever[1] * reaction[2]);
+					int reduction;
+					reduction = (cp->controlType == CONTROL_TYPE_PURSUER_AI);
 
-					if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
-						temp >>= 1;
-
-					cp->hd.aacc[0] += temp;
-
-					temp = FIXEDH(lever[2] * reaction[1]);
-
-					if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
-						temp >>= 1;
-						
-					cp->hd.aacc[0] -= temp;
-
-					temp = FIXEDH(lever[0] * reaction[1]);
-
-					if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
-						temp >>= 1;
-
-					cp->hd.aacc[2] += temp;
-
-					temp = FIXEDH(lever[1] * reaction[0]);
-
-					if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
-						temp >>= 1;
-						
-					cp->hd.aacc[2] -= temp;
+					cp->hd.aacc[0] += FIXEDH(lever[1] * reaction[2]) >> reduction;
+					cp->hd.aacc[0] -= FIXEDH(lever[2] * reaction[1]) >> reduction;
+					cp->hd.aacc[2] += FIXEDH(lever[0] * reaction[1]) >> reduction;
+					cp->hd.aacc[2] -= FIXEDH(lever[1] * reaction[0]) >> reduction;
 
 					cp->st.n.linearVelocity[1] += reaction[1];
 				}

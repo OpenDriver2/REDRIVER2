@@ -66,9 +66,9 @@ MODEL* gCleanWheelModelPtr;
 MODEL* gFastWheelModelPtr;
 MODEL* gDamWheelModelPtr;
 
-// active carsg
+// active cars
 CAR_DATA* active_car_list[MAX_CARS];
-BOUND_BOX bbox[MAX_CARS];
+
 u_char lightsOnDelay[MAX_CARS];
 short FrontWheelRotation[MAX_CARS]; // offset 0x0
 short BackWheelRotation[MAX_CARS]; // offset 0x30

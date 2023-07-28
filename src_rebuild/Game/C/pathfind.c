@@ -581,18 +581,16 @@ int iterate(void)
 	
 			nbr->dist = 1;
 		}
-		else
+		else if (dist <= itHere.dist - 288)
 		{
-			if (dist <= itHere.dist - 288)
-			{
-				nbr->dist = 1;
-			}
+			nbr->dist = 1;
 		}
 	}
 	
 	// now we have distance let's compute the rest of the map
 	for(dir = 0; dir < 6; dir++)
 	{
+		// visited?
 		if (pathNodes[dir].dist != 0)
 			continue;
 
@@ -614,29 +612,26 @@ int iterate(void)
 			else
 				dist = (nr + itHere.dist >> 1) + 221;
 		}
+		else if (nr < 2)
+		{
+			dist = (nl + itHere.dist >> 1) + 221;
+		}
 		else
 		{
-			if (nr < 2)
+			r = nr - nl;
+			dist = 0x10000 - (r * r) / 3;
+
+			if (dist < 0)
 			{
-				dist = (nl + itHere.dist >> 1) + 221;
+				dist = 0;
 			}
 			else
 			{
-				r = nr - nl;
-				dist = 0x10000 - (r * r) / 3;
-					
-				if (dist < 0)
-				{
-					dist = 0;
-				}
-				else
-				{
-					a = (dist >> 9) + 128;
-					dist = dist / a + a >> 1;
-				}
-					
-				dist += itHere.dist;
+				a = (dist >> 9) + 128;
+				dist = dist / a + a >> 1;
 			}
+
+			dist += itHere.dist;
 		}
 
 		pushNode(&pathNodes[dir], dist);
@@ -667,7 +662,7 @@ void InitPathFinding(void)
 	searchTarget.vy = -12367;
 	searchTarget.vz = 0;
 	playerTargetDistanceSq = 0;
-	pathFrames = 0;
+	//pathFrames = 0;
 	pathIterations = 129;
 }
 
@@ -684,7 +679,7 @@ int getInterpolatedDistance(VECTOR* pos)
 	VECTOR sp;
 
 	// WHY?
-	n.vx = ((pos->vx + (pos->vz >> 1 & 0x1ffU)) >> 9) * 512 - ((pos->vz & 0x200) >> 1);
+	n.vx = ((pos->vx + (pos->vz >> 1 & 511)) >> 9) * 512 - ((pos->vz & 512) >> 1);
 	n.vy = pos->vy;
 	n.vz = (pos->vz >> 9) << 9;
 
@@ -867,7 +862,7 @@ void addCivs(void)
 }
 
 // [A]
-void pushNode(tNode* startNode, ushort dist)
+void pushNode(tNode* node, ushort dist)
 {
 	int i;
 	u_int pnode, parent;
@@ -875,7 +870,7 @@ void pushNode(tNode* startNode, ushort dist)
 	if (numHeapEntries == 198)
 		return;
 
-	setDistance(startNode, dist);
+	setDistance(node, dist);
 
 	// up heap
 	i = numHeapEntries + 1;
@@ -891,7 +886,7 @@ void pushNode(tNode* startNode, ushort dist)
 		parent >>= 1;
 	}
 
-	heap[pnode] = *startNode;
+	heap[pnode] = *node;
 	numHeapEntries++;
 }
 
@@ -1001,7 +996,7 @@ void UpdateCopMap(void)
 			distanceCache[i] = d;
 		}
 		
-		startNode.vx = ((searchTarget.vx + (searchTarget.vz >> 1 & 0x1ffU)) >> 9) * 512 - ((searchTarget.vz & 0x200U) >> 1);
+		startNode.vx = ((searchTarget.vx + (searchTarget.vz >> 1 & 511)) >> 9) * 512 - ((searchTarget.vz & 512) >> 1);
 		startNode.vz = (searchTarget.vz >> 9) << 9;
 		startNode.vy = searchTarget.vy;
 		

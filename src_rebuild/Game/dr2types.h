@@ -291,16 +291,6 @@ struct HUBCAP
 	int Duration;
 };
 
-struct BOUND_BOX
-{
-	int x0;
-	int y0;
-	int z0;
-	int x1;
-	int y1;
-	int z1;
-};
-
 typedef struct _HANDLING_TYPE
 {
 	char frictionScaleRatio;
