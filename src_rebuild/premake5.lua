@@ -21,7 +21,7 @@ SDL2_DIR = os.getenv("SDL2_DIR") or "dependencies/SDL2"
 OPENAL_DIR = os.getenv("OPENAL_DIR") or "dependencies/openal-soft"
 JPEG_DIR = os.getenv("JPEG_DIR") or "dependencies/jpeg"
 
-WEBDEMO_DIR = os.getenv("WEBDEMO_DIR") or "../../../content/web_demo@/"	-- FIXME: make it better
+WEBDEMO_DIR = os.getenv("WEBDEMO_DIR") or "../../../../content/web_demo@/"	-- FIXME: make it better
 RED2_DIR = os.getenv("RED2_DIR") or "../../data@/"
 WEBSHELL_PATH = "../platform/Emscripten"	-- must be relative to makefile path (SADLY)
 
@@ -182,11 +182,15 @@ if os.target() == "windows" or os.target() == "emscripten" then
 	include "premake_libjpeg.lua"
 end
 
+-- font tool
+if os.target() ~= "emscripten" then
+	include "premake5_font_tool.lua"
+end
+
 -- Psy-Cross layer
 include "premake5_psycross.lua"
 
--- font tool
-include "premake5_font_tool.lua"
+
 
 -- game iteslf
 project "REDRIVER2"
