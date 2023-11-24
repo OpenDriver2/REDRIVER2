@@ -627,7 +627,6 @@ void DisableDisplay(void)
 	SetDispMask(0);
 }
 
-int DoNotSwap = 0;
 DB* MPlast[2];
 DB* MPcurrent[2];
 
@@ -643,13 +642,7 @@ void SwapDrawBuffers(void)
 {
 	DrawSync(0);
 
-	if (DoNotSwap == 0)
-	{
-		PutDispEnv(&current->disp);
-	}
-
-	DoNotSwap = 0;
-
+	PutDispEnv(&current->disp);
 	PutDrawEnv(&current->draw);
 	DrawOTag((u_long*)(current->ot + OTSIZE-1));
 
@@ -664,7 +657,8 @@ void SwapDrawBuffers(void)
 		last = &MPBuff[0][0];
 	}
 
-	ClearCurrentDrawBuffers();
+	ClearOTagR((u_long*)current->ot, OTSIZE);
+	current->primptr = current->primtab;
 }
 
 // [D] [T]
@@ -680,17 +674,17 @@ void SwapDrawBuffers2(int player)
 	}
 
 	PutDrawEnv(&current->draw);
-	DrawOTag((u_long*)(current->ot + OTSIZE - 1));
+	DrawOTag((u_long*)(current->ot + OTSIZE-1));
 
 	if (player == 1)
 	{
 		toggle = FrameCnt & 1;
 
 		// [A] i guess it should work as intended
-		MPcurrent[0] = &MPBuff[0][-toggle + 1];
+		MPcurrent[0] = &MPBuff[0][1-toggle];
 		MPlast[0] = &MPBuff[0][toggle];
 
-		MPcurrent[1] = &MPBuff[1][-toggle + 1];
+		MPcurrent[1] = &MPBuff[1][1-toggle];
 		MPlast[1] = &MPBuff[1][toggle];
 	}
 
@@ -734,6 +728,8 @@ void SetupDrawBuffers(void)
 	MPBuff[0][1].disp.screen.h = SCREEN_H;
 	MPBuff[0][0].disp.screen.x = draw_mode.framex;
 	MPBuff[0][1].disp.screen.x = draw_mode.framex;
+	MPBuff[0][0].disp.screen.y = draw_mode.framey;
+	MPBuff[0][1].disp.screen.y = draw_mode.framey;
 
 	if (NoPlayerControl == 0)
 		SetupDrawBufferData(NumPlayers);
@@ -812,9 +808,9 @@ void SetupDrawBufferData(int num_players)
 			toggle ^= 1;
 			InitaliseDrawEnv(MPBuff[j], x[j], y[j], 320, height);
 	
-			MPBuff[i][j].primtab = (char*)primpt;
-			MPBuff[i][j].primptr = (char*)primpt;
-			MPBuff[i][j].ot = (OTTYPE*)otpt;
+			MPBuff[j][i].primtab = (char*)primpt;
+			MPBuff[j][i].primptr = (char*)primpt;
+			MPBuff[j][i].ot = (OTTYPE*)otpt;
 		}
 	}
 
@@ -849,6 +845,7 @@ void InitaliseDrawEnv(DB* pBuff, int x, int y, int w, int h)
 	pBuff[1].draw.dfe = 1;
 
 #if USE_PGXP
+	// extend clip rectangles for widscreen
 	if(NumPlayers == 2)
 	{
 		pBuff[0].draw.clip.x -= 256;
