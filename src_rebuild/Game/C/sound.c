@@ -519,7 +519,7 @@ void ComputeDoppler(CHANNEL_DATA *ch)
 	int seperationrate;
 
 	VECTOR *srcPos;
-	long* srcVel; // LONGVECTOR3
+	int* srcVel; // LONGVECTOR3
 
 	PLAYER *pl;
 	int dx, dy, dz;
@@ -532,7 +532,7 @@ void ComputeDoppler(CHANNEL_DATA *ch)
 		return;
 	}
 
-	srcVel = (long*)ch->srcvelocity;
+	srcVel = (int*)ch->srcvelocity;
 
 	pl = &player[ch->player];
 
@@ -1129,7 +1129,7 @@ int GetFreeChannel(int force)
 }
 
 // [D] [T]
-void AllocateReverb(long mode, long depth)
+void AllocateReverb(int mode, int depth)
 {
 	SpuReverbAttr r_attr;
 

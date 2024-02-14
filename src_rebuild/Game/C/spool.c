@@ -488,7 +488,7 @@ void SendTPage(void)
 
 			cluts.h = npalettes / 4 + 1;
 
-			LoadImage(&cluts, (u_long *)(model_spool_buffer + 0xE000 + 4));
+			LoadImage(&cluts, (u_long*)(model_spool_buffer + 0xE000 + 4));
 
 			clutptr = (u_int*)(texture_cluts[tpage2send]);
 			i = 0;
@@ -512,7 +512,7 @@ void SendTPage(void)
 	{
 		if (slot != tpageloaded[tpage2send] - 1) 
 		{
-			LoadImage(&tpage, (u_long *)(model_spool_buffer + 0xA000 + (loadbank_write & 1) * 256 * 32));
+			LoadImage(&tpage, (u_long*)(model_spool_buffer + 0xA000 + (loadbank_write & 1) * 256 * 32));
 			tpage.y = tpage.y + tpage.h;
 		}
 

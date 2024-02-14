@@ -9,10 +9,10 @@
 
 typedef short	SHORTVECTOR4[4];
 
-typedef long	LONGVECTOR3[3];
-typedef long	LONGVECTOR4[4];
+typedef int		LONGVECTOR3[3];
+typedef int		LONGVECTOR4[4];
 
-typedef long	LONGQUATERNION[4];
+typedef int		LONGQUATERNION[4];
 
 struct VECTOR2
 {
@@ -352,7 +352,7 @@ typedef struct _HANDLING_DATA
 
 union RigidBodyState
 {
-	long v[13];
+	int v[13];
 	struct {
 		LONGVECTOR3 fposition;
 		LONGQUATERNION orientation;
@@ -752,7 +752,7 @@ typedef struct _TARGET
 					int eventId;			// data 3
 					union
 					{
-						VECTOR* eventPos;	// data 4
+						int eventPos;		// data 4
 						int unused[10];
 					};
 					int loseMessage;		// data 14
@@ -762,7 +762,7 @@ typedef struct _TARGET
 	};
 } MS_TARGET;
 
-assert_sizeof(MS_TARGET, 64);
+static_assert(sizeof(MS_TARGET) == 64, "MS_TARGET size is not correct");
 
 //---------------------------------------------------------------------------------------
 

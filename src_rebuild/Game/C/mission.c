@@ -436,12 +436,12 @@ void LoadMission(int missionnum)
 	LoadfileSeg(filename, (char *)MissionLoadAddress, offset, sizeof(MS_MISSION));
 
 	MissionHeader = MissionLoadAddress;
-	MissionTargets = (MS_TARGET *)((int)MissionLoadAddress + MissionLoadAddress->size);
+	MissionTargets = (MS_TARGET *)((char*)MissionLoadAddress + MissionLoadAddress->size);
 	MissionScript = (u_int *)(MissionTargets + MAX_MISSION_TARGETS);
-	MissionStrings = (char*)((int*)MissionScript + MissionLoadAddress->strings);
+	MissionStrings = (char*)(MissionScript + MissionLoadAddress->strings);
 	
 	if (MissionLoadAddress->route && !NewLevel)
-		loadsize = (int)MissionStrings + (MissionLoadAddress->route - (int)MissionLoadAddress);
+		loadsize = (u_int)((char*)MissionStrings + ((char*)MissionLoadAddress->route - (char*)MissionLoadAddress));
 	else
 		loadsize = length;
 
@@ -2567,7 +2567,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 			if (target->s.target_flags & TARGET_FLAG_EVENT_TRIGGERED)
 			{
 				// [A] Ahhhh, 32 bit pointers... for future full-scale refactoring
-				if (target->s.event.loseMessage != -1 && Long2DDistance(target->s.event.eventPos, &pv) > 30000)
+				if (target->s.event.loseMessage != -1 && Long2DDistance((*(VECTOR**)&target->s.event.eventPos), &pv) > 30000)
 				{
 					message = MissionStrings + target->s.event.loseMessage;
 					SetPlayerMessage(thread->player, message, 2, 2);
@@ -2576,7 +2576,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 			}
 			else
 			{
-				target->s.event.eventPos = TriggerEvent(target->s.event.eventId);
+				(*(VECTOR**)&target->s.event.eventPos) = TriggerEvent(target->s.event.eventId);
 				target->s.target_flags |= TARGET_FLAG_EVENT_TRIGGERED;
 			}
 

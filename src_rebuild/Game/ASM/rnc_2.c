@@ -28,7 +28,7 @@ struct RNCheader
 */
 
 /*____________________________________________________________________________*/
-short testRNC(unsigned long firstLong)
+short testRNC(unsigned int firstLong)
 {
     int method = 0;
     method = (firstLong & 0xFF000000) >> 24;      //get low byte
@@ -113,8 +113,8 @@ unsigned short get_offset(unsigned char** byteStreamPtr)
 /*____________________________________________________________________________*/
 //RNC2 unpack
 
-int RNCunpack2(unsigned char* packed, unsigned long srcSize,
-    unsigned char* unpacked, unsigned long dstSize)
+int RNCunpack2(unsigned char* packed, unsigned int srcSize,
+    unsigned char* unpacked, unsigned int dstSize)
 {
     unsigned char* src = packed;
     unsigned char* dst = unpacked;

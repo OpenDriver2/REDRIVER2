@@ -50,7 +50,7 @@ struct XA_TRACK
 
 XA_TRACK XAMissionMessages[4];
 
-static unsigned long finished_count = 0;
+static unsigned int finished_count = 0;
 static int gPlaying = 0;
 unsigned short gChannel = 0;
 static int xa_prepared = 0;

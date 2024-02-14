@@ -20,7 +20,7 @@ XMPLAY.C
 SpuVoiceAttr xm_g_s_attr; 		/* Structure for individual voice attributes*/
 SpuVoiceAttr uxm_g_s_attr; 		/* Structure for individual voice attributes*/
 SpuReverbAttr xm_r_attr;		/* Structure for reverb */
-unsigned long xm_l_vag_spu_addr[8][128];  /* Address in memory for first sound file */
+unsigned int xm_l_vag_spu_addr[8][128];  /* Address in memory for first sound file */
 
 
 /**** XM SPECIFIC ****/
@@ -232,7 +232,7 @@ short Interpolate(short p, short p1, short p2, short v1, short v2)
 	dp = p2 - p1;
 	di = p - p1;
 
-	return v1 + ((long)(di*dv) / dp);
+	return v1 + ((int)(di*dv) / dp);
 }
 
 
@@ -423,7 +423,7 @@ int InitXMData(u_char *mpp, int XM_ID, int S3MPan)
 	int a;
 	int c;
 
-	u_long b;
+	u_int b;
 	u_short b2;
 
 
@@ -456,9 +456,9 @@ int InitXMData(u_char *mpp, int XM_ID, int S3MPan)
 
 	for (t = 0; t < c; t++)
 	{
-		mhu->JAP_PAT_ADDR[t] = (u_long*)(mpp + a);				/* Store Pattern Addr's */
+		mhu->JAP_PAT_ADDR[t] = (u_int*)(mpp + a);				/* Store Pattern Addr's */
 		b = GetLong(mpp + a);
-		mhu->JAP_PAT_ADDR2[t] = (u_long*)(mpp + a + b);			/* Store Pattern Addr's */
+		mhu->JAP_PAT_ADDR2[t] = (u_int*)(mpp + a + b);			/* Store Pattern Addr's */
 		b2 = getWord(mpp + a + 7);
 		b += b2;
 		a += b;
@@ -471,16 +471,16 @@ int InitXMData(u_char *mpp, int XM_ID, int S3MPan)
 		b2 = getWord(mpp + a + 27);
 		if (b2 != 0)
 		{
-			mhu->JAP_SampAddr[t] = (u_long*)(mpp + 29 + a);
-			mhu->JAP_SampHdrAddr[t] = (u_long*)(mpp + b + a);
+			mhu->JAP_SampAddr[t] = (u_int*)(mpp + 29 + a);
+			mhu->JAP_SampHdrAddr[t] = (u_int*)(mpp + b + a);
 			b += (40 * b2);
 		}
 		else
 		{
-			mhu->JAP_SampAddr[t] = (u_long*)0xcdcdcdcd;	//(u_long*)(mpp+29+a);
-			mhu->JAP_SampHdrAddr[t] = (u_long*)0x01234567;	//(u_long*)(mpp+b+a);
+			mhu->JAP_SampAddr[t] = (u_int*)0xcdcdcdcd;	//(u_int *)(mpp+29+a);
+			mhu->JAP_SampHdrAddr[t] = (u_int*)0x01234567;	//(u_int *)(mpp+b+a);
 		}
-		mhu->JAP_InstrumentOffset[t] = (u_long*)(mpp + a);		/* Store Instrument Addr's*/
+		mhu->JAP_InstrumentOffset[t] = (u_int*)(mpp + a);		/* Store Instrument Addr's*/
 		a += b;
 	}
 	return(mhu->XMPSXChannels);
@@ -489,16 +489,16 @@ int InitXMData(u_char *mpp, int XM_ID, int S3MPan)
 
 /*****************************************************************************
 GetLong
-	Returns a long from given address
+	Returns a int from given address
 *****************************************************************************/
 
-u_long GetLong(u_char *mpp)
+u_int GetLong(u_char *mpp)
 {
 	u_char a;
 	u_char b;
 	u_char c;
 	u_char d;
-	u_long e;
+	u_int e;
 
 	a = *(mpp);
 	b = *(mpp + 1);
@@ -1306,7 +1306,7 @@ SetInstr
 
 void SetInstr(u_char inst)
 {
-	u_long *j;
+	u_int *j;
 	u_char j2;
 	short ddd;
 
@@ -1344,7 +1344,7 @@ void SetInstr(u_char inst)
 	*/
 
 	j = mh->JAP_SampHdrAddr[inst];
-	if (j == (u_long*)0x01234567)
+	if (j == (u_int*)0x01234567)
 		return;
 
 	j2 = *((u_char*)j + 12);
@@ -1373,7 +1373,7 @@ SetPer
 
 void SetPer(void)
 {
-	u_long *j;
+	u_int *j;
 	u_short period;
 	u_char a;
 	if (CurrentCh > 23)
@@ -1749,7 +1749,7 @@ DoVol
 	c Instrument volume
 *****************************************************************************/
 
-short DoVol(u_long a,short b,short c)
+short DoVol(u_int a,short b,short c)
 {
 	a*=b;
 	a*=c;
@@ -2494,10 +2494,10 @@ GetFreq2
 
 int JPPer = 7350;	//6578
 
-long GetFreq2(long period)
+int GetFreq2(int period)
 {
 	int okt;
-	long frequency;
+	int frequency;
 
 	//FntPrint("period %d\n",period);
 	period = JPPer - period;
@@ -2525,7 +2525,7 @@ short ProcessEnvelope(short v,u_char keyon,int JSmp)
 u_char a2,b;
 u_short p;
 
-u_long* j;
+u_int* j;
 short apos;
 short aval;
 short bpos;
@@ -2597,7 +2597,7 @@ short ProcessPanEnvelope(short v, u_char keyon, int JSmp)
 	u_char a2, b;
 	u_short p;
 
-	u_long* j;
+	u_int* j;
 	short apos;
 	short aval;
 	short bpos;

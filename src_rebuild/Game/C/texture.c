@@ -193,7 +193,7 @@ void LoadTPageFromTIMs(int tpage2send)
 		tmptpage.w = timData->width;
 		tmptpage.h = timData->height;
 
-		LoadImage(&tmptpage, (u_long *)((char*)timData + sizeof(TIMIMAGEHDR)));
+		LoadImage(&tmptpage, (u_long*)((char*)timData + sizeof(TIMIMAGEHDR)));
 
 		// get through all it's CLUTs
 		// and replace
@@ -225,7 +225,7 @@ void LoadTPageFromTIMs(int tpage2send)
 			tmpclut.w = 16;
 			tmpclut.h = 1;
 
-			LoadImage(&tmpclut, (u_long *)((char*)timClut + sizeof(TIMIMAGEHDR) + j * 32));
+			LoadImage(&tmpclut, (u_long*)((char*)timClut + sizeof(TIMIMAGEHDR) + j * 32));
 		}
 	}
 }
@@ -245,7 +245,7 @@ int LoadTPageAndCluts(RECT16 *tpage, RECT16 *cluts, int tpage2send, char *tpagea
 
 	for (i = 0; i < npalettes; i++)
 	{
-		LoadImage(cluts, (u_long *)tpageaddress);
+		LoadImage(cluts, (u_long*)tpageaddress);
 		tpageaddress += 32;
 
 		texture_cluts[tpage2send][i] = GetClut(cluts->x, cluts->y);
@@ -259,7 +259,7 @@ int LoadTPageAndCluts(RECT16 *tpage, RECT16 *cluts, int tpage2send, char *tpagea
 	temptpage.h = 256;
 
 	decomp_asm((char*)_other_buffer, tpageaddress);
-	LoadImage(&temptpage, (u_long *)_other_buffer);
+	LoadImage(&temptpage, (u_long*)_other_buffer);
 
 	texture_pages[tpage2send] = GetTPage(0, 0, tpage->x, tpage->y);
 	IncrementTPageNum(tpage);

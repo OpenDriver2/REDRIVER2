@@ -439,7 +439,7 @@ void InitShadow(void)
 }
 
 // [D] [A] - this is a fuckery
-void SubdivShadow(long z0, long z1, long z2, long z3, POLY_FT4 *sps)
+void SubdivShadow(int z0, int z1, int z2, int z3, POLY_FT4 *sps)
 {
 	// [A] we already have better car shadow code. This is UNUSED anyway
 	POLY_FT4 *spd;
@@ -653,7 +653,7 @@ void clippedPoly(void)
 	int iVar6;
 	SVECTOR *pSVar7;
 	short *psVar8;
-	ulong *in_a1;
+	uint *in_a1;
 	short *psVar9;
 	int iVar10;
 	int iVar11;
@@ -662,7 +662,7 @@ void clippedPoly(void)
 	pPVar4 = spolys;
 	iVar11 = numcv + -1;
 	if (iVar11 != -1) {
-		in_a1 = (ulong *)0xffffffff;
+		in_a1 = (uint *)0xffffffff;
 		psVar8 = &(&cv)[lastcv].vz;
 		do {
 			iVar11 = iVar11 + -1;
@@ -674,7 +674,7 @@ void clippedPoly(void)
 	if (2 < numcv) {
 		iVar11 = numcv + -1;
 		if (numcv != 0) {
-			in_a1 = (ulong *)0xffffffff;
+			in_a1 = (uint *)0xffffffff;
 			pSVar7 = &cv + lastcv;
 			do {
 				iVar11 = iVar11 + -1;
@@ -686,7 +686,7 @@ void clippedPoly(void)
 		if (2 < numcv) {
 			iVar11 = numcv + -1;
 			if (numcv != 0) {
-				in_a1 = (ulong *)&(&cv)[lastcv].vy;
+				in_a1 = (uint *)&(&cv)[lastcv].vy;
 				do {
 					iVar11 = iVar11 + -1;
 					*(short *)((int)in_a1 + 2) =
@@ -698,7 +698,7 @@ void clippedPoly(void)
 			if (2 < numcv) {
 				iVar11 = numcv + -1;
 				if (numcv != 0) {
-					in_a1 = (ulong *)0xffffffff;
+					in_a1 = (uint *)0xffffffff;
 					psVar8 = &(&cv)[lastcv].vy;
 					do {
 						iVar11 = iVar11 + -1;
@@ -710,7 +710,7 @@ void clippedPoly(void)
 				if (2 < numcv) {
 					iVar11 = numcv + -1;
 					if (numcv != 0) {
-						in_a1 = (ulong *)0xffffffff;
+						in_a1 = (uint *)0xffffffff;
 						psVar8 = &(&cv)[lastcv].vy;
 						do {
 							iVar11 = iVar11 + -1;

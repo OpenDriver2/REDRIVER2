@@ -1746,7 +1746,7 @@ void StepFromToEvent(EVENT* ev)
 {
 	int df;
 	int md;
-	long* curr;
+	decltype(VECTOR::vx)* curr;
 	int* to;
 	int direction;
 	int d, d2;
@@ -1838,7 +1838,7 @@ void StepPathEvent(EVENT* ev)
 	int* to;
 	Station station;
 	int direction;
-	long* curr;
+	decltype(VECTOR::vx)* curr;
 	int dir;
 	int turn[4];
 	XZPAIR centre;

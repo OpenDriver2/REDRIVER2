@@ -485,8 +485,8 @@ void LoadFont(char *buffer)
 
 	fonttpage = GetTPage(0,0, dest.x, dest.y);
 
-	LoadImage(&fontclutpos, (u_long *)clut);	// upload clut
-	LoadImage(&dest, (u_long *)(file + 32));	// upload font image
+	LoadImage(&fontclutpos, (u_long*)clut);	// upload clut
+	LoadImage(&dest, (u_long*)(file + 32));	// upload font image
 
 #ifdef HIRES_FONTS
 	InitHiresFonts();
@@ -496,7 +496,7 @@ void LoadFont(char *buffer)
 }
 
 // [D] [T]
-void StoreClut2(u_long *pDest, int x, int y)
+void StoreClut2(u_long* pDest, int x, int y)
 {
 	RECT16 rect;
 
@@ -519,7 +519,7 @@ void SetCLUT16Flags(ushort clutID, ushort mask, char transparent)
 	x = (clutID & 63) * 16;
 	y = (clutID >> 6);
 
-	StoreClut2((ulong *)buffer, x, y);
+	StoreClut2((u_long*)buffer, x, y);
 
 	pCurrent = buffer;
 	ctr = 1;

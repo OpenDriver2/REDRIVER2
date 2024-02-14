@@ -1781,7 +1781,7 @@ int CreateCivCarWotDrivesABitThenStops(int direction, LONGVECTOR4* startPos, LON
 }
 
 // [D] [T]
-int CreateStationaryCivCar(int direction, long orientX, long orientZ, LONGVECTOR4* startPos, int externalModel, int palette, int controlFlags)
+int CreateStationaryCivCar(int direction, int orientX, int orientZ, LONGVECTOR4* startPos, int externalModel, int palette, int controlFlags)
 {
 	unsigned char* slot;
 	CAR_DATA* newCar;
