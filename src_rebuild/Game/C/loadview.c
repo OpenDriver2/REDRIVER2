@@ -177,7 +177,7 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 	DrawSync(0);
 
 	setRECT(&dest, 320, 0, 160, 511);
-	LoadImage(&dest, (u_long *)&_other_buffer[544]);
+	LoadImage(&dest, (u_long*)&_other_buffer[544]);
 
 	DrawSync(0);
 
@@ -418,8 +418,8 @@ void DrawFadePoly(void)
 	setRGB2(fl_g4, fadeVal, fadeVal, fadeVal);
 	setRGB3(fl_g4, fadeVal, fadeVal, fadeVal);
 
-	addPrim(&current->ot[1], fl_g4);
-	addPrim(&current->ot[1], &fade_gt4[current->id]);
+	addPrim(current->ot + 1, fl_g4);
+	addPrim(current->ot + 1, &fade_gt4[current->id]);
 }
 
 // [D] [T]

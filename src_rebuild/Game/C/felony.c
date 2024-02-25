@@ -386,7 +386,7 @@ void CheckPlayerMiscFelonies(void)
 	NoteFelony(&felonyData, 8, 4096);
 
 	// if lights are off (broken)
-	if (gTimeOfDay == 3 && cp->ap.damage[0] > 1000 && cp->ap.damage[1] > 1000)
+	if (gTimeOfDay == TIME_NIGHT && cp->ap.damage[0] > 1000 && cp->ap.damage[1] > 1000)
 		NoteFelony(&felonyData, 9, 4096);
 
 	// reckless driving.

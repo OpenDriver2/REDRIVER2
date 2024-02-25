@@ -45,11 +45,11 @@ typedef struct _XMHEADER {
 	u_short bpm;
 	u_short XMChannels;
 	u_short XMPSXChannels;
-	u_long *JAP_PAT_ADDR[256];     /* Pattern Start Addresses (maxpatt*chnls)*/
-	u_long *JAP_PAT_ADDR2[256];     /* Pattern Start Addresses (maxpatt*chnls)*/
-	u_long *JAP_InstrumentOffset[128];
-	u_long *JAP_SampAddr[128];
-	u_long *JAP_SampHdrAddr[128];
+	u_int *JAP_PAT_ADDR[256];     /* Pattern Start Addresses (maxpatt*chnls)*/
+	u_int *JAP_PAT_ADDR2[256];     /* Pattern Start Addresses (maxpatt*chnls)*/
+	u_int *JAP_InstrumentOffset[128];
+	u_int *JAP_SampAddr[128];
+	u_int *JAP_SampHdrAddr[128];
 	u_char jorders[256];		/* list of patterns */
 	int	  S3MPanning;
 } XMHEADER;
@@ -63,8 +63,8 @@ typedef struct _XMCHANNEL {
 	short OldRVol;
 	u_short OldPeriod;
 	u_char OldSample;
-	u_long OldSOff;
-	u_long SOffset;
+	u_int OldSOff;
+	u_int SOffset;
 	u_char nothing;
 	u_char ChDead;
 	u_char panenvflg;		/* envelope flag */
@@ -100,7 +100,7 @@ typedef struct _XMCHANNEL {
 	u_char kick2;	   	/* if 1=sample has to be restarted */
 	u_char sample;		/* which sample number (0-31) */
 	short handle;		/* which sample-handle */
-	u_long start;		/* The start byte index in the sample */
+	u_int start;		/* The start byte index in the sample */
 	u_char panning;		/* panning position */
 	u_char pansspd;		/* panslide speed */
 	u_char volume;		/* volume (0 - 64) to play the sample at */
@@ -163,8 +163,8 @@ typedef struct _XMSONG {
 	int	  JBPM;
 	int	  PCounter;
 	u_short PatSize;
-	u_long *PatAdr;
-	u_long *PatAdr2;
+	u_int *PatAdr;
+	u_int *PatAdr2;
 	int	  PlayMask;
 	int	  SFXNum;
 	XMCHANNEL XM_Chnl[24];	  /* max 32 channels per song*/
@@ -231,7 +231,7 @@ typedef struct _XM_HeaderInfo
 typedef struct _XM_VABInfo
 {
 	u_char*		Address;
-	u_long		Size;
+	u_int		Size;
 } XM_VABInfo;
 
 typedef struct _XM_Feedback
@@ -273,7 +273,7 @@ void XM_PlayStop(int Song_ID); // 0x00085DC8
 
 int InitXMData(u_char *mpp, int XM_ID, int S3MPan); // 0x000831B0
 
-unsigned long GetLong(u_char *mpp); // 0x000869C0
+unsigned int GetLong(u_char *mpp); // 0x000869C0
 
 void XM_OnceOffInit(int PAL); // 0x00085F7C
 
@@ -309,7 +309,7 @@ void DoTremolo(); // 0x000849F0
 
 short DoPan(short envpan, short pan); // 0x00086560
 
-short DoVol(unsigned long a, short b, short c); // 0x00086538
+short DoVol(unsigned int a, short b, short c); // 0x00086538
 
 void UpdateXMData(); // 0x00086484
 
@@ -337,7 +337,7 @@ void UpdateHardware(); // 0x00085448
 
 int IntVols(int Vol1, int Vol2); // 0x00086F70
 
-long GetFreq2(long period); // 0x00086AF0
+int GetFreq2(int period); // 0x00086AF0
 
 short ProcessEnvelope(short v, u_char keyon, int JSmp); // 0x000857A4
 

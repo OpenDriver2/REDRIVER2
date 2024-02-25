@@ -188,32 +188,32 @@ extern void LoadSky(void);
 
 void DebugTimeOfDayDay(int direction)
 {
-	wantedTimeOfDay = 1;
-	gTimeOfDay = 1;
+	wantedTimeOfDay = TIME_DAY;
+	gTimeOfDay = TIME_DAY;
 	gWantNight = 0;
 	LoadSky();
 }
 
 void DebugTimeOfDayNight(int direction)
 {
-	wantedTimeOfDay = 3;
-	gTimeOfDay = 3;
+	wantedTimeOfDay = TIME_NIGHT;
+	gTimeOfDay = TIME_NIGHT;
 	gWantNight = 1;
 	LoadSky();
 }
 
 void DebugTimeOfDayDusk(int direction)
 {
-	wantedTimeOfDay = 0;
-	gTimeOfDay = 0;
+	wantedTimeOfDay = TIME_DUSK;
+	gTimeOfDay = TIME_DUSK;
 	gWantNight = 0;
 	LoadSky();
 }
 
 void DebugTimeOfDayDawn(int direction)
 {
-	wantedTimeOfDay = 2;
-	gTimeOfDay = 2;
+	wantedTimeOfDay = TIME_DAWN;
+	gTimeOfDay = TIME_DAWN;
 	gWantNight = 0;
 	LoadSky();
 }
@@ -225,7 +225,7 @@ void DebugTimeOfDayRain(int direction)
 	gWeather ^= 1;
 	wantedWeather = gWeather;
 
-	if (gWeather == 1)
+	if (gWeather == WEATHER_RAIN)
 		wetness = 7000;
 	else
 		wetness = 0;
@@ -259,7 +259,6 @@ MENU_HEADER DebugJustForFunHeader =
 MENU_ITEM DebugOptionsItems[] =
 {
 #ifdef CUTSCENE_RECORDER
-	//{ gCutsceneRecorderPauseText, 5u, 2u, (pauseFunc)&NextCutsceneRecorderPlayer, MENU_QUIT_NONE, NULL },
 	{ gCurrentChasePauseText, 5u, 2u, (pauseFunc)&CutRec_NextChase, MENU_QUIT_NONE, NULL },
 #endif
 	{ "Display position", PAUSE_TYPE_FUNC, 	2,	SetDisplayPosition,		MENU_QUIT_NONE,		NULL},
@@ -1062,7 +1061,7 @@ void DrawVisibleMenus(void)
 
 	if (NumPlayers > 1)
 	{
-		SetFullscreenDrawing();
+		SetFullscreenDrawing(2);
 	}
 
 	pActive = VisibleMenus[VisibleMenu];

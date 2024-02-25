@@ -66,7 +66,7 @@ void ResetTyreTracks(CAR_DATA* cp, int player_id)
 // [D] [T]
 void GetTyreTrackPositions(CAR_DATA *cp, int player_id)
 {
-	int loop, track, steps;
+	int loop, track;
 	CAR_COSMETICS *car_cos;
 	VECTOR WheelPos;
 	VECTOR CarPos;
@@ -78,9 +78,8 @@ void GetTyreTrackPositions(CAR_DATA *cp, int player_id)
 	car_cos = cp->ap.carCos;
 	SetRotMatrix(&cp->hd.where);
 
-	steps = 4 / MAX_TYRE_TRACK_WHEELS;
-
-	for (loop = 0; loop < 4; loop += steps)
+	track = 0;
+	for (loop = (2 / MAX_TYRE_TRACK_WHEELS); loop < 4; loop += (4 / MAX_TYRE_TRACK_WHEELS), track++)
 	{
 		WheelPos.vx = car_cos->wheelDisp[loop].vx;
 		if (loop & 2) 
@@ -89,15 +88,13 @@ void GetTyreTrackPositions(CAR_DATA *cp, int player_id)
 			WheelPos.vx -= 17;
 
 		WheelPos.vy = 0;
-		WheelPos.vz = car_cos->wheelDisp[loop + 1 & 3].vz;
+		WheelPos.vz = car_cos->wheelDisp[loop].vz;
 
 		_MatrixRotate(&WheelPos);
 
 		WheelPos.vx += CarPos.vx;
 		WheelPos.vy = CarPos.vy;
 		WheelPos.vz += CarPos.vz;
-
-		track = loop / steps;
 
 		tyre_new_positions[player_id][track].vx = WheelPos.vx;
 		tyre_new_positions[player_id][track].vz = WheelPos.vz;
@@ -442,7 +439,7 @@ void InitShadow(void)
 }
 
 // [D] [A] - this is a fuckery
-void SubdivShadow(long z0, long z1, long z2, long z3, POLY_FT4 *sps)
+void SubdivShadow(int z0, int z1, int z2, int z3, POLY_FT4 *sps)
 {
 	// [A] we already have better car shadow code. This is UNUSED anyway
 	POLY_FT4 *spd;
@@ -493,8 +490,8 @@ void PlaceShadowForCar(VECTOR *shadowPoints, int subdiv, int zOfs, int flag)
 
 	POLYFT4* pft4 = &shadowpoly;
 
-	plotContext.clut = (u_int)(*plotContext.ptexture_cluts)[pft4->texture_set][pft4->texture_id] << 0x10;
-	plotContext.tpage = ((u_int)(*plotContext.ptexture_pages)[pft4->texture_set] | 0x40) << 0x10;
+	plotContext.clut = (u_int)(*plotContext.ptexture_cluts)[pft4->texture_set][pft4->texture_id];
+	plotContext.tpage = ((u_int)(*plotContext.ptexture_pages)[pft4->texture_set] | 0x40);
 
 	copyVector(&subdivVerts[0][0], &points[pft4->v0]);
 	subdivVerts[0][0].uv.val = *(ushort*)&pft4->uv0;
@@ -656,7 +653,7 @@ void clippedPoly(void)
 	int iVar6;
 	SVECTOR *pSVar7;
 	short *psVar8;
-	ulong *in_a1;
+	uint *in_a1;
 	short *psVar9;
 	int iVar10;
 	int iVar11;
@@ -665,7 +662,7 @@ void clippedPoly(void)
 	pPVar4 = spolys;
 	iVar11 = numcv + -1;
 	if (iVar11 != -1) {
-		in_a1 = (ulong *)0xffffffff;
+		in_a1 = (uint *)0xffffffff;
 		psVar8 = &(&cv)[lastcv].vz;
 		do {
 			iVar11 = iVar11 + -1;
@@ -677,7 +674,7 @@ void clippedPoly(void)
 	if (2 < numcv) {
 		iVar11 = numcv + -1;
 		if (numcv != 0) {
-			in_a1 = (ulong *)0xffffffff;
+			in_a1 = (uint *)0xffffffff;
 			pSVar7 = &cv + lastcv;
 			do {
 				iVar11 = iVar11 + -1;
@@ -689,7 +686,7 @@ void clippedPoly(void)
 		if (2 < numcv) {
 			iVar11 = numcv + -1;
 			if (numcv != 0) {
-				in_a1 = (ulong *)&(&cv)[lastcv].vy;
+				in_a1 = (uint *)&(&cv)[lastcv].vy;
 				do {
 					iVar11 = iVar11 + -1;
 					*(short *)((int)in_a1 + 2) =
@@ -701,7 +698,7 @@ void clippedPoly(void)
 			if (2 < numcv) {
 				iVar11 = numcv + -1;
 				if (numcv != 0) {
-					in_a1 = (ulong *)0xffffffff;
+					in_a1 = (uint *)0xffffffff;
 					psVar8 = &(&cv)[lastcv].vy;
 					do {
 						iVar11 = iVar11 + -1;
@@ -713,7 +710,7 @@ void clippedPoly(void)
 				if (2 < numcv) {
 					iVar11 = numcv + -1;
 					if (numcv != 0) {
-						in_a1 = (ulong *)0xffffffff;
+						in_a1 = (uint *)0xffffffff;
 						psVar8 = &(&cv)[lastcv].vy;
 						do {
 							iVar11 = iVar11 + -1;

@@ -7,6 +7,8 @@
 #ifndef PSX
 #include "PsyX/PsyX_public.h"
 #include "PsyX/PsyX_globals.h"
+#include "psx/libgte.h"
+#include "psx/libgpu.h"
 #endif
 
 // Necessary types

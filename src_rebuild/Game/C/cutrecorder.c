@@ -564,7 +564,7 @@ int CutRec_LoadCutsceneAsReplayFromBuffer(char* buffer)
 		REPLAY_STREAM* destStream = &ReplayStreams[i];
 
 		// copy source type
-		memcpy((u_char*)&destStream->SourceType, (u_char*)&sheader->SourceType, sizeof(STREAM_SOURCE));
+		destStream->SourceType = sheader->SourceType;
 
 		int size = (sheader->Size + sizeof(PADRECORD)) & -4;
 

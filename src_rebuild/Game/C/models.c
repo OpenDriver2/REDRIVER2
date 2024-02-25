@@ -5,6 +5,10 @@
 #include "mission.h"
 #include "cars.h"
 
+#if USE_PC_FILESYSTEM
+extern int gContentOverride;
+#endif
+
 MODEL dummyModel = { 0 };
 
 char* modelname_buffer = NULL;
@@ -20,6 +24,7 @@ u_short *Low2LowerDetailTable = NULL;
 
 // [A]
 int staticModelSlotBitfield[48];
+int litSprites[48];
 
 // [A] returns freed slot count
 int CleanSpooledModelSlots()
@@ -39,6 +44,7 @@ int CleanSpooledModelSlots()
 			{
 				modelpointers[i] = &dummyModel;
 				pLodModels[i] = &dummyModel;
+				litSprites[i >> 5] &= ~(1 << (i & 31));
 
 				num_freed++;
 			}
@@ -46,6 +52,25 @@ int CleanSpooledModelSlots()
 	}
 
 	return num_freed;
+}
+
+// [A]
+void ProcessModel(int modelIdx)
+{
+	MODEL* model;
+
+	model = modelpointers[modelIdx];
+
+	model->tri_verts = 0; // [A] this is used as additional flags for animated models and triangle processing
+
+	if (gTimeOfDay == TIME_NIGHT)
+	{
+		if (model->shape_flags & SHAPE_FLAG_SPRITE)
+		{
+			if (modelIdx != 1223 && (!(model->flags2 & MODEL_FLAG_TREE) || modelIdx == 945 || modelIdx == 497))
+				litSprites[modelIdx >> 5] |= 1 << (modelIdx & 31);
+		}
+	}
 }
 
 // [D] [T]
@@ -56,6 +81,7 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 	MODEL *parentmodel;
 	int modelAmts;
 	int i, size;
+	int litModel;
 
 	modelAmts = *(int *)lump_file;
 	mdsfile = (lump_file + 4);
@@ -63,6 +89,7 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 
 	// [A] usage bits
 	ClearMem((char*)staticModelSlotBitfield, sizeof(staticModelSlotBitfield));
+	ClearMem((char*)litSprites, sizeof(litSprites));
 
 	// assign model pointers
 	for (i = 0; i < MAX_MODEL_SLOTS; i++) // [A] bug fix. Init with dummyModel
@@ -83,6 +110,8 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 			
 			model = (MODEL*)mdsfile;
 			modelpointers[i] = model;
+
+			ProcessModel(i);
 		}
 
 		mdsfile += size;
@@ -216,11 +245,47 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 			int cleanOfs = offsets[0];
 			int damOfs = offsets[1];
 			int lowOfs = offsets[2];
+
+#if USE_PC_FILESYSTEM
+			if (gContentOverride)
+			{
+				char* mem;
+				if (mem = LoadCarModelFromFile(NULL, model_number, CAR_MODEL_CLEAN))
+				{
+					D_MALLOC_BEGIN();
+					model = GetCarModel(mem, (char**)&mallocptr, 1);
+					D_MALLOC_END();
+
+					gCarCleanModelPtr[i] = model;
+					cleanOfs = -1; // skip loading
+				}
+
+				if (mem = LoadCarModelFromFile(NULL, model_number, CAR_MODEL_DAMAGED))
+				{
+					D_MALLOC_BEGIN();
+					model = GetCarModel(mem, (char**)&mallocptr, 1);
+					D_MALLOC_END();
+
+					gCarDamModelPtr[i] = model;
+					damOfs = -1; // skip loading
+				}
+
+				if (mem = LoadCarModelFromFile(NULL, model_number, CAR_MODEL_LOWDETAIL))
+				{
+					D_MALLOC_BEGIN();
+					model = GetCarModel(mem, (char**)&mallocptr, 1);
+					D_MALLOC_END();
+
+					gCarLowModelPtr[i] = model;
+					lowOfs = -1; // skip loading
+				}
+			}
+#endif
 			
 			if (cleanOfs != -1)
 			{
 				D_MALLOC_BEGIN();
-				model = GetCarModel(models_offset + cleanOfs, (char**)&mallocptr, 1, model_number, CAR_MODEL_CLEAN);
+				model = GetCarModel(models_offset + cleanOfs, (char**)&mallocptr, 1);
 				gCarCleanModelPtr[i] = model;
 				D_MALLOC_END();
 			}
@@ -228,7 +293,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 			if (damOfs != -1)
 			{
 				D_MALLOC_BEGIN();
-				model = GetCarModel(models_offset + damOfs, (char**)&mallocptr, 0, model_number, CAR_MODEL_DAMAGED);
+				model = GetCarModel(models_offset + damOfs, (char**)&mallocptr, 0);
 				gCarDamModelPtr[i] = model;
 				D_MALLOC_END();
 			}
@@ -236,7 +301,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 			if (lowOfs != -1)
 			{
 				D_MALLOC_BEGIN();
-				model = GetCarModel(models_offset + lowOfs, (char**)&mallocptr, 1, model_number, CAR_MODEL_LOWDETAIL);
+				model = GetCarModel(models_offset + lowOfs, (char**)&mallocptr, 1);
 				gCarLowModelPtr[i] = model;
 				D_MALLOC_END();
 			}
@@ -244,6 +309,15 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 	}
 
 	D_MALLOC_BEGIN();
+
+#if USE_PC_FILESYSTEM
+	if (gContentOverride)
+	{
+		// extra spool memory needed
+		specMemReq += 4096;
+	}
+#endif
+
 	mallocptr = specmallocptr + specMemReq;
 	specLoadBuffer = specmallocptr + specMemReq - 2048;
 	D_MALLOC_END();
@@ -260,14 +334,14 @@ char* CarModelTypeNames[] = {
 	"LOW",
 };
 
-#ifndef PSX
+#if USE_PC_FILESYSTEM
 // [A] loads car model from file
 char* LoadCarModelFromFile(char* dest, int modelNumber, int type)
 {
 	char* mem;
 	char filename[64];
 
-	sprintf(filename, "LEVELS\\%s\\CARMODEL_%d_%s.DMODEL", LevelNames[GameLevel], modelNumber, CarModelTypeNames[type-1]);
+	sprintf(filename, "LEVELS\\%s\\CARMODEL_%d_%s.MDL", LevelNames[GameLevel], modelNumber, CarModelTypeNames[type-1]);
 	if(FileExists(filename))
 	{
 		mem = (char*)(dest ? dest : (_other_buffer + modelNumber * 0x10000 + (type-1) * 0x4000));
@@ -282,30 +356,21 @@ char* LoadCarModelFromFile(char* dest, int modelNumber, int type)
 #endif
 
 // [D] [T]
-MODEL* GetCarModel(char *src, char **dest, int KeepNormals, int modelNumber, int type)
+MODEL* GetCarModel(char *src, char **dest, int KeepNormals)
 {
 	int size;
 	MODEL *model;
 	char* mem;
-
-#ifndef PSX
-	mem = LoadCarModelFromFile(NULL, modelNumber, type);
-
-	if (!mem) // fallback to lump
-		mem = src;
-#else
-	mem = src;
-#endif
 	
 	model = (MODEL *)*dest;
 	
 	if (KeepNormals == 0)
-		size = ((MODEL*)mem)->normals;
+		size = ((MODEL*)src)->normals;
 	else 
-		size = ((MODEL*)mem)->poly_block;
+		size = ((MODEL*)src)->poly_block;
 
 	// if loaded externally don't copy from source lump
-	memcpy((u_char*)*dest, (u_char*)mem, size);
+	memcpy((u_char*)*dest, (u_char*)src, size);
 
 	if (KeepNormals == 0)
 		size = model->normals;
@@ -317,7 +382,7 @@ MODEL* GetCarModel(char *src, char **dest, int KeepNormals, int modelNumber, int
 
 	model->vertices += (int)model;
 	model->normals += (int)model;
-	model->poly_block = (int)mem + model->poly_block;
+	model->poly_block = (int)src + model->poly_block;
 
 	if (KeepNormals == 0)
 		model->point_normals = 0;

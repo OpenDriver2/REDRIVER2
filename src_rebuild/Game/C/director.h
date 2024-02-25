@@ -1,26 +1,26 @@
 #ifndef DIRECTOR_H
 #define DIRECTOR_H
 
-extern TEXTURE_DETAILS addcam;
-extern TEXTURE_DETAILS frameadv;
-extern TEXTURE_DETAILS autocam;
-extern TEXTURE_DETAILS chasecar;
-extern TEXTURE_DETAILS choosecar;
-extern TEXTURE_DETAILS clock;
-extern TEXTURE_DETAILS delcam;
-extern TEXTURE_DETAILS editcam;
-extern TEXTURE_DETAILS fixedcam;
-extern TEXTURE_DETAILS incar;
-extern TEXTURE_DETAILS lenschan;
-extern TEXTURE_DETAILS lookcar;
-extern TEXTURE_DETAILS movecam;
-extern TEXTURE_DETAILS movecampos;
-extern TEXTURE_DETAILS ok;
-extern TEXTURE_DETAILS pause;
-extern TEXTURE_DETAILS playcam;
-extern TEXTURE_DETAILS playpause;
-extern TEXTURE_DETAILS save2card;
-extern TEXTURE_DETAILS restart;
+extern TEXTURE_DETAILS icon_addcam;
+extern TEXTURE_DETAILS icon_frameadv;
+extern TEXTURE_DETAILS icon_autocam;
+extern TEXTURE_DETAILS icon_chasecar;
+extern TEXTURE_DETAILS icon_choosecar;
+extern TEXTURE_DETAILS icon_clock;
+extern TEXTURE_DETAILS icon_delcam;
+extern TEXTURE_DETAILS icon_editcam;
+extern TEXTURE_DETAILS icon_fixedcam;
+extern TEXTURE_DETAILS icon_incar;
+extern TEXTURE_DETAILS icon_lenschan;
+extern TEXTURE_DETAILS icon_lookcar;
+extern TEXTURE_DETAILS icon_movecam;
+extern TEXTURE_DETAILS icon_movecampos;
+extern TEXTURE_DETAILS icon_ok;
+extern TEXTURE_DETAILS icon_pause;
+extern TEXTURE_DETAILS icon_playcam;
+extern TEXTURE_DETAILS icon_playpause;
+extern TEXTURE_DETAILS icon_save2card;
+extern TEXTURE_DETAILS icon_restart;
 
 extern int FastForward;
 extern int EditMode;

@@ -27,52 +27,52 @@ struct REPLAY_ICON
 	short tx, ty;
 };
 
-TEXTURE_DETAILS delcam; // address 0xC0EE0
-TEXTURE_DETAILS incar; // address 0xBF950
-TEXTURE_DETAILS lenschan; // address 0xC1DB0
-TEXTURE_DETAILS lookcar; // address 0xC1CB0
-TEXTURE_DETAILS movecam; // address 0xC1C18
-TEXTURE_DETAILS movecampos; // address 0xC08C0
-TEXTURE_DETAILS ok; // address 0xC1BD8
-TEXTURE_DETAILS pause; // address 0xBF970
-TEXTURE_DETAILS playpause; // address 0xC2A28
-TEXTURE_DETAILS clock; // address 0xBF940
-TEXTURE_DETAILS choosecar; // address 0xC2A08
-TEXTURE_DETAILS chasecar; // address 0xC1D60
-TEXTURE_DETAILS addcam; // address 0xC0A50
-TEXTURE_DETAILS autocam; // address 0xC1CA0
-TEXTURE_DETAILS playcam; // address 0xC1C08
-TEXTURE_DETAILS restart; // address 0xC1CD0
-TEXTURE_DETAILS save2card; // address 0xC1F40
-TEXTURE_DETAILS editcam; // address 0xC1BE8
-TEXTURE_DETAILS fixedcam; // address 0xC1D70
-TEXTURE_DETAILS frameadv; // address 0xC1D80
+TEXTURE_DETAILS icon_delcam; // address 0xC0EE0
+TEXTURE_DETAILS icon_incar; // address 0xBF950
+TEXTURE_DETAILS icon_lenschan; // address 0xC1DB0
+TEXTURE_DETAILS icon_lookcar; // address 0xC1CB0
+TEXTURE_DETAILS icon_movecam; // address 0xC1C18
+TEXTURE_DETAILS icon_movecampos; // address 0xC08C0
+TEXTURE_DETAILS icon_ok; // address 0xC1BD8
+TEXTURE_DETAILS icon_pause; // address 0xBF970
+TEXTURE_DETAILS icon_playpause; // address 0xC2A28
+TEXTURE_DETAILS icon_clock; // address 0xBF940
+TEXTURE_DETAILS icon_choosecar; // address 0xC2A08
+TEXTURE_DETAILS icon_chasecar; // address 0xC1D60
+TEXTURE_DETAILS icon_addcam; // address 0xC0A50
+TEXTURE_DETAILS icon_autocam; // address 0xC1CA0
+TEXTURE_DETAILS icon_playcam; // address 0xC1C08
+TEXTURE_DETAILS icon_restart; // address 0xC1CD0
+TEXTURE_DETAILS icon_save2card; // address 0xC1F40
+TEXTURE_DETAILS icon_editcam; // address 0xC1BE8
+TEXTURE_DETAILS icon_fixedcam; // address 0xC1D70
+TEXTURE_DETAILS icon_frameadv; // address 0xC1D80
 
 REPLAY_ICON replay_icons[] =
 {
-	{ 20, 26, &pause, G_LTXT_ID(GTXT_Pause), 20, 48 },
-	{ 20, 26, &playpause, G_LTXT_ID(GTXT_Play), 20, 48 },
-	{ 44, 26, &autocam, G_LTXT_ID(GTXT_AutoDirector), 44, 48 },
-	{ 68, 26, &playcam, G_LTXT_ID(GTXT_FastForward), 68, 48 },
-	{ 92, 26, &frameadv, G_LTXT_ID(GTXT_FrameAdvance), 92, 48 },
-	{ 116, 26, &restart, G_LTXT_ID(GTXT_Rewindtobeginning), 116, 48 },
-	{ 140, 26, &addcam, G_LTXT_ID(GTXT_AddCamera), 140, 48 },
-	{ 164, 26, &editcam, G_LTXT_ID(GTXT_EditCamera), 164, 48 },
-	{ 188, 26, &save2card, G_LTXT_ID(GTXT_SaveReplay), 188, 48 },
-	{ 212, 26, &ok, G_LTXT_ID(GTXT_Exit), 212, 48 },
-	{ 140, 50, &incar, G_LTXT_ID(GTXT_InCar), 164, 48 },
-	{ 140, 74, &chasecar, G_LTXT_ID(GTXT_ChaseCamera), 164, 72 },
-	{ 140, 98, &fixedcam, G_LTXT_ID(GTXT_TripodCamera), 164, 96 },
-	{ 140, 122, &ok, G_LTXT_ID(GTXT_Accept), 164, 120 },
-	{ 140, 122, &clock, G_LTXT_ID(GTXT_MoveCameraStart), 164, 120 },
-	{ 140, 146, &delcam, G_LTXT_ID(GTXT_DeleteCamera), 164, 144 },
-	{ 140, 170, &ok, G_LTXT_ID(GTXT_Accept), 164, 168 },
-	{ 164, 50, &choosecar, G_LTXT_ID(GTXT_YouorPursuer), 164, 72 },
-	{ 164, 74, &movecampos, G_LTXT_ID(GTXT_MoveCamera), 164, 96 },
-	{ 164, 98, &movecampos, G_LTXT_ID(GTXT_MoveCamera), 164, 120 },
-	{ 188, 98, &lookcar, G_LTXT_ID(GTXT_LocktoCar), 188, 120 },
-	{ 212, 98, &movecam, G_LTXT_ID(GTXT_Rotate), 212, 120 },
-	{ 236, 98, &lenschan, G_LTXT_ID(GTXT_Zoom), 236, 120 }
+	{ 20, 26, &icon_pause, G_LTXT_ID(GTXT_Pause), 20, 48 },
+	{ 20, 26, &icon_playpause, G_LTXT_ID(GTXT_Play), 20, 48 },
+	{ 44, 26, &icon_autocam, G_LTXT_ID(GTXT_AutoDirector), 44, 48 },
+	{ 68, 26, &icon_playcam, G_LTXT_ID(GTXT_FastForward), 68, 48 },
+	{ 92, 26, &icon_frameadv, G_LTXT_ID(GTXT_FrameAdvance), 92, 48 },
+	{ 116, 26, &icon_restart, G_LTXT_ID(GTXT_Rewindtobeginning), 116, 48 },
+	{ 140, 26, &icon_addcam, G_LTXT_ID(GTXT_AddCamera), 140, 48 },
+	{ 164, 26, &icon_editcam, G_LTXT_ID(GTXT_EditCamera), 164, 48 },
+	{ 188, 26, &icon_save2card, G_LTXT_ID(GTXT_SaveReplay), 188, 48 },
+	{ 212, 26, &icon_ok, G_LTXT_ID(GTXT_Exit), 212, 48 },
+	{ 140, 50, &icon_incar, G_LTXT_ID(GTXT_InCar), 164, 48 },
+	{ 140, 74, &icon_chasecar, G_LTXT_ID(GTXT_ChaseCamera), 164, 72 },
+	{ 140, 98, &icon_fixedcam, G_LTXT_ID(GTXT_TripodCamera), 164, 96 },
+	{ 140, 122, &icon_ok, G_LTXT_ID(GTXT_Accept), 164, 120 },
+	{ 140, 122, &icon_clock, G_LTXT_ID(GTXT_MoveCameraStart), 164, 120 },
+	{ 140, 146, &icon_delcam, G_LTXT_ID(GTXT_DeleteCamera), 164, 144 },
+	{ 140, 170, &icon_ok, G_LTXT_ID(GTXT_Accept), 164, 168 },
+	{ 164, 50, &icon_choosecar, G_LTXT_ID(GTXT_YouorPursuer), 164, 72 },
+	{ 164, 74, &icon_movecampos, G_LTXT_ID(GTXT_MoveCamera), 164, 96 },
+	{ 164, 98, &icon_movecampos, G_LTXT_ID(GTXT_MoveCamera), 164, 120 },
+	{ 188, 98, &icon_lookcar, G_LTXT_ID(GTXT_LocktoCar), 188, 120 },
+	{ 212, 98, &icon_movecam, G_LTXT_ID(GTXT_Rotate), 212, 120 },
+	{ 236, 98, &icon_lenschan, G_LTXT_ID(GTXT_Zoom), 236, 120 }
 };
 
 unsigned char menu0[] = { 0, 0xFF };
