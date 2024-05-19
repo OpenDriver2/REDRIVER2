@@ -826,17 +826,8 @@ void SetupDrawBufferData(int num_players)
 // [D] [T]
 void InitaliseDrawEnv(DB* pBuff, int x, int y, int w, int h)
 {
-#ifdef PSX
-#define DB1 pBuff[0]
-#define DB2 pBuff[1]
-#else
-// on PsyX we have to prevent flicker
-#define DB1 pBuff[1]
-#define DB2 pBuff[0]
-#endif
-
-	SetDefDrawEnv(&DB1.draw, x, y, w, h);
-	SetDefDrawEnv(&DB2.draw, x, y + 256, w, h);
+	SetDefDrawEnv(&pBuff[0].draw, x, y, w, h);
+	SetDefDrawEnv(&pBuff[1].draw, x, y + 256, w, h);
 
 	pBuff[0].id = 0;
 	pBuff[0].draw.dfe = 1;
