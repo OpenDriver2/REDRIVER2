@@ -28,8 +28,6 @@
 #include "../utils/targa.h"
 #include "../utils/hqfont.h"
 
-#pragma optimize("", off)
-
 #define HIRES_FONTS
 
 struct FEFONT_QUAD
@@ -1313,11 +1311,11 @@ void LoadFrontendScreens(int full)
 			}
 		}
 
+#ifndef PSX
 		// [A] SCREEN HACKS
-
 		// Time of day extended screen
 		PsxScreens[3].userFunctionNum = 22;			// TimeOfDaySelectScreen
-
+#endif
 		// for web demo content (or empty SCRS.BIN)
 		if (PsxScreens[0].userFunctionNum == 128)
 			PsxScreens[0].userFunctionNum = 23;		// DemoScreen
