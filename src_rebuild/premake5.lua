@@ -120,8 +120,8 @@ workspace "REDRIVER2"
 		filter "platforms:*-x86"
 			architecture "x86"
 
-		filter "platforms:*-x86_64"
-			architecture "x86_64"
+		filter "platforms:*-x64"
+			architecture "x64"
 
 		filter "platforms:*-arm"
 			architecture "arm"
@@ -129,7 +129,7 @@ workspace "REDRIVER2"
 		filter "platforms:*-arm64"
 			architecture "arm64"
 	else
-		platforms { "x86" } --, "x86_64" }
+		platforms { "x86", "x64" }
 	end
 	
 	startproject "REDRIVER2"
