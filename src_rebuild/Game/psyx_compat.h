@@ -21,6 +21,10 @@ typedef short VERTTYPE;
 
 #define RECT16 RECT
 
+// for portability, mainly 64 bit platforms
+typedef int			intptr;
+typedef u_int		u_intptr;
+
 #else
 
 #if defined(_M_X64) || defined(__amd64__)
@@ -28,6 +32,10 @@ typedef OT_TAG OTTYPE;
 #else
 typedef unsigned long long OTTYPE;
 #endif
+
+// for portability, mainly 64 bit platforms
+typedef intptr_t	intptr;
+typedef uintptr_t	u_intptr;
 
 #endif
 
