@@ -831,7 +831,7 @@ void StoreVertexLists(void)
 		cTannerVNumbers[i] = counter;
 
 		destVerts = &vTannerList[counter];
-		srcVerts = (SVECTOR*)pModel->vertices;
+		srcVerts = GET_MODEL_DATA(SVECTOR, pModel, vertices);
 
 		for (j = 0; j < pModel->num_vertices; j++)
 		{
@@ -857,7 +857,7 @@ void StoreVertexLists(void)
 			continue;
 		}
 
-		srcVerts = (SVECTOR*)pModel->vertices;
+		srcVerts = GET_MODEL_DATA(SVECTOR, pModel, vertices);
 
 		// store start index
 		cJerichoVNumbers[i] = counter;
@@ -1119,7 +1119,7 @@ void newShowTanner(LPPEDESTRIAN pDrawingPed)
 
 					for (int c = 0; c < model->num_vertices; c++)
 					{
-						SVECTOR* mVerts = (SVECTOR*)model->vertices + c;
+						SVECTOR* mVerts = GET_MODEL_DATA(SVECTOR, model, vertices) + c;
 
 						mVerts->vx += (vJPos[lval].vx + playerPos->vx - cameraPos->vx);
 						mVerts->vy += (vJPos[lval].vy + playerPos->vy - cameraPos->vy);
@@ -1394,7 +1394,7 @@ void newRotateBones(LPPEDESTRIAN pDrawingPed, BONE* poBone)
 				{
 					pModel = *pBone->pModel;
 
-					SVECTOR* pmVerts = (SVECTOR*)pModel->vertices;
+					SVECTOR* pmVerts = GET_MODEL_DATA(SVECTOR, pModel, vertices);
 					int numVerts = pModel->num_vertices;
 
 					for (int c = 0; c < numVerts; c++)

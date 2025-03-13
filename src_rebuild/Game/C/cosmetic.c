@@ -79,7 +79,7 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 
 	// [A] cache all special vehicle cosmetics
 #if ENABLE_GAME_FIXES
-	for (i = 0; i < 5; i++)
+	for (i = 0; i < MAX_CAR_MODELS; i++)
 	{
 		model = 8 + i;
 

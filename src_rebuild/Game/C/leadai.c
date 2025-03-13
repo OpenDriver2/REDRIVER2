@@ -1537,8 +1537,8 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 
 					QuickUnpackCellObject(ppco, &ci.nearCell, &tempCO);
 					
-					num_cb = *(int*)model->collision_block;
-					collide = (COLLISION_PACKET*)((int*)model->collision_block + 1);
+					num_cb = *GET_MODEL_DATA(int, model, collision_block);
+					collide = GET_MODEL_DATA_OFS(COLLISION_PACKET, model, collision_block, sizeof(int));
 
 					while (num_cb > 0)
 					{

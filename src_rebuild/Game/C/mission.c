@@ -626,7 +626,7 @@ void LoadMission(int missionnum)
 	{
 		if (MissionHeader->route == 0)
 		{
-			mallocptr += (missionSize + 3U & 0xfffffffc);
+			mallocptr += (missionSize + 3U & ~3);
 
 			if(LOAD_OVERLAY("PATH.BIN", _other_buffer2))
 				pathAILoaded = 1;

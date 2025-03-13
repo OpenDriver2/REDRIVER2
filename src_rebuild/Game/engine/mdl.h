@@ -163,4 +163,23 @@ struct MODEL
 };
 
 
+#define GET_RELOC_MODEL_DATA(TYPE, MDL, FIELD)		(TYPE*)((unsigned char*)MDL + MDL->FIELD)
+
+#ifdef PSX
+#define MODEL_RELOCATE_POINTERS 1
+#define GET_MODEL_DATA(TYPE, MDL, FIELD)			((TYPE*)MDL->FIELD)
+#define GET_MODEL_DATA_OFS(TYPE, MDL, FIELD, OFS)	((TYPE*)(MDL->FIELD + OFS))
+#else
+#define MODEL_RELOCATE_POINTERS 0
+
+extern char* _MDL_GETTER_vertices(MODEL* mdl);
+extern char* _MDL_GETTER_normals(MODEL* mdl);
+extern char* _MDL_GETTER_point_normals(MODEL* mdl);
+extern char* _MDL_GETTER_collision_block(MODEL* mdl);
+#define _MDL_GETTER_poly_block(MDL) ((unsigned char*)MDL + MDL->poly_block)
+
+#define GET_MODEL_DATA(TYPE, MDL, FIELD)			(TYPE*)(_MDL_GETTER_ ## FIELD( MDL ))
+#define GET_MODEL_DATA_OFS(TYPE, MDL, FIELD, OFS)	(TYPE*)(_MDL_GETTER_ ## FIELD( MDL ) + OFS)
+#endif
+
 #endif // MDL_H

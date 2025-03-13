@@ -1771,7 +1771,7 @@ void InitMusic(int musicnum)
 	{
 		printInfo("NewLevel in InitMusic()\n");
 		
-		music_pt = D_MALLOC(music_len + 3U & 0xfffffffc);
+		music_pt = D_MALLOC(music_len + 3U & ~3);
 		sample_pt = D_TEMPALLOC(sample_len);
 
 #ifdef USE_CRT_MALLOC

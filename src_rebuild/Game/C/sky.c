@@ -232,7 +232,7 @@ void LoadSky(void)
 				skytexuv[i].v3 = v + 83;
 			}
 	
-			skytpage[i] = GetTPage(0,0,tp_x & 0xffffffc0,ry * 84 & 768);
+			skytpage[i] = GetTPage(0,0,tp_x & ~0x3f, ry * 84 & 768);
 			skyclut[i] = GetClut(clut_x,ry + 252);
 
 			tp_x += 32;
@@ -889,7 +889,7 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset, RGB16* skycolor)
 	int z;
 
 	z = -1;
-	verts = (SVECTOR*)model->vertices;
+	verts = GET_MODEL_DATA(SVECTOR, model, vertices);
 	dv = scratchPad_skyVertices;
 	count = model->num_vertices;
 
@@ -924,7 +924,7 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset, RGB16* skycolor)
 	{
 		int polySize;
 		u_char* horizonTex = &HorizonTextures[horizontaboffset];
-		polys = (unsigned char*)model->poly_block;
+		polys = GET_MODEL_DATA(u_char, model, poly_block);
 		polySize = PolySizes[*polys];
 
 		red = skycolor->r;

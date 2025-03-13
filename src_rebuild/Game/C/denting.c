@@ -114,8 +114,8 @@ void DentCar(CAR_DATA *cp)
 	// update vertices positon
 	if (gCarCleanModelPtr[model] != NULL && gCarDamModelPtr[model] != NULL) 
 	{
-		DamVertPtr = (SVECTOR *)gCarDamModelPtr[model]->vertices;
-		CleanVertPtr = (SVECTOR *)gCarCleanModelPtr[model]->vertices;
+		DamVertPtr = GET_MODEL_DATA(SVECTOR, gCarDamModelPtr[model], vertices);
+		CleanVertPtr = GET_MODEL_DATA(SVECTOR, gCarCleanModelPtr[model], vertices);
 
 		for (VertNo = 0; VertNo < pCleanModel->num_vertices; VertNo++, DamVertPtr++, CleanVertPtr++)
 		{
@@ -185,7 +185,7 @@ void CreateDentableCar(CAR_DATA *cp)
 	srcModel = gCarCleanModelPtr[model];
 	if (srcModel != NULL)
 	{
-		src = (SVECTOR *)srcModel->vertices;
+		src = GET_MODEL_DATA(SVECTOR, srcModel, vertices);
 		dst = gTempCarVertDump[cp->id];
 
 		vcount = srcModel->num_vertices;

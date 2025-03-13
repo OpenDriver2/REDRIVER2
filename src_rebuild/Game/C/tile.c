@@ -23,8 +23,8 @@ void Tile1x1Lit(MODEL* model)
 	POLY_GT4* prims;
 	SVECTOR* srcVerts;
 
-	srcVerts = (SVECTOR*)model->vertices;
-	polys = (PL_POLYFT4*)model->poly_block;
+	srcVerts = GET_MODEL_DATA(SVECTOR, model, vertices);
+	polys = GET_MODEL_DATA(PL_POLYFT4, model, poly_block);
 
 	// grass should be under pavements and other things
 	if ((model->shape_flags & SHAPE_FLAG_WATER) || (model->flags2 & MODEL_FLAG_GRASS))
@@ -130,8 +130,8 @@ void Tile1x1(MODEL *model)
 	POLY_FT4* prims;
 	SVECTOR* srcVerts;
 
-	srcVerts = (SVECTOR*)model->vertices;
-	polys = (PL_POLYFT4*)model->poly_block;
+	srcVerts = GET_MODEL_DATA(SVECTOR, model, vertices);
+	polys = GET_MODEL_DATA(PL_POLYFT4, model, poly_block);
 
 	// grass should be under pavements and other things
 	if ((model->shape_flags & SHAPE_FLAG_WATER) || (model->flags2 & MODEL_FLAG_GRASS))
@@ -629,8 +629,8 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 	int i;
 	int ofse;
 
-	polys = (u_char *)model->poly_block;
-	plotContext.verts = (SVECTOR *)model->vertices;
+	polys = GET_MODEL_DATA(u_char, model, poly_block);
+	plotContext.verts = GET_MODEL_DATA(SVECTOR, model, vertices);
 
 	// WEIRD: tile types comes right after model header it seems
 	tileTypes = *(u_int *)(model + 1) >> 2;

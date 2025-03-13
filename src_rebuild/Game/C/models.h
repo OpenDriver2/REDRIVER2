@@ -15,7 +15,7 @@ extern char *car_models_lump;
 
 extern MODEL* modelpointers[MAX_MODEL_SLOTS];
 extern MODEL* pLodModels[MAX_MODEL_SLOTS];
-extern int litSprites[48];
+extern int litSprites[MAX_MODEL_SLOTS / 32];
 
 extern unsigned short *Low2HighDetailTable;
 extern unsigned short *Low2LowerDetailTable;
@@ -29,15 +29,8 @@ extern void ProcessMDSLump(char *lump_file, int lump_size); // 0x00064CFC
 
 extern int ProcessCarModelLump(char *lump_ptr, int lump_size); // 0x00064E6C
 
-extern MODEL * GetCarModel(char *src, char **dest, int KeepNormals); // 0x00065134
-
-extern MODEL * FindModelPtrWithName(char *name); // 0x0005D40C
+extern MODEL* FindModelPtrWithName(char *name); // 0x0005D40C
 
 extern int FindModelIdxWithName(char *name); // 0x0005D4C4
-
-#ifndef PSX
-// [A] loads car model from file
-char* LoadCarModelFromFile(char* dest, int modelNumber, int type);
-#endif
 
 #endif

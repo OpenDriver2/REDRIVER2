@@ -46,11 +46,11 @@ char CellEmpty(VECTOR *pPosition, int radius)
 		type = (ppco->value >> 6) | ((ppco->pos.vy & 1) << 10);
 		pModel = modelpointers[type];
 
-		if ((uint)pModel->collision_block > 0 && (pModel->flags2 & (MODEL_FLAG_CHAIR | MODEL_FLAG_SMASHABLE)) == 0)
+		if (pModel->collision_block > 0 && (pModel->flags2 & (MODEL_FLAG_CHAIR | MODEL_FLAG_SMASHABLE)) == 0)
 		{
 			QuickUnpackCellObject(ppco, &ci.nearCell, &tempCO);
 
-			num_cb = *(int*)pModel->collision_block;
+			num_cb = *GET_MODEL_DATA(int, pModel, collision_block);
 
 			xd = (tempCO.pos.vx - pPosition->vx);
 			zd = (tempCO.pos.vz - pPosition->vz);
@@ -58,7 +58,7 @@ char CellEmpty(VECTOR *pPosition, int radius)
 			sphere_sq = pModel->bounding_sphere + 580;
 			sphere_sq = (sphere_sq * sphere_sq);
 
-			collide = (COLLISION_PACKET*)(pModel->collision_block + sizeof(int));
+			collide = GET_MODEL_DATA_OFS(COLLISION_PACKET, pModel, collision_block, sizeof(int));
 
 			if (xd * xd + zd * zd < sphere_sq)
 			{
@@ -378,10 +378,10 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 					(pModel->flags2 & (MODEL_FLAG_CHAIR | MODEL_FLAG_SMASHABLE)) == 0 && 
 					(xd*xd + zd*zd < sphere_sq*sphere_sq))
 				{
-					num_cb = *(int*)pModel->collision_block;
-					box_loop = 0;
+					num_cb = *GET_MODEL_DATA(int, pModel, collision_block);
+					collide = GET_MODEL_DATA_OFS(COLLISION_PACKET, pModel, collision_block, sizeof(int));
 
-					collide = (COLLISION_PACKET*)(pModel->collision_block + sizeof(int));
+					box_loop = 0;
 
 					while (box_loop < num_cb)
 					{
@@ -552,7 +552,7 @@ void CollisionCopList(XZPAIR* pos, int* count)
 							/*model->num_vertices - 3 < 300 &&
 							model->num_point_normals < 300 &&
 							model->num_polys < 300 &&*/
-							*(int*)model->collision_block > 0)
+							*GET_MODEL_DATA(int, model, collision_block) > 0)
 						{
 							cop = UnpackCellObject(ppco, &ci.nearCell);
 							cop->pad = cnt;
@@ -660,12 +660,12 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 
 		model = modelpointers[cop->type];
 
-		if ((uint)model->collision_block > 0 /*&&
+		if (model->collision_block > 0 /*&&
 			model->num_vertices - 3 < 300 &&
 			model->num_point_normals < 300 &&
 			model->num_polys < 300*/)
 		{
-			num_cb = *(int*)model->collision_block;	// box count
+			num_cb = *GET_MODEL_DATA(int, model, collision_block);	// box count
 
 			if (!num_cb)
 			{
@@ -679,7 +679,7 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 
 			if (dx * dx + dz * dz < sphereSq * sphereSq)
 			{
-				collide = (COLLISION_PACKET*)(model->collision_block + sizeof(int));
+				collide = GET_MODEL_DATA_OFS(COLLISION_PACKET, model, collision_block, sizeof(int));
 
 				while(num_cb--)
 				{
@@ -766,8 +766,9 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 							{
 								cp->ap.needsDenting = 1;
 							}
-
-							//cp->st.n.linearVelocity[2] -= 700000; // [A] Vegas train velocity - disabled here, see flag above
+#if ENABLE_GAME_FIXES == 0
+							cp->st.n.linearVelocity[2] -= 700000; // [A] Vegas train velocity - disabled here, see flag above
+#endif
 						}
 						else
 						{
@@ -848,8 +849,8 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 
 			if (dx * dx + dz * dz < sphereSq * sphereSq)
 			{
-				num_cb = *(int *)model->collision_block;
-				collide = (COLLISION_PACKET*)(model->collision_block + sizeof(int));
+				num_cb = *GET_MODEL_DATA(int, model, collision_block);
+				collide = GET_MODEL_DATA_OFS(COLLISION_PACKET, model, collision_block, sizeof(int));
 
 				while(num_cb--)
 				{

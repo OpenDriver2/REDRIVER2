@@ -666,30 +666,32 @@ void init_spooled_models(void)
 
 		if (model->instance_number == -1)
 		{
-			if ((uint)model->collision_block != 0)
+#if MODEL_RELOCATE_POINTERS
+			if (model->collision_block != 0)
 				model->collision_block += (int)model;
 
 			model->vertices += (int)model;
 			model->normals += (int)model;
 			model->point_normals += (int)model;
-
+#endif
 			InitSpooledAnimObj(model_number);
 		}
 		else
 		{
 			parentmodel = modelpointers[model->instance_number];
-
-			if ((uint)parentmodel->collision_block != 0)
+			if (parentmodel->collision_block != 0)
 				model->collision_block = parentmodel->collision_block;
 
 			model->vertices = parentmodel->vertices;
 			model->normals = parentmodel->normals;
 			model->point_normals = parentmodel->point_normals;
 
-			InitSpooledAnimObj(parentmodel->instance_number);
+			InitSpooledAnimObj(model->instance_number);
 		}
-	
+
+#if MODEL_RELOCATE_POINTERS
 		model->poly_block += (int)model;
+#endif
 		addr += size + 4;
 	}
 
@@ -1677,7 +1679,7 @@ char* specmallocptr;
 char* specLoadBuffer;
 short specSpoolModelIndex = 4;
 
-int* modelMemory;
+int* modelMemory = NULL;
 
 int lengthLowBlock;
 int lastCleanBlock;
@@ -1755,20 +1757,22 @@ void CleanModelSpooled(void)
 	while (loadaddr < (int*)(specLoadBuffer + CDSECTOR_SIZE))
 		*modelMemory++ = *loadaddr++;
 
-	polyBlock = (int*)((int)gCarCleanModelPtr[4] + gCarCleanModelPtr[4]->poly_block);	// [A] pls check, might be invalid
+	polyBlock = GET_RELOC_MODEL_DATA(int, gCarCleanModelPtr[4], poly_block);
 
 	if (specBlocksToLoad == 0 || modelMemory > polyBlock)
 	{		
 		specBlocksToLoad = 0;
 		modelMemory = polyBlock;
 
+#if MODEL_RELOCATE_POINTERS
 		gCarCleanModelPtr[4]->vertices += (int)gCarCleanModelPtr[4];
 		gCarCleanModelPtr[4]->normals += (int)gCarCleanModelPtr[4];
 		gCarCleanModelPtr[4]->point_normals += (int)gCarCleanModelPtr[4];
 		gCarCleanModelPtr[4]->poly_block += (int)gCarCleanModelPtr[4];
-
-		NewCarModel[4].nlist = (SVECTOR *)gCarCleanModelPtr[4]->point_normals;
-		NewCarModel[4].vlist = (SVECTOR *)gCarCleanModelPtr[4]->vertices;
+#endif
+		gCarCleanModelPtr[4]->instance_number = -1;
+		NewCarModel[4].nlist = GET_MODEL_DATA(SVECTOR, gCarCleanModelPtr[4], point_normals);
+		NewCarModel[4].vlist = GET_MODEL_DATA(SVECTOR, gCarCleanModelPtr[4], vertices);
 	}
 
 	if (quickSpool != 1)
@@ -1795,17 +1799,19 @@ void DamagedModelSpooled(void)
 	while (loadaddr < (int*)(specLoadBuffer + CDSECTOR_SIZE))
 		*modelMemory++ = *loadaddr++;
 
-	polyBlock = (int*)((int)gCarDamModelPtr[4] + gCarDamModelPtr[4]->poly_block);	// [A] pls check, might be invalid
+	polyBlock = GET_RELOC_MODEL_DATA(int, gCarDamModelPtr[4], poly_block);
 
 	if (specBlocksToLoad == 0 || modelMemory > polyBlock)
 	{		
 		specBlocksToLoad = 0;
 		modelMemory = polyBlock;
 
+#if MODEL_RELOCATE_POINTERS
 		gCarDamModelPtr[4]->vertices += (int)gCarDamModelPtr[4];
 		gCarDamModelPtr[4]->normals += (int)gCarDamModelPtr[4];
 		gCarDamModelPtr[4]->poly_block += (int)gCarDamModelPtr[4];
 		gCarDamModelPtr[4]->point_normals += (int)gCarDamModelPtr[4];
+#endif
 	}
 
 	if (quickSpool != 1)
@@ -1832,20 +1838,22 @@ void LowModelSpooled(void)
 	while (loadaddr < (int*)(specLoadBuffer + CDSECTOR_SIZE))
 		*modelMemory++ = *loadaddr++;
 
-	polyBlock = (int*)((int)gCarLowModelPtr[4] + gCarLowModelPtr[4]->poly_block);	// [A] pls check, might be invalid
+	polyBlock = GET_RELOC_MODEL_DATA(int, gCarLowModelPtr[4], poly_block);
 
 	if (specBlocksToLoad == 0 || modelMemory > polyBlock)
 	{
 		specBlocksToLoad = 0;
 		modelMemory = polyBlock;
 
+#if MODEL_RELOCATE_POINTERS
 		gCarLowModelPtr[4]->vertices += (int)gCarLowModelPtr[4];
 		gCarLowModelPtr[4]->normals += (int)gCarLowModelPtr[4];
 		gCarLowModelPtr[4]->poly_block += (int)gCarLowModelPtr[4];
 		gCarLowModelPtr[4]->point_normals += (int)gCarLowModelPtr[4];
-
-		NewLowCarModel[4].nlist = (SVECTOR *)gCarLowModelPtr[4]->point_normals;
-		NewLowCarModel[4].vlist = (SVECTOR *)gCarLowModelPtr[4]->vertices;
+#endif
+		gCarLowModelPtr[4]->instance_number = -1;
+		NewLowCarModel[4].nlist = GET_MODEL_DATA(SVECTOR, gCarLowModelPtr[4], point_normals);
+		NewLowCarModel[4].vlist = GET_MODEL_DATA(SVECTOR, gCarLowModelPtr[4], vertices);
 	}
 
 	if (quickSpool != 1)
@@ -1902,11 +1910,10 @@ void CleanSpooled(void)
 			if (mem = LoadCarModelFromFile((char*)modelMemory, MissionHeader->residentModels[4], CAR_MODEL_CLEAN))
 			{
 				gCarCleanModelPtr[4] = (MODEL*)modelMemory;
-
 				model = GetCarModel(mem, (char**)&modelMemory, 1);
 
 				whichCP = baseSpecCP;
-				buildNewCarFromModel(&NewCarModel[4], model, 0);
+				buildNewCarFromModel(4, 1, mem, model);
 
 				specBlocksToLoad = 0;
 				specialState = SpecSpool_CleanModel;
@@ -1915,7 +1922,6 @@ void CleanSpooled(void)
 			if (mem = LoadCarModelFromFile((char*)modelMemory, MissionHeader->residentModels[4], CAR_MODEL_DAMAGED))
 			{
 				gCarDamModelPtr[4] = (MODEL*)modelMemory;
-
 				model = GetCarModel(mem, (char**)&modelMemory, 0);
 				
 				specBlocksToLoad = 0;
@@ -1925,10 +1931,9 @@ void CleanSpooled(void)
 			if (mem = LoadCarModelFromFile((char*)modelMemory, MissionHeader->residentModels[4], CAR_MODEL_LOWDETAIL))
 			{
 				gCarLowModelPtr[4] = (MODEL*)modelMemory;
-
 				model = GetCarModel(mem, (char**)&modelMemory, 1);
 
-				buildNewCarFromModel(&NewLowCarModel[4], model, 0);
+				buildNewCarFromModel(4, 0, mem, model);
 
 				specBlocksToLoad = 0;
 				specialState = SpecSpool_LowModel;
@@ -1942,16 +1947,17 @@ void CleanSpooled(void)
 	if (specBlocksToLoad == 7 - lastCleanBlock) 
 	{
 		specBlocksToLoad = 0;
-
 		model = (MODEL*)(specmallocptr + sizeof(int) * 3);
 
+		startBuildNewCars(1);
+		buildNewCarFromModel(4, 1, (char*)model, model);
+
+#if MODEL_RELOCATE_POINTERS
 		model->vertices += (int)model;
 		model->poly_block += (int)model;
 		model->normals += (int)model;
 		model->point_normals += (int)model;
-
-		whichCP = baseSpecCP;
-		buildNewCarFromModel(&NewCarModel[4], model, 0);
+#endif
 	}
 
 	if (quickSpool != 1)
@@ -1967,13 +1973,14 @@ void LowSpooled(void)
 	if (specBlocksToLoad == 0) 
 	{
 		model = (MODEL *)(specmallocptr + lowOffset);
-		
+		buildNewCarFromModel(4, 0, (char*)model, model);
+
+#if MODEL_RELOCATE_POINTERS
 		model->vertices += (int)model;
 		model->normals += (int)model;
 		model->poly_block += (int)model;
 		model->point_normals += (int)model;
-
-		buildNewCarFromModel(&NewLowCarModel[4], model, 0);
+#endif
 	}
 
 	if (quickSpool != 1) 

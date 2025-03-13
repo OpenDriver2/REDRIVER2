@@ -271,7 +271,7 @@ int LoadTPageAndCluts(RECT16 *tpage, RECT16 *cluts, int tpage2send, char *tpagea
 int Find_TexID(MODEL *model, int t_id)
 {
 	char *polylist;
-	polylist = (char *)model->poly_block;
+	polylist = GET_MODEL_DATA(char, model, poly_block);
 
 	for (int i = 0; i < model->num_polys; i++)
 	{
