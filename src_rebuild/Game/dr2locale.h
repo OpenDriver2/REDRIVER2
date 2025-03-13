@@ -267,8 +267,8 @@ extern char* gMissionLangTable[MAX_LANGUAGE_TEXT];
 #define M_LTXT_ID(id)		(char*)(id)
 
 // fancy logic
-#define GET_GAME_TXT(st)		(((int)st < MAX_LANGUAGE_TEXT && st) ? gGameLangTable[(int)st] : st)
-#define GET_MISSION_TXT(st)		(((int)st < MAX_LANGUAGE_TEXT && st) ? gMissionLangTable[(int)st] : st)
+#define GET_GAME_TXT(st)		(((u_intptr)st < MAX_LANGUAGE_TEXT && st) ? gGameLangTable[(int)st] : st)
+#define GET_MISSION_TXT(st)		(((u_intptr)st < MAX_LANGUAGE_TEXT && st) ? gMissionLangTable[(int)st] : st)
 
 extern int InitStringMng();
 extern void DeinitStringMng();
