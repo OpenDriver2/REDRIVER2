@@ -679,13 +679,17 @@ void init_spooled_models(void)
 		else
 		{
 			parentmodel = modelpointers[model->instance_number];
+#if MODEL_RELOCATE_POINTERS
 			if (parentmodel->collision_block != 0)
 				model->collision_block = parentmodel->collision_block;
 
 			model->vertices = parentmodel->vertices;
 			model->normals = parentmodel->normals;
 			model->point_normals = parentmodel->point_normals;
-
+#else
+			if (parentmodel->collision_block != 0)
+				model->collision_block = parentmodel->collision_block;
+#endif
 			InitSpooledAnimObj(model->instance_number);
 		}
 

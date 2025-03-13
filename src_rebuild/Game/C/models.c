@@ -130,6 +130,9 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 			model->point_normals = (int)(char*)parentmodel + parentmodel->point_normals;
 			if (parentmodel->collision_block != 0)
 				model->collision_block = (int)(char*)parentmodel + parentmodel->collision_block;
+#else
+			if (parentmodel->collision_block != 0)
+				model->collision_block = parentmodel->collision_block;
 #endif
 		}
 	}
@@ -179,6 +182,10 @@ char* _MDL_GETTER_collision_block(MODEL* mdl)
 {
 	if (mdl->instance_number != -1)
 		mdl = modelpointers[mdl->instance_number];
+
+	if (!mdl->collision_block)
+		return 0;
+
 	return (char*)mdl + mdl->collision_block;
 }
 
