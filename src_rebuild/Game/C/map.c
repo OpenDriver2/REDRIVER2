@@ -326,19 +326,16 @@ int CheckUnpackNewRegions(void)
 			srcsort = sortorder + i;
 			destsort = sortorder + (i + 1);
 
-			j = sortcount - (i + 1);
-
-			do {
+			for (j = sortcount - (i + 1); j > 0; --j) 
+			{
 				sort = *srcsort;
 				if (sortregions[*destsort].vz < sortregions[*srcsort].vz)
 				{
 					*srcsort = *destsort;
 					*destsort = sort;
 				}
-
-				j--;
 				destsort++;
-			} while (j > 0);
+			}
 		}
 
 		UnpackRegion(sortregions[sortorder[i]].vx, sortregions[sortorder[i]].vy);

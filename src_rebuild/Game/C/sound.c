@@ -471,10 +471,11 @@ int CompleteSoundSetup(int channel, int bank, int sample, int pitch, int proximi
 	samp = &samples[bank][sample];
 
 	rate = samp->samplerate * pitch;
+	bpf = (rate / 4096);
 #ifdef PAL_VERSION
-	bpf = (rate / 4096) / 50;
+	bpf /= 50;
 #else
-	bpf = (rate / 4096) / 60;
+	bpf /= 60;
 #endif
 
 	if (bpf == 0) 
