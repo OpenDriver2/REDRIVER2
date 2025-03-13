@@ -75,7 +75,7 @@ void InitPadRecording(void)
 
 		// FIXME: is that correct?
 		bufferEnd = replayptr-13380;
-		remain = (u_int)ReplayStart - (u_int)bufferEnd - cutsSize;
+		remain = (int)(ReplayStart - bufferEnd) - cutsSize;
 
 		for (i = 0; i < NumPlayers; i++)
 		{
@@ -560,7 +560,7 @@ void AllocateReplayStream(REPLAY_STREAM *stream, int maxpad)
 		stream->InitialPadRecordBuffer->run = 238;
 	}
 
-	replayptr = (char *)(((u_int)replayptr + (maxpad+1) * sizeof(PADRECORD)) & -4);
+	replayptr = (char *)(((intptr)replayptr + (maxpad+1) * sizeof(PADRECORD)) & -4);
 }
 
 // [D] [T]
