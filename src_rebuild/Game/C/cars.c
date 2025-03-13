@@ -1017,6 +1017,8 @@ MODEL* GetCarModel(char* src, char** dest, int KeepNormals)
 #else
 	if (KeepNormals == 0)
 		model->point_normals = 0;
+
+	model->instance_number = -1;
 #endif
 	return model;
 }
