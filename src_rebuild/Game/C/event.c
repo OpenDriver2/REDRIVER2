@@ -25,17 +25,17 @@
 
 struct FixedEvent // same as EVENT but different fields
 {
+	EVENT* next;
 	VECTOR position;
 	short rotation;
 	short active;
+	short flags;
+	short radius;
+	int model;
 	u_short initialRotation;
 	u_short finalRotation;
 	u_short minSpeed;
 	u_short maxSpeed;
-	short flags;
-	short radius;
-	int model;
-	EVENT* next;
 	char* modelName;
 };
 
@@ -260,45 +260,45 @@ MissionTrain missionTrain[2] =
 FixedEvent chicagoDoor[3] =
 {
   {
+	NULL,
 	{ -207616, 0, 659706, 0 },
+	0,
+	0,
+	80,
 	0,
 	0,
 	800u,
 	0u,
 	25u,
 	50u,
-	80,
-	0,
-	0,
-	0,
 	"WRGFLDDOOR"
   },
   {
+	NULL,
 	{ -209152, -512, 668928, 0 },
+	0,
+	0,
+	64,
 	0,
 	0,
 	2496u,
 	4096u,
 	25u,
 	50u,
-	64,
-	0,
-	0,
-	0,
 	"DOOR01"
   },
   {
+	NULL,
 	{ 195264, -3728, 74752, 0 },
 	0,
 	0,
-	0u,
-	0u,
-	0u,
-	0u,
 	1088,
 	0,
 	0,
-	0,
+	0u,
+	0u,
+	0u,
+	0u,
 	"FRAME"
   }
 };
@@ -306,45 +306,45 @@ FixedEvent chicagoDoor[3] =
 FixedEvent havanaFixed[3] =
 {
   {
+	NULL,
 	{ -183296, -273, -41720, 0 },
+	0,
+	0,
+	64,
 	0,
 	0,
 	800,
 	0,
 	25,
 	50,
-	64,
-	0,
-	0,
-	0,
 	"DOOR"
   },
   {
+	NULL,
 	{ -455168, 1529, -125440, 0 },
 	0,
 	0,
-	0u,
-	0u,
-	0u,
-	0u,
 	1536,
 	0,
 	0,
-	0,
+	0u,
+	0u,
+	0u,
+	0u,
 	"LIFT_SHAFT"
   },
   {
+	NULL,
 	{ -487936, 0, -136689, 0 },
+	0,
+	0,
+	80,
 	0,
 	0,
 	1152u,
 	0u,
 	10u,
 	20u,
-	80,
-	0,
-	0,
-	0,
 	"BASEDOOR"
   }
 };
@@ -352,73 +352,73 @@ FixedEvent havanaFixed[3] =
 FixedEvent vegasDoor[5] =
 {
   {
+	NULL,
 	{ -11851, 0, 844163, 0 },
+	0,
+	0,
+	80,
 	0,
 	0,
 	1700u,
 	3072u,
 	25u,
 	50u,
-	80,
-	0,
-	0,
-	0,
 	"DOOR"
   },
   {
+	NULL,
 	{ -106242, -239, -216960, 0 },
+	0,
+	0,
+	96,
 	0,
 	0,
 	800u,
 	0u,
 	25u,
 	50u,
-	96,
-	0,
-	0,
-	0,
 	"DOOR01"
   },
   {
+	NULL,
 	{ 63058, -231, 501184, 0 },
 	0,
 	0,
-	3200u,
-	4096u,
-	25u,
-	50u,
 	96,
 	0,
 	0,
-	0,
+	3200u,
+	4096u,
+	25u,
+	50u,
 	"DOOR02"
   },
   {
+	NULL,
 	{ -159356, -176, 647024, 0 },
 	0,
 	0,
-	3200u,
-	4096u,
-	25u,
-	50u,
 	64,
 	0,
 	0,
-	0,
+	3200u,
+	4096u,
+	25u,
+	50u,
 	"DOOR03"
   },
   {
+	NULL,
 	{ 123936, -170, 4928, 0 },
+	0,
+	0,
+	80,
 	0,
 	0,
 	3200u,
 	4096u,
 	25u,
 	50u,
-	80,
-	0,
-	0,
-	0,
 	"GATE01"
   }
 };
@@ -427,87 +427,87 @@ FixedEvent vegasDoor[5] =
 FixedEvent rioDoor[6] =
 {
   {
+	NULL,
 	{ -123328, -177, -254720, 0 },
+	0,
+	0,
+	96,
 	0,
 	0,
 	3200u,
 	4096u,
 	25u,
 	50u,
-	96,
-	0,
-	0,
-	0,
 	"DOOR1"
   },
   {
+	NULL,
 	{ -125248, -17, -256208, 0 },
+	0,
+	0,
+	80,
 	0,
 	0,
 	1600u,
 	0u,
 	25u,
 	50u,
-	80,
-	0,
-	0,
-	0,
 	"DOOR2"
   },
   {
+	NULL,
 	{ -274000, -17, -321408, 0 },
+	0,
+	0,
+	80,
 	0,
 	0,
 	1748u,
 	3072u,
 	25u,
 	50u,
-	80,
-	0,
-	0,
-	0,
 	"GATE01"
   },
   {
+	NULL,
 	{ -274000, -17, -322432, 0 },
+	0,
+	0,
+	80,
 	0,
 	0,
 	2348u,
 	1024u,
 	25u,
 	50u,
-	80,
-	0,
-	0,
-	0,
 	"GATE01"
   },
   {
+	NULL,
 	{ -40432, -17, 383328, 0 },
+	0,
+	0,
+	80,
 	0,
 	0,
 	700u,
 	2048u,
 	25u,
 	50u,
-	80,
-	0,
-	0,
-	0,
 	"GATE03"
   },
   {
+	NULL,
 	{ -39424, -17, 383328, 0 },
+	0,
+	0,
+	80,
 	0,
 	0,
 	900u,
 	0u,
 	25u,
 	50u,
-	80,
-	0,
-	0,
-	0,
 	"GATE03"
   }
 };
