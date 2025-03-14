@@ -1953,7 +1953,7 @@ void CleanSpooled(void)
 		specBlocksToLoad = 0;
 		model = (MODEL*)(specmallocptr + sizeof(int) * 3);
 
-		startBuildNewCars(1);
+		whichCP = baseSpecCP;
 		buildNewCarFromModel(4, 1, (char*)model, model);
 
 #if MODEL_RELOCATE_POINTERS
