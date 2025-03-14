@@ -1816,6 +1816,7 @@ void DamagedModelSpooled(void)
 		gCarDamModelPtr[4]->poly_block += (int)gCarDamModelPtr[4];
 		gCarDamModelPtr[4]->point_normals += (int)gCarDamModelPtr[4];
 #endif
+		gCarDamModelPtr[4]->instance_number = -1;
 	}
 
 	if (quickSpool != 1)
