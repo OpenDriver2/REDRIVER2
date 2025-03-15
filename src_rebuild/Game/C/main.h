@@ -22,9 +22,7 @@ extern int wetness;
 extern int scr_z;
 
 extern int DawnCount;
-
 extern int ObjectDrawnValue;
-extern int ObjectDrawnCounter;
 
 extern int Havana3DLevelDraw;
 

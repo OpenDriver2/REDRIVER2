@@ -3,6 +3,8 @@
 require "premake_modules/usage"
 require "premake_modules/emscripten"
 
+IS_ANDROID = (_ACTION == "androidndk")
+
 ------------------------------------------
 
 newoption {
@@ -19,7 +21,7 @@ SDL2_DIR = os.getenv("SDL2_DIR") or "dependencies/SDL2"
 OPENAL_DIR = os.getenv("OPENAL_DIR") or "dependencies/openal-soft"
 JPEG_DIR = os.getenv("JPEG_DIR") or "dependencies/jpeg"
 
-WEBDEMO_DIR = os.getenv("WEBDEMO_DIR") or "../../../content/web_demo@/"	-- FIXME: make it better
+WEBDEMO_DIR = os.getenv("WEBDEMO_DIR") or "../../../../content/web_demo@/"	-- FIXME: make it better
 RED2_DIR = os.getenv("RED2_DIR") or "../../data@/"
 WEBSHELL_PATH = "../platform/Emscripten"	-- must be relative to makefile path (SADLY)
 
@@ -58,6 +60,7 @@ workspace "REDRIVER2"
 			"-Wno-parentheses",
 			"-Wno-format",
 		}
+
 		linkoptions  { 
 			"-s TOTAL_MEMORY=1073741824",
 			"-s USE_SDL=2",
@@ -80,8 +83,53 @@ workspace "REDRIVER2"
 			"{COPY} " .. WEBSHELL_PATH .. "/lsfs.js %{cfg.buildtarget.directory}"
 		}
 
+	elseif IS_ANDROID then		
+		system "android"
+		shortcommands "On"
+		
+		platforms {
+			"android-arm", "android-arm64"
+		}
+		
+		disablewarnings {
+			"c++11-narrowing",
+			"constant-conversion",
+			"writable-strings",
+			"unused-value",
+			"switch",
+			"shift-op-parentheses",
+			"parentheses",
+			"format",
+		}
+		
+		buildoptions {
+			"-fpermissive",
+			"-fexceptions",
+			"-pthread",
+		}
+		
+		linkoptions {
+			"--no-undefined",
+			"-fexceptions",
+			"-pthread",
+			
+			"-mfloat-abi=softfp",	-- force NEON to be used
+			"-mfpu=neon"
+		}
+
+		filter "platforms:*-x86"
+			architecture "x86"
+
+		filter "platforms:*-x64"
+			architecture "x64"
+
+		filter "platforms:*-arm"
+			architecture "arm"
+
+		filter "platforms:*-arm64"
+			architecture "arm64"
 	else
-		platforms { "x86" } --, "x86_64" }
+		platforms { "x86", "x64" }
 	end
 	
 	startproject "REDRIVER2"
@@ -134,8 +182,15 @@ if os.target() == "windows" or os.target() == "emscripten" then
 	include "premake_libjpeg.lua"
 end
 
+-- font tool
+if os.target() ~= "emscripten" then
+	include "premake5_font_tool.lua"
+end
+
 -- Psy-Cross layer
 include "premake5_psycross.lua"
+
+
 
 -- game iteslf
 project "REDRIVER2"
@@ -175,7 +230,6 @@ project "REDRIVER2"
 			"utils/**.cpp",
 			"utils/**.c",
 			"redriver2_psxpc.cpp",
-			"DebugOverlay.cpp",
 		}
 		
 	filter "platforms:emscripten"

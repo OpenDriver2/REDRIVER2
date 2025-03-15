@@ -25,17 +25,17 @@
 
 struct FixedEvent // same as EVENT but different fields
 {
+	EVENT* next;
 	VECTOR position;
 	short rotation;
 	short active;
+	short flags;
+	short radius;
+	int model;
 	u_short initialRotation;
 	u_short finalRotation;
 	u_short minSpeed;
 	u_short maxSpeed;
-	short flags;
-	short radius;
-	int model;
-	EVENT* next;
 	char* modelName;
 };
 
@@ -260,45 +260,45 @@ MissionTrain missionTrain[2] =
 FixedEvent chicagoDoor[3] =
 {
   {
+	NULL,
 	{ -207616, 0, 659706, 0 },
+	0,
+	0,
+	80,
 	0,
 	0,
 	800u,
 	0u,
 	25u,
 	50u,
-	80,
-	0,
-	0,
-	0,
 	"WRGFLDDOOR"
   },
   {
+	NULL,
 	{ -209152, -512, 668928, 0 },
+	0,
+	0,
+	64,
 	0,
 	0,
 	2496u,
 	4096u,
 	25u,
 	50u,
-	64,
-	0,
-	0,
-	0,
 	"DOOR01"
   },
   {
+	NULL,
 	{ 195264, -3728, 74752, 0 },
 	0,
 	0,
-	0u,
-	0u,
-	0u,
-	0u,
 	1088,
 	0,
 	0,
-	0,
+	0u,
+	0u,
+	0u,
+	0u,
 	"FRAME"
   }
 };
@@ -306,45 +306,45 @@ FixedEvent chicagoDoor[3] =
 FixedEvent havanaFixed[3] =
 {
   {
+	NULL,
 	{ -183296, -273, -41720, 0 },
+	0,
+	0,
+	64,
 	0,
 	0,
 	800,
 	0,
 	25,
 	50,
-	64,
-	0,
-	0,
-	0,
 	"DOOR"
   },
   {
+	NULL,
 	{ -455168, 1529, -125440, 0 },
 	0,
 	0,
-	0u,
-	0u,
-	0u,
-	0u,
 	1536,
 	0,
 	0,
-	0,
+	0u,
+	0u,
+	0u,
+	0u,
 	"LIFT_SHAFT"
   },
   {
+	NULL,
 	{ -487936, 0, -136689, 0 },
+	0,
+	0,
+	80,
 	0,
 	0,
 	1152u,
 	0u,
 	10u,
 	20u,
-	80,
-	0,
-	0,
-	0,
 	"BASEDOOR"
   }
 };
@@ -352,73 +352,73 @@ FixedEvent havanaFixed[3] =
 FixedEvent vegasDoor[5] =
 {
   {
+	NULL,
 	{ -11851, 0, 844163, 0 },
+	0,
+	0,
+	80,
 	0,
 	0,
 	1700u,
 	3072u,
 	25u,
 	50u,
-	80,
-	0,
-	0,
-	0,
 	"DOOR"
   },
   {
+	NULL,
 	{ -106242, -239, -216960, 0 },
+	0,
+	0,
+	96,
 	0,
 	0,
 	800u,
 	0u,
 	25u,
 	50u,
-	96,
-	0,
-	0,
-	0,
 	"DOOR01"
   },
   {
+	NULL,
 	{ 63058, -231, 501184, 0 },
 	0,
 	0,
-	3200u,
-	4096u,
-	25u,
-	50u,
 	96,
 	0,
 	0,
-	0,
+	3200u,
+	4096u,
+	25u,
+	50u,
 	"DOOR02"
   },
   {
+	NULL,
 	{ -159356, -176, 647024, 0 },
 	0,
 	0,
-	3200u,
-	4096u,
-	25u,
-	50u,
 	64,
 	0,
 	0,
-	0,
+	3200u,
+	4096u,
+	25u,
+	50u,
 	"DOOR03"
   },
   {
+	NULL,
 	{ 123936, -170, 4928, 0 },
+	0,
+	0,
+	80,
 	0,
 	0,
 	3200u,
 	4096u,
 	25u,
 	50u,
-	80,
-	0,
-	0,
-	0,
 	"GATE01"
   }
 };
@@ -427,87 +427,87 @@ FixedEvent vegasDoor[5] =
 FixedEvent rioDoor[6] =
 {
   {
+	NULL,
 	{ -123328, -177, -254720, 0 },
+	0,
+	0,
+	96,
 	0,
 	0,
 	3200u,
 	4096u,
 	25u,
 	50u,
-	96,
-	0,
-	0,
-	0,
 	"DOOR1"
   },
   {
+	NULL,
 	{ -125248, -17, -256208, 0 },
+	0,
+	0,
+	80,
 	0,
 	0,
 	1600u,
 	0u,
 	25u,
 	50u,
-	80,
-	0,
-	0,
-	0,
 	"DOOR2"
   },
   {
+	NULL,
 	{ -274000, -17, -321408, 0 },
+	0,
+	0,
+	80,
 	0,
 	0,
 	1748u,
 	3072u,
 	25u,
 	50u,
-	80,
-	0,
-	0,
-	0,
 	"GATE01"
   },
   {
+	NULL,
 	{ -274000, -17, -322432, 0 },
+	0,
+	0,
+	80,
 	0,
 	0,
 	2348u,
 	1024u,
 	25u,
 	50u,
-	80,
-	0,
-	0,
-	0,
 	"GATE01"
   },
   {
+	NULL,
 	{ -40432, -17, 383328, 0 },
+	0,
+	0,
+	80,
 	0,
 	0,
 	700u,
 	2048u,
 	25u,
 	50u,
-	80,
-	0,
-	0,
-	0,
 	"GATE03"
   },
   {
+	NULL,
 	{ -39424, -17, 383328, 0 },
+	0,
+	0,
+	80,
 	0,
 	0,
 	900u,
 	0u,
 	25u,
 	50u,
-	80,
-	0,
-	0,
-	0,
 	"GATE03"
   }
 };
@@ -556,6 +556,12 @@ static EventCamera eventCamera;
 
 void MakeEventTrackable(EVENT* ev);
 
+#ifdef PSX
+#define EVENT_DRAW_DISTANCE VIEW_DRAW_DISTANCE
+#else
+#define EVENT_DRAW_DISTANCE 15000 // [A] world becomes repetetive if further :(
+#endif // PSX
+
 // [D] [T]
 int GetVisValue(int index, int zDir)
 {
@@ -566,17 +572,16 @@ int GetVisValue(int index, int zDir)
 
 	if (index & 0xC000)
 	{
-		camera = (index >> 0xf ^ 1) & 1;
+		camera = (index >> 15 ^ 1) & 1;
+		radius = EVENT_DRAW_DISTANCE;
 
 		if (zDir == 0)
 		{
 			pos.vx = player[camera].cameraPos.vx;
-			radius = 16000;
 		}
 		else
 		{
 			pos.vx = player[camera].cameraPos.vz;
-			radius = 16000;
 		}
 	}
 	else
@@ -584,9 +589,9 @@ int GetVisValue(int index, int zDir)
 		int multiple;
 
 		if (index & 0x80)
-			ev = (EVENT*)&fixedEvent[index & 0x7f];
+			ev = (EVENT*)&fixedEvent[index & 127];
 		else
-			ev = &event[index & 0x7f];
+			ev = &event[index & 127];
 
 		if (index & 0xf00)
 		{
@@ -748,9 +753,9 @@ void VisibilityLists(VisType type, int i)
 	else if (type == VIS_ADD)
 	{
 		if (i & 0x80)
-			ev = (EVENT*)&fixedEvent[i & 0x7f];
+			ev = (EVENT*)&fixedEvent[i & 127];
 		else
-			ev = &event[i & 0x7f];
+			ev = &event[i & 127];
 
 		if (ev->radius == 0)
 		{
@@ -1087,7 +1092,7 @@ void SetUpEvents(int full)
 		missionTrain[1].engine = missionTrain[0].engine;
 
 		// add trains
-		while (n < count-1)
+		while (n < count)
 		{
 			// randomize carriage count
 			if (n != 0)
@@ -1741,7 +1746,7 @@ void StepFromToEvent(EVENT* ev)
 {
 	int df;
 	int md;
-	long* curr;
+	decltype(VECTOR::vx)* curr;
 	int* to;
 	int direction;
 	int d, d2;
@@ -1833,7 +1838,7 @@ void StepPathEvent(EVENT* ev)
 	int* to;
 	Station station;
 	int direction;
-	long* curr;
+	decltype(VECTOR::vx)* curr;
 	int dir;
 	int turn[4];
 	XZPAIR centre;
@@ -2038,7 +2043,7 @@ void StepPathEvent(EVENT* ev)
 		ev->position.vx += offset.x;
 		ev->position.vz += offset.z;
 
-		ev->rotation = ratan2(offset.x, offset.z) + 1024U & 0xfff;
+		ev->rotation = ratan2(offset.x, offset.z) + 1024U & 4095;
 
 		if (ev->flags & 0x8000)
 		{
@@ -2330,7 +2335,7 @@ void StepHelicopter(EVENT* ev)
 		}
 
 		ev->rotation += FIXEDH(FIXEDH(direction * direction) * direction);
-		ev->rotation &= 0xfff;
+		ev->rotation &= 4095;
 
 		if (GetSurfaceIndex(&ev->position) == -23)
 		{
@@ -2603,7 +2608,7 @@ void StepEvents(void)
 				}
 
 				chicagoDoor[2].rotation -= chicagoDoor[2].active;
-				chicagoDoor[2].rotation &= 0xfff;
+				chicagoDoor[2].rotation &= 4095;
 			}
 		}
 
@@ -2643,9 +2648,9 @@ void StepEvents(void)
 				if ((*x & otherCamera) == 0)
 				{
 					if ((*x & 0x80) == 0)
-						evt = &event[*x & 0x7f];
+						evt = &event[*x & 127];
 					else
-						evt = (EVENT*)&fixedEvent[*x & 0x7f];
+						evt = (EVENT*)&fixedEvent[*x & 127];
 
 					// events that enable drawing
 					if ((evt->flags & 0x204) == 0x200)
@@ -2654,7 +2659,7 @@ void StepEvents(void)
 
 						while ((*z & thisCamera) == 0)
 						{
-							if ((*z & otherCamera) == 0 && (*x & 0xfff) == (*z & 0xfff))
+							if ((*z & otherCamera) == 0 && (*x & 4095) == (*z & 4095))
 							{
 								cop = &EventCop[event_models_active++];
 
@@ -2777,7 +2782,7 @@ void DrawRotor(VECTOR pos, MATRIX* matrix)
 	pos.vy -= camera_position.vy;
 	pos.vz -= camera_position.vz;
 
-	_RotMatrixY(&localMat, HelicopterData.rotorrot & 0xfff);
+	_RotMatrixY(&localMat, HelicopterData.rotorrot & 4095);
 	ApplyMatrixSV(matrix, v, v);
 	MulMatrix0(matrix, &localMat, &localMat);
 	ApplyMatrixSV(&localMat, v + 1, v + 1);
@@ -2925,15 +2930,15 @@ void DrawEvents(int camera)
 		if ((*x & otherCamera) == 0)
 		{
 			if ((*x & 0x80) == 0)
-				ev = &event[*x & 0x7f];
+				ev = &event[*x & 127];
 			else
-				ev = (EVENT*)&fixedEvent[*x & 0x7f];
+				ev = (EVENT*)&fixedEvent[*x & 127];
 
 			z = zVis;
 
 			while ((*z & thisCamera) == 0)
 			{
-				if ((*z & otherCamera) == 0 && (*x & 0xfff) == (*z & 0xfff))
+				if ((*z & otherCamera) == 0 && (*x & 4095) == (*z & 4095))
 				{
 					if ((ev->flags & 4) == 0 && (ev->flags & 1) == camera)
 					{
@@ -3051,9 +3056,9 @@ void DrawEvents(int camera)
 								{
 									if (ev->model == HelicopterData.cleanModel)
 									{
-										_RotMatrixZ(&matrix, HelicopterData.roll & 0xfff);
-										_RotMatrixX(&matrix, HelicopterData.pitch & 0xfff);
-										_RotMatrixY(&matrix, ev->rotation & 0xfff);
+										_RotMatrixZ(&matrix, HelicopterData.roll & 4095);
+										_RotMatrixX(&matrix, HelicopterData.pitch & 4095);
+										_RotMatrixY(&matrix, ev->rotation & 4095);
 
 										DrawRotor(ev->position, &matrix);
 
@@ -3132,7 +3137,7 @@ void DrawEvents(int camera)
 
 									pos.vy += ev->data[2];
 
-									if (gTimeOfDay != 1)
+									if (gTimeOfDay != TIME_DAY)
 										SetupPlaneColours(0x00282828);
 
 									RenderModel(foam.model, &matrix, &pos, 200, (foam.rotate & 0x8000) ? 0x3 : 0x1, 1, 0);
@@ -3144,6 +3149,7 @@ void DrawEvents(int camera)
 						{
 							SetCamera(ev);
 							DrawMapPSX(&ObjectDrawnValue);
+							ObjectDrawnValue += 16;
 						}
 					}
 				}
@@ -4022,7 +4028,7 @@ void MultiCarEvent(MS_TARGET* target)
 		ev->position.vx = mcd->x;
 		ev->position.vz = mcd->z;
 		
-		ev->position.vy = -312;
+		ev->position.vy = -312; // MapHeight may not be available due to region is not yet loaded
 	
 		ev->rotation = mcd->rot;
 

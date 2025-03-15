@@ -26,12 +26,12 @@ sdPlane* sdGetCell_asm(int param_1, short** roadMapData, int pos_x, int pos_z, i
 	short* buffer;
 	bool nextLevel;
 
-	buffer = *(short**)((param_1 ^ sdSelfModifyingCode) + (int)roadMapData);
+	buffer = *(short**)((param_1 ^ sdSelfModifyingCode) + (intptr)roadMapData);
 
 	cell.x = pos_x & 1023;
 	cell.y = pos_z & 1023;
 
-	surface = (ushort*)((int)buffer + (pos_z >> 3 & 0x1f80U) + (pos_x >> 9 & 0x7eU) + 8);
+	surface = (ushort*)((u_char*)buffer + (pos_z >> 3 & 0x1f80U) + (pos_x >> 9 & 0x7eU) + 8);
 
 	if (*surface == 0xffff)
 	{
@@ -41,7 +41,7 @@ sdPlane* sdGetCell_asm(int param_1, short** roadMapData, int pos_x, int pos_z, i
 	{
 		if ((*surface & 0x6000) == 0x2000)
 		{
-			HSurface = (short*)((int)buffer + (*surface & 0x1fff) * 2 + (int)buffer[2]);
+			HSurface = (short*)((u_char*)buffer + (*surface & 0x1fff) * 2 + (int)buffer[2]);
 			surfHeight = (int)*HSurface;
 			do {
 				if (-256 - pos_y <= surfHeight)
@@ -61,7 +61,7 @@ sdPlane* sdGetCell_asm(int param_1, short** roadMapData, int pos_x, int pos_z, i
 
 			if ((*surface & 0x4000) != 0)
 			{
-				BSPSurface = (ushort*)sdGetBSP((_sdNode*)((int)buffer + (*surface & 0x1fff) * 4 + (int)buffer[3]), &cell);
+				BSPSurface = (ushort*)sdGetBSP((_sdNode*)((u_char*)buffer + (*surface & 0x1fff) * 4 + (int)buffer[3]), &cell);
 				if (*BSPSurface == 0x7fff)
 				{
 					_sdLevel = _sdLevel + 1;
@@ -72,7 +72,7 @@ sdPlane* sdGetCell_asm(int param_1, short** roadMapData, int pos_x, int pos_z, i
 			surface = BSPSurface;
 		} while (nextLevel);
 
-		plane = (sdPlane*)((int)buffer + (short)*BSPSurface * sizeof(sdPlane) + (int)buffer[1]);
+		plane = (sdPlane*)((u_char*)buffer + (short)*BSPSurface * sizeof(sdPlane) + (int)buffer[1]);
 	}
 
 	sdLevel = _sdLevel;

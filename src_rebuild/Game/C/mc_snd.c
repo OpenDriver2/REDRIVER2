@@ -665,7 +665,7 @@ void DoMissionSound(void)
 			else
 			{
 				int dx, dz;
-				long* C = (long*)bodgevar; // Ahhh, Reflections...	// LONGVECTOR3
+				int* C = (int*)bodgevar; // Ahhh, Reflections...	// LONGVECTOR3
 
 				dx = C[0] - car_data[player[0].playerCarId].hd.where.t[0];
 				dz = C[2] - car_data[player[0].playerCarId].hd.where.t[2];

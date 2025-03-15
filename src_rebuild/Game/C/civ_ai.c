@@ -24,9 +24,11 @@
 #include "objcoll.h"
 #include "overlay.h"
 #include "cutrecorder.h"
+#include "draw.h"
 
 const u_char speedLimits[3] = { 56, 97, 138 };
 
+#ifdef DEBUG
 struct
 {
 	int NumPingedIn;
@@ -40,6 +42,7 @@ struct
 	int TooClosePlayer;
 	int InvalidRegion;
 } civPingTest;
+#endif // DEBUG
 
 char modelRandomList[] = { 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 1, 0, 4 };
 u_char reservedSlots[MAX_CARS] = { 0 };
@@ -75,12 +78,14 @@ int test555 = 0;
 
 #ifdef _DEBUG
 #define CIV_STATE_SET_CONFUSED(cp) \
-	printInfo("CIV confused: at %s, %d\n", __FUNCTION__, __LINE__);\
+	printInfo("CIV confused: at %s, %d\n", FUNCNAME, __LINE__);\
 	cp->ai.c.thrustState = 3; cp->ai.c.ctrlState = 7;
 #else
 #define CIV_STATE_SET_CONFUSED(cp) \
 	cp->ai.c.thrustState = 3; cp->ai.c.ctrlState = 7;
 #endif
+
+int GetNodePos(DRIVER2_STRAIGHT* straight, DRIVER2_JUNCTION* junction, DRIVER2_CURVE* curve, int distAlongPath, CAR_DATA* cp, int* x, int* z, int laneNo);
 
 // [D] [T]
 int InitCar(CAR_DATA* cp, int direction, LONGVECTOR4* startPos, unsigned char control, int model, int palette, char* extraData)
@@ -234,6 +239,66 @@ void CivCarFX(CAR_DATA* cp)
 		AddBrakeLight(cp);
 }
 
+int GetLeftBoundLane(DRIVER2_ROAD_INFO& roadInfo, int oppDir)
+{
+	int i, laneCount, laneNo;
+
+	laneCount = ROAD_WIDTH_IN_LANES(&roadInfo);
+	laneNo = laneCount;
+
+	for (i = laneNo - 1; i >= 0; i--)
+	{
+		if (ROAD_IS_AI_LANE(&roadInfo, i) && !ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, i))
+		{
+			test42 = ROAD_LANE_DIR(&roadInfo, i) ^ 1;
+			laneNo = i;
+
+			if (test42 == 0)
+			{
+				if (oppDir != 0)
+					break;
+			}
+			else
+			{
+				if (oppDir == 0)
+					break;
+			}
+		}
+	}
+
+	return laneNo;
+};
+
+int GetRightBoundLane(DRIVER2_ROAD_INFO& roadInfo, int oppDir)
+{
+	int i, laneCount, laneNo;
+
+	laneCount = ROAD_WIDTH_IN_LANES(&roadInfo);
+	laneNo = ROAD_IS_LEFTMOST_LANE_PARKING(&roadInfo);
+
+	for (i = laneNo; i < laneCount; i++)
+	{
+		if (ROAD_IS_AI_LANE(&roadInfo, i) && !ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, i))
+		{
+			test555 = ROAD_LANE_DIR(&roadInfo, i) ^ 1;
+			laneNo = i;
+
+			if (test555 == 0)
+			{
+				if (oppDir != 0)
+					break;
+			}
+			else
+			{
+				if (oppDir == 0)
+					break;
+			}
+		}
+	}
+
+	return laneNo;
+}
+
 // [D] [T]
 int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist, CIV_ROUTE_ENTRY* oldNode)
 {
@@ -243,34 +308,22 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 	DRIVER2_ROAD_INFO currentRoadInfo;
 	DRIVER2_ROAD_INFO roadInfo;
 
-	int currentRoadId = 0;
 	int tmpNewRoad[2];
-	int newExit = 0;
 	int tmpNewLane[2];
 	int laneFit[2];
 	short validExitIdx[4];
 
-	int newLane;
-	int newRoad;
+	int newRoad, newLane, newExit, numExits;
+	int currentRoadId, leftLane, rightLane;
 
-	int numExits;
-	int leftLane;
-	int rightLane;
-
-	int oldOppDir;
-	int oppDir;
-	int turnDir;
-	int currentLaneDir;
+	int oppDir, oldOppDir;
+	int turnDir, currentLaneDir;
 
 	currentRoadId = cp->ai.c.currentRoad;
 
 	if (GetSurfaceRoadInfo(&currentRoadInfo, currentRoadId))
 	{
-		int widthInLanes;
 		int laneNo;
-		int count;
-
-		widthInLanes = ROAD_WIDTH_IN_LANES(&currentRoadInfo);
 
 		currentLaneDir = ROAD_LANE_DIR(&currentRoadInfo, cp->ai.c.currentLane);
 
@@ -284,76 +337,36 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 			dx = oldNode->x - currentRoadInfo.curve->Midx;
 			dz = oldNode->z - currentRoadInfo.curve->Midz;
 
-			oldOppDir = DIFF_ANGLES(ratan2(dx, dz), oldNode->dir); // (((oldNode->dir - ratan2(dx, dz)) + 2048U & 0xfff) - 2048);
+			oldOppDir = DIFF_ANGLES(ratan2(dx, dz), oldNode->dir);
 			oldOppDir = (oldOppDir < 1) * 2048;
 		}
 
 		// first road is picked from road direction
-		tmpNewRoad[0] = ((short*)currentRoadInfo.ConnectIdx)[(oldOppDir > 0) * 2];
+		tmpNewRoad[0] = currentRoadInfo.ConnectIdx[(oldOppDir > 0) * 2];
 
 		// and second picked from lane direction
-		tmpNewRoad[1] = ((short*)currentRoadInfo.ConnectIdx)[(currentLaneDir > 0) ? 3 : 1];
+		tmpNewRoad[1] = currentRoadInfo.ConnectIdx[(currentLaneDir > 0) ? 3 : 1];
+		laneNo = GetLeftBoundLane(currentRoadInfo, currentLaneDir);
 
-		count = widthInLanes;		// counter
-		laneNo = widthInLanes;		// bestLane
-
-		do
-		{
-			count--;
-			if (ROAD_IS_AI_LANE(&currentRoadInfo, count) && !ROAD_IS_PARKING_ALLOWED_AT(&currentRoadInfo, count))
-			{
-				test42 = ROAD_LANE_DIR(&currentRoadInfo, count);
-				laneNo = count;
-			}
-		} while (count >= 0);
-
-		if (currentLaneDir == 0)
-			leftLane = laneNo & 0xff;
+		if (oldOppDir == 0)
+			leftLane = laneNo;
 		else
-			rightLane = laneNo & 0xff;
+			rightLane = laneNo;
 
-		// ifhas fast lane, use second lane
-		count = ROAD_HAS_FAST_LANES(&currentRoadInfo);
-		laneNo = widthInLanes;	
+		laneNo = GetRightBoundLane(currentRoadInfo, currentLaneDir);
 
-		while (count < widthInLanes)
-		{
-			if (ROAD_IS_AI_LANE(&currentRoadInfo, count) && !ROAD_IS_PARKING_ALLOWED_AT(&currentRoadInfo, count))
-			{
-				test555 = ROAD_LANE_DIR(&currentRoadInfo, count) ^ 1;
-				laneNo = count;
-
-				if (test555 == 0)
-				{
-					if (currentLaneDir != 0)
-						break;
-				}
-				else
-				{
-					if (currentLaneDir == 0)
-						break;
-				}
-			}
-			laneNo = widthInLanes;
-			count++;
-		}
-
-		if (currentLaneDir != 0)
-			leftLane = laneNo & 0xff;
+		if (oldOppDir != 0)
+			leftLane = laneNo;
 		else
-			rightLane = laneNo & 0xff;
+			rightLane = laneNo;
 	}
 
 	newLane = -1;
 	
 	if (IS_JUNCTION_SURFACE(tmpNewRoad[0]))
 	{
-		int bestExit;
-
-		int exitFrom;
-		int exitCnt;
+		int exitFrom, exitCnt, bestExit;
 		int rnd;
-		numExits = 0;
 		
 		cp->ai.c.changeLaneCount = 0;
 		jn = GET_JUNCTION(tmpNewRoad[0]);
@@ -362,15 +375,13 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 
 		// check if road is valid for this junction
 		// by determining connection with junction
-		exitCnt = 0;
-		while(exitCnt < 4)
+		for(exitCnt = 0; exitCnt < 4; exitCnt++)
 		{
 			if(jn->ExitIdx[exitCnt] == currentRoadId)
 			{
 				exitFrom = exitCnt;
 				break;
 			}
-			exitCnt++;
 		}
 
 		if (exitFrom == -1)
@@ -380,45 +391,46 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 		}
 
 		// check directions of exits
-		//printWarning("Checking directions, exitFrom: %d, \n", exitFrom);
-		exitCnt = 0;
-		do {
-			int exitSurfId;
-			int exitIdx = (exitFrom + exitCnt + 1) % 4;
-			int valid;
+		numExits = 0;
+
+		// only need 3 cycles because we don't want make U-turns
+		for (exitCnt = 0; exitCnt < 3; exitCnt++)
+		{
+			int exitSurfId, exitIdx, valid;
+
+			exitIdx = (exitFrom + exitCnt + 1) % 4;
 			
 			valid = 0;
 			exitSurfId = jn->ExitIdx[exitIdx];
 			
 			if (exitSurfId != -1)
 			{
+				int turnAng;
 				int exitDir;
 				exitDir = ((exitIdx + 4) - exitFrom) % 4;
-				//exitDir = exitDir - (exitDir / 4) * 4;
 
 				if (exitDir == 1)
-					*turnAngle = -1024;	// left
+					turnAng = -1024;	// left
 				else if (exitDir == 2)
-					*turnAngle = 0;		// forward
+					turnAng = 0;		// forward
 				else if (exitDir == 3)
-					*turnAngle = 1024;	// right
+					turnAng = 1024;	// right
 				else
-					*turnAngle = 0;		// forward again?
+					turnAng = 0;		// forward again?
 
 				test123 = 666;
 				test555 = 666;
 				test42 = 666;
 
 				// current node direction and new direction
-				turnDir = oldNode->dir + *turnAngle;
+				turnDir = oldNode->dir + turnAng;
 
 				if (GetSurfaceRoadInfo(&roadInfo, exitSurfId))
 				{
-					int turnAng;
 					int dx, dz;
-					int laneCount;
+					int numLanes;
 
-					laneCount = ROAD_WIDTH_IN_LANES(&roadInfo);
+					numLanes = ROAD_WIDTH_IN_LANES(&roadInfo);
 
 					if(roadInfo.straight)
 					{
@@ -429,93 +441,41 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 						dx = oldNode->x - roadInfo.curve->Midx;
 						dz = oldNode->z - roadInfo.curve->Midz;
 
-						oppDir = DIFF_ANGLES(ratan2(dx, dz), turnDir);// ((turnDir - ratan2(dx, dz)) + 2048U & 0xfff) - 2048; // [A]
+						oppDir = DIFF_ANGLES(ratan2(dx, dz), turnDir);
 						oppDir = (oppDir < 1) * 2048;
 					}
-
-					turnAng = *turnAngle;
-					
-					if (oppDir == 0)
-						turnAng = -turnAng;
-
+			
 					if (turnAng == 0) // going forward
 					{
 						if (oppDir != oldOppDir) // next road is flipped
-							newLane = laneCount - (cp->ai.c.currentLane + 1);
+							newLane = numLanes - (cp->ai.c.currentLane + 1);
 						else
 							newLane = cp->ai.c.currentLane;
-
-						// goes on invalid lane?
-						// [A] bug fix with exitDir == 0
-						if (oppDir == 0 && exitDir == 0 || !ROAD_IS_AI_LANE(&roadInfo, newLane))
-							newLane = -1;
 					}
 					else if (turnAng == -1024) // going left
 					{
-						int count;
-
-						//printInfo("check left\n");
-
-						count = ROAD_HAS_FAST_LANES(&roadInfo); // lane counter
-						newLane = laneCount;
-
-						// check if allowed to go on any of lanes
-						while (count < laneCount)
-						{
-							if (ROAD_IS_AI_LANE(&roadInfo, count) && !ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, count))
-							{
-								test555 = (ROAD_LANE_DIR(&roadInfo, count) ^ 1) & 1;
-								newLane = count;
-
-								if (test555 == 0)
-								{
-									if (oppDir != 0)
-										break;
-								}
-								else
-								{
-									if (oppDir == 0)
-										break;
-								}
-							}
-
-							count++;
-							newLane = laneCount;
-						}
+						newLane = GetRightBoundLane(roadInfo, oppDir);
 					}
 					else if (turnAng == 1024)
 					{
-						int count;
-
-						count = laneCount;		// lane counter
-						newLane = laneCount;
-
-						do
-						{
-							if (ROAD_IS_AI_LANE(&roadInfo, count) && !ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, count))
-							{
-								test42 = (ROAD_LANE_DIR(&roadInfo, count) ^ 1) & 1;
-
-								if (test42 == 0)
-								{
-									if (oppDir != 0)
-										newLane = count;
-								}
-								else
-								{
-									if (oppDir == 0)
-										newLane = count;
-								}
-								
-							}
-							count--;
-						} while (count >= 0);
+						newLane = GetLeftBoundLane(roadInfo, oppDir);
 					}
 
 					// validate lane
-					if (turnAng == 0 || newLane >= 0 && newLane < laneCount)
+					if (newLane >= 0 && newLane < numLanes)
 					{
 						valid = ROAD_IS_AI_LANE(&roadInfo, newLane) && !ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, newLane);
+					}
+
+					if (oppDir != oldOppDir)
+					{
+						if (currentLaneDir == ROAD_LANE_DIR(&roadInfo, newLane))
+							valid = 0;
+					}
+					else
+					{
+						if (currentLaneDir != ROAD_LANE_DIR(&roadInfo, newLane))
+							valid = 0;
 					}
 				}
 			}
@@ -529,10 +489,7 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 			{
 				validExitIdx[exitCnt] = 42;
 			}
-
-			// only need 3 cycles because we don't want make U-turns
-			exitCnt++;
-		} while (exitCnt < 3);
+		}
 
 		if (leftLane != rightLane && numExits != 1 && ROAD_LANES_COUNT(&currentRoadInfo) > 1)
 		{
@@ -580,11 +537,9 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 		
 		newRoad = jn->ExitIdx[bestExit];
 
-		if (turnAngle != NULL)
 		{
 			int invExit;
 			invExit = (bestExit + 4 - exitFrom) % 4;
-			//invExit = invExit - (invExit / 4) * 4;
 
 			if (invExit == 1)
 				*turnAngle = -1024;
@@ -660,9 +615,9 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 
 		turnDir = oldNode->dir + *turnAngle;
 
+		// determine the new lane on the new road
 		{
-			int numLanes;
-			int turnAng;
+			int numLanes, turnAng;
 
 			numLanes = ROAD_WIDTH_IN_LANES(&roadInfo);
 			turnAng = *turnAngle;
@@ -677,7 +632,7 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 				dx = oldNode->x - roadInfo.curve->Midx;
 				dz = oldNode->z - roadInfo.curve->Midz;
 
-				oppDir = DIFF_ANGLES(ratan2(dx, dz), turnDir); // (((turnDir - ratan2(dx, dz)) + 2048U & 0xfff) - 2048);
+				oppDir = DIFF_ANGLES(ratan2(dx, dz), turnDir);
 				oppDir = (oppDir < 1) * 2048;
 			}
 
@@ -706,67 +661,13 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 			}
 			else if (turnAng == -1024)
 			{
-				int count;
-				
-				count = ROAD_HAS_FAST_LANES(&roadInfo);
-				newLane = numLanes;
-
-				// check if allowed to go on any of lanes
-				while (count < numLanes)
-				{
-					if (ROAD_IS_AI_LANE(&roadInfo, count) && !ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, count))
-					{
-						test555 = (ROAD_LANE_DIR(&roadInfo, count) ^ 1) & 1;
-						newLane = count;
-
-						if (test555 == 0)
-						{
-							if (oppDir != 0)
-								break;
-						}
-						else
-						{
-							if (oppDir == 0)
-								break;
-						}
-					}
-
-					count++;
-					newLane = numLanes;
-				}
-
-				//printWarning("car %d check left lane, chosen %d\n", cp->id, newLane);
+				newLane = GetRightBoundLane(roadInfo, oppDir);
 			}
 			else if (turnAng == 1024)
 			{
-				int count;
-
-				count = numLanes;
-				newLane = numLanes;
-
-				do
-				{
-					if (ROAD_IS_AI_LANE(&roadInfo, count) && !ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, count))
-					{
-						test42 = (ROAD_LANE_DIR(&roadInfo, count) ^ 1) & 1;
-
-						if (test42 == 0)
-						{
-							if (oppDir != 0)
-								newLane = count;
-						}
-						else
-						{
-							if (oppDir == 0)
-								newLane = count;
-						}
-						
-					}
-					count--;
-				} while (count >= 0);
-
-				//printWarning("car %d check right lane, chosen %d\n", cp->id, newLane);
+				newLane = GetLeftBoundLane(roadInfo, oppDir);
 			}
+
 
 			if (*turnAngle != 0)
 			{
@@ -812,10 +713,22 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 		{
 			if (tmpNewRoad[roadCnt] != -1)
 			{
+				int px, pz;
 				int dx, dz;
 				int numLanes;
 
 				numLanes = 0;
+
+				// [A] fix lane changingg issues
+				if(cp->ai.c.changeLaneCount > 0)
+				{
+					GetNodePos(currentRoadInfo.straight, NULL, currentRoadInfo.curve, oldNode->distAlongSegment, NULL, &px, &pz, cp->ai.c.currentLane);
+				}
+				else
+				{
+					px = oldNode->x;
+					pz = oldNode->z;
+				}
 
 				if (GetSurfaceRoadInfo(&roadInfo, tmpNewRoad[roadCnt]))
 				{
@@ -824,8 +737,8 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 					// determine new lane by old node position
 					if(roadInfo.straight)
 					{
-						dx = (oldNode->x - roadInfo.straight->Midx);
-						dz = (oldNode->z - roadInfo.straight->Midz);
+						dx = (px - roadInfo.straight->Midx);
+						dz = (pz - roadInfo.straight->Midz);
 
 						tmpNewLane[roadCnt] = ROAD_LANES_COUNT(&roadInfo)
 											- (FIXEDH(dx * RCOS(roadInfo.straight->angle) - dz * RSIN(roadInfo.straight->angle)) + 512 >> 9);
@@ -833,8 +746,8 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 					}
 					else
 					{
-						dx = oldNode->x - roadInfo.curve->Midx;
-						dz = oldNode->z - roadInfo.curve->Midz;
+						dx = px - roadInfo.curve->Midx;
+						dz = pz - roadInfo.curve->Midz;
 
 						tmpNewLane[roadCnt] = (SquareRoot0(dx * dx + dz * dz) >> 9) - roadInfo.curve->inside * 2;
 					}
@@ -850,7 +763,6 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 						continue;
 					}
 				}
-
 
 				// fit new lane
 				newLane = tmpNewLane[roadCnt];
@@ -1024,11 +936,44 @@ void InitNodeList(CAR_DATA* cp, EXTRA_CIV_DATA* extraData)
 		cr->distAlongSegment = extraData->distAlongSegment;
 }
 
+// [A] bug fixes the incorrect lane changes
+void RemapLaneChange(CAR_DATA* cp)
+{
+	CIV_ROUTE_ENTRY* currentNode;
+	DRIVER2_ROAD_INFO roadInfo;
+	int numLanes, dx, dz;
+	int newLane;
+
+	if (!GetSurfaceRoadInfo(&roadInfo, cp->ai.c.currentRoad))
+		return;
+
+	currentNode = &cp->ai.c.targetRoute[cp->ai.c.currentNode];
+	numLanes = ROAD_WIDTH_IN_LANES(&roadInfo);
+
+	// determine lane on new road by old node position
+	if (roadInfo.straight)
+	{
+		dx = (currentNode->x - roadInfo.straight->Midx);
+		dz = (currentNode->z - roadInfo.straight->Midz);
+
+		newLane = ROAD_LANES_COUNT(&roadInfo)
+			- (FIXEDH(dx * RCOS(roadInfo.straight->angle) - dz * RSIN(roadInfo.straight->angle)) + 512 >> 9);
+	}
+	else
+	{
+		dx = currentNode->x - roadInfo.curve->Midx;
+		dz = currentNode->z - roadInfo.curve->Midz;
+
+		newLane = (SquareRoot0(dx * dx + dz * dz) >> 9) - roadInfo.curve->inside * 2;
+	}
+
+	cp->ai.c.currentLane = newLane;
+}
+
 // [D] [T]
 int GetNodePos(DRIVER2_STRAIGHT* straight, DRIVER2_JUNCTION* junction, DRIVER2_CURVE* curve, int distAlongPath, CAR_DATA* cp, int* x, int* z, int laneNo)
 {
-	unsigned char oldLane;
-	unsigned char changeLaneCount;
+	u_char oldLane, changeLaneCount;
 	int angle;
 	int distFromCentre;
 	int sideShift;
@@ -1104,13 +1049,10 @@ int GetNodePos(DRIVER2_STRAIGHT* straight, DRIVER2_JUNCTION* junction, DRIVER2_C
 // [D] [T]
 int CheckChangeLanes(DRIVER2_STRAIGHT* straight, DRIVER2_CURVE* curve, int distAlongSegment, CAR_DATA* cp, int tryToPark)
 {
-	int oldLane;
-	int currentLane;
-	int newLane;
+	int oldLane, newLane, currentLane;
 	int trials;
 	CAR_COSMETICS* car_cos;
-	int dx;
-	int dz;
+	int dx, dz;
 	u_int theta;
 	int length;
 	CAR_DATA* lcp;
@@ -1718,7 +1660,7 @@ int TrafficLightCycle(int exit)
 {
 	int timeCnt;
 
-	timeCnt = CameraCnt - frameStart & 0x1ff;
+	timeCnt = CameraCnt - frameStart & 511;
 
 	if (exit == 0 || exit == 2)
 	{
@@ -1732,7 +1674,7 @@ int TrafficLightCycle(int exit)
 
 	if (timeCnt < 150)
 		return 3;
-	else if (timeCnt > 199)
+	else if (timeCnt >= 200)
 		return 1;
 
 	return 2;
@@ -1762,7 +1704,7 @@ void InitCivCars(void)
 	closeEncounter = 3;
 }
 
-const int EVENT_CAR_SPEED = 71;
+const int EVENT_CAR_SPEED = 60;
 const int DistanceTriggerCarMoves = 5000;
 
 // [D] [T] [A]
@@ -1839,7 +1781,7 @@ int CreateCivCarWotDrivesABitThenStops(int direction, LONGVECTOR4* startPos, LON
 }
 
 // [D] [T]
-int CreateStationaryCivCar(int direction, long orientX, long orientZ, LONGVECTOR4* startPos, int externalModel, int palette, int controlFlags)
+int CreateStationaryCivCar(int direction, int orientX, int orientZ, LONGVECTOR4* startPos, int externalModel, int palette, int controlFlags)
 {
 	unsigned char* slot;
 	CAR_DATA* newCar;
@@ -1933,32 +1875,28 @@ int CreateStationaryCivCar(int direction, long orientX, long orientZ, LONGVECTOR
 	return -1;
 }
 
-
-VECTOR baseLoc;
-VECTOR randomLoc;
-int dx = 0; // offset 0xAAB40
-int dy = 0; // offset 0xAAB44
-int dz = 0; // offset 0xAAB48
-
 #define PINGIN_DIST_WANTED_MULT			(10)
 #define PINGIN_DIST_MULT		(8)
 
 // [D] [T] [A] - some register is not properly decompiled
 int PingInCivCar(int minPingInDist)
 {
-	int model;
-	CAR_DATA* carCnt;
-	CAR_DATA* newCar;
-	
-	//DRIVER2_CURVE* curve;
-	//DRIVER2_STRAIGHT* straight;
-
+#ifdef PSX
+	DRIVER2_ROAD_INFO& roadInfo = *(DRIVER2_ROAD_INFO*)(u_char*)getScratchAddr(0);
+	EXTRA_CIV_DATA& civDat = *(EXTRA_CIV_DATA*)((u_char*)getScratchAddr(0) + sizeof(DRIVER2_ROAD_INFO));
+	u_char* possibleLanes = ((u_char*)getScratchAddr(0) + sizeof(DRIVER2_ROAD_INFO) + sizeof(EXTRA_CIV_DATA));
+	static_assert(sizeof(CELL_ITERATOR) + sizeof(char) + 12 < 1024 - sizeof(_pct), "scratchpad overflow");
+#else
 	DRIVER2_ROAD_INFO roadInfo;
-	
 	EXTRA_CIV_DATA civDat;
 	u_char possibleLanes[12];
-	// carDistLanes removed as it's unused
+#endif
 	LONGVECTOR4 pos;
+	VECTOR baseLoc, randomLoc;
+	int dx, dy, dz;
+	CAR_DATA* carCnt;
+	CAR_DATA* newCar;
+	int model;
 	int distSq;
 	int dir;
 	int curveLength;
@@ -1971,9 +1909,6 @@ int PingInCivCar(int minPingInDist)
 	u_int retDistSq;
 	unsigned char* slot;
 
-	//straight = NULL;
-	//curve = NULL;
-	
 	civDat.distAlongSegment = -5;
 	lane = -1;
 	dir = 0xffffff;
@@ -2019,8 +1954,6 @@ int PingInCivCar(int minPingInDist)
 	}*/
 
 	newCar = NULL;
-
-	ClearMem((char*)&civDat, sizeof(civDat));
 
 	baseLoc.vx = player[playerNum].spoolXZ->vx;
 	baseLoc.vz = player[playerNum].spoolXZ->vz;
@@ -2145,7 +2078,10 @@ int PingInCivCar(int minPingInDist)
 	// wtf there were before? car wasn't set to 'confused' state
 	if (!GetSurfaceRoadInfo(&roadInfo, roadSeg))
 	{
+#ifdef DEBUG
 		civPingTest.OffRoad++;
+#endif // DEBUG
+
 		//CIV_STATE_SET_CONFUSED(newCar);
 		return 0;
 	}
@@ -2181,7 +2117,7 @@ int PingInCivCar(int minPingInDist)
 				// this is closest to OG decompiled. Works different!
 				//if ((
 				//	((tryPingInParkedCars && allowedToPark))) ||
-				//	((ROAD_IS_AI_LANE(straight, i) && (((i != 0 || ((straight->NumLanes & 0x40U) == 0)) && (((straight->NumLanes & 0xffffff0f) * 2 - 1 != i || ((straight->NumLanes & 0x80U) == 0))))))))
+				//	((ROAD_IS_AI_LANE(&roadInfo, i) && (((i != 0 || ((roadInfo.NumLanes & 0x40U) == 0)) && (((roadInfo.NumLanes & 0xffffff0f) * 2 - 1 != i || ((roadInfo.NumLanes & 0x80U) == 0))))))))
 
 				// pick only non-parkable driveable lanes if parked cars not requested
 				if (tryPingInParkedCars && allowedToPark || ROAD_IS_AI_LANE(&roadInfo, i) && !allowedToPark)
@@ -2193,6 +2129,8 @@ int PingInCivCar(int minPingInDist)
 
 			lane = possibleLanes[(Random2(0) >> 8) % numPossibleLanes];
 		}
+
+		ClearMem((char*)&civDat, sizeof(civDat));
 
 		// check if need to make a parked car
 		if (ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, lane))
@@ -2209,7 +2147,9 @@ int PingInCivCar(int minPingInDist)
 			// Car is not active. Permanently parked
 			if (ROAD_IS_AI_LANE(&roadInfo, lane) == 0)
 			{
+#ifdef DEBUG
 				civPingTest.NotDrivable++;
+#endif
 				return 0;
 			}
 
@@ -2312,7 +2252,7 @@ int PingInCivCar(int minPingInDist)
 		}
 		else
 		{
-			scDist = lbody / 2;
+			scDist = lbody * 2;
 			minDistAlong = 0;
 		}
 
@@ -2777,221 +2717,198 @@ static u_char hornchanflag[2] = { 0 };
 // [D] [T]
 void SetUpCivCollFlags(void)
 {
-	CAR_COSMETICS* car_cos;
-	CAR_DATA* cp1;
-	SVECTOR boxDisp;
 	CAR_DATA* cp0;
-	int carLength[2];
+	CAR_DATA* cp1;
+	CAR_COSMETICS* car0_cos;
+	CAR_COSMETICS* car1_cos;
+	SVECTOR boxDisp;
+	int cp0Length;
+	int cp0Computed;
 	int i;
-	int brake;
-	int dx;
-	int extraLength;
-	int boxOverlap;
 
 	CDATA2D cd[2];
 
 	ClearMem((char*)brakeLength, sizeof(brakeLength));
 
-	cp0 = &car_data[MAX_CARS - 1];
-
-	while (cp0 >= car_data)
+	for (cp0 = &car_data[MAX_CARS - 1]; cp0 >= car_data; cp0--)
 	{
-		if (cp0->controlType == CONTROL_TYPE_CIV_AI)
+		int extraLength;
+		int cp0BrakeLength;
+
+		if (cp0->controlType != CONTROL_TYPE_CIV_AI)
 		{
-			extraLength = FIXEDH(cp0->hd.wheel_speed);
+			continue;
+		}
 
-			if (cp0->wheel_angle < 61)
-				extraLength *= 13;
-			else
-				extraLength *= 4;
+		extraLength = FIXEDH(cp0->hd.wheel_speed);
 
-			extraLength = ABS(extraLength);
+		if (cp0->wheel_angle < 61)
+			extraLength *= 13;
+		else
+			extraLength *= 4;
 
-			car_cos = cp0->ap.carCos;
-			carLength[0] = car_cos->colBox.vz;
+		extraLength = ABS(extraLength);
 
-			cd[0].length[0] = carLength[0] + 93 + extraLength;
-			cd[0].length[1] = car_cos->colBox.vx;
-			cd[0].theta = cp0->hd.direction;
+		car0_cos = cp0->ap.carCos;
+		cp0Length = car0_cos->colBox.vz;
 
-			gte_SetRotMatrix(&cp0->hd.where.m);
-			gte_SetTransMatrix(&cp0->hd.where.m);
+		cd[0].length[0] = cp0Length + extraLength + 93;
+		cd[0].x.vx = cp0->hd.where.t[0];
+		cd[0].x.vy = cp0->hd.where.t[1];
+		cd[0].x.vz = cp0->hd.where.t[2];
 
-			boxDisp.vx = -car_cos->cog.vx;
-			boxDisp.vy = -car_cos->cog.vy;
-			boxDisp.vz = (extraLength - car_cos->cog.vz) + 93;
+		cp0Computed = 0;
+		cp0BrakeLength = brakeLength[cp0->id];
 
-			gte_ldv0(&boxDisp);
-			gte_rtv0tr();
-			gte_stlvnl(&cd[0].x);
+		for (cp1 = &car_data[MAX_CARS];  cp1 >= car_data; cp1--)
+		{
+			int dist, isTanner;
+			int brake, boxOverlap;
 
-			cp1 = &car_data[MAX_CARS];
-
-			while (cp1 >= car_data)
+			if (cp1->controlType == CONTROL_TYPE_NONE || cp1 == cp0)
 			{
-				if (cp1->controlType != CONTROL_TYPE_NONE && cp1 != cp0)
+				continue;
+			}
+
+			car1_cos = cp1->ap.carCos;
+
+			isTanner = 0;
+			if (CAR_INDEX(cp1) == TANNER_COLLIDER_CARID)
+			{
+				if (player[0].playerType != 2)
 				{
-					car_cos = cp1->ap.carCos;
+					continue;
+				}
+						
+				cd[1].length[0] = 60;
+				cd[1].length[1] = 60;
+				cd[1].x.vx = player[0].pos[0];
+				cd[1].x.vy = player[0].pos[1];
+				cd[1].x.vz = player[0].pos[2];
+				cd[1].theta = player[0].dir;
 
-					if (CAR_INDEX(cp1) == TANNER_COLLIDER_CARID)
+				isTanner = 1;
+			}
+			else
+			{
+				cd[1].length[0] = car1_cos->colBox.vz;
+				cd[1].length[1] = car1_cos->colBox.vx;
+				cd[1].x.vx = cp1->hd.oBox.location.vx;
+				cd[1].x.vy = cp1->hd.oBox.location.vy;
+				cd[1].x.vz = cp1->hd.oBox.location.vz;
+				cd[1].theta = cp1->hd.direction;
+			}
+
+			dist = ((cd[0].length[0] + cd[1].length[0]) * 3) / 2;
+
+			if (ABS(cd[0].x.vx - cd[1].x.vx) >= dist ||
+				ABS(cd[0].x.vz - cd[1].x.vz) >= dist ||
+				ABS(cd[0].x.vy - cd[1].x.vy) >= 500)
+			{
+				continue;
+			}
+
+			if (cp0Computed == 0)
+			{
+				cd[0].length[1] = car0_cos->colBox.vx;
+				cd[0].theta = cp0->hd.direction;
+
+				gte_SetRotMatrix(&cp0->hd.where.m);
+				gte_SetTransMatrix(&cp0->hd.where.m);
+
+				boxDisp.vx = -car0_cos->cog.vx;
+				boxDisp.vy = -car0_cos->cog.vy;
+				boxDisp.vz = (extraLength - car0_cos->cog.vz) + 93;
+
+				gte_ldv0(&boxDisp);
+				gte_rtv0tr();
+				gte_stlvnl(&cd[0].x);
+				cp0Computed = 1;
+			}
+
+			// do overlap test between boxes
+			if (!bcollided2d(cd, &boxOverlap))
+			{
+				continue;
+			}
+
+			brake = MAX(1, (cd[0].length[0] - cp0Length) - boxOverlap);
+
+			if (cp0BrakeLength == 0 || brake < cp0BrakeLength)
+			{
+				cp0BrakeLength = brake;
+				brakeLength[cp0->id] = cp0BrakeLength;
+			}
+
+			// don't do anything further when it tries to park
+			if (cp0->ai.c.thrustState == 3)
+			{
+				continue;
+			}
+
+			// wait for Tanner to get into car
+			if (isTanner)
+			{
+				cp0->ai.c.carPauseCnt = CAR_PAUSE_START;
+			}
+
+			// do horns
+			// horn to player and chased cars (except Steal the Ambulance)
+			if (cp0->ai.c.thrustState != 3 &&
+				(isTanner || cp1->controlType == CONTROL_TYPE_PLAYER || cp1->controlType == CONTROL_TYPE_CUTSCENE && gCurrentMissionNumber != 26 && ProxyBar.active == 0))
+			{
+				int dont;
+				int rnd;
+				rnd = Random2(0);
+
+				dont = 0;
+
+				for (i = 0; i < 2; i++)
+				{
+					if (horncarflag[i] == cp0)
 					{
-						if (player[0].playerType != 2)
-						{
-							cp1--;
-							continue;
-						}
-
-						cd[1].length[0] = 60;
-						cd[1].length[1] = 60;
-						cd[1].x.vx = player[0].pos[0];
-						cd[1].x.vz = player[0].pos[2];
-						cd[1].theta = player[0].dir;
-					}
-					else
-					{
-						cd[1].length[0] = car_cos->colBox.vz;
-						cd[1].length[1] = car_cos->colBox.vx;
-						cd[1].x.vx = cp1->hd.oBox.location.vx;
-						cd[1].x.vy = cp1->hd.oBox.location.vy;
-						cd[1].x.vz = cp1->hd.oBox.location.vz;
-						cd[1].theta = cp1->hd.direction;
-					}
-
-					dx = ((cd[0].length[0] + cd[1].length[0]) * 3) / 2;
-
-					if (cd[0].x.vx - cd[1].x.vx < 0)
-					{
-						if (cd[1].x.vx - cd[0].x.vx >= dx)
-						{
-							cp1--;
-							continue;
-						}
-
-					}
-					else if (dx <= cd[0].x.vx - cd[1].x.vx)
-					{
-						cp1--;
-						continue;
-					}
-
-					if (cd[0].x.vz - cd[1].x.vz < 0)
-					{
-						if (cd[1].x.vz - cd[0].x.vz >= dx)
-						{
-							cp1--;
-							continue;
-						}
-					}
-					else if (dx <= cd[0].x.vz - cd[1].x.vz)
-					{
-						cp1--;
-						continue;
-					}
-
-					// check height difference
-					if (CAR_INDEX(cp1) == CAMERA_COLLIDER_CARID)
-					{
-						if (ABS(player[0].pos[1] - cp0->hd.where.t[1]) >= 500)
-						{
-							cp1--;
-							continue;
-						}
-					}
-					else if (ABS(cp1->hd.where.t[1] - cp0->hd.where.t[1]) >= 500 && ABS(player[0].pos[1] - cp0->hd.where.t[1]) >= 500)
-					{
-						cp1--;
-						continue;
-					}
-
-					// do overlap test between boxes
-					if (!bcollided2d(cd, &boxOverlap))
-					{
-						cp1--;
-						continue;
-					}
-
-					brake = (cd[0].length[0] - carLength[0]) - boxOverlap;
-
-					if (brake < 1)
-						brake = 1;
-
-					if (brakeLength[cp0->id] == 0 || brake < brakeLength[cp0->id])
-						brakeLength[cp0->id] = brake;
-
-					// don't do anything further when it tries to park
-					if (cp0->ai.c.thrustState == 3)
-					{
-						cp1--;
-						continue;
-					}
-
-					if (CAR_INDEX(cp1) == TANNER_COLLIDER_CARID)
-						cp0->ai.c.carPauseCnt = CAR_PAUSE_START;
-
-					// do horns
-					// horn to player and chased cars (except Steal the Ambulance)
-					if (cp0->ai.c.thrustState != 3 &&
-						(cp1->controlType == CONTROL_TYPE_PLAYER || cp1->controlType == CONTROL_TYPE_CUTSCENE && gCurrentMissionNumber != 26 && ProxyBar.active == 0 || 
-						CAR_INDEX(cp1) == TANNER_COLLIDER_CARID))
-					{
-						int dont;
-						int rnd;
-						rnd = Random2(0);
-
-						dont = 0;
-
-						for (i = 0; i < 2; i++)
-						{
-							if (horncarflag[i] == cp0)
-							{
-								dont = 1;
-								break;
-							}
-						}
-
-						if (dont)
-						{
-							cp1--;
-							continue;
-						}
-
-						for (i = 0; i < 2; i++) 
-						{
-							if (hornchanflag[i] == 0)
-							{
-								int sample;
-
-								hornchanflag[i] = GetFreeChannel();
-								SpuSetVoiceAR(hornchanflag[i], 27);
-
-								if (cp0->ap.model == 4)
-									sample = ResidentModelsBodge();
-								else if (cp0->ap.model < 3)
-									sample = cp0->ap.model;
-								else
-									sample = cp0->ap.model - 1;
-
-								// [A] use tracking sound
-								Start3DTrackingSound(hornchanflag[i], SOUND_BANK_CARS, sample * 3 + 2, 
-									(VECTOR*)cp0->hd.where.t,
-									(LONGVECTOR3*)cp0->st.n.linearVelocity);
-								
-								SetChannelVolume(hornchanflag[i], -2000, 0);
-
-								horncarflag[i] = cp0;
-
-								channels[hornchanflag[i]].time += rnd - (rnd / 30) * 30;
-								break;
-							}
-						}
+						dont = 1;
+						break;
 					}
 				}
 
-				cp1--;
+				if (dont)
+				{
+					continue;
+				}
+
+				for (i = 0; i < 2; i++) 
+				{
+					if (hornchanflag[i] == 0)
+					{
+						int sample;
+
+						hornchanflag[i] = GetFreeChannel();
+						SpuSetVoiceAR(hornchanflag[i], 27);
+
+						if (cp0->ap.model == 4)
+							sample = ResidentModelsBodge();
+						else if (cp0->ap.model < 3)
+							sample = cp0->ap.model;
+						else
+							sample = cp0->ap.model - 1;
+
+						// [A] use tracking sound
+						Start3DTrackingSound(hornchanflag[i], SOUND_BANK_CARS, sample * 3 + 2, 
+							(VECTOR*)cp0->hd.where.t,
+							(LONGVECTOR3*)cp0->st.n.linearVelocity);
+								
+						SetChannelVolume(hornchanflag[i], -2000, 0);
+
+						horncarflag[i] = cp0;
+
+						channels[hornchanflag[i]].time += rnd - (rnd / 30) * 30;
+						break;
+					}
+				}
 			}
-		}
-		cp0--;
-	}
+		} // for cp1
+	} // for cp0
 
 	// clear on timeout
 	for (i = 0; i < 2; i++)
@@ -3194,10 +3111,8 @@ int CivFindPointOnPath(CAR_DATA * cp, int station, VECTOR * ppoint)
 	CIV_ROUTE_ENTRY* start;
 	CIV_ROUTE_ENTRY* currentNode;
 	CIV_ROUTE_ENTRY* retNode;
-	int dx;
-	int dz;
-	int sx;
-	int sz;
+	int dx, dz;
+	int sx, sz;
 
 	start = cp->ai.c.pnode;
 
@@ -3355,18 +3270,16 @@ int CivSteerAngle(CAR_DATA* cp)
 // [D] [T]
 void CreateRoadblock(void)
 {
-	int laneNo;
+	VECTOR startPos, endPos, currentPos;
+	VECTOR baseLoc, randomLoc;
 	CAR_COSMETICS* car_cos;
 	CAR_DATA* cp;
-	int distAlongSegment;
-	
 	DRIVER2_CURVE* crv;
 	DRIVER2_STRAIGHT* str;
 
-	VECTOR startPos;
-	VECTOR endPos;
-	
-	VECTOR currentPos;
+	int dx, dz;
+	int laneNo;
+	int distAlongSegment;
 	int numLanes;
 	int externalCopModel;
 	int noMoreCars;
@@ -3671,9 +3584,12 @@ int CivControl(CAR_DATA* cp)
 		if (cp->ai.c.thrustState != 3)
 			steer = CivSteerAngle(cp);
 
-		thrust = CivAccel(cp) - MAX(ABS(steer), 4) * 3; // [A] reduce acceleration when steering is applied
-
-		if (thrust < 0 && cp->hd.wheel_speed < 5)
+		thrust = CivAccel(cp);
+		if (thrust != 0) // [A] reduce acceleration when steering is applied
+			thrust = CivAccel(cp) - MAX(ABS(steer), 4) * 3;
+		
+		// [A] fix backwards crawl
+		if (thrust < 0 && cp->hd.wheel_speed < 100)
 			thrust = 0;
 
 		cp->wheel_angle = steer;
@@ -3681,8 +3597,8 @@ int CivControl(CAR_DATA* cp)
 
 #if 0
 		{
-			 //maxCivCars = 2;
-			 //maxCopCars = 0;
+			//maxCivCars = 2;
+			//maxCopCars = 0;
 
 			extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
 			extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);

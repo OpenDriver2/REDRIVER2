@@ -12,6 +12,29 @@
 #include "players.h"
 #include "main.h"
 
+#if USE_PC_FILESYSTEM
+extern int gContentOverride;
+
+// [A] loads car model from file
+char* LoadCustomCarDentingFromFile(char* dest, int modelNumber)
+{
+	char* mem;
+	char filename[64];
+
+	sprintf(filename, "LEVELS\\%s\\CARMODEL_%d.DEN", LevelNames[GameLevel], modelNumber);
+	if (FileExists(filename))
+	{
+		mem = dest ? dest : ((char*)_other_buffer + modelNumber * 4096);
+
+		// get model from file
+		Loadfile(filename, mem);
+		return mem;
+	}
+
+	return NULL;
+}
+#endif
+
 char* DentingFiles[] =
 {
 	"LEVELS\\CHICAGO.DEN",
@@ -28,7 +51,7 @@ char* DentingFiles[] =
 
 u_char gCarDamageZoneVerts[MAX_CAR_MODELS][NUM_DAMAGE_ZONES][MAX_DAMAGE_ZONE_VERTS];
 u_char gHDCarDamageZonePolys[MAX_CAR_MODELS][NUM_DAMAGE_ZONES][MAX_DAMAGE_ZONE_POLYS];
-u_char gHDCarDamageLevels[MAX_CAR_MODELS][MAX_DAMAGE_LEVELS];
+u_char gHDCarDamageLevels[MAX_CAR_MODELS][MAX_DAMAGE_LEVELS];	// the damage level (texture) count for polygons
 
 // [D] [T]
 void InitialiseDenting(void)
@@ -66,12 +89,11 @@ void DentCar(CAR_DATA *cp)
 	// collect vertices from zones
 	if (pCleanModel != NULL) 
 	{
-		VertNo = 0;
-		while (VertNo < pCleanModel->num_vertices)
-			tempDamage[VertNo++] = 0;
+		for (VertNo = 0; VertNo < pCleanModel->num_vertices; VertNo++)
+			tempDamage[VertNo] = 0;
 
-		Zone = 0;
-		do {
+		for (Zone = 0; Zone < NUM_DAMAGE_ZONES; Zone++)
+		{
 			Damage = cp->ap.damage[Zone];
 
 			if (Damage > MaxDamage)
@@ -79,40 +101,27 @@ void DentCar(CAR_DATA *cp)
 
 			DamPtr = gCarDamageZoneVerts[cp->ap.model][Zone];
 
-			VertNo = 0;
-			while (VertNo < MAX_DAMAGE_ZONE_VERTS && *DamPtr != 0xFF)
+			for (VertNo = 0; VertNo < MAX_DAMAGE_ZONE_VERTS && *DamPtr != 0xFF; VertNo++, DamPtr++)
 			{
 				if (tempDamage[*DamPtr] == 0)
 					tempDamage[*DamPtr] += Damage;
 				else 
 					tempDamage[*DamPtr] += Damage / 2;
-
-				DamPtr++;
-
-				VertNo++;
 			}
-
-			Zone++;
-		} while (Zone < NUM_DAMAGE_ZONES);
+		} 
 	}
 
 	// update vertices positon
 	if (gCarCleanModelPtr[model] != NULL && gCarDamModelPtr[model] != NULL) 
 	{
-		DamVertPtr = (SVECTOR *)gCarDamModelPtr[model]->vertices;
-		CleanVertPtr = (SVECTOR *)gCarCleanModelPtr[model]->vertices;
+		DamVertPtr = GET_MODEL_DATA(SVECTOR, gCarDamModelPtr[model], vertices);
+		CleanVertPtr = GET_MODEL_DATA(SVECTOR, gCarCleanModelPtr[model], vertices);
 
-		VertNo = 0;
-		while (VertNo < pCleanModel->num_vertices)
+		for (VertNo = 0; VertNo < pCleanModel->num_vertices; VertNo++, DamVertPtr++, CleanVertPtr++)
 		{
 			gTempCarVertDump[cp->id][VertNo].vx = CleanVertPtr->vx + FIXEDH((DamVertPtr->vx - CleanVertPtr->vx) * tempDamage[VertNo] / 2);
 			gTempCarVertDump[cp->id][VertNo].vy = CleanVertPtr->vy + FIXEDH((DamVertPtr->vy - CleanVertPtr->vy) * tempDamage[VertNo] / 2);
 			gTempCarVertDump[cp->id][VertNo].vz = CleanVertPtr->vz + FIXEDH((DamVertPtr->vz - CleanVertPtr->vz) * tempDamage[VertNo] / 2);
-
-			DamVertPtr++;
-			CleanVertPtr++;
-
-			VertNo++;
 		}
 	}
 
@@ -122,21 +131,22 @@ void DentCar(CAR_DATA *cp)
 		dentptr = gTempHDCarUVDump[cp->id];
 
 		// reset UV coordinates
-		Poly = 0;
-		while (Poly < pCleanModel->num_polys)
+		
+		for (Poly = 0; Poly < pCleanModel->num_polys; Poly++)
 		{
 			dentptr->u3 = 0;
-			Poly++;
 			dentptr++;
 		}
 
-		Zone = 0;
-		do {
+		for(Zone = 0; Zone < NUM_DAMAGE_ZONES; Zone++)
+		{
 			Damage = cp->ap.damage[Zone];
 
-			Poly = 0;
-			while (Poly < MAX_DAMAGE_ZONE_POLYS && gHDCarDamageZonePolys[cp->ap.model][Zone][Poly] != 0xFF)
+			for (Poly = 0; Poly < MAX_DAMAGE_ZONE_POLYS; Poly++)
 			{
+				if (gHDCarDamageZonePolys[cp->ap.model][Zone][Poly] == 0xFF)
+					break;
+
 				dentptr = gTempHDCarUVDump[cp->id] + gHDCarDamageZonePolys[cp->ap.model][Zone][Poly];
 
 				// add a damage level
@@ -145,28 +155,17 @@ void DentCar(CAR_DATA *cp)
 				// clamp level
 				if (dentptr->u3 > 2)
 					dentptr->u3 = 2;
-
-				Poly++;
 			}
-
-			Zone++;
-		} while (Zone < NUM_DAMAGE_ZONES);
-
-		Poly = 0;
+		}
 
 		DamPtr = gHDCarDamageLevels[model];
 		dentptr = gTempHDCarUVDump[cp->id];
 
-		while (Poly < pCleanModel->num_polys)
+		for (Poly = 0; Poly < pCleanModel->num_polys; Poly++, DamPtr++, dentptr++)
 		{
 			// calculate the UV offset with strange XORs
 			if(dentptr->u3 > 0)
 				dentptr->u3 = (*DamPtr ^ 1 ^ (*DamPtr ^ 1 | dentptr->u3)) * 64;
-
-			dentptr++;
-			
-			DamPtr++;
-			Poly++;
 		}
 	}
 }
@@ -186,7 +185,7 @@ void CreateDentableCar(CAR_DATA *cp)
 	srcModel = gCarCleanModelPtr[model];
 	if (srcModel != NULL)
 	{
-		src = (SVECTOR *)srcModel->vertices;
+		src = GET_MODEL_DATA(SVECTOR, srcModel, vertices);
 		dst = gTempCarVertDump[cp->id];
 
 		vcount = srcModel->num_vertices;
@@ -194,11 +193,9 @@ void CreateDentableCar(CAR_DATA *cp)
 		while (vcount-- != -1) 
 			*dst++ = *src++;
 
-		count = 0;
-		while (count < srcModel->num_polys)
+		for (count = 0; count < srcModel->num_polys; count++)
 		{
 			gTempHDCarUVDump[cp->id][count].u3 = 0;
-			count++;
 		}
 	}
 	else
@@ -209,11 +206,9 @@ void CreateDentableCar(CAR_DATA *cp)
 	srcModel = gCarLowModelPtr[model];
 	if (srcModel != NULL)
 	{
-		count = 0;
-		while (count < srcModel->num_polys)
+		for (count = 0; count < srcModel->num_polys; count++)
 		{
 			gTempLDCarUVDump[cp->id][count].u3 = 0;
-			count++;
 		}
 	}
 	else
@@ -223,11 +218,9 @@ void CreateDentableCar(CAR_DATA *cp)
 
 	if (gDontResetCarDamage == 0) 
 	{
-		count = 0;
-		while (count < NUM_DAMAGE_ZONES)
+		for (count = 0; count < NUM_DAMAGE_ZONES; count++)
 		{
 			cp->ap.damage[count] = 0;
-			count++;
 		}
 
 		cp->totalDamage = 0;
@@ -392,7 +385,7 @@ void MoveHubcap()
 		_MatrixRotate(&Position);
 		savecombo = combointensity;
 
-		if (gTimeOfDay == 3)
+		if (gTimeOfDay == TIME_NIGHT)
 		{
 			cmb = (combointensity & 0xffU) / 3;
 			combointensity = cmb << 0x10 | cmb << 8 | cmb;
@@ -407,27 +400,6 @@ void MoveHubcap()
 	}
 }
 
-#ifndef PSX
-// [A] loads car model from file
-char* LoadCarDentingFromFile(char* dest, int modelNumber)
-{
-	char* mem;
-	char filename[64];
-
-	sprintf(filename, "LEVELS\\%s\\CARMODEL_%d.DEN", LevelNames[GameLevel], modelNumber);
-	if(FileExists(filename))
-	{
-		mem = dest ? dest : ((char*)_other_buffer + modelNumber * 4096);
-
-		// get model from file
-		Loadfile(filename, mem);
-		return mem;
-	}
-
-	return NULL;
-}
-#endif
-
 // [D] [T]
 void ProcessDentLump(char *lump_ptr, int lump_size)
 {
@@ -436,9 +408,7 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 	int offset;
 	u_char* mem;
 
-	i = 0;
-
-	while (i < MAX_CAR_MODELS)
+	for (i = 0; i < MAX_CAR_MODELS; i++)
 	{
 		model = MissionHeader->residentModels[i];
 
@@ -456,12 +426,16 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 		{
 			offset = *(int *)(lump_ptr + model * 4);
 			mem = (u_char*)lump_ptr;
-#ifndef PSX
-			char* newDenting = LoadCarDentingFromFile(NULL, model);
-			if(newDenting)
+#if USE_PC_FILESYSTEM
+			if (gContentOverride)
 			{
-				mem = (u_char*)newDenting;
-				offset = 0;
+				char* newDenting;
+				newDenting = LoadCustomCarDentingFromFile(NULL, model);
+				if (newDenting)
+				{
+					mem = (u_char*)newDenting;
+					offset = 0;
+				}
 			}
 #endif
 
@@ -473,8 +447,6 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 			
 			memcpy((u_char*)gHDCarDamageLevels[i], mem + offset, MAX_FILE_DAMAGE_LEVELS);
 		}
-
-		i++;
 	}
 }
 
@@ -483,6 +455,20 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 void SetupSpecDenting(char *loadbuffer)
 {
 	int offset;
+
+#if USE_PC_FILESYSTEM
+	if (gContentOverride)
+	{
+		char* newDenting;
+		int model;
+		model = MissionHeader->residentModels[4];
+
+		newDenting = LoadCustomCarDentingFromFile(NULL, model);
+		if (newDenting)
+			loadbuffer = newDenting;
+	}
+	
+#endif
 
 	// [A] this is better
 	memcpy((u_char*)gCarDamageZoneVerts[4], (u_char*)loadbuffer, NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_VERTS);

@@ -14,6 +14,7 @@
 #include "spool.h"
 #include "system.h"
 #include "pause.h"
+#include "draw.h"
 
 struct ANIMATED_OBJECT
 {
@@ -78,7 +79,7 @@ CYCLE_OBJECT* Lev_CycleObjPtrs[] = {
 	Lev3
 };
 
-int Num_LevCycleObjs[] = { 2, 0, 12, 0 };
+int Num_LevCycleObjs[] = { numberOf(Lev0), 0, numberOf(Lev2), 0 };
 
 ANIMATED_OBJECT Lev0AnimObjects[9] =
 {
@@ -175,7 +176,6 @@ SMASHABLE_OBJECT smashable[] =
 	{ 0, 0, 0, 0, 0 }
 };
 
-
 int num_anim_objects = 0;
 int num_cycle_obj = 0;
 
@@ -191,7 +191,7 @@ void InitCyclingPals(void)
 	int i;
 
 	// only enabled at Night
-	if (gTimeOfDay != 3)
+	if (gTimeOfDay != TIME_NIGHT)
 	{
 		num_cycle_obj = 0;
 		return;
@@ -220,7 +220,9 @@ void ColourCycle(void)
 	RECT16 vram;
 
 	if (!num_cycle_obj)
+	{
 		return;
+	}
 
 	if (LoadingArea != 0)
 	{
@@ -228,66 +230,76 @@ void ColourCycle(void)
 		return;
 	}
 
+	if (FrameCnt & 1) // [A]
+	{
+		return;
+	}
+
 	vram.w = 16;
 	vram.h = 1;
 	cyc = Lev_CycleObjPtrs[GameLevel];
 		
-	for (i = 0; i < num_cycle_obj; i++)
+	for (i = 0; i < num_cycle_obj; i++, cyc++)
 	{
+		TEXTURE_DETAILS* cycTex = &cycle_tex[i];
 		bufaddr = (u_short*)cyclecluts[i].p;
 
-		if (tpageloaded[cycle_tex[i].texture_page] != 0)
+		if (tpageloaded[cycTex->texture_page] == 0)
 		{
-			if (cycle_phase == 0)
-			{
-				// initialize
-				temp = texture_cluts[cycle_tex[i].texture_page][cycle_tex[i].texture_number];
-
-				cyc->vx = vram.x = (temp & 0x3f) << 4;
-				cyc->vy = vram.y = (temp >> 6);
-
-				StoreImage(&vram, (u_long*)bufaddr);
-			}
-			else
-			{
-				if ((cycle_timer & cyc->speed1) == 0)
-				{
-					if (cyc->start1 != -1)
-					{
-						temp = bufaddr[cyc->start1];
-						memmove((u_char*)(bufaddr + cyc->start1), (u_char*)(bufaddr + cyc->start1 + 1), (cyc->stop1 - cyc->start1) << 1);
-
-						bufaddr[cyc->stop1] = temp;
-					}
-				}
-
-				if ((cycle_timer & cyc->speed2) == 0)
-				{
-					if (cyc->start2 != -1)
-					{
-						temp = bufaddr[cyc->start2];
-						memmove((u_char*)(bufaddr + cyc->start2), (u_char*)(bufaddr + cyc->start2 + 1), (cyc->stop2 - cyc->start2) << 1);
-
-						bufaddr[cyc->stop2] = temp;
-					}
-				}
-
-				vram.x = cyc->vx;
-				vram.y = cyc->vy;
-
-				SetDrawLoad(&cyclecluts[i], &vram);
-
-				addPrim(current->ot, &cyclecluts[i]);
-			}
+			continue;
 		}
 
-		cyc++;
+		if (cycle_phase == 0)
+		{
+			// initialize clut data from VRAM
+			temp = texture_cluts[cycTex->texture_page][cycTex->texture_number];
+
+			cyc->vx = vram.x = (temp & 63) << 4;
+			cyc->vy = vram.y = (temp >> 6);
+
+			StoreImage(&vram, (u_long*)bufaddr);
+		}
+		else
+		{
+			if ((cycle_timer & cyc->speed1) == 0)
+			{
+				if (cyc->start1 != -1)
+				{
+					temp = bufaddr[cyc->start1];
+					memmove((u_char*)(bufaddr + cyc->start1), (u_char*)(bufaddr + cyc->start1 + 1), (cyc->stop1 - cyc->start1) * sizeof(ushort));
+
+					bufaddr[cyc->stop1] = temp;
+				}
+			}
+
+			if ((cycle_timer & cyc->speed2) == 0)
+			{
+				if (cyc->start2 != -1)
+				{
+					temp = bufaddr[cyc->start2];
+					memmove((u_char*)(bufaddr + cyc->start2), (u_char*)(bufaddr + cyc->start2 + 1), (cyc->stop2 - cyc->start2) * sizeof(ushort));
+
+					bufaddr[cyc->stop2] = temp;
+				}
+			}
+
+			vram.x = cyc->vx;
+			vram.y = cyc->vy;
+
+			SetDrawLoad(&cyclecluts[i], &vram);
+
+			addPrim(current->ot, &cyclecluts[i]);
+		}
 	}
 
 	if (cycle_phase != 0)
+	{
 		cycle_timer++;
-
-	cycle_phase ^= 1;
+	}
+	else
+	{
+		cycle_phase = 1;
+	}
 }
 
 
@@ -319,20 +331,26 @@ void InitAnimatingObjects(void)
 	{
 		// My way
 		int model_idx = FindModelIdxWithName(aop->name);
+		aop->model_num = model_idx;
 
 		if (model_idx != -1 && modelpointers[model_idx] != &dummyModel)
 		{
 			modelPtr = modelpointers[model_idx];
 			modelPtr->flags2 |= MODEL_FLAG_ANIMOBJ;
 
+#ifdef DYNAMIC_LIGHTING
+			if (gEnableDlights)
+			{
+				modelPtr->bounding_sphere <<= 3;
+			}
+#endif // DYNAMIC_LIGHTING
+
 			if (aop->LitPoly)
 				modelPtr->flags2 |= MODEL_FLAG_LAMP;
-			
-			aop->model_num = model_idx;
 
 			// [A] store animated object number in normals pointer
 			// after all it was always unused
-			modelPtr->normals = loop;
+			modelPtr->tri_verts = loop;
 
 			if (modelPtr->instance_number != -1 &&
 				modelpointers[modelPtr->instance_number] != &dummyModel)
@@ -340,16 +358,21 @@ void InitAnimatingObjects(void)
 				modelPtr = modelpointers[modelPtr->instance_number];
 				modelPtr->flags2 |= MODEL_FLAG_ANIMOBJ;
 
+#ifdef DYNAMIC_LIGHTING
+				if (gEnableDlights)
+				{
+					modelPtr->bounding_sphere <<= 3;
+				}
+#endif // DYNAMIC_LIGHTING
+
 				if (aop->LitPoly)
 					modelPtr->flags2 |= MODEL_FLAG_LAMP;
 
 				// [A] store animated object number in normals pointer
 				// after all it was always unused
-				modelPtr->normals = loop;
+				modelPtr->tri_verts = loop;
 			}
 		}
-		else
-			aop->model_num = -1;
 
 		aop++;
 	}
@@ -380,9 +403,16 @@ void InitSpooledAnimObj(int model_number)
 			if (aop->LitPoly)
 				modelPtr->flags2 |= MODEL_FLAG_LAMP;
 
+#ifdef DYNAMIC_LIGHTING
+			if (gEnableDlights)
+			{
+				modelPtr->bounding_sphere <<= 3;
+			}
+#endif // DYNAMIC_LIGHTING
+
 			// [A] store animated object number in normals pointer
 			// after all it was always unused
-			modelPtr->normals = i;
+			modelPtr->tri_verts = i;
 			
 			break;
 		}
@@ -416,9 +446,10 @@ void DrawAllAnimatingObjects(CELL_OBJECT** objects, int num_animated)
 		model = modelpointers[type];
 
 		// [A] optimized
-		animate_object(cop, aop[model->normals].internal_id);
+		animate_object(cop, aop[model->tri_verts & 31].internal_id);
 	}
 }
+
 
 // [D] [T]
 void animate_object(CELL_OBJECT* cop, int type)
@@ -428,12 +459,11 @@ void animate_object(CELL_OBJECT* cop, int type)
 
 	yang = cop->yang * 64;
 
-	// [A] Rev 1.1 has less of those types
-
 	if (GameLevel == 0)
 	{
 		switch (type)
 		{
+
 			case 0:
 			case 7:
 				yang += 1024;
@@ -441,15 +471,15 @@ void animate_object(CELL_OBJECT* cop, int type)
 
 				if (phase == 1)
 				{
-					AddTrafficLight(cop, 0, -0x2c4, -0x2d, 0x200, yang);
+					AddTrafficLight(cop, 0, -708, -45, 0x200, yang);
 				}
 				else if (phase == 2)
 				{
-					AddTrafficLight(cop, 0,  -0x284, -0x2d, 0x400, yang);
+					AddTrafficLight(cop, 0,  -644, -45, 0x400, yang);
 				}
 				else if (phase == 3)
 				{
-					AddTrafficLight(cop, 0, -0x244, -0x2d, 0x800, yang);
+					AddTrafficLight(cop, 0, -580, -45, 0x800, yang);
 				}
 				break;
 			case 1:
@@ -458,15 +488,15 @@ void animate_object(CELL_OBJECT* cop, int type)
 
 				if (phase == 1)
 				{
-					AddTrafficLight(cop, 0x196, -0x2c4, -0x2e, 0x200, yang);
+					AddTrafficLight(cop, 406, -708, -46, 0x200, yang);
 				}
 				else if (phase == 2)
 				{
-					AddTrafficLight(cop, 0x196, -0x292, -0x2e, 0x400, yang);
+					AddTrafficLight(cop, 406, -658, -46, 0x400, yang);
 				}
 				else if (phase == 3)
 				{
-					AddTrafficLight(cop,  0x196, -0x252, -0x2e, 0x800, yang);
+					AddTrafficLight(cop, 406, -594, -46, 0x800, yang);
 				}
 				break;
 			case 2:
@@ -474,27 +504,27 @@ void animate_object(CELL_OBJECT* cop, int type)
 				if (gLightsOn == 0)
 					break;
 
-				AddLightEffect(cop, 0x1ad, -0x4d2, 0, 0, 3);
+				AddLightEffect(cop, 429, -1234, 0, 0, 3);
 				break;
 			case 4:
 				if (gLightsOn == 0)
 					break;
 
-				AddLightEffect(cop, -0x1b0, -0x4d9, 0, 0, 3);
-				AddLightEffect(cop, 0x1b0, -0x4d9, 0, 0, 3);
+				AddLightEffect(cop, -432, -1241, 0, 0, 3);
+				AddLightEffect(cop, 432, -1241, 0, 0, 3);
 				break;
 			case 5:
 				if (gLightsOn == 0)
 					break;
 
-				AddLightEffect(cop, 0, -0x50, 0, 2, 2);
+				AddLightEffect(cop, 0, -80, 0, 2, 2);
 				break;
 			case 6:
 				if (gLightsOn == 0)
 					break;
 
-				AddLightEffect(cop, 0xea, -0x47a, 0, 0, 3);
-				AddLightEffect(cop,  -0xea, -0x47a, 0, 0, 3);
+				AddLightEffect(cop, 234, -1146, 0, 0, 3);
+				AddLightEffect(cop, -234, -1146, 0, 0, 3);
 		}
 	}
 	else if (GameLevel == 1)
@@ -506,15 +536,15 @@ void animate_object(CELL_OBJECT* cop, int type)
 
 				if (phase == 2)
 				{
-					AddTrafficLight(cop, -0x1a1, -800, -0x1e, 0x400, yang);
+					AddTrafficLight(cop, -417, -800, -30, 0x400, yang);
 				}
 				else if (phase == 1)
 				{
-					AddTrafficLight(cop, -0x1ea, -800, -0x1e, 0x200, yang);
+					AddTrafficLight(cop, -490, -800, -30, 0x200, yang);
 				}
 				else if (phase == 3)
 				{
-					AddTrafficLight(cop, -0x157, -800, -0x1e, 0x800, yang);
+					AddTrafficLight(cop, -343, -800, -30, 0x800, yang);
 				}
 
 				break;
@@ -522,20 +552,20 @@ void animate_object(CELL_OBJECT* cop, int type)
 				if (gLightsOn == 0)
 					break;
 
-				AddSmallStreetLight(cop, 0xe6, -0x442, 0, 0);
+				AddSmallStreetLight(cop, 230, -1090, 0, 0);
 				break;
 			case 3:
 				if (gLightsOn == 0)
 					break;
 
-				AddLightEffect(cop, -0x265, -0x7d2, 0, 0, 3);
+				AddLightEffect(cop, -613, -2002, 0, 0, 3);
 				break;
 			case 4:
 				if (gLightsOn == 0)
 					break;
 
-				AddLightEffect(cop, -0x250, -2000, 0, 0, 3);
-				AddLightEffect(cop, 0x252, -2000, 0, 0, 3);
+				AddLightEffect(cop, -592, -2000, 0, 0, 3);
+				AddLightEffect(cop, 594, -2000, 0, 0, 3);
 				break;
 		}
 	}
@@ -548,21 +578,21 @@ void animate_object(CELL_OBJECT* cop, int type)
 			
 				if (phase == 1)
 				{
-					AddTrafficLight(cop, -0x857, -0x458, -0x44, 0x200, yang);
-					AddTrafficLight(cop, -0x520, -0x421, -0x44, 0x200, yang);
-					AddTrafficLight(cop, -0x202, -0x400, -0x44, 0x200, yang);
+					AddTrafficLight(cop, -2135, -1112, -68, 0x200, yang);
+					AddTrafficLight(cop, -1312, -1057, -68, 0x200, yang);
+					AddTrafficLight(cop, -514, -1024, -68, 0x200, yang);
 				}
 				else if (phase == 2)
 				{
-					AddTrafficLight(cop, -0x85c, -0x3fd, -0x41, 0x400, yang);
-					AddTrafficLight(cop, -0x51e, -0x3d4, -0x41, 0x400, yang);
-					AddTrafficLight(cop, -0x208, -0x3ab, -0x41, 0x400, yang);
+					AddTrafficLight(cop, -2140, -1021, -65, 0x400, yang);
+					AddTrafficLight(cop, -1310, -980, -65, 0x400, yang);
+					AddTrafficLight(cop, -520, -939, -65, 0x400, yang);
 				}
 				else if (phase == 3)
 				{
-					AddTrafficLight(cop, -0x85a, -0x3a9, -0x3e, 0x800, yang);
-					AddTrafficLight(cop, -0x51d, -0x381, -0x3e, 0x800, yang);
-					AddTrafficLight(cop, -0x206, -0x353, -0x3e, 0x800, yang);
+					AddTrafficLight(cop, -2138, -937, -62, 0x800, yang);
+					AddTrafficLight(cop, -1309, -897, -62, 0x800, yang);
+					AddTrafficLight(cop, -518, -851, -62, 0x800, yang);
 				}
 				break;
 			case 1:
@@ -570,41 +600,42 @@ void animate_object(CELL_OBJECT* cop, int type)
 
 				if (phase == 1)
 				{
-					AddTrafficLight(cop, -4, -0x219, -0x29, 0x200, yang);
+					AddTrafficLight(cop, -4, -537, -41, 0x200, yang);
 				}
 				else if (phase == 2)
 				{
-					AddTrafficLight(cop, -4, -0x1d2, -0x29, 0x400, yang);
+					AddTrafficLight(cop, -4, -466, -41, 0x400, yang);
 				}
 				else if (phase == 3)
 				{
-					AddTrafficLight(cop, -4, -0x18b, -0x29, 0x800, yang);
+					AddTrafficLight(cop, -4, -395, -41, 0x800, yang);
 				}
 				break;
 			case 2:
 				if (gLightsOn == 0)
 					break;
 
-				AddLightEffect(cop, -0x348, -0x7b4, -0x3d, 0, 3);
+				AddLightEffect(cop, -840, -1972, -61, 0, 3);
 				break;
 			case 3:
 				if (gLightsOn == 0)
 					break;
 
-				AddLightEffect(cop, -0x361, -0x8c9, 0, 0, 3);
-				AddLightEffect(cop, 0x361, -0x8c9, 0, 0, 3);
+				AddLightEffect(cop, -865, -2249, 0, 0, 3);
+				AddLightEffect(cop, 865, -2249, 0, 0, 3);
 				break;
 			case 4:
 				if (gLightsOn == 0)
 					break;
 
+				// spooled?
 				if (cop->pos.vx - 137190U < 50687 && cop->pos.vz > 713372 && cop->pos.vz < 719516)
 				{
-					AddSmallStreetLight(cop, -0x26c, -0x65, 0, 0);
+					AddSmallStreetLight(cop, -620, -101, 0, 0);
 					break;
 				}
 			
-				AddLightEffect(cop, -0x26c, -0x652, 0, 0, 3);
+				AddLightEffect(cop, -620, -1618, 0, 0, 3);
 				break;
 		}
 	}
@@ -617,15 +648,15 @@ void animate_object(CELL_OBJECT* cop, int type)
 			
 				if (phase == 1)
 				{
-					AddTrafficLight(cop, -0x2cf, -0x38a, -0x16, 0x200, yang);
+					AddTrafficLight(cop, -719, -906, -22, 0x200, yang);
 				}
 				else if (phase == 2)
 				{
-					AddTrafficLight(cop, -0x2cf, -0x345, -0x16, 0x400, yang);
+					AddTrafficLight(cop, -719, -837, -22, 0x400, yang);
 				}
 				else if (phase == 3)
 				{
-					AddTrafficLight(cop, -0x2cf, -0x2fa, -0x16, 0x800, yang);
+					AddTrafficLight(cop, -719, -762, -22, 0x800, yang);
 				}
 				break;
 			case 1:
@@ -633,36 +664,36 @@ void animate_object(CELL_OBJECT* cop, int type)
 
 				if (phase == 1)
 				{
-					AddTrafficLight(cop, 0, -0x28e, -0x15, 0x200, yang);
+					AddTrafficLight(cop, 0, -654, -21, 0x200, yang);
 				}
 				else if (phase == 2)
 				{
-					AddTrafficLight(cop, 0, -0x242, -0x15, 0x400, yang);
+					AddTrafficLight(cop, 0, -578, -21, 0x400, yang);
 				}
 				else if (phase == 3)
 				{
-					AddTrafficLight(cop, 0, -0x1fd, -0x15, 0x800, yang);
+					AddTrafficLight(cop, 0, -509, -21, 0x800, yang);
 				}
 				break;
 			case 2:
 				if (gLightsOn == 0)
 					break;
 
-				AddLightEffect(cop, -0x1f1, -0x59d, 0, 0, 3);
+				AddLightEffect(cop, -497, -1437, 0, 0, 3);
 
 				break;
 			case 3:
 				if (gLightsOn == 0)
 					break;
 
-				AddLightEffect(cop, 0,  -0xaa7, 0, 0, 3);
+				AddLightEffect(cop, 0,  -2727, 0, 0, 3);
 			
 				break;
 			case 4:
 				if (gLightsOn == 0)
 					break;
 
-				AddSmallStreetLight(cop, 0, -0x492, 0, 1);
+				AddSmallStreetLight(cop, 0, -1170, 0, 1);
 				break;
 		}
 	}

@@ -23,7 +23,7 @@ void InitFMVFont()
 	RECT16 fontRect;
 
 	DrawSync(0);
-	LoadClut((u_long *)(fmvFont + 20),960,72);
+	LoadClut((u_long*)(fmvFont + 20),960,72);
 	DrawSync(0);
 
 	fontRect.x = 960;
@@ -31,7 +31,7 @@ void InitFMVFont()
 	fontRect.w = 64;
 	fontRect.h = 72;
 
-	LoadImage2(&fontRect,(u_long *)(fmvFont + 64));
+	LoadImage2(&fontRect,(u_long*)(fmvFont + 64));
 	DrawSync(0);
 }
 
@@ -49,7 +49,7 @@ void PrintFMVText(char *str, int x, short y, int brightness)
 	OTTYPE ot;
 	POLY_FT4* poly;
 
-	ClearOTagR((ulong*)&ot, 1);
+	ClearOTagR((u_long*)&ot, 1);
 	poly = fmvTextPolys;
 
 	str_w = 0;
@@ -119,7 +119,7 @@ void PrintFMVText(char *str, int x, short y, int brightness)
 		}
 	}
 
-	DrawOTag((ulong*)&ot);
+	DrawOTag((u_long*)&ot);
 }
 
 int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsigned char* dst_buf, int& width, int& height)
@@ -180,7 +180,7 @@ void SetupMovieRectangle(int image_w, int image_h)
 	u_char r = 1;
 	u_char b = 1;
 
-#ifdef USE_PGXP
+#if USE_PGXP
 	GR_SetViewPort(0, 0, windowWidth, windowHeight);
 
 	GrVertex blit_vertices[] =

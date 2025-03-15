@@ -9,10 +9,10 @@
 
 typedef short	SHORTVECTOR4[4];
 
-typedef long	LONGVECTOR3[3];
-typedef long	LONGVECTOR4[4];
+typedef int		LONGVECTOR3[3];
+typedef int		LONGVECTOR4[4];
 
-typedef long	LONGQUATERNION[4];
+typedef int		LONGQUATERNION[4];
 
 struct VECTOR2
 {
@@ -291,16 +291,6 @@ struct HUBCAP
 	int Duration;
 };
 
-struct BOUND_BOX
-{
-	int x0;
-	int y0;
-	int z0;
-	int x1;
-	int y1;
-	int z1;
-};
-
 typedef struct _HANDLING_TYPE
 {
 	char frictionScaleRatio;
@@ -362,7 +352,7 @@ typedef struct _HANDLING_DATA
 
 union RigidBodyState
 {
-	long v[13];
+	int v[13];
 	struct {
 		LONGVECTOR3 fposition;
 		LONGQUATERNION orientation;
@@ -762,7 +752,7 @@ typedef struct _TARGET
 					int eventId;			// data 3
 					union
 					{
-						VECTOR* eventPos;	// data 4
+						int eventPos;		// data 4
 						int unused[10];
 					};
 					int loseMessage;		// data 14
@@ -772,7 +762,7 @@ typedef struct _TARGET
 	};
 } MS_TARGET;
 
-assert_sizeof(MS_TARGET, 64);
+static_assert(sizeof(MS_TARGET) == 64, "MS_TARGET size is not correct");
 
 //---------------------------------------------------------------------------------------
 
@@ -1155,24 +1145,6 @@ struct ROADBLOCK
 //---------------------------------------------------------------------------------------
 // TODO: OBJCOLL.H
 
-struct tRay
-{
-	LONGVECTOR4 org;
-	LONGVECTOR4 dir;
-};
-
-struct tRange
-{
-	int lower;
-	int upper;
-};
-
-struct tAABB
-{
-	tRange slab[3];
-};
-
-
 struct TestResult
 {
 	int depth;
@@ -1344,6 +1316,23 @@ enum GAMEMODE
 	GAMEMODE_DIRECTOR = 4,
 	GAMEMODE_NEXTMISSION = 5,
 	GAMEMODE_DEMO = 6,
+};
+
+//---------------------------------------------------
+
+enum TIMEOFDAY
+{
+	TIME_DAWN = 0,
+	TIME_DAY = 1,
+	TIME_DUSK = 2,
+	TIME_NIGHT = 3
+};
+
+enum WEATHER
+{
+	WEATHER_NONE = 0,
+	WEATHER_RAIN = 1,
+	WEATHER_WET = 2
 };
 
 #endif // DR2TYPES_H

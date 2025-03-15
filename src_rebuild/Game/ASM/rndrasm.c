@@ -2,7 +2,11 @@
 #include "C/camera.h"
 #include "C/draw.h"
 
-extern MATRIX frustrum_matrix;
+#ifdef PSX
+#pragma GCC optimization ("O3")
+#endif
+
+#define FRUSTUM_THRESHOLD (-80)
 
 // [D] [T]
 void SetCameraVector(void)
@@ -32,8 +36,7 @@ void Apply_Inv_CameraMatrix(VECTOR* v)
 // [D] [T]
 int Apply_InvCameraMatrixSetTrans(VECTOR_NOPAD* pos)
 {
-	VECTOR vfc;
-	VECTOR vec;
+	VECTOR vfc, vec;
 	SVECTOR local;
 	gte_stfc(&vfc);
 
@@ -63,8 +66,7 @@ int Apply_InvCameraMatrixSetTrans(VECTOR_NOPAD* pos)
 // [D] [T]
 int Apply_InvCameraMatrixAndSetMatrix(VECTOR_NOPAD* pos, MATRIX2* mtx)
 {
-	VECTOR vfc;
-	VECTOR vec;
+	VECTOR vfc, vec;
 	SVECTOR local;
 	gte_stfc(&vfc);
 
@@ -97,8 +99,9 @@ int Apply_InvCameraMatrixAndSetMatrix(VECTOR_NOPAD* pos, MATRIX2* mtx)
 // [D] [T]
 int FrustrumCheck16(PACKED_CELL_OBJECT* pcop, int bounding_sphere)
 {
-	VECTOR result;
+	VECTOR_NOPAD result;
 	SVECTOR local;
+	int ang;
 	VecSubtract(&local, &pcop->pos, &camera_position);
 
 	gte_ldsv(&local);
@@ -106,10 +109,12 @@ int FrustrumCheck16(PACKED_CELL_OBJECT* pcop, int bounding_sphere)
 
 	gte_stlvnl(&result);
 
-	int ang = frustrum_matrix.t[0] - bounding_sphere;
+	ang = FRUSTUM_THRESHOLD - bounding_sphere;
 
-	if (ang <= result.vx && ang <= result.vy && ang <= result.vz)
+	if (ang <= result.vx && ang <= result.vy && ang <= result.vz) 
+	{
 		return 0;
+	}
 
 	return -1;
 }
@@ -117,8 +122,9 @@ int FrustrumCheck16(PACKED_CELL_OBJECT* pcop, int bounding_sphere)
 // [D] [T]
 int FrustrumCheck(VECTOR* pos, int bounding_sphere)
 {
-	VECTOR result;
+	VECTOR_NOPAD result;
 	SVECTOR local;
+	int ang;
 	VecSubtract(&local, pos, &camera_position);
 
 	gte_ldsv(&local);
@@ -126,10 +132,12 @@ int FrustrumCheck(VECTOR* pos, int bounding_sphere)
 
 	gte_stlvnl(&result);
 
-	int ang = frustrum_matrix.t[0] - bounding_sphere;
+	ang = FRUSTUM_THRESHOLD - bounding_sphere;
 
-	if (ang <= result.vx && ang <= result.vy && ang <= result.vz)
+	if (ang <= result.vx && ang <= result.vy && ang <= result.vz) 
+	{
 		return 0;
+	}
 
 	return -1;
 }

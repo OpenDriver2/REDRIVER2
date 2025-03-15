@@ -5,7 +5,6 @@
 #include "map.h"
 #include "event.h"
 #include "convert.h"
-#include "cutscene.h"
 #include "mission.h"
 #include "handling.h"
 #include "main.h"
@@ -102,7 +101,7 @@ int GetSurfaceRoadInfo(DRIVER2_ROAD_INFO* outRoadInfo, int surfId)
 	if(IS_CURVED_SURFACE(surfId))
 	{
 		outRoadInfo->curve = curve = GET_CURVE(surfId);
-		outRoadInfo->ConnectIdx = &curve->ConnectIdx;
+		outRoadInfo->ConnectIdx = curve->ConnectIdx;
 		outRoadInfo->NumLanes = curve->NumLanes;
 		outRoadInfo->LaneDirs = curve->LaneDirs;
 		outRoadInfo->AILanes = curve->AILanes;
@@ -111,7 +110,7 @@ int GetSurfaceRoadInfo(DRIVER2_ROAD_INFO* outRoadInfo, int surfId)
 	else if (IS_STRAIGHT_SURFACE(surfId))
 	{
 		outRoadInfo->straight = straight = GET_STRAIGHT(surfId);
-		outRoadInfo->ConnectIdx = &straight->ConnectIdx;
+		outRoadInfo->ConnectIdx = straight->ConnectIdx;
 		outRoadInfo->NumLanes = straight->NumLanes;
 		outRoadInfo->LaneDirs = straight->LaneDirs;
 		outRoadInfo->AILanes = straight->AILanes;
@@ -120,7 +119,7 @@ int GetSurfaceRoadInfo(DRIVER2_ROAD_INFO* outRoadInfo, int surfId)
 	else if (IS_JUNCTION_SURFACE(surfId))
 	{
 		junction = GET_JUNCTION(surfId);
-		outRoadInfo->ConnectIdx = &junction->ExitIdx;
+		outRoadInfo->ConnectIdx = junction->ExitIdx;
 	}
 
 	return 0;
@@ -204,11 +203,13 @@ void ProcessStraightsDriver2Lump(char *lump_file, int lump_size)
 	}
 	else if (GameLevel == 2)
 	{
+#if ENABLE_GAME_FIXES
 		int i;
 		DRIVER2_STRAIGHT* str;
 
 		Driver2StraightsPtr[348].ConnectIdx[2] = 8244;
 		Driver2StraightsPtr[348].ConnectIdx[3] = 351;
+#endif
 	}
 }
 
@@ -348,71 +349,71 @@ sdPlane* sdGetCell(VECTOR *pos)
 	// Alpha 1.6 code, works too; not widely tested yet
 	//buffer = *(short**)((int)RoadMapDataRegions + (cellPos.x >> 14 & 4 ^ cellPos.y >> 13 & 8 ^ sdSelfModifyingCode));
 
-	plane = NULL;
+	plane = GetSeaPlane();
 	
-	if (*buffer == 2)
-	{
-		sdPlane* planeData = (sdPlane*)((char*)buffer + buffer[1]);
-		short* bspData = (short*)((char*)buffer + buffer[2]);
-		sdNode* nodeData = (sdNode*)((char*)buffer + buffer[3]);
+	if (*buffer != 2)
+		return &default_plane;
+	
+	sdPlane* planeData = (sdPlane*)((char*)buffer + buffer[1]);
+	short* bspData = (short*)((char*)buffer + buffer[2]);
+	sdNode* nodeData = (sdNode*)((char*)buffer + buffer[3]);
 		
-		surface = &buffer[(cellPos.x >> 10 & 63) + 
-						  (cellPos.y >> 10 & 63) * 64 + 4];
+	surface = &buffer[(cellPos.x >> 10 & 63) + 
+						(cellPos.y >> 10 & 63) * 64 + 4];
 
-		// initial surface
-		if (*surface == -1)
-			return GetSeaPlane();
+	// initial surface
+	if (*surface == -1)
+		return plane;
 
-		// check surface has overlapping planes flag (aka multiple levels)
-		if ((*surface & 0x6000) == 0x2000)
-		{
-			surface = &bspData[*surface & 0x1fff];
-			do {
-				if(-256 - pos->vy > *surface)
-				{
-					surface += 2;
-					sdLevel++;
-				}
-				else
-					break;
-			} while (*surface != -0x8000); // end flag
-			
-			surface += 1;
-		}
-
-		// iterate surfaces if BSP
+	// check surface has overlapping planes flag (aka multiple levels)
+	if ((*surface & 0x6000) == 0x2000)
+	{
+		surface = &bspData[*surface & 0x1fff];
 		do {
-			nextLevel = 0;
-
-			// check if it's has BSP properties
-			// basically it determines surface bounds
-			if (*surface & 0x4000)
-			{				
-				// get closest surface by BSP lookup
-				BSPSurface = sdGetBSP(&nodeData[*surface & 0x3fff], &cell);
-
-				if (*BSPSurface == 0x7fff)
-				{
-					sdLevel++;
-					nextLevel = 1;
-					
-					BSPSurface = surface + 2; // get to the next node
-				}
-
-				surface = BSPSurface;
+			if(-256 - pos->vy > *surface)
+			{
+				surface += 2;
+				sdLevel++;
 			}
-		} while (nextLevel);
-
-		plane = &planeData[*surface];
-
-		if (((int)plane & 3) == 0 && *(int *)plane != -1) 
-		{
-			if (plane->surface - 16U < 16)
-				plane = EventSurface(pos, plane);
-		}
-		else 
-			plane = GetSeaPlane();
+			else
+				break;
+		} while (*surface != -0x8000); // end flag
+			
+		surface += 1;
 	}
+
+	// iterate surfaces if BSP
+	do {
+		nextLevel = 0;
+
+		// check if it's has BSP properties
+		// basically it determines surface bounds
+		if (*surface & 0x4000)
+		{				
+			// get closest surface by BSP lookup
+			BSPSurface = sdGetBSP(&nodeData[*surface & 0x3fff], &cell);
+
+			if (*BSPSurface == 0x7fff)
+			{
+				sdLevel++;
+				nextLevel = 1;
+					
+				BSPSurface = surface + 2; // get to the next node
+			}
+
+			surface = BSPSurface;
+		}
+	} while (nextLevel);
+
+	plane = &planeData[*surface];
+
+	if (((int)plane & 3) == 0 && *(int *)plane != -1) 
+	{
+		if (plane->surface - 16U < 16)
+			plane = EventSurface(pos, plane);
+	}
+	else 
+		plane = GetSeaPlane();
 
 	return plane;
 }
@@ -433,7 +434,7 @@ sdPlane * FindRoadInBSP(sdNode *node, sdPlane *base)
 {
 	sdPlane *plane;
 
-	while (true)
+	do
 	{
 		if (node->value > -1)
 		{
@@ -442,12 +443,8 @@ sdPlane * FindRoadInBSP(sdNode *node, sdPlane *base)
 		}
 
 		plane = FindRoadInBSP(node + 1, base);
-
-		if (plane != NULL)
-			break;
-
 		node += node->n.offset;
-	}
+	} while (plane == NULL);
 
 	return plane;
 }
@@ -550,14 +547,17 @@ int MapHeight(VECTOR *pos)
 }
 
 // [D] [T]
-int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, sdPlane **plane)
+void FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, sdPlane **plane)
 {
-	*plane = sdGetCell(pos);
+	sdPlane* pl;
+	pl = sdGetCell(pos);
+
+	*plane = pl;
 	out->vx = pos->vx;
 	out->vz = pos->vz;
-	out->vy = sdHeightOnPlane(pos, *plane);
+	out->vy = sdHeightOnPlane(pos, pl);
 
-	if (*plane == NULL || (*plane)->b == 0)
+	if (pl == NULL || pl->b == 0)
 	{
 		normal->vx = 0;
 		normal->vy = 4096;
@@ -565,24 +565,8 @@ int FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, sdPlane **plane)
 	}
 	else
 	{
-		normal->vx = (int)(*plane)->a >> 2;
-		normal->vy = (int)(*plane)->b >> 2;
-		normal->vz = (int)(*plane)->c >> 2;
+		normal->vx = (int)pl->a >> 2;
+		normal->vy = (int)pl->b >> 2;
+		normal->vz = (int)pl->c >> 2;
 	}
-
-	if (*plane == NULL)
-	{
-		return 4096;
-	}
-	else if ((*plane)->surface == 4)
-	{
-		if (gInGameCutsceneActive && gCurrentMissionNumber == 23 && gInGameCutsceneID == 0)
-			out->vy += RSIN((pos->vx + pos->vz) * 2) >> 9;			// rcossin_tbl[(pos->vx + pos->vz) * 4 & 0x1fff] >> 9;
-		else
-			out->vy += (RSIN((pos->vx + pos->vz) * 2) >> 8) / 3;	// (rcossin_tbl[(pos->vx + pos->vz) * 4 & 0x1fff] >> 8) / 3;
-
-		return 2048;
-	}
-
-	return 4096;
 }

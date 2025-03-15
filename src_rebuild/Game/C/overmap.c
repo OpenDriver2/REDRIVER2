@@ -404,7 +404,7 @@ void ProcessOverlayLump(char *lump_ptr, int lump_size)
 	D_MALLOC_END();
 
 	// load CLUT
-	LoadImage(&mapclutpos, (u_long *)(MapBitMaps + 512));
+	LoadImage(&mapclutpos, (u_long*)(MapBitMaps + 512));
 	DrawSync(0);
 }
 
@@ -425,14 +425,14 @@ void LoadMapTile(int tpage, int x, int y)
 	temp = x * 32;
 
 	if (idx > -1 && idx < overlaidmaps[GameLevel].toptile &&
-		temp > -1 && (temp < overlaidmaps[GameLevel].width))
+		temp > -1 && temp < overlaidmaps[GameLevel].width)
 	{
 		UnpackRNC(MapBitMaps + *((ushort*)MapBitMaps + idx), MapBuffer);
 	}
 	else
 	{
 		for (count = 0; count < 512; count++)
-			MapBuffer[count++] = overlaidmaps[GameLevel].dummy;
+			MapBuffer[count] = overlaidmaps[GameLevel].dummy;
 	}
 
 #ifdef PSX
@@ -527,7 +527,7 @@ void DrawN(VECTOR *pScreenPosition, int direct)
 		linef2->x1 = lastPoint.x;
 		linef2->y1 = lastPoint.y;
 
-		if (gTimeOfDay == 3)
+		if (gTimeOfDay == TIME_NIGHT)
 		{
 			linef2->r0 = 75;
 			linef2->g0 = 75;
@@ -849,8 +849,7 @@ void DrawSightCone(COP_SIGHT_DATA *pCopSightData, VECTOR *pPosition, int directi
 // [D] [T]
 u_int Long2DDistance(VECTOR *pPoint1, VECTOR *pPoint2)
 {
-	int tempTheta;
-	int theta;
+	int theta, tempTheta;
 	u_int result;
 	VECTOR delta;
 
@@ -859,7 +858,7 @@ u_int Long2DDistance(VECTOR *pPoint1, VECTOR *pPoint2)
 
 	theta = ratan2(delta.vz, delta.vx);
 
-	if ((theta & 0x7ff) - 512U <= 1024)
+	if ((theta & 2047) - 512U <= 1024)
 	{
 		tempTheta = RSIN(theta);
 		result = delta.vz;
@@ -870,7 +869,7 @@ u_int Long2DDistance(VECTOR *pPoint1, VECTOR *pPoint2)
 		result = delta.vx;
 	}
 
-	if (result < 0x80000) 
+	if (result < 512 * 1024) 
 		result = (result << 12) / tempTheta;
 	else 
 		result = (result << 9) / tempTheta << 3;
@@ -899,7 +898,7 @@ void InitMultiplayerMap(void)
 		rect.w = 16;
 		rect.h = 64;
 
-		LoadImage(&rect, (u_long *)MapBitMaps);
+		LoadImage(&rect, (u_long*)MapBitMaps);
 
 		DrawSync(0);
 	}
@@ -1060,7 +1059,7 @@ void DrawMultiplayerMap(void)
 	poly->clut = MapClut;
 	poly->tpage = MapTPage;
 
-	if (gTimeOfDay == 3)
+	if (gTimeOfDay == TIME_NIGHT)
 		r = 50;
 	else
 		r = 100;
@@ -1174,12 +1173,7 @@ void DrawOverheadMap(void)
 		}
 	}
 
-	// for restoring
-	drarea = (DR_AREA *)current->primptr;
-	SetDrawArea(drarea, &current->draw.clip);
-
-	addPrim(current->ot + 1, drarea);
-	current->primptr += sizeof(DR_AREA);
+	SetFullscreenDrawing(1);
 
 	WorldToOverheadMapPositions((VECTOR *)player->pos, &vec, 1, 0, 0);
 
@@ -1370,7 +1364,7 @@ void DrawOverheadMap(void)
 			setPolyFT4(spt);
 			setSemiTrans(spt, 1);
 			
-			if (gTimeOfDay == 3) 
+			if (gTimeOfDay == TIME_NIGHT)
 				spt->r0 = spt->g0 = spt->b0 = 50;
 			else
 				spt->r0 = spt->g0 = spt->b0 = 100;
@@ -1449,7 +1443,7 @@ void DrawOverheadMap(void)
 	clipped_size.x = map_minX + 1;
 	clipped_size.w = MAP_SIZE_W - 1;
 	clipped_size.h = MAP_SIZE_H;
-	clipped_size.y = current->draw.clip.y + map_minY;// +1;
+	clipped_size.y = (current->draw.clip.y & 256) + map_minY;
 
 	drarea = (DR_AREA*)current->primptr;
 
@@ -1810,7 +1804,7 @@ void DrawFullscreenMap(void)
 	SetTextColour(128, 128, 128);
 
 	// print string with special characters representing some images inserted into it
-	sprintf(str, "\x80 %s \x81 %s \x8a %s", G_LTXT(GTXT_Exit), G_LTXT(GTXT_Rotation), G_LTXT(GTXT_Move));
+	sprintf(str, "\x80 %s \x81 %s \x8a %s", G_LTXT(GTXT_Back), G_LTXT(GTXT_Rotation), G_LTXT(GTXT_Move));
 	PrintStringCentred(str, SCREEN_H - 30); // 226
 }
 

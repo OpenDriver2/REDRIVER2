@@ -1,28 +1,31 @@
 #ifndef SOUND_H
 #define SOUND_H
 
+enum ChanFlags
+{
+	CHAN_LOOP			= (1 << 0),
+	CHAN_LOCKED			= (1 << 1)
+};
+
 struct CHANNEL_DATA
 {
 	SpuVoiceAttr attr;
-
-	u_char loop;
-	u_char locked;
-	u_short time;
+	VECTOR* srcposition;
+	VECTOR position;
+	LONGVECTOR3* srcvelocity;
 
 	int samplerate;
-	char player;
 	int srcvolume;
 	int volumeScale;
+	int cameradist;
+	int lastcameradist;
 
 	u_short srcpitch;
 	u_short dopplerScale;
 
-	int cameradist;
-	int lastcameradist;
-
-	VECTOR* srcposition;
-	VECTOR position;
-	LONGVECTOR3* srcvelocity;
+	u_short time;
+	u_char flags;
+	char player;
 };
 
 extern CHANNEL_DATA channels[16];
@@ -32,13 +35,14 @@ extern int gMusicVolume;
 extern int gSoundMode;
 
 extern int Song_ID;
+extern int Song_SetPos;
 extern int VABID;
 extern int music_paused;
 
 extern void InitSound(); // 0x000790E4
 extern void ResetSound(); // 0x00079250
 
-extern void AllocateReverb(long mode, long depth); // 0x0007AB3C
+extern void AllocateReverb(int mode, int depth); // 0x0007AB3C
 extern void SetReverbState(int on); // 0x0007A6C0
 extern void SetReverbInGameState(int on); // 0x0007A704
 extern int SetReverbChannelState(int ch, int on); // 0x0007A75C

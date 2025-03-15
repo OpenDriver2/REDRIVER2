@@ -52,6 +52,7 @@ int gMasterVolume = 0;
 int gMusicVolume = -4000;
 
 int Song_ID = -1;
+int Song_SetPos = -1;
 int VABID = -1;
 
 int gSoundMode = 1;		// mono or stereo
@@ -67,6 +68,7 @@ int vblcounter = 0; // vblank counter
 // [D] [T]
 void SoundHandler(void)
 {
+	CHANNEL_DATA* c;
 	int ct;
 	int off;
 
@@ -77,11 +79,16 @@ void SoundHandler(void)
 
 	for (ct = 0; ct < MAX_SFX_CHANNELS; ct++)
 	{
-		if (channels[ct].loop || channels[ct].time == 0)
+		c = &channels[ct];
+		if ((c->flags & CHAN_LOOP) || c->time == 0)
+		{
 			continue;
+		}
 
-		if (--channels[ct].time == 0)
+		if (--c->time == 0)
+		{
 			off |= SPU_KEYCH(ct);
+		}
 	}
 
 	if (off)
@@ -94,7 +101,15 @@ void VsyncProc(void)
 	vblcounter++;
 
 	if (Song_ID != -1)
+	{
+		if (Song_SetPos != -1) 
+		{
+			XM_SetSongPos(Song_ID, Song_SetPos);
+			Song_SetPos = -1;
+		}
+
 		XM_Update();
+	}
 
 	SoundHandler();
 }
@@ -140,8 +155,7 @@ void ClearChannelFields(int channel)
 
 	chan = &channels[channel];
 	
-	chan->loop = 0;
-	chan->locked = 0;
+	chan->flags = 0;
 	chan->time = 0;
 	chan->samplerate = 0;
 	chan->srcvolume = -10000;
@@ -320,9 +334,6 @@ int CalculateVolume(int channel)
 	return volume - 10000;
 }
 
-
-int gSurround = 0;
-
 // [D] [T]
 void UpdateVolumeAttributesS(int channel, int proximity)
 {
@@ -352,7 +363,7 @@ void UpdateVolumeAttributesS(int channel, int proximity)
 	vol = (vol + vol / 2 + vol / 8 + vol / 128) * master_volume / 16384;
 
 	chan->attr.volume.left = vol;
-	chan->attr.volume.right = gSurround ? -vol : vol;	// HMM: why like that?
+	chan->attr.volume.right = vol;
 
 	if (vol == 0)
 		return;
@@ -426,7 +437,7 @@ void UpdateVolumeAttributesS(int channel, int proximity)
 		if (proximity > 0)
 			damp = damp * dist / 12000;
 
-		chan->attr.volume.right = gSurround ? -MAX(0, vol - damp) : MAX(0, vol - damp);
+		chan->attr.volume.right = MAX(0, vol - damp);
 	}
 }
 
@@ -455,44 +466,52 @@ int CompleteSoundSetup(int channel, int bank, int sample, int pitch, int proximi
 	int bpf;
 	int rate;
 	CHANNEL_DATA* chan;
+	SAMPLE_DATA* samp;
 
-	rate = samples[bank][sample].samplerate * pitch;
-	bpf = (rate / 4096) / 50;
+	samp = &samples[bank][sample];
+
+	rate = samp->samplerate * pitch;
+	bpf = (rate / 4096);
+#ifdef PAL_VERSION
+	bpf /= 50;
+#else
+	bpf /= 60;
+#endif
 
 	if (bpf == 0) 
 	{
-		channel = -1;
+		return -1;
 	}
-	else
-	{
-		chan = &channels[channel];
+
+	chan = &channels[channel];
 		
-		if (gSoundMode == 1 && proximity != -1) 
-			UpdateVolumeAttributesS(channel, proximity);
-		else
-			UpdateVolumeAttributesM(channel);
+	if (gSoundMode == 1 && proximity != -1) 
+		UpdateVolumeAttributesS(channel, proximity);
+	else
+		UpdateVolumeAttributesM(channel);
 
-		stop_sound_handler = 1;
+	stop_sound_handler = 1;
 
-		chan->attr.mask =  SPU_VOICE_VOLL | SPU_VOICE_VOLR | SPU_VOICE_VOLMODEL | SPU_VOICE_VOLMODER | SPU_VOICE_PITCH | SPU_VOICE_WDSA;
-		chan->attr.addr = samples[bank][sample].address;
-		chan->attr.pitch = MIN(rate / 44100, 16383);
-		chan->time = (samples[bank][sample].length / bpf) * 2 + 2;
-		chan->loop = samples[bank][sample].loop;
+	chan->attr.mask =  SPU_VOICE_VOLL | SPU_VOICE_VOLR | SPU_VOICE_VOLMODEL | SPU_VOICE_VOLMODER | SPU_VOICE_PITCH | SPU_VOICE_WDSA;
+	chan->attr.addr = samp->address;
+	chan->attr.pitch = MIN(rate / 44100, 16383);
+	chan->time = (samp->length / bpf) * 2 + 2;
 
-		chan->samplerate = samples[bank][sample].samplerate;
+	chan->flags &= ~CHAN_LOOP;
+	chan->flags |= samp->loop ? CHAN_LOOP : 0;
 
-		if (sound_paused != 0)
-		{
-			chan->attr.volume.left = 0;
-			chan->attr.volume.right = 0;
-		}
+	chan->samplerate = samp->samplerate;
 
-		SpuSetVoiceAttr(&chan->attr);
-		SpuSetKey(1, chan->attr.voice);
-
-		stop_sound_handler = 0;
+	if (sound_paused != 0)
+	{
+		chan->attr.volume.left = 0;
+		chan->attr.volume.right = 0;
 	}
+
+	SpuSetVoiceAttr(&chan->attr);
+	SpuSetKey(1, chan->attr.voice);
+
+	stop_sound_handler = 0;
 
 	return channel;
 }
@@ -505,7 +524,7 @@ void ComputeDoppler(CHANNEL_DATA *ch)
 	int seperationrate;
 
 	VECTOR *srcPos;
-	long* srcVel; // LONGVECTOR3
+	int* srcVel; // LONGVECTOR3
 
 	PLAYER *pl;
 	int dx, dy, dz;
@@ -518,7 +537,7 @@ void ComputeDoppler(CHANNEL_DATA *ch)
 		return;
 	}
 
-	srcVel = (long*)ch->srcvelocity;
+	srcVel = (int*)ch->srcvelocity;
 
 	pl = &player[ch->player];
 
@@ -528,9 +547,9 @@ void ComputeDoppler(CHANNEL_DATA *ch)
 
 	dist = jsqrt(dx * dx + dy * dy + dz * dz);
 
-	dx = (srcPos->vx - pl->cameraPos.vx) + FIXEDH(srcVel[0] - pl->camera_vel[0]);
-	dy = (srcPos->vy + pl->cameraPos.vy) + FIXEDH(srcVel[1] - pl->camera_vel[1]);
-	dz = (srcPos->vz - pl->cameraPos.vz) + FIXEDH(srcVel[2] - pl->camera_vel[2]);
+	dx += FIXEDH(srcVel[0] - pl->camera_vel[0]);
+	dy += FIXEDH(srcVel[1] - pl->camera_vel[1]);
+	dz += FIXEDH(srcVel[2] - pl->camera_vel[2]);
 
 	seperationrate = jsqrt(dx * dx + dy * dy + dz * dz);
 
@@ -577,6 +596,9 @@ int Start3DTrackingSound(int channel, int bank, int sample, VECTOR *position, LO
 
 	channel = CompleteSoundSetup(channel, bank, sample, 4096, 0);
 
+	if (channel < 0)
+		return -1;
+
 	ComputeDoppler(&channels[channel]);
 	SetChannelPitch(channel, 4096);
 
@@ -604,6 +626,9 @@ int Start3DSoundVolPitch(int channel, int bank, int sample, int x, int y, int z,
 	chan->srcpitch = pitch;
 
 	channel = CompleteSoundSetup(channel, bank, sample, pitch, 0);
+
+	if (channel < 0)
+		return -1;
 
 	ComputeDoppler(&channels[channel]);
 	SetChannelPitch(channel, pitch);
@@ -848,29 +873,34 @@ void UnPauseSound(void)
 //  [D] [T]
 void StopChannel(int channel)
 {
+	CHANNEL_DATA* c;
 	u_char lock;
 	int vsync;
 
 	if (channel < 0 || channel >= MAX_SFX_CHANNELS)	
 		return;
 
-	lock = channels[channel].locked;
+	c = &channels[channel];
+
 	vsync = VSync(-1);
 
-	SpuSetKey(0, channels[channel].attr.voice);
+	SpuSetKey(0, c->attr.voice);
 
 	// PSX SPU keyoff sometimes does not work for first time due to it's nature
 	do {
-		if (SpuGetKeyStatus(channels[channel].attr.voice) == 0)
+		if (SpuGetKeyStatus(c->attr.voice) == 0)
 			break;
 #ifdef __EMSCRIPTEN__
 		emscripten_sleep(0);
 #endif
 	} while (VSync(-1) - vsync < 8);
 
+	// save lock status
+	lock = c->flags & CHAN_LOCKED;
+
 	ClearChannelFields(channel);
 	
-	channels[channel].locked = lock;
+	c->flags = lock;
 }
 
 // [D] [T]
@@ -891,7 +921,7 @@ void LockChannel(int channel)
 	if (channel < 0 || channel >= MAX_SFX_CHANNELS)	// [A]
 		return;
 
-	channels[channel].locked = 1;
+	channels[channel].flags |= CHAN_LOCKED;
 }
 
 // [D] [T]
@@ -900,7 +930,7 @@ void UnlockChannel(int c)
 	if (c < 0 || c >= MAX_SFX_CHANNELS)	// [A]
 		return;
 
-	channels[c].locked = 0;
+	channels[c].flags &= ~CHAN_LOCKED;
 }
 
 // [D] [T]
@@ -923,7 +953,7 @@ int LoadSoundBank(char *address, int length, int bank)
 	SpuSetTransferMode(SPU_TRANSFER_BY_DMA);
 
 	SpuSetTransferStartAddr(spuaddress);
-	SpuWrite((unsigned char*)address + slength, length - slength);
+	SpuWrite((u_char*)address + slength, length - slength);
 	
 	SpuIsTransferCompleted(SPU_TRANSFER_WAIT);
 
@@ -1001,7 +1031,7 @@ int LoadSoundBankDynamic(char *address, int length, int dbank)
 	SpuSetTransferMode(SPU_TRANSFER_BY_DMA);
 
 	SpuSetTransferStartAddr(lsbTabs.addr);
-	SpuWrite((unsigned char*)address + slength, length - slength);
+	SpuWrite((u_char*)address + slength, length - slength);
 
 	SpuIsTransferCompleted(SPU_TRANSFER_WAIT);
 
@@ -1057,6 +1087,7 @@ void StopXM(void)
 // [D] [T]
 int GetFreeChannel(int force)
 {
+	CHANNEL_DATA* c;
 	int channel;
 	int it;
 	int least;
@@ -1068,7 +1099,7 @@ int GetFreeChannel(int force)
 	channel = 0;
 
 	// find free channel
-	while (channel < MAX_SFX_CHANNELS && (channels[channel].locked || status[channel] != SPU_OFF && status[channel] != SPU_RESET))
+	while (channel < MAX_SFX_CHANNELS && ((channels[channel].flags & CHAN_LOCKED) || status[channel] != SPU_OFF && status[channel] != SPU_RESET))
 	{
 		channel++;
 	}
@@ -1083,15 +1114,16 @@ int GetFreeChannel(int force)
 	channel = -1;
 	least = 0;
 	
-	for (it = 0; it < MAX_SFX_CHANNELS; it++)
+	c = &channels[0];
+	for (it = 0; it < MAX_SFX_CHANNELS; it++, c++)
 	{
-		if (channels[it].locked || channels[it].loop)
+		if (c->flags & (CHAN_LOCKED | CHAN_LOOP))
 			continue;
 		
-		if (channel == -1 || channels[it].time < least)
+		if (channel == -1 || c->time < least)
 		{
 			channel = it;
-			least = channels[it].time;
+			least = c->time;
 		}
 	}
 
@@ -1102,7 +1134,7 @@ int GetFreeChannel(int force)
 }
 
 // [D] [T]
-void AllocateReverb(long mode, long depth)
+void AllocateReverb(int mode, int depth)
 {
 	SpuReverbAttr r_attr;
 

@@ -26,76 +26,81 @@ struct MISSION_STEP
 	u_char disc : 1;
 };
 
-MISSION_STEP MissionLadder[68] =
+#define DML_FMV			1
+#define DML_MISSION		2
+#define DML_CREDITS		4
+#define DML_RECAP		6
+
+MISSION_STEP MissionLadder[] =
 {
-  { 1, 0, 1, 0 },
-  { 1, 0, 2, 0 },
-  { 2, 0, 1, 0 },
-  { 2, 1, 2, 0 },
-  { 2, 1, 3, 0 },
-  { 1, 1, 3, 0 },
-  { 1, 1, 4, 0 },
-  { 2, 1, 4, 0 },
-  { 1, 2, 5, 0 },
-  { 2, 2, 5, 0 },
-  { 1, 3, 6, 0 },
-  { 2, 3, 6, 0 },
-  { 1, 4, 7, 0 },
-  { 2, 5, 7, 0 },
-  { 6, 5, 0, 0 },
-  { 2, 5, 9, 0 },
-  { 1, 5, 8, 0 },
-  { 1, 5, 9, 0 },
-  { 2, 6, 10, 0 },
-  { 1, 6, 10, 0 },
-  { 1, 6, 11, 0 },
-  { 2, 7, 11, 0 },
-  { 6, 7, 0, 0 },
-  { 2, 7, 13, 0 },
-  { 2, 7, 14, 0 },
-  { 1, 7, 12, 0 },
-  { 2, 8, 15, 0 },
-  { 2, 8, 16, 0 },
-  { 1, 8, 13, 0 },
-  { 2, 9, 17, 0 },
-  { 2, 9, 18, 0 },
-  { 1, 9, 14, 0 },
-  { 2, 10, 19, 0 },
-  { 1, 10, 15, 0 },
-  { 2, 11, 20, 0 },
-  { 1, 12, 16, 1 },
-  { 1, 12, 17, 1 },
-  { 2, 13, 21, 1 },
-  { 2, 13, 22, 1 },
-  { 2, 13, 23, 1 },
-  { 2, 13, 24, 1 },
-  { 1, 13, 18, 1 },
-  { 2, 14, 25, 1 },
-  { 2, 14, 26, 1 },
-  { 1, 14, 19, 1 },
-  { 2, 15, 27, 1 },
-  { 2, 15, 28, 1 },
-  { 2, 15, 29, 1 },
-  { 2, 15, 30, 1 },
-  { 1, 15, 20, 1 },
-  { 1, 15, 21, 1 },
-  { 2, 16, 31, 1 },
-  { 2, 16, 32, 1 },
-  { 2, 16, 33, 1 },
-  { 2, 16, 34, 1 },
-  { 1, 16, 22, 1 },
-  { 2, 17, 35, 1 },
-  { 6, 17, 0, 1 },
-  { 2, 17, 37, 1 },
-  { 1, 17, 23, 1 },
-  { 2, 18, 38, 1 },
-  { 2, 18, 39, 1 },
-  { 1, 18, 24, 1 },
-  { 2, 19, 40, 1 },
-  { 1, 19, 25, 1 },
-  { 1, 19, 26, 1 },
-  { 1, 19, 27, 1 },
-  { 4, 19, 28, 1 }
+  { DML_FMV, 0, 1, 0 },
+  { DML_FMV, 0, 2, 0 },
+  { DML_MISSION, 0, 1, 0 },
+  { DML_MISSION, 1, 2, 0 },
+  { DML_MISSION, 1, 3, 0 },
+  { DML_FMV, 1, 3, 0 },
+  { DML_FMV, 1, 4, 0 },
+  { DML_MISSION, 1, 4, 0 },
+  { DML_FMV, 2, 5, 0 },
+  { DML_MISSION, 2, 5, 0 },
+  { DML_FMV, 3, 6, 0 },
+  { DML_MISSION, 3, 6, 0 },
+  { DML_FMV, 4, 7, 0 },
+  { DML_MISSION, 5, 7, 0 },
+  { DML_RECAP, 5, 0, 0 },
+  { DML_MISSION, 5, 9, 0 },
+  { DML_FMV, 5, 8, 0 },
+  { DML_FMV, 5, 9, 0 },
+  { DML_MISSION, 6, 10, 0 },
+  { DML_FMV, 6, 10, 0 },
+  { DML_FMV, 6, 11, 0 },
+  { DML_MISSION, 7, 11, 0 },
+  { DML_RECAP, 7, 0, 0 },
+  { DML_MISSION, 7, 13, 0 },
+  { DML_MISSION, 7, 14, 0 },
+  { DML_FMV, 7, 12, 0 },
+  { DML_MISSION, 8, 15, 0 },
+  { DML_MISSION, 8, 16, 0 },
+  { DML_FMV, 8, 13, 0 },
+  { DML_MISSION, 9, 17, 0 },
+  { DML_MISSION, 9, 18, 0 },
+  { DML_FMV, 9, 14, 0 },
+  { DML_MISSION, 10, 19, 0 },
+  { DML_FMV, 10, 15, 0 },
+  { DML_MISSION, 11, 20, 0 },
+  { DML_FMV, 12, 16, 1 },
+  { DML_FMV, 12, 17, 1 },
+  { DML_MISSION, 13, 21, 1 },
+  { DML_MISSION, 13, 22, 1 },
+  { DML_MISSION, 13, 23, 1 },
+  { DML_MISSION, 13, 24, 1 },
+  { DML_FMV, 13, 18, 1 },
+  { DML_MISSION, 14, 25, 1 },
+  { DML_MISSION, 14, 26, 1 },
+  { DML_FMV, 14, 19, 1 },
+  { DML_MISSION, 15, 27, 1 },
+  { DML_MISSION, 15, 28, 1 },
+  { DML_MISSION, 15, 29, 1 },
+  { DML_MISSION, 15, 30, 1 },
+  { DML_FMV, 15, 20, 1 },
+  { DML_FMV, 15, 21, 1 },
+  { DML_MISSION, 16, 31, 1 },
+  { DML_MISSION, 16, 32, 1 },
+  { DML_MISSION, 16, 33, 1 },
+  { DML_MISSION, 16, 34, 1 },
+  { DML_FMV, 16, 22, 1 },
+  { DML_MISSION, 17, 35, 1 },
+  { DML_RECAP, 17, 0, 1 },
+  { DML_MISSION, 17, 37, 1 },
+  { DML_FMV, 17, 23, 1 },
+  { DML_MISSION, 18, 38, 1 },
+  { DML_MISSION, 18, 39, 1 },
+  { DML_FMV, 18, 24, 1 },
+  { DML_MISSION, 19, 40, 1 },
+  { DML_FMV, 19, 25, 1 },
+  { DML_FMV, 19, 26, 1 },
+  { DML_FMV, 19, 27, 1 },
+  { DML_CREDITS, 19, 28, 1 }
 };
 
 unsigned short RecapFrameLength[19] = {
@@ -403,7 +408,7 @@ void State_MissionLadder(void* param)
 			SetPleaseWait(NULL);
 		}
 
-		if (CurrentStep->flags == 2)
+		if (CurrentStep->flags == DML_MISSION)
 		{
 			if (RenderArgs.nRenders != 0)
 			{
@@ -419,14 +424,14 @@ void State_MissionLadder(void* param)
 			
 			quit = 1;
 		}
-		else if (CurrentStep->flags == 1) // any render
+		else if (CurrentStep->flags == DML_FMV) // any render
 		{
 			RenderArgs.Args[RenderArgs.nRenders].render = CurrentStep->data;
 			RenderArgs.Args[RenderArgs.nRenders].recap = 0;
 			RenderArgs.Args[RenderArgs.nRenders].credits = 0;
 			RenderArgs.nRenders++;
 		}
-		else if (CurrentStep->flags == 4) // ending
+		else if (CurrentStep->flags == DML_CREDITS) // ending
 		{
 			SetPleaseWait(NULL);
 

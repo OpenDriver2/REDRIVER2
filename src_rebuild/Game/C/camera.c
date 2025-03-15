@@ -286,14 +286,12 @@ int CameraCollisionCheck(void)
 
 		if (gCameraDistance > 0)
 		{
-			ppco = GetFirstPackedCop(cellx, cellz, &ci, 0, cellLevel);
-			
-			while (ppco) 
+			for (ppco = GetFirstPackedCop(cellx, cellz, &ci, 0, cellLevel); ppco; ppco = GetNextPackedCop(&ci))
 			{
 				int type = (ppco->value >> 6) | ((ppco->pos.vy & 1) << 10);
 
 				model = modelpointers[type];
-				boxptr = (int *)model->collision_block;
+				boxptr = GET_MODEL_DATA(int, model, collision_block);
 
 				if (boxptr != NULL && (model->flags2 & MODEL_FLAG_SMASHABLE) == 0)
 				{
@@ -349,7 +347,6 @@ int CameraCollisionCheck(void)
 						}
 					}
 				}
-				ppco = GetNextPackedCop(&ci);
 			}
 		}
 		count++;
@@ -592,9 +589,9 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 
 	// [A] handle REDRIVER2 dedicated look back button
 	if ((paddCamera & CAMERA_PAD_LOOK_BACK) == CAMERA_PAD_LOOK_BACK || (paddCamera & CAMERA_PAD_LOOK_BACK_DED))
-		camera_angle.vy = 2048 - baseDir & 0xfff;
+		camera_angle.vy = 2048 - baseDir & 4095;
 	else
-		camera_angle.vy = (lp->headPos >> 16) - baseDir & 0xfff;
+		camera_angle.vy = (lp->headPos >> 16) - baseDir & 4095;
 
 	if (cp)
 	{
@@ -632,13 +629,18 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 	}
 	else
 	{
+		LPPEDESTRIAN pPlayerPed;
+		pPlayerPed = lp->pPed;
+
 		camera_angle.vx = -tannerLookAngle.vx;
 
-		// pedestrian camera is much simpler
 		BuildWorldMatrix();
 
-		viewer_position.vy += lp->pPed->head_pos - 25;
-		//viewer_position.vz += 45;
+		if (pPlayerPed)
+		{
+			// apply pedestrian bobbing
+			viewer_position.vy += pPlayerPed->head_pos - 25;
+		}
 
 		angle = -baseDir;
 
@@ -702,7 +704,7 @@ void PlaceCameraAtLocation(PLAYER* lp, int zoom)
 
 		d = PointAtTarget(&lp->cameraPos, &temp, &camera_angle);
 
-		if (d > 16000)
+		if (d > VIEW_DRAW_DISTANCE)
 		{
 			lp->cameraView = 0;
 			return;

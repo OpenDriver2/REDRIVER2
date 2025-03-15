@@ -151,8 +151,8 @@ MS_MISSION* MissionHeader;
 STREAM_SOURCE* PlayerStartInfo[8];
 int numPlayersToCreate = 0;
 int gStartOnFoot = 0;
-int gWeather = 0;
-int gTimeOfDay = 0;
+int gWeather = WEATHER_NONE;
+int gTimeOfDay = TIME_DAY;
 int gShowPlayerDamage = 0;
 int gDontPingInCops = 0;
 int gBatterPlayer = 1;
@@ -263,7 +263,7 @@ void InitialiseMissionDefaults(void)
 
 	prevCopsInPursuit = 0;
 
-	for (i = 0; i < 15; i++)
+	for (i = 0; i < MAX_MISSION_THREADS; i++)
 	{
 		MissionThreads[i].initial_sp = MissionStack[i];
 		MissionThreads[i].active = 0;
@@ -436,12 +436,12 @@ void LoadMission(int missionnum)
 	LoadfileSeg(filename, (char *)MissionLoadAddress, offset, sizeof(MS_MISSION));
 
 	MissionHeader = MissionLoadAddress;
-	MissionTargets = (MS_TARGET *)((int)MissionLoadAddress + MissionLoadAddress->size);
+	MissionTargets = (MS_TARGET *)((char*)MissionLoadAddress + MissionLoadAddress->size);
 	MissionScript = (u_int *)(MissionTargets + MAX_MISSION_TARGETS);
-	MissionStrings = (char*)((int*)MissionScript + MissionLoadAddress->strings);
+	MissionStrings = (char*)(MissionScript + MissionLoadAddress->strings);
 	
 	if (MissionLoadAddress->route && !NewLevel)
-		loadsize = (int)MissionStrings + (MissionLoadAddress->route - (int)MissionLoadAddress);
+		loadsize = (u_int)((char*)MissionStrings + ((char*)MissionLoadAddress->route - (char*)MissionLoadAddress));
 	else
 		loadsize = length;
 
@@ -514,13 +514,13 @@ void LoadMission(int missionnum)
 	if (wantedWeather > -1)
 		gWeather = wantedWeather;
 
-	if (gTimeOfDay >= 3) 
+	if (gTimeOfDay >= TIME_NIGHT)
 		gNight = 1;
 	else 
 		gNight = 0;
 
 	// setup weather
-	if (gWeather == 1)
+	if (gWeather == WEATHER_RAIN)
 	{
 		gRainCount = 30;
 		gEffectsTimer = 41;
@@ -626,7 +626,7 @@ void LoadMission(int missionnum)
 	{
 		if (MissionHeader->route == 0)
 		{
-			mallocptr += (missionSize + 3U & 0xfffffffc);
+			mallocptr += (missionSize + 3U & ~3);
 
 			if(LOAD_OVERLAY("PATH.BIN", _other_buffer2))
 				pathAILoaded = 1;
@@ -1386,6 +1386,7 @@ int Swap2Cars(int curslot, int newslot)
 
 	gDontResetCarDamage = 0;
 
+#if ENABLE_GAME_FIXES
 	// [A] swap cars in targets and fix "Bank Job" bug
 	for (int i = 0; i < MAX_MISSION_TARGETS; i++)
 	{
@@ -1399,6 +1400,7 @@ int Swap2Cars(int curslot, int newslot)
 				swapTgt->s.car.slot = curslot;
 		}		
 	}
+#endif
 
 	return newslot;
 }
@@ -1670,7 +1672,7 @@ int MRCommand(MR_THREAD *thread, u_int cmd)
 	else if (cmd == 0x1000090)			// SetRaining
 	{
 		MR_DebugWarn("MR %d command: SetRaining\n", thread - MissionThreads);
-		gWeather = 1;
+		gWeather = WEATHER_RAIN;
 		return 1;
 	}
 	else if (cmd == 0x1000040)
@@ -2565,7 +2567,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 			if (target->s.target_flags & TARGET_FLAG_EVENT_TRIGGERED)
 			{
 				// [A] Ahhhh, 32 bit pointers... for future full-scale refactoring
-				if (target->s.event.loseMessage != -1 && Long2DDistance(target->s.event.eventPos, &pv) > 30000)
+				if (target->s.event.loseMessage != -1 && Long2DDistance((*(VECTOR**)&target->s.event.eventPos), &pv) > 30000)
 				{
 					message = MissionStrings + target->s.event.loseMessage;
 					SetPlayerMessage(thread->player, message, 2, 2);
@@ -2574,7 +2576,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 			}
 			else
 			{
-				target->s.event.eventPos = TriggerEvent(target->s.event.eventId);
+				(*(VECTOR**)&target->s.event.eventPos) = TriggerEvent(target->s.event.eventId);
 				target->s.target_flags |= TARGET_FLAG_EVENT_TRIGGERED;
 			}
 
@@ -2967,6 +2969,7 @@ void CompleteAllActiveTargets(int player)
 		if (pTarget->type >= Target_Point && 
 			pTarget->type <= Target_Event && (pTarget->s.target_flags & flag1))
 		{
+			pTarget->s.target_flags &= ~flag1;
 			pTarget->s.target_flags |= flag2;
 		}
 	}

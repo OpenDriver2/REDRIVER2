@@ -281,7 +281,7 @@ void DrawStopZone(VECTOR *pPosition)
 	SVECTOR temp;
 	long p;
 	long flag;
-	long sz;
+	int sz;
 	int flash;
 	int height;
 
@@ -326,7 +326,7 @@ void DrawStopZone(VECTOR *pPosition)
 
 		RotTransPers(&temp, pOut, &p, &flag);
 
-		if (pOut == (long*)&pPoly->x0) 
+		if (pOut == (long*)&pPoly->x0)
 			pOut = (long*)&pPoly->x1;
 		else if (pOut == (long*)&pPoly->x1)
 			pOut = (long*)&pPoly->x2;
@@ -347,7 +347,7 @@ void DrawStopZone(VECTOR *pPosition)
 	*(ushort*)&pPoly->u2 = *(ushort*)&light_texture.coords.u2;
 	*(ushort*)&pPoly->u3 = *(ushort*)&light_texture.coords.u3;
 
-	if (gTimeOfDay == 3)
+	if (gTimeOfDay == TIME_NIGHT)
 		pPoly->tpage = light_texture.tpageid | 0x20;
 	else
 		pPoly->tpage = light_texture.tpageid | 0x40;

@@ -24,6 +24,13 @@
 #include "camera.h"
 #include "dr2roads.h"
 
+#define SPOOL_REGION	0
+#define SPOOL_TPAGE		1
+#define SPOOL_SOUNDBANK 2
+#define SPOOL_MISC		3
+
+typedef void(*spooledFuncPtr)();
+
 struct SPOOLQ
 {
 	u_char type;
@@ -73,12 +80,14 @@ int SpecialByRegion[4][20] = {
 	{2, 5, 4, 1, 2, 1, 4, 3, 2, 2, 2, 2, 3, 3, 3, 0, 0, 0, 0, 0},
 };
 
+SPOOLQ spooldata[48];
+
 char* model_spool_buffer = NULL;
 
 int cell_objects_add[5];
 int cell_slots_add[5];
-
-typedef void(*spooledFuncPtr)();
+short loading_region[4];
+int regions_unpacked[4];
 
 SXYPAIR* Music_And_AmbientOffsets;
 
@@ -89,27 +98,18 @@ int NumAreas;
 char* RegionSpoolInfo;
 unsigned short *spoolinfo_offsets;
 
-char* specmallocptr;
-char *specLoadBuffer;
-
 int doSpooling = 1;
-
-short loading_region[4];
-int regions_unpacked[4];
 
 int spool_regioncounter;
 int spoolerror;	// UNUSED
 int spool_regionpos;
+int spoolcounter;
 volatile int spoolactive;	// volatile is required at least for PC
 volatile int quickSpool;
+
 int models_ready;
-
-short specspooldata[3] = { 20, 10, 4 };
-
 int tsetcounter;
 int tsetpos;
-
-int spoolcounter;
 
 int loadbank_read;
 int loadbank_write;
@@ -117,12 +117,6 @@ int loadbank_write;
 volatile int spoolpos;
 volatile int spoolpos_reading;
 volatile int spoolpos_writing;
-
-int allowSpecSpooling;
-int startSpecSpool;
-
-int unpack_roadmap_flag;
-int unpack_cellptr_flag;
 
 char *packed_cell_pointers;
 SPL_REGIONINFO spool_regioninfo[8];
@@ -140,8 +134,6 @@ static volatile int current_sector;
 static volatile int switch_spooltype;
 
 static volatile int endchunk;
-int send_bank;
-int sample_chunk;
 
 volatile int chunk_complete;
 
@@ -151,7 +143,12 @@ int new_area_location;
 int LoadingArea = 0;
 unsigned short *newmodels = NULL;
 
-SPOOLQ spooldata[48];
+#define CHECK_SWITCHSPOOL() \
+	if (switch_spooltype) \
+	{ \
+		changemode(&spooldata[spoolpos_writing]); \
+		return; \
+	} \
 
 // configure spooler
 #if USE_PC_FILESYSTEM
@@ -450,9 +447,7 @@ void InitSpooling(void)
 	spoolcounter = 0;
 	loadbank_read = 0;
 	spoolpos = 0;
-	unpack_roadmap_flag = 0;
 	loadbank_write = 0;
-	unpack_cellptr_flag = 0;
 }
 
 int tsetinfo[32];
@@ -476,6 +471,7 @@ void SendTPage(void)
 
 	if (nTPchunks == 0) 
 	{
+		// Send palettes
 		if (slot != tpageloaded[tpage2send] - 1)
 		{
 			npalettes = *(int *)(model_spool_buffer + 0xE000);
@@ -492,7 +488,7 @@ void SendTPage(void)
 
 			cluts.h = npalettes / 4 + 1;
 
-			LoadImage(&cluts, (u_long *)(model_spool_buffer + 0xE000 + 4));
+			LoadImage(&cluts, (u_long*)(model_spool_buffer + 0xE000 + 4));
 
 			clutptr = (u_int*)(texture_cluts[tpage2send]);
 			i = 0;
@@ -516,7 +512,7 @@ void SendTPage(void)
 	{
 		if (slot != tpageloaded[tpage2send] - 1) 
 		{
-			LoadImage(&tpage, (u_long *)(model_spool_buffer + 0xA000 + (loadbank_write % 2) * 256 * 32));
+			LoadImage(&tpage, (u_long*)(model_spool_buffer + 0xA000 + (loadbank_write & 1) * 256 * 32));
 			tpage.y = tpage.y + tpage.h;
 		}
 
@@ -619,7 +615,7 @@ void LoadInAreaTSets(int area)
 			tsetinfo[tsetcounter * 2 + 1] = availableslots[slot];
 			tsetinfo[tsetcounter * 2] = tpages[i];
 
-			RequestSpool(1, 0, offset, 17, loadaddr, SendTPage);
+			RequestSpool(SPOOL_TPAGE, 0, offset, 17, loadaddr, SendTPage);
 			offset += 17;
 
 			tsetcounter++;
@@ -658,41 +654,48 @@ void init_spooled_models(void)
 		size = *(int *)addr;
 		model = (MODEL *)(addr + 4);
 
+		modelpointers[model_number] = model;
+		pLodModels[model_number] = model;
+
 		lod = Low2LowerDetailTable[model_number];
 
 		if (lod != 0xffff && lod != model_number)
 			pLodModels[model_number] = modelpointers[lod];
 
+		ProcessModel(model_number);
+
 		if (model->instance_number == -1)
 		{
-			if ((uint)model->collision_block != 0)
+#if MODEL_RELOCATE_POINTERS
+			if (model->collision_block != 0)
 				model->collision_block += (int)model;
 
 			model->vertices += (int)model;
 			model->normals += (int)model;
 			model->point_normals += (int)model;
-
+#endif
 			InitSpooledAnimObj(model_number);
 		}
 		else
 		{
 			parentmodel = modelpointers[model->instance_number];
-
-			if ((uint)parentmodel->collision_block != 0)
+#if MODEL_RELOCATE_POINTERS
+			if (parentmodel->collision_block != 0)
 				model->collision_block = parentmodel->collision_block;
 
 			model->vertices = parentmodel->vertices;
 			model->normals = parentmodel->normals;
 			model->point_normals = parentmodel->point_normals;
-
-			InitSpooledAnimObj(parentmodel->instance_number);
+#else
+			if (parentmodel->collision_block != 0)
+				model->collision_block = parentmodel->collision_block;
+#endif
+			InitSpooledAnimObj(model->instance_number);
 		}
-	
+
+#if MODEL_RELOCATE_POINTERS
 		model->poly_block += (int)model;
-
-		modelpointers[model_number] = model;
-		pLodModels[model_number] = model;
-
+#endif
 		addr += size + 4;
 	}
 
@@ -714,6 +717,7 @@ void CheckValidSpoolData(void)
 	if (models_ready)
 		init_spooled_models();
 	
+#ifdef PSX
 	if (spoolactive && check_regions_present())
 	{
 		stopgame();
@@ -726,6 +730,7 @@ void CheckValidSpoolData(void)
 
 		startgame();
 	}
+#endif // PSX
 }
 
 // [D] [T]
@@ -741,7 +746,7 @@ void LoadInAreaModels(int area)
 	int length = AreaData[area].model_size;
 	newmodels = (ushort *)(model_spool_buffer + (length-1) * 2048);
 
-	RequestSpool(3, 0, AreaData[area].model_offset, length, model_spool_buffer, SetupModels);
+	RequestSpool(SPOOL_MISC, 0, AreaData[area].model_offset, length, model_spool_buffer, SetupModels);
 }
 
 // [D] [T]
@@ -758,14 +763,6 @@ void CheckLoadAreaData(int cellx, int cellz)
 
 	spoolptr = (Spool *)(RegionSpoolInfo + spoolinfo_offsets[current_region]);
 
-#ifndef PSX
-	// [A] this fixes spooling not activated bug (reversing bug?)
-	if (LoadedArea != spoolptr->super_region && spoolptr->super_region != 0xFF && old_region != -1)
-	{
-		LoadedArea = spoolptr->super_region;
-	}
-	else
-#endif
 	if (old_region == -1 && spoolptr->super_region != 0xFF)
 	{
 		// just load the area if no
@@ -777,7 +774,7 @@ void CheckLoadAreaData(int cellx, int cellz)
 
 		if (old_region == -1)
 			LoadedArea = -1;
-		else if (/*spoolptr->super_region == 0xFF ||*/ nAreas == 0)
+		else if (spoolptr->super_region == 0xFF && nAreas == 0)
 			return;
 
 #define BOUNDARY_MIN 15
@@ -852,7 +849,7 @@ void ClearRegion(int target_region)
 
 	ClearMem(PVS_Buffers[target_region]-4, pvsSize[target_region]);
 
-	RoadMapDataRegions[target_region] = (short*)PVS_Buffers[0];
+	RoadMapDataRegions[target_region] = (short*)PVS_Buffers[target_region];
 }
 
 inline int _getIntAdv(char** ptr)
@@ -998,134 +995,131 @@ void changemode(SPOOLQ *current);
 // [D] [T]
 void data_cb_textures(void)
 {
-	if (chunk_complete) 
+	if (chunk_complete == 0)
+		return;
+
+	chunk_complete = 0;
+	nTPchunks = nTPchunks_writing;
+
+	SendTPage();
+
+	if (nTPchunks != 0)
+		loadbank_write++;
+
+	nTPchunks_writing++;
+
+	if (nTPchunks_writing != 5)
+		return;
+
+	nTPchunks_writing = 0;
+	spoolpos_writing++;
+
+	if (ntpages != 0)
+		return;
+
+	CHECK_SWITCHSPOOL();
+
+	CdDataCallback(NULL);
+
+	if (spoolpos_writing == spoolcounter)
 	{
-		chunk_complete = 0;
-		nTPchunks = nTPchunks_writing;
+		SPOOL_WARNING("All SPOOL requests (%d) completed successfully on TEXTURES\n", spoolcounter);	// [A]
 
-		SendTPage();
-
-		if (nTPchunks != 0)
-			loadbank_write++;
-
-		nTPchunks_writing++;
-
-		if (nTPchunks_writing == 5)
-		{
-			nTPchunks_writing = 0;
-			spoolpos_writing++;
-
-			if (ntpages == 0)
-			{
-				if (!switch_spooltype)
-				{
-					CdDataCallback(NULL);
-
-					if (spoolpos_writing == spoolcounter)
-					{
-						SPOOL_WARNING("All SPOOL requests (%d) completed successfully on TEXTURES\n", spoolcounter);	// [A]
-
-						spoolcounter = 0;
-						spoolpos_writing = 0;
-						spoolpos_reading = 0;
-						spoolactive = 0;
-					}
-					else
-					{
-						UpdateSpool();
-					}
-				}
-				else
-				{
-					changemode(&spooldata[spoolpos_writing]);
-				}
-			}
-		}
+		spoolcounter = 0;
+		spoolpos_writing = 0;
+		spoolpos_reading = 0;
+		spoolactive = 0;
+	}
+	else
+	{
+		UpdateSpool();
 	}
 }
 
 // [D] [T]
 void ready_cb_textures(unsigned char intr, unsigned char *result)
 {
-	if (intr == 1)
+	if (intr != 1)
 	{
-		CdGetSector(target_address, SECTOR_SIZE);
+		FoundError("ready_cb_textures", intr, result);
+		return;
+	}
 
-		target_address += CDSECTOR_SIZE;
-		sectors_this_chunk--;
-		current_sector++;
-		sectors_to_read--;
+	CdGetSector(target_address, SECTOR_SIZE);
 
-		if (sectors_this_chunk == 0) 
+	target_address += CDSECTOR_SIZE;
+	sectors_this_chunk--;
+	current_sector++;
+	sectors_to_read--;
+
+	if (sectors_this_chunk != 0)
+		return;
+
+	if (nTPchunks_reading)
+		loadbank_read++;
+
+	nTPchunks_reading++;
+	chunk_complete = intr;
+
+	if (sectors_to_read == 0)
+	{
+		ntpages--;
+
+		if (ntpages == 0)
 		{
-			if (nTPchunks_reading)
-				loadbank_read++;
+			spoolpos_reading++;
+			test_changemode();
+		}
+		else
+		{
+			nTPchunks_reading = 0;
+			sectors_to_read = 17;
 
-			nTPchunks_reading++;
-			chunk_complete = intr;
+			target_address = spooldata[spoolpos_reading].addr + 0x4000;
+			spoolpos_reading++;
 
-			if (sectors_to_read == 0)
-			{
-				ntpages--;
-
-				if (ntpages == 0)
-				{
-					spoolpos_reading++;
-					test_changemode();
-				}
-				else
-				{
-					nTPchunks_reading = 0;
-					sectors_to_read = 17;
-
-					target_address = spooldata[spoolpos_reading].addr + 0x4000;
-					spoolpos_reading++;
-
-					sectors_this_chunk = intr;
-				}
-			}
-			else 
-			{
-				sectors_this_chunk = 4;
-				target_address = spooldata[spoolpos_reading].addr + (loadbank_read & 1U) * 0x2000;
-			}
+			sectors_this_chunk = intr;
 		}
 	}
 	else 
-		FoundError("ready_cb_textures", intr, result);
+	{
+		sectors_this_chunk = 4;
+		target_address = spooldata[spoolpos_reading].addr + (loadbank_read & 1U) * 0x2000;
+	}
 }
 
 // [D] [T]
 void ready_cb_regions(unsigned char intr, unsigned char *result)
 {
-	if (intr == 1) 
+	if (intr != 1)
 	{
-		CdGetSector(target_address, SECTOR_SIZE);
+		FoundError("ready_cb_regions", intr, result);
+		return;
+	}
 
-		target_address += CDSECTOR_SIZE;
-		sectors_this_chunk--;
-		current_sector++;
-		sectors_to_read--;
+	CdGetSector(target_address, SECTOR_SIZE);
 
-		if (sectors_this_chunk == 0) 
+	target_address += CDSECTOR_SIZE;
+	sectors_this_chunk--;
+	current_sector++;
+	sectors_to_read--;
+
+	if (sectors_this_chunk == 0) 
+	{
+		spoolpos_reading++;
+		chunk_complete = intr;
+
+		if (sectors_to_read == 0)
 		{
-			spoolpos_reading++;
-			chunk_complete = intr;
-
-			if (sectors_to_read == 0)
-			{
-				endchunk = intr;
-				test_changemode();
-			}
-			else 
-			{
-				target_address = spooldata[spoolpos_reading].addr;
-				sectors_this_chunk = spooldata[spoolpos_reading].nsectors;
-			}
+			endchunk = intr;
+			test_changemode();
+		}
+		else 
+		{
+			target_address = spooldata[spoolpos_reading].addr;
+			sectors_this_chunk = spooldata[spoolpos_reading].nsectors;
 		}
 	}
-	else 
-		FoundError("ready_cb_regions", intr, result);
 }
 
 // [D] [T]
@@ -1133,40 +1127,35 @@ void data_cb_regions(void)
 {
 	SPOOLQ* current = &spooldata[spoolpos_writing];
 
-	if (chunk_complete) 
+	if (chunk_complete == 0)
+		return;
+
+	chunk_complete = 0;
+
+	if (current->func != NULL)
+		(current->func)();
+
+	spoolpos_writing++;
+
+	if (endchunk == 0)
+		return;
+
+	CHECK_SWITCHSPOOL();
+
+	CdDataCallback(NULL);
+
+	if (spoolpos_writing == spoolcounter) 
 	{
-		chunk_complete = 0;
+		SPOOL_WARNING("All SPOOL requests (%d) completed successfully on REGIONS\n", spoolcounter);	// [A]
 
-		if (current->func != NULL)
-			(current->func)();
-
-		spoolpos_writing++;
-
-		if (endchunk)
-		{
-			if (!switch_spooltype) 
-			{
-				CdDataCallback(NULL);
-
-				if (spoolpos_writing == spoolcounter) 
-				{
-					SPOOL_WARNING("All SPOOL requests (%d) completed successfully on REGIONS\n", spoolcounter);	// [A]
-
-					spoolcounter = 0;
-					spoolpos_writing = 0;
-					spoolpos_reading = 0;
-					spoolactive = 0;
-				}
-				else 
-				{
-					UpdateSpool();
-				}
-			}
-			else 
-			{
-				changemode(&spooldata[spoolpos_writing]);
-			}
-		}
+		spoolcounter = 0;
+		spoolpos_writing = 0;
+		spoolpos_reading = 0;
+		spoolactive = 0;
+	}
+	else 
+	{
+		UpdateSpool();
 	}
 }
 
@@ -1176,37 +1165,32 @@ void data_cb_misc(void)
 {
 	SPOOLQ *current = &spooldata[spoolpos_writing];
 
-	if (chunk_complete) 
-	{
-		chunk_complete = 0;
+	if (chunk_complete == 0)
+		return;
 
-		if (current->func != NULL)
-			(*current->func)();
+	chunk_complete = 0;
 
-		spoolpos_writing++;
+	if (current->func != NULL)
+		(*current->func)();
 
-		if (!switch_spooltype)
-		{
-			CdDataCallback(NULL);
+	spoolpos_writing++;
+
+	CHECK_SWITCHSPOOL();
+
+	CdDataCallback(NULL);
 			
-			if (spoolpos_writing == spoolcounter)
-			{
-				SPOOL_WARNING("All SPOOL requests (%d) completed successfully on MISC\n", spoolcounter);	// [A]
+	if (spoolpos_writing == spoolcounter)
+	{
+		SPOOL_WARNING("All SPOOL requests (%d) completed successfully on MISC\n", spoolcounter);	// [A]
 
-				spoolcounter = 0;
-				spoolpos_writing = 0;
-				spoolpos_reading = 0;
-				spoolactive = 0;
-			}
-			else
-			{
-				UpdateSpool();
-			}
-		}
-		else
-		{
-			changemode(&spooldata[spoolpos_writing]);
-		}
+		spoolcounter = 0;
+		spoolpos_writing = 0;
+		spoolpos_reading = 0;
+		spoolactive = 0;
+	}
+	else
+	{
+		UpdateSpool();
 	}
 }
 
@@ -1348,7 +1332,6 @@ void unpack_cellpointers(int region_to_unpack, int target_barrel_region, char* c
 
 	int packtype;
 
-	unpack_cellptr_flag = 0;
 	packtype = *(int *)(cell_addr + 4);
 	source_packed_data = (ushort *)(cell_addr + 8);
 
@@ -1406,8 +1389,6 @@ void unpack_cellpointers(int region_to_unpack, int target_barrel_region, char* c
 		printError("BAD PACKED CELL POINTER DATA, region = %d, packtype = %d\n", region_to_unpack, packtype);
 
 		D_CHECK_ERROR(true, "Bad cell pointer data");
-
-		unpack_cellptr_flag = 0;
 	}
 }
 
@@ -1505,7 +1486,6 @@ int UpdateSpoolPC(void)
 
 			break;
 		case 1:	// textures
-
 			// read cluts
 			nTPchunks = 0;
 			SPL_READ(current->addr + CDSECTOR_SIZE * 2 * 4, 1);
@@ -1516,9 +1496,10 @@ int UpdateSpoolPC(void)
 			// read tpage (4 sectors 4 times = 16)
 			for (int i = 0; i < 4; i++)
 			{
-				SPL_READ(current->addr + (loadbank_write & 1U) * 256 * 32, 4);
+				SPL_READ(current->addr + (loadbank_write & 1) * 256 * 32, 4);
 				SendTPage();
 
+				loadbank_write++;
 				nTPchunks++;
 			}
 
@@ -1618,31 +1599,31 @@ int LoadRegionData(int region, int target_region)
 #ifndef PSX
 	if (gDemoLevel)
 	{
-		RequestSpool(0, 0, offset, spoolptr->roadm_size, PVS_Buffers[target_region], NULL);
+		RequestSpool(SPOOL_REGION, 0, offset, spoolptr->roadm_size, PVS_Buffers[target_region], NULL);
 		offset += spoolptr->roadm_size;
 
-		RequestSpool(0, 0, offset, spoolptr->cell_data_size[1], cell_buffer, NULL);
+		RequestSpool(SPOOL_REGION, 0, offset, spoolptr->cell_data_size[1], cell_buffer, NULL);
 		offset += spoolptr->cell_data_size[1];
 
-		RequestSpool(0, 0, offset, spoolptr->cell_data_size[0], (char *)(cells + cell_slots_add[target_region]), NULL);
+		RequestSpool(SPOOL_REGION, 0, offset, spoolptr->cell_data_size[0], (char *)(cells + cell_slots_add[target_region]), NULL);
 		offset += spoolptr->cell_data_size[0];
 
-		RequestSpool(0, 0, offset, spoolptr->cell_data_size[2], (char *)(cell_objects + num_straddlers + cell_objects_add[target_region]), GotRegion);
+		RequestSpool(SPOOL_REGION, 0, offset, spoolptr->cell_data_size[2], (char *)(cell_objects + num_straddlers + cell_objects_add[target_region]), GotRegion);
 		offset += spoolptr->cell_data_size[2];
 	}
 	else
 #endif
 	{
-		RequestSpool(0, 0, offset, spoolptr->cell_data_size[1], cell_buffer, NULL);
+		RequestSpool(SPOOL_REGION, 0, offset, spoolptr->cell_data_size[1], cell_buffer, NULL);
 		offset += spoolptr->cell_data_size[1];
 
-		RequestSpool(0, 0, offset, spoolptr->cell_data_size[0], (char *)(cells + cell_slots_add[target_region]), NULL);
+		RequestSpool(SPOOL_REGION, 0, offset, spoolptr->cell_data_size[0], (char *)(cells + cell_slots_add[target_region]), NULL);
 		offset += spoolptr->cell_data_size[0];
 
-		RequestSpool(0, 0, offset, spoolptr->cell_data_size[2], (char *)(cell_objects + num_straddlers + cell_objects_add[target_region]), NULL);
+		RequestSpool(SPOOL_REGION, 0, offset, spoolptr->cell_data_size[2], (char *)(cell_objects + num_straddlers + cell_objects_add[target_region]), NULL);
 		offset += spoolptr->cell_data_size[2];
 
-		RequestSpool(0, 0, offset, spoolptr->roadm_size, PVS_Buffers[target_region] - 4, GotRegion);
+		RequestSpool(SPOOL_REGION, 0, offset, spoolptr->roadm_size, PVS_Buffers[target_region] - 4, GotRegion);
 		offset += spoolptr->roadm_size;
 	}
 
@@ -1675,6 +1656,45 @@ void UnpackRegion(int region_to_unpack, int target_barrel_region)
 
 
 //---------------------------------------------------------------------
+// Special car spooling
+
+enum SpecialSpoolState
+{
+	SpecSpool_None = 0,
+
+	SpecSpool_Tpage1,
+	SpecSpool_Tpage2,
+	SpecSpool_Cluts,
+	SpecSpool_Cosmetics,
+
+	SpecSpool_CleanSpool,
+	SpecSpool_LowSpool,
+
+	SpecSpool_CleanModel,
+	SpecSpool_DamagedModel,
+	SpecSpool_LowModel
+};
+
+int specialState = SpecSpool_None;
+
+int allowSpecSpooling;
+int startSpecSpool;
+char* specmallocptr;
+char* specLoadBuffer;
+short specSpoolModelIndex = 4;
+
+int* modelMemory = NULL;
+
+int lengthLowBlock;
+int lastCleanBlock;
+int lengthDamBlock;
+
+int firstLowBlock;
+int firstDamBlock;
+
+int specBlocksToLoad = 0;
+char specModelValid = 1;
+int specSpoolComplete;
 
 void SpecialStartNextBlock(void);
 
@@ -1694,7 +1714,7 @@ void SpecClutsSpooled(void)
 	for (int i = 0; i < 2; i++)
 	{
 		int index = specialSlot + i;
-		int tpage = specTpages[GameLevel][(specspooldata[2]-1) * 2 + i];
+		int tpage = specTpages[GameLevel][(specSpoolModelIndex-1) * 2 + i];
 
 		carTpages[GameLevel][i + 6] = tpageslots[index] = tpage;
 		tpageloaded[tpage] = specialSlot + i + 1;
@@ -1721,38 +1741,19 @@ void SpecClutsSpooled(void)
 		}
 #endif
 	}
-
-	if (quickSpool != 1)
-		DrawSyncCallback(SpecialStartNextBlock);
 }
-
-int *modelMemory;
-
-int lengthLowBlock;
-int lastCleanBlock;
-int lengthDamBlock;
-
-int firstLowBlock;
-int firstDamBlock;
-
-int specBlocksToLoad = 0;
-int specialState = 0;
-char specModelValid = 1;
-int specSpoolComplete;
 
 // [D] [T]
 void CleanModelSpooled(void)
 {
-	int *loadaddr;
-	int *mem;
+	int* loadaddr;
+	int* polyBlock;
 
 	loadaddr = (int *)specLoadBuffer;
 	
 	if (specBlocksToLoad == lastCleanBlock-1) 
 	{
 		loadaddr = (int *)(specLoadBuffer + 12);
-
-		modelMemory = (int *)specmallocptr;
 		gCarCleanModelPtr[4] = (MODEL *)modelMemory;
 	}
 
@@ -1760,28 +1761,22 @@ void CleanModelSpooled(void)
 	while (loadaddr < (int*)(specLoadBuffer + CDSECTOR_SIZE))
 		*modelMemory++ = *loadaddr++;
 
-	mem = (int*)((int)gCarCleanModelPtr[4] + gCarCleanModelPtr[4]->poly_block);	// [A] pls check, might be invalid
+	polyBlock = GET_RELOC_MODEL_DATA(int, gCarCleanModelPtr[4], poly_block);
 
-	if (specBlocksToLoad == 0 || mem < modelMemory)
-	{
-#if USE_PC_FILESYSTEM
-		if (gContentOverride)
-		{
-			// [A] vertices
-			LoadCarModelFromFile((char*)gCarCleanModelPtr[4], MissionHeader->residentModels[4], CAR_MODEL_CLEAN);
-		}
-#endif
-		
+	if (specBlocksToLoad == 0 || modelMemory > polyBlock)
+	{		
 		specBlocksToLoad = 0;
-		modelMemory = mem;
+		modelMemory = polyBlock;
 
+#if MODEL_RELOCATE_POINTERS
 		gCarCleanModelPtr[4]->vertices += (int)gCarCleanModelPtr[4];
 		gCarCleanModelPtr[4]->normals += (int)gCarCleanModelPtr[4];
 		gCarCleanModelPtr[4]->point_normals += (int)gCarCleanModelPtr[4];
 		gCarCleanModelPtr[4]->poly_block += (int)gCarCleanModelPtr[4];
-
-		NewCarModel[4].nlist = (SVECTOR *)gCarCleanModelPtr[4]->point_normals;
-		NewCarModel[4].vlist = (SVECTOR *)gCarCleanModelPtr[4]->vertices;
+#endif
+		gCarCleanModelPtr[4]->instance_number = -1;
+		NewCarModel[4].nlist = GET_MODEL_DATA(SVECTOR, gCarCleanModelPtr[4], point_normals);
+		NewCarModel[4].vlist = GET_MODEL_DATA(SVECTOR, gCarCleanModelPtr[4], vertices);
 	}
 
 	if (quickSpool != 1)
@@ -1793,15 +1788,14 @@ int damOffset;
 // [D] [T]
 void DamagedModelSpooled(void)
 {
-	int *loadaddr;
-	int *mem;
+	int* loadaddr;
+	int* polyBlock;
 
 	loadaddr = (int *)specLoadBuffer;
 
 	if (specBlocksToLoad == lengthDamBlock-1) 
 	{
 		loadaddr = (int *)(specLoadBuffer + damOffset);
-
 		gCarDamModelPtr[4] = (MODEL *)modelMemory;
 	}
 	
@@ -1809,30 +1803,24 @@ void DamagedModelSpooled(void)
 	while (loadaddr < (int*)(specLoadBuffer + CDSECTOR_SIZE))
 		*modelMemory++ = *loadaddr++;
 
-	mem = (int*)((int)gCarDamModelPtr[4] + gCarDamModelPtr[4]->poly_block);	// [A] pls check, might be invalid
+	polyBlock = GET_RELOC_MODEL_DATA(int, gCarDamModelPtr[4], poly_block);
 
-	if (specBlocksToLoad == 0 || mem < modelMemory)
-	{
-#if USE_PC_FILESYSTEM
-		if (gContentOverride)
-		{
-			// [A] vertices
-			LoadCarModelFromFile((char*)gCarDamModelPtr[4], MissionHeader->residentModels[4], CAR_MODEL_DAMAGED);
-		}
-#endif
-		
+	if (specBlocksToLoad == 0 || modelMemory > polyBlock)
+	{		
 		specBlocksToLoad = 0;
-		modelMemory = mem;
+		modelMemory = polyBlock;
 
+#if MODEL_RELOCATE_POINTERS
 		gCarDamModelPtr[4]->vertices += (int)gCarDamModelPtr[4];
 		gCarDamModelPtr[4]->normals += (int)gCarDamModelPtr[4];
 		gCarDamModelPtr[4]->poly_block += (int)gCarDamModelPtr[4];
 		gCarDamModelPtr[4]->point_normals += (int)gCarDamModelPtr[4];
+#endif
+		gCarDamModelPtr[4]->instance_number = -1;
 	}
 
 	if (quickSpool != 1)
 		DrawSyncCallback(SpecialStartNextBlock);
-
 }
 
 int lowOffset;
@@ -1840,15 +1828,14 @@ int lowOffset;
 // [D] [T]
 void LowModelSpooled(void)
 {
-	int *loadaddr;
-	int *mem;
+	int* loadaddr;
+	int* polyBlock;
 
 	loadaddr = (int *)specLoadBuffer;
 
 	if (specBlocksToLoad == lengthLowBlock - 1) 
 	{
 		loadaddr = (int *)(specLoadBuffer + lowOffset);
-
 		gCarLowModelPtr[4] = (MODEL *)modelMemory;
 	}
 	
@@ -1856,28 +1843,22 @@ void LowModelSpooled(void)
 	while (loadaddr < (int*)(specLoadBuffer + CDSECTOR_SIZE))
 		*modelMemory++ = *loadaddr++;
 
-	mem = (int*)((int)gCarLowModelPtr[4] + gCarLowModelPtr[4]->poly_block);	// [A] pls check, might be invalid
+	polyBlock = GET_RELOC_MODEL_DATA(int, gCarLowModelPtr[4], poly_block);
 
-	if (specBlocksToLoad == 0 || mem < modelMemory)
+	if (specBlocksToLoad == 0 || modelMemory > polyBlock)
 	{
-#if USE_PC_FILESYSTEM
-		if (gContentOverride)
-		{
-			// [A] vertices
-			LoadCarModelFromFile((char*)gCarLowModelPtr[4], MissionHeader->residentModels[4], CAR_MODEL_LOWDETAIL);
-		}
-#endif
-		
 		specBlocksToLoad = 0;
-		modelMemory = mem;
+		modelMemory = polyBlock;
 
+#if MODEL_RELOCATE_POINTERS
 		gCarLowModelPtr[4]->vertices += (int)gCarLowModelPtr[4];
 		gCarLowModelPtr[4]->normals += (int)gCarLowModelPtr[4];
 		gCarLowModelPtr[4]->poly_block += (int)gCarLowModelPtr[4];
 		gCarLowModelPtr[4]->point_normals += (int)gCarLowModelPtr[4];
-
-		NewLowCarModel[4].nlist = (SVECTOR *)gCarLowModelPtr[4]->point_normals;
-		NewLowCarModel[4].vlist = (SVECTOR *)gCarLowModelPtr[4]->vertices;
+#endif
+		gCarLowModelPtr[4]->instance_number = -1;
+		NewLowCarModel[4].nlist = GET_MODEL_DATA(SVECTOR, gCarLowModelPtr[4], point_normals);
+		NewLowCarModel[4].vlist = GET_MODEL_DATA(SVECTOR, gCarLowModelPtr[4], vertices);
 	}
 
 	if (quickSpool != 1)
@@ -1890,56 +1871,98 @@ void CleanSpooled(void)
 {
 	MODEL *model;
 
+	// first block is model sizes
 	if (specBlocksToLoad == 6)
 	{
+		int lastDamBlock;
+		int lastLowBlock;
+
 		// [A] for readability sake
-		int size_1 = ((int *)specmallocptr)[0];
-		int size_2 = ((int *)specmallocptr)[1];
-		int size_3 = ((int *)specmallocptr)[2];
+		int cleanModelOfs = ((int *)specmallocptr)[0];
+		int damModelOfs = ((int *)specmallocptr)[1];
+		int lowModelOfs = ((int *)specmallocptr)[2];
 
-		lastCleanBlock = size_1 + CDSECTOR_SIZE + 11;
+		lastCleanBlock = cleanModelOfs + CDSECTOR_SIZE + 11;
+		firstDamBlock = cleanModelOfs + 12;
+		firstLowBlock = cleanModelOfs + damModelOfs + 12;
+
+		// to sector index
 		lastCleanBlock >>= 11;
-
-		firstDamBlock = size_1 + 12;
 		firstDamBlock >>= 11;
-
-		firstLowBlock = size_1 + size_2 + 12;
 		firstLowBlock >>= 11;
 
-		int lastDamBlock = size_1 + size_2 + CDSECTOR_SIZE + 11;
+		lastDamBlock = cleanModelOfs + damModelOfs + CDSECTOR_SIZE + 11;
+		lastLowBlock = cleanModelOfs + damModelOfs + lowModelOfs + CDSECTOR_SIZE + 11;
+
+		// to sector index
 		lastDamBlock >>= 11;
-
-		lengthDamBlock = lastDamBlock - firstDamBlock;
-		damOffset = size_1 - (firstDamBlock * CDSECTOR_SIZE - 12);
-
-		int lastLowBlock = size_1 + size_2 + size_3 + CDSECTOR_SIZE + 11;
 		lastLowBlock >>= 11;
 
+		lengthDamBlock = lastDamBlock - firstDamBlock;
 		lengthLowBlock = lastLowBlock - firstLowBlock;
-		lowOffset = size_1 + size_2 - (firstLowBlock * CDSECTOR_SIZE - 12);
-	}
 
-	model = (MODEL *)(specmallocptr + 12);
+		lowOffset = cleanModelOfs + damModelOfs - (firstLowBlock * CDSECTOR_SIZE - 12);
+		damOffset = cleanModelOfs - (firstDamBlock * CDSECTOR_SIZE - 12);
 
-	if (specBlocksToLoad == 7-lastCleanBlock) 
-	{
+		// mark the memory start for all special models
+		modelMemory = (int*)specmallocptr;
+
 #if USE_PC_FILESYSTEM
 		if (gContentOverride)
 		{
-			// [A] vertices
-			LoadCarModelFromFile((char*)model, MissionHeader->residentModels[4], CAR_MODEL_CLEAN);
+			char* mem;
+
+			if (mem = LoadCarModelFromFile((char*)modelMemory, MissionHeader->residentModels[4], CAR_MODEL_CLEAN))
+			{
+				gCarCleanModelPtr[4] = (MODEL*)modelMemory;
+				model = GetCarModel(mem, (char**)&modelMemory, 1);
+
+				whichCP = baseSpecCP;
+				buildNewCarFromModel(4, 1, mem, model);
+
+				specBlocksToLoad = 0;
+				specialState = SpecSpool_CleanModel;
+			}
+
+			if (mem = LoadCarModelFromFile((char*)modelMemory, MissionHeader->residentModels[4], CAR_MODEL_DAMAGED))
+			{
+				gCarDamModelPtr[4] = (MODEL*)modelMemory;
+				model = GetCarModel(mem, (char**)&modelMemory, 0);
+				
+				specBlocksToLoad = 0;
+				specialState = SpecSpool_DamagedModel;
+			}
+
+			if (mem = LoadCarModelFromFile((char*)modelMemory, MissionHeader->residentModels[4], CAR_MODEL_LOWDETAIL))
+			{
+				gCarLowModelPtr[4] = (MODEL*)modelMemory;
+				model = GetCarModel(mem, (char**)&modelMemory, 1);
+
+				buildNewCarFromModel(4, 0, mem, model);
+
+				specBlocksToLoad = 0;
+				specialState = SpecSpool_LowModel;
+			}
 		}
 #endif
-		
+	}
+
+	// Spooled clean car models are guaranteed to be split in two instances
+	// this one is polygons only
+	if (specBlocksToLoad == 7 - lastCleanBlock) 
+	{
+		specBlocksToLoad = 0;
+		model = (MODEL*)(specmallocptr + sizeof(int) * 3);
+
+		whichCP = baseSpecCP;
+		buildNewCarFromModel(4, 1, (char*)model, model);
+
+#if MODEL_RELOCATE_POINTERS
 		model->vertices += (int)model;
 		model->poly_block += (int)model;
 		model->normals += (int)model;
 		model->point_normals += (int)model;
-
-		whichCP = baseSpecCP;
-
-		buildNewCarFromModel(&NewCarModel[4], model, 0);
-		specBlocksToLoad = 0;
+#endif
 	}
 
 	if (quickSpool != 1)
@@ -1955,21 +1978,14 @@ void LowSpooled(void)
 	if (specBlocksToLoad == 0) 
 	{
 		model = (MODEL *)(specmallocptr + lowOffset);
+		buildNewCarFromModel(4, 0, (char*)model, model);
 
-#if USE_PC_FILESYSTEM
-		if (gContentOverride)
-		{
-			// [A] vertices
-			LoadCarModelFromFile((char*)model, MissionHeader->residentModels[4], CAR_MODEL_LOWDETAIL);
-		}
-#endif
-		
+#if MODEL_RELOCATE_POINTERS
 		model->vertices += (int)model;
 		model->normals += (int)model;
 		model->poly_block += (int)model;
 		model->point_normals += (int)model;
-
-		buildNewCarFromModel(&NewLowCarModel[4], model, 0);
+#endif
 	}
 
 	if (quickSpool != 1) 
@@ -1983,51 +1999,31 @@ void Tada(void)
 	int spec_tpage;
 	RECT16 tpagerect;
 
-	if (specialState == 2)
+	switch (specialState)
 	{
-		tpagerect.w = 64;
-		tpagerect.h = 16;
+		case SpecSpool_Tpage1:
+		case SpecSpool_Tpage2:
+			spec_tpage = specialSlot + (specialState - 1);
+			tpagerect.w = 64;
+			tpagerect.h = 16;
 
-		spec_tpage = specialSlot + 1;
-		tpagerect.x = tpagepos[spec_tpage].x;
-		tpagerect.y = tpagepos[spec_tpage].y + (15 - specBlocksToLoad) * 16;
+			tpagerect.x = tpagepos[spec_tpage].x;
+			tpagerect.y = tpagepos[spec_tpage].y + (15 - specBlocksToLoad) * 16;
 
-		if (specBlocksToLoad == 15) 
-			update_slotinfo(specTpages[GameLevel][specspooldata[2]-1], specialSlot, &tpagerect);
+			if (specBlocksToLoad == 15)
+				update_slotinfo(specTpages[GameLevel][specSpoolModelIndex-1], specialSlot, &tpagerect);
 
-		LoadImage(&tpagerect, (u_long *)specLoadBuffer);
-	}
-	else
-	{
-		if (specialState > 2) 
-		{
-			if (specialState != 4)
-				return;
-
+			LoadImage(&tpagerect, (u_long*)specLoadBuffer);
+			break;
+		case SpecSpool_Cluts:
+			SpecClutsSpooled();
+			break;
+		case SpecSpool_Cosmetics:
 			SetupSpecCosmetics(specLoadBuffer);
 			SetupSpecDenting(specLoadBuffer + sizeof(CAR_COSMETICS));
-
-			if (quickSpool == 1)
-				return;
-
-			DrawSyncCallback(SpecialStartNextBlock);
-			return;
-		}
-
-		if (specialState != 1)
-			return;
-
-		spec_tpage = specialSlot;
-		tpagerect.w = 64;
-		tpagerect.h = 16;
-
-		tpagerect.x = tpagepos[spec_tpage].x;
-		tpagerect.y = tpagepos[spec_tpage].y + (15 - specBlocksToLoad) * 16;
-
-		if (specBlocksToLoad == 15) 
-			update_slotinfo(specTpages[GameLevel][specspooldata[2]-1], spec_tpage, &tpagerect);
-
-		LoadImage(&tpagerect, (u_long *)specLoadBuffer);
+			break;
+		default:
+			printWarning("Tada: incorrect special state %d", specialState);
 	}
 
 	if (quickSpool != 1)
@@ -2042,79 +2038,78 @@ void SpecialStartNextBlock(void)
 	spooledFuncPtr spoolFunc;
 
 	loadaddr = specLoadBuffer;
-	DrawSyncCallback(0);
+	DrawSyncCallback(NULL);
 
 	// if previous state blocks are fully loaded, start next state
 	if (specBlocksToLoad == 0)
 	{
+		specialState++;
 		switch (specialState) 
 		{
-			case 0:
-			case 1:
+			case SpecSpool_Tpage1:
+			case SpecSpool_Tpage2:
 				specBlocksToLoad = 16;
 				break;
-			case 2:
-			case 3:
+			case SpecSpool_Cluts:
+			case SpecSpool_Cosmetics:
 				specBlocksToLoad = 1;
 				break;
-			case 4:
+			case SpecSpool_CleanSpool:
 				specBlocksToLoad = 7;
 				break;
-			case 5:
-			case 8:
+			case SpecSpool_LowSpool:
+			case SpecSpool_LowModel:
 				specBlocksToLoad = lengthLowBlock;
 				break;
-			case 6:
+			case SpecSpool_CleanModel:
 				specBlocksToLoad = lastCleanBlock;
 				break;
-			case 7:
+			case SpecSpool_DamagedModel:
 				specBlocksToLoad = lengthDamBlock;
 				break;
 			default:
 				specBlocksToLoad = 0;
 		}
-
-		specialState++;
 	}
 
-	fileSector = 0x1400 + (citystart[GameLevel] - SpoolLumpOffset / CDSECTOR_SIZE) + (specspooldata[2]-1) * 42;
+	fileSector = 0x1400 + (citystart[GameLevel] - SpoolLumpOffset / CDSECTOR_SIZE) + (specSpoolModelIndex-1) * 42;
 
 	switch (specialState)
 	{
-		case 1:
+		case SpecSpool_Tpage1:
 			spoolFunc = Tada;
 			fileSector += (17 - specBlocksToLoad);
 			break;
-		case 2:
+		case SpecSpool_Tpage2:
 			spoolFunc = Tada;
 			fileSector += (33 - specBlocksToLoad);
 			break;
-		case 3:
-			spoolFunc = SpecClutsSpooled;
+		case SpecSpool_Cluts:
+			spoolFunc = Tada;
 			break;
-		case 4:
+		case SpecSpool_Cosmetics:
 			fileSector += 33;
 			spoolFunc = Tada;
 			break;
-		case 5:
+		case SpecSpool_CleanSpool:
 			spoolFunc = CleanSpooled;
 			fileSector += (41 - specBlocksToLoad);
 			loadaddr = specmallocptr + (7 - specBlocksToLoad) * CDSECTOR_SIZE;
 			break;
-		case 6:
+		case SpecSpool_LowSpool:
 			spoolFunc = LowSpooled;
 			fileSector += ((firstLowBlock + lengthLowBlock) - specBlocksToLoad) + 34;
 			loadaddr = specmallocptr + (lengthLowBlock - specBlocksToLoad) * CDSECTOR_SIZE;
 			break;
-		case 7:
+		case SpecSpool_CleanModel:
 			spoolFunc = CleanModelSpooled;
 			fileSector += (lastCleanBlock - specBlocksToLoad) + 34;
 			break;
-		case 8:
+		case SpecSpool_DamagedModel:
 			spoolFunc = DamagedModelSpooled;
 			fileSector += ((firstDamBlock + lengthDamBlock) - specBlocksToLoad) + 34;
 			break;
-		case 9:
+		case SpecSpool_LowModel:
 			spoolFunc = LowModelSpooled;
 			fileSector += ((firstLowBlock + lengthLowBlock) - specBlocksToLoad) + 34;
 			break;
@@ -2122,7 +2117,7 @@ void SpecialStartNextBlock(void)
 			if (quickSpool == 1)
 			{
 				specModelValid = 1;
-				specialState = 0;
+				specialState = SpecSpool_None;
 				quickSpool = 0;
 				specSpoolComplete = 0;
 				return;
@@ -2132,7 +2127,7 @@ void SpecialStartNextBlock(void)
 			return;
 	}
 
-	RequestSpool(3, 0, fileSector, 1, loadaddr, spoolFunc);
+	RequestSpool(SPOOL_MISC, 0, fileSector, 1, loadaddr, spoolFunc);
 	specBlocksToLoad--;
 }
 
@@ -2156,7 +2151,7 @@ void CheckSpecialSpool(void)
 		}
 
 		specModelValid = 1;
-		specialState = 0;
+		specialState = SpecSpool_None;
 		specBlocksToLoad = 0;
 		specSpoolComplete = 0;
 		startSpecSpool = -1;
@@ -2164,6 +2159,7 @@ void CheckSpecialSpool(void)
 
 	if (allowSpecSpooling && 
 		specSpoolComplete != 1 && 
+		specialState == SpecSpool_None &&
 		GameType != GAME_PURSUIT &&
 		LoadedArea != -1 &&
 		SpecialByRegion[GameLevel][LoadedArea] != MissionHeader->residentModels[4]-7) 
@@ -2187,11 +2183,10 @@ void CheckSpecialSpool(void)
 		gCarCleanModelPtr[4] = NULL;
 		gCarLowModelPtr[4] = NULL;
 
-		specspooldata[2] = SpecialByRegion[GameLevel][LoadedArea];
+		specSpoolModelIndex = SpecialByRegion[GameLevel][LoadedArea];
 		MissionHeader->residentModels[4] = SpecialByRegion[GameLevel][LoadedArea] + 7;
 
-		if (specialState == 0)
-			SpecialStartNextBlock();
+		SpecialStartNextBlock();
 	}
 }
 
@@ -2199,14 +2194,14 @@ void CheckSpecialSpool(void)
 void QuickSpoolSpecial(void)
 {
 	quickSpool = 1;
-	specialState = 0;
+	specialState = SpecSpool_None;
 	specBlocksToLoad = 0;
 
 	gCarCleanModelPtr[4] = NULL;
 	gCarDamModelPtr[4] = NULL;
 	gCarLowModelPtr[4] = NULL;
 
-	specspooldata[2] = MissionHeader->residentModels[4]-7;
+	specSpoolModelIndex = MissionHeader->residentModels[4]-7;
 
 	do {
 		SpoolSYNC();
@@ -2226,11 +2221,11 @@ void PrepareSecretCar(void)
 	gCarCleanModelPtr[4] = NULL;
 	gCarLowModelPtr[4] = NULL;
 
-	specspooldata[2] = 5;
+	specSpoolModelIndex = 5;
 	specModelValid = 0;
 	startSpecSpool = CameraCnt;
 	MissionHeader->residentModels[4] = 12;
-	specialState = 0;
+	specialState = SpecSpool_None;
 	specBlocksToLoad = 0;
 	SpecialStartNextBlock();
 }
@@ -2327,7 +2322,7 @@ void InitSpecSpool(void)
 #endif
 
 	specModelValid = 1;
-	specialState = 0;
+	specialState = SpecSpool_None;
 	specBlocksToLoad = 0;
 	quickSpool = 0;
 	specSpoolComplete = 0;

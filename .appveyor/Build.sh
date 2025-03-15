@@ -1,30 +1,30 @@
 #!/usr/bin/env bash
 set -ex
 
-# Creating flatpak directories
-mkdir -p "${APPVEYOR_BUILD_FOLDER}/.flatpak/lib" "${APPVEYOR_BUILD_FOLDER}/.flatpak/data" "${APPVEYOR_BUILD_FOLDER}/.flatpak/bin"
-
+# Configure
 cd "$APPVEYOR_BUILD_FOLDER/src_rebuild"
-
 ./premake5 gmake2
-
 cd project_gmake2_linux
 
+# Build
 for config in debug_x86 release_x86 release_dev_x86
 do
     make config=$config -j$(nproc)
 done
 
-find ${APPVEYOR_BUILD_FOLDER}/src_rebuild/bin -name 'REDRIVER2*' -exec cp -t ${APPVEYOR_BUILD_FOLDER}/.flatpak/bin {} +
+cd ${APPVEYOR_BUILD_FOLDER}
+
+# Creating flatpak directories
+mkdir -p "${APPVEYOR_BUILD_FOLDER}/.flatpak/lib" "${APPVEYOR_BUILD_FOLDER}/.flatpak/data" "${APPVEYOR_BUILD_FOLDER}/.flatpak/bin"
+find ${APPVEYOR_BUILD_FOLDER}/src_rebuild/bin/Release -name 'REDRIVER2*' -exec cp -t ${APPVEYOR_BUILD_FOLDER}/.flatpak/bin {} +
 
 # Copy missing libraries in the runtime
-for lib in libjpeg libopenal libsndio libbsd
+for lib in libjpeg libopenal
 do
     cp -Lf $(ldd "${APPVEYOR_BUILD_FOLDER}/src_rebuild/bin/Release/REDRIVER2" | awk '/ => / { print $3 }' | grep ${lib}) "${APPVEYOR_BUILD_FOLDER}/.flatpak/lib"
 done
 
 cp -r "${APPVEYOR_BUILD_FOLDER}/data" "${APPVEYOR_BUILD_FOLDER}/.flatpak/"
-cd ${APPVEYOR_BUILD_FOLDER}
 
 # Editing metadatas with the current version
 export APPVEYOR_BUILD_DATE=$(date "+%Y-%m-%d")

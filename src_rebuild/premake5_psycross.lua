@@ -39,7 +39,7 @@ project "PsyCross"
 			OPENAL_DIR.."/libs/Win32",
 		}
 
-	filter {"system:Windows", "platforms:x86_64"}
+	filter {"system:Windows", "platforms:x64"}
 		libdirs { 
 			SDL2_DIR.."/lib/x64",
 			OPENAL_DIR.."/libs/Win64",

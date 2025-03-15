@@ -65,7 +65,7 @@ static int said_picked_up = 0;
 
 char last_cop_phrase = 0;
 
-char CopWorkMem[444];		// PVS table
+char CopWorkMem[PVS_CELL_COUNT * PVS_CELL_COUNT + 3];		// PVS table
 COP_SIGHT_DATA copSightData;
 
 int player_position_known = 0;
@@ -379,6 +379,7 @@ void CopControl1(CAR_DATA *cp)
 	// [A] periodically beat player in ass
 	if (!doBatter && *playerFelony > gCopData.autoBatterPlayerTrigger)
 	{
+#if ENABLE_GAME_ENCHANCEMENTS
 		int batterTrigger;
 
 		if(gCopDifficultyLevel == 0)
@@ -393,9 +394,10 @@ void CopControl1(CAR_DATA *cp)
 		
 		cp->ai.p.batterTimer++;
 		cp->ai.p.batterTimer &= 127;
+#else
+		doBatter = 1;
+#endif
 	}
-
-
 
 	if (cp->ai.p.dying != 0 || 
 		cp->totalDamage > 27000 && gCopData.immortal == 0)
@@ -854,7 +856,11 @@ void ControlCopDetection(void)
 					}
 
 					// [A] also check player elevation from cops (block cops vision from bridges, tunnels etc)
-					if (spotted && ABS(cp->hd.where.t[1] - vec.vy) < 1000) 
+					if (spotted 
+#if ENABLE_GAME_ENCHANCEMENTS
+						&& ABS(cp->hd.where.t[1] - vec.vy) < 1000
+#endif
+						) 
 					{
 						CopsCanSeePlayer = 1;
 						break;
@@ -865,6 +871,7 @@ void ControlCopDetection(void)
 		}
 	}
 
+#if ENABLE_GAME_ENCHANCEMENTS
 	// [A] if Tanner is outside car, cops can arrest him if they are too close
 	if(player[0].playerType == 2 && minDistanceToPlayer < 2048 && !player[0].dying && pedestrianFelony > FELONY_PURSUIT_MIN_VALUE)
 	{
@@ -873,6 +880,7 @@ void ControlCopDetection(void)
 		SetMissionMessage(G_LTXT(GTXT_YouveBeenCaught),3,2);
 		SetMissionFailed(FAILED_MESSAGESET);
 	}
+#endif
 
 	if (numActiveCops == 0 && OutOfSightCount < 256 && CameraCnt > 8) 
 	{

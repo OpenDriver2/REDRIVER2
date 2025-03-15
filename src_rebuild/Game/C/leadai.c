@@ -1522,9 +1522,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 			if (RoadMapRegions[cbr] != cbrX + cbrZ * regions_across)
 				continue;
 
-			ppco = GetFirstPackedCop(cell_x, cell_z, &ci, 1);
-
-			while (ppco)
+			for (ppco = GetFirstPackedCop(cell_x, cell_z, &ci, 1); ppco; ppco = GetNextPackedCop(&ci))
 			{
 				int type = (ppco->value >> 6) | ((ppco->pos.vy & 1) << 10);
 				model = modelpointers[type];
@@ -1539,8 +1537,8 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 
 					QuickUnpackCellObject(ppco, &ci.nearCell, &tempCO);
 					
-					num_cb = *(int*)model->collision_block;
-					collide = (COLLISION_PACKET*)((int*)model->collision_block + 1);
+					num_cb = *GET_MODEL_DATA(int, model, collision_block);
+					collide = GET_MODEL_DATA_OFS(COLLISION_PACKET, model, collision_block, sizeof(int));
 
 					while (num_cb > 0)
 					{
@@ -1666,7 +1664,6 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 						collide++;
 					}
 				}
-				ppco = GetNextPackedCop(&ci);
 			}
 		}
 	}
@@ -2819,8 +2816,9 @@ u_int hypot(int x, int y)
 
 	if (x < y)
 	{
+		t = y;
 		y = x;
-		x = y;
+		x = t;
 	}
 
 	if (x < 0x8000)

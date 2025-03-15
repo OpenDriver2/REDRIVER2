@@ -19,9 +19,29 @@ char* CosmeticFiles[] = {
 
 CAR_COSMETICS car_cosmetics[MAX_CAR_MODELS];
 
+#if ENABLE_GAME_FIXES
 // [A] storage for spooled models
 // remember: we already have more than 1k of free memory with optimizations
 CAR_COSMETICS levelSpecCosmetics[5];
+#endif
+
+#if USE_PC_FILESYSTEM
+extern int gContentOverride;
+
+// [A] loads car cosmetics from file
+void LoadCustomCarCosmetics(CAR_COSMETICS* dest, int modelNumber)
+{
+	char filename[64];
+
+	sprintf(filename, "LEVELS\\%s\\CARMODEL_%d.COS", LevelNames[GameLevel], modelNumber);
+	if (!FileExists(filename))
+	{
+		return;
+	}
+
+	LoadfileSeg(filename, (char*)dest, 0, sizeof(CAR_COSMETICS));
+}
+#endif
 
 // [D] [T]
 void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
@@ -47,20 +67,26 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 		if (model != -1) 
 		{
 			offset = *(int*)(lump_ptr + model * sizeof(int));
-			memcpy((u_char*)&car_cosmetics[i], (u_char*)lump_ptr + offset, sizeof(CAR_COSMETICS));
+			car_cosmetics[i] = *(CAR_COSMETICS*)((u_char*)lump_ptr + offset);
 
+#if USE_PC_FILESYSTEM
+			if(gContentOverride)
+				LoadCustomCarCosmetics(&car_cosmetics[i], model);
+#endif
 			FixCarCos(&car_cosmetics[i], model);
 		}
 	}
 
 	// [A] cache all special vehicle cosmetics
-	for (i = 0; i < 5; i++)
+#if ENABLE_GAME_FIXES
+	for (i = 0; i < MAX_CAR_MODELS; i++)
 	{
 		model = 8 + i;
 
 		offset = *(int*)(lump_ptr + model * sizeof(int));
-		memcpy((u_char*)&levelSpecCosmetics[i], (u_char*)lump_ptr + offset, sizeof(CAR_COSMETICS));
+		levelSpecCosmetics[i] = *(CAR_COSMETICS*)((u_char*)lump_ptr + offset);
 	}
+#endif
 }
 
 // [D] [T]
@@ -113,11 +139,16 @@ void SetupSpecCosmetics(char *loadbuffer)
 	int model;
 	model = MissionHeader->residentModels[4];
 
-#if 1
+#if ENABLE_GAME_FIXES
 	// [A] always use cached cosmetics
-	memcpy((u_char*)&car_cosmetics[4], (u_char*)&levelSpecCosmetics[model - 8], sizeof(CAR_COSMETICS));
+	car_cosmetics[4] = levelSpecCosmetics[model - 8];
 #else
-	memcpy((u_char*)&car_cosmetics[4], loadbuffer, sizeof(CAR_COSMETICS));
+	car_cosmetics[4] = *(CAR_COSMETICS*)loadbuffer;
+#endif
+
+#if USE_PC_FILESYSTEM
+	if (gContentOverride)
+		LoadCustomCarCosmetics(&car_cosmetics[4], model);
 #endif
 
 	// [A] don't forget

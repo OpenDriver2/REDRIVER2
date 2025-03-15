@@ -4,6 +4,12 @@
 // DRIVER 2 game engine limits
 // please populate this file only with engine limits during refactoring
 
+
+#ifndef PSX
+#define DYNAMIC_LIGHTING
+#define MAX_DLIGHTS				32
+#endif
+
 #ifndef PSX
 #define MAX_PLAYERS				16			// used for replay streams mostly
 #else
