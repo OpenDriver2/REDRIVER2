@@ -491,6 +491,7 @@ void HandleThrownBombs(void)
 
 					AddExplosion(bomb->position, BIG_BANG);
 					AddFlash(&bomb->position);
+					break;
 				}
 				cp++;
 			}
