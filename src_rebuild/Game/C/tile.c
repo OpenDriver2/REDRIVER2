@@ -8,10 +8,6 @@
 
 #include "ASM/rndrasm.h"
 
-#ifdef PSX
-#pragma GCC optimization ("O3")
-#endif
-
 #ifdef DYNAMIC_LIGHTING
 void Tile1x1Lit(MODEL* model)
 {

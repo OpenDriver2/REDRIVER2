@@ -2047,6 +2047,16 @@ int AddEnvSnd(int type, char flags, int bank, int sample, int vol, int px, int p
 	return EStags.envsnd_cnt++;
 }
 
+// It computes a fast 1 / sqrtf(v) approximation
+inline float rsqrtf(float v)
+{
+	float v_half = v * 0.5f;
+	int i = *(int*)&v;
+	i = 0x5f3759df - (i >> 1);
+	v = *(float*)&i;
+	return v * (1.5f - v_half * v * v);
+}
+
 // [D] [T]
 void IdentifyZone(envsound* ep, envsoundinfo* E, int pl)
 {
@@ -2058,7 +2068,6 @@ void IdentifyZone(envsound* ep, envsoundinfo* E, int pl)
 	bitfield64 zones;
 	int snd;
 
-	// [A] does it really needed? we don't have that much sounds to be played
 	zones.l = 0;
 	zones.h = 0;
 
@@ -2095,7 +2104,7 @@ void IdentifyZone(envsound* ep, envsoundinfo* E, int pl)
 				ldz = ep[i].pos2.vz - ep[i].pos.vz;
 				
 				// find inverse length of line
-				l_inv_len = 1.0f / sqrt(ldx * ldx + ldz * ldz);
+				l_inv_len = rsqrtf(ldx * ldx + ldz * ldz);
 				
 				// find normal (perpendicular) by using cross product and normalize
 				ndx = ldz * l_inv_len;

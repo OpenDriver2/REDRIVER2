@@ -16,10 +16,6 @@
 #include "ASM/rndrasm.h"
 #include "event.h"
 
-#ifdef PSX
-#pragma GCC optimization ("O3")
-#endif
-
 MATRIX aspect =
 {
 	{

@@ -10,23 +10,23 @@ void AddEnvSounds(int level, int time)
 
 	switch (level) 
 	{
-		case 0:
+		case 0:	// Chicago Day
 			AddEnvSnd(1, 0, SOUND_BANK_ENVIRONMENT, 2, 0, -225275, 674800, -207350, 657910);
 			AddEnvSnd(1, 0, SOUND_BANK_ENVIRONMENT, 2, 0, 73730, -359430, 88070, -387080);
 			AddEnvSnd(1, 0x10, SOUND_BANK_ENVIRONMENT, 3, 0, 177700, 77500, 222200, 61700);
-		case 4:
+		case 4:	// Chicago Night
 			AddEnvSnd(1, 0x10, SOUND_BANK_ENVIRONMENT, 0, -5000, 36250, -167050, 70250, -275700);
 			AddEnvSnd(1, 0x10, SOUND_BANK_ENVIRONMENT, 0, -5000, 36250, -157500, 70250, -126900);
 			AddEnvSnd(1, 0x10, SOUND_BANK_ENVIRONMENT, 0, -5000, 36250, -79500, 70250, -113500);
 			break;
-		case 1:
+		case 1:	// Havana Day
 			AddEnvSnd(3, 0, SOUND_BANK_ENVIRONMENT, 2, 2000, -232360, -266390, -232360, -266390);
 			AddEnvSnd(3, 0, SOUND_BANK_ENVIRONMENT, 2, 2000, 252200, -119500, 252200, -119500);
-		case 5:
+		case 5:	// Havana Night
 			AddEnvSnd(1, 0, SOUND_BANK_ENVIRONMENT, 4, -3500, 324150, -363950, 339500, -323200);
 			AddEnvSnd(1, 0, SOUND_BANK_ENVIRONMENT, 4, -3500, 339500, -326600, 354100, -332600);
 
-			if (level == 5)
+			if (level == 5)	// Havana Night
 			{
 				AddEnvSnd(1, 0x10, SOUND_BANK_ENVIRONMENT, 3, -4500, -113900, -181000, -82500, -2424832);
 				AddEnvSnd(1, 0x10, SOUND_BANK_ENVIRONMENT, 3, -4500, -100700, -258250, -89500, -292600);
@@ -39,13 +39,13 @@ void AddEnvSounds(int level, int time)
 				AddEnvSnd(1, 0x10, SOUND_BANK_ENVIRONMENT, 3, -4500, -154200, -126300, -134700, -65950);
 			}
 			break;
-		case 2:
-		case 6:
+		case 2:	// Vegas Day
+		case 6:	// Vegas Night
 			AddEnvSnd(1, 0x10, SOUND_BANK_ENVIRONMENT, 1, -6000, 177100, 918100, 207600, 874100);
 			AddEnvSnd(1, 0x10, SOUND_BANK_ENVIRONMENT, 1, -6000, 17000, 785500, -598016, 985750);
 			break;
-		case 3:
-		case 7:
+		case 3:	// Rio Day
+		case 7:	// Rio Night
 			AddEnvSnd(1, 0x10, SOUND_BANK_ENVIRONMENT, 3, -5000, -330600, 156700, -199100, 73750);
 			AddEnvSnd(1, 0x10, SOUND_BANK_ENVIRONMENT, 3, -5000, -84500, 406700, 256500, 378400);
 			AddEnvSnd(1, 0x10, SOUND_BANK_ENVIRONMENT, 3, -5000, -226200, -520600, 32300, -533400);
