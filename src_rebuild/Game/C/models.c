@@ -293,14 +293,14 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 					D_MALLOC_END();
 
 					gCarCleanModelPtr[i] = model;
-					buildNewCarFromModel(i, 0, mem, model);
+					buildNewCarFromModel(i, 1, mem, model);
 					cleanOfs = -1; // skip loading
 				}
 
 				if (mem = LoadCarModelFromFile(NULL, model_number, CAR_MODEL_DAMAGED))
 				{
 					D_MALLOC_BEGIN();
-					model = GetCarModel(mem, (char**)&mallocptr, 1);
+					model = GetCarModel(mem, (char**)&mallocptr, 0);
 					D_MALLOC_END();
 
 					gCarDamModelPtr[i] = model;
