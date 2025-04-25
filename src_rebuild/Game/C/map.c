@@ -455,9 +455,15 @@ void GetVisSetAtPosition(VECTOR *pos, char *tgt, int *ccx, int *ccz)
 {
 	int cx, cz;
 	int rx, rz;
+	int barrel_region_x, barrel_region_z;
 
 	cx = (pos->vx + units_across_halved) / MAP_CELL_SIZE;
 	cz = (pos->vz + units_down_halved) / MAP_CELL_SIZE;
+
+	if (*ccx == cx && *ccz == cz)
+	{
+		return;
+	}
 
 	*ccx = cx;
 	*ccz = cz;
@@ -465,8 +471,8 @@ void GetVisSetAtPosition(VECTOR *pos, char *tgt, int *ccx, int *ccz)
 	rx = cx / MAP_REGION_SIZE;
 	rz = cz / MAP_REGION_SIZE;
 
-	int barrel_region_x = (rx & 1);
-	int barrel_region_z = (rz & 1);
+	barrel_region_x = (rx & 1);
+	barrel_region_z = (rz & 1);
 
 	GetPVSRegionCell2(
 		barrel_region_x + barrel_region_z * 2,
@@ -509,9 +515,7 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 		int ni;
 		int sym;
 
-		ni = nybblearray[i];
-		i++;
-
+		ni = nybblearray[i++];
 		if (ni < 12)
 		{
 			symIndex = ni * 2;
@@ -520,30 +524,24 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 		}
 		else
 		{
-			if (i == sz*2)
+			if (i == sz * 2)
 				break;
 
-			sym = (ni & 3) * 16 + nybblearray[i];
-			i++;
-
+			sym = (ni & 3) * 16 + nybblearray[i++];
 			if (sym < 60)
 			{
 				symIndex = sym * 2 + 24;
 				goto spod;
 			}
 
-			sym = ((sym & 3) * 16 + nybblearray[i]) * 16 + nybblearray[i+1];
-			i += 2;
+			sym = ((sym & 3) * 16 + nybblearray[i++]) * 16 + nybblearray[i++ + 1];
 		}
 
 		pixelIndex += (sym >> 1);
-		decodebuf[pixelIndex] = 1;
-		pixelIndex++;
-
+		decodebuf[pixelIndex++] = 1;
 		if ((sym & 1) != 0)
 		{
-			decodebuf[pixelIndex] = 1;
-			pixelIndex++;
+			decodebuf[pixelIndex++] = 1;
 		}
 	}
 
@@ -551,36 +549,23 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 		decodebuf[pvs_square_sq-1] ^= 1;
 
 	size = pvs_square - 2;
-	
 	op = (decodebuf - 1) + (size * pvs_square + pvs_square);
-	i = size;
-	while (i >= 0) 
+	for (i = size; i >= 0; --i)
 	{
-		i--;
-		j = pvs_square;
-		while (j > 0)
+		for (j = pvs_square; j > 0; --j, --op)
 		{
 			*op = *op ^ op[pvs_square];
-			j--;
-			op--;
 		}
 	}
 
 	size = pvs_square - 1;
 	op = (decodebuf - 2) + (size * pvs_square + pvs_square);
-
-	i = size;
-	while (i >= 0) 
+	for (i = size; i >= 0; --i, --op)
 	{
-		j = pvs_square-2;
-		while (j >= 0) 
+		for (j = pvs_square - 2; j >= 0; --j, --op)
 		{
 			*op = *op ^ op[1];
-			j--;
-			op--;
 		}
-		i--;
-		op--;
 	}
 
 #if 0

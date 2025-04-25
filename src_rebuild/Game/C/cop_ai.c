@@ -766,7 +766,9 @@ void ControlCopDetection(void)
 	int dx, dz;
 	CAR_DATA *cp;
 	VECTOR vec;
-	int ccx, ccz;
+
+	static int ccx = 0;
+	static int ccz = 0;
 
 	vec.vx = player[0].pos[0];
 	vec.vy = player[0].pos[1];
