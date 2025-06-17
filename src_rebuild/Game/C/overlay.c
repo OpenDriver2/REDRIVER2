@@ -551,6 +551,7 @@ void DrawDrivingGameOverlays(void)
 			x = PrintString(G_LTXT(GTXT_Best), gOverlayXPos, 60);
 			PrintScoreTableTime(x + 3, 60, table->time);
 			break;
+
 		case GAME_CHECKPOINT:
 
 			if (NumPlayers == 1)
@@ -578,6 +579,7 @@ void DrawDrivingGameOverlays(void)
 			}
 
 			break;
+
 		case GAME_GATERACE:
 
 			if (NumPlayers == 1)
@@ -591,7 +593,7 @@ void DrawDrivingGameOverlays(void)
 				x = PrintString(G_LTXT(GTXT_Best), gOverlayXPos, 36);
 				PrintScoreTableTime(x + 3, 36, table->time);
 
-				sprintf(string, table->items != -1 ? "%s: %d" : "%s: -", G_LTXT(GTXT_Gates), table->items);
+				sprintf(string, (table->items != -1) ? "%s: %d" : "%s: -", G_LTXT(GTXT_Gates), table->items);
 				PrintString(string, gOverlayXPos, 52);
 			}
 			else
@@ -605,9 +607,10 @@ void DrawDrivingGameOverlays(void)
 				sprintf(string, "%d / %d", gPlayerScore.P2items, 100);
 				PrintString(string, x + 3, SCREEN_H / 2 + 22);
 			}
-			break;
-		case GAME_TRAILBLAZER:
 
+			break;
+
+		case GAME_TRAILBLAZER:
 			table = &ScoreTables.TrailblazerTable[GameLevel][gSubGameNumber][0];
 			x = PrintStringRightAligned(G_LTXT(GTXT_Cone), gOverlayXOppPos + 55, 16);
 
@@ -617,24 +620,26 @@ void DrawDrivingGameOverlays(void)
 			x = PrintString(G_LTXT(GTXT_Best), gOverlayXPos, 36);
 			PrintScoreTableTime(x + 3, 36, table->time);
 
-			sprintf(string, table->items != -1 ? "%s: %d" : "%s: -", G_LTXT(GTXT_Cones), table->items);
+			sprintf(string, (table->items != -1) ? "%s: %d" : "%s: -", G_LTXT(GTXT_Cones), table->items);
 			PrintString(string, gOverlayXPos, 52);
-
 			break;
+
 		case GAME_SURVIVAL:
 			table = &ScoreTables.SurvivalTable[GameLevel][gSubGameNumber][0];
 			x = PrintString(G_LTXT(GTXT_Best), gOverlayXPos, 36);
 			PrintScoreTableTime(x + 3, 36, table->time);
 			break;
+
 		case GAME_CAPTURETHEFLAG:
 			x = PrintString(G_LTXT(GTXT_Flags), gOverlayXPos, 16);
 			sprintf(string, "%d", gPlayerScore.items);
 			PrintString(string, x + 3, 16);
 
-			x = PrintString(G_LTXT(GTXT_Flags), gOverlayXPos, 132);
+			x = PrintString(G_LTXT(GTXT_Flags), gOverlayXPos, SCREEN_H / 2 + 12);
 			sprintf(string, "%d", gPlayerScore.P2items);
-			PrintString(string, x + 3, SCREEN_H / 2 + 4);
+			PrintString(string, x + 3, SCREEN_H / 2 + 12);
 			break;
+
 		case GAME_SECRET:
 			y = 36;
 
@@ -662,6 +667,7 @@ void DrawDrivingGameOverlays(void)
 					y += 16;
 				}
 			}
+
 			break;
 	}
 }

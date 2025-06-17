@@ -169,10 +169,12 @@ void State_GameStart(void* param)
 	switch (GameType)
 	{
 		case GAME_MISSION:
+		{
 			RunMissionLadder(1);
 			break;
+		}
 		case GAME_TAKEADRIVE:
-
+		{
 			if (NumPlayers == 1)
 				gCurrentMissionNumber = 50;
 			else
@@ -181,9 +183,10 @@ void State_GameStart(void* param)
 			gCurrentMissionNumber += GameLevel * 2 + gWantNight + gSubGameNumber * 440;
 
 			SetState(STATE_GAMELAUNCH);
-
 			break;
+		}
 		case GAME_IDLEDEMO:
+		{
 			if (LoadAttractReplay(gCurrentMissionNumber))
 			{
 				gVibration = 0;
@@ -192,44 +195,55 @@ void State_GameStart(void* param)
 
 				SetState(STATE_GAMELAUNCH);
 			}
-
 			break;
+		}
 		case GAME_PURSUIT:
+		{
 			gCurrentMissionNumber = 70 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
-			SetState(STATE_GAMELAUNCH);
 
+			SetState(STATE_GAMELAUNCH);
 			break;
+		}
 		case GAME_GETAWAY:
+		{
 			gCurrentMissionNumber = 102 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
-			SetState(STATE_GAMELAUNCH);
 
+			SetState(STATE_GAMELAUNCH);
 			break;
+		}
 		case GAME_GATERACE:
+		{
 			if (NumPlayers == 1)
 				gCurrentMissionNumber = 134;
 			else
 				gCurrentMissionNumber = 164;
 
 			gCurrentMissionNumber += GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
-			SetState(STATE_GAMELAUNCH);
 
+			SetState(STATE_GAMELAUNCH);
 			break;
+		}
 		case GAME_CHECKPOINT:
+		{
 			if (NumPlayers == 1)
 				gCurrentMissionNumber = 196;
 			else
 				gCurrentMissionNumber = 228;
 
 			gCurrentMissionNumber += GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
-			SetState(STATE_GAMELAUNCH);
 
+			SetState(STATE_GAMELAUNCH);
 			break;
+		}
 		case GAME_TRAILBLAZER:
+		{
 			gCurrentMissionNumber = GameLevel * 8 + 260 + gWantNight * 4 + gSubGameNumber;
-			SetState(STATE_GAMELAUNCH);
 
+			SetState(STATE_GAMELAUNCH);
 			break;
+		}
 		case GAME_SURVIVAL:
+		{
 			gCopDifficultyLevel = 2;
 
 			if (NumPlayers == 1)
@@ -241,48 +255,59 @@ void State_GameStart(void* param)
 
 			SetState(STATE_GAMELAUNCH);
 			break;
+		}
 		case GAME_REPLAYMISSION:
+		{
 			GameType = GAME_MISSION;
 
 			if (FindMissionLadderPos(gCurrentMissionNumber))
 				RunMissionLadder(0);
 
 			//GameType = GAME_REPLAYMISSION;
-
 			break;
+		}
 		case GAME_COPSANDROBBERS:
+		{
 			gCurrentMissionNumber = 420 + GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
-			SetState(STATE_GAMELAUNCH);
 
+			SetState(STATE_GAMELAUNCH);
 			break;
+		}
 		case GAME_CAPTURETHEFLAG:
+		{
 			gCurrentMissionNumber = 352 + GameLevel * 8 + gSubGameNumber;
-			SetState(STATE_GAMELAUNCH);
 
+			SetState(STATE_GAMELAUNCH);
 			break;
+		}
 		case GAME_SECRET:
+		{
 			if (NumPlayers == 1)
 				gCurrentMissionNumber = 480;
 			else
 				gCurrentMissionNumber = 484;
 
 			gCurrentMissionNumber += gWantNight + gSubGameNumber;
+
 			SetState(STATE_GAMELAUNCH);
-
 			break;
+		}
 		case GAME_CONTINUEMISSION:
+		{
 			GameType = GAME_MISSION;
-			RunMissionLadder(0);
 
+			RunMissionLadder(0);
 			break;
+		}
 		case GAME_LOADEDREPLAY:
+		{
 			CurrentGameMode = GAMEMODE_DIRECTOR;
 			gLoadedReplay = 1;
 			GameType = StoredGameType;
 
 			SetState(STATE_GAMELAUNCH);
-
 			break;
+		}
 	}
 }
 
