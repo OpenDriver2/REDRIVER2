@@ -384,6 +384,18 @@ void DrawMultiplayerTarget(MS_TARGET *target)
 				{
 					if(gPlayerWithTheFlag != -1)
 					{
+						if (gPlayerWithTheFlag == 1)
+						{
+							r = 0;
+							g = 128;
+							b = 0;
+						}
+						else
+						{
+							r = 128;
+							g = 0;
+							b = 0;
+						}
 						tv.vx = player[gPlayerWithTheFlag].pos[0];
 						tv.vz = player[gPlayerWithTheFlag].pos[2];
 					}
