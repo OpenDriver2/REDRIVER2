@@ -68,7 +68,7 @@
 
 #endif // PSX
 
-#define D_CHECK_ERROR(expr, message) if(expr){ printError("%s - %s\n", FUNCNAME, message); while (FrameCnt != 0x78654321) trap(0x400); }
+#define D_CHECK_ERROR(expr, message) if (expr){ printError("%s - %s\n", FUNCNAME, message); while (FrameCnt != 0x78654321) trap(0x400); }
 
 #include "reversing.h"
 

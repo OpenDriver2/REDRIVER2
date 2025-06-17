@@ -186,7 +186,6 @@ void ConvertTorqueToAngularAcceleration(CAR_DATA* cp, CAR_LOCALS* cl)
 	}
 }
 
-
 // [D] [T]
 void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 {
@@ -323,7 +322,7 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 			if (ABS(newCompression - oldCompression) > 12 && (i & 1U) != 0)
 			{
 				chan = GetFreeChannel(0);
-				if(chan > -1)
+				if (chan > -1)
 				{
 					if (NumPlayers > 1 && NoPlayerControl == 0)
 						SetPlayerOwnsChannel(chan, player_id);
@@ -412,7 +411,7 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 				if (slidevel < -12500)
 					slidevel = -12500;
 			}
-			
+
 			if ((i & 1U) != 0)
 			{
 				// rear wheels
@@ -438,13 +437,13 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 			{
 				// front wheels
 				sidevel = frontFS * slidevel + 2048 >> 12;
-				
+
 				if (wheel->locked)
 				{
 					sidevel = (frontFS * slidevel + 2048 >> 13) + sidevel >> 1;
-					
+
 					forcefac = FixHalfRound(FIXEDH(-sidevel * lfx) * sdz - FIXEDH(-sidevel * lfz) * sdx, 11);
-					
+
 					force.vx = forcefac * sdz;
 					force.vz = -forcefac * sdx;
 				}
@@ -505,7 +504,7 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 			cp->hd.acc[0] += force.vx;
 			cp->hd.acc[1] += force.vy;
 			cp->hd.acc[2] += force.vz;
-	
+
 			cp->hd.aacc[0] += FIXEDH(wheelPos[1] * force.vz - wheelPos[2] * force.vy);
 			cp->hd.aacc[1] += FIXEDH(wheelPos[2] * force.vx - wheelPos[0] * force.vz);
 			cp->hd.aacc[2] += FIXEDH(wheelPos[0] * force.vy - wheelPos[1] * force.vx);
@@ -564,7 +563,7 @@ void StepOneCar(CAR_DATA* cp)
 	{
 		_cl.vel[i] = cp->st.n.linearVelocity[i];
 		_cl.avel[i] = cp->st.n.angularVelocity[i];
-		
+
 		cp->st.n.fposition[i] = (cp->st.n.fposition[i] & 0xF) + cp->hd.where.t[i] * 16;
 	}
 
@@ -593,7 +592,7 @@ void StepOneCar(CAR_DATA* cp)
 
 	if (cp->hd.where.m[1][1] > 2048)
 	{
-		if(cp->controlType == CONTROL_TYPE_CIV_AI)
+		if (cp->controlType == CONTROL_TYPE_CIV_AI)
 			count = (cp->totalDamage != 0) * 4;
 		else
 			count = 4;

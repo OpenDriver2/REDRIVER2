@@ -1,7 +1,6 @@
 #ifndef RNDRASM_H
 #define RNDRASM_H
 
-
 extern void SetCameraVector(); // 0x0001BCD4
 
 extern void Apply_Inv_CameraMatrix(VECTOR* v); // 0x0001BCFC
@@ -12,6 +11,4 @@ extern int FrustrumCheck16(PACKED_CELL_OBJECT* pcop, int bounding_sphere); // 0x
 
 extern int FrustrumCheck(VECTOR* pos, int bounding_sphere); // 0x0001BDEC
 
-
-
-#endif
+#endif // RNDRASM_H

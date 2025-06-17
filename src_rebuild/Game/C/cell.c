@@ -38,26 +38,26 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 		// [A] don't draw loading region
 		if (loading_region[index] != -1)
 			return NULL;
-		
+
 		if (RoadMapRegions[index] != (cellx / MAP_REGION_SIZE) + (cellz / MAP_REGION_SIZE) * (cells_across / MAP_REGION_SIZE))
 			return NULL;
 	}
 
-	cbr = (cellz % MAP_REGION_SIZE) * MAP_REGION_SIZE + index * (MAP_REGION_SIZE*MAP_REGION_SIZE) + (cellx % MAP_REGION_SIZE);
-	
+	cbr = (cellz % MAP_REGION_SIZE) * MAP_REGION_SIZE + index * (MAP_REGION_SIZE * MAP_REGION_SIZE) + (cellx % MAP_REGION_SIZE);
+
 	ptr = cell_ptrs[cbr];
-	
+
 	if (ptr == 0xffff)
 		return NULL;
 
 	cell = &cells[ptr];
 
-	if (level == -1) 
+	if (level == -1)
 	{
 		if (cell->num & 0x4000)
 			return NULL;
 	}
-	else 
+	else
 	{
 		/*
 			Data looks like this:
@@ -89,7 +89,7 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 	num = cell->num & 16383;
 	ppco = &cell_objects[num];
 
-	if (ppco->value == 0xffff && (ppco->pos.vy & 1)) 
+	if (ppco->value == 0xffff && (ppco->pos.vy & 1))
 	{
 		ppco = GetNextPackedCop(pci);
 	}
@@ -113,7 +113,6 @@ PACKED_CELL_OBJECT * GetFirstPackedCop(int cellx, int cellz, CELL_ITERATOR *pci,
 	return ppco;
 }
 
-
 // [D] [T]
 PACKED_CELL_OBJECT* GetNextPackedCop(CELL_ITERATOR* pci)
 {
@@ -123,7 +122,7 @@ PACKED_CELL_OBJECT* GetNextPackedCop(CELL_ITERATOR* pci)
 	CELL_DATA* celld;
 
 	celld = pci->pcd;
-	
+
 	do {
 		do {
 			if (celld->num & 0x8000)	// end of cell objects?
@@ -138,7 +137,7 @@ PACKED_CELL_OBJECT* GetNextPackedCop(CELL_ITERATOR* pci)
 			num &= 16383;
 			ppco = &cell_objects[num];
 		} while (ppco->value == 0xffff && (ppco->pos.vy & 1));
-		
+
 		if (!pci->use_computed)
 			break;
 
@@ -155,7 +154,6 @@ PACKED_CELL_OBJECT* GetNextPackedCop(CELL_ITERATOR* pci)
 
 	return ppco;
 }
-
 
 // [D] [T]
 CELL_OBJECT* UnpackCellObject(PACKED_CELL_OBJECT* ppco, XZPAIR* near)

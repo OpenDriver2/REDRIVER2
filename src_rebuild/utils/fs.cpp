@@ -56,8 +56,8 @@ char* strreplace(char** str, char* dst, char* replace)
 	char* start, * tmp;
 	int n;
 
-	if ((start = strstr(*str, dst)) == 0) 
-		return(0);
+	if ((start = strstr(*str, dst)) == 0)
+		return (0);
 
 	n = (start - *str) + strlen(start + strlen(dst)) + strlen(replace) + 1;
 
@@ -148,7 +148,7 @@ void FS_FindClose(FS_FINDDATA* findData)
 		return;
 
 #ifdef _WIN32
-	if(findData->fileHandle = INVALID_HANDLE_VALUE)
+	if (findData->fileHandle = INVALID_HANDLE_VALUE)
 		FindClose(findData->fileHandle);
 #else
 	if (findData->index >= 0)

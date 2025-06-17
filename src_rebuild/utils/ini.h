@@ -25,4 +25,4 @@ int         ini_sget(ini_t *ini, const char *section, const char *key, const cha
 }
 #endif
 
-#endif
+#endif // INI_H

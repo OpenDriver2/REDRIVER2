@@ -26,5 +26,4 @@ extern void ControlMenu();
 
 void SaveReplay(int direction);
 
-
-#endif
+#endif // PAUSE_H

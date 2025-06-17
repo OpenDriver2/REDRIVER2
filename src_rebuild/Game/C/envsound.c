@@ -8,7 +8,7 @@ void AddEnvSounds(int level, int time)
 	if (time == 3)
 		level += 4;
 
-	switch (level) 
+	switch (level)
 	{
 		case 0:	// Chicago Day
 			AddEnvSnd(1, 0, SOUND_BANK_ENVIRONMENT, 2, 0, -225275, 674800, -207350, 657910);
@@ -75,8 +75,3 @@ void AddEnvSounds(int level, int time)
 			break;
 	}
 }
-
-
-
-
-

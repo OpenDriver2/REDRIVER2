@@ -89,7 +89,7 @@ void InitCopState(CAR_DATA *cp, char *extraData)
 
 	if (gCopDifficultyLevel == 0)
 		cp->hndType = 2;
-	else if (gCopDifficultyLevel == 1) 
+	else if (gCopDifficultyLevel == 1)
 		cp->hndType = 3;
 	else
 		cp->hndType = 4;
@@ -99,7 +99,6 @@ int ReplayLog_Fnarr_He_Said_Log(int val)
 {
 	return 0;
 }
-
 
 // [D] [T]
 int FindCost(int x, int z, int dvx, int dvz)
@@ -208,7 +207,7 @@ void WibbleDownTheRoad(VECTOR *from, int distance, VECTOR *to)
 	to->vz = pos.vz;
 	to->pad = pos.pad;
 
-	if (((thl[3] - thl[0]) + 200U & 0xfff) < 400) 
+	if (((thl[3] - thl[0]) + 200U & 0xfff) < 400)
 	{
 		pathStraight = 1;
 	}
@@ -283,7 +282,7 @@ void InitCops(void)
 	gCopData.autoMaxPowerScaleLimit = 0;
 	gCopData.autoDesiredSpeedScaleLimit = 0;
 
-	if (GameType == GAME_GETAWAY) 
+	if (GameType == GAME_GETAWAY)
 	{
 		gCopRespawnTime = 10000;
 	}
@@ -292,7 +291,7 @@ void InitCops(void)
 		gCopRespawnTime = 0;
 		gCopDesiredSpeedScale = 4596;
 		gCopMaxPowerScale = 4596;
-	
+
 		gCopData.autoMaxPowerScaleLimit = 1024;
 		gCopData.autoDesiredSpeedScaleLimit = 1024;
 	}
@@ -315,7 +314,6 @@ void InitCops(void)
 	CarTail.vy = 0;
 	CarTail.vz = 0;
 
-	
 	lastKnownPosition.vx = INT_MAX;
 	lastKnownPosition.vy = INT_MAX;
 	lastKnownPosition.vz = INT_MAX;
@@ -325,7 +323,7 @@ void InitCops(void)
 	copsAreInPursuit = 0;
 }
 
-VECTOR targetPoint = { 0,0,0 };
+VECTOR targetPoint = { 0, 0, 0 };
 
 // [D] [T]
 void CopControl1(CAR_DATA *cp)
@@ -371,7 +369,7 @@ void CopControl1(CAR_DATA *cp)
 
 	// [A] new cop batter logic
 	// survival setting really
-	if(gBatterPlayer)
+	if (gBatterPlayer)
 		doBatter = 1;
 	else
 		doBatter = 0;
@@ -382,7 +380,7 @@ void CopControl1(CAR_DATA *cp)
 #if ENABLE_GAME_ENCHANCEMENTS
 		int batterTrigger;
 
-		if(gCopDifficultyLevel == 0)
+		if (gCopDifficultyLevel == 0)
 			batterTrigger = 80;
 		else if (gCopDifficultyLevel == 1)
 			batterTrigger = 50;
@@ -391,7 +389,7 @@ void CopControl1(CAR_DATA *cp)
 
 		if (cp->ai.p.batterTimer > batterTrigger)
 			doBatter = 1;
-		
+
 		cp->ai.p.batterTimer++;
 		cp->ai.p.batterTimer &= 127;
 #else
@@ -399,7 +397,7 @@ void CopControl1(CAR_DATA *cp)
 #endif
 	}
 
-	if (cp->ai.p.dying != 0 || 
+	if (cp->ai.p.dying != 0 ||
 		cp->totalDamage > 27000 && gCopData.immortal == 0)
 	{
 		cp->thrust = 0;
@@ -419,7 +417,7 @@ void CopControl1(CAR_DATA *cp)
 		dx = ABS(cp->hd.where.t[0] - gStopCops.pos.vx);
 		dz = ABS(cp->hd.where.t[2] - gStopCops.pos.vz);
 
-		if (dx + dz < gStopCops.radius * 3 / 2 && 
+		if (dx + dz < gStopCops.radius * 3 / 2 &&
 			SquareRoot0(dx * dx + dz * dz) < gStopCops.radius)
 		{
 			cp->thrust = 0;
@@ -505,11 +503,11 @@ void CopControl1(CAR_DATA *cp)
 
 	dvx = targetVehicle->st.n.linearVelocity[0] - cp->st.n.linearVelocity[0];
 	dvz = targetVehicle->st.n.linearVelocity[2] - cp->st.n.linearVelocity[2];
-	
+
 	dist = FindCost(x, z, dvx, dvz);
 
 	cp->ai.p.close_pursuit = (dist < 2800);
-	
+
 	targetFound = 0;
 
 	if (cp->ai.p.recoveryTimer < 1)
@@ -517,13 +515,13 @@ void CopControl1(CAR_DATA *cp)
 		if (dist < 8400)
 		{
 			int dd;
-			
+
 			dx = x - targetVehicle->hd.where.t[0];
 			dz = targetVehicle->hd.where.t[2] - z;
-			
+
 			idvx = FIXEDH(dvx);
 			idvz = FIXEDH(dvz);
-			
+
 			dd = (dx * idvx - dz * idvz) / (idvx * idvx + idvz * idvz + 1);
 
 			if (doBatter == 0)
@@ -531,7 +529,7 @@ void CopControl1(CAR_DATA *cp)
 
 			if (dd < 0)
 				dd = 0;
-			else if (dd > 60) 
+			else if (dd > 60)
 				dd = 60;
 
 			dvz = targetVehicle->hd.where.t[0] + FIXEDH(targetVehicle->st.n.linearVelocity[0] * dd);
@@ -542,23 +540,23 @@ void CopControl1(CAR_DATA *cp)
 				CarTail.vx = dvz - (targetVehicle->hd.where.m[0][2] * 5 >> 7);
 				CarTail.vz = dvx - (targetVehicle->hd.where.m[2][2] * 5 >> 7);
 			}
-			else 
+			else
 			{
 				CarTail.vx = dvz + (targetVehicle->hd.where.m[0][0] * 5 >> 8);
 				CarTail.vz = dvx + (targetVehicle->hd.where.m[2][0] * 5 >> 8);
 			}
 		}
-		else 
+		else
 		{
 			CarTail.vx = targetVehicle->hd.where.t[0];
 			CarTail.vz = targetVehicle->hd.where.t[2];
 		}
 
-		if (cp->ai.p.close_pursuit == 0) 
+		if (cp->ai.p.close_pursuit == 0)
 		{
 			WibbleDownTheRoad((VECTOR*)cp->hd.where.t, cp->hd.speed * 10 + 680, &targetPoint);
 		}
-		else 
+		else
 		{
 			targetPoint.vx = CarTail.vx;
 			targetPoint.vz = CarTail.vz;
@@ -587,42 +585,42 @@ void CopControl1(CAR_DATA *cp)
 		cp->ai.p.targetHistory[0].vx = targetPoint.vx;
 		cp->ai.p.targetHistory[0].vz = targetPoint.vz;
 	}
-	else 
+	else
 	{
 		cp->ai.p.recoveryTimer--;
 	}
 
-	//if (gTimeInWater == 0) 
+	//if (gTimeInWater == 0)
 	//	targetFound = 0;
 
-	if (targetFound) 
+	if (targetFound)
 	{
 		slidevel = FIXEDH(cp->hd.where.m[0][0] * cp->st.n.linearVelocity[0] + cp->hd.where.m[2][0] * cp->st.n.linearVelocity[2]);
 
 		path[1].t = dvx = FIXEDH((x - targetPoint.vx) * cp->hd.where.m[2][0] + (targetPoint.vz - z) * cp->hd.where.m[0][0]);
 		path[1].n = steeringFac = FIXEDH((targetPoint.vx - x) * cp->hd.where.m[0][0] + (targetPoint.vz - z) * cp->hd.where.m[2][0]) - slidevel / 140;
 
-		if (path[1].n < 1) 
+		if (path[1].n < 1)
 		{
 			if (path[1].n * -2 >= path[1].t || cp->ai.p.frontLClear == 0)
 			{
 				targetZone = zoneLeft;
 				targetFound = -path[1].n < (path[1].t << 2);
 
-				if (targetFound && cp->ai.p.close_pursuit != 0) 
+				if (targetFound && cp->ai.p.close_pursuit != 0)
 					targetZone = zoneBack;
 			}
 			else
 				targetZone = zoneFrnt;
 		}
-		else 
+		else
 		{
-			if (path[1].n * 2 >= path[1].t || cp->ai.p.frontRClear == 0) 
+			if (path[1].n * 2 >= path[1].t || cp->ai.p.frontRClear == 0)
 			{
 				targetZone = zoneRght;
 				targetFound = path[1].n < (path[1].t << 2);
-				
-				if (targetFound && cp->ai.p.close_pursuit != 0) 
+
+				if (targetFound && cp->ai.p.close_pursuit != 0)
 					targetZone = zoneBack;
 			}
 			else
@@ -632,7 +630,7 @@ void CopControl1(CAR_DATA *cp)
 		steerDif = path[1].n + slidevel / 140;
 
 		if (targetZone == zoneFrnt)
-		{			
+		{
 			if (pathStraight == 0)
 				cp->ai.p.desiredSpeed = speed1[gCopDifficultyLevel];
 			else
@@ -648,7 +646,7 @@ void CopControl1(CAR_DATA *cp)
 			if ((gPuppyDogCop || player[0].playerType == 2) && cp->ai.p.close_pursuit)
 			{
 				plcrspd = targetVehicle->hd.speed + 10;
-				
+
 				if (dist > 4000)
 				{
 					speedDif = (cp->ai.p.desiredSpeed - plcrspd) * (dist - 4000);
@@ -665,8 +663,8 @@ void CopControl1(CAR_DATA *cp)
 		else if (targetZone == zoneBack)
 		{
 			cp->ai.p.desiredSpeed = -70;
-			
-			if ((steerDif ^ currentSpeed) < 0) 
+
+			if ((steerDif ^ currentSpeed) < 0)
 				desiredSteerAngle = -284;
 			else
 				desiredSteerAngle = 284;
@@ -679,7 +677,7 @@ void CopControl1(CAR_DATA *cp)
 			{
 				cp->ai.p.desiredSpeed = -120;
 			}
-			else if ((targetZone == zoneLeft && cp->st.n.angularVelocity[1] > -130) || 
+			else if ((targetZone == zoneLeft && cp->st.n.angularVelocity[1] > -130) ||
 					 (targetZone == zoneRght && cp->st.n.angularVelocity[1] < 130))
 			{
 				cp->wheelspin = 1;
@@ -691,7 +689,7 @@ void CopControl1(CAR_DATA *cp)
 				desiredSteerAngle = 512;
 		}
 	}
-	else if (cp->ai.p.recoveryTimer < 1) 
+	else if (cp->ai.p.recoveryTimer < 1)
 	{
 		cp->ai.p.desiredSpeed = 0;
 		desiredSteerAngle = 0;
@@ -729,7 +727,7 @@ void CopControl1(CAR_DATA *cp)
 	else
 		cp->thrust = (currentSpeed * maxPower) / 50;
 
-	if (cp->hd.speed < 48) 
+	if (cp->hd.speed < 48)
 		cp->thrust = (cp->thrust * (cp->hd.speed + 80) >> 7);
 
 	if (handlingType[cp->hndType].fourWheelDrive == 1)
@@ -778,7 +776,7 @@ void ControlCopDetection(void)
 
 	UpdateCopSightData();
 
-	if (player_position_known < 1) 
+	if (player_position_known < 1)
 		player_position_known = 1;
 	else
 		player_position_known = 2;
@@ -794,7 +792,7 @@ void ControlCopDetection(void)
 		dz = ABS(roadblockLoc.vz - vec.vz) >> 8;
 
 		distanceToPlayer = dx * dx + dz * dz;
-		
+
 		if (distanceToPlayer < 1640 &&
 			newPositionVisible(&roadblockLoc, CopWorkMem, ccx, ccz) != 0)
 		{
@@ -807,11 +805,11 @@ void ControlCopDetection(void)
 
 	if (!CopsCanSeePlayer && !((gCurrentMissionNumber == 24 || gCurrentMissionNumber == 30) && CameraCnt-frameStart < 100))
 	{
-		cp = &car_data[MAX_CARS-1];
+		cp = &car_data[MAX_CARS - 1];
 
 		while (car_data <= cp)
 		{
-			if (cp->controlType == CONTROL_TYPE_PURSUER_AI && cp->ai.p.dying == 0 || 
+			if (cp->controlType == CONTROL_TYPE_PURSUER_AI && cp->ai.p.dying == 0 ||
 				(cp->controlFlags & CONTROL_FLAG_COP))
 			{
 				dx = ABS(cp->hd.where.t[0] - vec.vx) >> 8;
@@ -826,7 +824,7 @@ void ControlCopDetection(void)
 				{
 					cp->ai.p.DistanceToPlayer = distanceToPlayer;
 
-					if(cp->ai.p.close_pursuit)
+					if (cp->ai.p.close_pursuit)
 					{
 						CopsCanSeePlayer = 1;
 						break;
@@ -836,8 +834,8 @@ void ControlCopDetection(void)
 				if (newPositionVisible(&vec, CopWorkMem, ccx, ccz) )
 				{
 					spotted = false;
-					
-					if (distanceToPlayer < copSightData.surroundViewDistance) 
+
+					if (distanceToPlayer < copSightData.surroundViewDistance)
 					{
 						spotted = true;
 					}
@@ -849,8 +847,8 @@ void ControlCopDetection(void)
 						dx = vec.vz - cp->hd.where.t[2];
 
 						theta = ABS(ratan2(dz, dx) - cp->hd.direction);
-						
-						if (theta < copSightData.frontViewAngle || 
+
+						if (theta < copSightData.frontViewAngle ||
 							(theta + 512 & 0xfff) < copSightData.frontViewAngle + 512)
 						{
 							spotted = true;
@@ -858,11 +856,11 @@ void ControlCopDetection(void)
 					}
 
 					// [A] also check player elevation from cops (block cops vision from bridges, tunnels etc)
-					if (spotted 
+					if (spotted
 #if ENABLE_GAME_ENCHANCEMENTS
 						&& ABS(cp->hd.where.t[1] - vec.vy) < 1000
 #endif
-						) 
+						)
 					{
 						CopsCanSeePlayer = 1;
 						break;
@@ -875,16 +873,16 @@ void ControlCopDetection(void)
 
 #if ENABLE_GAME_ENCHANCEMENTS
 	// [A] if Tanner is outside car, cops can arrest him if they are too close
-	if(player[0].playerType == 2 && minDistanceToPlayer < 2048 && !player[0].dying && pedestrianFelony > FELONY_PURSUIT_MIN_VALUE)
+	if (player[0].playerType == 2 && minDistanceToPlayer < 2048 && !player[0].dying && pedestrianFelony > FELONY_PURSUIT_MIN_VALUE)
 	{
 		player[0].dying = 1;
-		
-		SetMissionMessage(G_LTXT(GTXT_YouveBeenCaught),3,2);
+
+		SetMissionMessage(G_LTXT(GTXT_YouveBeenCaught), 3, 2);
 		SetMissionFailed(FAILED_MESSAGESET);
 	}
 #endif
 
-	if (numActiveCops == 0 && OutOfSightCount < 256 && CameraCnt > 8) 
+	if (numActiveCops == 0 && OutOfSightCount < 256 && CameraCnt > 8)
 	{
 		OutOfSightCount = 256;
 	}
@@ -892,11 +890,11 @@ void ControlCopDetection(void)
 	// if cops can't see player - get out of pursued state
 	if (!CopsCanSeePlayer)
 	{
-		if (OutOfSightCount <= 255) 
+		if (OutOfSightCount <= 255)
 		{
 			OutOfSightCount++;
 		}
-		else if (OutOfSightCount == 256) 
+		else if (OutOfSightCount == 256)
 		{
 			player_position_known = -1;
 			OutOfSightCount = 257;
@@ -907,19 +905,19 @@ void ControlCopDetection(void)
 				FunkUpDaBGMTunez(0);
 			}
 		}
-		else 
+		else
 		{
 			player_position_known = 0;
 		}
 	}
-	else 
+	else
 	{
 		OutOfSightCount = 0;
 	}
 
 	if (player_position_known < 1)
 	{
-		cp = &car_data[MAX_CARS-1];
+		cp = &car_data[MAX_CARS - 1];
 
 		do {
 			if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
@@ -941,7 +939,7 @@ void ControlCopDetection(void)
 		} while (car_data <= cp);
 	}
 
-	if (player_position_known == 1 && first_offence == 0) 
+	if (player_position_known == 1 && first_offence == 0)
 	{
 		heading = GetCarDirectionOfTravel(&car_data[player[0].playerCarId]);
 
@@ -956,7 +954,7 @@ void ControlCopDetection(void)
 	{
 		said_picked_up = 0;
 	}
-	else if (!first_offence && !said_picked_up) 
+	else if (!first_offence && !said_picked_up)
 	{
 		int rnd;
 		rnd = Random2(2);
@@ -978,7 +976,7 @@ void PassiveCopTasks(CAR_DATA *cp)
 
 	if (player[0].playerCarId < 0)
 		playerFelony = &pedestrianFelony;
-	else 
+	else
 		playerFelony = &car_data[player[0].playerCarId].felonyRating;
 
 	if (*playerFelony <= FELONY_PURSUIT_MIN_VALUE)
@@ -1012,14 +1010,14 @@ void ControlNumberOfCops(void)
 	pTrigger = gCopData.trigger;
 	numWantedCops = 0;
 
-	while( true ) 
+	while (true)
 	{
 		if (player[0].playerCarId < 0)
 			playerFelony = &pedestrianFelony;
 		else
 			playerFelony = &car_data[player[0].playerCarId].felonyRating;
 
-		if (*playerFelony < *pTrigger) 
+		if (*playerFelony < *pTrigger)
 			break;
 
 		pTrigger++;
@@ -1031,11 +1029,11 @@ void ControlNumberOfCops(void)
 
 	if (numWantedCops > maxCopCars)
 		numWantedCops = maxCopCars;
-	
+
 	if (numCopCars < numWantedCops && gDontPingInCops == 0)
 	{
 		respawnTime = gCopRespawnTime;
-		
+
 		if (Roadblock.status == 2)
 			respawnTime = Roadblock.copRespawnTime;
 
@@ -1048,13 +1046,13 @@ void ControlNumberOfCops(void)
 		return;
 	}
 
-	if (numCopCars <= numWantedCops) 
+	if (numCopCars <= numWantedCops)
 	{
 		gCopData.cutOffDistance = INT_MAX;
 		cop_respawn_timer = 0;
 		return;
 	}
-	
+
 	gCopData.cutOffDistance = INT_MAX;
 
 	do {
@@ -1063,15 +1061,15 @@ void ControlNumberOfCops(void)
 		num_closer = 0;
 
 		do {
-			if (lcp->controlType == CONTROL_TYPE_PURSUER_AI) 
+			if (lcp->controlType == CONTROL_TYPE_PURSUER_AI)
 			{
 				tempDist = lcp->ai.p.DistanceToPlayer;
-				
+
 				if (tempDist < gCopData.cutOffDistance)
 				{
-					if(cutOffDistance < tempDist)
+					if (cutOffDistance < tempDist)
 						cutOffDistance = tempDist;
-					
+
 					num_closer++;
 				}
 			}
@@ -1154,8 +1152,8 @@ void ControlCops(void)
 		// play the phrases about direction
 		if (first_offence == 0 && CopsCanSeePlayer && numActiveCops != 0)
 		{
-			if (*playerFelony > FELONY_PURSUIT_MIN_VALUE && 
-				TimeSinceLastSpeech > 720 && 
+			if (*playerFelony > FELONY_PURSUIT_MIN_VALUE &&
+				TimeSinceLastSpeech > 720 &&
 				targetVehicle->hd.speed > 20)
 			{
 				int rnd;

@@ -24,8 +24,8 @@ extern OUT_CELL_FILE_HEADER cell_header;
 
 #endif
 
-extern int cells_across; // offset 0xAA67C
-extern int cells_down; // offset 0xAA680
+extern int cells_across;
+extern int cells_down;
 
 extern int current_region;
 extern int old_region;
@@ -80,5 +80,4 @@ extern void ControlMap(); // 0x0005CC00
 extern void GetVisSetAtPosition(VECTOR *pos, char *tgt, int *ccx, int *ccz); // 0x0005D6E4
 extern void GetPVSRegionCell2(int source_region, int region, int cell, char *output); // 0x0005D224
 
-
-#endif
+#endif // MAP_H

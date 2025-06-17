@@ -123,4 +123,4 @@ extern void StopDualShockMotors(); // 0x0006BEEC
 
 extern void SetDuplicatePadData(char *buffer, int size); // 0x0006BEF4
 
-#endif
+#endif // PAD_H

@@ -19,5 +19,4 @@ extern void AddSmokingEngine(CAR_DATA *cp, int black_smoke, int WheelSpeed); // 
 extern void AddExhaustSmoke(CAR_DATA *cp, int black_smoke, int WheelSpeed);
 extern void AddFlamingEngine(CAR_DATA *cp); // 0x00030FAC
 
-
-#endif
+#endif // COSMETIC_H

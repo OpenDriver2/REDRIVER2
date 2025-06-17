@@ -21,4 +21,4 @@ extern void animate_object(CELL_OBJECT *cop, int type); // 0x00013DF8
 
 extern void animate_garage_door(); // 0x000146A4
 
-#endif
+#endif // OBJANIM_H

@@ -27,7 +27,7 @@ void ShowLoading(void)
 		return;
 
 	int col = (VERTTYPE)(++loading_bar_pos * load_steps);
-		
+
 	if (col > 120)
 		col = 120;
 
@@ -76,8 +76,8 @@ void SetupScreenFade(int start, int end, int speed)
 // [D] [T]
 void FadeGameScreen(int flag)
 {
-	static POLY_F4 poly; // offset 0x0
-	static POLY_FT4 p; // offset 0x20
+	static POLY_F4 poly;
+	static POLY_FT4 p;
 
 	bool do_fade;
 
@@ -90,7 +90,7 @@ void FadeGameScreen(int flag)
 	{
 		int val = screen_fade_value;
 
-		if (val < 0) 
+		if (val < 0)
 		{
 			val = 0;
 		}
@@ -151,7 +151,7 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 	POLY_FT3 nulls[4];
 	int fade_step;
 
-	if (effect == 1) 
+	if (effect == 1)
 		SetDispMask(0);
 
 	SetupDefDrawEnv(&load_draw, 0, 0, 320, 512);
@@ -182,9 +182,9 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 	DrawSync(0);
 
 	done = 0;
-	
+
 	tp = 320;
-	
+
 	null = nulls;
 	sprt = prims;
 
@@ -208,7 +208,7 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 		null->x2 = -1;
 		null->y2 = -1;
 		null->tpage = getTPage(1, 0, tp, 0);
-	
+
 		null++;
 		sprt++;
 
@@ -242,15 +242,15 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 
 		null++;
 		sprt++;
-		
+
 		tp += 128;
-		
+
 		i++;
 	}
 
 #define FADE_STEP 2
 
-	if (effect == 1) 
+	if (effect == 1)
 	{
 		fade = 8;
 		fade_step = FADE_STEP;
@@ -271,7 +271,7 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 
 		if (i == 2)
 			SetDispMask(1);
-	
+
 		i++;
 
 		for (j = 0; j < 4; j++)
@@ -286,13 +286,13 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 			DrawPrim(&nulls[j]);
 			DrawPrim(&prims[j]);
 		}
-		
+
 		DrawSync(0);
 
 		// [A]
-		if(gFastLoadingScreens == 0)
+		if (gFastLoadingScreens == 0)
 			VSync(0);
-	
+
 #ifndef PSX
 		PsyX_EndScene();
 #endif
@@ -301,28 +301,27 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 		PutDrawEnv(&load_draw);
 
 		fade += fade_step;
-		
-		if (effect == 1) 
+
+		if (effect == 1)
 		{
 			if (fade > 127)
 				done = 1;
 		}
 		else if (effect == 2)
 		{
-			if(fade < 0)
+			if (fade < 0)
 				done = 1;
 		}
-	
+
 	} while (!done);
 
 	load_steps = 24;
 
-	if (gInFrontend == 0) 
+	if (gInFrontend == 0)
 		load_steps = 20;
 
 	loading_bar_pos = 0;
 }
-
 
 // [D] [T]
 void CloseShutters(int speed, int width, int height)
@@ -394,10 +393,10 @@ void SetupFadePolys(void)
 // [D] [T]
 void DrawFadePoly(void)
 {
-	if (fadeVal < 0) 
+	if (fadeVal < 0)
 	{
 		bMissionTitleFade = 0;
-		
+
 		if (!gInGameCutsceneActive)
 			gStopPadReads = 0;
 
@@ -425,22 +424,22 @@ void DrawFadePoly(void)
 // [D] [T]
 void DisplayMissionTitle(void)
 {
-	if (bWantFade && CameraCnt == 1) 
+	if (bWantFade && CameraCnt == 1)
 	{
 		bWantFade = 0;
 		bMissionTitleFade = CameraCnt;
 	}
 
-	if (bMissionTitleFade && !pauseflag) 
+	if (bMissionTitleFade && !pauseflag)
 	{
 		fadeVal -= 6;
 
 		if (NoPlayerControl != 0)
 		{
-			if (fadeVal < 0) 
+			if (fadeVal < 0)
 			{
 				bMissionTitleFade = 0;
-				
+
 				if (gInGameCutsceneActive == 0)
 					gStopPadReads = 0;
 
@@ -448,9 +447,9 @@ void DisplayMissionTitle(void)
 				fadeVal = 0;
 			}
 		}
-		else 
+		else
 		{
-			if (gMissionTitle) 
+			if (gMissionTitle)
 			{
 #ifdef PSX
 				gShowMap = 1;
@@ -467,8 +466,3 @@ void DisplayMissionTitle(void)
 		}
 	}
 }
-
-
-
-
-

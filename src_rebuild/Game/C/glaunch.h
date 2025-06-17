@@ -51,5 +51,4 @@ extern int FindPrevMissionFromLadderPos(int pos); // 0x000536D8
 
 extern int FindMissionLadderPos(int mission); // 0x00053740
 
-
-#endif
+#endif // GLAUNCH_H

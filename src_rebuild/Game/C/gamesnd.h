@@ -12,12 +12,12 @@
 
 enum SoundBankIds
 {
-	SBK_ID_MENU = 0,	// frontend, alpha 1.6 used it in ingame menu as well
+	SBK_ID_MENU = 0,			// frontend, alpha 1.6 used it in ingame menu as well
 
 	SBK_ID_SFX = 1,
 	SBK_CAR_SOUNDS_START = 2,
 
-	SBK_ID_JERICHO = 19,	// jericho_in_back
+	SBK_ID_JERICHO = 19,		// jericho_in_back
 	SBK_ID_JONES = 20,
 
 	SBK_CITY_EFFECTS_START = 21,
@@ -28,26 +28,26 @@ enum SoundBankIds
 
 	// Mission banks start
 	// Jones banks
-	SBK_ID_MISSION_2 = 45,	// Chase the witness
-	SBK_ID_MISSION_3 = 46,	// Train pursuit
+	SBK_ID_MISSION_2 = 45,		// Chase the witness
+	SBK_ID_MISSION_3 = 46,		// Train pursuit
 	SBK_ID_MISSION_4 = 47,
 	SBK_ID_MISSION_10 = 48,
 
-	SBK_ID_MISSION_11 = 49,	// Hijack the truck
-	SBK_ID_MISSION_13 = 50,	// Steal the truck
-	SBK_ID_FERRY = 51,	// Escape to ferry / To the docks
-	SBK_ID_MISSION_18 = 52,	// Tail Jericho
-	SBK_ID_MISSION_22 = 53,	// Beat the train
-	SBK_ID_MISSION_23 = 54,	// Car bomb
-	SBK_ID_MISSION_24 = 55,	// Stake out
+	SBK_ID_MISSION_11 = 49,		// Hijack the truck
+	SBK_ID_MISSION_13 = 50,		// Steal the truck
+	SBK_ID_FERRY = 51,			// Escape to ferry / To the docks
+	SBK_ID_MISSION_18 = 52,		// Tail Jericho
+	SBK_ID_MISSION_22 = 53,		// Beat the train
+	SBK_ID_MISSION_23 = 54,		// Car bomb
+	SBK_ID_MISSION_24 = 55,		// Stake out
 	SBK_ID_MISSION_27 = 56,
-	SBK_ID_MISSION_29 = 57,	// C4 deal
-	SBK_ID_MISSION_30 = 58,	// Destroy the yard
-	SBK_ID_MISSION_32 = 59,	// Steal the cop car
-	SBK_ID_MISSION_33 = 60,	// Caine's cash - UNUSED
-	SBK_ID_MISSION_35 = 61,	// Boat jump
-	SBK_ID_MISSION_39 = 62,	// Lenny escaping - UNUSED
-	SBK_ID_MISSION_40 = 63,	// Lenny gets caught
+	SBK_ID_MISSION_29 = 57,		// C4 deal
+	SBK_ID_MISSION_30 = 58,		// Destroy the yard
+	SBK_ID_MISSION_32 = 59,		// Steal the cop car
+	SBK_ID_MISSION_33 = 60,		// Caine's cash - UNUSED
+	SBK_ID_MISSION_35 = 61,		// Boat jump
+	SBK_ID_MISSION_39 = 62,		// Lenny escaping - UNUSED
+	SBK_ID_MISSION_40 = 63,		// Lenny gets caught
 
 	SBK_ID_HAVANA_TAKEADRIVE = 64,
 	SBK_ID_VEGAS_TAKEADRIVE = 65,
@@ -128,5 +128,4 @@ extern int AddEnvSnd(int type, char flags, int bank, int sample, int vol, int px
 extern void InitLeadHorn(); // 0x00052948
 extern void LeadHorn(CAR_DATA *cp); // 0x00052954
 
-
-#endif
+#endif // GAMESND_H

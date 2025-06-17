@@ -28,7 +28,7 @@ char CellEmpty(VECTOR *pPosition, int radius)
 	int xs, zs;
 	int ypos;
 	COLLISION_PACKET* collide;
-	
+
 	int cell_x, cell_z;
 	int type;
 
@@ -102,7 +102,7 @@ char CellEmpty(VECTOR *pPosition, int radius)
 					xs = ((collide->xsize + 10) * 2048 + radius * 4096);
 
 					ypos = pPosition->vy + (tempCO.pos.vy + collide->ypos);	// [A] removed excessive height
-					
+
 #if defined(COLLISION_DEBUG) && !defined(PSX)
 					int result = 0;
 
@@ -200,7 +200,6 @@ char CellEmpty(VECTOR *pPosition, int radius)
 	return 1;
 }
 
-
 // [D] [T]
 int GlobalPositionToCellNumber(VECTOR *pPosition)
 {
@@ -208,9 +207,9 @@ int GlobalPositionToCellNumber(VECTOR *pPosition)
 	int cbrX, cbrZ;
 	int cbr;
 
-	cellX = (pPosition->vx + units_across_halved - (MAP_REGION_SIZE*MAP_REGION_SIZE)) / MAP_CELL_SIZE;
-	cellZ = (pPosition->vz + units_down_halved - (MAP_REGION_SIZE*MAP_REGION_SIZE)) / MAP_CELL_SIZE;
-	
+	cellX = (pPosition->vx + units_across_halved - (MAP_REGION_SIZE * MAP_REGION_SIZE)) / MAP_CELL_SIZE;
+	cellZ = (pPosition->vz + units_down_halved - (MAP_REGION_SIZE * MAP_REGION_SIZE)) / MAP_CELL_SIZE;
+
 	cbrX = cellX / MAP_REGION_SIZE;
 	cbrZ = cellZ / MAP_REGION_SIZE;
 
@@ -219,9 +218,8 @@ int GlobalPositionToCellNumber(VECTOR *pPosition)
 	if (RoadMapRegions[cbr] != cbrX + cbrZ * regions_across)
 		return -1;
 
-	return cell_ptrs[(cellZ - cbrZ * MAP_REGION_SIZE) * MAP_REGION_SIZE + cbr * (MAP_REGION_SIZE*MAP_REGION_SIZE) + cellX - cbrX * MAP_REGION_SIZE];
+	return cell_ptrs[(cellZ - cbrZ * MAP_REGION_SIZE) * MAP_REGION_SIZE + cbr * (MAP_REGION_SIZE * MAP_REGION_SIZE) + cellX - cbrX * MAP_REGION_SIZE];
 }
-
 
 // [D] [T]
 char CellAtPositionEmpty(VECTOR *pPosition, int radius)
@@ -231,7 +229,6 @@ char CellAtPositionEmpty(VECTOR *pPosition, int radius)
 
 	return CellEmpty(pPosition, radius);
 }
-
 
 struct tRay
 {
@@ -247,7 +244,6 @@ struct tAABB
 {
 	tRange slab[3];
 };
-
 
 // [D] [T]
 int RaySlabsIntersection(tRay *ray, tAABB *bbox)
@@ -268,10 +264,10 @@ int RaySlabsIntersection(tRay *ray, tAABB *bbox)
 
 		dir = ray->dir[i];
 
-		if (dir > -1) 
+		if (dir > -1)
 			d = (dir != 0);
 
-		if (d == 0) 
+		if (d == 0)
 		{
 			if (cabbage.lower > 0)
 				return 0;
@@ -351,12 +347,12 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 
 	for (we = 0; we < 2; we++)
 	{
-		if (we == 0) 
+		if (we == 0)
 		{
 			cell_x = (v2->vx + units_across_halved) / MAP_CELL_SIZE;
 			cell_z = (v2->vz + units_down_halved) / MAP_CELL_SIZE;
 		}
-		else 
+		else
 		{
 			cell_x = (v1->vx + units_across_halved) / MAP_CELL_SIZE;
 			cell_z = (v1->vz + units_down_halved) / MAP_CELL_SIZE;
@@ -375,7 +371,7 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 				sphere_sq = pModel->bounding_sphere + 800;
 
 				if ((uint)pModel->collision_block > 0 &&
-					(pModel->flags2 & (MODEL_FLAG_CHAIR | MODEL_FLAG_SMASHABLE)) == 0 && 
+					(pModel->flags2 & (MODEL_FLAG_CHAIR | MODEL_FLAG_SMASHABLE)) == 0 &&
 					(xd*xd + zd*zd < sphere_sq*sphere_sq))
 				{
 					num_cb = *GET_MODEL_DATA(int, pModel, collision_block);
@@ -395,7 +391,7 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 
 						dx = va.vx - (tempCO.pos.vx + FIXEDH(collide->xpos * mat->m[0][0] + collide->zpos * mat->m[2][0]));
 						dz = va.vz - (tempCO.pos.vz + FIXEDH(collide->xpos * mat->m[0][2] + collide->zpos * mat->m[2][2]));
-						
+
 						box.slab[0].upper = collide->xsize / 2 + testRadius;
 						box.slab[0].lower = -box.slab[0].upper;
 
@@ -435,7 +431,7 @@ char lineClear(VECTOR *v1, VECTOR *v2)
 							cd[0].axis[0].vx = RSIN(dtheta);
 							cd[0].axis[0].vz = RCOS(dtheta);
 
-							cd[0].axis[1].vz = -RSIN(dtheta); 
+							cd[0].axis[1].vz = -RSIN(dtheta);
 							cd[0].axis[1].vx = RCOS(dtheta);
 
 							extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
@@ -522,20 +518,20 @@ void CollisionCopList(XZPAIR* pos, int* count)
 #else
 	CELL_ITERATOR ci;
 #endif
-	
+
 	cellLevel = events.camera ? events.draw : -1;
 
 	if (pos == NULL)
 	{
 		cnt = *count;
-		
+
 		cell.x = initial.x;
 		for (i = 0; i < 2; i++)
 		{
 			cbr.x = cell.x / MAP_REGION_SIZE;
-			
+
 			cell.z = initial.z;
-			for (j = 0; j < 2; j++) 
+			for (j = 0; j < 2; j++)
 			{
 				cbr.z = cell.z / MAP_REGION_SIZE;
 
@@ -581,7 +577,6 @@ void CollisionCopList(XZPAIR* pos, int* count)
 	}
 }
 
-
 // [D] [T]
 void SetCopListCell(int x, int z)
 {
@@ -619,7 +614,7 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 	int extraDist;
 	int sphereSq;
 	int dx, dz;
-	
+
 	if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER || cp->ap.carCos == NULL)
 		lbody = 360;
 	else
@@ -642,14 +637,14 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 	else
 		extraDist = 580;
 
-	cell.x = (player_pos.vx + units_across_halved - (MAP_REGION_SIZE*MAP_REGION_SIZE)) / MAP_CELL_SIZE;
-	cell.z = (player_pos.vz + units_down_halved - (MAP_REGION_SIZE*MAP_REGION_SIZE)) / MAP_CELL_SIZE;
+	cell.x = (player_pos.vx + units_across_halved - (MAP_REGION_SIZE * MAP_REGION_SIZE)) / MAP_CELL_SIZE;
+	cell.z = (player_pos.vz + units_down_halved - (MAP_REGION_SIZE * MAP_REGION_SIZE)) / MAP_CELL_SIZE;
 
 	SetCopListCell(cell.x, cell.z);
 
 	mdcount = 0;
 	Havana3DOcclusion(BuildCollisionCopList, &mdcount);
-		
+
 	count = 0;
 	while (count < mdcount + event_models_active)
 	{
@@ -674,14 +669,14 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 
 			dx = cop->pos.vx - player_pos.vx;
 			dz = cop->pos.vz - player_pos.vz;
-					
+
 			sphereSq = model->bounding_sphere + extraDist + cp->hd.speed;
 
 			if (dx * dx + dz * dz < sphereSq * sphereSq)
 			{
 				collide = GET_MODEL_DATA_OFS(COLLISION_PACKET, model, collision_block, sizeof(int));
 
-				while(num_cb--)
+				while (num_cb--)
 				{
 					yang = -cop->yang & 63;
 
@@ -738,7 +733,7 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 							gCameraBoxOverlap = -1;
 
 							minDist = lbody / 2;
-							
+
 							while (coll_test_count > 0 && gCameraDistance > minDist && CarBuildingCollision(cp, &bbox, cop, 0))
 							{
 								gCameraDistance = MAX(minDist, gCameraDistance - gCameraBoxOverlap);
@@ -781,12 +776,12 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 				}
 			}
 		}
+
 		count++;
 	}
 
 	EventCollisions(cp, 1);
 }
-
 
 // [D] [T]
 int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
@@ -816,9 +811,9 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 	player_pos.vx = pPos->vx;
 	player_pos.vz = pPos->vz;
 
-	cell.x = (player_pos.vx + units_across_halved - (MAP_REGION_SIZE*MAP_REGION_SIZE)) / MAP_CELL_SIZE;
-	cell.z = (player_pos.vz + units_down_halved - (MAP_REGION_SIZE*MAP_REGION_SIZE)) / MAP_CELL_SIZE;
-	
+	cell.x = (player_pos.vx + units_across_halved - (MAP_REGION_SIZE * MAP_REGION_SIZE)) / MAP_CELL_SIZE;
+	cell.z = (player_pos.vz + units_down_halved - (MAP_REGION_SIZE * MAP_REGION_SIZE)) / MAP_CELL_SIZE;
+
 	SetCopListCell(cell.x, cell.z);
 	mdcount = 0;
 
@@ -838,12 +833,12 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 		model = modelpointers[cop->type];
 
 		if ((uint)model->collision_block > 0 /*&&
-			model->num_vertices - 3 < 300 && 
-			model->num_point_normals < 300 && 
+			model->num_vertices - 3 < 300 &&
+			model->num_point_normals < 300 &&
 			model->num_polys < 300*/)
 		{
 			sphereSq = model->bounding_sphere + extra;
-			
+
 			dx = cop->pos.vx - player_pos.vx;
 			dz = cop->pos.vz - player_pos.vz;
 
@@ -852,10 +847,10 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 				num_cb = *GET_MODEL_DATA(int, model, collision_block);
 				collide = GET_MODEL_DATA_OFS(COLLISION_PACKET, model, collision_block, sizeof(int));
 
-				while(num_cb--)
+				while (num_cb--)
 				{
 					yang = -cop->yang & 0x3f;
-					
+
 					bbox.pos.vy = cop->pos.vy + collide->ypos;
 
 					if (ABS(pPos->vy + bbox.pos.vy) < collide->ysize / 2)
@@ -886,7 +881,7 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 						cd[1].avel = 0;
 
 						int res = bcollided2d(cd);
-							
+
 #if defined(COLLISION_DEBUG) && !defined(PSX)
 						extern int gShowCollisionDebug;
 						if (gShowCollisionDebug == 1)
@@ -966,16 +961,16 @@ int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int extra)
 							}
 						}
 #endif
-						if(res)
+						if (res)
 							return 1;
 					}
 
 					collide++;
-
 				}
 			}
 		}
 	}
+
 	return 0;
 }
 
@@ -990,7 +985,7 @@ void DoScenaryCollisions(void)
 		if (cp->controlType != CONTROL_TYPE_NONE)
 		{
 			// civ AI and dead cop cars perform less collision detection frames
-			if (cp->controlType == CONTROL_TYPE_CIV_AI || 
+			if (cp->controlType == CONTROL_TYPE_CIV_AI ||
 				cp->controlType == CONTROL_TYPE_PURSUER_AI && cp->ai.p.dying > 85)
 			{
 				if (cp->totalDamage != 0 && (cp->hd.speed > 10 || (cp->id + CameraCnt & 3) == 0))
@@ -1006,8 +1001,3 @@ void DoScenaryCollisions(void)
 		cp--;
 	} while (cp >= car_data);
 }
-
-
-
-
-

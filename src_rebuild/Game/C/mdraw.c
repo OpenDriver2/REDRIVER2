@@ -46,7 +46,6 @@ void DrawTimer(MR_TIMER* timer)
 	}
 }
 
-
 // [D] [T]
 void DisplayPlayerPosition(void)
 {
@@ -70,7 +69,6 @@ void DrawMessage(int y, char* string)
 		PrintStringBoxed(string, 24, y - 10);
 }
 
-
 // [D] [T]
 void DrawMission(void)
 {
@@ -81,23 +79,23 @@ void DrawMission(void)
 
 	if (gDisplayPosition)
 		DisplayPlayerPosition();
-	
+
 	if (MissionHeader->type & 4)
 	{
 		SetTextColour(128, 128, 64);
 
 		if (g321GoDelay < 32)
 			string = "3";
-		else if(g321GoDelay < 64)
+		else if (g321GoDelay < 64)
 			string = "2";
 		else
 			string = "1";
 
-		if (NumPlayers == 1) 
+		if (NumPlayers == 1)
 		{
 			PrintScaledString(96, string, 32 - (g321GoDelay & 0x1f));
 		}
-		else 
+		else
 		{
 			PrintScaledString(SCREEN_H / 4, string, 32 - (g321GoDelay & 0x1f));
 			PrintScaledString(SCREEN_H / 2 + SCREEN_H / 4, string, 32 - (g321GoDelay & 0x1f));
@@ -148,7 +146,7 @@ void DrawOverheadTarget(MS_TARGET *target)
 	if (!(target->s.target_flags & TARGET_FLAG_VISIBLE_ALLP))
 		return;
 
-	switch(target->type)
+	switch (target->type)
 	{
 		case Target_Point:	// point or car target
 		case Target_Car:
@@ -183,7 +181,7 @@ void DrawFullscreenTarget(MS_TARGET *target)
 	if (!(target->s.target_flags & TARGET_FLAG_VISIBLE_ALLP))
 		return;
 
-	switch(target->type)
+	switch (target->type)
 	{
 		case Target_Point:	// point or car target
 		case Target_Car:
@@ -222,8 +220,8 @@ void DrawWorldTarget(MS_TARGET *target)
 	gDraw3DArrowBlue = 0;
 
 	flags = 0x2;
-	
-	switch(target->type)
+
+	switch (target->type)
 	{
 		case Target_Point:
 		{
@@ -232,14 +230,14 @@ void DrawWorldTarget(MS_TARGET *target)
 			tv.vy = 10000;
 
 			// Capture the Flag target properties
-			switch(target->s.target_flags & (TARGET_FLAG_POINT_CTF_BASE_P1 | TARGET_FLAG_POINT_CTF_BASE_P2 | TARGET_FLAG_POINT_CTF_FLAG))
+			switch (target->s.target_flags & (TARGET_FLAG_POINT_CTF_BASE_P1 | TARGET_FLAG_POINT_CTF_BASE_P2 | TARGET_FLAG_POINT_CTF_FLAG))
 			{
 				case TARGET_FLAG_POINT_CTF_BASE_P1:
 				{
 					// [A]
-					if(CurrentPlayerView != 0)
+					if (CurrentPlayerView != 0)
 						flags = 0x10;
-						
+
 					gDraw3DArrowBlue = 0;
 					break;
 				}
@@ -248,20 +246,20 @@ void DrawWorldTarget(MS_TARGET *target)
 					// [A]
 					if (CurrentPlayerView != 1)
 						flags = 0x10;
-						
+
 					gDraw3DArrowBlue = 1;
 					break;
 				}
 				case TARGET_FLAG_POINT_CTF_FLAG:
 				{
-					if (gPlayerWithTheFlag == -1) 
+					if (gPlayerWithTheFlag == -1)
 					{
 						if (CurrentPlayerView == 1)
 							gDraw3DArrowBlue = 1;
 					}
 					else
 					{
-						if (CurrentPlayerView == gPlayerWithTheFlag) 
+						if (CurrentPlayerView == gPlayerWithTheFlag)
 							return;
 
 						tv.vx = player[gPlayerWithTheFlag].pos[0];
@@ -277,9 +275,9 @@ void DrawWorldTarget(MS_TARGET *target)
 
 			if (target->s.point.height != 0)
 				tv.vy = target->s.point.posY;
-			else 
+			else
 				tv.vy = -MapHeight(&tv);
-			
+
 			break;
 		}
 		case Target_Car:
@@ -306,7 +304,7 @@ void DrawWorldTarget(MS_TARGET *target)
 
 	if (gMultiplayerLevels && doSpooling == 0 || Long2DDistance(player[0].spoolXZ, &tv) <= 15900)
 	{
-		if((flags & 0x10) == 0)
+		if ((flags & 0x10) == 0)
 		{
 			if (target->s.display_flags & 0x20)
 				flags |= 0x1;
@@ -315,7 +313,7 @@ void DrawWorldTarget(MS_TARGET *target)
 				flags |= 0x20;
 		}
 
-		if (flags) 
+		if (flags)
 			Draw3DTarget(&tv, flags);
 	}
 }
@@ -342,20 +340,20 @@ void DrawMultiplayerTarget(MS_TARGET *target)
 	g = 64;
 	b = 64;
 
-	if(activeTargets == 1)
+	if (activeTargets == 1)
 	{
 		r = 128;
 		g = 0;
 		b = 0;
 	}
-	else if(activeTargets == 2)
+	else if (activeTargets == 2)
 	{
 		r = 0;
 		g = 128;
 		b = 0;
 	}
 
-	switch(target->type)
+	switch (target->type)
 	{
 		case Target_Point:
 		{
@@ -364,7 +362,7 @@ void DrawMultiplayerTarget(MS_TARGET *target)
 			tv.vy = 10000;
 
 			// Capture the Flag target properties
-			switch(target->s.target_flags & (TARGET_FLAG_POINT_CTF_BASE_P1 | TARGET_FLAG_POINT_CTF_BASE_P2 | TARGET_FLAG_POINT_CTF_FLAG))
+			switch (target->s.target_flags & (TARGET_FLAG_POINT_CTF_BASE_P1 | TARGET_FLAG_POINT_CTF_BASE_P2 | TARGET_FLAG_POINT_CTF_FLAG))
 			{
 				case TARGET_FLAG_POINT_CTF_BASE_P1:
 				{
@@ -382,7 +380,7 @@ void DrawMultiplayerTarget(MS_TARGET *target)
 				}
 				case TARGET_FLAG_POINT_CTF_FLAG:
 				{
-					if(gPlayerWithTheFlag != -1)
+					if (gPlayerWithTheFlag != -1)
 					{
 						tv.vx = player[gPlayerWithTheFlag].pos[0];
 						tv.vz = player[gPlayerWithTheFlag].pos[2];
@@ -394,7 +392,7 @@ void DrawMultiplayerTarget(MS_TARGET *target)
 
 			if (target->s.point.height != 0)
 				tv.vy = target->s.point.posY;
-			else 
+			else
 				tv.vy = -MapHeight(&tv);
 
 			break;
@@ -427,7 +425,6 @@ void DrawMultiplayerTarget(MS_TARGET *target)
 	}
 }
 
-
 // [D] [T]
 void DrawWorldTargets(void)
 {
@@ -440,7 +437,6 @@ void DrawWorldTargets(void)
 		DrawWorldTarget(&MissionTargets[i]);
 }
 
-
 // [D] [T]
 void DrawOverheadTargets(void)
 {
@@ -452,7 +448,6 @@ void DrawOverheadTargets(void)
 	for (i = 0; i < MAX_MISSION_TARGETS; i++)
 		DrawOverheadTarget(&MissionTargets[i]);
 }
-
 
 // [D] [T]
 void DrawFullscreenTargets(void)

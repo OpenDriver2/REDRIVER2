@@ -11,8 +11,8 @@ struct MVERTEX
 		struct {
 			u_char u0;
 			u_char v0;
-		}s;
-	}uv;
+		} s;
+	} uv;
 };
 
 struct VERTEX
@@ -35,5 +35,4 @@ extern void TileNxN(MODEL *model, int levels, int Dofse); // 0x00042F40
 extern void ProcessSubDivisionLump(char *lump_ptr, int lump_size); // 0x00042F34
 extern void ProcessLowDetailTable(char *lump_ptr, int lump_size); // 0x00043090
 
-
-#endif
+#endif // TILE_H

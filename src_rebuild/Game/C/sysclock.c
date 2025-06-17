@@ -56,7 +56,7 @@ long tmrint(void)
 
 		ptmr++;
 	}
-	
+
 	g_currentthread = 0;
 	restoregp(_saved_gp);
 
@@ -69,7 +69,7 @@ void timedwait(int ms)
 	int oldTick;
 
 	oldTick = gettick();
-	
+
 	while (gettick() - (oldTick + ms) < 0)
 		systemtask(0);
 
@@ -115,11 +115,11 @@ void inittimer(int hz)
 	if (timerflag == 0)
 	{
 		memset((u_char*)&tmrsub, 0, sizeof(tmrsub));
-	
+
 		timerevent = OpenEvent(RCntCNT2, 2, RCntMdINTR, tmrint);
 		EnableEvent(timerevent);
 		timerflag = 1;
-	
+
 		//addexit(restoretimer);
 	}
 
@@ -131,7 +131,7 @@ void inittimer(int hz)
 	if ((hz == -1) && (false)) {
 		trap(0x1800);
 	}
-	
+
 	reentryflag = 0;
 	timerhz = hz;
 
@@ -157,7 +157,7 @@ void Clock_MasterInterruptHandler(void)
 
 	savegp(&oldgp);
 
-	if (stopClock == 0) 
+	if (stopClock == 0)
 	{
 		clock_realTime.time128Hz++;
 		generic128HzClock++;
@@ -169,12 +169,12 @@ void Clock_MasterInterruptHandler(void)
 			if ((clock_realTime.time64Hz & 1U) == 0)
 			{
 				clock_realTime.time32Hz++;
-				
-				if ((clock_realTime.time32Hz & 1U) == 0) 
+
+				if ((clock_realTime.time32Hz & 1U) == 0)
 				{
 					//Input_Update__Fv();
 				}
-				
+
 				//Input_Store__Fv();
 			}
 		}
@@ -191,9 +191,9 @@ void Clock_SystemStartUp(void)
 	if (clock_InterruptStarted == 0)
 	{
 		clock_InterruptStarted = 1;
-	
+
 		addtimer(Clock_MasterInterruptHandler);
-		
+
 		clock_realTime.time128Hz = 0;
 		clock_realTime.time64Hz = 0;
 		clock_realTime.time32Hz = 0;

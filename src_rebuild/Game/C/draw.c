@@ -55,34 +55,34 @@ int PolySizes[56] = {
 
 SVECTOR day_vectors[4] =
 {
-  { -3132, 2520, 783, 0 },
-  { -3132, 2520, 783, 0 },
-  { -2364, 2364, 2364, 0 },
-  { -3132, 2520, 783, 0 }
+	{ -3132, 2520, 783, 0 },
+	{ -3132, 2520, 783, 0 },
+	{ -2364, 2364, 2364, 0 },
+	{ -3132, 2520, 783, 0 }
 };
 
 SVECTOR night_vectors[4] =
 {
-  { 3132, 2520, 783, 0 },
-  { 3132, 2520, 783, 0 },
-  { -2364, 2364, -2364, 0 },
-  { 3132, 2520, 783, 0 }
+	{ 3132, 2520, 783, 0 },
+	{ 3132, 2520, 783, 0 },
+	{ -2364, 2364, -2364, 0 },
+	{ 3132, 2520, 783, 0 }
 };
 
 SVECTOR day_colours[4] =
 {
-  { 3200, 3200, 3200, 0 },
-  { 3200, 3200, 3200, 0 },
-  { 3200, 3200, 3200, 0 },
-  { 3200, 3200, 3200, 0 }
+	{ 3200, 3200, 3200, 0 },
+	{ 3200, 3200, 3200, 0 },
+	{ 3200, 3200, 3200, 0 },
+	{ 3200, 3200, 3200, 0 }
 };
 
 SVECTOR night_colours[4] =
 {
-  { 880, 880, 905, 0 },
-  { 880, 880, 905, 0 },
-  { 880, 880, 905, 0 },
-  { 880, 880, 905, 0 }
+	{ 880, 880, 905, 0 },
+	{ 880, 880, 905, 0 },
+	{ 880, 880, 905, 0 },
+	{ 880, 880, 905, 0 }
 };
 
 void* model_object_ptrs[MAX_DRAWN_BUILDINGS];
@@ -204,7 +204,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 
 	spriteColour = lightLevel << 0x10 | lightLevel << 8 | lightLevel | 0x2c000000;
 
-	for (i = 0; i < 3; i++) 
+	for (i = 0; i < 3; i++)
 	{
 		shadowMatrix.m[i][0] = inv_camera_matrix.m[i][2];
 		shadowMatrix.m[i][1] = -inv_camera_matrix.m[i][0];
@@ -297,9 +297,9 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 #else
 #define MAX_TREE_SHADOW_DISTANCE 14000
 #endif
-		
+
 		if (wetness == 0 && gTimeOfDay != TIME_NIGHT &&
-			(pco->value & 32) == 0 && 
+			(pco->value & 32) == 0 &&
 			z < MAX_TREE_SHADOW_DISTANCE &&
 			numShadows < 40)
 		{
@@ -330,7 +330,7 @@ void SetupPlaneColours(u_int ambient)
 			b = ambient & 255;
 			g = ambient >> 8 & 255;
 			r = ambient >> 16 & 255;
-			
+
 			plotContext.planeColours[1] = (r * 120 >> 7) << 16 | (g * 120 >> 7) << 8 | b * 120 >> 7;
 			plotContext.planeColours[2] = (r * 103 >> 7) << 16 | (g * 103 >> 7) << 8 | b * 103 >> 7;
 			plotContext.planeColours[3] = (r * 13 >> 5) << 16 | (g * 13 >> 5) << 8 | b * 13 >> 5;
@@ -363,9 +363,7 @@ void SetupPlaneColours(u_int ambient)
 	plotContext.planeColours[7] = ambient + 0x10101;
 }
 
-
 int current_pvs_cell;
-
 
 // [D] [T]
 void SetupDrawMapPSX(void)
@@ -448,7 +446,6 @@ void Set_Inv_CameraMatrix(void)
 	gte_SetColorMatrix(&inv_camera_matrix);
 }
 
-
 // [D] [T] [A]
 void CalcObjectRotationMatrices(void)
 {
@@ -488,7 +485,7 @@ int num_cars_drawn = 0;
 // [D] [T]
 void DrawAllTheCars(int view)
 {
-	static int car_distance[MAX_CARS]; // offset 0x0
+	static int car_distance[MAX_CARS];
 	CAR_DATA* cars_to_draw[MAX_CARS];
 
 	int dx, dz;
@@ -497,14 +494,14 @@ void DrawAllTheCars(int view)
 	CAR_DATA* cp;
 	int num_cars_to_draw;
 	int spacefree;
-	
+
 
 	num_cars_drawn = 0;
 	num_cars_to_draw = 0;
 
 	cp = &car_data[MAX_CARS - 1];
 	do {
-		if (cp->controlType != CONTROL_TYPE_NONE && 
+		if (cp->controlType != CONTROL_TYPE_NONE &&
 			PositionVisible((VECTOR*)cp->hd.where.t))
 		{
 			// XZ distance estimation
@@ -545,7 +542,7 @@ void DrawAllTheCars(int view)
 				cars_to_draw[i] = cars_to_draw[j];
 				j--;
 			}
-			
+
 			cars_to_draw[j+1] = cp;
 			car_distance[j+1] = dist;
 		}
@@ -566,12 +563,11 @@ void DrawAllTheCars(int view)
 				gForceLowDetailCars = 0;
 
 			DrawCar(cars_to_draw[i], view);
-			
+
 			spacefree -= 2000;
 		}
 	}
 }
-
 
 // [D] [T]
 u_int normalIndex(SVECTOR* verts, u_int vidx)
@@ -651,7 +647,7 @@ void ConvertPolygonTypes(MODEL* model, _pct* pc)
 	{
 		return;
 	}
-	
+
 	model->tri_verts |= 0x80;
 
 	srcVerts = GET_MODEL_DATA(SVECTOR, model, vertices);
@@ -790,7 +786,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 	SVECTOR* srcVerts;
 	int combo;
 
-#if 0//def PSX
+#if 0 //def PSX
 	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)(u_char*)getScratchAddr(0);
 #else
 	MVERTEX5x5 subdiVerts;
@@ -860,7 +856,7 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 			ushort uv0, uv1, uv2, uv3;
 
 			// [A] special case
-			if(ptype == 23)
+			if (ptype == 23)
 			{
 				POLYGT4* pgt4 = (POLYGT4*)polys;
 				uv0 = *(ushort*)&pgt4->uv0;
@@ -940,7 +936,6 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 	}
 }
 
-
 // [D] [T]
 int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 {
@@ -952,7 +947,7 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 	CELL_OBJECT* cop;
 
 	prev_mat = -1;
-	
+
 	for (i = 0; i < 8; i++)
 	{
 		plotContext.f4colourTable[i * 4 + 0] = plotContext.planeColours[i] | 0x2C000000;
@@ -993,7 +988,7 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 
 		plotContext.ot = ot + zbias * 4;
 
-		if(Z <= DRAW_LOD_DIST_HIGH)
+		if (Z <= DRAW_LOD_DIST_HIGH)
 			PlotBuildingModelSubdivNxN(model, cop->yang, &plotContext, 1);
 		else
 			PlotBuildingModel(model, cop->yang, &plotContext);
@@ -1011,7 +1006,6 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 	return 0;
 }
 
-
 // [D] [T] [A] custom
 void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 {
@@ -1024,7 +1018,7 @@ void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 	SVECTOR* srcVerts;
 	int combo;
 
-#if 0//def PSX
+#if 0 //def PSX
 	MVERTEX5x5& subdiVerts = *(MVERTEX5x5*)(u_char*)getScratchAddr(0);
 #else
 	MVERTEX5x5 subdiVerts;
@@ -1195,7 +1189,6 @@ void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 	}
 }
 
-
 // [D] [T]
 void RenderModel(MODEL* model, MATRIX* matrix, VECTOR* pos, int zBias, int flags, int subdiv, int nrot)
 {
@@ -1231,7 +1224,7 @@ void RenderModel(MODEL* model, MATRIX* matrix, VECTOR* pos, int zBias, int flags
 	plotContext.polySizes = PolySizes;
 	plotContext.flags = flags;
 	plotContext.current = current;
-	
+
 	plotContext.primptr = plotContext.current->primptr;
 
 	if ((current->primtab - (current->primptr - PRIMTAB_SIZE)) > 56000)
@@ -1340,7 +1333,7 @@ void DrawMapPSX(int* comp_val)
 	drawData.current_object_computed_value = (*comp_val & 4095) | drawData.cellLevel << 16;
 	drawData.other_models_found = 0;
 	drawData.anim_objs_found = 0;
-	
+
 	drawData.cellzpos = current_cell_z;
 	drawData.cellxpos = current_cell_x;
 
@@ -1432,7 +1425,7 @@ void DrawMapPSX(int* comp_val)
 									*(MATRIX*)cmat = inv_camera_matrix;
 							}
 
-							if ((model->shape_flags & (SHAPE_FLAG_WATER | SHAPE_FLAG_TILE)) || 
+							if ((model->shape_flags & (SHAPE_FLAG_WATER | SHAPE_FLAG_TILE)) ||
 								(model->flags2 & (MODEL_FLAG_PATH | MODEL_FLAG_GRASS)))
 							{
 								if (model->flags2 & MODEL_FLAG_ALLEY)
@@ -1501,7 +1494,7 @@ void DrawMapPSX(int* comp_val)
 			//PVS_ptr -= pvs_square;
 			dir = (hloop == --vloop) ? 0 : dir;
 		}
-	}while (i-- > 0);
+	} while (i-- > 0);
 
 #if 0
 	char tempBuf[512];

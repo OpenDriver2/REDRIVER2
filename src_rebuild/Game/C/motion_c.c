@@ -113,7 +113,7 @@ LIMBS lRoutes[5][8] = {
 
 PED_DATA MainPed[NUM_BONES] =
 {
-	{ 0, 68u, &chest1_texture, CHEST_PAL },   
+	{ 0, 68u, &chest1_texture, CHEST_PAL },
 	{ 1, 68u, &chest1_texture, CHEST_PAL },
 	{ 17, 36u, &chest1_texture, CHEST_PAL },
 	{ 6, 68u, &forearm1_texture, ARM_PAL },
@@ -137,7 +137,6 @@ PED_DATA MainPed[NUM_BONES] =
 	{ 6, 63u, &chest1_texture, JEANS_PAL },
 	{ 2, 68u, &jeans_texture, JEANS_PAL }
 };
-
 
 // FIXME: could be incorrect
 BONE Skel[NUM_BONES] =
@@ -469,7 +468,6 @@ void SetupPedMotionData(LPPEDESTRIAN pPed)
 	pPed->motion = MotionCaptureData[pPed->type];
 }
 
-
 // [D] [T]
 void SetupPedestrian(LPPEDESTRIAN pedptr)
 {
@@ -526,7 +524,7 @@ void DrawBodySprite(LPPEDESTRIAN pDrawingPed, int boneId, VERTTYPE v1[2], VERTTY
 
 	bone = (LIMBS)(boneId & 127);
 	body_texture = MainPed[bone].ptd;
-	
+
 	if (bDoingShadow)
 		z = sz + (scr_z / 2);
 	else
@@ -558,7 +556,7 @@ void DrawBodySprite(LPPEDESTRIAN pDrawingPed, int boneId, VERTTYPE v1[2], VERTTY
 	}
 
 	if (bDoingShadow &&
-		(bone == RKNEE || bone == LKNEE || 
+		(bone == RKNEE || bone == LKNEE ||
 		bone == LFOOT || bone == RFOOT))
 	{
 		width -= 5;
@@ -568,7 +566,7 @@ void DrawBodySprite(LPPEDESTRIAN pDrawingPed, int boneId, VERTTYPE v1[2], VERTTY
 	y = v1[1] - v2[1];
 
 	angle = -ratan2(y, x);
-	
+
 	cs = FIXEDH(z2 * RSIN(angle) * (width & 0x3f) * 2);
 	sn = FIXEDH(z2 * RCOS(angle) * (width & 0x3f) * 2);
 
@@ -585,7 +583,7 @@ void DrawBodySprite(LPPEDESTRIAN pDrawingPed, int boneId, VERTTYPE v1[2], VERTTY
 	else
 	{
 		tmp2 = MainPed[bone].cAdj >> 4;
-		
+
 		dx1 = x >>tmp2;
 		dy1 = y >> tmp2;
 	}
@@ -712,7 +710,7 @@ void DrawBodySprite(LPPEDESTRIAN pDrawingPed, int boneId, VERTTYPE v1[2], VERTTY
 			if (pal != 0)
 				clut = civ_clut[0][body_texture->texture_number][pal];
 		}
-		else if(bone == HEAD)
+		else if (bone == HEAD)
 		{
 			pal = (pDrawingPed->pallet & 0xf);
 
@@ -826,7 +824,7 @@ void StoreVertexLists(void)
 			cTannerVNumbers[i] = -1;
 			continue;
 		}
-		
+
 		// store start index
 		cTannerVNumbers[i] = counter;
 
@@ -1003,7 +1001,7 @@ void SetupTannerSkeleton(LPPEDESTRIAN pDrawingPed)
 #endif
 }
 
-// [A] - was inlined in newShowTanner
+// [A] was inlined in newShowTanner
 void DrawSprite(LPPEDESTRIAN pDrawingPed, BONE* pBone, SVECTOR* vJPos)
 {
 	VERTTYPE t0[2], t1[2]; // [A] was two longs
@@ -1132,7 +1130,7 @@ void newShowTanner(LPPEDESTRIAN pDrawingPed)
 		}
 	}
 
-	if(bDoingShadow || draw)
+	if (bDoingShadow || draw)
 	{
 		if (pDrawingPed->pedType < OTHER_SPRITE)
 		{
@@ -1169,7 +1167,7 @@ void newShowTanner(LPPEDESTRIAN pDrawingPed)
 						bias = 1;
 					else if (id == HEAD)
 						bias = 0;
-					
+
 					RenderModel(model, NULL, &v, bias, PLOT_NO_SHADE, 0, 0);
 				}
 
@@ -1424,7 +1422,6 @@ void newRotateBones(LPPEDESTRIAN pDrawingPed, BONE* poBone)
 	};
 }
 
-
 // [D] [T]
 void DrawCiv(LPPEDESTRIAN pPed)
 {
@@ -1508,7 +1505,7 @@ void DrawCiv(LPPEDESTRIAN pPed)
 	rot.vz = pPed->dir.vz & 0xfff;
 
 	RotMatrixYXZ(&rot, &workmatrix);
-	
+
 	gte_MulMatrix0(&inv_camera_matrix, &workmatrix, &workmatrix);
 	gte_SetRotMatrix(&workmatrix);
 
@@ -1540,7 +1537,7 @@ void DrawCiv(LPPEDESTRIAN pPed)
 		}
 
 		boneId = boneIdvals[i];
-		
+
 		if (boneId == HEAD && szList[0] <= switch_detail_distance / 2)
 			bHeadModel = 1;
 		else
@@ -1614,7 +1611,6 @@ void SetSkelModelPointers(int type)
 	}
 }
 
-
 int iCurrBone = 0;
 
 // [D] [T]
@@ -1640,7 +1636,7 @@ void DrawTanner(LPPEDESTRIAN pPed)
 	v.vx = pPed->position.vx;
 	v.vy = -pPed->position.vy;
 	v.vz = pPed->position.vz;
-	
+
 	v.vy = -camera_position.vy - MapHeight(&v);// - camera_position.vy;
 
 	v.vx = (pPed->position.vx - camera_position.vx) + Skel[ROOT].pvOrigPos->vx;
@@ -1732,13 +1728,12 @@ int DrawCharacter(LPPEDESTRIAN pPed)
 			size = -phase + 96;
 
 		cv.b = cv.g = cv.r = 40;
-		
+
 		RoundShadow(&pos, &cv, size);
 	}
 
 	return 1;
 }
-
 
 POLY_FT4 ft4TannerShadow[2];
 TILE tileTannerClear[2];
@@ -1760,7 +1755,7 @@ void InitTannerShadow(void)
 
 	poly = ft4TannerShadow;
 	tile = tileTannerClear;
-	
+
 	rectTannerWindow.w = 64;
 	rectTannerWindow.h = 128;
 	rectTannerWindow.x = tpagepos[nperms + 1].x;
@@ -1769,15 +1764,15 @@ void InitTannerShadow(void)
 	for (i = 0; i < 2; i++)
 	{
 		int offs = 0;
-		if(GameLevel == 2) // [A] bug fix for vegas
+		if (GameLevel == 2) // [A] bug fix for Vegas
 			offs = 18;
-		
+
 		poly->u0 = tannerShadow_texture.coords.u1 / 4 - 1;
 		poly->v0 = tannerShadow_texture.coords.v1 + offs;
-		
+
 		poly->u1 = tannerShadow_texture.coords.u0 / 4 + 1;
 		poly->v1 = tannerShadow_texture.coords.v0 + offs;
-		
+
 		poly->u2 = tannerShadow_texture.coords.u3 / 4 - 1;
 		poly->v2 = tannerShadow_texture.coords.v3 + offs - 18;
 
@@ -1914,7 +1909,7 @@ void TannerShadow(LPPEDESTRIAN pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos,
 
 	addPrim(current->ot + (z0 * 2 + z3 * 6 >> 6), &ft4TannerShadow[current->id]);
 	//SubdivShadow(z0, z1, z2, z3, ft4TannerShadow + current->id);
-	
+
 	{
 		// store vectors
 		cp = camera_position;
@@ -1949,7 +1944,7 @@ void TannerShadow(LPPEDESTRIAN pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos,
 		SetGeomScreen(scr_z);
 		BuildWorldMatrix();
 	}
-	
+
 	SetDefDrawEnv(&drEnv, rectTannerWindow.x, rectTannerWindow.y, rectTannerWindow.w, rectTannerWindow.h);
 	drEnv.dfe = 0; // we're drawing into VRAM - don't draw on screen
 	drEnv.dtd = 0; // [A] no need in dithering
@@ -1961,7 +1956,7 @@ void TannerShadow(LPPEDESTRIAN pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos,
 	current->primptr += sizeof(DR_ENV);
 }
 
-// [A] - totally custom function but it works pretty much same as original
+// [A] totally custom function but it works pretty much same as original
 void DoCivHead(LPPEDESTRIAN pPed, SVECTOR* vert1, SVECTOR* vert2)
 {
 	SVECTOR spos;
@@ -2020,5 +2015,3 @@ void DoCivHead(LPPEDESTRIAN pPed, SVECTOR* vert1, SVECTOR* vert2)
 
 	combointensity = oldcombointensity;
 }
-
-

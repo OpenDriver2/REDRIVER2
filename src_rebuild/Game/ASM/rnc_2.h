@@ -3,4 +3,4 @@
 
 extern void UnpackRNC(char* src, char* dest) ; // 0x0001B434
 
-#endif
+#endif // RNC_2_H

@@ -50,9 +50,9 @@ extern void LoadPermanentTPages(int *sector); // 0x00080688
 extern void ReloadIcons(); // 0x00081118
 
 #ifndef PSX
- // [A] - loads TIM files as level textures
+// [A] loads TIM files as level textures
 void LoadTPageFromTIMs(int tpage2send);
 void LoadPermanentTPagesFromTIM();
 #endif
 
-#endif
+#endif // TEXTURE_H

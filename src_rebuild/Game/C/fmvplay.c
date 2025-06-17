@@ -7,7 +7,6 @@
 #include "E3stuff.h"
 #include "main.h"
 
-
 // FMV
 int gSubtitles = 1;
 int gNoFMV = 0;
@@ -51,7 +50,7 @@ void PlayRender(RENDER_ARGS *args)
 #ifdef PSX
 
 #if 0
-	
+
 	if (Loadfile("FMV\\FMV.EXE", (char*)_fmv_memory) != 0)
 	{
 		oldsp = GetSp();
@@ -62,7 +61,7 @@ void PlayRender(RENDER_ARGS *args)
 		SetSp(oldsp);
 	}
 #endif
-	
+
 #else
 
 	if (gNoFMV == 0)

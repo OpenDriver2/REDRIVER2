@@ -80,13 +80,13 @@ void ProcessMapLump(char* lump_ptr, int lump_size)
 	num_regions = cell_header.num_regions;
 
 #ifdef PSX
-	if(num_regions > MAX_REGIONS)
+	if (num_regions > MAX_REGIONS)
 	{
 		printError("MAX_REGIONS is too small , allocate at least %d !", num_regions);
 		trap(0x400);
 	}
 
-	if(cell_header.cell_size != MAP_CELL_SIZE)
+	if (cell_header.cell_size != MAP_CELL_SIZE)
 	{
 		printError("Error LevEdit cellsize %d whilst PSX cellsize %d\n", cell_header.cell_size, MAP_CELL_SIZE);
 		trap(0x400);
@@ -116,7 +116,6 @@ void ProcessMapLump(char* lump_ptr, int lump_size)
 	memcpy((u_char*)cell_objects, (u_char*)lump_ptr + 4, num_straddlers * sizeof(PACKED_CELL_OBJECT));
 }
 
-
 // [D] [T]
 void NewProcessRoadMapLump(ROAD_MAP_LUMP_DATA *pRoadMapLumpData, char *pLumpFile)
 {
@@ -132,7 +131,6 @@ void ProcessJunctionsLump(char *lump_file, int lump_size)
 {
 	return;
 }
-
 
 // [D] [T]
 void ProcessRoadsLump(char *lump_file, int lump_size)
@@ -155,10 +153,10 @@ void ProcessJuncBoundsLump(char *lump_file, int lump_size)
 // [D] [T]
 int newPositionVisible(VECTOR *pos, char *pvs, int ccx, int ccz)
 {
- 	int dx; // $a2
- 	int dz; // $a0
- 	int cellx; // $v1
- 	int cellz; // $v0
+ 	int dx;
+ 	int dz;
+ 	int cellx;
+ 	int cellz;
 
 	dx = pos->vx + units_across_halved;
 	dz = pos->vz + units_down_halved;
@@ -171,7 +169,7 @@ int newPositionVisible(VECTOR *pos, char *pvs, int ccx, int ccz)
 	cellz = MIN(MAX(cellz, -9), PVS_CELL_COUNT / 2);
 #endif // PSX
 
-	if (ABS(cellx) <= view_dist && 
+	if (ABS(cellx) <= view_dist &&
 		ABS(cellz) <= view_dist)
 	{
 		return pvs[cellx + 10 + (cellz + 10) * pvs_square] != 0;
@@ -211,7 +209,7 @@ int CheckUnpackNewRegions(void)
 	topbottom_unpack = 0;
 	num_regions_to_unpack = 0;
 
-	if (saved_leadcar_pos != 0) 
+	if (saved_leadcar_pos != 0)
 		return 0;
 
 	force_load_boundary = 13;
@@ -221,7 +219,7 @@ int CheckUnpackNewRegions(void)
 
 	if (current_barrel_region_xcell < force_load_boundary)
 	{
-		if (region_x != 0) 
+		if (region_x != 0)
 		{
 			leftright_unpack = 1;
 			num_regions_to_unpack = 1;
@@ -242,7 +240,7 @@ int CheckUnpackNewRegions(void)
 
 	if (current_barrel_region_zcell < force_load_boundary)
 	{
-		if (region_z != 0) 
+		if (region_z != 0)
 		{
 			topbottom_unpack = 1;
 			regions_to_unpack[num_regions_to_unpack].xoffset = 0;
@@ -273,11 +271,11 @@ int CheckUnpackNewRegions(void)
 				regions_to_unpack[2].zoffset = -1;
 			}
 		}
-		else 
+		else
 		{
 			if (leftright_unpack == 1)
 				regions_to_unpack[2].xoffset = -1;
-			else 
+			else
 				regions_to_unpack[2].xoffset = 1;
 
 			regions_to_unpack[2].zoffset = 1;
@@ -302,7 +300,7 @@ int CheckUnpackNewRegions(void)
 			{
 				regions_unpacked[target_region] = region_to_unpack;
 			}
-			else 
+			else
 			{
 				Spool *spoolptr = (Spool*)(RegionSpoolInfo + spoolinfo_offsets[region_to_unpack]);
 
@@ -326,7 +324,7 @@ int CheckUnpackNewRegions(void)
 			srcsort = sortorder + i;
 			destsort = sortorder + (i + 1);
 
-			for (j = sortcount - (i + 1); j > 0; --j) 
+			for (j = sortcount - (i + 1); j > 0; --j)
 			{
 				sort = *srcsort;
 				if (sortregions[*destsort].vz < sortregions[*srcsort].vz)
@@ -366,7 +364,7 @@ void ControlMap(void)
 		UnpackRegion(region_to_unpack, region_x & 1U | (region_z & 1U) * 2);
 
 	current_region = region_to_unpack;
-	
+
 	CheckLoadAreaData(current_barrel_region_xcell, current_barrel_region_zcell);
 
 	CheckUnpackNewRegions();
@@ -545,7 +543,7 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 		}
 	}
 
-	if (havanaCorruptCellBodge == 0) 
+	if (havanaCorruptCellBodge == 0)
 		decodebuf[pvs_square_sq-1] ^= 1;
 
 	size = pvs_square - 2;
@@ -589,7 +587,6 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 	memcpy((u_char*)output, decodebuf, pvs_square_sq-1);	// 110*4
 }
 
-
 // [D] [T]
 void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 {
@@ -610,7 +607,7 @@ void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 	}
 #endif
 
-	if (regions_unpacked[source_region] == region && loading_region[source_region] == -1) 
+	if (regions_unpacked[source_region] == region && loading_region[source_region] == -1)
 	{
 		bp = PVS_Buffers[source_region];
 		PVSEncodeTable = (u_char *)(bp + 0x802);
@@ -618,27 +615,22 @@ void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 
 		length = M_SHRT_2((u_char)tbp[2], (u_char)tbp[3]) - M_SHRT_2((u_char)tbp[0], (u_char)tbp[1]) & 0xffff;
 
-		if (length != 0) 
+		if (length != 0)
 		{
 			havanaCorruptCellBodge = (regions_unpacked[source_region] == 158 && cell == 168);
 
 			PVSDecode(output, bp + M_SHRT_2((u_char)tbp[0], (u_char)tbp[1]), length, havanaCorruptCellBodge);
 		}
-		else 
+		else
 		{
 			for (k = 0; k < pvs_square_sq; k++)
 				output[k] = 1;
 		}
 	}
-	else 
+	else
 	{
 		// don't draw non-loaded regions
 		for (k = 0; k < pvs_square_sq; k++)
 			output[k] = 0;
 	}
 }
-
-
-
-
-

@@ -64,7 +64,7 @@ void CutRec_Reset()
 		gAutoTestStats[gCutsceneChaseAutoTest].stuck = 0;
 		gAutoTestStats[gCutsceneChaseAutoTest].saved = 0;
 		gChaseStuckTimer = 0;
-		
+
 		return;
 	}
 
@@ -99,9 +99,9 @@ int CutRec_GotoChase(int number)
 
 	if (number > 15)
 		return 0;
-	
+
 	gCutsceneChaseAutoTest = number;
-	
+
 	// load next replay and restart
 	if (LoadCutsceneAsReplay(gCutsceneChaseAutoTest))
 	{
@@ -112,7 +112,7 @@ int CutRec_GotoChase(int number)
 		CurrentGameMode = GAMEMODE_REPLAY;
 
 		SetState(STATE_GAMELAUNCH);
-		
+
 		return 1;
 	}
 	return 0;
@@ -180,12 +180,12 @@ void CutRec_Draw()
 
 	SetTextColour(128, 128, 128);
 
-	if(gCutsceneChaseAutoTest)
+	if (gCutsceneChaseAutoTest)
 	{
 		sprintf(text, "Auto-test - chase %d %s", gCutsceneChaseAutoTest, gAutoTestStats[gCutsceneChaseAutoTest].saved ? "-SAVED-" : "");
 		PrintString(text, 5, 10);
-		
-		if(gCutsceneAsReplay_ReChaseLoaded)
+
+		if (gCutsceneAsReplay_ReChaseLoaded)
 		{
 			SetTextColour(32, 128, 32);
 			PrintString("Re-recorded", 5, 20);
@@ -197,12 +197,12 @@ void CutRec_Draw()
 		}
 
 		SetTextColour(128, 128, 128);
-		
+
 		sprintf(text, "Frame %d of %d", CameraCnt, ReplayParameterPtr->RecordingEnd);
 		PrintString(text, 5, 215);
 	}
 
-	if(PingBufferPos >= MAX_REPLAY_PINGS-1)
+	if (PingBufferPos >= MAX_REPLAY_PINGS-1)
 		SetTextColour(128, 0, 0);
 
 	sprintf(text, "Pings: %d", PingBufferPos);
@@ -211,15 +211,15 @@ void CutRec_Draw()
 	SetTextColour(128, 128, 128);
 
 	if (gAutoTestStats[gCutsceneChaseAutoTest].numHitCars > 0)
-		SetTextColour(128, 0, 0);		
+		SetTextColour(128, 0, 0);
 
 	sprintf(text, "Hit cars: %d", gAutoTestStats[gCutsceneChaseAutoTest].numHitCars);
 	PrintString(text, 120, 205);
 
-	if(gAutoTestStats[gCutsceneChaseAutoTest].stuck)
+	if (gAutoTestStats[gCutsceneChaseAutoTest].stuck)
 	{
 		SetTextColour(128, 0, 0);
-	
+
 		sprintf(text, "Car is stuck!");
 		PrintString(text, 5, 60);
 	}
@@ -277,11 +277,11 @@ int LoadCutsceneAsReplay(int subindex)
 	// Try loading existing ReChase
 	sprintf(filename, "REPLAYS\\ReChases\\CUT%d_N.R", gCutsceneAsReplay);
 
-	if(!FileExists(filename))
+	if (!FileExists(filename))
 	{
 		gCutsceneAsReplay_ReChaseLoaded = 0;
 		printWarning("--- NO re-recorded chases available! ---\n");
-		
+
 		if (gCutsceneAsReplay < 21)
 			sprintf(filename, "REPLAYS\\CUT%d.R", gCutsceneAsReplay);
 		else
@@ -351,11 +351,11 @@ void InitCutsceneRecorder(char* configFilename)
 
 	if (loadExistingCutscene)
 	{
-		if(gCutsceneChaseAutoTest != 0)
+		if (gCutsceneChaseAutoTest != 0)
 		{
 			subindex = gCutsceneChaseAutoTest;
 		}
-		
+
 		if (!LoadCutsceneAsReplay(subindex))
 		{
 			ini_free(config);
@@ -434,8 +434,6 @@ int CutRec_StorePingInfo(int cookieCount, int carId)
 		packet->carId = -1;
 		packet->cookieCount = -1;
 
-		
-
 		return 1;
 	}
 
@@ -499,7 +497,7 @@ int CutRec_InitMission(char* filename)
 
 	if (gCutsceneAsReplay == 0)
 		return 0;
-	
+
 	LoadfileSeg(filename, (char*)&header, gCutsceneAsReplay * 4, 4);
 
 	if (header == 0)
@@ -515,7 +513,7 @@ int CutRec_InitMission(char* filename)
 	MissionHeader->weather = missionTempHeader.weather;
 	MissionHeader->cops = missionTempHeader.cops;
 
-	if(gCutsceneChaseAutoTest == 0)
+	if (gCutsceneChaseAutoTest == 0)
 		ClearMem((char*)gAutoTestStats, sizeof(gAutoTestStats));
 
 	return 1;
@@ -637,7 +635,7 @@ int CutRec_LoadCutsceneAsReplayFromBuffer(char* buffer)
 	memcpy((u_char*)PingBuffer, (u_char*)pt, sizeof(PING_PACKET) * MAX_REPLAY_PINGS);
 	memcpy((u_char*)NewPingBuffer, (u_char*)pt, sizeof(PING_PACKET) * MAX_REPLAY_PINGS);
 	pt += sizeof(PING_PACKET) * MAX_REPLAY_PINGS;
-	
+
 	replayptr = (char*)(PingBuffer + MAX_REPLAY_PINGS);
 
 	if (header->HaveStoredData == 0x91827364)	// -0x6e7d8c9c
@@ -679,7 +677,7 @@ int CutRec_SaveReplayToBuffer(char* buffer)
 	header->wantedCar[1] = wantedCar[1];
 
 	memcpy((u_char*)&header->SavedData, (u_char*)&MissionEndData, sizeof(MISSION_DATA));
-	
+
 	// write each stream data
 	for (int i = 0; i < NumReplayStreams; i++)
 	{
@@ -762,13 +760,13 @@ int CutRec_SaveChase()
 		return 0;
 
 
-	if(CutRec_SaveReplayToFile(filename))
+	if (CutRec_SaveReplayToFile(filename))
 	{
 		printInfo("Chase replay '%s' saved\n", filename);
 
 		if (gCutsceneChaseAutoTest != 0)
 			gAutoTestStats[gCutsceneChaseAutoTest].saved = 1;
-		
+
 		return 1;
 	}
 

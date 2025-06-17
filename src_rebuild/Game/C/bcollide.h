@@ -19,5 +19,4 @@ extern void DamageCar(CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int st
 
 extern int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop, int flags); // 0x0001D68C
 
-
-#endif
+#endif // BCOLLIDE_H

@@ -1,5 +1,4 @@
 ﻿// redriver2_psxpc.cpp
-//
 
 #include <SDL_keyboard.h>
 
@@ -29,7 +28,6 @@
 
 #include "PsyX/PsyX_globals.h"
 
-
 int(*GPU_printf)(const char *fmt, ...);
 
 bool CtrlModifier;
@@ -40,15 +38,15 @@ void CheckModifierKeys(int nKey, bool down)
 {
 	switch (nKey)
 	{
-	case SDL_SCANCODE_LCTRL:
-		CtrlModifier = down;
-		break;
-	case SDL_SCANCODE_LSHIFT:
-		ShiftModifier = down;
-		break;
-	case SDL_SCANCODE_LALT:
-		AltModifier = down;
-		break;
+		case SDL_SCANCODE_LCTRL:
+			CtrlModifier = down;
+			break;
+		case SDL_SCANCODE_LSHIFT:
+			ShiftModifier = down;
+			break;
+		case SDL_SCANCODE_LALT:
+			AltModifier = down;
+			break;
 	}
 }
 
@@ -117,7 +115,7 @@ void FreeCameraKeyboardHandler(int nKey, char down)
 		}
 	}
 
-	if(!down)
+	if (!down)
 		return;
 
 	if (nKey == SDL_SCANCODE_F7)
@@ -334,7 +332,7 @@ OTTYPE g_OT2[OTSIZE];				// 0xF7200
 char g_PrimTab1[PRIMTAB_SIZE];		// 0xFB400
 char g_PrimTab2[PRIMTAB_SIZE];		// 0x119400
 char g_SBank_buffer[0x50000];		// 0x180000
-char g_Replay_buffer[0x50000];		// 0x1fABBC
+char g_Replay_buffer[0x50000];		// 0x1FABBC
 #endif
 
 void ParseKeyboardMappings(ini_t* config, char* section, PsyXKeyboardMapping& outMapping)
@@ -468,7 +466,7 @@ PsyXControllerMapping g_gcMenuMappings = { 0x654 };
 
 void SwitchMappings(int menu)
 {
-	if(menu)
+	if (menu)
 	{
 		g_cfg_keyboardMapping = g_kbMenuMappings;
 		g_cfg_controllerMapping = g_gcMenuMappings;
@@ -494,8 +492,8 @@ int main(int argc, char** argv)
 	_primTab1 = (char*)malloc(PRIMTAB_SIZE);			// 0xFB400
 	_primTab2 = (char*)malloc(PRIMTAB_SIZE);			// 0x119400
 	_sbank_buffer = (char*)malloc(0x80000);				// 0x180000
-	_replay_buffer = (char*)malloc(0x50000);			// 0x1fabbc
-	
+	_replay_buffer = (char*)malloc(0x50000);			// 0x1FABBC
+
 #else
 	_overlay_buffer = g_Overlay_buffer;		// 0x1C0000
 	_frontend_buffer = g_Frontend_buffer;	// 0xFB400
@@ -506,14 +504,14 @@ int main(int argc, char** argv)
 	_primTab1 = g_PrimTab1;					// 0xFB400
 	_primTab2 = g_PrimTab2;					// 0x119400
 	_sbank_buffer = g_SBank_buffer;			// 0x180000
-	_replay_buffer = g_Replay_buffer;		// 0x1fABBC
+	_replay_buffer = g_Replay_buffer;		// 0x1FABBC
 #endif
 
 #if defined(DEBUG_OPTIONS) || defined(_DEBUG)
 	GPU_printf = printf;
 #endif // _DEBUG
 
-	
+
 #if 0 // defined(__EMSCRIPTEN__)
 	// mount the current folder as a NODEFS instance
 	// inside of emscripten
@@ -533,7 +531,7 @@ int main(int argc, char** argv)
 			i++;
 			configFilename = argv[i];
 		}
-		else if(!strcmp(argv[i], "-cdimage"))
+		else if (!strcmp(argv[i], "-cdimage"))
 		{
 			i++;
 			cdImageFileName = argv[i];
@@ -562,9 +560,9 @@ int main(int argc, char** argv)
 		int newScrZ = gCameraDefaultScrZ;
 		const char* dataFolderStr = ini_get(config, "fs", "dataFolder");
 
-		if(!cdImageFileName)
+		if (!cdImageFileName)
 			cdImageFileName = ini_get(config, "cdfs", "image");
-		
+
 		// configure Psy-X pads
 		ini_sget(config, "pad", "pad1device", "%d", &g_cfg_controllerToSlotMapping[0]);
 		ini_sget(config, "pad", "pad2device", "%d", &g_cfg_controllerToSlotMapping[1]);
@@ -593,10 +591,10 @@ int main(int argc, char** argv)
 		ini_sget(config, "game", "fastLoadingScreens", "%d", &gFastLoadingScreens);
 		ini_sget(config, "game", "languageId", "%d", &gUserLanguage);
 		ini_sget(config, "game", "overrideContent", "%d", &gContentOverride);
-		
-	
+
+
 		gCameraDefaultScrZ = MAX(MIN(newScrZ, 384), 128);
-		
+
 		if (dataFolderStr)
 		{
 			strcpy(gDataFolder, dataFolderStr);
@@ -650,7 +648,7 @@ int main(int argc, char** argv)
 	// configure Psy-X CD image reader
 	if (cdImageFileName)
 		PsyX_CDFS_Init(cdImageFileName, 0, 0);
-	
+
 	if (config)
 	{
 		ParseKeyboardMappings(config, "kbcontrols_game", g_kbGameMappings);
@@ -658,7 +656,7 @@ int main(int argc, char** argv)
 
 		ParseControllerMappings(config, "controls_game", g_gcGameMappings);
 		ParseControllerMappings(config, "controls_menu", g_gcMenuMappings);
-		
+
 		ini_free(config);
 	}
 

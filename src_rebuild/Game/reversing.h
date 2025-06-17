@@ -73,12 +73,11 @@ template<int x> struct compile_time_assert_test {};
 #endif
 
 #if defined(_DEBUG)
-#define UNIMPLEMENTED()	{ static bool _stop = false; if(!_stop) printMsg("[GAME] %s - unimplemented!\n", FUNCNAME); _stop = true; }
+#define UNIMPLEMENTED()	{ static bool _stop = false; if (!_stop) printMsg("[GAME] %s - unimplemented!\n", FUNCNAME); _stop = true; }
 #else
 #define UNIMPLEMENTED()
 #endif
 
 //----------------------------------------
 
-
-#endif // REVERSTING_H
+#endif // REVERSING_H

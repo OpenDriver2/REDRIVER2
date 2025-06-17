@@ -1,9 +1,8 @@
-#ifndef DRLIMITS_H
-#define DRLIMITS_H
+#ifndef DR2LIMITS_H
+#define DR2LIMITS_H
 
 // DRIVER 2 game engine limits
 // please populate this file only with engine limits during refactoring
-
 
 #ifndef PSX
 #define DYNAMIC_LIGHTING
@@ -83,5 +82,4 @@
 #define MAX_SIREN_NOISES		2
 #define MAX_CAR_NOISES			4
 
-
-#endif // DRLIMITS_H
+#endif // DR2LIMITS_H

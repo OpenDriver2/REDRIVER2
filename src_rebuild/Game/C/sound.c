@@ -44,7 +44,7 @@ int banksize[2] = { 88064, 412672 };
 char banks[24] = { 0 };
 
 SAMPLE_DATA samples[LSB_BANK_COUNT][35];
-CHANNEL_DATA channels[MAX_SFX_CHANNELS]; // offset 0xDE480
+CHANNEL_DATA channels[MAX_SFX_CHANNELS];
 
 int master_volume = 0;	// why need two?
 
@@ -63,7 +63,7 @@ int music_paused = 0;
 
 SpuCommonAttr sound_attr;
 
-int vblcounter = 0; // vblank counter
+int vblcounter = 0;		// vblank counter
 
 // [D] [T]
 void SoundHandler(void)
@@ -102,7 +102,7 @@ void VsyncProc(void)
 
 	if (Song_ID != -1)
 	{
-		if (Song_SetPos != -1) 
+		if (Song_SetPos != -1)
 		{
 			XM_SetSongPos(Song_ID, Song_SetPos);
 			Song_SetPos = -1;
@@ -154,7 +154,7 @@ void ClearChannelFields(int channel)
 	CHANNEL_DATA* chan;
 
 	chan = &channels[channel];
-	
+
 	chan->flags = 0;
 	chan->time = 0;
 	chan->samplerate = 0;
@@ -186,7 +186,7 @@ void ResetSound(void)
 
 	SpuSetCommonAttr(&sound_attr);
 
-	for (ct = 0; ct < MAX_SFX_CHANNELS; ct++) 
+	for (ct = 0; ct < MAX_SFX_CHANNELS; ct++)
 	{
 		chan = &channels[ct];
 		memset((u_char*)chan, 0, sizeof(CHANNEL_DATA));
@@ -198,7 +198,7 @@ void ResetSound(void)
 		ClearChannelFields(ct);
 	}
 
-	for (ct = 0; ct < MAX_SFX_CHANNELS; ct++) 
+	for (ct = 0; ct < MAX_SFX_CHANNELS; ct++)
 	{
 		SpuSetVoiceRR(ct, 6);
 		SpuSetVoiceAR(ct, 35);
@@ -478,14 +478,14 @@ int CompleteSoundSetup(int channel, int bank, int sample, int pitch, int proximi
 	bpf /= 60;
 #endif
 
-	if (bpf == 0) 
+	if (bpf == 0)
 	{
 		return -1;
 	}
 
 	chan = &channels[channel];
-		
-	if (gSoundMode == 1 && proximity != -1) 
+
+	if (gSoundMode == 1 && proximity != -1)
 		UpdateVolumeAttributesS(channel, proximity);
 	else
 		UpdateVolumeAttributesM(channel);
@@ -515,7 +515,6 @@ int CompleteSoundSetup(int channel, int bank, int sample, int pitch, int proximi
 
 	return channel;
 }
-
 
 // [D] [T]
 void ComputeDoppler(CHANNEL_DATA *ch)
@@ -560,7 +559,6 @@ void ComputeDoppler(CHANNEL_DATA *ch)
 		ch->dopplerScale = 0;
 }
 
-
 // [D] [T]
 int StartSound(int channel, int bank, int sample, int volume, int pitch)
 {
@@ -580,7 +578,7 @@ int StartSound(int channel, int bank, int sample, int volume, int pitch)
 int Start3DTrackingSound(int channel, int bank, int sample, VECTOR *position, LONGVECTOR3* velocity)
 {
 	CHANNEL_DATA* chan;
-	
+
 	if (channel < 0)
 		channel = GetFreeChannel();
 
@@ -634,7 +632,6 @@ int Start3DSoundVolPitch(int channel, int bank, int sample, int x, int y, int z,
 	SetChannelPitch(channel, pitch);
 
 	return channel;
-
 }
 
 // [D] [T]
@@ -648,7 +645,7 @@ void SetChannelPitch(int channel, int pitch)
 
 	if (sound_paused)
 		return;
-	
+
 	chan = &channels[channel];
 
 	if (chan->time != 0 && pitch > 128)
@@ -700,14 +697,14 @@ void SetChannelPosition3(int channel, VECTOR *position, LONGVECTOR3* velocity, i
 		return;
 
 	chan = &channels[channel];
-		
+
 	chan->srcposition = position;
 	chan->srcvelocity = velocity ? velocity : (LONGVECTOR3*)dummylong;
 	chan->srcvolume = volume;
 
 	if (gSoundMode == 1)
 		UpdateVolumeAttributesS(channel, proximity);
-	else 
+	else
 		UpdateVolumeAttributesM(channel);
 
 	chan->attr.mask = SPU_VOICE_VOLL | SPU_VOICE_VOLR | SPU_VOICE_VOLMODEL | SPU_VOICE_VOLMODER;
@@ -718,7 +715,6 @@ void SetChannelPosition3(int channel, VECTOR *position, LONGVECTOR3* velocity, i
 
 	SetChannelPitch(channel, pitch);
 }
-
 
 static int music_pause_max;
 
@@ -742,7 +738,6 @@ void PauseXM(void)
 	music_paused = 1;
 }
 
-
 // [D] [T]
 void PauseSFX(void)
 {
@@ -761,7 +756,7 @@ void PauseSFX(void)
 
 		vl = MAX(pause.voll[i], pause.volr[i]);
 
-		if (pause.max < vl) 
+		if (pause.max < vl)
 			pause.max = vl;
 
 		pause.lev = gMasterVolume + 10000;
@@ -803,7 +798,7 @@ void PauseSound(void)
 void UnPauseXM(void)
 {
 	int fade;
-	
+
 	if (Song_ID == -1)
 		return;
 
@@ -858,7 +853,7 @@ void UnPauseSFX(void)
 
 		fade += 96;
 	}
-	
+
 	sound_paused = 0;
 }
 
@@ -877,7 +872,7 @@ void StopChannel(int channel)
 	u_char lock;
 	int vsync;
 
-	if (channel < 0 || channel >= MAX_SFX_CHANNELS)	
+	if (channel < 0 || channel >= MAX_SFX_CHANNELS)
 		return;
 
 	c = &channels[channel];
@@ -899,7 +894,7 @@ void StopChannel(int channel)
 	lock = c->flags & CHAN_LOCKED;
 
 	ClearChannelFields(channel);
-	
+
 	c->flags = lock;
 }
 
@@ -914,7 +909,7 @@ void StopAllChannels(void)
 		VSync(0);
 	}
 }
-	
+
 // [D] [T]
 void LockChannel(int channel)
 {
@@ -954,10 +949,10 @@ int LoadSoundBank(char *address, int length, int bank)
 
 	SpuSetTransferStartAddr(spuaddress);
 	SpuWrite((u_char*)address + slength, length - slength);
-	
+
 	SpuIsTransferCompleted(SPU_TRANSFER_WAIT);
 
-	for(ct = 0; ct < num_samples; ct++)
+	for (ct = 0; ct < num_samples; ct++)
 	{
 		samples[bank][ct].address += spuaddress;
 	}
@@ -980,7 +975,7 @@ int LoadSoundBankDynamic(char *address, int length, int dbank)
 	int slength;
 	int num_samples;
 
-	if (address == NULL) 
+	if (address == NULL)
 	{
 		switch (length)
 		{
@@ -1013,13 +1008,13 @@ int LoadSoundBankDynamic(char *address, int length, int dbank)
 	}
 
 	// init bank samples
-	if (lsbTabs.append == 0) 
+	if (lsbTabs.append == 0)
 	{
 		lsbTabs.addr = bankaddr[1];
-		
-		for(i = 0; i < 7; i++)
+
+		for (i = 0; i < 7; i++)
 			lsbTabs.count[i] = 0;
-		
+
 		lsbTabs.append = 1;
 	}
 
@@ -1036,12 +1031,12 @@ int LoadSoundBankDynamic(char *address, int length, int dbank)
 	SpuIsTransferCompleted(SPU_TRANSFER_WAIT);
 
 	// set proper address for samples
-	for(i = 0; i < num_samples; i++)
+	for (i = 0; i < num_samples; i++)
 	{
 		samples[dbank][lsbTabs.count[dbank]].address += lsbTabs.addr;
 		lsbTabs.count[dbank]++;
 	}
-	
+
 	lsbTabs.addr += length - slength;
 
 	return num_samples;
@@ -1068,11 +1063,11 @@ void StartXM(int reverb)
 
 	if (Song_ID == -1)
 		return;
-	
+
 	XM_PlayStart(Song_ID, -1);
 	SpuSetReverb(1);
 
-	for(ct = MAX_SFX_CHANNELS; ct < SPU_CHANNEL_COUNT; ct++)
+	for (ct = MAX_SFX_CHANNELS; ct < SPU_CHANNEL_COUNT; ct++)
 	{
 		SpuSetReverbVoice(reverb, SPU_VOICECH(ct));
 	}
@@ -1093,7 +1088,7 @@ int GetFreeChannel(int force)
 	int least;
 
 	char status[SPU_CHANNEL_COUNT];
-	
+
 	SpuGetAllKeysStatus(status);
 
 	channel = 0;
@@ -1109,17 +1104,17 @@ int GetFreeChannel(int force)
 
 	if (!force)
 		return -1;
-	
+
 	// if not found free channels - free already playing one
 	channel = -1;
 	least = 0;
-	
+
 	c = &channels[0];
 	for (it = 0; it < MAX_SFX_CHANNELS; it++, c++)
 	{
 		if (c->flags & (CHAN_LOCKED | CHAN_LOOP))
 			continue;
-		
+
 		if (channel == -1 || c->time < least)
 		{
 			channel = it;
@@ -1127,7 +1122,7 @@ int GetFreeChannel(int force)
 		}
 	}
 
-	if (channel != -1) 
+	if (channel != -1)
 		StopChannel(channel);
 
 	return channel;
@@ -1201,5 +1196,3 @@ int jsqrt(u_int a)
 
 	return b1;
 }
-
-

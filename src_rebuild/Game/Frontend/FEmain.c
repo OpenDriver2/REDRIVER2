@@ -80,7 +80,7 @@ void InitHiresFEFont()
 		// load TGA file
 		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\fefont.tga");
 		FS_FixPathSlashes(namebuffer);
-		
+
 		if (LoadTGAImage(namebuffer, &data, width, height, bpp))
 		{
 			if (bpp == 32)
@@ -568,21 +568,20 @@ char cutUnlock[] = {
 };
 
 int CarAvailability[4][10] = {
-	{1,1,1,1,0,0,0,0,0,0},
-	{1,1,1,1,0,0,0,0,0,0},
-	{1,1,1,1,0,0,0,0,0,0},
-	{1,1,1,1,0,0,0,0,0,0},
+	{ 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
+	{ 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
+	{ 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 },
+	{ 1, 1, 1, 1, 0, 0, 0, 0, 0, 0 }
 };
 
 char carNumLookup[4][10] = {
-	{1, 2, 3, 4, 0, 8, 9, 10, 11, 12},
-	{1, 2, 3, 4, 0, 8, 9, 10, 11, 12},
-	{1, 2, 3, 4, 0, 8, 9, 10, 11, 12},
-	{1, 2, 3, 4, 0, 8, 9, 10, 11, 12},
+	{ 1, 2, 3, 4, 0, 8, 9, 10, 11, 12 },
+	{ 1, 2, 3, 4, 0, 8, 9, 10, 11, 12 },
+	{ 1, 2, 3, 4, 0, 8, 9, 10, 11, 12 },
+	{ 1, 2, 3, 4, 0, 8, 9, 10, 11, 12 }
 };
 
 int minmaxSelections[4][2] = {
-
 	{ 0, 8 },
 	{ 8, 18 },
 	{ 18, 28 },
@@ -590,44 +589,44 @@ int minmaxSelections[4][2] = {
 };
 
 BOTCH botch[38] = {
-	{ 1, &MissionName[0]},
-	{ 2, &MissionName[1]},
-	{ 3, &MissionName[2]},
-	{ 4, &MissionName[3]},
-	{ 5, &MissionName[4]},
-	{ 6, &MissionName[5]},
-	{ 7, &MissionName[6]},
-	{ 9, &MissionName[7]},
-	{ 10, &MissionName[8]},
-	{ 11, &MissionName[9]},
-	{ 13, &MissionName[10]},
-	{ 14, &MissionName[11]},
-	{ 15, &MissionName[12]},
-	{ 16, &MissionName[13]},
-	{ 17, &MissionName[14]},
-	{ 18, &MissionName[15]},
-	{ 19, &MissionName[16]},
-	{ 20, &MissionName[17]},
-	{ 21, &MissionName[18]},
-	{ 22, &MissionName[19]},
-	{ 23, &MissionName[20]},
-	{ 24, &MissionName[21]},
-	{ 25, &MissionName[22]},
-	{ 26, &MissionName[23]},
-	{ 27, &MissionName[24]},
-	{ 28, &MissionName[25]},
-	{ 29, &MissionName[26]},
-	{ 30, &MissionName[27]},
-	{ 31, &MissionName[28]},
-	{ 32, &MissionName[29]},
-	{ 33, &MissionName[30]},
-	{ 34, &MissionName[31]},
-	{ 35, &MissionName[32]},
-	{ 37, &MissionName[33]},
-	{ 38, &MissionName[34]},
-	{ 39, &MissionName[35]},
-	{ 40, &MissionName[36]},
-	{ 0,NULL}
+	{ 1, &MissionName[0] },
+	{ 2, &MissionName[1] },
+	{ 3, &MissionName[2] },
+	{ 4, &MissionName[3] },
+	{ 5, &MissionName[4] },
+	{ 6, &MissionName[5] },
+	{ 7, &MissionName[6] },
+	{ 9, &MissionName[7] },
+	{ 10, &MissionName[8] },
+	{ 11, &MissionName[9] },
+	{ 13, &MissionName[10] },
+	{ 14, &MissionName[11] },
+	{ 15, &MissionName[12] },
+	{ 16, &MissionName[13] },
+	{ 17, &MissionName[14] },
+	{ 18, &MissionName[15] },
+	{ 19, &MissionName[16] },
+	{ 20, &MissionName[17] },
+	{ 21, &MissionName[18] },
+	{ 22, &MissionName[19] },
+	{ 23, &MissionName[20] },
+	{ 24, &MissionName[21] },
+	{ 25, &MissionName[22] },
+	{ 26, &MissionName[23] },
+	{ 27, &MissionName[24] },
+	{ 28, &MissionName[25] },
+	{ 29, &MissionName[26] },
+	{ 30, &MissionName[27] },
+	{ 31, &MissionName[28] },
+	{ 32, &MissionName[29] },
+	{ 33, &MissionName[30] },
+	{ 34, &MissionName[31] },
+	{ 35, &MissionName[32] },
+	{ 37, &MissionName[33] },
+	{ 38, &MissionName[34] },
+	{ 39, &MissionName[35] },
+	{ 40, &MissionName[36] },
+	{ 0, NULL }
 };
 
 char ScreenTitle[128];
@@ -746,13 +745,13 @@ void SetVariable(int var)
 			pScreenStack[ScreenDepth] = pCurrScreen;
 			pButtonStack[ScreenDepth] = pCurrButton;
 
-			if (value == 1) 
+			if (value == 1)
 			{
 #ifdef PSX
 #else
 				// [A] temporary
 				// TODO: Do menu with the replays
-				if(LoadReplayFromFile("Replays/CHASE.D2RP"))
+				if (LoadReplayFromFile("Replays/CHASE.D2RP"))
 				{
 					StoredGameType = GameType;
 					GameType = GAME_LOADEDREPLAY;
@@ -780,15 +779,15 @@ void SetVariable(int var)
 			pButtonStack[ScreenDepth] = pCurrButton;
 
 #ifndef PSX
-			if (value == 0) 
+			if (value == 0)
 			{
 				// [A] save configuration
 				SaveCurrentProfile(1);
 			}
-			else 
+			else
 			{
 				// [A] load progress
-				if(LoadCurrentGame())
+				if (LoadCurrentGame())
 				{
 					GameType = GAME_CONTINUEMISSION;
 					SetState(STATE_GAMESTART);
@@ -906,19 +905,19 @@ void SetupScreenSprts(PSXSCREEN *pScr)
 
 	if (pScr->userFunctionNum == 0 || pScr->userFunctionNum == 128)
 	{
-		if (pNewButton != NULL) 
+		if (pNewButton != NULL)
 		{
 			pCurrButton = pNewButton;
 			pNewButton = NULL;
 		}
-		else 
+		else
 			pCurrButton = pScr->buttons;
 	}
 	else
 	{
 		if ((fpUserFunctions[pScr->userFunctionNum - 1])(1) == 0)
 		{
-			if (pNewButton != NULL) 
+			if (pNewButton != NULL)
 			{
 				pCurrButton = pNewButton;
 				pNewButton = NULL;
@@ -932,8 +931,6 @@ void SetupScreenSprts(PSXSCREEN *pScr)
 DR_MOVE In;
 DR_MOVE Out;
 RECT16 storeRect = { 768, 475, 255, 36 };
-
-
 
 // [D] [T]
 void DisplayOnScreenText(void)
@@ -1057,7 +1054,7 @@ void DrawScreen(PSXSCREEN *pScr)
 			// hide the Director's Cut button
 			numBtnsToDraw = pScr->numButtons - 1;
 		}
-		else 
+		else
 		{
 			numBtnsToDraw = pScr->numButtons;
 		}
@@ -1066,7 +1063,7 @@ void DrawScreen(PSXSCREEN *pScr)
 		for (i = 0; i < numBtnsToDraw; i++)
 			DrawButton(&pScr->buttons[i], i);
 #else
-		if(bQuitToSystem)
+		if (bQuitToSystem)
 		{
 			int len;
 			int quitLen;
@@ -1076,7 +1073,7 @@ void DrawScreen(PSXSCREEN *pScr)
 
 			if (quitLen < 100)
 				quitLen = 100;
-			
+
 			len = FEStringWidth(G_LTXT(GTXT_YES));
 			FEPrintString(G_LTXT(GTXT_YES), 320 - quitLen / 4 - len / 2, 288, 0, 128, 128, bQuitToSystemSel ? 0 : 128);
 
@@ -1086,7 +1083,7 @@ void DrawScreen(PSXSCREEN *pScr)
 		else
 		{
 			NewSelection(0);
-			
+
 			for (i = 0; i < numBtnsToDraw; i++)
 				DrawButton(&pScr->buttons[i], i);
 		}
@@ -1101,8 +1098,8 @@ void DrawScreen(PSXSCREEN *pScr)
 		SetTextColour(128, 0, 0);
 
 		DisplayOnScreenText();
-		
-		if (bDrawExtra) 
+
+		if (bDrawExtra)
 		{
 #ifdef PSX
 			addPrim(current->ot + 2, &extraSprt);
@@ -1110,7 +1107,7 @@ void DrawScreen(PSXSCREEN *pScr)
 #else
 			SPRT* extrSprt;
 			POLY_FT3* extrDummy;
-			
+
 			extrSprt = (SPRT*)current->primptr;
 			current->primptr += sizeof(SPRT);
 			*extrSprt = extraSprt;
@@ -1126,7 +1123,7 @@ void DrawScreen(PSXSCREEN *pScr)
 	}
 
 #ifdef PSX
-	else 
+	else
 	{
 		EndFrame();
 	}
@@ -1146,7 +1143,7 @@ void FEDrawCDicon(void)
 	int i;
 	RECT16 dest;
 
-	if(!bCdIconSetup)
+	if (!bCdIconSetup)
 		return;
 
 	cd_icon[23] = cd_icon[11];
@@ -1186,13 +1183,13 @@ void SetupExtraPoly(char *fileName, int offset, int offset2)
 	rect.y = 256;
 	rect.w = 64;
 	rect.h = 219;
-	
+
 	LoadImage(&rect, (u_long*)(_frontend_buffer + offset2 + offset * 0x8000));
-	
+
 	DrawSync(0);
 	VSync(0);
 
-	if(bDrawExtra == 0)
+	if (bDrawExtra == 0)
 	{
 		setSprt(&extraSprt);
 		setPolyFT3(&extraDummy);
@@ -1209,7 +1206,7 @@ void SetupExtraPoly(char *fileName, int offset, int offset2)
 
 	bDrawExtra = 1;
 
-	if (strcmp(fileName, "DATA\\CITY.RAW") == 0) 
+	if (strcmp(fileName, "DATA\\CITY.RAW") == 0)
 	{
 		loaded[0] = 1;
 		loaded[1] = -1;
@@ -1227,7 +1224,7 @@ void SetupExtraPoly(char *fileName, int offset, int offset2)
 
 	for (i = 0; i < 4; i++)
 	{
-		if (strcmp(fileName, cutGfxNames[i]) == 0) 
+		if (strcmp(fileName, cutGfxNames[i]) == 0)
 		{
 			loaded[1] = -1;
 			loaded[2] = i;
@@ -1348,7 +1345,7 @@ void LoadFrontendScreens(int full)
 		// [A] optimized. Before it was to wasteful to load 16 sectors
 		int loadSize = i == 0 ? 0x8000 : (36 * 128);
 		rect.h = i == 0 ? 256 : 36;
-		
+
 		ShowLoading();
 		LoadfileSeg("DATA\\GFX.RAW", (char*)_other_buffer, 0x30000 + (i * 0x8000), loadSize);
 
@@ -1383,7 +1380,7 @@ void ReInitScreens(int returnToMain)
 #ifndef PSX
 	bReturnToMain = returnToMain;
 
-	if(bReturnToMain)
+	if (bReturnToMain)
 	{
 		bCdIconSetup = 0;
 		iScreenSelect = SCREEN_NONE;
@@ -1402,7 +1399,7 @@ void ReInitScreens(int returnToMain)
 		loaded[0] = -1;
 		loaded[1] = -1;
 		loaded[2] = -1;
-	
+
 		padsConnected[0] = 1;
 		padsConnected[1] = 0;
 
@@ -1444,7 +1441,7 @@ void ReInitScreens(int returnToMain)
 			LoadBackgroundFile("DATA\\GFX.RAW");
 		}
 	}
-	else 
+	else
 	{
 		bReturnToMain = 1;
 	}
@@ -1549,7 +1546,7 @@ int HandleKeyPress(void)
 	}
 
 	if (feNewPad & MPAD_CROSS)
-	{	
+	{
 		int action = pCurrButton->action >> 8;
 
 		if (action != BTN_DISABLED)
@@ -1608,7 +1605,7 @@ int HandleKeyPress(void)
 		{
 			if (!bDoneAllready)
 				FESound(0);
-			else 
+			else
 				bDoneAllready = 0;
 
 			if (--ScreenDepth == 0)
@@ -1641,7 +1638,6 @@ int HandleKeyPress(void)
 	return 1;
 }
 
-
 // [D] [T]
 void PadChecks(void)
 {
@@ -1651,18 +1647,18 @@ void PadChecks(void)
 	int oldnum = numPadsConnected;
 
 	ReadControllers();
-	
+
 	numPadsConnected = 0;
 	feNewPad = Pads[0].mapnew;
 	fePad = Pads[0].mapped;
 
-	for (int i = 0; i < 2; i++) 
+	for (int i = 0; i < 2; i++)
 	{
-		if (Pads[i].type < 2) 
+		if (Pads[i].type < 2)
 		{
 			padsConnected[i] = 0;
 		}
-		else 
+		else
 		{
 			padsConnected[i] = 1;
 			numPadsConnected++;
@@ -1671,20 +1667,20 @@ void PadChecks(void)
 
 #ifndef PSX
 	// [A] quit to system
-	if(feNewPad & MPAD_TRIANGLE)
+	if (feNewPad & MPAD_TRIANGLE)
 	{
-		if(ScreenDepth == 0)
+		if (ScreenDepth == 0)
 		{
 			bQuitToSystem ^= 1;
 			FESound(0);
 		}
 	}
 
-	if(bQuitToSystem)
+	if (bQuitToSystem)
 	{
 		if (feNewPad & MPAD_CROSS)
 		{
-			if(bQuitToSystemSel == 1)
+			if (bQuitToSystemSel == 1)
 				bQuitToSystem = 2;
 			else
 				bQuitToSystem = 0;
@@ -1703,16 +1699,16 @@ void PadChecks(void)
 	}
 #endif
 
-	if (oldnum != numPadsConnected && (oldnum == 2 || numPadsConnected == 2) && ScreenDepth == 0) 
+	if (oldnum != numPadsConnected && (oldnum == 2 || numPadsConnected == 2) && ScreenDepth == 0)
 	{
 		bRedrawFrontend = 1;
 		MainScreen(1);
 	}
 
 	if ((Pads[0].dualshock == 0 || padsConnected[0] == 0) &&
-		(Pads[1].dualshock == 0 || padsConnected[1] == 0)) 
+		(Pads[1].dualshock == 0 || padsConnected[1] == 0))
 	{
-		if(allowVibration == 1)
+		if (allowVibration == 1)
 		{
 			allowVibration = 0;
 
@@ -1723,7 +1719,7 @@ void PadChecks(void)
 			}
 		}
 	}
-	else 
+	else
 	{
 		if (allowVibration == 0)
 		{
@@ -1737,22 +1733,22 @@ void PadChecks(void)
 		}
 	}
 
-	if (oldnum != numPadsConnected && NumPlayers == 2 && numPadsConnected != NumPlayers || 
-		numPadsConnected == 0 || 
-		padsConnected[0] == 0) 
+	if (oldnum != numPadsConnected && NumPlayers == 2 && numPadsConnected != NumPlayers ||
+		numPadsConnected == 0 ||
+		padsConnected[0] == 0)
 	{
 		bReturnToMain = 1;
 		bRedrawFrontend = 1;
 		feNewPad = 0x10;
 
-		if (pCurrScreen->userFunctionNum != 0) 
+		if (pCurrScreen->userFunctionNum != 0)
 		{
 			(fpUserFunctions[pCurrScreen->userFunctionNum - 1])(0);
 		}
 
 		feNewPad = 0;
 
-		if (ScreenDepth != 0) 
+		if (ScreenDepth != 0)
 		{
 			ReInitScreens(bReturnToMain);
 		}
@@ -1803,7 +1799,7 @@ void SetFEDrawMode(void)
 	PutDrawEnv(&current->draw);
 }
 
-// [A] - was inlined in State_FrontEnd
+// [A] was inlined in State_FrontEnd
 void InitFrontend(void)
 {
 	InitCdIcon();
@@ -1828,7 +1824,7 @@ void InitFrontend(void)
 	LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_MENU);
 }
 
-// [A] - was inlined in State_FrontEnd
+// [A] was inlined in State_FrontEnd
 void InitFrontendDisplay(void)
 {
 	SetDispMask(0);
@@ -1867,7 +1863,7 @@ void State_FrontEnd(void* param)
 		{
 			feNewPad = ((feNewPad & MPAD_TRIANGLE) != 0) ? MPAD_TRIANGLE : 0;
 		}
-		else 
+		else
 		{
 			feNewPad = Pads[1].mapnew;
 		}
@@ -1907,7 +1903,7 @@ void State_FrontEnd(void* param)
 			GameType = GAME_IDLEDEMO;
 
 			gCurrentMissionNumber = gIdleReplay + 400;
-			
+
 			if (++gIdleReplay == 4)
 				gIdleReplay = 0;
 
@@ -1926,7 +1922,7 @@ void State_FrontEnd(void* param)
 		idle_timer = VSync(-1);
 	}
 
-	if(bQuitToSystem == 2)
+	if (bQuitToSystem == 2)
 		SetState(STATE_NONE);
 }
 
@@ -2056,7 +2052,6 @@ int FEPrintString(char *string, int x, int y, int justification, int r, int g, i
 	return x;
 }
 
-
 // [D] [T]
 int FEPrintStringSized(char *string, int x, int y, int scale, int transparent, int r, int g, int b)
 {
@@ -2118,7 +2113,6 @@ int FEPrintStringSized(char *string, int x, int y, int scale, int transparent, i
 
 	return x;
 }
-
 
 SCREEN_LIMITS screen_limits[2] = {
 	// min(x/y), max(x/y)
@@ -2210,7 +2204,6 @@ int CentreScreen(int bSetup)
 	return 0;
 }
 
-
 // [D] [T]
 int CarSelectScreen(int bSetup)
 {
@@ -2261,7 +2254,7 @@ int CarSelectScreen(int bSetup)
 				// unlock the cop car only
 				int unlocked = (i == 4) && gFurthestMission == 40;
 
-				CarAvailability[0][i] = unlocked; 
+				CarAvailability[0][i] = unlocked;
 				CarAvailability[1][i] = unlocked;
 				CarAvailability[2][i] = unlocked;
 				CarAvailability[3][i] = unlocked;
@@ -2269,7 +2262,7 @@ int CarSelectScreen(int bSetup)
 		}
 
 #ifdef PSX
-		if (currPlayer != 1) 
+		if (currPlayer != 1)
 			return 0;
 #endif
 
@@ -2384,7 +2377,7 @@ int CarSelectScreen(int bSetup)
 
 			return 0;
 		}
-		
+
 		rect = extraRect;
 		LoadImage(&rect, (u_long*)(_frontend_buffer + carSelection * 0x8000));
 		DrawSync(0);
@@ -2413,7 +2406,7 @@ int CarSelectScreen(int bSetup)
 // [D] [T]
 int CopDiffLevelScreen(int bSetup)
 {
-	if (bSetup) 
+	if (bSetup)
 	{
 		pCurrButton = &pCurrScreen->buttons[gCopDifficultyLevel];
 		return 1;
@@ -2438,7 +2431,7 @@ int CopDiffLevelScreen(int bSetup)
 // [D] [T]
 int VibroOnOffScreen(int bSetup)
 {
-	if (bSetup) 
+	if (bSetup)
 	{
 		currSelIndex = (gVibration ^ 1);
 		pCurrButton = &pCurrScreen->buttons[currSelIndex];
@@ -2461,13 +2454,12 @@ int VibroOnOffScreen(int bSetup)
 	return 0;
 }
 
-
 // [D] [T]
 int MissionSelectScreen(int bSetup)
 {
 	int i;
 
-	if (bSetup) 
+	if (bSetup)
 	{
 		iScreenSelect = SCREEN_MISSION;
 
@@ -2480,7 +2472,7 @@ int MissionSelectScreen(int bSetup)
 				LoadBackgroundFile("DATA\\CITYBACK.RAW");
 		}
 
-		if (feVariableSave[0] != -1) 
+		if (feVariableSave[0] != -1)
 		{
 			currMission = feVariableSave[0];
 			currSelIndex = feVariableSave[1];
@@ -2497,7 +2489,7 @@ int MissionSelectScreen(int bSetup)
 		{
 			if (botch[currMission + i].missNum > gFurthestMission ||
 				currMission + i >= minmaxSelections[currCity][1] ||
-				currMission + i > 36) 
+				currMission + i > 36)
 			{
 				done = true;
 			}
@@ -2509,50 +2501,50 @@ int MissionSelectScreen(int bSetup)
 
 		switch (usedB)
 		{
-		case 1:
-			pCurrScreen->buttons[1].u = 2;
-			pCurrScreen->buttons[1].d = 2;
-			sprintf(pCurrScreen->buttons[1].Name, GET_MISSION_TXT(MissionName[currMission]));
-			sprintf(pCurrScreen->buttons[2].Name, NullStr);
-			sprintf(pCurrScreen->buttons[3].Name, NullStr);
-			sprintf(pCurrScreen->buttons[4].Name, NullStr);
-			break;
-		case 2:
-			pCurrScreen->buttons[1].u = 3;
-			pCurrScreen->buttons[1].d = 3;
-			pCurrScreen->buttons[2].u = 2;
-			pCurrScreen->buttons[2].d = 2;
-			sprintf(pCurrScreen->buttons[1].Name, GET_MISSION_TXT(MissionName[currMission]));
-			sprintf(pCurrScreen->buttons[2].Name, GET_MISSION_TXT(MissionName[currMission + 1]));
-			sprintf(pCurrScreen->buttons[3].Name, NullStr);
-			sprintf(pCurrScreen->buttons[4].Name, NullStr);
-			break;
-		case 3:
-			pCurrScreen->buttons[1].u = 4;
-			pCurrScreen->buttons[1].d = 3;
-			pCurrScreen->buttons[2].u = 2;
-			pCurrScreen->buttons[2].d = 4;
-			pCurrScreen->buttons[3].u = 3;
-			pCurrScreen->buttons[3].d = 2;
-			sprintf(pCurrScreen->buttons[1].Name, GET_MISSION_TXT(MissionName[currMission]));
-			sprintf(pCurrScreen->buttons[2].Name, GET_MISSION_TXT(MissionName[currMission + 1]));
-			sprintf(pCurrScreen->buttons[3].Name, GET_MISSION_TXT(MissionName[currMission + 2]));
-			sprintf(pCurrScreen->buttons[4].Name, NullStr);
-			break;
-		case 4:
-			pCurrScreen->buttons[1].u = 5;
-			pCurrScreen->buttons[1].d = 3;
-			pCurrScreen->buttons[2].u = 2;
-			pCurrScreen->buttons[2].d = 4;
-			pCurrScreen->buttons[3].u = 3;
-			pCurrScreen->buttons[3].d = 5;
-			pCurrScreen->buttons[4].u = 4;
-			pCurrScreen->buttons[4].d = 2;
-			sprintf(pCurrScreen->buttons[1].Name, GET_MISSION_TXT(MissionName[currMission]));
-			sprintf(pCurrScreen->buttons[2].Name, GET_MISSION_TXT(MissionName[currMission + 1]));
-			sprintf(pCurrScreen->buttons[3].Name, GET_MISSION_TXT(MissionName[currMission + 2]));
-			sprintf(pCurrScreen->buttons[4].Name, GET_MISSION_TXT(MissionName[currMission + 3]));
-			break;
+			case 1:
+				pCurrScreen->buttons[1].u = 2;
+				pCurrScreen->buttons[1].d = 2;
+				sprintf(pCurrScreen->buttons[1].Name, GET_MISSION_TXT(MissionName[currMission]));
+				sprintf(pCurrScreen->buttons[2].Name, NullStr);
+				sprintf(pCurrScreen->buttons[3].Name, NullStr);
+				sprintf(pCurrScreen->buttons[4].Name, NullStr);
+				break;
+			case 2:
+				pCurrScreen->buttons[1].u = 3;
+				pCurrScreen->buttons[1].d = 3;
+				pCurrScreen->buttons[2].u = 2;
+				pCurrScreen->buttons[2].d = 2;
+				sprintf(pCurrScreen->buttons[1].Name, GET_MISSION_TXT(MissionName[currMission]));
+				sprintf(pCurrScreen->buttons[2].Name, GET_MISSION_TXT(MissionName[currMission + 1]));
+				sprintf(pCurrScreen->buttons[3].Name, NullStr);
+				sprintf(pCurrScreen->buttons[4].Name, NullStr);
+				break;
+			case 3:
+				pCurrScreen->buttons[1].u = 4;
+				pCurrScreen->buttons[1].d = 3;
+				pCurrScreen->buttons[2].u = 2;
+				pCurrScreen->buttons[2].d = 4;
+				pCurrScreen->buttons[3].u = 3;
+				pCurrScreen->buttons[3].d = 2;
+				sprintf(pCurrScreen->buttons[1].Name, GET_MISSION_TXT(MissionName[currMission]));
+				sprintf(pCurrScreen->buttons[2].Name, GET_MISSION_TXT(MissionName[currMission + 1]));
+				sprintf(pCurrScreen->buttons[3].Name, GET_MISSION_TXT(MissionName[currMission + 2]));
+				sprintf(pCurrScreen->buttons[4].Name, NullStr);
+				break;
+			case 4:
+				pCurrScreen->buttons[1].u = 5;
+				pCurrScreen->buttons[1].d = 3;
+				pCurrScreen->buttons[2].u = 2;
+				pCurrScreen->buttons[2].d = 4;
+				pCurrScreen->buttons[3].u = 3;
+				pCurrScreen->buttons[3].d = 5;
+				pCurrScreen->buttons[4].u = 4;
+				pCurrScreen->buttons[4].d = 2;
+				sprintf(pCurrScreen->buttons[1].Name, GET_MISSION_TXT(MissionName[currMission]));
+				sprintf(pCurrScreen->buttons[2].Name, GET_MISSION_TXT(MissionName[currMission + 1]));
+				sprintf(pCurrScreen->buttons[3].Name, GET_MISSION_TXT(MissionName[currMission + 2]));
+				sprintf(pCurrScreen->buttons[4].Name, GET_MISSION_TXT(MissionName[currMission + 3]));
+				break;
 		}
 
 		if (usedB == 4 &&
@@ -2790,7 +2782,7 @@ int MissionCityScreen(int bSetup)
 		EndFrame();
 #endif
 	}
-	
+
 	return 0;
 }
 
@@ -2916,8 +2908,6 @@ int CutSceneSelectScreen(int bSetup)
 	return 0;
 }
 
-
-
 // [D] [T]
 int CutSceneCitySelectScreen(int bSetup)
 {
@@ -2947,7 +2937,7 @@ int CutSceneCitySelectScreen(int bSetup)
 		pCurrScreen->buttons[0].u = 4;
 		pCurrScreen->buttons[3].d = 1;
 
-		if (gFurthestMission == 0) 
+		if (gFurthestMission == 0)
 		{
 			pCurrScreen->buttons[0].action = FE_MAKEVAR(BTN_DISABLED, 0);
 			pCurrScreen->buttons[1].action = FE_MAKEVAR(BTN_DISABLED, 0);
@@ -2968,14 +2958,14 @@ int CutSceneCitySelectScreen(int bSetup)
 			pCurrScreen->buttons[2].action = FE_MAKEVAR(BTN_DISABLED, 0);
 			pCurrScreen->buttons[3].action = FE_MAKEVAR(BTN_DISABLED, 0);
 		}
-		else if (gFurthestMission < 31) 
+		else if (gFurthestMission < 31)
 		{
 			pCurrScreen->buttons[0].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 22);
 			pCurrScreen->buttons[1].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 22);
 			pCurrScreen->buttons[2].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 22);
 			pCurrScreen->buttons[3].action = FE_MAKEVAR(BTN_DISABLED, 0);
 		}
-		else 
+		else
 		{
 			pCurrScreen->buttons[0].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 22);
 			pCurrScreen->buttons[1].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 22);
@@ -2996,10 +2986,10 @@ int CutSceneCitySelectScreen(int bSetup)
 		else
 		{
 			bDrawExtra = 1;
-			
-			if (currCity == 4) 
+
+			if (currCity == 4)
 				LoadImage(&rect, (u_long*)_frontend_buffer);
-			else 
+			else
 				LoadImage(&rect, (u_long*)(_frontend_buffer + currCity * 0x8000));
 
 			DrawSync(0);
@@ -3076,8 +3066,6 @@ int CutSceneCitySelectScreen(int bSetup)
 	return 0;
 }
 
-
-
 // [D] [T]
 int SetVolumeScreen(int bSetup)
 {
@@ -3089,7 +3077,7 @@ int SetVolumeScreen(int bSetup)
 	static int masterVolumeHold = 0;
 	static int musicVolumeHold = 0;
 
-	if (bSetup) 
+	if (bSetup)
 	{
 		currSelIndex = 0;
 
@@ -3152,72 +3140,72 @@ int SetVolumeScreen(int bSetup)
 		{
 			switch (currSelIndex)
 			{
-			case 0:
-				gMasterVolume -= 100;
+				case 0:
+					gMasterVolume -= 100;
 
-				if (gMasterVolume < -10000)
-				{
-					gMasterVolume = -10000;
-					dir = 0;
-				}
-				else
-				{
-					dir = 1;
-				}
+					if (gMasterVolume < -10000)
+					{
+						gMasterVolume = -10000;
+						dir = 0;
+					}
+					else
+					{
+						dir = 1;
+					}
 
-				last = gMasterVolume;
-				break;
-			case 1:
-				gMusicVolume -= 100;
+					last = gMasterVolume;
+					break;
+				case 1:
+					gMusicVolume -= 100;
 
-				if (gMusicVolume < -10000)
-				{
-					gMusicVolume = -10000;
-					dir = 0;
-				}
-				else
-				{
-					dir = 1;
-				}
+					if (gMusicVolume < -10000)
+					{
+						gMusicVolume = -10000;
+						dir = 0;
+					}
+					else
+					{
+						dir = 1;
+					}
 
-				last = gMusicVolume;
-				break;
+					last = gMusicVolume;
+					break;
 			}
 		}
 		else if (fePad & MPAD_D_RIGHT)
 		{
 			switch (currSelIndex)
 			{
-			case 0:
-				gMasterVolume += 100;
+				case 0:
+					gMasterVolume += 100;
 
-				if (gMasterVolume > 0)
-				{
-					gMasterVolume = 0;
-					dir = 0;
-				}
-				else
-				{
-					dir = 1;
-				}
+					if (gMasterVolume > 0)
+					{
+						gMasterVolume = 0;
+						dir = 0;
+					}
+					else
+					{
+						dir = 1;
+					}
 
-				last = gMasterVolume;
-				break;
-			case 1:
-				gMusicVolume += 100;
+					last = gMasterVolume;
+					break;
+				case 1:
+					gMusicVolume += 100;
 
-				if (gMusicVolume > 0)
-				{
-					gMusicVolume = 0;
-					dir = 0;
-				}
-				else
-				{
-					dir = 1;
-				}
+					if (gMusicVolume > 0)
+					{
+						gMusicVolume = 0;
+						dir = 0;
+					}
+					else
+					{
+						dir = 1;
+					}
 
-				last = gMusicVolume;
-				break;
+					last = gMusicVolume;
+					break;
 			}
 		}
 
@@ -3252,7 +3240,7 @@ int SetVolumeScreen(int bSetup)
 
 int GameNum = 0;
 CVECTOR scoreCol = { 120, 120, 120 };
-CVECTOR otherCol = {125, 115, 34};
+CVECTOR otherCol = { 125, 115, 34 };
 
 // [D] [T]
 void DisplayScoreTable(void)
@@ -3291,22 +3279,22 @@ void DisplayScoreTable(void)
 	else
 		offset = (GameType - 4U) * 8;
 
-	if (GameType != GAME_PURSUIT && GameType != GAME_SURVIVAL) 
+	if (GameType != GAME_PURSUIT && GameType != GAME_SURVIVAL)
 	{
 		sprintf(text, "%s", GAMEMODE_AREA_NAME(GameLevel, offset, GameNum));
 		FEPrintStringSized(text, 420, 206, 3072, 2, otherCol.r, otherCol.g, otherCol.b);
 	}
 
 	offset = 240;
-	
+
 	for (i = 0; i < 5; i++)
 	{
 		sprintf(text, pSE[i].name);
 		FEPrintString(text, 20, offset, 2, scoreCol.r, scoreCol.g, scoreCol.b);
 
-		if (GameType == GAME_GATERACE || GameType == GAME_TRAILBLAZER) 
+		if (GameType == GAME_GATERACE || GameType == GAME_TRAILBLAZER)
 		{
-			if (pSE[i].items != -1) 
+			if (pSE[i].items != -1)
 			{
 				sprintf(text, "%d", pSE[i].items);
 				FEPrintString(text, 140, offset, 2, scoreCol.r, scoreCol.g, scoreCol.b);
@@ -3315,17 +3303,16 @@ void DisplayScoreTable(void)
 
 		time = pSE[i].time;
 
-		if (time != -1) 
+		if (time != -1)
 		{
 			sprintf(text, "%d:%02d.%02d", time / 180000, time / 3000 - (time / 180000) * 60, (time % 3000) / 30);
-			
+
 			FEPrintString(text, 280, offset, 2, scoreCol.r, scoreCol.g, scoreCol.b);
 		}
 
 		offset += 36;
 	}
 }
-
 
 // [D] [T]
 int ScoreScreen(int bSetup)
@@ -3416,7 +3403,7 @@ int SubtitlesOnOffScreen(int bSetup)
 		{
 			pCurrButton = pCurrScreen->buttons + 1;
 		}
-		else 
+		else
 		{
 			pCurrButton = pCurrScreen->buttons;
 		}
@@ -3425,7 +3412,6 @@ int SubtitlesOnOffScreen(int bSetup)
 	}
 	return 0;
 }
-
 
 // [D] [T]
 int CityCutOffScreen(int bSetup)
@@ -3510,7 +3496,6 @@ int CityCutOffScreen(int bSetup)
 	return 0;
 }
 
-
 char* contNames[2] = {
 	"DATA\\CARCONT.RAW",
 	"DATA\\TANCONT.RAW"
@@ -3519,7 +3504,7 @@ char* contNames[2] = {
 // [D] [T]
 int ControllerScreen(int bSetup)
 {
-	if (bSetup ) 
+	if (bSetup )
 	{
 		iScreenSelect = SCREEN_SCORES;
 		currSelIndex = 0;
@@ -3549,13 +3534,13 @@ int ControllerScreen(int bSetup)
 // [D] [T]
 int MainScreen(int bSetup)
 {
-	if (bSetup) 
+	if (bSetup)
 	{
-		if (numPadsConnected == 2) 
+		if (numPadsConnected == 2)
 		{
 			pCurrScreen->buttons[3].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 6);
 		}
-		else 
+		else
 		{
 			pCurrScreen->buttons[3].action = FE_MAKEVAR(BTN_DISABLED, 0);
 		}
@@ -3607,16 +3592,16 @@ int CheatScreen(int bSetup)
 		return 0;
 	}
 
-	if (gFurthestMission == 40) 
+	if (gFurthestMission == 40)
 		numOpen = 4 + ENABLE_BONUS_CONTENT * 2;	// [A] now 5 elements as "Bonus gallery" is open
-	else 
+	else
 		numOpen = AvailableCheats.cheat1 + AvailableCheats.cheat2 + AvailableCheats.cheat3 + AvailableCheats.cheat4;
-	
+
 	// "Sorry no secrets"
 	if (numOpen == 0)
 	{
 		pCurrScreen->numButtons = 1;
-		
+
 		pCurrScreen->buttons[0].u = 1;
 		pCurrScreen->buttons[0].d = 1;
 		pCurrScreen->buttons[0].action = FE_MAKEVAR(BTN_PREVIOUS_SCREEN, 0);
@@ -3652,22 +3637,22 @@ int CheatScreen(int bSetup)
 		}
 	}
 
-	if (numOpen == 2) 
+	if (numOpen == 2)
 	{
 		pCurrScreen->buttons[0].action = hackLookup1[cheatOn[0]];
 		pCurrScreen->buttons[1].action = hackLookup1[cheatOn[1]];
-	
+
 		pCurrScreen->buttons[0].var = hackLookup2[cheatOn[0]];
 		pCurrScreen->buttons[1].var = hackLookup2[cheatOn[1]];
-		
+
 		pCurrScreen->buttons[0].d = 2;
 		pCurrScreen->buttons[0].u = 2;
-		
+
 		pCurrScreen->buttons[1].d = 1;
 		pCurrScreen->buttons[1].u = 1;
-		
+
 		currSelIndex = 0;
-	
+
 		return 0;
 	}
 
@@ -3677,36 +3662,36 @@ int CheatScreen(int bSetup)
 		pCurrScreen->buttons[0].var = hackLookup2[cheatOn[0]];
 		pCurrScreen->buttons[0].d = 1;
 		pCurrScreen->buttons[0].u = 1;
-		
+
 		currSelIndex = 0;
-	
+
 		return 0;
 	}
 
-	if (numOpen == 3) 
+	if (numOpen == 3)
 	{
 		pCurrScreen->buttons[0].action = hackLookup1[cheatOn[0]];
 		pCurrScreen->buttons[1].action = hackLookup1[cheatOn[1]];
 		pCurrScreen->buttons[2].action = hackLookup1[cheatOn[2]];
-		
+
 		pCurrScreen->buttons[0].var = hackLookup2[cheatOn[0]];
 		pCurrScreen->buttons[1].var = hackLookup2[cheatOn[1]];
 		pCurrScreen->buttons[2].var = hackLookup2[cheatOn[2]];
-		
+
 		pCurrScreen->buttons[0].d = 2;
 		pCurrScreen->buttons[0].u = 3;
-		
+
 		pCurrScreen->buttons[1].d = 3;
 		pCurrScreen->buttons[1].u = 1;
-		
+
 		pCurrScreen->buttons[2].d = 1;
 		pCurrScreen->buttons[2].u = 2;
-		
+
 		currSelIndex = 0;
 		return 0;
 	}
 
-	if (numOpen >= 4) 
+	if (numOpen >= 4)
 	{
 		pCurrScreen->buttons[0].action = hackLookup1[cheatOn[0]];
 		pCurrScreen->buttons[1].action = hackLookup1[cheatOn[1]];
@@ -3717,21 +3702,21 @@ int CheatScreen(int bSetup)
 		pCurrScreen->buttons[1].var = hackLookup2[cheatOn[1]];
 		pCurrScreen->buttons[2].var = hackLookup2[cheatOn[2]];
 		pCurrScreen->buttons[3].var = hackLookup2[cheatOn[3]];
-		
+
 		pCurrScreen->buttons[0].d = 2;
 		pCurrScreen->buttons[0].u = 4;
-		
+
 		pCurrScreen->buttons[1].d = 3;
 		pCurrScreen->buttons[1].u = 1;
-		
+
 		pCurrScreen->buttons[2].d = 4;
 		pCurrScreen->buttons[2].u = 2;
-		
+
 		pCurrScreen->buttons[3].d = 1;
 		pCurrScreen->buttons[3].u = 3;
 
 		// [A] adding bonus gallery
-		if(numOpen >= 5)
+		if (numOpen >= 5)
 		{
 			pCurrScreen->buttons[4].action = hackLookup1[cheatOn[4]];
 			pCurrScreen->buttons[4].var = hackLookup2[cheatOn[4]];
@@ -3740,7 +3725,7 @@ int CheatScreen(int bSetup)
 
 			pCurrScreen->buttons[0].u = 5;
 			pCurrScreen->buttons[3].d = 5;
-			
+
 			pCurrScreen->buttons[4].d = 1;
 			pCurrScreen->buttons[4].u = 4;
 		}
@@ -3770,7 +3755,6 @@ int CheatScreen(int bSetup)
 	return 0;
 }
 
-
 // [D] [T]
 int ImmunityOnOffScreen(int bSetup)
 {
@@ -3791,13 +3775,14 @@ int InvincibleOnOffScreen(int bSetup)
 {
 	if (bSetup)
 	{
-		if (gInvincibleCar == 0) 
+		if (gInvincibleCar == 0)
 			pCurrButton = pCurrScreen->buttons + 1;
-		else 
+		else
 			pCurrButton = pCurrScreen->buttons;
 
 		return 1;
 	}
+
 	return 0;
 }
 
@@ -3812,6 +3797,7 @@ int MiniCarsOnOffScreen(int bSetup)
 
 		return 1;
 	}
+
 	return 0;
 }
 
@@ -3831,10 +3817,9 @@ int GameNameScreen(int bSetup)
 {
 	int offset;
 
-	if (bSetup) 
+	if (bSetup)
 	{
-		
-		if (GameType == GAME_TAKEADRIVE && NumPlayers == 2) 
+		if (GameType == GAME_TAKEADRIVE && NumPlayers == 2)
 			offset = 48;
 		else if (GameType == GAME_COPSANDROBBERS)
 			offset = 32;
@@ -3851,21 +3836,24 @@ int GameNameScreen(int bSetup)
 
 	return 0;
 }
+
 // [D] [T]
 int CheatNumlayerSelect(int bSetup)
 {
-	if (bSetup) 
+	if (bSetup)
 	{
-		if (numPadsConnected == 2) 
+		if (numPadsConnected == 2)
 		{
 			pCurrScreen->buttons[1].action = FE_MAKEVAR(BTN_NEXT_SCREEN, 32);
 		}
-		else 
+		else
 		{
 			pCurrScreen->buttons[1].action = FE_MAKEVAR(BTN_DISABLED, 0);
 		}
+
 		return 0;
 	}
+
 	return 0;
 }
 
@@ -4085,13 +4073,9 @@ int TimeOfDaySelectScreen(int bSetup)
 	dir = 0;
 
 	if (feNewPad & MPAD_D_LEFT)
-	{
 		dir = -1;
-	}
 	else if (feNewPad & MPAD_D_RIGHT)
-	{
 		dir = 1;
-	}
 
 	if (dir != 0)
 	{
@@ -4123,25 +4107,25 @@ int DemoScreen(int bSetup)
 {
 	if (bSetup)
 		return 0;
-	
+
 	if (feNewPad & MPAD_CROSS)
 	{
 		pScreenStack[ScreenDepth] = pCurrScreen;
 		pButtonStack[ScreenDepth] = pCurrButton;
-		
+
 		FESound(2);
 		GameType = GAME_PURSUIT;
-	
+
 		GameLevel = 1;
 		gWantNight = 0;
 		gSubGameNumber = 0;
-		
+
 		SetState(STATE_GAMESTART);
-		
+
 		return 0;
 	}
 
-	if(mainScreenLoaded)
+	if (mainScreenLoaded)
 	{
 		if (feNewPad & MPAD_CIRCLE)
 		{
@@ -4149,7 +4133,7 @@ int DemoScreen(int bSetup)
 			FESound(2);
 		}
 	}
-	else if(bQuitToSystem)
+	else if (bQuitToSystem)
 	{
 		bQuitToSystem = 0;
 		LoadBackgroundFile("DATA\\GFX.RAW");

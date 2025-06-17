@@ -32,5 +32,4 @@ extern void CheckCarEffects(CAR_DATA *cp, int player_id); // 0x00056350
 
 extern int GetPlayerId(CAR_DATA *cp); // 0x00056CEC
 
-
-#endif
+#endif // HANDLING_H

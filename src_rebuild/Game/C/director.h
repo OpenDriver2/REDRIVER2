@@ -37,8 +37,8 @@ extern int InvalidCamera(int car_num); // 0x0003E53C
 extern void FindNextChange(int CameraCnt); // 0x0003E94C
 extern int CheckCameraChange(int CameraCnt); // 0x0003B794
 
-extern int dist(VECTOR* pos1, VECTOR* pos2);
+extern int dist(VECTOR* pos1, VECTOR* pos2); // 0x0003EB9C
 
 extern int IsMovingCamera(PLAYBACKCAMERA* lastcam, PLAYBACKCAMERA* nextcam, int cameracnt); // 0x0003B8C8
 
-#endif
+#endif // DIRECTOR_H

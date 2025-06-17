@@ -41,7 +41,7 @@ extern int carsOnBoat;
 
 extern void InitEvents(); // 0x0004BBD4
 extern void SetUpEvents(int full); // 0x00046258
-extern VECTOR* TriggerEvent(int i);
+extern VECTOR* TriggerEvent(int i); // 0x0004AA78
 
 extern void EventCollisions(CAR_DATA *cp, int type); // 0x0004BC50
 
@@ -61,5 +61,4 @@ extern int DetonatorTimer(); // 0x0004B5FC
 
 extern void MultiCarEvent(MS_TARGET *target); // 0x0004BAB0
 
-
-#endif
+#endif // EVENT_H

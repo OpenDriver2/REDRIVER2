@@ -30,7 +30,7 @@ void DrawDebugOverlays()
 {
 	VECTOR _zerov = { 0 };
 
-	while(gDebug_numLines > 0)
+	while (gDebug_numLines > 0)
 	{
 		LineDef_t& ld = gDebug_Lines[gDebug_numLines-1];
 
@@ -45,7 +45,7 @@ void DrawDebugOverlays()
 
 		gte_rtpt();
 		gte_avsz4();
-		
+
 		int z;
 		gte_stopz(&z);
 
@@ -66,8 +66,10 @@ void DrawDebugOverlays()
 
 			current->primptr += sizeof(LINE_F2);
 		}
+
 		gDebug_numLines--;
 	}
+
 	gDebug_numLines = 0;
 
 	DR_TPAGE* tp = (DR_TPAGE*)current->primptr;
@@ -82,7 +84,7 @@ void DrawDebugOverlays()
 	if (gDisplayDrawStats)
 	{
 		SetTextColour(128, 120, 0);
-		
+
 		sprintf(tempBuf, "Primtab: %d of %d", primTabLeft, PRIMTAB_SIZE);
 		PrintString(tempBuf, 10, 20);
 
@@ -111,20 +113,18 @@ void DrawDebugOverlays()
 		PrintString(tempBuf, 10, 60);
 
 		int playerCar = player[0].playerCarId;
-		if(playerCar >= 0)
+		if (playerCar >= 0)
 		{
-			
 			int speed = car_data[playerCar].hd.speed;
 
 			sprintf(tempBuf, "Car speed: %d     direction: %d", speed, car_data[playerCar].hd.direction);
 			PrintString(tempBuf, 10, 80);
 
 			VECTOR* carPos = (VECTOR*)car_data[playerCar].hd.where.t;
-			
+
 			DRIVER2_ROAD_INFO roadInfo;
 			roadInfo.surfId = GetSurfaceIndex(carPos);
 
-			
 			if (GetSurfaceRoadInfo(&roadInfo, roadInfo.surfId))
 			{
 				int dx, dz;
@@ -135,7 +135,7 @@ void DrawDebugOverlays()
 				{
 					dx = carPos->vx - roadInfo.straight->Midx;
 					dz = carPos->vz - roadInfo.straight->Midz;
-					
+
 					segLen = roadInfo.straight->length;
 					theta = roadInfo.straight->angle - ratan2(dx, dz);
 					distAlongSegment = (segLen / 2) + FIXEDH(RCOS(theta) * SquareRoot0(dx * dx + dz * dz));
@@ -144,7 +144,7 @@ void DrawDebugOverlays()
 				{
 					dx = carPos->vx - roadInfo.curve->Midx;
 					dz = carPos->vz - roadInfo.curve->Midz;
-					
+
 					theta = ratan2(dx,dz);
 					segLen = (roadInfo.curve->end - roadInfo.curve->start & 0xfffU); // *roadInfo.curve->inside * 11 / 7; // don't use physical length
 
@@ -155,7 +155,7 @@ void DrawDebugOverlays()
 					else
 						distAlongSegment = (theta & 0xfffU) - roadInfo.curve->start & 0xfe0;
 				}
-				
+
 				int lane = GetLaneByPositionOnRoad(&roadInfo, carPos);
 
 				sprintf(tempBuf, "%s %d PRK(%d-%d) SPD(%d) LEN(%d)",
@@ -184,14 +184,14 @@ void DrawDebugOverlays()
 
 				PrintString(tempBuf, 10, 205);
 			}
-			else if(IS_JUNCTION_SURFACE(roadInfo.surfId))
+			else if (IS_JUNCTION_SURFACE(roadInfo.surfId))
 			{
 				DRIVER2_JUNCTION* junc = GET_JUNCTION(roadInfo.surfId);
-				
+
 				sprintf(tempBuf, "JUN %d TL(%d) YLD(%d)",
-					roadInfo.surfId, 
+					roadInfo.surfId,
 					(junc->flags & 1), (junc->flags & 2));
-				
+
 				PrintString(tempBuf, 10, 180);
 
 				sprintf(tempBuf, "c %d %d %d %d",
@@ -199,10 +199,7 @@ void DrawDebugOverlays()
 
 				PrintString(tempBuf, 10, 205);
 			}
-
-			
 		}
-
 	}
 }
 
@@ -233,7 +230,7 @@ void Debug_Line2D(SXYPAIR& pointA, SXYPAIR& pointB, CVECTOR& color)
 
 	line->x0 = pointA.x;
 	line->y0 = pointA.y;
-	
+
 	line->x1 = pointB.x;
 	line->y1 = pointB.y;
 
@@ -342,6 +339,4 @@ void DoFreeCamera()
 		g_FreeCameraVelocity.vy += (inv_camera_matrix.m[0][1] * 32) * sign;
 		g_FreeCameraVelocity.vz += (inv_camera_matrix.m[0][2] * 32) * sign;
 	}
-
-
 }

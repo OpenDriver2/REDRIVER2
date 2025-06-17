@@ -20,5 +20,4 @@ extern void SetMSoundVar(intptr_t var, VECTOR *V); // 0x0005F25C
 extern char SilenceThisCar(int car); // 0x0005EE00
 extern void AdjustPlayerCarVolume(); // 0x0005F294
 
-
-#endif
+#endif // MC_SND_H

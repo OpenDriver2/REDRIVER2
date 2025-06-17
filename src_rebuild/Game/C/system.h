@@ -26,7 +26,6 @@ enum CITYTYPE
 	CITYTYPE_MULTI_NIGHT = 3,
 };
 
-
 extern volatile char* _overlay_buffer;		// 0x1C0000
 extern volatile char* _frontend_buffer;		// 0xFB400
 extern volatile char* _other_buffer;		// 0xF3000
@@ -84,13 +83,13 @@ extern void sys_freeall();
 #ifdef __GNUC__
 #define D_MALLOC_END() \
 		D_TEMPFREE();\
-		if(mallocptr > _oldmalloc)\
+		if (mallocptr > _oldmalloc)\
 			DMalloc_DebugPrint("malloc(%d) in %s, line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, FUNCNAME, __LINE__, (mallocptr-malloctab));\
 	} // D_MALLOC_BEGIN block
 #else
 #define D_MALLOC_END() \
 		D_TEMPFREE();\
-		if(mallocptr > _oldmalloc)\
+		if (mallocptr > _oldmalloc)\
 			DMalloc_DebugPrint("malloc(%d) in " FUNCNAME ", line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __LINE__, (mallocptr-malloctab));\
 	} // D_MALLOC_BEGIN block
 #endif
@@ -132,7 +131,7 @@ extern DRAW_MODE draw_mode_ntsc;
 #define video_mode MODE_NTSC
 #endif // PAL
 
-// ordering table size 
+// ordering table size
 #ifdef PSX
 #define	OTSIZE	0x1080
 #else
@@ -190,5 +189,4 @@ extern void SetCityType(CITYTYPE type); // 0x0007F118
 extern CITYTYPE GetCityType();
 extern CDTYPE DiscSwapped(char *filename); // 0x0007F640
 
-
-#endif
+#endif // SYSTEM_H

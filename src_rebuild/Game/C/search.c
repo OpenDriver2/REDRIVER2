@@ -5,8 +5,3 @@ void InitTextureNames(void)
 {
 	return;
 }
-
-
-
-
-

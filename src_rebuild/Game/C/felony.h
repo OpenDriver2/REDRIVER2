@@ -23,4 +23,4 @@ extern void CarHitByPlayer(CAR_DATA* victim, int howHard); // 0x0004D2B8
 extern void NoteFelony(FELONY_DATA *pFelonyData, char type, short scale); // 0x0004C330
 extern void AdjustFelony(FELONY_DATA *pFelonyData); // 0x0004C8B4
 
-#endif
+#endif // FELONY_H

@@ -33,4 +33,4 @@ extern MODEL* FindModelPtrWithName(char *name); // 0x0005D40C
 
 extern int FindModelIdxWithName(char *name); // 0x0005D4C4
 
-#endif
+#endif // MODELS_H

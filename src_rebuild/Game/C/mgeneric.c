@@ -28,7 +28,7 @@ void StorePlayerPosition(SAVED_PLAYER_POS *data)
 
 		data->totaldamage = cp->totalDamage;
 		data->felony = cp->felonyRating;
-	
+
 		data->damage[0] = cp->ap.damage[0];
 		data->damage[1] = cp->ap.damage[1];
 		data->damage[2] = cp->ap.damage[2];
@@ -47,7 +47,7 @@ void StorePlayerPosition(SAVED_PLAYER_POS *data)
 
 		data->totaldamage = 0;
 		data->felony = pedestrianFelony;
-	
+
 		data->damage[0] = 0;
 		data->damage[1] = 0;
 		data->damage[2] = 0;
@@ -62,20 +62,19 @@ void StorePlayerPosition(SAVED_PLAYER_POS *data)
 	}
 }
 
-
 // [D] [T]
 void RestorePlayerPosition(SAVED_PLAYER_POS *data)
 {
-	if ((data->type & 0xf) == 1) 
+	if ((data->type & 0xf) == 1)
 	{
 		PlayerStartInfo[0]->type = 1;
 		PlayerStartInfo[0]->model = (data->type >> 4) & 15;
 		PlayerStartInfo[0]->palette = (data->type >> 8) & 15;
 	}
-	else 
+	else
 		PlayerStartInfo[0]->type = 2;
 
-	if (gCurrentMissionNumber != 16) 
+	if (gCurrentMissionNumber != 16)
 	{
 		PlayerStartInfo[0]->position.vx = data->vx;
 		PlayerStartInfo[0]->position.vy = data->vy;
@@ -132,11 +131,10 @@ void StoreCarPosition(MS_TARGET *target, SAVED_CAR_POS *data)
 	data->direction = cp->hd.direction;
 
 	data->active = 1;
-	
+
 	if (target->s.target_flags & TARGET_FLAG_CAR_SWAPPED)
 		data->active |= 0x80;
 }
-
 
 // [D] [T]
 void RestoreCarPosition(SAVED_CAR_POS *data)
@@ -144,9 +142,9 @@ void RestoreCarPosition(SAVED_CAR_POS *data)
 	REPLAY_STREAM* stream;
 	STREAM_SOURCE* playerStart;
 
-	if(!data->active)
+	if (!data->active)
 		return;
-	
+
 	stream = &ReplayStreams[numPlayersToCreate];
 
 	stream->InitialPadRecordBuffer = (PADRECORD*)ReplayStart;
@@ -158,7 +156,7 @@ void RestoreCarPosition(SAVED_CAR_POS *data)
 
 	PlayerStartInfo[numPlayersToCreate] = &stream->SourceType;
 
-	if (data->active & 0x80) 
+	if (data->active & 0x80)
 	{
 		memcpy((u_char*)PlayerStartInfo[numPlayersToCreate], (u_char*)PlayerStartInfo[0], sizeof(STREAM_SOURCE));
 
@@ -186,7 +184,7 @@ void RestoreCarPosition(SAVED_CAR_POS *data)
 		playerStart->damage[4] = data->damage[4];
 		playerStart->damage[5] = data->damage[5];
 	}
-	else 
+	else
 	{
 		playerStart = &stream->SourceType;
 
@@ -207,6 +205,7 @@ void RestoreCarPosition(SAVED_CAR_POS *data)
 		playerStart->damage[4] = data->damage[4];
 		playerStart->damage[5] = data->damage[5];
 	}
+
 	numPlayersToCreate++;
 }
 
@@ -219,25 +218,25 @@ void StoreEndData(void)
 	SAVED_CAR_POS* carpos;
 
 	ClearMem((char*)&MissionEndData, sizeof(MissionEndData));
-	
+
 	if (gCurrentMissionNumber > 40)
 		return;
 
 	numStored = 0;
 	StorePlayerPosition(&MissionEndData.PlayerPos);
 
-	for(i = 0; i < MAX_MISSION_TARGETS && numStored < 6; i++)
+	for (i = 0; i < MAX_MISSION_TARGETS && numStored < 6; i++)
 	{
 		target = &MissionTargets[i];
 		carpos = &MissionEndData.CarPos[numStored];
 
 		if (target->type == Target_Car &&
-			(target->s.target_flags & TARGET_FLAG_CAR_SAVED) && 
+			(target->s.target_flags & TARGET_FLAG_CAR_SAVED) &&
 			(target->s.target_flags & TARGET_FLAG_CAR_PINGED_IN))
 		{
 			StoreCarPosition(target, carpos);
 
-			if(carpos->active)
+			if (carpos->active)
 				numStored++;
 		}
 	}

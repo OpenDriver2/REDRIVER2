@@ -9,4 +9,4 @@ extern sdPlane*	sdGetCell_asm(int param_2, short** roadMapData, int pos_x, int p
 extern sdPlane* sdGetCell_alpha16(VECTOR* pos);
 extern int		RoadInCell_alpha16(VECTOR* pos);
 
-#endif
+#endif // D2MAPASM_H

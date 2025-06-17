@@ -98,19 +98,19 @@ int PointFaceCheck(CAR_DATA *cp0, CAR_DATA *cp1, int i, TestResult *least, int n
 int collided3d(CAR_DATA *cp0, CAR_DATA *cp1, TestResult *least)
 {
 	int i;
-	
+
 	least->depth = 0x40000000;
 
 	// check up-down first
-	if (PointFaceCheck(cp0, cp1, 1, least, 1) >= 0 && 
+	if (PointFaceCheck(cp0, cp1, 1, least, 1) >= 0 &&
 		PointFaceCheck(cp1, cp0, 1, least, -1) >= 0)
 	{
 		least->depth = 0x40000000;
-		
+
 		i = 0;
 
 		// check sides
-		while (PointFaceCheck(cp0, cp1, i, least, 1) >= 0) 
+		while (PointFaceCheck(cp0, cp1, i, least, 1) >= 0)
 		{
 			if (PointFaceCheck(cp1, cp0, i, least, -1) >= 0)
 			{
@@ -118,7 +118,7 @@ int collided3d(CAR_DATA *cp0, CAR_DATA *cp1, TestResult *least)
 
 				if (i <= 2)
 					continue;
-				
+
 				return 1;
 			}
 		}
@@ -138,11 +138,11 @@ int CarCarCollision3(CAR_DATA *c0, CAR_DATA *c1, int *depth, VECTOR *where, VECT
 	if (res)
 	{
 		*depth = tr.depth;
-		
+
 		where->vx = tr.location.vx;
 		where->vy = tr.location.vy;
 		where->vz = tr.location.vz;
-		
+
 		normal->vx = tr.normal.vx;
 		normal->vy = tr.normal.vy;
 		normal->vz = tr.normal.vz;
@@ -150,8 +150,3 @@ int CarCarCollision3(CAR_DATA *c0, CAR_DATA *c1, int *depth, VECTOR *where, VECT
 
 	return res;
 }
-
-
-
-
-

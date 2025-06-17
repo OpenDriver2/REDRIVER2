@@ -25,10 +25,10 @@ struct FLAREREC
 int sky_y_offset[4] = { -17, -17, -17, -17 };
 
 unsigned char HorizonLookup[4][4] = {
-	{0, 0, 20, 20},
-	{20, 20, 0, 0},
-	{0, 0, 20, 20},
-	{0, 0, 20, 20},
+	{ 0, 0, 20, 20 },
+	{ 20, 20, 0, 0 },
+	{ 0, 0, 20, 20 },
+	{ 0, 0, 20, 20 }
 };
 
 unsigned char HorizonTextures[40] = {
@@ -38,19 +38,18 @@ unsigned char HorizonTextures[40] = {
 	16, 17, 18, 19
 };
 
-
 SVECTOR sun_position[4] = {
-	{-32000,-11000,-5000},
-	{-32000,-11000,-5000},
-	{-32000,-11000,-5000},
-	{-32000,-11000,-5000}
+	{ -32000, -11000, -5000 },
+	{ -32000, -11000, -5000 },
+	{ -32000, -11000, -5000 },
+	{ -32000, -11000, -5000 }
 };
 
 SVECTOR moon_position[4] = {
-	{-32000,-11500,-18000},
-	{-32000,-11500,-18000,},
-	{-32000,-11500,-18000,},
-	{-32000,-11500,-18000,}
+	{ -32000, -11500, -18000 },
+	{ -32000, -11500, -18000 },
+	{ -32000, -11500, -18000 },
+	{ -32000, -11500, -18000 }
 };
 
 SVECTOR moon_shadow_position[4] =
@@ -64,36 +63,35 @@ SVECTOR moon_shadow_position[4] =
 FLAREREC flare_info[8] =
 {
 	{
-		{0,0,90},16, 48
+		{ 0, 0, 90 }, 16, 48
 	},
 	{
-		{80,40,4},48,72
+		{ 80, 40, 4 }, 48, 72
 	},
 	{
-		{90,0,0},48,96
+		{ 90, 0, 0 }, 48, 96
 	},
 	{
-		{0,90,0},16,144
+		{ 0, 90, 0 }, 16, 144
 	},
 	{
-		{0,0,90},64,160
+		{ 0, 0, 90 }, 64, 160
 	},
 	{
-		{90,90,0},32,184
+		{ 90, 90, 0 }, 32, 184
 	},
 	{
-		{90,0,0},32,208
+		{ 90, 0, 0 }, 32, 208
 	},
 	{
-		{0,0,90},48,15
+		{ 0, 0, 90 }, 48, 15
 	}
 };
 
-int tunnelDir[3][2] =
-{
-	{2000, 3064},
-	{2048, 0},
-	{2048, 4095}
+int tunnelDir[3][2] = {
+	{ 2000, 3064 },
+	{ 2048, 0 },
+	{ 2048, 4095 }
 };
 
 VECTOR tunnelPos[3][2] =
@@ -106,7 +104,6 @@ VECTOR tunnelPos[3][2] =
 		{ 272800, 0, 41200, 0 },
 		{ 271963, 2000, 168187, 0 }
 	},
-
 	{
 		{ -115100, 0, -193200, 0 },
 		{ -113300, -400, -132501, 0 }
@@ -124,13 +121,13 @@ void LoadSky(void)
 
 	int skyNum;
 	RECT16 rect;
-	
+
 	int offset;
 
 	int flipped;
 	int single;
 
-	int u,v,x,y,ry;
+	int u, v, x, y, ry;
 	int tp_x, clut_x, i;
 
 	i = 0;
@@ -139,9 +136,9 @@ void LoadSky(void)
 	flipped = 1;
 
 	do {
-		if (flipped) 
+		if (flipped)
 		{
-			switch(y)
+			switch (y)
 			{
 				default:
 					ry = 0;
@@ -197,7 +194,7 @@ void LoadSky(void)
 
 		do {
 			u = x * 128;
-		
+
 			if (single)
 			{
 				skytexuv[i].u0 = u;
@@ -209,7 +206,7 @@ void LoadSky(void)
 				skytexuv[i].u3 = u;
 				skytexuv[i].v3 = v;
 			}
-			else if (flipped) 
+			else if (flipped)
 			{
 				skytexuv[i].u0 = u;
 				skytexuv[i].v0 = v + 83;
@@ -231,9 +228,9 @@ void LoadSky(void)
 				skytexuv[i].u3 = u + 127;
 				skytexuv[i].v3 = v + 83;
 			}
-	
-			skytpage[i] = GetTPage(0,0,tp_x & ~0x3f, ry * 84 & 768);
-			skyclut[i] = GetClut(clut_x,ry + 252);
+
+			skytpage[i] = GetTPage(0, 0, tp_x & ~0x3f, ry * 84 & 768);
+			skyclut[i] = GetClut(clut_x, ry + 252);
 
 			tp_x += 32;
 			clut_x += 16;
@@ -241,9 +238,9 @@ void LoadSky(void)
 			x++;
 			i++;
 		} while (x < 4);
-	
+
 		flipped = (y < 7);
-		
+
 	} while (y < 7);
 
 	if (GameLevel == 1)
@@ -353,8 +350,8 @@ void DisplaySun(DVECTOR* pos, CVECTOR* col, int flare_col)
 	addPrim(current->ot + 0x1079, polys);
 	current->primptr += sizeof(POLY_FT4);
 
-	cs = RCOS(camera_angle.vy);  //rcossin_tbl[(camera_angle.vy & 0x1ffe) + 1];
-	sn = RSIN(camera_angle.vy);  //rcossin_tbl[camera_angle.vy & 0x1ffe];
+	cs = RCOS(camera_angle.vy); //rcossin_tbl[(camera_angle.vy & 0x1ffe) + 1];
+	sn = RSIN(camera_angle.vy); //rcossin_tbl[camera_angle.vy & 0x1ffe];
 
 	sz = -(((flare_texture.coords.u1 - (flare_texture.coords.u0 - 1)) / 2) * 3) / 4;
 
@@ -401,10 +398,10 @@ void DisplayMoon(DVECTOR* pos, CVECTOR* col, int flip)
 {
 	short width;
 	short height;
-	
+
 	POLY_FT3* null;
 	POLY_FT4* polys;
-	
+
 	null = (POLY_FT3*)current->primptr;
 	setPolyFT3(null);
 
@@ -462,19 +459,19 @@ void DisplayMoon(DVECTOR* pos, CVECTOR* col, int flip)
 
 extern VECTOR dummy;
 RECT16 sun_source = {
-		1008,
-		456,
-		16,
-		10
+	1008,
+	456,
+	16,
+	10
 };
 
 // [D] [T]
 void DrawLensFlare(void)
 {
-	static char last_attempt_failed; // offset 0x0
-	static ushort buffer[16*10];
+	static char last_attempt_failed;
+	static ushort buffer[16 * 10];
 
-	RECT16 viewp = { -1,-1,321,257 };
+	RECT16 viewp = { -1, -1, 321, 257 };
 
 	int flarez;
 	int distance_to_sun;
@@ -489,7 +486,7 @@ void DrawLensFlare(void)
 	int xgap;
 	int flare_col;
 	int flaresize;
-	
+
 	int haze_col;
 
 #if USE_PGXP
@@ -497,7 +494,7 @@ void DrawLensFlare(void)
 #else
 	DVECTOR sun_pers_conv_position;
 #endif
-	
+
 	RECT16 source;
 	CVECTOR col;
 
@@ -505,7 +502,7 @@ void DrawLensFlare(void)
 
 	if (gWeather - 1U <= 1 || (M_BIT(gTimeOfDay) & (M_BIT(TIME_DAWN) | M_BIT(TIME_DUSK))))
 		return;
-	
+
 	if (gTimeOfDay == TIME_NIGHT)
 		col.r = 128;
 	else
@@ -560,12 +557,12 @@ void DrawLensFlare(void)
 	gte_stsxy(&sun_pers_conv_position);
 
 	gte_stszotz(&flarez);
-	
+
 	xgap = sun_pers_conv_position.vx - 160;
 	ygap = sun_pers_conv_position.vy - 128;
 
 	//sun_pers_conv_position.vy = (short)((u_int)sun_pers_conv_position >> 0x10);
-	
+
 	distance_to_sun = SquareRoot0(xgap * xgap + ygap * ygap);
 
 	if (gTimeOfDay == TIME_NIGHT)
@@ -576,7 +573,7 @@ void DrawLensFlare(void)
 			col.r = 64;
 			col.b = 64;
 			col.g = 64;
-			
+
 			gte_ldv0(&moon_shadow_position[GameLevel]);
 			gte_rtps();
 			gte_stsxy(&sun_pers_conv_position);
@@ -589,23 +586,23 @@ void DrawLensFlare(void)
 		if (flarez > 0 && distance_to_sun < 500)
 		{
 			DisplaySun(&sun_pers_conv_position, &col, flare_col);
-			
+
 			haze_col = (60 - (distance_to_sun / 2)) * flare_col;
-			
+
 			add_haze((haze_col / 6 + (haze_col >> 0x1f) >> 3) - (haze_col >> 0x1f), haze_col >> 6, 7);
 			shade = flare_col / 3 - (distance_to_sun * 80) / 500;
-	
+
 			if (shade > -1 && flare_col != 0)
 			{
 				pFlareInfo = flare_info;
-				
+
 				do
 				{
 					int xpos, ypos, gapmod;
-					
+
 					gapmod = (128 - pFlareInfo->gapmod) * 2;
 					flaresize = (pFlareInfo->size / 2);
-					
+
 					xpos = (xgap * gapmod) / 256;
 					ypos = (ygap * gapmod) / 256;
 
@@ -622,7 +619,7 @@ void DrawLensFlare(void)
 					poly->r0 = (pFlareInfo->transparency.r * shade >> 6);
 					poly->g0 = (pFlareInfo->transparency.g * shade >> 6);
 					poly->b0 = (pFlareInfo->transparency.b * shade >> 6);
-					
+
 					poly->u0 = lensflare_texture.coords.u0;
 					poly->v0 = lensflare_texture.coords.v0;
 					poly->u1 = lensflare_texture.coords.u1;
@@ -631,7 +628,7 @@ void DrawLensFlare(void)
 					poly->v2 = lensflare_texture.coords.v2 - 4;
 					poly->u3 = lensflare_texture.coords.u3;
 					poly->v3 = lensflare_texture.coords.v3 - 4;
-					
+
 					poly->clut = lensflare_texture.clutid;
 					poly->tpage = lensflare_texture.tpageid | 0x20;
 
@@ -649,10 +646,10 @@ void DrawLensFlare(void)
 		PsyX_GetPSXWidescreenMappedViewport(&viewp);
 		sun_pers_conv_position.vx = RemapVal(sun_pers_conv_position.vx, float(viewp.x), float(viewp.w), 0.0f, 320.0f);
 #endif
-		
+
 		sun_pers_conv_position.vx = sun_pers_conv_position.vx - 8;
 		sun_pers_conv_position.vy = sun_pers_conv_position.vy - 4;
-		
+
 		// store framebuffer image of sun separately in VRAM
 		if (sun_pers_conv_position.vx > -1 &&
 			sun_pers_conv_position.vy > -1 &&
@@ -664,7 +661,7 @@ void DrawLensFlare(void)
 			source.x = sun_pers_conv_position.vx;
 			source.y = sun_pers_conv_position.vy + last->disp.disp.y;
 
-#if 1//def PSX
+#if 1 //def PSX
 			sample_sun = (DR_MOVE*)current->primptr;
 			SetDrawMove(sample_sun, &source, 1008, 456);
 
@@ -715,7 +712,7 @@ void TunnelSkyFade(void)
 	px = player[0].pos[0];
 	pz = player[0].pos[2];
 
-	if(v1 && v2)
+	if (v1 && v2)
 	{
 		dX = (v1->vx - px) >> 5;		// [A] smooth sky fade
 		dZ = (v1->vz - pz) >> 5;
@@ -729,14 +726,14 @@ void TunnelSkyFade(void)
 		if (l2 <= len)
 			len = l2;
 	}
-	else if(v2)
+	else if (v2)
 	{
 		diffX = (v2->vx - px) >> 5;
 		diffZ = (v2->vz - pz) >> 5;
 
 		len = (diffX * diffX + diffZ * diffZ);
 	}
-	else if(v1)
+	else if (v1)
 	{
 		diffX = (v1->vx - px) >> 5;
 		diffZ = (v1->vz - pz) >> 5;
@@ -764,7 +761,7 @@ void calc_sky_brightness(RGB16* skycolor)
 	int dawn;
 	dawn = DawnCount >> 5;
 
-	if(M_BIT(gTimeOfDay) & (M_BIT(TIME_DAWN) | M_BIT(TIME_DUSK)))
+	if (M_BIT(gTimeOfDay) & (M_BIT(TIME_DAWN) | M_BIT(TIME_DUSK)))
 	{
 		if (gTimeOfDay == TIME_DAWN)
 		{
@@ -795,8 +792,8 @@ void calc_sky_brightness(RGB16* skycolor)
 		skycolor->g = 128;
 		skycolor->r = 128;
 	}
-	
-	if (gTunnelNum == -1 || 
+
+	if (gTunnelNum == -1 ||
 		GameLevel == 0 ||
 		GameLevel == 1 && gTunnelNum == 2 ||
 		GameLevel == 2 ||
@@ -853,12 +850,12 @@ void PlotSkyPoly(POLYFT4* polys, int skytexnum, unsigned char r, unsigned char g
 		*(u_int*)&poly->x1 = *(u_int*)&outpoints[src->v1].vx;
 		*(u_int*)&poly->x2 = *(u_int*)&outpoints[src->v3].vx;
 		*(u_int*)&poly->x3 = *(u_int*)&outpoints[src->v2].vx;
-	
+
 		*(ushort*)&poly->u0 = *(ushort*)&skytexuv[skytexnum].u2;
 		*(ushort*)&poly->u1 = *(ushort*)&skytexuv[skytexnum].u3;
 		*(ushort*)&poly->u2 = *(ushort*)&skytexuv[skytexnum].u0;
 		*(ushort*)&poly->u3 = *(ushort*)&skytexuv[skytexnum].u1;
-		
+
 		poly->clut = skyclut[skytexnum];
 		poly->tpage = skytpage[skytexnum];
 
@@ -866,7 +863,7 @@ void PlotSkyPoly(POLYFT4* polys, int skytexnum, unsigned char r, unsigned char g
 
 #if USE_PGXP && USE_EXTENDED_PRIM_POINTERS
 		poly->pgxp_index = outpoints[src->v0].pgxp_index;
-#endif 
+#endif
 
 		current->primptr += sizeof(POLY_FT4);
 	}
@@ -903,7 +900,7 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset, RGB16* skycolor)
 		gte_rtpt();
 		gte_stsxy3(dv, dv+1, dv+2);
 
-		if(count == 15)
+		if (count == 15)
 			gte_stszotz(&z);
 
 #if USE_PGXP
@@ -930,7 +927,7 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset, RGB16* skycolor)
 		red = skycolor->r;
 		green = skycolor->g;
 		blue = skycolor->b;
-		
+
 		// draw sky
 		count = model->num_polys;
 		do
@@ -955,7 +952,7 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset, RGB16* skycolor)
 // [D] [T]
 void DrawSkyDome(void)
 {
-	RGB16 skycolor = { 128,128,128 };
+	RGB16 skycolor = { 128, 128, 128 };
 	VECTOR skyOfs = dummy;
 
 	calc_sky_brightness(&skycolor);
@@ -984,6 +981,4 @@ void DrawSkyDome(void)
 	PlotHorizonMDL(modelpointers[3], HorizonLookup[GameLevel][2], &skycolor);
 	PlotHorizonMDL(modelpointers[1], HorizonLookup[GameLevel][3], &skycolor);
 #endif
-
 }
-

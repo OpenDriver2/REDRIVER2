@@ -41,18 +41,19 @@ struct CYCLE_OBJECT
 	short start2, stop2, speed2;
 };
 
-CYCLE_OBJECT Lev0[2] =
-{
+// Chicago
+CYCLE_OBJECT Lev0[2] = {
 	{ "REDRVR", 0, 0, 6, 10, 2, 11, 15, 2 },
 	{ "NAVPIR34", 0, 0, 0, 6, 0, 7, 13, 0 }
 };
 
-CYCLE_OBJECT Lev1[] = {
-	{ "DOOR11", 0, 0, 1, 7, 2, 8, 14, 3 },
+// Havana
+CYCLE_OBJECT Lev1[1] = {
+	{ "DOOR11", 0, 0, 1, 7, 2, 8, 14, 3 }
 };
 
-CYCLE_OBJECT Lev2[12] =
-{
+// Vegas
+CYCLE_OBJECT Lev2[12] = {
 	{ "DTSYN01", 0, 0, 0, 3, 0, 4, 14, 0 },
 	{ "DTSYN02", 0, 0, 0, 15, 0, -1, -1, 0 },
 	{ "F-MTSYN2", 0, 0, 0, 3, 0, 10, 14, 0 },
@@ -67,10 +68,10 @@ CYCLE_OBJECT Lev2[12] =
 	{ "CYCLE-04", 0, 0, 0, 6, 15, 7, 13, 15 }
 };
 
-CYCLE_OBJECT Lev3[] = {
+// Rio
+CYCLE_OBJECT Lev3[1] = {
 	{ "FWING11", 0, 0, 1, 7, 2, 8, 14, 3 }
 };
-
 
 CYCLE_OBJECT* Lev_CycleObjPtrs[] = {
 	Lev0,
@@ -81,6 +82,7 @@ CYCLE_OBJECT* Lev_CycleObjPtrs[] = {
 
 int Num_LevCycleObjs[] = { numberOf(Lev0), 0, numberOf(Lev2), 0 };
 
+// Chicago
 ANIMATED_OBJECT Lev0AnimObjects[9] =
 {
 	{ 0, 0, "TLIGHT01", 0 },
@@ -94,6 +96,7 @@ ANIMATED_OBJECT Lev0AnimObjects[9] =
 	{ 8, 0, "TLIGHT02_LOW", 0 }
 };
 
+// Havana
 ANIMATED_OBJECT Lev1AnimObjects[5] =
 {
 	{ 0, 0, "TLIGHT1", 0 },
@@ -103,6 +106,7 @@ ANIMATED_OBJECT Lev1AnimObjects[5] =
 	{ 4, 0, "DLIGHT1", 1 }
 };
 
+// Vegas
 ANIMATED_OBJECT Lev2AnimObjects[5] =
 {
 	{ 0, 0, "TLIGHT01", 0 },
@@ -112,6 +116,7 @@ ANIMATED_OBJECT Lev2AnimObjects[5] =
 	{ 4, 0, "SLIGHT02", 1 }
 };
 
+// Rio
 ANIMATED_OBJECT Lev3AnimObjects[4] =
 {
 	{ 0, 0, "TLIGHT01", 0 },
@@ -137,7 +142,7 @@ int Level_NumAnimatedObjects[] = {
 // sound ids for SOUND_BANK_SFX
 SMASHABLE_OBJECT smashable[] =
 {
-	{ 0, "", 1, 0, 800 },		// default
+	{ 0, "", 1, 0, 800 },	// default
 	{ 0, "CONE_TASTIC", 1, 0, 1400 },
 	{ 0, "CONE1_TASTIC", 1, 0, 1400 },
 	{ 0, "CONE2_TASTIC", 1, 0, 1400 },
@@ -196,7 +201,7 @@ void InitCyclingPals(void)
 		num_cycle_obj = 0;
 		return;
 	}
-	
+
 	num_cycle_obj = Num_LevCycleObjs[GameLevel];
 	CYCLE_OBJECT* cyc = Lev_CycleObjPtrs[GameLevel];
 
@@ -238,7 +243,7 @@ void ColourCycle(void)
 	vram.w = 16;
 	vram.h = 1;
 	cyc = Lev_CycleObjPtrs[GameLevel];
-		
+
 	for (i = 0; i < num_cycle_obj; i++, cyc++)
 	{
 		TEXTURE_DETAILS* cycTex = &cycle_tex[i];
@@ -301,7 +306,6 @@ void ColourCycle(void)
 		cycle_phase = 1;
 	}
 }
-
 
 // [D] [T]
 void FindSmashableObjects(void)
@@ -413,9 +417,10 @@ void InitSpooledAnimObj(int model_number)
 			// [A] store animated object number in normals pointer
 			// after all it was always unused
 			modelPtr->tri_verts = i;
-			
+
 			break;
 		}
+
 		aop++;
 	}
 }
@@ -434,7 +439,7 @@ void DrawAllAnimatingObjects(CELL_OBJECT** objects, int num_animated)
 	ANIMATED_OBJECT* aop;
 	CELL_OBJECT* cop;
 	MODEL* model;
-	int i, j;
+	int i;
 	int type;
 
 	aop = Level_AnimatingObjectPtrs[GameLevel];
@@ -449,7 +454,6 @@ void DrawAllAnimatingObjects(CELL_OBJECT** objects, int num_animated)
 		animate_object(cop, aop[model->tri_verts & 31].internal_id);
 	}
 }
-
 
 // [D] [T]
 void animate_object(CELL_OBJECT* cop, int type)
@@ -575,7 +579,7 @@ void animate_object(CELL_OBJECT* cop, int type)
 		{
 			case 0:
 				phase = junctionLightsPhase[yang + 128 >> 10 & 1];
-			
+
 				if (phase == 1)
 				{
 					AddTrafficLight(cop, -2135, -1112, -68, 0x200, yang);
@@ -634,7 +638,7 @@ void animate_object(CELL_OBJECT* cop, int type)
 					AddSmallStreetLight(cop, -620, -101, 0, 0);
 					break;
 				}
-			
+
 				AddLightEffect(cop, -620, -1618, 0, 0, 3);
 				break;
 		}
@@ -645,7 +649,7 @@ void animate_object(CELL_OBJECT* cop, int type)
 		{
 			case 0:
 				phase = junctionLightsPhase[yang + 128 >> 10 & 1];
-			
+
 				if (phase == 1)
 				{
 					AddTrafficLight(cop, -719, -906, -22, 0x200, yang);
@@ -687,7 +691,7 @@ void animate_object(CELL_OBJECT* cop, int type)
 					break;
 
 				AddLightEffect(cop, 0,  -2727, 0, 0, 3);
-			
+
 				break;
 			case 4:
 				if (gLightsOn == 0)
@@ -698,7 +702,6 @@ void animate_object(CELL_OBJECT* cop, int type)
 		}
 	}
 }
-
 
 // [D] [T]
 void animate_garage_door(void)
@@ -747,8 +750,3 @@ void animate_garage_door(void)
 		}
 	}
 }
-
-
-
-
-

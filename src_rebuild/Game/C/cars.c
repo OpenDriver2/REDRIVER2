@@ -37,23 +37,23 @@ struct plotCarGlobals
 #endif
 
 MATRIX light_matrix =
-{ 
-	{ 
-		{ 4096, 0, 0 }, 
-		{ 0, 0, 0 }, 
+{
+	{
+		{ 4096, 0, 0 },
+		{ 0, 0, 0 },
 		{ 0, 0, 0 }
-	}, 
-	{ 0, 0, 0 } 
+	},
+	{ 0, 0, 0 }
 };
 
 MATRIX colour_matrix =
-{ 
-	{ 
-		{ 4032, 0, 0 }, 
-		{ 3936, 0, 0 }, 
+{
+	{
+		{ 4032, 0, 0 },
+		{ 3936, 0, 0 },
 		{ 3520, 0, 0 }
-	}, 
-	{ 0, 0, 0 } 
+	},
+	{ 0, 0, 0 }
 };
 
 // PHYSICS
@@ -70,8 +70,8 @@ MODEL* gDamWheelModelPtr;
 CAR_DATA* active_car_list[MAX_CARS];
 
 u_char lightsOnDelay[MAX_CARS];
-short FrontWheelRotation[MAX_CARS]; // offset 0x0
-short BackWheelRotation[MAX_CARS]; // offset 0x30
+short FrontWheelRotation[MAX_CARS];
+short BackWheelRotation[MAX_CARS];
 
 SVECTOR gTempCarVertDump[MAX_CARS][MAX_DENTING_VERTS];
 
@@ -129,7 +129,7 @@ void plotCarPolyB3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *p
 		gte_stopz(&Z);
 		gte_avsz3();
 
-		if (Z > -1) 
+		if (Z > -1)
 		{
 			*(u_int*)&prim->r0 = FT3rgb | 0x20000000;
 
@@ -185,7 +185,7 @@ void plotCarPolyFT3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *
 		gte_stopz(&Z);
 		gte_avsz3();
 
-		if (Z > -1) 
+		if (Z > -1)
 		{
 			ofse = pg->damageLevel[src->originalindex];
 			*(u_int*)&prim->r0 = FT3rgb;
@@ -213,8 +213,8 @@ void plotCarPolyFT3(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *
 void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, plotCarGlobals *pg, int palette)
 {
 	int Z;
-	int otz;	
-	SVECTOR* v2;
+	int otz;
+	SVECTOR *v2;
 	SVECTOR *v1;
 	SVECTOR *v0;
 	u_int indices;
@@ -243,7 +243,7 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 		gte_stopz(&Z);
 
 		gte_avsz3();
-		
+
 		gte_stotz(&otz);
 
 		if (Z > -1 && otz > 0)
@@ -278,7 +278,6 @@ void plotCarPolyGT3(int numTris, CAR_POLY *src, SVECTOR *vlist, SVECTOR *nlist, 
 
 	pg->primptr = (unsigned char*)prim;
 }
-
 
 #ifdef DYNAMIC_LIGHTING
 void plotCarPolyGT3Lit(int numTris, CAR_POLY* src, SVECTOR* vlist, SVECTOR* nlist, plotCarGlobals* pg, int palette)
@@ -366,7 +365,6 @@ void plotCarPolyGT3Lit(int numTris, CAR_POLY* src, SVECTOR* vlist, SVECTOR* nlis
 	pg->primptr = (unsigned char*)prim;
 }
 #endif // DYNAMIC_LIGHTING
-
 
 // [D] [T]
 void plotCarPolyGT3nolight(int numTris, CAR_POLY *src, SVECTOR *vlist, plotCarGlobals *pg, int palette)
@@ -687,7 +685,7 @@ void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 		WheelModelBack = gFastWheelModelPtr;
 
 	wheelSize = car_cosmetics[cp->ap.model].wheelSize;
-	
+
 	sizeScale = (wheelSize * 14142) / 10000;
 
 	// rotate wheel verts
@@ -740,7 +738,7 @@ void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 	BW2z = FIXEDH(RCOS(BackWheelRotation[car_id]) * sizeScale);
 
 	VertPtr = GET_MODEL_DATA(SVECTOR, WheelModelBack, vertices);
-	
+
 	VertPtr[8].vz = BW1z;
 	VertPtr[15].vz = BW1z;
 	VertPtr[11].vy = BW1z;
@@ -809,7 +807,7 @@ void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 			model = gDamWheelModelPtr;
 		}
 
-		if ((wheelnum & 2) == 0) 
+		if ((wheelnum & 2) == 0)
 			sWheelPos.vx = 17 - wheelDisp->vx;
 		else
 			sWheelPos.vx = -17 - wheelDisp->vx;
@@ -830,7 +828,7 @@ void DrawCarWheels(CAR_DATA *cp, MATRIX *RearMatrix, VECTOR *pos, int zclip)
 
 		gte_SetTransVector(&WheelPos);
 
-		if ((wheelnum & 1) == 0) 
+		if ((wheelnum & 1) == 0)
 		{
 			gte_SetRotMatrix(&FrontMatrix);
 		}
@@ -857,7 +855,7 @@ void PlayerCarFX(CAR_DATA *cp)
 			AddIndicatorLight(cp, 1);
 	}
 
-	if( WheelSpeed < 0 && cp->thrust > 0 ||
+	if (WheelSpeed < 0 && cp->thrust > 0 ||
 		WheelSpeed > 0 && cp->thrust < 0)
 	{
 		AddBrakeLight(cp);
@@ -946,7 +944,7 @@ void plotNewCarModel(CAR_MODEL* car, int palette)
 // [A]
 void startBuildNewCars(int isSpecial)
 {
-	if(isSpecial)
+	if (isSpecial)
 		baseSpecCP = whichCP;
 	else
 		whichCP = 0;
@@ -1071,7 +1069,7 @@ void buildNewCarFromModel(int index, int detail, char* polySrc, MODEL* model)
 
 			cp = carPolyBuffer + newNumPolys;
 
-			switch (ptype & 0x1f) 
+			switch (ptype & 0x1f)
 			{
 				case 0:
 				case 18:
@@ -1087,7 +1085,7 @@ void buildNewCarFromModel(int index, int detail, char* polySrc, MODEL* model)
 				case 19:
 					if (pass == 2)	// F4
 					{
-						cp->vindices = M_INT_4R(polyList[4], polyList[5], polyList[6], 0); 
+						cp->vindices = M_INT_4R(polyList[4], polyList[5], polyList[6], 0);
 						cp->originalindex = i;
 
 						cp++;
@@ -1102,7 +1100,7 @@ void buildNewCarFromModel(int index, int detail, char* polySrc, MODEL* model)
 					if (pass == 1)	// FT3
 					{
 						POLYFT3* pft3 = (POLYFT3*)polyList;
-									
+
 						cp->vindices = M_INT_4R(pft3->v0, pft3->v1, pft3->v2, 0);
 						cp->clut_uv0 = M_INT_2(texture_cluts[pft3->texture_set][pft3->texture_id], *(ushort*)&pft3->uv0);
 						cp->tpage_uv1 = M_INT_2(texture_pages[pft3->texture_set], *(ushort*)&pft3->uv1);
@@ -1124,7 +1122,7 @@ void buildNewCarFromModel(int index, int detail, char* polySrc, MODEL* model)
 						cp->originalindex = i;
 
 						cp++;
-						
+
 						cp->vindices = M_INT_4R(pft4->v0, pft4->v2, pft4->v3, 0);
 						cp->clut_uv0 = M_INT_2(texture_cluts[polyList[1]][polyList[2]], *(ushort*)&pft4->uv0);
 						cp->tpage_uv1 = M_INT_2(texture_pages[polyList[1]], *(ushort*)&pft4->uv2);
@@ -1138,12 +1136,12 @@ void buildNewCarFromModel(int index, int detail, char* polySrc, MODEL* model)
 					if (pass == 0) // GT3
 					{
 						POLYGT3* pgt3 = (POLYGT3*)polyList;
-							
+
 						carid = GetCarPalIndex(pgt3->texture_set);
 						clut = (carid - 1) * 6 * 32 + pgt3->texture_id * 6;
 
 						civ_clut[carid][pgt3->texture_id][0] = texture_cluts[pgt3->texture_set][pgt3->texture_id];
-						
+
 						cp->vindices = M_INT_4R(pgt3->v0, pgt3->v1, pgt3->v2, 0);
 						cp->nindices = M_INT_4R(pgt3->n0, pgt3->n1, pgt3->n2, 0);
 						cp->clut_uv0 = M_INT_2(clut, *(ushort*)&pgt3->uv0);
@@ -1187,11 +1185,11 @@ void buildNewCarFromModel(int index, int detail, char* polySrc, MODEL* model)
 			polyList += PolySizes[ptype & 0x1f];
 		}
 
-		if (pass == 1) 
+		if (pass == 1)
 			car->numFT3 = newNumPolys - whichCP;
 		else if (pass == 0)
 			car->numGT3 = newNumPolys - whichCP;
-		else if (pass == 2) 
+		else if (pass == 2)
 			car->numB3 = newNumPolys - whichCP;
 
 		whichCP = newNumPolys;
@@ -1204,7 +1202,7 @@ void MangleWheelModels(void)
 	UV_INFO tmpUV2;
 	u_char tmpUV;
 	u_int v0, v1, v2;
-	POLYFT4*src;
+	POLYFT4 *src;
 	MODEL *m;
 	int i, j;
 
@@ -1219,7 +1217,7 @@ void MangleWheelModels(void)
 
 		// do some fuckery swaps
 		src = GET_MODEL_DATA(POLYFT4, m, poly_block);
-		
+
 		v0 = *(u_int *)&src[2].v0;
 		v1 = *(u_int *)&src[2].uv0;
 		v2 = *(u_int *)&src[2].uv2;
@@ -1290,7 +1288,7 @@ void MangleWheelModels(void)
 		for (j = 0; j < 2; j++)
 		{
 			tmpUV2 = src->uv0;
-			
+
 			src->uv0 = src->uv1;
 			src->uv1 = src->uv2;
 			src->uv2 = src->uv3;
@@ -1298,11 +1296,10 @@ void MangleWheelModels(void)
 
 			src++;
 		}
-
 	}
 
-	// HACK: Show clean model only in Rio.
-	//if (GameLevel == 3) 
+	// HACK: Show clean model only in Rio
+	//if (GameLevel == 3)
 	//	gFastWheelModelPtr = gCleanWheelModelPtr;
 }
 
@@ -1320,7 +1317,7 @@ void ProcessPalletLump(char *lump_ptr, int lump_size)
 	int clut_number;
 
 	total_cluts = *(int*)lump_ptr;
-	
+
 	if (total_cluts == 0)
 		return;
 
@@ -1344,7 +1341,7 @@ void ProcessPalletLump(char *lump_ptr, int lump_size)
 			clutValue = GetClut(clutpos.x, clutpos.y);
 			IncrementClutNum(&clutpos);
 
-			*clutTablePtr++ = clutValue;			
+			*clutTablePtr++ = clutValue;
 		}
 		else
 		{
@@ -1543,7 +1540,7 @@ void DrawCar(CAR_DATA* cp, int view)
 
 		if (cp->controlType == CONTROL_TYPE_PLAYER)
 		{
-			if(*cp->ai.padid >= 0 && *cp->ai.padid < 2)
+			if (*cp->ai.padid >= 0 && *cp->ai.padid < 2)
 				maxDamage = MaxPlayerDamage[*cp->ai.padid];
 		}
 
@@ -1631,7 +1628,7 @@ void DrawCar(CAR_DATA* cp, int view)
 			AddNightLights(cp);
 	}
 
-	if(CarHasSiren(cp->ap.model))
+	if (CarHasSiren(cp->ap.model))
 	{
 		if ((IS_ROADBLOCK_CAR(cp) || cp->controlType == CONTROL_TYPE_PURSUER_AI) ||		// any regular cop car including roadblock
 			gInGameCutsceneActive && cp->controlType == CONTROL_TYPE_CUTSCENE && force_siren[CAR_INDEX(cp)] != 0 ||		// any car with siren in cutscene

@@ -10,16 +10,16 @@ enum GameStrId
 	GTXT_Proximity,
 
 	GTXT_Best,
-	
+
 	GTXT_Cone,
 	GTXT_Gate,
 	GTXT_Check,
-	
+
 	GTXT_Cones,
 	GTXT_Gates,
 	GTXT_Checks,
 	GTXT_Minus1second,
-	
+
 	GTXT_Flags,
 	GTXT_Lap,
 	GTXT_YouGotTheFlag,
@@ -39,7 +39,7 @@ enum GameStrId
 	GTXT_NoDISCinserted,
 	GTXT_IncorrectDISCinserted,
 	GTXT_Checking,
-	
+
 	GTXT_AreYouSure,
 	GTXT_Paused,
 	GTXT_MissionSuccessful,
@@ -290,4 +290,4 @@ extern int InitStringLanguage(char* filename, int mission);
 
 #endif
 
-#endif
+#endif // DR2LOCALE_H

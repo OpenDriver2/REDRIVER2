@@ -1,7 +1,6 @@
 #ifndef CARS_H
 #define CARS_H
 
-
 #define CAR_INDEX(cp)  (int)(cp-car_data)
 
 #define IS_ROADBLOCK_CAR(cp) (cp->controlType == CONTROL_TYPE_CIV_AI && (cp->controlFlags & CONTROL_FLAG_COP_SLEEPING))
@@ -55,5 +54,4 @@ extern void MangleWheelModels(); // 0x000230C8
 
 extern char GetCarPalIndex(int tpage); // 0x00023390
 
-
-#endif
+#endif // CARS_H

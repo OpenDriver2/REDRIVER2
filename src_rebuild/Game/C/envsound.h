@@ -3,4 +3,4 @@
 
 extern void AddEnvSounds(int level, int time); // 0x00044F60
 
-#endif
+#endif // ENVSOUND_H

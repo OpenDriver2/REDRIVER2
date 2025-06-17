@@ -91,7 +91,7 @@ void SkipCutscene(int direction);
 void EnterScoreName();
 
 void CreateScoreNames(SCORE_ENTRY *table, PLAYER_SCORE *score, int position);
-void DrawHighScoreMenu(int selection); 
+void DrawHighScoreMenu(int selection);
 
 char EnterScoreText[32] = { 0 };
 
@@ -425,7 +425,6 @@ MENU_ITEM InvalidMultiPadItems[] =
 	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
 };
 
-
 MENU_HEADER PauseMenuHeader =
 { G_LTXT_ID(GTXT_Paused), { 0, 0, 0, 0 }, 0u, MainPauseItems };
 
@@ -485,7 +484,6 @@ MENU_HEADER InvalidMultiPadHeader =
 	InvalidMultiPadItems
 };
 
-
 u_char gCurrentTextChar = 0;
 typedef void(*OnEntryComplete)(void* data, char* text);
 
@@ -527,7 +525,7 @@ char* WaitForTextEntry(char* textBufPtr, int maxLength)
 
 		if (!FilterFrameTime())
 			continue;
-		
+
 		ReadControllers();
 
 		npad = Pads[0].dirnew;
@@ -712,7 +710,7 @@ void SaveReplay(int direction)
 #else
 
 #ifdef CUTSCENE_RECORDER
-	if(_CutRec_IsOn())
+	if (_CutRec_IsOn())
 	{
 		if (CutRec_SaveChase())
 		{
@@ -735,7 +733,7 @@ void SaveReplay(int direction)
 		_mkdir("Replays");
 
 		ClearMem(EnterNameText, REPLAY_NAME_LEN);
-		
+
 		// detect the best file name
 		// TODO: if replay is loaded - set the loaded replay filename
 		if (gLoadedReplay)
@@ -812,7 +810,7 @@ int MaxMenuStringLength(MENU_HEADER *pMenu)
 	{
 		temp = StringWidth(GET_GAME_TXT(pItems->Text));
 
-		if (pItems->Type & (PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_MUSICVOLUME)) 
+		if (pItems->Type & (PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_MUSICVOLUME))
 			temp = temp + StringWidth(" 100");
 
 		if (temp > max)
@@ -823,7 +821,6 @@ int MaxMenuStringLength(MENU_HEADER *pMenu)
 
 	return max;
 }
-
 
 // [D] [T]
 void SetupMenu(MENU_HEADER *menu, int back)
@@ -875,24 +872,24 @@ void InitaliseMenu(PAUSEMODE mode)
 
 	allownameentry = 0;
 
-	switch (mode) 
+	switch (mode)
 	{
 		case PAUSEMODE_PAUSE:
 		case PAUSEMODE_PAUSEP1:
 		case PAUSEMODE_PAUSEP2:
-			if (NumPlayers == 1 && gMultiplayerLevels == 0) 
+			if (NumPlayers == 1 && gMultiplayerLevels == 0)
 			{
 				if (gInGameCutsceneActive == 0)
 					pNewMenu = &PauseMenuHeader;
-				else 
+				else
 					pNewMenu = &CutscenePauseMenuHeader;
 			}
-			else 
+			else
 				pNewMenu = &MultiplayerPauseHeader;
 
 			break;
 		case PAUSEMODE_GAMEOVER:
-			switch (GameType) 
+			switch (GameType)
 			{
 				case GAME_PURSUIT:
 					pNewMenu = &ChaseGameFinishedHeader;
@@ -942,7 +939,7 @@ void InitaliseMenu(PAUSEMODE mode)
 			break;
 		case PAUSEMODE_COMPLETE:
 
-			switch (GameType) 
+			switch (GameType)
 			{
 				case GAME_MISSION:
 					pNewMenu = &MissionCompleteHeader;
@@ -955,7 +952,7 @@ void InitaliseMenu(PAUSEMODE mode)
 				case GAME_SURVIVAL:
 				case GAME_COPSANDROBBERS:
 				case GAME_CAPTURETHEFLAG:
-					if (NumPlayers == 1) 
+					if (NumPlayers == 1)
 					{
 						pNewMenu = &DrivingGameFinishedHeader;
 						gMissionCompletionState = mode;
@@ -986,9 +983,9 @@ void InitaliseMenu(PAUSEMODE mode)
 			}
 			break;
 		case PAUSEMODE_PADERROR:
-			if (pad_connected < 0) 
+			if (pad_connected < 0)
 			{
-				if (NumPlayers == 1) 
+				if (NumPlayers == 1)
 					pNewMenu = &InvalidPadHeader;
 				else
 					pNewMenu = &InvalidMultiPadHeader;
@@ -998,9 +995,9 @@ void InitaliseMenu(PAUSEMODE mode)
 				else
 					pNewMenu->Title = G_LTXT(GTXT_IncorrectController2);
 			}
-			else 
+			else
 			{
-				if (NumPlayers == 1) 
+				if (NumPlayers == 1)
 					pNewMenu = &NoPadHeader;
 				else
 					pNewMenu = &NoMultiPadHeader;
@@ -1014,7 +1011,7 @@ void InitaliseMenu(PAUSEMODE mode)
 	}
 
 	// [A]
-	if(pNewMenu)
+	if (pNewMenu)
 	{
 		VisibleMenu = 0;
 		VisibleMenus[VisibleMenu] = pNewMenu;
@@ -1055,7 +1052,7 @@ void DrawVisibleMenus(void)
 	int i;
 	int xpos, ypos;
 	int menuWidth;
-	
+
 	int x1, x2, y1, y2;
 	static int maxPercentageWidth = StringWidth(" 100");
 
@@ -1069,7 +1066,7 @@ void DrawVisibleMenus(void)
 	xpos = pActive->Bound.x;
 	ypos = pActive->Bound.y;
 	menuWidth = pActive->Bound.w;
-	
+
 	if (pActive->Title)
 	{
 		OutputString(GET_GAME_TXT(pActive->Title), 2, xpos, ypos, menuWidth, 128, 32, 32);
@@ -1084,7 +1081,7 @@ void DrawVisibleMenus(void)
 
 		if (!pItem->Text)
 			continue;
-	
+
 		if (pItem == ActiveItem[VisibleMenu])
 		{
 			r = 0;
@@ -1096,14 +1093,14 @@ void DrawVisibleMenus(void)
 			r = 128;
 		}
 
-		if(pItem->Type & (PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_MUSICVOLUME))
+		if (pItem->Type & (PAUSE_TYPE_SFXVOLUME | PAUSE_TYPE_MUSICVOLUME))
 		{
 			width = StringWidth(GET_GAME_TXT(pItem->Text));
 
 			itemXpos = xpos + ((menuWidth - width) - maxPercentageWidth) / 2;
 
 			OutputString(GET_GAME_TXT(pItem->Text), 1, itemXpos, ypos, menuWidth, r, 128, b);
-			
+
 			if (pItem->Type & PAUSE_TYPE_SFXVOLUME)
 				OutputString(SfxVolumeText, 1, itemXpos + width + 10, ypos, menuWidth, r, 128, b);
 			else if (pItem->Type & PAUSE_TYPE_MUSICVOLUME)
@@ -1120,7 +1117,7 @@ void DrawVisibleMenus(void)
 	poly = (POLY_F4*)current->primptr;
 
 	ypos = pActive->Bound.y;
-	
+
 	setPolyF4(poly);
 	x1 = xpos - 5;
 	x2 = xpos + menuWidth + 5;
@@ -1189,7 +1186,7 @@ void ControlMenu(void)
 	{
 		paddata = Pads[0].dirnew;
 		paddirect = Pads[0].direct;
-	
+
 		if (NumPlayers == 2)
 		{
 			paddata = Pads[1].dirnew | Pads[0].dirnew;
@@ -1251,7 +1248,7 @@ void ControlMenu(void)
 	{
 		// go up
 		ActiveMenuItem--;
-		
+
 		if (ActiveMenuItem < 0)
 			ActiveMenuItem = ActiveMenu->NumItems - 1;
 
@@ -1261,7 +1258,7 @@ void ControlMenu(void)
 	{
 		// go down
 		ActiveMenuItem++;
-		
+
 		if (ActiveMenuItem > ActiveMenu->NumItems - 1)
 			ActiveMenuItem = 0;
 
@@ -1273,10 +1270,10 @@ void ControlMenu(void)
 		if (pItem->Type & PAUSE_TYPE_SUBMENU)
 		{
 			menu = pItem->SubMenu;
-	
+
 			VisibleMenu++;
 			VisibleMenus[VisibleMenu] = menu;
-	
+
 			SetupMenu(menu, 0);
 			return;
 		}
@@ -1284,7 +1281,7 @@ void ControlMenu(void)
 		// function flag
 		if (pItem->Type & PAUSE_TYPE_FUNC)
 			(*pItem->func)(0);
-			
+
 		if (pItem->ExitValue == MENU_QUIT_NONE)
 			return;
 
@@ -1304,7 +1301,7 @@ void ControlMenu(void)
 		{
 #ifndef PSX
 			// hack for keyboard swap
-			if(!(paddata & MPAD_START))
+			if (!(paddata & MPAD_START))
 				return;
 #endif
 			for (i = 0; i < ActiveMenu->NumItems; i++)
@@ -1321,7 +1318,7 @@ void ControlMenu(void)
 		else
 		{
 			// only triangle
-			if(paddata & 0x10)
+			if (paddata & 0x10)
 			{
 				VisibleMenu--;
 				SetupMenu(VisibleMenus[VisibleMenu], 1);
@@ -1347,15 +1344,15 @@ void PauseMap(int direction)
 // [D] [T]
 void SfxVolume(int direction)
 {
-	if (direction < 0) 
+	if (direction < 0)
 		gMasterVolume = gMasterVolume + -100;
 	else if (0 < direction)
 		gMasterVolume = gMasterVolume + 100;
 
-	if (gMasterVolume < -10000) 
+	if (gMasterVolume < -10000)
 		gMasterVolume = -10000;
 
-	if (gMasterVolume > 0) 
+	if (gMasterVolume > 0)
 		gMasterVolume = 0;
 
 	sprintf(SfxVolumeText, "%d", (10000 + gMasterVolume) / 100);
@@ -1368,13 +1365,13 @@ void MusicVolume(int direction)
 {
 	if (direction < 0)
 		gMusicVolume = gMusicVolume + -100;
-	else if (0 < direction) 
+	else if (0 < direction)
 		gMusicVolume = gMusicVolume + 100;
 
 	if (gMusicVolume < -10000)
 		gMusicVolume = -10000;
 
-	if (gMusicVolume > 0) 
+	if (gMusicVolume > 0)
 		gMusicVolume = 0;
 
 	sprintf(MusicVolumeText, "%d", (10000 + gMusicVolume) / 100);
@@ -1394,11 +1391,11 @@ void EnterScoreName(void)
 
 	username = NULL;
 
-	if (!gScoreEntered) 
+	if (!gScoreEntered)
 	{
 		gScorePosition = OnScoreTable(&table);
 
-		if (gScorePosition != -1) 
+		if (gScorePosition != -1)
 			username = ScoreName[gScorePosition];
 
 		CreateScoreNames(table, &gPlayerScore, gScorePosition);
@@ -1503,8 +1500,8 @@ void DrawHighScoreMenu(int selection)
 
 	i = 0;
 	do {
-		
-		if (i == selection) 
+
+		if (i == selection)
 		{
 			r = 0;
 			b = 0;
@@ -1571,7 +1568,7 @@ int mytolower(int ch)
 	else
 		return ch;
 }
-	
+
 void strlower(char* str)
 {
 	while (*str != '\0')
@@ -1588,7 +1585,7 @@ void CreateScoreNames(SCORE_ENTRY* table, PLAYER_SCORE* score, int position)
 	char* text;
 	int i;
 
-	switch (GameType) 
+	switch (GameType)
 	{
 		case GAME_PURSUIT:
 		case GAME_GETAWAY:
@@ -1627,7 +1624,7 @@ void CreateScoreNames(SCORE_ENTRY* table, PLAYER_SCORE* score, int position)
 
 			ClearMem(ScoreName[i], 7);
 		}
-		else 
+		else
 		{
 			time = table->time;
 
@@ -1644,7 +1641,7 @@ void CreateScoreNames(SCORE_ENTRY* table, PLAYER_SCORE* score, int position)
 				strlower(ScoreItems[i]);
 			}
 
-			sprintf(ScoreName[i], "%s", table->name);			
+			sprintf(ScoreName[i], "%s", table->name);
 			table++;
 		}
 
@@ -1661,7 +1658,7 @@ int UpdatePauseMenu(PAUSEMODE mode)
 
 	if (mode == PAUSEMODE_PADERROR)
 		mode = PAUSEMODE_PAUSE;
-	
+
 	if (passed_mode == PAUSEMODE_PADERROR)
 	{
 		if (pad_connected == 1)
@@ -1720,7 +1717,7 @@ void ShowPauseMenu(PAUSEMODE mode)
 
 	InitaliseMenu(mode);
 	gDrawPauseMenus = 1;
-		
+
 	PauseReturnValue = 0;
 }
 
@@ -1744,7 +1741,7 @@ void DrawPauseMenus(void)
 		{
 			DisplayMenuMessage(gDisplayedMessage.header, gDisplayedMessage.text);
 
-			if(gDisplayedMessage.show > 0)
+			if (gDisplayedMessage.show > 0)
 				gDisplayedMessage.show--;
 		}
 		else if (gEnteringScore)

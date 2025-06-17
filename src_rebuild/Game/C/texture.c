@@ -85,7 +85,7 @@ void IncrementClutNum(RECT16 *clut)
 {
 	clut->x += 16;
 
-	if (clut->x >= 1024) 
+	if (clut->x >= 1024)
 	{
 		clut->x = 960;
 		clut->y += 1;
@@ -100,7 +100,7 @@ void IncrementTPageNum(RECT16 *tpage)
 	while (++i)
 	{
 		// proper tpage position?
-		if ((tpage->x == tpagepos[i - 1].x) && 
+		if ((tpage->x == tpagepos[i - 1].x) &&
 			(tpage->y == tpagepos[i - 1].y))
 		{
 			if (tpagepos[i].x == -1)
@@ -128,7 +128,7 @@ void IncrementTPageNum(RECT16 *tpage)
 }
 
 #ifndef PSX
-// [A] - loads TIM files as level textures
+// [A] loads TIM files as level textures
 void LoadTPageFromTIMs(int tpage2send)
 {
 	int i, j;
@@ -136,7 +136,7 @@ void LoadTPageFromTIMs(int tpage2send)
 	RECT16 tmpclut;
 	SXYPAIR tpage;
 	int tpn;
-	
+
 	char filename[64];
 	TEXINF* details = tpage_ids[tpage2send];
 
@@ -144,9 +144,9 @@ void LoadTPageFromTIMs(int tpage2send)
 
 	tpage.x = tpn << 6 & 0x3c0;
 	tpage.y = (tpn << 4 & 0x100) + (tpn >> 2 & 0x200);
-	
+
 	// try loading TIMs directly
-	for(i = 0; i < tpage_texamts[tpage2send]; i++)
+	for (i = 0; i < tpage_texamts[tpage2send]; i++)
 	{
 		TIMIMAGEHDR* timClut;
 		TIMIMAGEHDR* timData;
@@ -177,9 +177,9 @@ void LoadTPageFromTIMs(int tpage2send)
 		if (!FileExists(filename))
 			sprintf(filename, "LEVELS\\%s\\PAGE_%d\\%s_%d.TIM", LevelNames[GameLevel], tpage2send, textureName, i);
 
-		if(!FileExists(filename))
+		if (!FileExists(filename))
 			continue;
-		
+
 		Loadfile(filename, (char*)_other_buffer);
 
 		// get TIM data
@@ -211,7 +211,7 @@ void LoadTPageFromTIMs(int tpage2send)
 			// FIXME:
 			// this is a wasteful way handling multiple palettes
 			// we just allocate new palettes to ensure that it would not glitch
-			if(clutN == 0 || j > 0 && cpal > 0)
+			if (clutN == 0 || j > 0 && cpal > 0)
 			{
 				// add new CLUT
 				clutN = GetClut(clutpos.x, clutpos.y);
@@ -219,7 +219,7 @@ void LoadTPageFromTIMs(int tpage2send)
 				civ_clut[cpal][i][j] = clutN;
 			}
 #endif
-			
+
 			tmpclut.x = (clutN & 0x3f) << 4;
 			tmpclut.y = (clutN >> 6);
 			tmpclut.w = 16;
@@ -249,7 +249,7 @@ int LoadTPageAndCluts(RECT16 *tpage, RECT16 *cluts, int tpage2send, char *tpagea
 		tpageaddress += 32;
 
 		texture_cluts[tpage2send][i] = GetClut(cluts->x, cluts->y);
-		
+
 		IncrementClutNum(cluts);
 	}
 
@@ -291,7 +291,7 @@ int Find_TexID(MODEL *model, int t_id)
 
 		polylist += PolySizes[*polylist];
 	}
-	
+
 	return 0;
 }
 
@@ -398,7 +398,7 @@ void LoadPermanentTPagesFromTIM()
 
 	for (slot = 0; slot < 19; slot++)
 	{
-		if(tpageslots[slot] != 0xFF)
+		if (tpageslots[slot] != 0xFF)
 		{
 			int tpage = tpageslots[slot];
 			LoadTPageFromTIMs(tpage);
@@ -407,17 +407,16 @@ void LoadPermanentTPagesFromTIM()
 			// initialize ALL texture palettes
 			// this makes damaged textures appear properly
 			int pal = GetCarPalIndex(tpage);
-			
+
 			if (pal)
 			{
 				int carpal = GetCarPalIndex(tpage);
 
-				if(carpal > 0)
+				if (carpal > 0)
 				{
 					for (int i = 0; i < 32; i++)
 						civ_clut[carpal][i][0] = texture_cluts[tpage][i];
 				}
-
 			}
 #endif
 		}
@@ -472,7 +471,7 @@ void LoadPermanentTPages(int *sector)
 
 	IncrementClutNum(&clutpos);
 	fontclutpos = clutpos;
-	
+
 	IncrementClutNum(&clutpos);
 	ProcessPalletLump(palette_lump, 0);
 
@@ -499,7 +498,7 @@ void LoadPermanentTPages(int *sector)
 
 		tpagebuffer += (permlist[i].y + 2047) & -CDSECTOR_SIZE;
 	}
-	
+
 	tpagebuffer = (char*)mallocptr;
 
 	slot_clutpos[slotsused].vx = clutpos.x;
@@ -519,7 +518,7 @@ void LoadPermanentTPages(int *sector)
 	if (nspecpages != 0)
 	{
 		int temp, clutsloaded;
-		
+
 		temp = 0;
 		clutsloaded = 0;
 
@@ -531,7 +530,7 @@ void LoadPermanentTPages(int *sector)
 		loadsectors(tpagebuffer, *sector, nsectors);
 
 		*sector += nsectors;
-		
+
 		for (i = 0; i < nspecpages; i++)
 		{
 			int tp, npalettes;
@@ -569,7 +568,7 @@ void LoadPermanentTPages(int *sector)
 		}
 	}
 
-	if (clutpos.x != 960) 
+	if (clutpos.x != 960)
 	{
 		clutpos.x = 960;
 		clutpos.y++;
@@ -605,7 +604,7 @@ void GetTextureDetails(char *name, TEXTURE_DETAILS *info)
 	int texamt;
 	char *nametable;
 	TEXINF *texinf;
-	
+
 	nametable = texturename_buffer;
 
 	for (i = 0; i < tpage_amount; i++)
@@ -634,8 +633,3 @@ void GetTextureDetails(char *name, TEXTURE_DETAILS *info)
 
 	GetTextureDetails("SEA", info);	// weird but ok, ok...
 }
-
-
-
-
-

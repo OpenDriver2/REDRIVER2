@@ -23,18 +23,18 @@
 
 VECTOR gCameraOffset = { 0};
 VECTOR camera_position = { 0, 380, 0, 0 };
-SVECTOR camera_angle = { 0,0,0 };
+SVECTOR camera_angle = { 0, 0, 0 };
 
 MATRIX camera_matrix;
 
 MATRIX face_camera_work =
 {
-	{ 
-		{ 4096, 0, 0 }, 
+	{
+		{ 4096, 0, 0 },
 		{ 0, 4096, 0 },
-		{ 0, 0, 4096 } 
+		{ 0, 0, 4096 }
 	},
-	{ 0, 0, 0 } 
+	{ 0, 0, 0 }
 };
 
 char old_camera_change = 0;
@@ -49,7 +49,7 @@ static int baseDir = 0;
 
 char tracking_car = 0;
 
-int gCameraAngle = 2048; // offset 0xAA104
+int gCameraAngle = 2048;
 
 int TargetCar = 0;
 int CameraCar = 0;
@@ -106,7 +106,7 @@ void CalcCameraBasePos(PLAYER* lp)
 		gte_rtv0tr();
 		gte_stlvnl(basePos);
 
-		if(gInGameCutsceneActive == 0)
+		if (gInGameCutsceneActive == 0)
 			basePos[1] -= gCameraOffset.vy;
 
 		baseDir = car_data[lp->cameraCarId].hd.direction;
@@ -116,7 +116,7 @@ void CalcCameraBasePos(PLAYER* lp)
 // [D] [T]
 void InitCamera(PLAYER *lp)
 {
-	if (events.cameraEvent == NULL) 
+	if (events.cameraEvent == NULL)
 	{
 		paddCamera = Pads[lp->padid].mapped;
 
@@ -129,13 +129,13 @@ void InitCamera(PLAYER *lp)
 
 		if (lp->cameraView == 0)
 		{
-			if (FrameCnt == 0) 
+			if (FrameCnt == 0)
 			{
 				lp->cameraDist = 1000;
 
 				gCameraAngle = 2048;
 				gCameraMaxDistance = 0;
-				
+
 				gCameraOffset.vx = 0;
 				gCameraOffset.vy = 0;
 				gCameraOffset.vz = 0;
@@ -170,8 +170,8 @@ void InitCamera(PLAYER *lp)
 		}
 
 		// "Beat the Train" hack
-		if (gCurrentMissionNumber == 22 && 
-			lp->cameraPos.vx < 0 && 
+		if (gCurrentMissionNumber == 22 &&
+			lp->cameraPos.vx < 0 &&
 			lp->cameraPos.vz < 793671 && lp->cameraPos.vz > 700000)
 		{
 			SetSpecialCamera(SPECIAL_CAMERA_SET, 0);
@@ -185,7 +185,7 @@ void InitCamera(PLAYER *lp)
 
 		lp->snd_cam_ang = camera_angle.vy;
 	}
-	else 
+	else
 	{
 		BuildWorldMatrix();
 	}
@@ -201,7 +201,7 @@ void ModifyCamera(void)
 {
 	// camera types which can be chosen during game
 	static char inGameCamera[4] = {
-		1,0,2,1
+		1, 0, 2, 1
 	};
 
 	PLAYER *lp;
@@ -214,7 +214,7 @@ void ModifyCamera(void)
 	if (NoPlayerControl || cameraview == 6 || events.cameraEvent != NULL) // || NumPlayers > 1)	// [A] allow switching cameras in multiplayer
 		return;
 
-	for(i = 0; i < NumPlayers; i++)
+	for (i = 0; i < NumPlayers; i++)
 	{
 		lp = &player[i];
 
@@ -230,7 +230,7 @@ void ModifyCamera(void)
 					if (pNextCameraView > inGameCamera + 2)
 						break;
 				}
-			
+
 				lp->cameraView = *pNextCameraView;
 				lp->viewChange = FrameCnt;
 			}
@@ -281,8 +281,8 @@ int CameraCollisionCheck(void)
 	cellLevel = events.camera ? events.draw : -1;
 
 	do {
-		cellx = (camera_position.vx + (count % 3) * MAP_REGION_SIZE*MAP_REGION_SIZE - MAP_REGION_SIZE*MAP_REGION_SIZE + units_across_halved) / MAP_CELL_SIZE;
-		cellz = (camera_position.vz + (count / 3) * MAP_REGION_SIZE*MAP_REGION_SIZE - MAP_REGION_SIZE*MAP_REGION_SIZE + units_down_halved) / MAP_CELL_SIZE;
+		cellx = (camera_position.vx + (count % 3) * (MAP_REGION_SIZE * MAP_REGION_SIZE) - (MAP_REGION_SIZE * MAP_REGION_SIZE) + units_across_halved) / MAP_CELL_SIZE;
+		cellz = (camera_position.vz + (count / 3) * (MAP_REGION_SIZE * MAP_REGION_SIZE) - (MAP_REGION_SIZE * MAP_REGION_SIZE) + units_down_halved) / MAP_CELL_SIZE;
 
 		if (gCameraDistance > 0)
 		{
@@ -302,7 +302,7 @@ int CameraCollisionCheck(void)
 
 					num_cb = *boxptr;
 					collide = (COLLISION_PACKET *)(boxptr + 1);
-					if (xd * xd + zd * zd < model->bounding_sphere * model->bounding_sphere + sphere * sphere) 
+					if (xd * xd + zd * zd < model->bounding_sphere * model->bounding_sphere + sphere * sphere)
 					{
 						box_loop = 0;
 
@@ -363,7 +363,7 @@ int CameraCollisionCheck(void)
 void TurnHead(PLAYER *lp)
 {
 	LPPEDESTRIAN pPlayerPed;
-	
+
 	pPlayerPed = lp->pPed;
 
 	// [A] handle REDRIVER2 dedicated look back button
@@ -434,7 +434,7 @@ void PlaceCameraFollowCar(PLAYER *lp)
 	maxCameraDist = 850;
 	carheight = -220;
 	camExpandSpeed = 10;
-	
+
 	if (lp->cameraCarId >= 0)
 	{
 		CAR_DATA* camCar;
@@ -443,7 +443,7 @@ void PlaceCameraFollowCar(PLAYER *lp)
 
 		car_cos = camCar->ap.carCos;
 
-		if(car_cos)
+		if (car_cos)
 		{
 			int addDist;
 
@@ -514,11 +514,11 @@ void PlaceCameraFollowCar(PLAYER *lp)
 
 	gCameraDistance = maxCameraDist;
 
-	if (lp->cameraCarId >= 0) 
+	if (lp->cameraCarId >= 0)
 		jcam->ap.carCos = car_data[lp->cameraCarId].ap.carCos;
 
 	jcam->hd.direction = camAngle & 0xfff;
-	
+
 	sdist = maxCameraDist * RSIN(camAngle) + 2048;
 	cdist = maxCameraDist * RCOS(camAngle) + 2048;
 
@@ -541,7 +541,7 @@ void PlaceCameraFollowCar(PLAYER *lp)
 		camera_angle.vy = -(jcam->hd.direction + 2048);
 	else
 		camera_angle.vy = -ratan2(basePos[0] - lp->cameraPos.vx, basePos[2] - lp->cameraPos.vz) & 0xfff;
-	
+
 	camera_angle.vz = 0;
 
 	SetGeomScreen(scr_z = gCameraDefaultScrZ);
@@ -549,7 +549,6 @@ void PlaceCameraFollowCar(PLAYER *lp)
 
 	BuildWorldMatrix();
 }
-
 
 // [D] [T]
 int PointAtTarget(VECTOR *pPosition, VECTOR *pTarget, SVECTOR *pAngleVec)

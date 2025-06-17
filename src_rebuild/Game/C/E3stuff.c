@@ -27,7 +27,6 @@ POLYCOORD polycoords[6] =
   { 512, 256, 896, 256, 128, 256 }
 };
 
-
 // [D] [T]
 void ShowHiresScreens(char **names, int delay, int wait)
 {
@@ -62,7 +61,7 @@ void ShowHiresScreens(char **names, int delay, int wait)
 void FadeInHiresScreen(char *filename)
 {
 	int col;
-	
+
 	DISPENV disp;
 	DRAWENV draw;
 	SPRT prims[6];
@@ -93,7 +92,7 @@ void FadeInHiresScreen(char *filename)
 	prim = prims;
 
 	// prepare polygons
-	for(int i = 0; i < 6; i++)
+	for (int i = 0; i < 6; i++)
 	{
 		// set primitive
 		setSprt(prim);
@@ -119,9 +118,9 @@ void FadeInHiresScreen(char *filename)
 	SetupDefDispEnv(&disp, 0, 0, 640, 512);
 
 	draw.dfe = 1;
-	
+
 	VSync(0);
-	
+
 	PutDispEnv(&disp);
 	PutDrawEnv(&draw);
 
@@ -144,17 +143,17 @@ void FadeInHiresScreen(char *filename)
 		PutDispEnv(&disp);
 		PutDrawEnv(&draw);
 		ClearOTagR((u_long*)&ot, 1);
-		
+
 		poly = nulls;
 		prim = prims;
 
 		for (int i = 0; i < 6; i++)
 		{
-			if (col < 129) 
+			if (col < 129)
 			{
 				setRGB0(prim, col, col, col);
 			}
-			else 
+			else
 			{
 				setRGB0(prim, 128, 128, 128);
 			}
@@ -214,7 +213,7 @@ void ShowBonusGallery()
 	prim = prims;
 
 	// prepare polygons
-	for(int i = 0; i < 6; i++)
+	for (int i = 0; i < 6; i++)
 	{
 		// set primitive
 		setSprt(prim);
@@ -247,13 +246,13 @@ void ShowBonusGallery()
 	currentImage = 0;
 
 	// draw image cycle
-	while(currentImage <= GALLERY_IMAGES)
+	while (currentImage <= GALLERY_IMAGES)
 	{
-		if(currentImage == 0)
+		if (currentImage == 0)
 			sprintf(filename, "GFX\\GAL\\INTRO.TIM");
 		else
 			sprintf(filename, "GFX\\GAL\\IMG%d.TIM", currentImage-1);
-		
+
 		LoadfileSeg(filename, (char*)_other_buffer, 20, 0x4ff80);
 		LoadClut((u_long*)_other_buffer, 640, 511);
 
@@ -301,7 +300,7 @@ void ShowBonusGallery()
 			emscripten_sleep(0);
 #endif
 
-			if(Pads[0].dirnew & 0x8000)
+			if (Pads[0].dirnew & 0x8000)
 			{
 				currentImage--;
 				if (currentImage < 0)
@@ -316,14 +315,14 @@ void ShowBonusGallery()
 				}
 			}
 
-			if(Pads[0].dirnew & 0x2000)
+			if (Pads[0].dirnew & 0x2000)
 			{
 				FESound(3);
 				currentImage++;
 				break;
 			}
 
-			if(Pads[0].dirnew & 0x10)
+			if (Pads[0].dirnew & 0x10)
 			{
 				FESound(0);
 				currentImage = GALLERY_IMAGES+1; // quit
@@ -383,7 +382,7 @@ void FadeOutHiresScreen(void)
 	SetupDefDispEnv(&disp, 0, 0, 640, 512);
 	draw.dfe = 1;
 
-	VSync(0); 
+	VSync(0);
 	PutDispEnv(&disp);
 	PutDrawEnv(&draw);
 
@@ -441,7 +440,7 @@ void SetupDefDrawEnv(DRAWENV *env, int x, int y, int w, int h)
 // [D] [T]
 void SetupDefDispEnv(DISPENV *env, int x, int y, int w, int h)
 {
-	if (h < 257) 
+	if (h < 257)
 	{
 		SetDefDispEnv(env, x, y, w, 256);
 
@@ -476,8 +475,8 @@ void SetPleaseWait(char *buffer)
 	DrawSync(0);
 	VSync(0);
 	SetDispMask(0);
-	SetupDefDrawEnv(&draw,0,0,320,256);
-	SetupDefDispEnv(&disp,0,0, 320, 256);
+	SetupDefDrawEnv(&draw, 0, 0, 320, 256);
+	SetupDefDispEnv(&disp, 0, 0, 320, 256);
 
 	draw.dfe = 1;
 
@@ -496,7 +495,7 @@ void SetPleaseWait(char *buffer)
 	rect.w = 320;
 	rect.h = 512;
 
-	ClearImage(&rect,0,0,0);
+	ClearImage(&rect, 0, 0, 0);
 	DrawSync(0);
 
 #ifndef PSX
@@ -506,11 +505,10 @@ void SetPleaseWait(char *buffer)
 
 	gShowMap = 1;
 	SetTextColour(128, 128, 128);
-	PrintStringCentred(G_LTXT(GTXT_PleaseWait),128);
+	PrintStringCentred(G_LTXT(GTXT_PleaseWait), 128);
 	gShowMap = 0;
 
 	VSync(0);
-	
 
 #ifdef PSX
 	if (lastrequesteddisc == 0)
@@ -524,7 +522,7 @@ void SetPleaseWait(char *buffer)
 #else
 	PsyX_EndScene();
 #endif // PSX
-	
+
 }
 
 // [D] [T]
@@ -541,7 +539,7 @@ void CheckForCorrectDisc(int disc)
 
 	discerror = 0;
 
-	if (lastrequesteddisc != disc) 
+	if (lastrequesteddisc != disc)
 	{
 		lastrequesteddisc = disc;
 		ResetCityType();
@@ -552,7 +550,7 @@ void CheckForCorrectDisc(int disc)
 		mess = G_LTXT(GTXT_PleaseinsertDISC1);
 		exe = ".\\SLES_029.96;1";
 	}
-	else 
+	else
 	{
 		mess = G_LTXT(GTXT_PleaseinsertDISC2);
 		exe = ".\\SLES_129.96;1";
@@ -589,7 +587,7 @@ void CheckForCorrectDisc(int disc)
 
 		ret = DiscSwapped(exe);
 
-		switch (ret) 
+		switch (ret)
 		{
 			case CDTYPE_NODISC:
 				discerror = 0;
@@ -620,7 +618,7 @@ void CheckForCorrectDisc(int disc)
 		rect.x = 0;
 		rect.w = 320;
 		rect.h = 60;
-		
+
 		ClearImage(&rect, 0, 0, 0);
 		DrawSync(0);
 		gShowMap = 1;
@@ -645,8 +643,3 @@ void CheckForCorrectDisc(int disc)
 	ClearImage(&rect, 0, 0, 0);
 	DrawSync(0);
 }
-
-
-
-
-

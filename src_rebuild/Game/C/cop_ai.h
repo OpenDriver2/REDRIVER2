@@ -41,4 +41,4 @@ extern void PassiveCopTasks(CAR_DATA *cp); // 0x0002F6FC
 
 extern int ReplayLog_Fnarr_He_Said_Log(int val);
 
-#endif
+#endif // COP_AI_H

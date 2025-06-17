@@ -110,5 +110,4 @@ extern void DrawAllTheCars(int view); // 0x000407D8
 
 extern void RenderModel(MODEL *model, MATRIX *matrix, VECTOR *pos, int zBias, int flags, int subdiv, int nrot); // 0x0004143C
 
-
-#endif
+#endif // DRAW_H

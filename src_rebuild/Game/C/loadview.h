@@ -17,5 +17,4 @@ extern void DrawFadePoly(); // 0x00058824
 
 extern void DisplayMissionTitle(); // 0x00058B08
 
-
-#endif
+#endif // LOADVIEW_H

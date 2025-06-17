@@ -3,4 +3,4 @@
 
 extern char* decomp_asm(char* dest, char* src); // 0x0002D298
 
-#endif
+#endif // COMPRES_H

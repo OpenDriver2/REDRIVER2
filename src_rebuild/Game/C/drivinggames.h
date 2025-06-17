@@ -10,5 +10,4 @@ extern void DrawDrivingGames(); // 0x000438DC
 extern void MoveSmashedCones(); // 0x00043CE0
 extern void DrawSmashedCones(); // 0x00044168
 
-
-#endif
+#endif // DRIVINGGAMES_H

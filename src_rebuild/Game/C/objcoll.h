@@ -10,4 +10,4 @@ extern int QuickBuildingCollisionCheck(VECTOR *pPos, int dir, int l, int w, int 
 
 extern void DoScenaryCollisions(); // 0x0006B220
 
-#endif
+#endif // OBJCOLL_H

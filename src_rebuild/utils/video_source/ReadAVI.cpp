@@ -49,15 +49,15 @@ using namespace std;
 #define DBG_LVL_DEF 0
 
 #ifdef VERBOSE
-#define MSG_DBG(dl, format, ...) {if(dl <= DBG_LVL_DEF ) fprintf(stdout, format ,##__VA_ARGS__);}
+#define MSG_DBG(dl, format, ...) {if (dl <= DBG_LVL_DEF ) fprintf(stdout, format ,##__VA_ARGS__);}
 #else
 #define MSG_DBG(dl, format, ...)
 #endif
 
 ReadAVI::chunk_type_int_t ReadAVI::chunk_types[ChunkTypesCnt] = {
-	{"db", ctype_uncompressed_video_frame }, 
+	{"db", ctype_uncompressed_video_frame },
 	{"dc", ctype_compressed_video_frame },
-	{"pc", ctype_palette_change }, 
+	{"pc", ctype_palette_change },
 	{"wb", ctype_audio_data } };
 
 ReadAVI::ReadAVI(const char* filename)
@@ -71,7 +71,6 @@ ReadAVI::ReadAVI(const char* filename)
 	fileSize = inFile.tellg();
 	inFile.close();
 	inFile.open(filename, ios_base::in | ios_base::binary);
-
 
 	try {
 		parse_riff();
@@ -115,6 +114,7 @@ int ReadAVI::GetFrameFromIndex(frame_entry_t* frame_entry)
 		MSG_DBG(2, "Pointer out of range\n");
 		return -5;
 	}
+
 	for (unsigned i = frame_entry->pointer; i < index_entries.size(); i++) {
 		if (index_entries[i].type & frame_entry->type) {
 			check_data_buf(index_entries[i].dwChunkLength);
@@ -132,6 +132,7 @@ int ReadAVI::GetFrameFromIndex(frame_entry_t* frame_entry)
 			return index_entries[i].dwChunkLength;
 		}
 	}
+
 	MSG_DBG(2, "No more frames\n");
 	return -1;
 }
@@ -179,12 +180,14 @@ int ReadAVI::hex_dump_chunk(int chunk_len)
 int ReadAVI::decodeCkid(char* ckid, chunk_type_t* chunk_type)
 {
 	int stream = (ckid[0] - '0') * 10 + (ckid[1] - '0');
+
 	for (int i = 0; i < ChunkTypesCnt; i++) {
 		if (chunk_types[i].type_id[0] == ckid[2] && chunk_types[i].type_id[1] == ckid[3]) {
 			*chunk_type = chunk_types[i].type;
 			return stream;
 		}
 	}
+
 	return -1;
 }
 
@@ -514,7 +517,7 @@ int ReadAVI::parse_movi(int size)
 			index_entries.push_back(index_entry);
 		}
 
-		MSG_DBG(3, "      AVI Movi Chunk ( id=%s(%d-%d) chunk_size=%d offset=0x%lx)\n", chunk_id, index_entry.type,
+		MSG_DBG(3, "      AVI Movi Chunk (id=%s(%d-%d) chunk_size=%d offset=0x%lx)\n", chunk_id, index_entry.type,
 			index_entry.stream_num, index_entry.dwChunkLength, offset);
 		MSG_DBG(3, "      {\n");
 
@@ -646,10 +649,14 @@ int ReadAVI::parse_riff()
 		else if (strcmp("idx1", chunk_id) == 0) {
 			inFile.seekg(inFile.tellg() - std::streamoff(4), ios_base::beg);
 			parse_idx1(chunk_size);
-		}/* else if (strcmp("indx", chunk_id) == 0) {
-		 inFile.seekg(inFile.tellg() - 4L, ios_base::beg);
-		 parse_indx(chunk_size);
-		 }*/else {
+		}
+		/*
+		else if (strcmp("indx", chunk_id) == 0) {
+			inFile.seekg(inFile.tellg() - 4L, ios_base::beg);
+			parse_indx(chunk_size);
+		}
+		*/
+		else {
 			MSG_DBG(2, "      Unknown chunk at %d (%4s)\n", (int)inFile.tellg() - 8, chunk_type);
 			if (chunk_size == 0)
 				break;

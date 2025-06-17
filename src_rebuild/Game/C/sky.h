@@ -13,4 +13,4 @@ extern void DrawLensFlare(); // 0x00077A8C
 
 extern void TunnelSkyFade(); // 0x000787B0
 
-#endif
+#endif // SKY_H

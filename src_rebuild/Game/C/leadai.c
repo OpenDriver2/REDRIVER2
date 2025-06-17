@@ -161,7 +161,7 @@ void InitLead(CAR_DATA* cp)
 	InitLeadHorn();
 }
 
-// [D] [T] - needless to say, the AI isn't very smart :D
+// [D] [T] needless to say, the AI isn't very smart :D
 void LeadUpdateState(CAR_DATA* cp)
 {
 	volatile int dx, dz;
@@ -235,7 +235,7 @@ void LeadUpdateState(CAR_DATA* cp)
 	}
 
 	avel = FIXEDH(cp->st.n.angularVelocity[1]);
-	end = DIFF_ANGLES(cp->ai.l.targetDir, cp->hd.direction);// (cp->hd.direction - cp->ai.l.targetDir) + 2048U & 0xfff) - 2048;
+	end = DIFF_ANGLES(cp->ai.l.targetDir, cp->hd.direction); //(cp->hd.direction - cp->ai.l.targetDir) + 2048U & 0xfff) - 2048;
 
 	switch (cp->ai.l.dstate)
 	{
@@ -284,7 +284,7 @@ void LeadUpdateState(CAR_DATA* cp)
 		case LeadDrive_NormalDrive:
 		{
 			volatile int dist;
-		
+
 			if (cp->ai.l.recoverTime > 40)
 				--cp->ai.l.recoverTime;
 
@@ -389,7 +389,7 @@ u_int LeadPadResponse(CAR_DATA* cp)
 
 	volatile int deltaTh;
 	volatile int avel;
-	
+
 	t0 = 0;
 
 	deltaTh = DIFF_ANGLES(cp->ai.l.targetDir, cp->hd.direction); // ((cp->hd.direction - cp->ai.l.targetDir) + 2048U & 0xfff) - 2048;
@@ -425,22 +425,22 @@ u_int LeadPadResponse(CAR_DATA* cp)
 		};
 
 		SetTextColour(120, 15, 15);
-		
+
 		char text[256];
 		sprintf(text, "%s", LeadDebugStateNames[cp->ai.l.dstate]);
 		PrintString(text, 20, 180);
 
 		SetTextColour(128, 128, 64);
-		
+
 		sprintf(text, "dir: %d, fwd: %d, pos: %d, width: %d", cp->ai.l.targetDir, cp->ai.l.roadForward, cp->ai.l.roadPosition, cp->ai.l.width);
 		PrintString(text, 20, 195);
-		
+
 		sprintf(text, "panic: %d, boring: %d, nextTurn: %d", cp->ai.l.panicCount, cp->ai.l.boringness, cp->ai.l.nextTurn);
 		PrintString(text, 20, 210);
 
 		sprintf(text, "currentRoad: %d", cp->ai.l.currentRoad);
 		PrintString(text, 20, 230);
-		
+
 		Debug_AddLineOfs(_zero, _up, pos, yycv);
 	}
 #endif
@@ -450,10 +450,10 @@ u_int LeadPadResponse(CAR_DATA* cp)
 		case LeadDrive_Handbrake:
 		{
 			int deltaAVel;
-			
+
 			// [A] check angular velocity when making this maneuver with handbrake
 			deltaAVel = ABS(avel);
-		
+
 			t0 = (deltaAVel < 200 ? CAR_PAD_HANDBRAKE : 0) | ((deltaTh < 0) ? CAR_PAD_RIGHT : CAR_PAD_LEFT);
 			break;
 			case 1:
@@ -474,7 +474,7 @@ u_int LeadPadResponse(CAR_DATA* cp)
 			volatile int maxDist;
 			volatile int deltaVel;
 			volatile int steerDelta;
-			
+
 			dx = -RCOS(cp->ai.l.targetDir) * (cp->hd.where.t[0] - cp->ai.l.targetX);
 			dz =  RSIN(cp->ai.l.targetDir) * (cp->hd.where.t[2] - cp->ai.l.targetZ);
 
@@ -496,7 +496,7 @@ u_int LeadPadResponse(CAR_DATA* cp)
                     + pathParams[3] * deltaTh) - cp->wheel_angle;
 
 			t0 = CAR_PAD_ACCEL;
-		
+
 			if (steerDelta > 32)
 				t0 |= CAR_PAD_RIGHT;
 			else if (steerDelta < -32)
@@ -504,7 +504,7 @@ u_int LeadPadResponse(CAR_DATA* cp)
 
 			if (ABS(steerDelta) > 64)
 				t0 |= CAR_PAD_FASTSTEER;
-		
+
 			if (steerDelta + 31U <= 62 && ABS(avel) <= 5)
 			{
 				if (t0 & CAR_PAD_ACCEL)
@@ -516,7 +516,7 @@ u_int LeadPadResponse(CAR_DATA* cp)
 		case LeadDrive_Unstuck:
 		{
 			volatile int deltaPos;
-			
+
 			t0 = CAR_PAD_WHEELSPIN;
 
 			deltaPos = DIFF_ANGLES(cp->hd.direction, cp->ai.l.roadPosition);// ((cp->ai.l.roadPosition - cp->hd.direction) + 2048U & 0xfff) - 2048;
@@ -539,7 +539,7 @@ u_int LeadPadResponse(CAR_DATA* cp)
 		case LeadDrive_Panic:
 		{
 			volatile int deltaAVel;
-			
+
 			deltaAVel = ABS(avel);
 
 			if (ABS(cp->ai.l.panicCount) < 2 || deltaAVel > 150)
@@ -592,7 +592,7 @@ u_int LeadPadResponse(CAR_DATA* cp)
 		{
 			t0 = (avel < 0) ? CAR_PAD_RIGHT : CAR_PAD_LEFT;
 			//t0 |= ((deltaTh < 0) ? CAR_PAD_RIGHT : CAR_PAD_LEFT);
-		
+
 			if (cp->ai.l.roadForward < 0 && cp->hd.speed > 100)
 				t0 |= CAR_PAD_BRAKE;
 			else
@@ -631,7 +631,7 @@ void FakeMotion(CAR_DATA* cp)
 	int currentRoad;
 	int nextJunction;
 	int temp;
-	
+
 	currentRoad = cp->ai.l.currentRoad;
 
 	if (IS_JUNCTION_SURFACE(currentRoad))
@@ -643,7 +643,7 @@ void FakeMotion(CAR_DATA* cp)
 	else if (IS_STRAIGHT_SURFACE(currentRoad))
 	{
 		int dx, dz;
-		
+
 		volatile int angle;
 		volatile int c, s, d;
 		volatile int toGo;
@@ -653,7 +653,7 @@ void FakeMotion(CAR_DATA* cp)
 		dz = cp->hd.where.t[2] - straight->Midz;
 
 		angle = straight->angle & 0xfff;
-		
+
 		nextJunction = (straight->ConnectIdx[1]);
 
 		if (nextJunction == -1)
@@ -672,7 +672,7 @@ void FakeMotion(CAR_DATA* cp)
 			angle ^= 2048;
 
 			nextJunction = (straight->ConnectIdx[3]);
-	
+
 			if (nextJunction == -1)
 				nextJunction = (straight->ConnectIdx[2]);
 		}
@@ -682,7 +682,7 @@ void FakeMotion(CAR_DATA* cp)
 		s = RCOS(angle);
 
 		d = FIXEDH(c * dx + s * dz);
-		
+
 		toGo = (straight->length / 2) - d;
 
 		if (toGo > -1)
@@ -712,9 +712,9 @@ void FakeMotion(CAR_DATA* cp)
 
 		dx = cp->hd.where.t[0] - curve->Midx;
 		dz = cp->hd.where.t[2] - curve->Midz;
-		
+
 		angle = ratan2(dx, dz);
-		
+
 		if (cp->ai.l.direction == 0)
 		{
 			if (angle - cp->ai.l.targetDir & 0x800U)
@@ -728,13 +728,13 @@ void FakeMotion(CAR_DATA* cp)
 		// move car in desired direction
 		if (cp->ai.l.direction == 1)
 		{
-			
-			if (DIFF_ANGLES(angle, curve->end) >= 0) // ((curve->end - angle & 0xfff) + 2048 & 0xfff) - 2048 > -1) 
+
+			if (DIFF_ANGLES(angle, curve->end) >= 0) // ((curve->end - angle & 0xfff) + 2048 & 0xfff) - 2048 > -1)
 			{
 				dir = angle + 0x13193 / radius;
 
 				cp->ai.l.targetDir = (dir + 1024) & 0xfff;
-				
+
 				cp->hd.where.t[0] = FIXEDH(RSIN(dir)* radius) + curve->Midx;
 				cp->hd.where.t[2] = FIXEDH(RCOS(dir) * radius) + curve->Midz;
 				return;
@@ -751,7 +751,7 @@ void FakeMotion(CAR_DATA* cp)
 				dir = angle - 0x13193 / radius;
 
 				cp->ai.l.targetDir = (dir - 1024) & 0xfff;
-				
+
 				cp->hd.where.t[0] = FIXEDH(RSIN(dir) * radius) + curve->Midx;
 				cp->hd.where.t[2] = FIXEDH(RCOS(dir) * radius) + curve->Midz;
 
@@ -762,8 +762,8 @@ void FakeMotion(CAR_DATA* cp)
 			if (nextJunction == -1)
 				nextJunction = (curve->ConnectIdx[2]);
 		}
-		
-		if(!IS_JUNCTION_SURFACE(nextJunction))
+
+		if (!IS_JUNCTION_SURFACE(nextJunction))
 		{
 			cp->ai.l.currentRoad = nextJunction;
 			cp->ai.l.direction = 0;
@@ -789,15 +789,15 @@ void PosToIndex(int* normal, int* tangent, int intention, CAR_DATA* cp)
 	volatile int t80;
 
 	if (intention - 4U < 3)
-	{ 
+	{
 		*normal = DIFF_ANGLES(0, *normal); //(*normal + 2048U & 0xfff) - 2048;
 
 		if (intention == 6 && ABS(*normal) < 240)
 		{
 			int dist;
-			
+
 			dist = FIXEDH(*tangent * RSIN(*normal));
-				
+
 			if (dist > 125)
 			{
 				*normal = 23;
@@ -825,7 +825,7 @@ void PosToIndex(int* normal, int* tangent, int intention, CAR_DATA* cp)
 			*normal = 20;
 			return;
 		}
-	
+
 		*normal *= 21;
 
 		if (intention == 4)
@@ -845,24 +845,24 @@ void PosToIndex(int* normal, int* tangent, int intention, CAR_DATA* cp)
 			volatile int myspeed;
 			volatile int temp;
 			volatile int w80;
-			
+
 			myspeed = cp->hd.speed;
 			w = LeadValues.tWidth;
 			t80 = LeadValues.tWidthMul;
-			
+
 			if (myspeed > 100)
 			{
 				w = LeadValues.hWidth;
 				t80 = LeadValues.hWidthMul;
 			}
-			
+
 			w = w + myspeed * t80;
-			
+
 			if (myspeed > 100)
 				w80 = LeadValues.hWidth80 + myspeed * LeadValues.hWidth80Mul;
 			else
 				w80 = LeadValues.tWidth80 + myspeed / LeadValues.tWidth80Mul;
-			
+
 			if (myspeed > 100)
 				t = LeadValues.hDist + (myspeed - 100) * LeadValues.hDistMul;
 			else
@@ -876,14 +876,14 @@ void PosToIndex(int* normal, int* tangent, int intention, CAR_DATA* cp)
 			if (w < *normal)
 			{
 				temp = *tangent;
-				
+
 				*tangent = (t + *normal) - w;
 				*normal = t - temp;
 			}
 			else if (w80 < *normal)
 			{
 				temp = ((*normal - w80) * (t - t80)) / (w - w80) + t80;
-				
+
 				*normal = temp - *tangent;
 				*tangent = temp;
 			}
@@ -902,7 +902,7 @@ void PosToIndex(int* normal, int* tangent, int intention, CAR_DATA* cp)
 	*normal = t80 + 21;
 }
 
-// [D] [T] - seems to be working as expected
+// [D] [T] seems to be working as expected
 void BlockToMap(MAP_DATA* data)
 {
 	volatile int carLength, carWidth;
@@ -1138,7 +1138,7 @@ void BlockToMap(MAP_DATA* data)
 			if (tangent < 2000 || data->intention == 6)
 			{
 				volatile int quad1, quad2;
-				
+
 				corners[0][0] = dx + data->size->vx;
 				corners[0][1] = dz + data->size->vz;
 				corners[2][0] = dx - data->size->vx;
@@ -1212,7 +1212,7 @@ void BlockToMap(MAP_DATA* data)
 				{
 					int vx, vz;
 					int theta;
-					
+
 					dx = corners[left][1] - corners[right][1];
 					dy = corners[left][0] - corners[right][0];
 
@@ -1250,7 +1250,7 @@ void BlockToMap(MAP_DATA* data)
 			printError("\nunknwn intention in leadai.c LOCKUP!!\n");
 		}
 	}
-	
+
 	switch (data->intention)
 	{
 		case 2:
@@ -1276,7 +1276,7 @@ void BlockToMap(MAP_DATA* data)
 			{
 				int tdist;
 				int temp;
-				
+
 				*ndist += carLength * 2;
 				*fdist = ABS(*fdist + carLength * -2);
 
@@ -1304,7 +1304,7 @@ void BlockToMap(MAP_DATA* data)
 			int localld = 0;
 			int localr = 0;
 			int localrd = 0;
-			
+
 			locall = left;
 			localr = right;
 			localld = ldist;
@@ -1411,7 +1411,7 @@ int IsOnMap(int x, int z, VECTOR* basePos, int intention, CAR_DATA* cp)
 			dx = x - curve->Midx;
 			dz = z - curve->Midz;
 
-			tangent = DIFF_ANGLES(cp->ai.l.base_Angle, ratan2(dx, dz)) // (((ratan2(dx, dz) - cp->ai.l.base_Angle) + 2048U & 0xfff) - 2048) * 
+			tangent = DIFF_ANGLES(cp->ai.l.base_Angle, ratan2(dx, dz)) // (((ratan2(dx, dz) - cp->ai.l.base_Angle) + 2048U & 0xfff) - 2048) *
 				* cp->ai.l.base_Dir * ((curve->inside * 45056) / 28672);
 
 			normal = (cp->ai.l.base_Normal - hypot(dx, dz)) * cp->ai.l.base_Dir;
@@ -1449,8 +1449,8 @@ int IsOnMap(int x, int z, VECTOR* basePos, int intention, CAR_DATA* cp)
 	return 0;
 }
 
-int roadAhead[42]; // offset 0x000ecde8
-int localMap[42]; // offset 0x000ecd40
+int roadAhead[42];
+int localMap[42];
 
 // [D] [A] overlapping stack variables - might be incorrect (i've tried to resolve them so far)
 void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
@@ -1474,24 +1474,24 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	volatile int laneAvoid;
 	volatile int newTarget = 21;
 	volatile int sindex = 0;
-	
+
 	volatile int cell_x, cell_z;
 	volatile int initial_cell_x, initial_cell_z;
 	volatile int x1, z1;
 
-	for(i = 0; i < 41; i++)
+	for (i = 0; i < 41; i++)
 		roadAhead[i] = 20480;
 
 	for (i = 0; i < 41; i++)
 		localMap[i] = (cp->hd.speed + 100) * 10;
-	
+
 	laneAvoid = -1;
-	
+
 	road_s = RSIN(cp->ai.l.targetDir);
 	road_c = RCOS(cp->ai.l.targetDir);
 
 	ClearCopUsage();
-	
+
 	initial_cell_x = ((basePos->vx + units_across_halved - 1024) / MAP_CELL_SIZE) - 5;
 	initial_cell_z = ((basePos->vz + units_down_halved - 1024) / MAP_CELL_SIZE) - 5;
 
@@ -1536,7 +1536,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 					int num_cb;
 
 					QuickUnpackCellObject(ppco, &ci.nearCell, &tempCO);
-					
+
 					num_cb = *GET_MODEL_DATA(int, model, collision_block);
 					collide = GET_MODEL_DATA_OFS(COLLISION_PACKET, model, collision_block, sizeof(int));
 
@@ -1545,7 +1545,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 						int yang;
 						int theta;
 						int xsize, zsize;
-						
+
 						yang = -tempCO.yang & 0x3f;
 
 						if (collide->type == 0)
@@ -1569,7 +1569,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 							theta = 0;
 							xsize = 1;
 							zsize = 1;
-							
+
 							printError("\nERROR! unknown collision box type in leadai.c\n");
 						}
 
@@ -1679,7 +1679,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 		{
 			int lbody;
 			int wbody;
-		
+
 			car_cos = lcp->ap.carCos;
 
 			wbody = car_cos->colBox.vx / 2;
@@ -1765,7 +1765,7 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 	if (intention < 2)
 	{
 		int smallest;
-	
+
 		smallest = roadAhead[24];
 		for (i = 24; i < 41; i++)
 		{
@@ -2142,9 +2142,9 @@ void UpdateRoadPosition(CAR_DATA* cp, VECTOR* basePos, int intention)
 // [D] [T]
 void CheckCurrentRoad(CAR_DATA* cp)
 {
-	volatile int heading = 0; // offset 0x1c
-	int nextJunction = 0; // offset 0x50
-	VECTOR basePosition = {0}; // offset 0x60
+	volatile int heading = 0;
+	int nextJunction = 0;
+	VECTOR basePosition = { 0 };
 
 	volatile int checkNext = -1;
 	volatile int currentRoad = -1;
@@ -2165,7 +2165,7 @@ void CheckCurrentRoad(CAR_DATA* cp)
 	{
 		cp->ai.l.offRoad = 0;
 
-		if (currentRoad != cp->ai.l.lastRoad && 
+		if (currentRoad != cp->ai.l.lastRoad &&
 			currentRoad != cp->ai.l.currentRoad)
 		{
 			cp->ai.l.direction = 0;
@@ -2184,11 +2184,11 @@ void CheckCurrentRoad(CAR_DATA* cp)
 	}
 	else if (IS_STRAIGHT_SURFACE(currentRoad))
 	{
-		volatile int d; // offset 0x70
-		volatile int toGo; // offset 0x74
-		volatile int angle; // offset 0x78
-		volatile int s; // offset 0x7c
-		volatile int c; // offset 0x80
+		volatile int d;
+		volatile int toGo;
+		volatile int angle;
+		volatile int s;
+		volatile int c;
 		volatile int fixedThresh;
 		volatile int dx, dz;
 
@@ -2197,7 +2197,7 @@ void CheckCurrentRoad(CAR_DATA* cp)
 
 		dx = cp->hd.where.t[0] - straight->Midx;
 		dz = cp->hd.where.t[2] - straight->Midz;
-		
+
 		if (straight->ConnectIdx[1] == -1)
 			nextJunction = straight->ConnectIdx[0];
 		else
@@ -2214,20 +2214,20 @@ void CheckCurrentRoad(CAR_DATA* cp)
 		if (cp->ai.l.direction == -1)
 		{
 			angle ^= 2048;
-			
+
 			if (straight->ConnectIdx[3] == -1)
 				nextJunction = straight->ConnectIdx[2];
 			else
 				nextJunction = straight->ConnectIdx[3];
 		}
-		
+
 		s = RSIN(angle);
 		c = RCOS(angle);
-		
+
 		d = FIXEDH(s * dx + c * dz);
 
 		toGo = (straight->length / 2) - d;
-		
+
 		if (cp->hd.speed > 100)
 			fixedThresh = LeadValues.hDist + (cp->hd.speed - 100) * LeadValues.hDistMul;
 		else
@@ -2254,11 +2254,11 @@ void CheckCurrentRoad(CAR_DATA* cp)
 	}
 	else if (IS_CURVED_SURFACE(currentRoad))
 	{
-		volatile int angle; // offset 0x84
-		volatile int radius; // offset 0x88
-		volatile int dx; // offset 0x8c
-		volatile int dz; // offset 0x90
-		volatile int fixedThresh; // offset 0x94
+		volatile int angle;
+		volatile int radius;
+		volatile int dx;
+		volatile int dz;
+		volatile int fixedThresh;
 
 		curve = GET_CURVE(currentRoad);
 		dx = cp->hd.where.t[0] - curve->Midx;
@@ -2348,19 +2348,19 @@ void CheckCurrentRoad(CAR_DATA* cp)
 	if (checkNext)
 	{
 		int diff;
-		
+
 		currentRoad = nextJunction;
 
 		if (IS_JUNCTION_SURFACE(nextJunction))
 		{
 			junction = GET_JUNCTION(nextJunction);
-			
+
 			if (nextJunction != cp->ai.l.nextJunction)
 			{
 				SelectExit(cp, junction);
 				cp->ai.l.nextJunction = nextJunction;
 			}
-			
+
 			currentRoad = junction->ExitIdx[cp->ai.l.nextExit];
 			heading = (cp->ai.l.nextExit & 3) << 10;
 		}
@@ -2379,14 +2379,14 @@ void CheckCurrentRoad(CAR_DATA* cp)
 			else if (IS_CURVED_SURFACE(nextJunction))
 			{
 				int angle;
-				int dx; // offset 0x9c
-				int dz; // offset 0xa0
+				int dx;
+				int dz;
 
 				curve = GET_CURVE(nextJunction);
 
 				dx = cp->hd.where.t[0] - curve->Midx;
 				dz = cp->hd.where.t[2] - curve->Midz;
-				
+
 				angle = ratan2(dx, dz);
 
 				if ((angle - cp->hd.direction & 2048U) != 0)
@@ -2401,28 +2401,28 @@ void CheckCurrentRoad(CAR_DATA* cp)
 		if (IS_STRAIGHT_SURFACE(currentRoad))
 		{
 			int cs, sn;
-			int dx; // offset 0xa4
-			int dz; // offset 0xa8
-			int dist; // offset 0xac
-			int offx; // offset 0xb0
-			int offz; // offset 0xb4
+			int dx;
+			int dz;
+			int dist;
+			int offx;
+			int offz;
 
 			straight = GET_STRAIGHT(currentRoad);
 
 			sn = RSIN(heading);
 			cs = RCOS(heading);
-			
+
 			offx = straight->Midx - cp->hd.where.t[0];
 			offz = straight->Midz - cp->hd.where.t[2];
-			
+
 			dist = -FIXEDH(offx * sn + offz * cs);
-			
+
 			cp->ai.l.d = FIXEDH(cs * offx - sn * offz);
 			cp->ai.l.width = ROAD_LANES_COUNT(straight) * 512;
-			
+
 			dx = FIXEDH(sn * dist);
 			dz = FIXEDH(cs * dist);
-			
+
 			basePosition.vx = straight->Midx + dx;
 			basePosition.vy = cp->hd.where.t[1];
 			basePosition.vz = straight->Midz + dz;
@@ -2430,19 +2430,19 @@ void CheckCurrentRoad(CAR_DATA* cp)
 		else if (IS_CURVED_SURFACE(currentRoad))
 		{
 			int radius;
-			int angle; // offset 0xb8
-			int dx; // offset 0xbc
-			int dz; // offset 0xc0
-			int basex; // offset 0xc4
-			int basez; // offset 0xc8
-			int dist; // offset 0xcc
-			int offx; // offset 0xd0
-			int offz; // offset 0xd4
+			int angle;
+			int dx;
+			int dz;
+			int basex;
+			int basez;
+			int dist;
+			int offx;
+			int offz;
 
 			curve = GET_CURVE(currentRoad);
 			dx = cp->hd.where.t[0] - curve->Midx;
 			dz = cp->hd.where.t[2] - curve->Midz;
-			
+
 			radius = curve->inside * 1024 + ROAD_LANES_COUNT(curve) * 512;
 			angle = ratan2(dx, dz);
 
@@ -2471,11 +2471,11 @@ void CheckCurrentRoad(CAR_DATA* cp)
 			cp->ai.l.width = ROAD_LANES_COUNT(curve) * 512;
 			offx = basex - cp->hd.where.t[0];
 			offz = basez - cp->hd.where.t[2];
-			
+
 			dist = -FIXEDH(offx * RSIN(heading) + offz * RCOS(heading));
 			dx = FIXEDH(RSIN(heading) * dist);
 			dz = FIXEDH(RCOS(heading) * dist);
-			
+
 			basePosition.vx = basex + dx;
 			basePosition.vy = cp->hd.where.t[1];
 			basePosition.vz = basez + dz;
@@ -2516,8 +2516,8 @@ void CheckCurrentRoad(CAR_DATA* cp)
 
 		// check for grass surface
 		// or if AI is too far from road
-		if (cp->ai.l.width + 2048 >= ABS(cp->ai.l.d) || 
-			(cp->hd.wheel[1].surface & 7) == 3 || 
+		if (cp->ai.l.width + 2048 >= ABS(cp->ai.l.d) ||
+			(cp->hd.wheel[1].surface & 7) == 3 ||
 			(cp->hd.wheel[3].surface & 7) == 3)
 		{
 			cp->ai.l.currentRoad = currentRoad;
@@ -2545,7 +2545,7 @@ void CheckCurrentRoad(CAR_DATA* cp)
 		{
 			cp->ai.l.offRoad = 1;
 			cp->ai.l.nextJunction = -1;
-			
+
 			UpdateRoadPosition(cp, &basePosition, 4);
 			SetTarget(cp, currentRoad, cp->hd.direction, &nextJunction);
 		}
@@ -2555,7 +2555,7 @@ void CheckCurrentRoad(CAR_DATA* cp)
 // [D] [T]
 void SetTarget(CAR_DATA* cp, int curRoad, int heading, int* nextJunction)
 {
-	volatile int dx, dz; // offset 0xd8
+	volatile int dx, dz;
 
 	sdPlane* pl;
 	VECTOR pos;
@@ -2565,7 +2565,7 @@ void SetTarget(CAR_DATA* cp, int curRoad, int heading, int* nextJunction)
 	if (cp->ai.l.offRoad == 1)
 	{
 		int dir = cp->ai.l.roadPosition;
-		
+
 		// get the road
 		dx = FIXEDH(RCOS(dir) * cp->ai.l.roadForward);
 		dz = FIXEDH(RSIN(dir) * cp->ai.l.roadForward);
@@ -2574,7 +2574,7 @@ void SetTarget(CAR_DATA* cp, int curRoad, int heading, int* nextJunction)
 		cp->ai.l.targetZ = cp->hd.where.t[2] + dz;
 
 		cp->ai.l.targetDir = dir;
-		
+
 		return;
 	}
 
@@ -2585,7 +2585,7 @@ void SetTarget(CAR_DATA* cp, int curRoad, int heading, int* nextJunction)
 		volatile int d;
 		volatile int angle;
 		volatile int mul;
-		
+
 		straight = GET_STRAIGHT(curRoad);
 		cp->ai.l.targetDir = straight->angle & 0xfff;
 
@@ -2594,11 +2594,11 @@ void SetTarget(CAR_DATA* cp, int curRoad, int heading, int* nextJunction)
 		else
 			*nextJunction = straight->ConnectIdx[1];
 
-		if (cp->ai.l.direction == -1 || 
+		if (cp->ai.l.direction == -1 ||
 			cp->ai.l.direction == 0 && (heading - cp->ai.l.targetDir + 1024U & 2048) != 0)
 		{
 			cp->ai.l.targetDir ^= 2048;
-			
+
 			if (straight->ConnectIdx[3] == -1)
 				*nextJunction = straight->ConnectIdx[2];
 			else
@@ -2609,7 +2609,7 @@ void SetTarget(CAR_DATA* cp, int curRoad, int heading, int* nextJunction)
 		dz = straight->Midz - cp->hd.where.t[2];
 
 		angle = cp->ai.l.targetDir;
-		
+
 		rx = FIXEDH(RSIN(angle) * cp->ai.l.roadForward);
 		rz = FIXEDH(RCOS(angle) * cp->ai.l.roadForward);
 
@@ -2622,28 +2622,28 @@ void SetTarget(CAR_DATA* cp, int curRoad, int heading, int* nextJunction)
 		// [A] it's obviously bugged somewhere as car always tends to be on left lanes
 		// on curves it's even WORSE
 		mul = FIXEDH(ux * dx + uz * dz) - ROAD_LANES_COUNT(straight) * 512 + cp->ai.l.roadPosition;
-		
+
 		ux = FIXEDH(mul * ux);
 		uz = FIXEDH(mul * uz);
-		
+
 		cp->ai.l.targetX = cp->hd.where.t[0] + rx + ux;
 		cp->ai.l.targetZ = cp->hd.where.t[2] + rz + uz;
 
 		pos.vx = cp->ai.l.targetX;
 		pos.vy = cp->hd.where.t[1];
 		pos.vz = cp->ai.l.targetZ;
-		
+
 		pl = sdGetCell(&pos);
 	}
 	else if (IS_CURVED_SURFACE(curRoad))
 	{
 		volatile int angle;
 		volatile int radius;
-		
+
 		curve = GET_CURVE(curRoad);
 		angle = ratan2(cp->hd.where.t[0] - curve->Midx, cp->hd.where.t[2] - curve->Midz);
 
-		if (cp->ai.l.direction == 1 || 
+		if (cp->ai.l.direction == 1 ||
 			cp->ai.l.direction == 0 && (angle - heading & 2048U) != 0)
 		{
 			radius = (curve->inside + ROAD_LANES_COUNT(curve)) * 1024 - cp->ai.l.roadPosition + cp->hd.speed * 2;
@@ -2690,7 +2690,7 @@ void SelectExit(CAR_DATA* cp, DRIVER2_JUNCTION* junction)
 	total = 0;
 
 	onward = (cp->ai.l.targetDir + 512U & 0xfff) >> 10;
-	
+
 	// [A] was weird loop
 	for (i = 0; i < 4; i++)
 	{
@@ -2702,7 +2702,7 @@ void SelectExit(CAR_DATA* cp, DRIVER2_JUNCTION* junction)
 	}
 
 	// [A] was unrolled
-	for(i = 0; i < 3; i++)
+	for (i = 0; i < 3; i++)
 	{
 		int d;
 
@@ -2714,7 +2714,7 @@ void SelectExit(CAR_DATA* cp, DRIVER2_JUNCTION* junction)
 			d = 0;
 
 		tmp = onward + d & 3;
-		
+
 		road = junction->ExitIdx[tmp];
 		if (IS_CURVED_SURFACE(road) || IS_STRAIGHT_SURFACE(road))
 		{
@@ -2732,19 +2732,19 @@ void SelectExit(CAR_DATA* cp, DRIVER2_JUNCTION* junction)
 		el[numExits][1] = 1;
 		numExits++;
 	}
-	
+
 	rnd = leadRand();
 	rnd = ABS(rnd);
 
 	// [A] again, was a strange loop. Hope it works
 	tmp = 0;
-	for(i = 0; i < numExits; i++)
+	for (i = 0; i < numExits; i++)
 	{
 		tmp += el[i][1];
 
 		cp->ai.l.nextTurn = el[i][0];
-		
-		if(tmp > rnd % total)
+
+		if (tmp > rnd % total)
 			break;
 	}
 
@@ -2765,7 +2765,7 @@ u_int FreeRoamer(CAR_DATA* cp)
 	CAR_DATA* pCar;
 
 	LeadHorn(cp);
-	
+
 	DamageBar.position = cp->totalDamage;
 
 	if (cp->ai.l.dstate != LeadDrive_FakeMotion)
@@ -2783,7 +2783,7 @@ u_int FreeRoamer(CAR_DATA* cp)
 	// re-randomize
 	if (CameraCnt == 100)
 	{
-		if(player[0].playerCarId >= 0)
+		if (player[0].playerCarId >= 0)
 		{
 			pCar = &car_data[player[0].playerCarId];
 			seed = (pCar->hd.where.t[0] + pCar->hd.where.t[2]) / (pCar->hd.speed + 1);
@@ -2833,8 +2833,3 @@ u_int hypot(int x, int y)
 
 	return t;
 }
-
-
-
-
-

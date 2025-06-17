@@ -22,5 +22,4 @@ extern void addtimer(tmr_func func);
 
 extern void Clock_SystemStartUp(void);
 
-
 #endif // SYSCLOCK_H

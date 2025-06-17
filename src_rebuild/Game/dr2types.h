@@ -746,7 +746,7 @@ typedef struct _TARGET
 						} chasing;
 					};
 				} car;
-				
+
 				struct
 				{
 					int eventId;			// data 3
@@ -788,7 +788,7 @@ enum TimerFlags
 	TIMER_FLAG_ACTIVE				= 0x1,
 	TIMER_FLAG_COUNTER				= 0x2,
 	TIMER_FLAG_PAUSED				= 0x4,
-	
+
 	TIMER_FLAG_COMPLETE_ON_OUT		= 0x8,
 	TIMER_FLAG_BOMB_COUNTDOWN		= 0x10,
 	TIMER_FLAG_BOMB_TRIGGERED		= 0x20,

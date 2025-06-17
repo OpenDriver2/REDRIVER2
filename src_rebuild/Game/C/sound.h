@@ -88,4 +88,4 @@ extern int FESound(int sample); // 0x0007A534
 
 extern int jsqrt(u_int a); // 0x0005270C
 
-#endif
+#endif // SOUND_H

@@ -13,4 +13,4 @@ extern void SetFEDrawMode();
 extern void LoadFrontendScreens(int full);
 extern void ReInitScreens(int returnToMain);
 
-#endif
+#endif // FEMAIN_H

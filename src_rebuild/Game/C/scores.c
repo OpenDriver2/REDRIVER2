@@ -37,7 +37,6 @@ void InitialiseScoreTables(void)
 	strcpy(gPlayerScore.name, "Mr.X");
 }
 
-
 // [D] [T]
 void AddScoreToTable(SCORE_ENTRY *table, int entry)
 {
@@ -68,7 +67,7 @@ int CheckGetawayPlacing(SCORE_ENTRY *table)
 	int i;
 
 	i = 0;
-	while (gPlayerScore.time == -1 || table->time != -1 && table->time <= gPlayerScore.time) 
+	while (gPlayerScore.time == -1 || table->time != -1 && table->time <= gPlayerScore.time)
 	{
 		i++;
 		table++;
@@ -86,18 +85,16 @@ int CheckTrailblazerPlacing(SCORE_ENTRY *table)
 	int i;
 
 	i = 0;
-
 	do {
-		if (gPlayerScore.items == -1) 
+		if (gPlayerScore.items == -1)
 		{
-			if (gPlayerScore.time != -1) 
+			if (gPlayerScore.time != -1)
 			{
-				if (table->time == -1) 
+				if (table->time == -1)
 					return i;
 
 				if (table->time < gPlayerScore.time)
 					return i;
-
 			}
 		}
 		else if (table->items == -1 || table->items < gPlayerScore.items)
@@ -120,7 +117,7 @@ int CheckCheckpointPlacing(SCORE_ENTRY *table)
 	int i;
 
 	i = 0;
-	while (gPlayerScore.time == -1 || table->time != -1 && table->time <= gPlayerScore.time) 
+	while (gPlayerScore.time == -1 || table->time != -1 && table->time <= gPlayerScore.time)
 	{
 		i++;
 		table++;
@@ -128,6 +125,7 @@ int CheckCheckpointPlacing(SCORE_ENTRY *table)
 		if (i > 4)
 			return -1;
 	}
+
 	return i;
 }
 
@@ -137,13 +135,15 @@ int CheckSurvivalPlacing(SCORE_ENTRY *table)
 	int i;
 
 	i = 0;
-	while (gPlayerScore.time == -1 || table->time != -1 && gPlayerScore.time <= table->time) 
+	while (gPlayerScore.time == -1 || table->time != -1 && gPlayerScore.time <= table->time)
 	{
 		i++;
 		table++;
-		if (i > 4) 
+
+		if (i > 4)
 			return -1;
 	}
+
 	return i;
 }
 
@@ -155,28 +155,28 @@ int OnScoreTable(SCORE_ENTRY **tablept)
 
 	switch (GameType)
 	{
-	case GAME_GETAWAY:
-		table = ScoreTables.GetawayTable[GameLevel][gSubGameNumber];
-		position = CheckGetawayPlacing(table);
-		break;
-	case GAME_GATERACE:
-		table = ScoreTables.GateRaceTable[GameLevel][gSubGameNumber];
-		position = CheckTrailblazerPlacing(table);
-		break;
-	case GAME_CHECKPOINT:
-		table = ScoreTables.CheckpointTable[GameLevel][gSubGameNumber];
-		position = CheckCheckpointPlacing(table);
-		break;
-	case GAME_TRAILBLAZER:
-		table = ScoreTables.TrailblazerTable[GameLevel][gSubGameNumber];
-		position = CheckTrailblazerPlacing(table);
-		break;
-	case GAME_SURVIVAL:
-		table = ScoreTables.SurvivalTable[GameLevel][gSubGameNumber];
-		position = CheckSurvivalPlacing(table);
-		break;
-	default:
-		return -1;
+		case GAME_GETAWAY:
+			table = ScoreTables.GetawayTable[GameLevel][gSubGameNumber];
+			position = CheckGetawayPlacing(table);
+			break;
+		case GAME_GATERACE:
+			table = ScoreTables.GateRaceTable[GameLevel][gSubGameNumber];
+			position = CheckTrailblazerPlacing(table);
+			break;
+		case GAME_CHECKPOINT:
+			table = ScoreTables.CheckpointTable[GameLevel][gSubGameNumber];
+			position = CheckCheckpointPlacing(table);
+			break;
+		case GAME_TRAILBLAZER:
+			table = ScoreTables.TrailblazerTable[GameLevel][gSubGameNumber];
+			position = CheckTrailblazerPlacing(table);
+			break;
+		case GAME_SURVIVAL:
+			table = ScoreTables.SurvivalTable[GameLevel][gSubGameNumber];
+			position = CheckSurvivalPlacing(table);
+			break;
+		default:
+			return -1;
 	}
 
 	if (tablept != NULL)
@@ -200,8 +200,3 @@ void ResetTable(SCORE_ENTRY *table)
 		i++;
 	}
 }
-
-
-
-
-

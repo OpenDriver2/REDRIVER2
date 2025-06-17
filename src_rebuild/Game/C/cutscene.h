@@ -42,5 +42,4 @@ extern void ReleaseInGameCutscene(); // 0x000316EC
 
 extern int CutsceneCameraChange(int cameracnt); // 0x000328E8
 
-
-#endif
+#endif // CUTSCENE_H

@@ -98,7 +98,7 @@ int GetSurfaceRoadInfo(DRIVER2_ROAD_INFO* outRoadInfo, int surfId)
 	ClearMem((char*)outRoadInfo, sizeof(DRIVER2_ROAD_INFO));
 	outRoadInfo->surfId = surfId;
 
-	if(IS_CURVED_SURFACE(surfId))
+	if (IS_CURVED_SURFACE(surfId))
 	{
 		outRoadInfo->curve = curve = GET_CURVE(surfId);
 		outRoadInfo->ConnectIdx = curve->ConnectIdx;
@@ -148,13 +148,13 @@ int GetLaneByPositionOnRoad(DRIVER2_ROAD_INFO* roadInfo, VECTOR* pos)
 		if (lane_count <= lane)
 			lane = lane_count - 1;
 	}
-	else if(roadInfo->curve)
+	else if (roadInfo->curve)
 	{
 		dx = pos->vx - roadInfo->curve->Midx;
 		dz = pos->vz - roadInfo->curve->Midz;
 
 		lane = (SquareRoot0(dx * dx + dz * dz) >> 9) - roadInfo->curve->inside * 2;
-	
+
 		if (lane < 0)
 			lane = 0;
 
@@ -181,7 +181,7 @@ void ProcessStraightsDriver2Lump(char *lump_file, int lump_size)
 		for (grp = 0; grp < 3; grp++)
 		{
 			// don't activate those roads in Caine's Compound
-			if(grp == 0 && gCurrentMissionNumber == 7)
+			if (grp == 0 && gCurrentMissionNumber == 7)
 				continue;
 
 			i = 0;
@@ -270,7 +270,7 @@ int sdHeightOnPlane(VECTOR *pos, sdPlane *plane)
 	{
 		d = plane->d;
 
-		if ((d >> 1 ^ d) & 0x40000000) 
+		if ((d >> 1 ^ d) & 0x40000000)
 			return d ^ 0x40000000;
 
 		if ((plane->surface & 0xE000) == 0x4000 && plane->b == 0)
@@ -312,7 +312,7 @@ short* sdGetBSP(sdNode *node, XYPAIR *pos)
 			node++;
 		else
 			node += node->n.offset;
-	} 
+	}
 
 	return (short *)node;
 }
@@ -343,22 +343,22 @@ sdPlane* sdGetCell(VECTOR *pos)
 	cell.x = cellPos.x & 1023;
 	cell.y = cellPos.y & 1023;
 
-	buffer = RoadMapDataRegions[(cellPos.x >> 16 & 1) ^ (regions_across / 2 & 1) + 
+	buffer = RoadMapDataRegions[(cellPos.x >> 16 & 1) ^ (regions_across / 2 & 1) +
 								(cellPos.y >> 15 & 2) ^ (regions_down & 2)];
 
 	// Alpha 1.6 code, works too; not widely tested yet
 	//buffer = *(short**)((int)RoadMapDataRegions + (cellPos.x >> 14 & 4 ^ cellPos.y >> 13 & 8 ^ sdSelfModifyingCode));
 
 	plane = GetSeaPlane();
-	
+
 	if (*buffer != 2)
 		return &default_plane;
-	
+
 	sdPlane* planeData = (sdPlane*)((char*)buffer + buffer[1]);
 	short* bspData = (short*)((char*)buffer + buffer[2]);
 	sdNode* nodeData = (sdNode*)((char*)buffer + buffer[3]);
-		
-	surface = &buffer[(cellPos.x >> 10 & 63) + 
+
+	surface = &buffer[(cellPos.x >> 10 & 63) +
 						(cellPos.y >> 10 & 63) * 64 + 4];
 
 	// initial surface
@@ -370,7 +370,7 @@ sdPlane* sdGetCell(VECTOR *pos)
 	{
 		surface = &bspData[*surface & 0x1fff];
 		do {
-			if(-256 - pos->vy > *surface)
+			if (-256 - pos->vy > *surface)
 			{
 				surface += 2;
 				sdLevel++;
@@ -378,7 +378,7 @@ sdPlane* sdGetCell(VECTOR *pos)
 			else
 				break;
 		} while (*surface != -0x8000); // end flag
-			
+
 		surface += 1;
 	}
 
@@ -389,7 +389,7 @@ sdPlane* sdGetCell(VECTOR *pos)
 		// check if it's has BSP properties
 		// basically it determines surface bounds
 		if (*surface & 0x4000)
-		{				
+		{
 			// get closest surface by BSP lookup
 			BSPSurface = sdGetBSP(&nodeData[*surface & 0x3fff], &cell);
 
@@ -397,7 +397,7 @@ sdPlane* sdGetCell(VECTOR *pos)
 			{
 				sdLevel++;
 				nextLevel = 1;
-					
+
 				BSPSurface = surface + 2; // get to the next node
 			}
 
@@ -407,12 +407,12 @@ sdPlane* sdGetCell(VECTOR *pos)
 
 	plane = &planeData[*surface];
 
-	if (((int)plane & 3) == 0 && *(int *)plane != -1) 
+	if (((int)plane & 3) == 0 && *(int *)plane != -1)
 	{
 		if (plane->surface - 16U < 16)
 			plane = EventSurface(pos, plane);
 	}
-	else 
+	else
 		plane = GetSeaPlane();
 
 	return plane;
@@ -468,7 +468,7 @@ int RoadInCell(VECTOR *pos)
 	cellPos.x = pos->vx - 512;
 	cellPos.y = pos->vz - 512;
 
-	buffer = RoadMapDataRegions[(cellPos.x >> 16 & 1) ^ (regions_across / 2 & 1) + 
+	buffer = RoadMapDataRegions[(cellPos.x >> 16 & 1) ^ (regions_across / 2 & 1) +
 								(cellPos.y >> 15 & 2) ^ (regions_down & 2)];
 
 	if (*buffer == 2)

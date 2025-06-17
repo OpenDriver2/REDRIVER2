@@ -18,7 +18,7 @@ struct TARGET_ARROW_MODEL
 	char numTris;
 };
 
-SVECTOR targetArrowVerts[] = 
+SVECTOR targetArrowVerts[] =
 {
 	{  -45, -270,  0,  0 },
 	{  45,  -270,  0,  0 },
@@ -142,7 +142,7 @@ void DrawTargetArrowModel(TARGET_ARROW_MODEL *pTargetArrowModel, VECTOR *pPositi
 	{
 		poly = (POLY_F3 *)current->primptr;
 
-		if (invert == 0) 
+		if (invert == 0)
 		{
 			gte_ldv3(&pVerts[tri_indices[0]], &pVerts[tri_indices[1]], &pVerts[tri_indices[2]]);
 		}
@@ -172,7 +172,7 @@ void DrawTargetArrowModel(TARGET_ARROW_MODEL *pTargetArrowModel, VECTOR *pPositi
 
 		setPolyF3(poly);
 
-		if (gDraw3DArrowBlue == 0) 
+		if (gDraw3DArrowBlue == 0)
 		{
 			poly->r0 = 255;
 			poly->g0 = 0;
@@ -198,7 +198,7 @@ void DrawTargetArrowModel(TARGET_ARROW_MODEL *pTargetArrowModel, VECTOR *pPositi
 		current->primptr += sizeof(POLY_F3);
 	}
 
-	if (shadow != 0) 
+	if (shadow != 0)
 		DrawStopZone(pPosition);
 }
 
@@ -286,10 +286,10 @@ void DrawStopZone(VECTOR *pPosition)
 	int height;
 
 	VECTOR pStopZonePt[4] = {
-		{-256, 0, 256},
-		{256, 0, 256},
-		{-256, 0, -256},
-		{256, 0, -256},
+		{ -256, 0, 256 },
+		{ 256, 0, 256 },
+		{ -256, 0, -256 },
+		{ 256, 0, -256 }
 	};
 
 	flash = -CameraCnt % 16;
@@ -358,9 +358,3 @@ void DrawStopZone(VECTOR *pPosition)
 
 	current->primptr += sizeof(POLY_FT4);
 }
-
-
-
-
-
-

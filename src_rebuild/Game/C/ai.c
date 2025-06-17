@@ -21,12 +21,12 @@ int TannerCanEnterCar(CAR_DATA *cp, int distToCarSq)
 {
 	int carRange;
 
-	if (cp->controlFlags & CONTROL_FLAG_COP) 
+	if (cp->controlFlags & CONTROL_FLAG_COP)
 		gCopCarTheftAttempted = 1;
 
-	if ((cp->controlType == CONTROL_TYPE_CIV_AI || cp->controlType == CONTROL_TYPE_CUTSCENE) && 
-		(cp->controlFlags & CONTROL_FLAG_COP) == 0 && 
-		(cp->controlFlags & CONTROL_FLAG_COP_SLEEPING) == 0 && 
+	if ((cp->controlType == CONTROL_TYPE_CIV_AI || cp->controlType == CONTROL_TYPE_CUTSCENE) &&
+		(cp->controlFlags & CONTROL_FLAG_COP) == 0 &&
+		(cp->controlFlags & CONTROL_FLAG_COP_SLEEPING) == 0 &&
 		cp->hd.where.m[1][1] > 99)			// not flipped over
 	{
 		if (ABS(FIXEDH(cp->hd.wheel_speed)) < 3)
@@ -35,7 +35,7 @@ int TannerCanEnterCar(CAR_DATA *cp, int distToCarSq)
 
 			if (ActiveCheats.cheat13 != 0)
 				carRange <<= 1;
-			
+
 			if (carRange > 5000)
 				carRange = 5000;
 
@@ -54,7 +54,7 @@ int TannerStuckInCar(int doSpeedCheck, int player_id)
 
 	CAR_DATA *cp;
 	PLAYER* lp;
-	
+
 	cp = NULL;
 	lp = &player[player_id];
 
@@ -64,7 +64,7 @@ int TannerStuckInCar(int doSpeedCheck, int player_id)
 		{
 			playerFelony = &pedestrianFelony;
 		}
-		else 
+		else
 		{
 			cp = &car_data[lp->playerCarId];
 			playerFelony = &cp->felonyRating;

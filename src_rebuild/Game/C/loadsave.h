@@ -30,5 +30,4 @@ extern int CalcConfigDataSize(); // 0x00058164
 extern int SaveConfigData(char *buffer); // 0x00057BF0
 extern int LoadConfigData(char *buffer); // 0x00057DF0
 
-
-#endif
+#endif // LOADSAVE_H

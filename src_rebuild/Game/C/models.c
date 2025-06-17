@@ -38,9 +38,9 @@ int CleanSpooledModelSlots()
 	for (i = 0; i < MAX_MODEL_SLOTS; i++) // [A] bug fix. Init with dummyModel
 	{
 		// if bit does not indicate usage - reset to dummy model
-		if((permanentModelSlotBitfield[i >> 5] & 1 << (i & 31)) == 0)
+		if ((permanentModelSlotBitfield[i >> 5] & 1 << (i & 31)) == 0)
 		{
-			if(modelpointers[i] != &dummyModel)
+			if (modelpointers[i] != &dummyModel)
 			{
 				modelpointers[i] = &dummyModel;
 				pLodModels[i] = &dummyModel;
@@ -106,7 +106,7 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 		{
 			// add the usage bit
 			permanentModelSlotBitfield[i >> 5] |= 1 << (i & 31);
-			
+
 			model = (MODEL*)mdsfile;
 			modelpointers[i] = model;
 
@@ -120,7 +120,7 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 	for (i = 0; i < modelAmts; i++)
 	{
 		model = modelpointers[i];
-		if (model->instance_number != -1) 
+		if (model->instance_number != -1)
 		{
 			parentmodel = modelpointers[model->instance_number];
 #if MODEL_RELOCATE_POINTERS
@@ -144,7 +144,7 @@ void ProcessMDSLump(char *lump_file, int lump_size)
 		model = modelpointers[i];
 		model->poly_block += (int)(char*)model;
 
-		if (model->instance_number == -1) 
+		if (model->instance_number == -1)
 		{
 			model->vertices += (int)model;
 			model->normals += (int)model;
@@ -241,7 +241,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 				// next model offset?
 				size = (offsets[3] - lowOfs) + 2048;
 
-				if(size > specMemReq)
+				if (size > specMemReq)
 					specMemReq = size;
 			}
 		}
@@ -319,7 +319,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 				}
 			}
 #endif
-			
+
 			if (cleanOfs != -1)
 			{
 				D_MALLOC_BEGIN();
@@ -341,7 +341,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 				gCarDamModelPtr[i] = model;
 				D_MALLOC_END();
 			}
-			
+
 			if (lowOfs != -1)
 			{
 				D_MALLOC_BEGIN();

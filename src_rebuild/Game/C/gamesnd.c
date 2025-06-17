@@ -206,7 +206,7 @@ int ResidentModelsBodge(void)
 	int i;
 	int j;
 
-	if (gCurrentMissionNumber == 24 || 
+	if (gCurrentMissionNumber == 24 ||
 		gCurrentMissionNumber == 27 ||
 		gCurrentMissionNumber == 29 ||
 		gCurrentMissionNumber == 30 ||
@@ -229,9 +229,9 @@ int ResidentModelsBodge(void)
 		if (j != 9 && j != i)
 			return 3;
 	}
-	else if (GameLevel == 1) 
+	else if (GameLevel == 1)
 	{
-		if (j - 8U > 1) 
+		if (j - 8U > 1)
 			return 3;
 	}
 	else if (GameLevel == 2)
@@ -259,10 +259,10 @@ int MapCarIndexToBank(int index)
 {
 	static char car_banks[4][9] =
 	{
-		{12, 4, 13, 5, 16, 9, 2, 15, 10},
-		{10, 11, 7, 6, 17, 17, 2, 5, 4},
-		{14, 3, 4, 6, 11, 9, 2, 17, 10},
-		{8, 7, 13, 9, 2, 17, 17, 11, 16},
+		{ 12, 4, 13, 5, 16, 9, 2, 15, 10 },
+		{ 10, 11, 7, 6, 17, 17, 2, 5, 4 },
+		{ 14, 3, 4, 6, 11, 9, 2, 17, 10 },
+		{ 8, 7, 13, 9, 2, 17, 17, 11, 16 }
 	};
 
 	int* RM;
@@ -339,7 +339,7 @@ void LoadLevelSFX(int missionNum)
 		missionNum != 40)
 	{
 		// first bank - directions
-		// second bank - 
+		// second bank -
 		if (GameLevel & 2)
 		{
 			LoadBankFromLump(SOUND_BANK_VOICES, SBK_COP_PHRASES_START + (GameLevel & 1) * 8 + (GameLevel & 1) * 2);
@@ -460,7 +460,7 @@ void LoadLevelSFX(int missionNum)
 			index = 0;
 	}
 
-	// mission bank	
+	// mission bank
 	if (index != 0)
 		LoadBankFromLump(SOUND_BANK_MISSION, index);
 
@@ -534,11 +534,11 @@ void StartPlayerCarSounds(int playerId, int model, VECTOR* pos)
 	siren = CarHasSiren(model);
 
 	// rev sound
-	channel = playerId * 3;	
+	channel = playerId * 3;
 	Start3DSoundVolPitch(channel, SOUND_BANK_CARS, carSampleId * 3, pos->vx, pos->vy, pos->vz, -10000, 4096);
 
 	// idle sound
-	channel = playerId * 3 + 1;	
+	channel = playerId * 3 + 1;
 	Start3DSoundVolPitch(channel, SOUND_BANK_CARS, carSampleId * 3 + 1, pos->vx, pos->vy, pos->vz, -10000, 4096);
 
 	if (siren)
@@ -597,7 +597,7 @@ void StartGameSounds(void)
 	}
 
 	InitEnvSnd(MAX_LEVEL_ENVSOUNDS);
-	
+
 	if (NumPlayers < 2 || NoPlayerControl != 0)
 		AddEnvSounds(GameLevel, gTimeOfDay);
 
@@ -778,7 +778,6 @@ void ControlCarRevs(CAR_DATA* cp)
 	}
 }
 
-
 // [D] [T]
 void DoSpeech(int chan, int sound)
 {
@@ -895,11 +894,11 @@ void CopSay(int phrase, int direction)
 		if (phrase != 15)
 			return;
 
-		if (cop_bank != 1) 
+		if (cop_bank != 1)
 		{
 			if (cop_bank == 2)
 				return;
-			
+
 			if (cop_bank == 3)
 				return;
 
@@ -910,7 +909,6 @@ void CopSay(int phrase, int direction)
 
 	PlaySpeech(&gSpeechQueue, direction + 1);
 }
-
 
 // [D] [T]
 void BodSay(int phrase)
@@ -1056,8 +1054,8 @@ void DoDopplerSFX(void)
 
 		// play car music
 		// vans in 'Caine's Compound' should not listen to it
-		if (gCurrentMissionNumber != 7 && 
-			car_ptr->controlType == CONTROL_TYPE_CIV_AI && 
+		if (gCurrentMissionNumber != 7 &&
+			car_ptr->controlType == CONTROL_TYPE_CIV_AI &&
 			car_ptr->ap.model > 0 && car_ptr->ap.model < 3 &&
 			indexlist[i] == 1)
 		{
@@ -1230,8 +1228,8 @@ void DoDopplerSFX(void)
 				else
 					sample = bank * 3;
 
-				car_noise[j].chan = Start3DTrackingSound(-1, SOUND_BANK_CARS, sample, 
-					(VECTOR*)car_data[car].hd.where.t, 
+				car_noise[j].chan = Start3DTrackingSound(-1, SOUND_BANK_CARS, sample,
+					(VECTOR*)car_data[car].hd.where.t,
 					(LONGVECTOR3*)car_data[car].st.n.linearVelocity);
 
 				LockChannel(car_noise[j].chan);
@@ -1287,7 +1285,7 @@ void DoDopplerSFX(void)
 				sample = bank * 3;
 
 			car_noise[j].chan = Start3DTrackingSound(-1, SOUND_BANK_CARS, sample, (VECTOR*)cp->hd.where.t, (LONGVECTOR3*)cp->st.n.linearVelocity);
-			
+
 			LockChannel(car_noise[j].chan);
 		}
 
@@ -1363,10 +1361,10 @@ void DoPoliceLoudhailer(int cars, ushort* indexlist, u_int* dist)
 		if (car_ptr->controlType == CONTROL_TYPE_PURSUER_AI && car_ptr->ai.p.dying == 0 &&
 			time < loudhail_time && rnd == (rnd / 31) * 31)
 		{
-			Start3DTrackingSound(-1, SOUND_BANK_VOICES, rnd % 2 + 13, 
-				(VECTOR*)car_ptr->hd.where.t, 
+			Start3DTrackingSound(-1, SOUND_BANK_VOICES, rnd % 2 + 13,
+				(VECTOR*)car_ptr->hd.where.t,
 				(LONGVECTOR3*)car_ptr->st.n.linearVelocity);
-			
+
 			loudhail_time = 0;
 			break;
 		}
@@ -1375,7 +1373,6 @@ void DoPoliceLoudhailer(int cars, ushort* indexlist, u_int* dist)
 	if (loudhail_time <= time)
 		loudhail_time++;
 }
-
 
 // [D] [T]
 void CollisionSound(char player_id, CAR_DATA* cp, int impact, int car_car)
@@ -1451,7 +1448,7 @@ void CollisionSound(char player_id, CAR_DATA* cp, int impact, int car_car)
 
 	player[playerid].crash_timer = 2;
 
-	if ((impact & 5) && 
+	if ((impact & 5) &&
 		GetPlayerId(cp) == 0 &&
 		(gCurrentMissionNumber - 2 <= 2 || gCurrentMissionNumber == 9 || gCurrentMissionNumber == 10 || gCurrentMissionNumber == 27))
 	{
@@ -1530,7 +1527,6 @@ void ExplosionSound(VECTOR* pos, int type)
 		sc1 = 1;
 		sc2 = 3;
 	}
-	
 
 	P.vx = pos->vx * sc1 + player[0].cameraPos.vx * sc2;
 	P.vy = pos->vy * sc1 + player[0].cameraPos.vy * sc2;
@@ -1540,7 +1536,6 @@ void ExplosionSound(VECTOR* pos, int type)
 		bang, P.vx / 4, P.vy / 4, P.vz / 4,
 		0, ((FrameCnt * pos->vx ^ rnd * pos->vz) & 0x3ffU) + 3584);
 }
-
 
 // [D] [T]
 void JerichoSpeak(void)
@@ -1606,7 +1601,7 @@ void SoundTasks(void)
 
 	UpdateEnvSounds[EStags.func_cnt++](envsnd, ESdata, 0);
 	EStags.func_cnt %= 4;
-	
+
 	lcp = player;
 	i = 0;
 	while (i < NumPlayers)
@@ -1655,7 +1650,7 @@ void SoundTasks(void)
 
 			chan = i * 3;
 			SetChannelPosition3(chan, position, velocity, vol, cp->hd.revs / 4 + lcp->revsvol / 64 + 1500, 0);
-			
+
 			if (lcp->car_is_sounding == 0)
 				vol = lcp->idlevol;
 			else
@@ -1727,16 +1722,15 @@ void SoundTasks(void)
 // [D] [T]
 void InitMusic(int musicnum)
 {
-	static char* music_pt; // offset 0xc
-	static char* sample_pt; // offset 0x10
-	static char xm_samples; // offset 0x4
+	static char* music_pt;
+	static char* sample_pt;
+	static char xm_samples;
 	int sample_len;
 	int music_len;
 	char* name;
 	char* addr;
 	int musicpos[3];
 
-	
 	char* musicname = "SOUND\\MUSIC.BIN";
 
 #ifndef PSX
@@ -1770,7 +1764,7 @@ void InitMusic(int musicnum)
 	if (NewLevel)
 	{
 		printInfo("NewLevel in InitMusic()\n");
-		
+
 		music_pt = D_MALLOC(music_len + 3U & ~3);
 		sample_pt = D_TEMPALLOC(sample_len);
 
@@ -1820,7 +1814,6 @@ void InitTunnels(char n)
 	tunnels.num_tunnels = n;
 	tunnels.tunnel_cnt = 0;
 }
-
 
 // [D] [T]
 int AddTunnel(int x1, int y1, int z1, int x2, int y2, int z2)
@@ -1940,7 +1933,6 @@ void AddTunnels(int level)
 		AddTunnel(173550, 0, 247400, 177700, -500, 245300);
 	}
 }
-
 
 // [D] [T]
 void InitEnvSnd(int num_envsnds)
@@ -2102,10 +2094,10 @@ void IdentifyZone(envsound* ep, envsoundinfo* E, int pl)
 				float ldx, ldz, ndx, ndz, dist, l_inv_len, offset;
 				ldx = ep[i].pos2.vx - ep[i].pos.vx;
 				ldz = ep[i].pos2.vz - ep[i].pos.vz;
-				
+
 				// find inverse length of line
 				l_inv_len = rsqrtf(ldx * ldx + ldz * ldz);
-				
+
 				// find normal (perpendicular) by using cross product and normalize
 				ndx = ldz * l_inv_len;
 				ndz = -ldx * l_inv_len;
@@ -2133,7 +2125,7 @@ void IdentifyZone(envsound* ep, envsoundinfo* E, int pl)
 						zones.h |= 1 << (i & 31);
 
 					tmp[j] = i;
-					
+
 					// also store length
 					_g[j] = l_inv_len;
 					j++;
@@ -2212,7 +2204,6 @@ void IdentifyZone(envsound* ep, envsoundinfo* E, int pl)
 	}
 }
 
-
 // [D] [T]
 void CalcEffPos(envsound* ep, envsoundinfo* E, int pl)
 {
@@ -2223,11 +2214,11 @@ void CalcEffPos(envsound* ep, envsoundinfo* E, int pl)
 	for (i = 0; i < 4; i++)
 	{
 		int snd;
-		
+
 		E->flags &= ~(1 << (i & 0x1f));
-	
+
 		snd = E->thisS[i];
-		
+
 		if (snd == -1)
 			continue;
 
@@ -2237,7 +2228,7 @@ void CalcEffPos(envsound* ep, envsoundinfo* E, int pl)
 			// clamp to bounds when outside
 			minX = MIN(ep[snd].pos.vx, ep[snd].pos2.vx);
 			maxX = MAX(ep[snd].pos.vx, ep[snd].pos2.vx);
-			
+
 			if (minX > E->cam_pos.vx)
 				E->eff_pos[i].vx = minX;
 			else if (maxX < E->cam_pos.vx)
@@ -2262,7 +2253,7 @@ void CalcEffPos(envsound* ep, envsoundinfo* E, int pl)
 			if ((ep[snd].flags & 1) != 0)
 			{
 				E->eff_pos[i].vx = ep[snd].pos.vx;
-				
+
 				minZ = MIN(ep[snd].pos.vz, ep[snd].pos2.vz);
 				maxZ = MAX(ep[snd].pos.vz, ep[snd].pos2.vz);
 
@@ -2343,7 +2334,7 @@ void CalcEffPos2(envsound* ep, envsoundinfo* E, int pl)
 				if (ep[snd].type == 2)
 				{
 					int minX, maxX, minZ, maxZ;
-					
+
 					maxX = MAX(ep[snd].pos.vx, ep[snd].pos2.vx);
 					minX = MIN(ep[snd].pos.vx, ep[snd].pos2.vx);
 
@@ -2367,17 +2358,17 @@ void CalcEffPos2(envsound* ep, envsoundinfo* E, int pl)
 					{
 						E->eff_pos[i].vz = minZ;
 					}
-					
+
 					E->flags |= 1 << (i & 0x1f);
 				}
 				else if (ep[snd].type == 4)
 				{
-					if ((ep[snd].flags & 8) == 0) 
+					if ((ep[snd].flags & 8) == 0)
 					{
 						int minX, maxX, maxZ;
 
 						maxZ = MAX(ep[snd].pos.vz, ep[snd].pos2.vz);
-						
+
 						if (E->cam_pos.vz > maxZ)
 						{
 							E->eff_pos[i].vz = maxZ;
@@ -2396,7 +2387,7 @@ void CalcEffPos2(envsound* ep, envsoundinfo* E, int pl)
 							{
 								E->eff_pos[i].vx = maxX;
 							}
-							else if (E->cam_pos.vx > E->eff_pos[i].vx) 
+							else if (E->cam_pos.vx > E->eff_pos[i].vx)
 							{
 								E->eff_pos[i].vx = (E->cam_pos).vx;
 							}
@@ -2404,7 +2395,7 @@ void CalcEffPos2(envsound* ep, envsoundinfo* E, int pl)
 						else
 						{
 							minX = MIN(ep[snd].pos.vx, ep[snd].pos2.vx);
-							
+
 							if (minX > E->cam_pos.vx)
 							{
 								E->eff_pos[i].vx = minX;
@@ -2420,7 +2411,7 @@ void CalcEffPos2(envsound* ep, envsoundinfo* E, int pl)
 						int minX, maxX, minZ;
 
 						minZ = MIN(ep[snd].pos.vz, ep[snd].pos2.vz);
-						
+
 						if (E->cam_pos.vz < minZ)
 						{
 							E->eff_pos[i].vz = minZ;
@@ -2439,7 +2430,7 @@ void CalcEffPos2(envsound* ep, envsoundinfo* E, int pl)
 							{
 								E->eff_pos[i].vx = maxX;
 							}
-							else if (E->cam_pos.vx > E->eff_pos[i].vx) 
+							else if (E->cam_pos.vx > E->eff_pos[i].vx)
 							{
 								E->eff_pos[i].vx = E->cam_pos.vx;
 							}
@@ -2447,7 +2438,7 @@ void CalcEffPos2(envsound* ep, envsoundinfo* E, int pl)
 						else
 						{
 							minX = MIN(ep[snd].pos.vx, ep[snd].pos2.vx);
-							
+
 							if (E->cam_pos.vx < minX)
 							{
 								E->eff_pos[i].vx = minX;
@@ -2459,14 +2450,14 @@ void CalcEffPos2(envsound* ep, envsoundinfo* E, int pl)
 						}
 					}
 
-					
+
 				}
 			}
 			else
 			{
 				E->eff_pos[i].vx = ep[snd].pos.vx;
 				E->eff_pos[i].vz = ep[snd].pos.vz;
-				
+
 				E->flags |= (1 << i);
 			}
 		}
@@ -2517,7 +2508,7 @@ void UpdateEnvSnd(envsound* ep, envsoundinfo* E, int pl)
 			{
 				StopChannel(E->chan[i]);
 				UnlockChannel(E->chan[i]);
-				
+
 				E->playing_sound[i] = -1;
 			}
 		}
@@ -2542,7 +2533,6 @@ void InitLeadHorn(void)
 			horn_time = 0;
 	}
 }
-
 
 // [D] [T]
 void LeadHorn(CAR_DATA* cp)
@@ -2576,15 +2566,10 @@ void LeadHorn(CAR_DATA* cp)
 		else
 			carBank = cp->ap.model - 1;
 
-		Start3DTrackingSound(-1, SOUND_BANK_CARS, carBank * 3 + 2, 
-			(VECTOR*)cp->hd.where.t, 
+		Start3DTrackingSound(-1, SOUND_BANK_CARS, carBank * 3 + 2,
+			(VECTOR*)cp->hd.where.t,
 			(LONGVECTOR3*)cp->st.n.linearVelocity);
 
 		horn_time = 0;
 	}
 }
-
-
-
-
-

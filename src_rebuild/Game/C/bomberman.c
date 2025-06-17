@@ -58,7 +58,7 @@ void DrawThrownBombs(void)
 	i = 0;
 	while (i < MAX_THROWN_BOMBS)
 	{
-		if ((bomb->flags & 1) != 0) 
+		if ((bomb->flags & 1) != 0)
 		{
 			InitMatrix(object_matrix);
 
@@ -80,7 +80,7 @@ void DrawThrownBombs(void)
 
 			SetFrustrumMatrix();
 
-			if (FrustrumCheck(&pos, gBombModel->bounding_sphere) != -1) 
+			if (FrustrumCheck(&pos, gBombModel->bounding_sphere) != -1)
 			{
 				PlotMDL_less_than_128(gBombModel);
 			}
@@ -90,7 +90,7 @@ void DrawThrownBombs(void)
 		bomb++;
 	}
 
-	if (gWantFlash != 0) 
+	if (gWantFlash != 0)
 	{
 		add_haze(flashval, flashval, 7);
 
@@ -111,7 +111,7 @@ void BombThePlayerToHellAndBack(int car)
 		return;
 
 	cp = &car_data[car];
-	
+
 	cp->ap.damage[0] = 0xfff;
 	cp->ap.damage[1] = 0xfff;
 	cp->ap.damage[2] = 0xfff;
@@ -124,7 +124,7 @@ void BombThePlayerToHellAndBack(int car)
 
 	DentCar(&car_data[car]);
 
-	if (maxCivCars == 0) 
+	if (maxCivCars == 0)
 	{
 		trap(7);
 	}
@@ -144,7 +144,7 @@ void BombThePlayerToHellAndBack(int car)
 	bomb->velocity.vx = 0;
 	bomb->velocity.vy = 0;
 	bomb->velocity.vz = 0;
-		
+
 	bomb = &ThrownBombs[CurrentBomb++];
 	CurrentBomb = CurrentBomb % MAX_THROWN_BOMBS;
 
@@ -158,7 +158,7 @@ void BombThePlayerToHellAndBack(int car)
 	bomb->velocity.vx = 0;
 	bomb->velocity.vy = 0;
 	bomb->velocity.vz = 0;
-		
+
 	bomb = &ThrownBombs[CurrentBomb++];
 	CurrentBomb = CurrentBomb % MAX_THROWN_BOMBS;
 
@@ -176,7 +176,7 @@ void BombThePlayerToHellAndBack(int car)
 // [D] [T]
 int BombCollisionCheck(CAR_DATA *cp, VECTOR *pPos)
 {
-	CDATA2D cd[2] = {0};
+	CDATA2D cd[2] = { 0 };
 
 	cd[1].theta = cp->hd.direction;
 	cd[1].length[0] = car_cosmetics[cp->ap.model].colBox.vz;
@@ -342,7 +342,7 @@ void ExplosionCollisionCheck(CAR_DATA *cp, EXOBJECT *pE)
 					}
 				}
 
-				if(isCar)
+				if (isCar)
 					DamageCar(cp, cd, &collisionResult, strikeVel);
 
 				displacement = FIXEDH(lever[0] * collisionResult.surfNormal.vx + lever[1] * collisionResult.surfNormal.vy + lever[2] * collisionResult.surfNormal.vz);
@@ -373,7 +373,7 @@ void ExplosionCollisionCheck(CAR_DATA *cp, EXOBJECT *pE)
 			return;
 	}
 
-	if (setUsed != 0) 
+	if (setUsed != 0)
 	{
 		pE->type = BANG_USED;
 		setUsed = 0;

@@ -20,5 +20,4 @@ extern void Getlong(char *dest, char *source); // 0x0002D678
 extern void RandomInit(int i1, int i2); // 0x0002D6A8
 extern int Random2(int step); // 0x0002D724
 
-
-#endif
+#endif // CONVERT_H

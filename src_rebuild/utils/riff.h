@@ -8,7 +8,6 @@
 #define WAVE_ID				(('E' << 24) | ('V' << 16) | ('A' << 8) | 'W' )
 #define CDXA_ID				(('A' << 24) | ('X' << 16) | ('D' << 8) | 'C' )
 
-
 #define CHUNK_FMT			((' ' << 24) | ('t' << 16) | ('m' << 8) | 'f' )
 #define CHUNK_CUE			((' ' << 24) | ('e' << 16) | ('u' << 8) | 'c' )
 #define CHUNK_DATA			(('a' << 24) | ('t' << 16) | ('a' << 8) | 'd' )
@@ -62,8 +61,8 @@ typedef struct // CHUNK_SAMPLE
 		uint End;
 		uint Fraction;
 		uint Count;
-	}Loop[1];
-}wavsamplehdr_t;
+	} Loop[1];
+} wavsamplehdr_t;
 
 typedef struct // CHUNK_CUE
 {

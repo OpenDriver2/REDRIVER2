@@ -37,7 +37,6 @@ _repl_org				| 0x1FABBC | 0x3444  | probably inside mallocTab
 
 */
 
-
 #else
 
 // Initialized in redriver2_main
@@ -53,8 +52,6 @@ volatile char* _overlay_buffer = NULL;		// 0x1C0000
 volatile char* _replay_buffer = NULL;		// 0x1FABBC
 
 #endif
-
-
 
 #if defined(USE_CRT_MALLOC)
 
@@ -234,7 +231,7 @@ void Init_FileSystem(void)
 	CdInit();
 	VSync(3);
 
-	// Driver 1 were looking up level files on CD...
+	// Driver 1 was looking up level files on CD...
 }
 
 int gNumCDRetries = 0;
@@ -251,8 +248,7 @@ void DoCDRetry(void)
 	}
 }
 
-// loads whole file into buffer
-// [D] [T]
+// [D] [T] loads whole file into buffer
 int Loadfile(char* name, char* addr)
 {
 	int nread;
@@ -291,7 +287,7 @@ int Loadfile(char* name, char* addr)
 int FileExists(char* filename)
 {
 	char namebuffer[128];
-	
+
 	if (*filename == '\0')
 		return 0;
 
@@ -326,17 +322,16 @@ int FileExists(char* filename)
 
 #else
 	// don't retry or we'll have problems
-	if(CdSearchFile(&cdfile, namebuffer) != NULL)
+	if (CdSearchFile(&cdfile, namebuffer) != NULL)
 		return 1;
 #endif
-	
+
 #endif // USE_CD_FILESYSTEM
 
 	return 0;
 }
 
-// loads file partially into buffer
-// [D] [T]
+// [D] [T] loads file partially into buffer
 int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 {
 	char namebuffer[64];
@@ -397,9 +392,9 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 
 	// seek to the sector
 	sector = offset / CDSECTOR_SIZE + CdPosToInt(&currentfileinfo.pos);
-		
+
 	// start reading sectors from CD
-	while(remainingBytes > 0)
+	while (remainingBytes > 0)
 	{
 		// start reading if we getting to desired offset
 		CdIntToPos(sector, &pos);
@@ -422,7 +417,7 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 			CdReadSync(0, result) != 0);
 
 		// non-direct reads must be handled
-		if(sectorPtr == sectorbuffer)
+		if (sectorPtr == sectorbuffer)
 		{
 			// fetch
 			readPtr = sectorbuffer + remainingOffset;
@@ -446,7 +441,7 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 		// go to next sector
 		sector++;
 	}
-	
+
 	return loadsize;
 #elif USE_PC_FILESYSTEM && !defined(__EMSCRIPTEN__)
 	char errPrint[1024];
@@ -455,7 +450,6 @@ int LoadfileSeg(char* name, char* addr, int offset, int loadsize)
 	return 0;
 #endif
 }
-
 
 // [D] [T]
 void ReportMode(int on)
@@ -486,9 +480,9 @@ void data_ready(void)
 	}
 }
 
-static int current_sector = 0; // offset 0xAB27C
-static char* current_address = NULL; // offset 0xAB288
-static int sectors_left = 0; // offset 0xAB280
+static int current_sector = 0;
+static char* current_address = NULL;
+static int sectors_left = 0;
 
 // [D] [T]
 void sector_ready(u_char intr, u_char* result)
@@ -507,7 +501,7 @@ void sector_ready(u_char intr, u_char* result)
 		if (sectors_left == 0)
 		{
 			endread = 1;
-			
+
 			CdReadyCallback(NULL);
 			CdControlF(CdlPause, 0);
 		}
@@ -517,7 +511,7 @@ void sector_ready(u_char intr, u_char* result)
 		if (*result & CdlStatShellOpen)
 		{
 			CdReadyCallback(NULL);
-			
+
 			do {
 			} while (CdDiskReady(1) != CdlComplete);
 
@@ -668,7 +662,7 @@ void SwapDrawBuffers2(int player)
 
 	DrawSync(0);
 
-	if (player == 0) 
+	if (player == 0)
 	{
 		PutDispEnv(&current->disp);
 	}
@@ -700,7 +694,7 @@ short padd;
 
 // [D] [T]
 void UpdatePadData(void)
-{	
+{
 	ReadControllers();
 
 	paddp = Pads[0].mapnew;
@@ -776,7 +770,7 @@ void SetupDrawBufferData(int num_players)
 		x[0] = 0;
 		y[0] = 0;
 		x[1] = 0;
-		y[1] = SCREEN_H / 2;	  // 120 on NTSC
+		y[1] = SCREEN_H / 2; // 120 on NTSC
 	}
 	else
 	{
@@ -797,7 +791,7 @@ void SetupDrawBufferData(int num_players)
 			if (toggle)
 			{
 				otpt = (u_int*)_OT2;
-				primpt = (u_char*)_primTab2; // _primTab1 + PRIMTAB_SIZE
+				primpt = (u_char*)_primTab2; //_primTab1 + PRIMTAB_SIZE
 			}
 			else
 			{
@@ -807,7 +801,7 @@ void SetupDrawBufferData(int num_players)
 
 			toggle ^= 1;
 			InitaliseDrawEnv(MPBuff[j], x[j], y[j], 320, height);
-	
+
 			MPBuff[j][i].primtab = (char*)primpt;
 			MPBuff[j][i].primptr = (char*)primpt;
 			MPBuff[j][i].ot = (OTTYPE*)otpt;
@@ -837,7 +831,7 @@ void InitaliseDrawEnv(DB* pBuff, int x, int y, int w, int h)
 
 #if USE_PGXP
 	// extend clip rectangles for widscreen
-	if(NumPlayers == 2)
+	if (NumPlayers == 2)
 	{
 		pBuff[0].draw.clip.x -= 256;
 		pBuff[0].draw.clip.w += 512;
@@ -885,18 +879,18 @@ void SetCityType(CITYTYPE type)
 	// PC code
 	switch (type)
 	{
-	case CITYTYPE_NIGHT:
-		format = "%sN%s";
-		break;
-	case CITYTYPE_MULTI_DAY:
-		format = "%sM%s";
-		break;
-	case CITYTYPE_MULTI_NIGHT:
-		format = "%sMN%s";
-		break;
-	default:
-		format = "%s%s";
-		break;
+		case CITYTYPE_NIGHT:
+			format = "%sN%s";
+			break;
+		case CITYTYPE_MULTI_DAY:
+			format = "%sM%s";
+			break;
+		case CITYTYPE_MULTI_NIGHT:
+			format = "%sMN%s";
+			break;
+		default:
+			format = "%s%s";
+			break;
 	}
 
 	sprintf(filename, format, gDataFolder, LevelFiles[GameLevel]);
@@ -927,7 +921,7 @@ void SetCityType(CITYTYPE type)
 	int i;
 	int sector;
 	int* data;
-	
+
 	switch (type)
 	{
 		case CITYTYPE_NIGHT:
@@ -965,7 +959,6 @@ void SetCityType(CITYTYPE type)
 
 	do {
 		do {
-
 			if (CdDiskReady(0) != CdlComplete)
 				DoCDRetry();
 
@@ -975,7 +968,7 @@ void SetCityType(CITYTYPE type)
 	} while (CdReadSync(0, result) != 0);
 
 	data = (int*)_OT1 + 2;
-	
+
 	for (i = 0; i < 4; i++)
 	{
 		citylumps[GameLevel][i].x = data[0] + sector * CDSECTOR_SIZE;
@@ -994,17 +987,17 @@ void SetCityType(CITYTYPE type)
 // [D] [T]
 CDTYPE DiscSwapped(char* filename)
 {
-#if 1//ndef PSX
+#if 1 //ndef PSX
 	return CDTYPE_CORRECTDISC;
 #else
 	CDTYPE ret;
 	CdlFILE cdfile;
 
-	switch(CdDiskReady(1))
+	switch (CdDiskReady(1))
 	{
 		case CdlStatStandby:
 		{
-			switch(CdGetDiskType())
+			switch (CdGetDiskType())
 			{
 				case CdlStatNoDisk:
 					ret = CDTYPE_NODISC;
@@ -1018,7 +1011,7 @@ CDTYPE DiscSwapped(char* filename)
 						ret = CDTYPE_CORRECTDISC;
 					else
 						ret = CDTYPE_DISCERROR;
-					
+
 					break;
 				}
 			}

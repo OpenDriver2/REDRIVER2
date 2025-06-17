@@ -21,4 +21,4 @@ const char* FS_FindNext(FS_FINDDATA* findData);
 void		FS_FindClose(FS_FINDDATA* findData);
 bool		FS_FindIsDirectory(FS_FINDDATA* findData);
 
-#endif
+#endif // FS_H

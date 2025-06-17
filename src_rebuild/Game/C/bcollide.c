@@ -46,8 +46,8 @@ int bcollided2d(CDATA2D *body, int* boxOverlap)
 	}
 
 	// hmmm, why?
-	as = RSIN(dtheta & 2047);			// rcossin_tbl[(dtheta & 0x7ff) * 2];
-	ac = RSIN(dtheta + 1024 & 2047);	// rcossin_tbl[(dtheta + 1024 & 0x7ff) * 2];
+	as = RSIN(dtheta & 2047);			//rcossin_tbl[(dtheta & 0x7ff) * 2];
+	ac = RSIN(dtheta + 1024 & 2047);	//rcossin_tbl[(dtheta + 1024 & 0x7ff) * 2];
 
 	delta.vx = body[0].x.vx - body[1].x.vx;
 	delta.vz = body[0].x.vz - body[1].x.vz;
@@ -125,7 +125,7 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 	carBarrierCollision = 0;
 
 	smallest = body[0].limit[0] + 1;
-	
+
 	if (!body[0].isCameraOrTanner && !body[1].isCameraOrTanner &&
 		(body[1].length[1] >= body[1].length[0] * 4 || body[1].length[0] >= body[1].length[1] * 4))
 	{
@@ -159,7 +159,7 @@ void bFindCollisionPoint(CDATA2D *body, CRET2D *collisionResult)
 
 			k--;
 		} while (k >= 0);
-		
+
 		i--;
 	} while (i >= 0);
 
@@ -227,7 +227,7 @@ int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 	neverfree = 1;
 	time = 4096;
 	step = 2048;
-	
+
 	for (i = 0; i < 2; i++)
 		original[i] = cd[i];
 
@@ -253,7 +253,7 @@ int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 			}
 		}
 
-		if (hit) 
+		if (hit)
 		{
 			time -= step;
 		}
@@ -271,7 +271,7 @@ int bFindCollisionTime(CDATA2D *cd, CRET2D *collisionResult)
 		i--;
 	} while (i >= 0);
 
-	if (hit == 0) 
+	if (hit == 0)
 	{
 		for (i = 0; i < 2; i++)
 		{
@@ -307,12 +307,12 @@ void ApplyDamage(CAR_DATA *cp, char region, int value, char fakeDamage)
 
 	if (cp->controlType == CONTROL_TYPE_PLAYER || cp->controlType == CONTROL_TYPE_LEAD_AI)
 		value *= FIXEDH(gPlayerDamageFactor);
-	else 
+	else
 		value *= 2;
 
 	if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
 	{
-		if (gCopDifficultyLevel == 1) 
+		if (gCopDifficultyLevel == 1)
 		{
 			value = value * 12 >> 4;
 		}
@@ -322,7 +322,7 @@ void ApplyDamage(CAR_DATA *cp, char region, int value, char fakeDamage)
 		}
 	}
 
-	if (!fakeDamage) 
+	if (!fakeDamage)
 	{
 		if (cp->totalDamage < USHRT_MAX - value)
 			cp->totalDamage += value;
@@ -355,11 +355,11 @@ void ApplyDamage(CAR_DATA *cp, char region, int value, char fakeDamage)
 
 		if (*pRegion < value)
 		{
-			if (!fakeDamage) 
+			if (!fakeDamage)
 			{
 				if (cp->totalDamage < USHRT_MAX - (value - *pRegion))
 					cp->totalDamage += (value - *pRegion);
-				else 
+				else
 					cp->totalDamage = USHRT_MAX;
 			}
 
@@ -386,7 +386,7 @@ int DamageCar3D(CAR_DATA *cp, LONGVECTOR4* delta, int strikeVel, CAR_DATA *pOthe
 
 	strikeVel >>= 8;
 
-	if (strikeVel < 40960) 
+	if (strikeVel < 40960)
 	{
 		if (cp->totalDamage == 0)
 			cp->totalDamage = 1;
@@ -399,16 +399,16 @@ int DamageCar3D(CAR_DATA *cp, LONGVECTOR4* delta, int strikeVel, CAR_DATA *pOthe
 
 	if (door < 1)
 	{
-		if(nose > lbody)
+		if (nose > lbody)
 			region = 0;
 		else if (-lbody < nose)
 			region = 5;
 		else
 			region = 4;
 	}
-	else 
+	else
 	{
-		if(nose > lbody)
+		if (nose > lbody)
 			region = 1;
 		else if (-lbody < nose)
 			region = 2;
@@ -416,12 +416,12 @@ int DamageCar3D(CAR_DATA *cp, LONGVECTOR4* delta, int strikeVel, CAR_DATA *pOthe
 			region = 3;
 	}
 
-	if (cp->controlType == CONTROL_TYPE_PLAYER) 
+	if (cp->controlType == CONTROL_TYPE_PLAYER)
 	{
 		value = (strikeVel / 350 + 512) * 3;
 
 		value >>= 3;
-		
+
 		if (value > 1143)
 			value = 1143;
 	}
@@ -443,7 +443,7 @@ int DamageCar3D(CAR_DATA *cp, LONGVECTOR4* delta, int strikeVel, CAR_DATA *pOthe
 			value = strikeVel / 350 + 512;
 
 			value >>= 3;
-			
+
 			if (value > 762)
 				value = 762;
 
@@ -451,7 +451,7 @@ int DamageCar3D(CAR_DATA *cp, LONGVECTOR4* delta, int strikeVel, CAR_DATA *pOthe
 				value = 0;
 		}
 	}
-	else 
+	else
 	{
 		value = ((strikeVel / 400 + 1024) * 7) >> 3;
 	}
@@ -481,7 +481,6 @@ int DamageCar3D(CAR_DATA *cp, LONGVECTOR4* delta, int strikeVel, CAR_DATA *pOthe
 	return 1;
 }
 
-
 // [D] [T]
 void DamageCar(CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVel)
 {
@@ -496,7 +495,7 @@ void DamageCar(CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVel
 	lbody = cp->ap.carCos->colBox.vz / 2;
 	impact = strikeVel / 600;
 
-	if (strikeVel >= 20480 && cp->hd.speed > 9) 
+	if (strikeVel >= 20480 && cp->hd.speed > 9)
 	{
 		dx = collisionResult->hit.vx - cd->x.vx;
 		dz = collisionResult->hit.vz - cd->x.vz;
@@ -523,20 +522,20 @@ void DamageCar(CAR_DATA *cp, CDATA2D *cd, CRET2D *collisionResult, int strikeVel
 				region = 3;
 		}
 
-		if (strikeVel > 2048000) 
+		if (strikeVel > 2048000)
 			strikeVel = 2048000;
 
 		value = ((strikeVel / 300) * 1024) / 1500;
 		if (value > 2048)
 			value = 2048;
-	
+
 		value -= (value * cp->ap.damage[region] >> 0xd);
 
 		if (cp->controlType == CONTROL_TYPE_LEAD_AI)
 		{
 			if (cp->ai.l.takeDamage == 0)
 				value = 0;
-			else 
+			else
 				value >>= 1;
 		}
 
@@ -569,8 +568,8 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 	memset((u_char*)cd, 0, sizeof(CDATA2D));
 	memset((u_char*)&collisionResult, 0, sizeof(CRET2D));
 #else
-	static CDATA2D cd[2] = { 0 }; // offset 0x0
-	static CRET2D collisionResult = { 0 }; // offset 0xd0
+	static CDATA2D cd[2] = { 0 };
+	static CRET2D collisionResult = { 0 };
 #endif
 
 	model = modelpointers[cop->type];
@@ -584,8 +583,8 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 	else
 		buildingHeightY = building->height >> 1;
 
-	if (boxDiffY > buildingHeightY + (cp->hd.oBox.length[1] >> 1) || 
-		(cop->pos.vx == OBJECT_SMASHED_MARK) || 
+	if (boxDiffY > buildingHeightY + (cp->hd.oBox.length[1] >> 1) ||
+		(cop->pos.vx == OBJECT_SMASHED_MARK) ||
 		(model->shape_flags & SHAPE_FLAG_NOCOLLIDE))
 	{
 		return 0;
@@ -608,7 +607,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 		cd[0].x.vx = cp->hd.where.t[0];
 		cd[0].x.vy = cp->hd.where.t[1];
 		cd[0].x.vz = cp->hd.where.t[2];
-			
+
 		cd[0].vel.vx = FIXEDH(cp->st.n.linearVelocity[0]);
 		cd[0].vel.vz = FIXEDH(cp->st.n.linearVelocity[2]);
 
@@ -620,7 +619,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 		cd[0].x.vx = cp->hd.where.t[0];
 		cd[0].x.vy = cp->hd.where.t[1];
 		cd[0].x.vz = cp->hd.where.t[2];
-			
+
 		cd[0].vel.vx = 0;
 		cd[0].vel.vz = 0;
 		cd[0].length[1] = 5;
@@ -638,7 +637,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 		gte_ldv0(&boxDisp);
 		gte_rtv0tr();
 		gte_stlvnl(&cd[0].x);
-			
+
 		cd[0].vel.vx = FIXEDH(cp->st.n.linearVelocity[0]);
 		cd[0].vel.vz = FIXEDH(cp->st.n.linearVelocity[2]);
 
@@ -750,7 +749,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 	}
 #endif
 
-	if (cp->controlType != CONTROL_TYPE_CAMERACOLLIDER) 
+	if (cp->controlType != CONTROL_TYPE_CAMERACOLLIDER)
 	{
 		if (collided)
 		{
@@ -759,7 +758,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 
 #if defined(COLLISION_DEBUG) && !defined(PSX)
 			extern int gShowCollisionDebug;
-			if(gShowCollisionDebug == 1)
+			if (gShowCollisionDebug == 1)
 			{
 				extern void Debug_AddLine(VECTOR& pointA, VECTOR& pointB, CVECTOR& color);
 				extern void Debug_AddLineOfs(VECTOR& pointA, VECTOR& pointB, VECTOR& ofs, CVECTOR& color);
@@ -794,7 +793,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 			collisionResult.hit.vy = cp->hd.where.t[1] + 41;
 
 			// perform error correction
-			if((model->flags2 & MODEL_FLAG_SMASHABLE) == 0 || gInGameCutsceneActive == 0 || cd[0].isCameraOrTanner)
+			if ((model->flags2 & MODEL_FLAG_SMASHABLE) == 0 || gInGameCutsceneActive == 0 || cd[0].isCameraOrTanner)
 			{
 				cp->hd.where.t[0] += FIXEDH(collisionResult.penetration * collisionResult.surfNormal.vx);
 				cp->hd.where.t[2] += FIXEDH(collisionResult.penetration * collisionResult.surfNormal.vz);
@@ -819,13 +818,13 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 
 			if (strikeVel > 0)
 			{
-				if (cp->controlType == CONTROL_TYPE_PLAYER) 
+				if (cp->controlType == CONTROL_TYPE_PLAYER)
 				{
 					short scale;
 
-					if (strikeVel < 32) 
+					if (strikeVel < 32)
 						scale = ((strikeVel << 23) >> 16);
-					else 
+					else
 						scale = 4096;
 
 					if (model->flags2 & MODEL_FLAG_SMASHABLE)
@@ -871,7 +870,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 							SetPlayerOwnsChannel(chan, player_id);
 
 						Start3DSoundVolPitch(chan, SOUND_BANK_SFX, match->sound,
-							collisionResult.hit.vx, -collisionResult.hit.vy, collisionResult.hit.vz, 
+							collisionResult.hit.vx, -collisionResult.hit.vy, collisionResult.hit.vz,
 							match->volume, match->pitch + (((velocity.vx ^ velocity.vz) * (collisionResult.hit.vx ^ collisionResult.hit.vz) & 1023) - 512));
 					}
 
@@ -902,7 +901,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 
 						AddLeaf(&LeafPosition, 3, 1);
 					}
-					else 
+					else
 					{
 						if (gNight && (model->flags2 & MODEL_FLAG_LAMP))
 						{
@@ -932,7 +931,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 					{
 						Setup_Debris(&collisionResult.hit, &velocity, 6, debris_colour << 0x10);
 
-						if(cp->controlType == CONTROL_TYPE_PLAYER)
+						if (cp->controlType == CONTROL_TYPE_PLAYER)
 							SetPadVibration(*cp->ai.padid, 1);
 					}
 				}
@@ -942,7 +941,7 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 				displacement = FIXEDH(lever[0] * collisionResult.surfNormal.vx + lever[1] * collisionResult.surfNormal.vy + lever[2] * collisionResult.surfNormal.vz);
 				displacement = FIXEDH(((lever[0] * lever[0] + lever[2] * lever[2]) - displacement * displacement) * car_cos->twistRateY) + 4096;
 
-				if (strikeVel < 0x7f001) 
+				if (strikeVel < 0x7f001)
 					denom = (strikeVel * 4096) / displacement;
 				else
 					denom = (strikeVel / displacement) * 4096;
@@ -980,8 +979,3 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 
 	return collided;
 }
-
-
-
-
-

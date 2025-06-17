@@ -24,7 +24,7 @@ public:
 	virtual soundFormat_t*	GetFormat()						{ return &m_format; }
 	virtual float			GetLoopPosition(float flPosition);
 	virtual int				GetSampleCount() const			{ return m_numSamples; }
-	
+
 	CUESubtitle_t			m_subtitles[128];
 	int						m_numSubtitles;
 

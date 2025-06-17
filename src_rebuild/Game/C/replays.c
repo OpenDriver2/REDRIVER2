@@ -12,7 +12,7 @@
 #include "civ_ai.h"
 #include "cutrecorder.h"
 
-char AnalogueUnpack[16] = { 
+char AnalogueUnpack[16] = {
 	0, -51, -63, -75, -87, -99, -111, -123,
 	0,  51,  63,  75,  87,  99,  111,  123
 };
@@ -55,7 +55,7 @@ void InitPadRecording(void)
 
 	gOutOfTape = 0;
 
-	if (gLoadedReplay == 0 && 
+	if (gLoadedReplay == 0 &&
 		CurrentGameMode != GAMEMODE_REPLAY &&
 		CurrentGameMode != GAMEMODE_DIRECTOR)
 	{
@@ -89,7 +89,7 @@ void InitPadRecording(void)
 	{
 		// reset stream count as cutscene/chase can increase it
 		NumReplayStreams = NumPlayers;
-		
+
 		for (i = 0; i < NumReplayStreams; i++)
 		{
 			ReplayStreams[i].playbackrun = 0;
@@ -104,7 +104,6 @@ void InitPadRecording(void)
 	InitDirectorVariables();
 	InitInGameCutsceneVariables();
 }
-
 
 // [D] [T]
 int SaveReplayToBuffer(char *buffer)
@@ -124,11 +123,11 @@ int SaveReplayToBuffer(char *buffer)
 	header->GameType = GameType;
 	header->MissionNumber = gCurrentMissionNumber;
 
-	header->NumReplayStreams = NumReplayStreams - NumCutsceneStreams; 
+	header->NumReplayStreams = NumReplayStreams - NumCutsceneStreams;
 	header->NumPlayers = NumPlayers;
 	header->CutsceneEvent = -1;
 	header->RandomChase = gRandomChase;
-	
+
 	header->gCopDifficultyLevel = gCopDifficultyLevel;
 	header->ActiveCheats = ActiveCheats;
 
@@ -225,12 +224,12 @@ int LoadReplayFromBuffer(char *buffer)
 		pt += sizeof(REPLAY_STREAM_HEADER);
 
 		REPLAY_STREAM* destStream = &ReplayStreams[i];
-		
+
 		// copy source type
 		destStream->SourceType = sheader->SourceType;
 
 		int size = (sheader->Size + sizeof(PADRECORD)) & -4;
-		
+
 		// init buffers
 		destStream->InitialPadRecordBuffer = (PADRECORD*)replayptr;
 		destStream->PadRecordBuffer = (PADRECORD*)replayptr;
@@ -257,7 +256,7 @@ int LoadReplayFromBuffer(char *buffer)
 	PlayerWayRecordPtr = (SXYPAIR *)(ReplayParameterPtr + 1);
 	memcpy((u_char*)PlayerWayRecordPtr, (u_char*)pt, sizeof(SXYPAIR) * MAX_REPLAY_WAYPOINTS);
 	pt += sizeof(SXYPAIR) * MAX_REPLAY_WAYPOINTS;
-		
+
 	PlaybackCamera = (PLAYBACKCAMERA *)(PlayerWayRecordPtr + MAX_REPLAY_WAYPOINTS);
 	memcpy((u_char*)PlaybackCamera, (u_char*)pt, sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS);
 	pt += sizeof(PLAYBACKCAMERA) * MAX_REPLAY_CAMERAS;
@@ -305,11 +304,11 @@ char GetPingInfo(char *cookieCount)
 	if (PingBuffer && PingBufferPos < MAX_REPLAY_PINGS)
 	{
 		pp = &PingBuffer[PingBufferPos];
-		
+
 		// accept only valid car pings
 		if (pp->frame != 0xFFFF)
 		{
-			if (CameraCnt - frameStart < pp->frame) 
+			if (CameraCnt - frameStart < pp->frame)
 				return -1;
 
 			retCarId = pp->carId;
@@ -327,7 +326,7 @@ int IsPingInfoAvailable()
 {
 	if (!_CutRec_IsPlaying() && (gUseStoredPings == 0 || gInGameChaseActive == 0))// && gLoadedReplay == 0)
 		return 0;
-	
+
 	return PingBuffer != NULL && PingBufferPos < MAX_REPLAY_PINGS;
 }
 
@@ -341,8 +340,8 @@ int valid_region(int x, int z)
 	region_coords.x = (x >> 16) + regions_across / 2;
 	region_coords.y = (z >> 16) + regions_down / 2;
 
-	if (region_coords.x >= 0 && region_coords.x <= regions_across && 
-		region_coords.y >= 0 && region_coords.y <= regions_down) 
+	if (region_coords.x >= 0 && region_coords.x <= regions_across &&
+		region_coords.y >= 0 && region_coords.y <= regions_down)
 	{
 		region = region_coords.x + region_coords.y * regions_across;
 
@@ -459,12 +458,12 @@ int cjpPlay(int stream, u_int *ppad, char *psteer, char *ptype)
 
 	*ppad = t0 & 0xF0FC;
 
-	if (t1 == 0) 
+	if (t1 == 0)
 	{
 		*psteer = 0;
 		*ptype = 0;
 	}
-	else 
+	else
 	{
 		*psteer = AnalogueUnpack[t1];
 		*ptype = 4;
@@ -480,17 +479,17 @@ void cjpRecord(int stream, u_int *ppad, char *psteer, char *ptype)
 	int t1;
 	u_int t0;
 
-	if (stream > -1 && stream < NumReplayStreams) 
+	if (stream > -1 && stream < NumReplayStreams)
 	{
 		RecordWaypoint();
 
-		if ((*ptype & 4U) == 0) 
+		if ((*ptype & 4U) == 0)
 		{
 			t1 = 0;
 		}
-		else 
+		else
 		{
-			if (*psteer < -45) 
+			if (*psteer < -45)
 			{
 				tmp = -45 - *psteer >> 0x1f;	// [A] still need to figure out this
 				t1 = (((-45 - *psteer) / 6 + tmp >> 1) - tmp) + 1;
@@ -512,7 +511,7 @@ void cjpRecord(int stream, u_int *ppad, char *psteer, char *ptype)
 		{
 			gOutOfTape = 1;
 		}
-		else if(NoPlayerControl == 0)
+		else if (NoPlayerControl == 0)
 		{
 			ClearCameras = 1;
 
@@ -525,12 +524,12 @@ void cjpRecord(int stream, u_int *ppad, char *psteer, char *ptype)
 
 		t1 = (t0 >> 8) & 0xF;
 
-		if (t1 == 0) 
+		if (t1 == 0)
 		{
 			*psteer = 0;
 			*ptype = 0;
 		}
-		else 
+		else
 		{
 			*psteer = AnalogueUnpack[t1];
 			*ptype = 4;

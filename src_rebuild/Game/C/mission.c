@@ -296,7 +296,7 @@ void InitialiseMissionDefaults(void)
 
 	ClearMem((char *)reservedSlots, sizeof(reservedSlots));
 	_CutRec_ReserveSlots();
-	
+
 	cop_adjust = 0;
 
 	playercollected[0] = 0;
@@ -336,13 +336,13 @@ void SetupResidentModels()
 			MissionHeader->residentModels[4] = PlayerStartInfo[0]->model;
 	}
 
-	for(i = 0; i < 2; i++)
+	for (i = 0; i < 2; i++)
 	{
 		if (wantedCar[i] != -1)
 		{
 			int foundRM = -1;
 			int singlePal;
-			
+
 			for (j = 0; j < 5; j++)
 			{
 				if (MissionHeader->residentModels[j] == wantedCar[i])
@@ -351,24 +351,24 @@ void SetupResidentModels()
 					break;
 				}
 			}
-			
+
 			PlayerStartInfo[i]->model = wantedCar[i];
 
 			singlePal = (wantedCar[i] == 0 || wantedCar[i] > 4);
-			
+
 			// check if chosen cop car or special car
 			if (wantedCar[i] > 4)// && NumPlayers == 1)
-			{		
+			{
 				MissionHeader->residentModels[4] = wantedCar[i];
 			}
-			else if(foundRM == -1)
+			else if (foundRM == -1)
 			{
 				MissionHeader->residentModels[takenSlots++] = wantedCar[i];
 			}
 			else
 			{
 				// this can make things ugly
-				takenSlots = foundRM+1;
+				takenSlots = foundRM + 1;
 			}
 
 			// force palette
@@ -415,7 +415,7 @@ void LoadMission(int missionnum)
 		length = header >> 19;
 	}
 
-	if (header == 0) 
+	if (header == 0)
 	{
 #if !defined(PSX) && !defined(__EMSCRIPTEN__)
 		char errPrint[1024];
@@ -432,14 +432,14 @@ void LoadMission(int missionnum)
 	{
 		MissionLoadAddress = (MS_MISSION*)mallocptr;
 	}
-	
+
 	LoadfileSeg(filename, (char *)MissionLoadAddress, offset, sizeof(MS_MISSION));
 
 	MissionHeader = MissionLoadAddress;
 	MissionTargets = (MS_TARGET *)((char*)MissionLoadAddress + MissionLoadAddress->size);
 	MissionScript = (u_int *)(MissionTargets + MAX_MISSION_TARGETS);
 	MissionStrings = (char*)(MissionScript + MissionLoadAddress->strings);
-	
+
 	if (MissionLoadAddress->route && !NewLevel)
 		loadsize = (u_int)((char*)MissionStrings + ((char*)MissionLoadAddress->route - (char*)MissionLoadAddress));
 	else
@@ -477,26 +477,26 @@ void LoadMission(int missionnum)
 	GameLevel = MissionHeader->city;
 
 	// player start position init
-	if(!_CutRec_InitMission(filename))
+	if (!_CutRec_InitMission(filename))
 	{
 		PlayerStartInfo[0]->rotation = MissionHeader->playerStartRotation;
 		PlayerStartInfo[0]->position.vx = MissionHeader->playerStartPosition.x;
 		PlayerStartInfo[0]->position.vz = MissionHeader->playerStartPosition.y;
-	
+
 #ifdef DEBUG_OPTIONS
-		if(gStartPos.x != 0 && gStartPos.z != 0)
+		if (gStartPos.x != 0 && gStartPos.z != 0)
 		{
 			PlayerStartInfo[0]->rotation = 0;
 			PlayerStartInfo[0]->position.vx = gStartPos.x;
 			PlayerStartInfo[0]->position.vz = gStartPos.z;
 		}
 #endif
-	
+
 		PlayerStartInfo[0]->model = MissionHeader->playerCarModel;
 		PlayerStartInfo[0]->palette = MissionHeader->playerCarColour;
 	}
 
-	if (MissionHeader->maxDamage != 0) 
+	if (MissionHeader->maxDamage != 0)
 	{
 		MaxPlayerDamage[1] = MissionHeader->maxDamage;
 		MaxPlayerDamage[0] = MissionHeader->maxDamage;
@@ -507,7 +507,7 @@ void LoadMission(int missionnum)
 	gWeather = MissionHeader->weather;
 
 	// [A] custom time of day
-	if(wantedTimeOfDay > -1)
+	if (wantedTimeOfDay > -1)
 		gTimeOfDay = wantedTimeOfDay;
 
 	// [A] custom weather
@@ -516,7 +516,7 @@ void LoadMission(int missionnum)
 
 	if (gTimeOfDay >= TIME_NIGHT)
 		gNight = 1;
-	else 
+	else
 		gNight = 0;
 
 	// setup weather
@@ -525,7 +525,7 @@ void LoadMission(int missionnum)
 		gRainCount = 30;
 		gEffectsTimer = 41;
 	}
-	else 
+	else
 	{
 		gRainCount = 0;
 		gEffectsTimer = 0;
@@ -537,7 +537,7 @@ void LoadMission(int missionnum)
 	Mission.timer[0].x = Mission.timer[1].x = 124;
 	Mission.timer[0].y = 16;
 	Mission.timer[1].y = SCREEN_H / 2 + 8;
-	
+
 	if (MissionHeader->timer || (MissionHeader->timerFlags & MISSIONTIMER_FLAG_COUNTER))
 	{
 		int flag;
@@ -546,7 +546,7 @@ void LoadMission(int missionnum)
 
 		if (MissionHeader->timerFlags & MISSIONTIMER_FLAG_COUNTER)
 			flag |= TIMER_FLAG_COUNTER;
-	
+
 		if (MissionHeader->timerFlags & MISSIONTIMER_FLAG_COMPLETE_ON_OUT)
 			flag |= TIMER_FLAG_COMPLETE_ON_OUT;
 
@@ -566,7 +566,7 @@ void LoadMission(int missionnum)
 
 	if (maxCopCars == 4)
 	{
-		if (GameType == GAME_SURVIVAL) 
+		if (GameType == GAME_SURVIVAL)
 		{
 			gDontPingInCops = 0;
 			gBatterPlayer = 1;
@@ -578,7 +578,7 @@ void LoadMission(int missionnum)
 			gBatterPlayer = 0;
 		}
 	}
-	else 
+	else
 	{
 		gDontPingInCops = 0;
 		gBatterPlayer = 0;
@@ -622,18 +622,18 @@ void LoadMission(int missionnum)
 	}
 
 	// load specific AI for mission
-	if (NewLevel) 
+	if (NewLevel)
 	{
 		if (MissionHeader->route == 0)
 		{
 			mallocptr += (missionSize + 3U & ~3);
 
-			if(LOAD_OVERLAY("PATH.BIN", _other_buffer2))
+			if (LOAD_OVERLAY("PATH.BIN", _other_buffer2))
 				pathAILoaded = 1;
 
 			leadAILoaded = 0;
 		}
-		else 
+		else
 		{
 			rinfo = (ROUTE_INFO *)(MissionStrings + MissionHeader->route);
 
@@ -641,10 +641,10 @@ void LoadMission(int missionnum)
 			NumTempJunctions = rinfo->nJunctions;
 			memcpy((u_char*)Driver2TempJunctionsPtr, (u_char*)rinfo->data, NumTempJunctions << 2);
 			LeadValues = rinfo->parameters;
-			
+
 			mallocptr = MissionStrings + MissionHeader->route;
 
-			if(LOAD_OVERLAY("LEAD.BIN", _other_buffer2))
+			if (LOAD_OVERLAY("LEAD.BIN", _other_buffer2))
 				leadAILoaded = 1;
 
 #ifdef DEBUG
@@ -695,7 +695,7 @@ void LoadMission(int missionnum)
 
 		if (titleId > 11)
 			titleId--;
-		
+
 		if (titleId > 7)
 			titleId--;
 
@@ -1035,7 +1035,7 @@ void LoadMission(int missionnum)
 						printWarning("MR: function MRProcessTarget %d\n", val1);
 					}
 
-					
+
 					break;
 				}
 			}
@@ -1044,7 +1044,6 @@ void LoadMission(int missionnum)
 		}
 	}
 #endif
-	
 
 	MRInitialiseThread(&MissionThreads[0], MissionScript, 0);
 }
@@ -1065,7 +1064,7 @@ void HandleTimer(MR_TIMER *timer)
 		if (timer->count > 10799999)
 			timer->count = 10799999;
 	}
-	else 
+	else
 	{
 		timer->count -= 100;
 
@@ -1078,14 +1077,14 @@ void HandleTimer(MR_TIMER *timer)
 				timer->count = 9000;
 				timer->flags |= 0x28;
 			}
-			else 
+			else
 			{
 				// do expolosions
 				if (timer->flags & TIMER_FLAG_COMPLETE_ON_OUT)
 				{
 					if (Mission.gameover_delay == -1)
 					{
-						SetMissionComplete();	
+						SetMissionComplete();
 					}
 
 					timer->count = 0;
@@ -1115,15 +1114,14 @@ void HandleTimer(MR_TIMER *timer)
 	timer->frac = (timer->count % 3000) / 30;
 }
 
-
 // [D] [T]
 void RegisterChaseHit(int car1, int car2)
 {
 	int player_id;
 
-	if (Mission.ChaseTarget && Mission.ChaseHitDelay == 0) 
+	if (Mission.ChaseTarget && Mission.ChaseHitDelay == 0)
 	{
-		if (gPlayerWithTheFlag == -1) 
+		if (gPlayerWithTheFlag == -1)
 		{
 			if (car1 == Mission.ChaseTarget->s.car.slot || car2 == Mission.ChaseTarget->s.car.slot)
 			{
@@ -1132,7 +1130,7 @@ void RegisterChaseHit(int car1, int car2)
 				DamageBar.position++;
 			}
 		}
-		else 
+		else
 		{
 			player_id = 1 - gPlayerWithTheFlag;
 			gPlayerWithTheFlag = player_id;
@@ -1141,21 +1139,20 @@ void RegisterChaseHit(int car1, int car2)
 			Mission.ChaseHitDelay = 20;
 			player[1 - player_id].targetCarId = gPlayerWithTheFlag;
 
-			SetPlayerMessage(player_id, G_LTXT(GTXT_YouGotTheFlag),2,1);
+			SetPlayerMessage(player_id, G_LTXT(GTXT_YouGotTheFlag), 2, 1);
 		}
 	}
 }
 
-
 // [D] [T]
 void PauseMissionTimer(int pause)
 {
-	if (pause == 0) 
+	if (pause == 0)
 	{
 		Mission.timer[0].flags &= ~TIMER_FLAG_PAUSED;
 		Mission.timer[1].flags &= ~TIMER_FLAG_PAUSED;
 	}
-	else 
+	else
 	{
 		Mission.timer[0].flags |= TIMER_FLAG_PAUSED;
 		Mission.timer[1].flags |= TIMER_FLAG_PAUSED;
@@ -1176,12 +1173,12 @@ void SetMissionMessage(char *message, int priority, int seconds)
 		{
 			Mission.message_string[i] = message;
 			Mission.message_priority[i] = priority;
-				
-			if (seconds == 0) 
+
+			if (seconds == 0)
 			{
 				Mission.message_timer[i] = 5;
 			}
-			else 
+			else
 			{
 				Mission.message_timer[i] = seconds * 30;
 			}
@@ -1208,7 +1205,7 @@ int TargetComplete(MS_TARGET *target, int player)
 {
 	u_int flag;
 
-	if (player == 0) 
+	if (player == 0)
 		flag = TARGET_FLAG_COMPLETED_P1;
 	else if (player == 1)
 		flag = TARGET_FLAG_COMPLETED_P2;
@@ -1217,7 +1214,6 @@ int TargetComplete(MS_TARGET *target, int player)
 
 	return (target->s.target_flags & flag) == flag;
 }
-
 
 // [D] [T]
 int TargetActive(MS_TARGET *target, int player)
@@ -1264,12 +1260,12 @@ int Swap2Cars(int curslot, int newslot)
 		if (cp->ai.c.ctrlNode == NULL)
 			ctrlNodeCurId = -1;
 		else
-			ctrlNodeCurId = cp->ai.c.ctrlNode - cp->ai.c.targetRoute;	// [A]
+			ctrlNodeCurId = cp->ai.c.ctrlNode - cp->ai.c.targetRoute; // [A]
 
 		if (cp->ai.c.pnode == NULL)
 			pnodeCurId = -1;
-		else 
-			pnodeCurId = cp->ai.c.pnode - cp->ai.c.targetRoute;	// [A]
+		else
+			pnodeCurId = cp->ai.c.pnode - cp->ai.c.targetRoute; // [A]
 	}
 
 	cp->lowDetail = -1;
@@ -1283,12 +1279,12 @@ int Swap2Cars(int curslot, int newslot)
 		if (cp->ai.c.ctrlNode == NULL)
 			ctrlNodeNewId = -1;
 		else
-			ctrlNodeNewId = cp->ai.c.ctrlNode - cp->ai.c.targetRoute;	// [A]
+			ctrlNodeNewId = cp->ai.c.ctrlNode - cp->ai.c.targetRoute; // [A]
 
 		if (cp->ai.c.pnode == NULL)
 			pnodeNewId = -1;
 		else
-			pnodeNewId = cp->ai.c.pnode - cp->ai.c.targetRoute;	// [A]
+			pnodeNewId = cp->ai.c.pnode - cp->ai.c.targetRoute; // [A]
 	}
 
 	cp->lowDetail = -1;
@@ -1309,7 +1305,7 @@ int Swap2Cars(int curslot, int newslot)
 	if (carsOnBoat & (1 << curslot))
 		carsOnBoat |= (1 << newslot);
 
-	if(tmp)
+	if (tmp)
 		carsOnBoat |= (1 << curslot);
 
 	// swap ids
@@ -1335,7 +1331,7 @@ int Swap2Cars(int curslot, int newslot)
 		player[0].playerCarId = newslot;
 
 	// swap world center car
-	if (player[0].worldCentreCarId == newslot) 
+	if (player[0].worldCentreCarId == newslot)
 	{
 		player[0].spoolXZ = (VECTOR *)car_data[curslot].hd.where.t;
 		player[0].worldCentreCarId = curslot;
@@ -1351,14 +1347,14 @@ int Swap2Cars(int curslot, int newslot)
 	// setup old slot nodes and reinit car
 	cp = &car_data[curslot];
 
-	if (ctrlNodeNewId == -1) 
+	if (ctrlNodeNewId == -1)
 		cp->ai.c.ctrlNode = 0;
-	else 
+	else
 		cp->ai.c.ctrlNode = &cp->ai.c.targetRoute[ctrlNodeNewId];
 
-	if (pnodeNewId == -1) 
+	if (pnodeNewId == -1)
 		cp->ai.c.pnode = 0;
-	else 
+	else
 		cp->ai.c.pnode = &cp->ai.c.targetRoute[pnodeNewId];
 
 	CreateDentableCar(cp);
@@ -1398,7 +1394,7 @@ int Swap2Cars(int curslot, int newslot)
 				swapTgt->s.car.slot = newslot;
 			else if (swapTgt->s.car.slot == newslot)
 				swapTgt->s.car.slot = curslot;
-		}		
+		}
 	}
 #endif
 
@@ -1421,7 +1417,6 @@ void SetConfusedCar(int slot)
 			player[0].worldCentreCarId = player[0].playerCarId;
 	}
 }
-
 
 // [D] [T]
 void HandleMissionThreads(void)
@@ -1446,24 +1441,24 @@ void HandleMissionThreads(void)
 
 			switch (value & 0xff000000)
 			{
-			case 0x0:
-			case 0x2000000:
-			case 0xff000000:
-				MR_DebugPrint("MR: push %d\n", value);
-				MRPush(thread, value);
-				break;
-			case 0x1000000:
-				MR_DebugPrint("MR: command %x\n", value);
-				running = MRCommand(thread, value);
-				break;
-			case 0x3000000:
-				MR_DebugPrint("MR: operator %x\n", value);
-				running = MROperator(thread, value);
-				break;
-			case 0x4000000:
-				MR_DebugPrint("MR: function %x\n", value);
-				running = MRFunction(thread, value);
-				break;
+				case 0x0:
+				case 0x2000000:
+				case 0xff000000:
+					MR_DebugPrint("MR: push %d\n", value);
+					MRPush(thread, value);
+					break;
+				case 0x1000000:
+					MR_DebugPrint("MR: command %x\n", value);
+					running = MRCommand(thread, value);
+					break;
+				case 0x3000000:
+					MR_DebugPrint("MR: operator %x\n", value);
+					running = MROperator(thread, value);
+					break;
+				case 0x4000000:
+					MR_DebugPrint("MR: function %x\n", value);
+					running = MRFunction(thread, value);
+					break;
 			}
 		}
 
@@ -1707,13 +1702,13 @@ int MROperator(MR_THREAD *thread, u_int op)
 	int val1;
 	int val2;
     int result;
-    
+
     result = 0;
 
     val1 = MRGetParam(thread);
     val2 = MRGetParam(thread);
 
-    switch(op) 
+    switch (op)
 	{
 		case 0x3000003: // AND
 			if (val1 != 0 && val2 != 0)
@@ -1732,7 +1727,7 @@ int MROperator(MR_THREAD *thread, u_int op)
 				result = 1;
 			break;
 		case 0x3000007: // GT
-			if(val1 > val2)
+			if (val1 > val2)
 				result = 1;
 			break;
 		case 0x3000008:	// LT
@@ -1755,7 +1750,7 @@ int MRFunction(MR_THREAD *thread, u_int fnc)
 {
 	int value;
 
-	if (fnc == 0x4000020) 
+	if (fnc == 0x4000020)
 	{
 		value = MRPop(thread);
 		value = MRProcessTarget(thread, &MissionTargets[value]);
@@ -1776,7 +1771,6 @@ void MRInitialiseThread(MR_THREAD *thread, u_int *pc, u_char player)
 	thread->player = player;
 	thread->sp = thread->initial_sp;
 }
-
 
 // [D] [T]
 void MRStartThread(MR_THREAD *callingthread, u_int addr, unsigned char player)
@@ -1846,7 +1840,7 @@ int MRGetParam(MR_THREAD *thread)
 		case 0x2000000:
 			return MRGetVariable(thread, value);
 	}
-	
+
 	return 0;
 }
 
@@ -1855,7 +1849,7 @@ int MRGetVariable(MR_THREAD *thread, u_int var)
 {
 	switch (var)
 	{
-		case 0x2000008: 
+		case 0x2000008:
 			return Mission.timer[thread->player].count / 3000;
 		case 0x2000100:
 			return gCopDesiredSpeedScale;
@@ -1866,7 +1860,7 @@ int MRGetVariable(MR_THREAD *thread, u_int var)
 		case 0x2000103:
 			return maxCopCars;
 	}
-	
+
 	return 0;
 }
 
@@ -1875,43 +1869,43 @@ void MRSetVariable(MR_THREAD *thread, u_int var, int value)
 {
 	switch (var)
 	{
-	case 0x2000008:
-		Mission.timer[thread->player].count = value * 3000;
-		break;
-	case 0x2000100:
-		gCopDesiredSpeedScale = value;
-		break;
-	case 0x2000101:
-		gCopMaxPowerScale = value;
-		break;
-	case 0x2000102:
-		gMinimumCops = value;
-		break;
-	case 0x2000103:
-		if (value == 4)
-		{
-			if (GameType == GAME_SURVIVAL)
+		case 0x2000008:
+			Mission.timer[thread->player].count = value * 3000;
+			break;
+		case 0x2000100:
+			gCopDesiredSpeedScale = value;
+			break;
+		case 0x2000101:
+			gCopMaxPowerScale = value;
+			break;
+		case 0x2000102:
+			gMinimumCops = value;
+			break;
+		case 0x2000103:
+			if (value == 4)
 			{
-				gDontPingInCops = 0;
-				gBatterPlayer = 1;
+				if (GameType == GAME_SURVIVAL)
+				{
+					gDontPingInCops = 0;
+					gBatterPlayer = 1;
+				}
+				else
+				{
+					gDontPingInCops = 1;
+					gBatterPlayer = 0;
+				}
 			}
 			else
 			{
-				gDontPingInCops = 1;
+				gDontPingInCops = 0;
 				gBatterPlayer = 0;
 			}
-		}
-		else
-		{
-			gDontPingInCops = 0;
-			gBatterPlayer = 0;
-		}
 
-		if (value > 0)
-			CopsAllowed = 1;
+			if (value > 0)
+				CopsAllowed = 1;
 
-		maxCopCars = value;
-		break;
+			maxCopCars = value;
+			break;
 	}
 }
 
@@ -1930,12 +1924,12 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 
 	ret = 0;
 
-	if (TargetComplete(target, thread->player)) 
+	if (TargetComplete(target, thread->player))
 		return 1;
 
-	if (thread->player == 0) 
+	if (thread->player == 0)
 		target->s.target_flags |= (TARGET_FLAG_VISIBLE_P1 | TARGET_FLAG_ACTIVE_P1);
-	else 
+	else
 		target->s.target_flags |= (TARGET_FLAG_VISIBLE_P2 | TARGET_FLAG_ACTIVE_P2);
 
 	playerId = thread->player;
@@ -1943,7 +1937,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 	pv.vy = player[playerId].pos[1];
 	pv.vz = player[playerId].pos[2];
 
-	switch(target->type)
+	switch (target->type)
 	{
 		case Target_Point: // point target
 		{
@@ -1972,7 +1966,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 				tv.vz = target->s.point.posZ;
 				tv.vy = 0;
 			}
-			
+
 			if (Long2DDistance(&tv, &pv) <= target->s.point.radius)
 			{
 				if (target->s.point.height != 0) // if target is at height (Train pursuit)
@@ -1983,7 +1977,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 
 				if (GameType == GAME_SECRET)
 				{
-					switch(target->s.target_flags & (TARGET_FLAG_POINT_SECRET_POINT1 | TARGET_FLAG_POINT_SECRET_POINT2 | TARGET_FLAG_POINT_SECRET_STARTFINISH))
+					switch (target->s.target_flags & (TARGET_FLAG_POINT_SECRET_POINT1 | TARGET_FLAG_POINT_SECRET_POINT2 | TARGET_FLAG_POINT_SECRET_STARTFINISH))
 					{
 						case 0: // TARGET_FLAG_POINT_SECRET_POINT0
 						{
@@ -2030,7 +2024,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 							break;
 						}
 					}
-					
+
 					return 0;
 				}
 
@@ -2101,7 +2095,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 							correctZone =	(target->s.target_flags & TARGET_FLAG_POINT_CTF_BASE_P1) && thread->player == 0 ||
 											(target->s.target_flags & TARGET_FLAG_POINT_CTF_BASE_P2) && thread->player == 1;
 
-							if(correctZone)
+							if (correctZone)
 							{
 								if (thread->player == 0)
 								{
@@ -2153,7 +2147,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 			tv.vx = target->s.car.posX;
 			tv.vz = target->s.car.posZ;
 			tv.vy = 0;
-	
+
 			dist = Long2DDistance(&tv, &pv);
 			slot = target->s.car.slot;
 
@@ -2163,7 +2157,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 					MRRequestCar(target);
 				else
 					MRCancelCarRequest(target);
-				
+
 				break;
 			}
 
@@ -2204,9 +2198,9 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 				}
 				else if (target->s.car.type == 3)
 				{
-					if((target->s.target_flags & TARGET_FLAG_CAR_PLAYERCONTROLLED) == 0)
+					if ((target->s.target_flags & TARGET_FLAG_CAR_PLAYERCONTROLLED) == 0)
 					{
-						if(target->s.car.flags & CARTARGET_FLAG_RANDOMCHASE)
+						if (target->s.car.flags & CARTARGET_FLAG_RANDOMCHASE)
 						{
 							if (target->s.car.cutscene == -1)
 							{
@@ -2282,7 +2276,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 					}
 				}
 
-				switch(target->s.car.flags & 0xf0)
+				switch (target->s.car.flags & 0xf0)
 				{
 					case 0:
 					{
@@ -2371,7 +2365,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						{
 							lastsay = -1;
 						}
-						
+
 						break;
 					}
 					case CATTARGET_FLAG_PROXIMITY_TARGET:	// proximity extended messages
@@ -2464,7 +2458,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						{
 							lastsay = -1;
 						}
-						
+
 						break;
 					}
 					case 0x20:
@@ -2492,7 +2486,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						}
 
 						// check if target car is damaged
-						if(failIfDamaged && cp->totalDamage >= MaxPlayerDamage[0])
+						if (failIfDamaged && cp->totalDamage >= MaxPlayerDamage[0])
 						{
 							message = MissionStrings + MissionHeader->msgCarWrecked;
 
@@ -2510,7 +2504,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 					}
 					case CARTARGET_FLAG_CnR_TARGET:
 					{
-						if(target->s.target_flags & TARGET_FLAG_CAR_PLAYERCONTROLLED)
+						if (target->s.target_flags & TARGET_FLAG_CAR_PLAYERCONTROLLED)
 						{
 							MaxPlayerDamage[1] = target->s.car.chasing.maxDamage;
 
@@ -2559,7 +2553,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 					SetMissionFailed(FAILED_MESSAGESET);
 				}
 			}
-			
+
 			break;
 		}
 		case Target_Event: // event target
@@ -2588,7 +2582,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 	{
 		// keep only those flags
 		target->s.target_flags &= ~TARGET_FLAG_COMPLETED_ALLP;
-		
+
 		if (thread->player == 0)
 			target->s.target_flags |= TARGET_FLAG_COMPLETED_P1;
 		else
@@ -2613,7 +2607,7 @@ int MRRequestCar(MS_TARGET *target)
 		return 0;
 
 	Mission.CarTarget = target;
-	
+
 	return 1;
 }
 
@@ -2629,7 +2623,7 @@ void MRHandleCarRequests(void)
 {
 	if (_CutRec_IsOn())
 		return;
-	
+
 	if (Mission.CarTarget)
 		MRCreateCar(Mission.CarTarget);
 }
@@ -2693,7 +2687,7 @@ int MRCreateCar(MS_TARGET *target)
 	target->s.car.slot = curslot;
 
 	target->s.target_flags |= TARGET_FLAG_CAR_PINGED_IN;
-	
+
 	car_data[curslot].inform = &target->s.target_flags;
 
 	// make fully damaged (Car bomb escape)
@@ -2715,7 +2709,6 @@ int MRCreateCar(MS_TARGET *target)
 	return 1;
 }
 
-
 // [D] [T]
 void PreProcessTargets(void)
 {
@@ -2731,7 +2724,7 @@ void PreProcessTargets(void)
 	{
 		target = &MissionTargets[i];
 
-		if (target->type == Target_Player2Start || 
+		if (target->type == Target_Player2Start ||
 			target->type == Target_Car && (target->s.target_flags & TARGET_FLAG_CAR_PLAYERCONTROLLED))
 		{
 			PlayerStartInfo[1] = &ReplayStreams[1].SourceType;
@@ -2748,7 +2741,7 @@ void PreProcessTargets(void)
 
 			if (target->s.car.type & 0x3)
 				target->s.car.cutscene = -1;
-	
+
 			target->s.car.slot = 1;
 			target->s.target_flags |= TARGET_FLAG_CAR_PINGED_IN;
 		}
@@ -2784,11 +2777,11 @@ extern int gStopPadReads;
 // [D] [T]
 int Handle321Go(void)
 {
-	if (MissionHeader->type & 0x4) 
+	if (MissionHeader->type & 0x4)
 	{
 		gStopPadReads = 1;
-		
-		if (++g321GoDelay == 96) 
+
+		if (++g321GoDelay == 96)
 		{
 			gStopPadReads = 0;
 			MissionHeader->type &= ~0x4;
@@ -2798,7 +2791,6 @@ int Handle321Go(void)
 	}
 	return 0;
 }
-
 
 extern int test42;	// why 42?
 
@@ -2811,7 +2803,7 @@ int HandleGameOver(void)
 	PLAYER* lp;
 	CAR_DATA *cp;
 
-	if (Mission.gameover_delay != -1) 
+	if (Mission.gameover_delay != -1)
 	{
 		gStopPadReads = 1;
 
@@ -2822,15 +2814,15 @@ int HandleGameOver(void)
 			return 0;
 		}
 
-		if (Mission.message_timer[0] == 0) 
+		if (Mission.message_timer[0] == 0)
 		{
-			if (Mission.message_timer[1] == 0) 
+			if (Mission.message_timer[1] == 0)
 			{
 				if (Mission.gameover_mode == PAUSEMODE_COMPLETE)
 				{
 					StoreEndData();
 #ifndef PSX
-					if(GameType == GAME_MISSION)
+					if (GameType == GAME_MISSION)
 						SaveCurrentGame();
 #endif
 				}
@@ -2856,11 +2848,11 @@ int HandleGameOver(void)
 
 		if (lp->playerType == 1)
 		{
-			if ((Mission.timer[0].flags & TIMER_FLAG_BOMB_COUNTDOWN) || 
+			if ((Mission.timer[0].flags & TIMER_FLAG_BOMB_COUNTDOWN) ||
 				TannerStuckInCar(0, player_id))
 			{
 				cp = &car_data[lp->playerCarId];
-				
+
 				if (MaxPlayerDamage[player_id] <= cp->totalDamage && lp->dying == 0)
 				{
 					lp->dying = 1;
@@ -2874,11 +2866,11 @@ int HandleGameOver(void)
 					{
 						cp->totalDamage = MaxPlayerDamage[player_id];
 
-						if(lp->dying < 30)
+						if (lp->dying < 30)
 							lp->dying = 30;
 					}
 				}
-				else 
+				else
 				{
 					lp->upsideDown = 0;
 				}
@@ -2906,9 +2898,9 @@ int HandleGameOver(void)
 			if (Mission.timer[player_id].flags & TIMER_FLAG_BOMB_COUNTDOWN)
 				BombThePlayerToHellAndBack(gCarWithABerm);
 
-			if (lp->playerType == 2) 
+			if (lp->playerType == 2)
 				SetPlayerMessage(player_id, MissionStrings + MissionHeader->msgDrowned, 2, 2);
-			else 
+			else
 				SetPlayerMessage(player_id, MissionStrings + MissionHeader->msgCarWrecked, 2, 2);
 
 			lp->dying++;
@@ -2931,7 +2923,7 @@ int HandleGameOver(void)
 			{
 				if (playersdead == NumPlayers)
 					SetMissionOver(PAUSEMODE_GAMEOVER);
-				
+
 				return 0;
 			}
 		}
@@ -2951,7 +2943,7 @@ void CompleteAllActiveTargets(int player)
 	int flag2;
 	int flag1;
 
-	if (player == 0) 
+	if (player == 0)
 	{
 		flag1 = TARGET_FLAG_ACTIVE_P1;
 		flag2 = TARGET_FLAG_COMPLETED_P1;
@@ -2966,7 +2958,7 @@ void CompleteAllActiveTargets(int player)
 	{
 		pTarget = &MissionTargets[i];
 
-		if (pTarget->type >= Target_Point && 
+		if (pTarget->type >= Target_Point &&
 			pTarget->type <= Target_Event && (pTarget->s.target_flags & flag1))
 		{
 			pTarget->s.target_flags &= ~flag1;
@@ -2978,12 +2970,12 @@ void CompleteAllActiveTargets(int player)
 // [D] [T]
 void SetMissionComplete(void)
 {
-	switch (GameType) 
+	switch (GameType)
 	{
 		case GAME_CHECKPOINT:
 		case GAME_CAPTURETHEFLAG:
 		case GAME_SECRET:
-			if (NumPlayers < 2) 
+			if (NumPlayers < 2)
 			{
 				SetMissionMessage(MissionStrings + MissionHeader->msgComplete, 3, 2);
 				break;
@@ -3011,7 +3003,7 @@ void SetMissionComplete(void)
 				SetPlayerMessage(0, MissionStrings + MissionHeader->msgDrowned, 3, 2);
 				SetPlayerMessage(1, MissionStrings + MissionHeader->msgComplete, 3, 2);
 			}
-			else 
+			else
 			{
 				SetPlayerMessage(0, MissionStrings + MissionHeader->msgComplete, 3, 2);
 				SetPlayerMessage(1, MissionStrings + MissionHeader->msgDrowned, 3, 2);
@@ -3021,7 +3013,7 @@ void SetMissionComplete(void)
 			if (Mission.timer[0].flags & TIMER_FLAG_BOMB_COUNTDOWN)
 			{
 				Mission.timer[0].flags |= TIMER_FLAG_BOMB_TRIGGERED;
-				
+
 				DetonatorTimer();
 				return;
 			}
@@ -3037,23 +3029,21 @@ void SetMissionComplete(void)
 	SetMissionOver(PAUSEMODE_COMPLETE);
 }
 
-
 // [D] [T]
 void SetMissionFailed(FAIL_REASON reason)
 {
-	if (reason == FAILED_CnR_LOSTHIM) 
+	if (reason == FAILED_CnR_LOSTHIM)
 	{
-		SetPlayerMessage(0,MissionStrings + MissionHeader->msgDrowned,3,2);
-		SetPlayerMessage(1,MissionStrings + MissionHeader->msgComplete,3,2);
+		SetPlayerMessage(0,MissionStrings + MissionHeader->msgDrowned, 3, 2);
+		SetPlayerMessage(1,MissionStrings + MissionHeader->msgComplete, 3, 2);
 	}
-	else if(reason == FAILED_OUTOFTIME) 
+	else if (reason == FAILED_OUTOFTIME)
 	{
-		SetMissionMessage(MissionStrings + MissionHeader->msgOutOfTime,3,2);
+		SetMissionMessage(MissionStrings + MissionHeader->msgOutOfTime, 3, 2);
 	}
 
 	SetMissionOver(PAUSEMODE_GAMEOVER);
 }
-
 
 // [D] [T]
 void SetMissionOver(PAUSEMODE mode)
@@ -3081,7 +3071,7 @@ void ActivateNextFlag(void)
 		MissionTargets[last_flag].s.target_flags |= TARGET_FLAG_COMPLETED_ALLP;
 
 	j = last_flag;
-	
+
 	for (i = 0; i < MAX_MISSION_TARGETS; i++)
 	{
 		j++;
@@ -3169,15 +3159,15 @@ void HandleMission(void)
 
 		switch (MissionHeader->type & 0x30)
 		{
-		case 0x20:
-			FelonyBar.flags |= 0x2;
-		case 0:
-			FelonyBar.active = 0x1;
-			break;
-		case 0x10:
-			FelonyBar.active = 0;
-		default:
-			FelonyBar.active = 0;
+			case 0x20:
+				FelonyBar.flags |= 0x2;
+			case 0:
+				FelonyBar.active = 0x1;
+				break;
+			case 0x10:
+				FelonyBar.active = 0;
+			default:
+				FelonyBar.active = 0;
 		}
 	}
 

@@ -35,91 +35,91 @@ char missionstarts[42] = {
 
 io id_map[49] =
 {
-	{0, 0},{0, 1},
-	
-	{2, 0},
-	{3, 1},
-	{4, 0},
-	{5, 1},
-	{4, 0},
-	{5, 1},
-	{11, 0},
-	
-	{12, 0},{12, 1},
-	
-	{11, 2},
-	
-	{14, 0},{14, 0},
-	
-	{15, 0},
-	
-	{16, 1},{16, 2},
-	
-	{18, 3},{18, 4},
-	
-	{11, 0},{11, 0},
-	
-	{20, 0},
-	
-	{12, 1},
-	
-	{13, 2},
+	{ 0, 0 }, { 0, 1 },
 
-	{21, 0},
-	{31, 1},{31, 0},
-	{11, 1},
-	{23, 0},
-	{24, 1},
-	{26, 0},
-	{27, 1},
-	{28, 2},
-	{34, 0},
-	
-	{29, 1}, {29, 2},
-	
-	{20, 3},
-	{31, 0},
-	{11, 1},
-	{31, 0},
-	{33, 1},
-	{34, 0},
-	{36, 1},
-	{29, 2},
-	{29, 3},
-	{20, 4},
-	{37, 0},
-	{38, 1},
-	{39, 0},
+	{ 2, 0 },
+	{ 3, 1 },
+	{ 4, 0 },
+	{ 5, 1 },
+	{ 4, 0 },
+	{ 5, 1 },
+	{ 11, 0 },
+
+	{ 12, 0 }, { 12, 1 },
+
+	{ 11, 2 },
+
+	{ 14, 0 }, { 14, 0 },
+
+	{ 15, 0 },
+
+	{ 16, 1 }, { 16, 2 },
+
+	{ 18, 3 }, { 18, 4 },
+
+	{ 11, 0 }, { 11, 0 },
+
+	{ 20, 0 },
+
+	{ 12, 1 },
+
+	{ 13, 2 },
+
+	{ 21, 0 },
+	{ 31, 1 }, { 31, 0 },
+	{ 11, 1 },
+	{ 23, 0 },
+	{ 24, 1 },
+	{ 26, 0 },
+	{ 27, 1 },
+	{ 28, 2 },
+	{ 34, 0 },
+
+	{ 29, 1 }, { 29, 2 },
+
+	{ 20, 3 },
+	{ 31, 0 },
+	{ 11, 1 },
+	{ 31, 0 },
+	{ 33, 1 },
+	{ 34, 0 },
+	{ 36, 1 },
+	{ 29, 2 },
+	{ 29, 3 },
+	{ 20, 4 },
+	{ 37, 0 },
+	{ 38, 1 },
+	{ 39, 0 }
 };
 
 xa_request xa_data[26] = {
-	{16, 0, 0, 1, 0},
-	{25, 0, 1, 2, 0},
-	{30, 0, 2, 3, 0},
-	{38, 0, 3, 4, 0},
-	{16, 0, 4, 9, 0},
-	{130, 0, 5, 10, 0},
-	{90, 0, 6, 13, 0},
-	{16, 0, 7, 14, 0},
-	{640, 1, 0, 18, 1},
-	{16, 1, 1, 22, 0},
-	{450, 1, 2, 23, 0},
-	{16, 1, 3, 25, 0},
-	{16, 1, 4, 26, 0},
-	{20, 1, 5, 27, 0},
-	{40, 1, 6, 28, 0},
-	{350, 1, 7, 29, 1},
-	{16, 2, 0, 29, 0},
-	{16, 2, 1, 30, 0},
-	{150, 2, 2, 31, 0},
-	{16, 2, 3, 32, 0},
-	{16, 2, 4, 34, 0},
-	{25, 2, 5, 35, 0},
-	{16, 2, 6, 37, 0},
-	{16, 2, 7, 39, 0},
-	{750, 3, 0, 33, 1},
-	
-	{0, 0, 0, 0xFF, 0},
+	{ 16, 0, 0, 1, 0 },
+	{ 25, 0, 1, 2, 0 },
+	{ 30, 0, 2, 3, 0 },
+	{ 38, 0, 3, 4, 0 },
+	{ 16, 0, 4, 9, 0 },
+	{ 130, 0, 5, 10, 0 },
+	{ 90, 0, 6, 13, 0 },
+	{ 16, 0, 7, 14, 0 },
+	{ 640, 1, 0, 18, 1 },
+	{ 16, 1, 1, 22, 0 },
+	{ 450, 1, 2, 23, 0 },
+	{ 16, 1, 3, 25, 0 },
+	{ 16, 1, 4, 26, 0 },
+	{ 20, 1, 5, 27, 0 },
+	{ 40, 1, 6, 28, 0 },
+	{ 350, 1, 7, 29, 1 },
+	{ 16, 2, 0, 29, 0 },
+	{ 16, 2, 1, 30, 0 },
+	{ 150, 2, 2, 31, 0 },
+	{ 16, 2, 3, 32, 0 },
+	{ 16, 2, 4, 34, 0 },
+	{ 25, 2, 5, 35, 0 },
+	{ 16, 2, 6, 37, 0 },
+	{ 16, 2, 7, 39, 0 },
+	{ 750, 3, 0, 33, 1 },
+
+	{ 0, 0, 0, 255, 0 }
 };
 
 int cutscene_timer = 0;
@@ -145,25 +145,26 @@ char GetMissionSound(char id)
 			c++;
 		} while (end == 0xff);
 
-		while (start < end) 
+		while (start < end)
 		{
 			c = start + 1;
-	
-			if (id_map[start].in == id) 
+
+			if (id_map[start].in == id)
 			{
 				if (c == end)
 					return id_map[start].out + phrase_top;
-				
-				if(id_map[c].in == id)
+
+				if (id_map[c].in == id)
 					return id_map[start + (rnd % 2 & 0xffU)].out + phrase_top;
 
 				return id_map[start].out + phrase_top;
 
 			}
-	
+
 			start = c;
 		}
 	}
+
 	return -1;
 }
 
@@ -223,7 +224,6 @@ void InitializeCutsceneSound(int cutscene)
 		force_siren[i++] = 0;
 	}
 }
-
 
 int jericho_in_back = 0;
 static int rio_alarm = 0;
@@ -287,7 +287,7 @@ void DoCutsceneSound(void)
 				if (cutscene_timer == 206)
 					Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 4, car_data[2].hd.where.t[0], -car_data[2].hd.where.t[1], car_data[2].hd.where.t[2], -2500, 3072);
 			}
-		
+
 			if (gInGameCutsceneID == 1 && cutscene_timer == 6)
 			{
 				PrepareXA();
@@ -344,7 +344,7 @@ void DoCutsceneSound(void)
 				if (cutscene_timer == 180)
 				{
 					Start3DTrackingSound(-1, SOUND_BANK_MISSION,
-						GetMissionSound(26), 
+						GetMissionSound(26),
 						(VECTOR*)car_data[2].hd.where.t,
 						(LONGVECTOR3*)car_data[2].st.n.linearVelocity);
 				}
@@ -449,7 +449,7 @@ void DoMissionSound(void)
 			if (bodgevar == 1)
 			{
 				channel = GetFreeChannel();
-				
+
 				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, GetMissionSound(11), pos[0], pos[1], pos[2], -1000, 0x1000);
 				bodgevar = 2;
 			}
@@ -501,9 +501,9 @@ void DoMissionSound(void)
 						chan = GetFreeChannel();
 
 						StartSound(chan, SOUND_BANK_MISSION, GetMissionSound(20), -1500, 4096);
-						SetChannelPosition3(chan, 
-							(VECTOR*)car_data[carId].hd.where.t, 
-							(LONGVECTOR3*)car_data[carId].st.n.linearVelocity, 
+						SetChannelPosition3(chan,
+							(VECTOR*)car_data[carId].hd.where.t,
+							(LONGVECTOR3*)car_data[carId].st.n.linearVelocity,
 							-1500, 4096 - Mission.timer[0].count / 750, 0);
 					}
 				}
@@ -597,9 +597,9 @@ void DoMissionSound(void)
 		case 35:
 		{
 			VECTOR Q[3] = {
-				{201520, -177, 385248},
-				{201392, -177, 389200},
-				{199376, -177, 389200}
+				{ 201520, -177, 385248 },
+				{ 201392, -177, 389200 },
+				{ 199376, -177, 389200 }
 			};
 
 			if (bodgevar > 0 && bodgevar < 4)
@@ -692,9 +692,9 @@ void DoMissionSound(void)
 				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, 0, pos[0], pos[1], pos[2], -1000, 4096);
 				bodgevar = 2;
 			}
-			else if(bodgevar == 2)
+			else if (bodgevar == 2)
 			{
-				if(channel > -1)
+				if (channel > -1)
 					SetChannelPosition3(channel, (VECTOR*)pos, NULL, -1000, 4096, 0 );
 			}
 			else if (bodgevar == 3)
@@ -925,7 +925,6 @@ char SilenceThisCar(int car)
 	return 0;
 }
 
-
 // [D] [T]
 void AdjustPlayerCarVolume(void)
 {
@@ -943,8 +942,3 @@ void AdjustPlayerCarVolume(void)
 		player[0].idlevol = -8000;
 	}
 }
-
-
-
-
-

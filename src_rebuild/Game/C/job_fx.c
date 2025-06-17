@@ -39,7 +39,7 @@ void AddExplosion(VECTOR pos, int type)
 	i = 0;
 	newExplosion = explosion;
 
-	while (newExplosion->time != -1 && i < MAX_EXPLOSION_OBJECTS) 
+	while (newExplosion->time != -1 && i < MAX_EXPLOSION_OBJECTS)
 	{
 		newExplosion++;
 		i++;
@@ -49,7 +49,7 @@ void AddExplosion(VECTOR pos, int type)
 	newExplosion->pos = pos;
 	newExplosion->type = (ExplosionType)type;
 
-	if (type == LITTLE_BANG) 
+	if (type == LITTLE_BANG)
 	{
 		newExplosion->speed = 192;
 		newExplosion->hscale = 1024;
@@ -70,7 +70,6 @@ void AddExplosion(VECTOR pos, int type)
 
 }
 
-
 // [D] [T]
 void HandleExplosion(void)
 {
@@ -89,7 +88,7 @@ void HandleExplosion(void)
 
 	for (i = 0; i < MAX_EXPLOSION_OBJECTS; i++)
 	{
-		if (exp->time != -1 && exp->type != BANG_USED) 
+		if (exp->time != -1 && exp->type != BANG_USED)
 		{
 			cp = car_data;
 
@@ -115,7 +114,7 @@ void HandleExplosion(void)
 			}
 
 			// [A] add smoke to explosions
-			if(exp->time > 1500 && (CameraCnt & 0x3) == 0)
+			if (exp->time > 1500 && (CameraCnt & 0x3) == 0)
 			{
 				smokePos = exp->pos;
 				smokePos.vy -= 120;
@@ -142,7 +141,7 @@ void initExplosion(void)
 	// generate half-globe mesh
 
 	vert = globemesh;
-	
+
 	d1 = 0;
 	d2 = 128;
 
@@ -158,13 +157,13 @@ void initExplosion(void)
 		vert[1].vz = FIXEDH(RSIN(d2) * 490);
 
 		vert += 2;
-	
+
 		d1 += 2;
 		d2 += 512;
 	}
 
 	vert = globemesh + 18;
-	
+
 	d1 = 0x1280;
 	d2 = 0x1300;
 
@@ -175,7 +174,7 @@ void initExplosion(void)
 
 		vert[0].vx = FIXEDH(RCOS(d1) * 490);
 		vert[0].vz = FIXEDH(RSIN(d1) * 490);
-									 
+
 		vert[1].vx = FIXEDH(RCOS(d2) * 330);
 		vert[1].vz = FIXEDH(RSIN(d2) * 330);
 
@@ -202,12 +201,11 @@ void initExplosion(void)
 		vert[1].vz = FIXEDH(RSIN(d1) * 100);
 
 		vert += 2;
-		
+
 		d1 += 512;
 		d2 += 512;
 	}
 }
-
 
 // [D] [T]
 void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
@@ -215,11 +213,11 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 	int j;
 	POLY_FT4 *poly;
 	SVECTOR *src;
-	
+
 	int rgb, transparency;
 	int red, green, blue;
 	int sf, sf1, sf2;
-	
+
 	u_int u0, u1,u2,u3;
 	int i;
 	VECTOR v;
@@ -237,8 +235,8 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 
 	transparency = 255 - (time >> 4);
 	rgb = (transparency * transparency >> 10 << 8 |
-		(255 - transparency) * (transparency >> 2) + transparency * (transparency >> 1) >> 8) << 8 | 
-		transparency | 
+		(255 - transparency) * (transparency >> 2) + transparency * (transparency >> 1) >> 8) << 8 |
+		transparency |
 		0x2e000000;
 
 	Apply_Inv_CameraMatrix(&v);
@@ -327,14 +325,14 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 	transparency = 255 - (time >> 4);
 
 	rgb = transparency >> 1;
-	rgb = (rgb + (transparency * transparency >> 10) >> 1 << 8 | 
-			rgb + ((255 - transparency) * (transparency >> 2) + transparency * rgb >> 8) >> 1) << 8 | 
+	rgb = (rgb + (transparency * transparency >> 10) >> 1 << 8 |
+			rgb + ((255 - transparency) * (transparency >> 2) + transparency * rgb >> 8) >> 1) << 8 |
 			rgb | 0x2e000000;
 
 	for (i = 0; i < 2; i++)
 	{
 		sf = CameraCnt * (i * -90 + 64);
-	
+
 		SS.m[1][1] = FIXED(sf2 * hscale);
 		SS.m[0][0] = FIXEDH(FIXED(sf2 * rscale) * RCOS(sf));
 		SS.m[2][0] = FIXEDH(FIXED(sf2 * rscale) * RSIN(sf));
@@ -401,7 +399,6 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 	}
 }
 
-
 // [D] [T]
 void DrawAllExplosions(void)
 {
@@ -413,7 +410,3 @@ void DrawAllExplosions(void)
 			DrawExplosion(explosion[i].time, explosion[i].pos, explosion[i].hscale, explosion[i].rscale);
 	}
 }
-
-
-
-

@@ -37,5 +37,4 @@ extern void cjpRecord(int stream, u_int*ppad, char *psteer, char *ptype); // 0x0
 extern void AllocateReplayStream(REPLAY_STREAM *stream, int maxpad); // 0x0001B17C
 extern void RecordWaypoint(); // 0x0001B364
 
-
-#endif
+#endif // REPLAYS_H

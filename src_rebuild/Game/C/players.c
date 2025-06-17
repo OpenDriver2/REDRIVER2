@@ -32,9 +32,9 @@ void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction
 	{
 		model = 0xFF;
 
-		if (MissionHeader->residentModels[0] == playerType) 
+		if (MissionHeader->residentModels[0] == playerType)
 			model = 0;
-		else if(MissionHeader->residentModels[1] == playerType)
+		else if (MissionHeader->residentModels[1] == playerType)
 			model = 1;
 		else if (MissionHeader->residentModels[2] == playerType)
 			model = 2;
@@ -48,7 +48,7 @@ void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction
 		ResetTyreTracks(cp, playerId);
 
 		cp->controlFlags |= CONTROL_FLAG_WAS_PARKED | CONTROL_FLAG_PLAYER_START_CAR; // [A] car is owned by player
-		
+
 		locPlayer->worldCentreCarId = cp->id;
 		locPlayer->cameraView = 0;// (NumPlayers == 2) << 1; // [A]
 		locPlayer->playerCarId = cp->id;
@@ -56,10 +56,10 @@ void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction
 		locPlayer->spoolXZ = (VECTOR *)cp->hd.where.t;
 		locPlayer->cameraCarId = cp->id;
 		locPlayer->car_is_sounding = 0;
-		
+
 		locPlayer->pos[1] = cp->hd.where.t[1];
 	}
-	else 
+	else
 	{
 		LPPEDESTRIAN pPlayerPed;
 		ActivatePlayerPedestrian(NULL, padid, direction, startPos, (PED_MODEL_TYPES)playerType);
@@ -71,7 +71,7 @@ void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction
 		locPlayer->playerCarId = -1;
 		locPlayer->car_is_sounding = 2;
 		locPlayer->cameraView = 0;
-		
+
 		locPlayer->pos[1] = -pPlayerPed->position.vy;
 	}
 
@@ -97,7 +97,7 @@ void ChangeCarPlayerToPed(int playerID)
 {
 	PLAYER* locPlayer;
 	CAR_DATA* lcp;
-	
+
 	locPlayer = &player[playerID];
 	lcp = &car_data[locPlayer->playerCarId];
 
@@ -169,8 +169,8 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 
 	lPlayer = &player[playerID];
 
-	if (newCar->controlType == CONTROL_TYPE_CIV_AI && 
-		newCar->ai.c.thrustState == 3 && (newCar->ai.c.ctrlState == 7 || newCar->ai.c.ctrlState == 5) || 
+	if (newCar->controlType == CONTROL_TYPE_CIV_AI &&
+		newCar->ai.c.thrustState == 3 && (newCar->ai.c.ctrlState == 7 || newCar->ai.c.ctrlState == 5) ||
 		newCar->controlType == CONTROL_TYPE_CUTSCENE)
 	{
 		carParked = 1;
@@ -203,13 +203,13 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 	lPlayer->pPed = NULL;
 
 	// only allow non-cutscene players to get into cars
-	if(lPlayer->padid >= 0)
+	if (lPlayer->padid >= 0)
 	{
 		newCar->controlType = CONTROL_TYPE_PLAYER;
 		newCar->ai.padid = &lPlayer->padid;
 		newCar->hndType = 0;
 
-		if (playerID == 0 
+		if (playerID == 0
 #if ENABLE_GAME_FIXES
 			&& !(newCar->controlFlags & CONTROL_FLAG_PLAYER_START_CAR)	// [A] bug fix: don't give felony if player owns his cop car
 #endif
@@ -318,8 +318,3 @@ void MakeTheCarShutUp(char player_id)
 	player[player_id].car_is_sounding = 1;
 	player[player_id].car_sound_timer = -1;
 }
-
-
-
-
-

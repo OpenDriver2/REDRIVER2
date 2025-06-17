@@ -1,7 +1,6 @@
 #include "driver2.h"
 #include "xaplay.h"
 
-
 #include "camera.h"
 #include "fmvplay.h"
 #include "pause.h"
@@ -61,7 +60,6 @@ static int StartPos;
 static CdlLOC pause_loc;
 static u_int buffer[8];
 
-
 #ifndef PSX
 struct XA_SUBTITLE
 {
@@ -102,7 +100,7 @@ void StoreXASubtitles()
 					for (int i = 0; i < numSubtitles; i++)
 					{
 						CUESubtitle_t* sub = &tmpWav.m_subtitles[i];
-						
+
 						strcpy(subtitles[i].text, sub->text);
 						subtitles[i].startframe = sub->sampleStart;
 						subtitles[i].endframe = sub->sampleStart + sub->sampleLength;
@@ -127,21 +125,21 @@ void PrintXASubtitles(int yPos)
 {
 	if (gSubtitles == 0 || pauseflag)
 		return;
-	
+
 	if (gPlaying == 0 || g_wavData == NULL)
 		return;
 
 	int curTime = (VSync(-1) - gXASubtitleTime) * 17;
 
 	// find subtitles
-	for(int i = 0; i < gNumXASubtitles; i++)
+	for (int i = 0; i < gNumXASubtitles; i++)
 	{
 		XA_SUBTITLE* sub = &gXASubtitles[i];
 
 		int subStartFrame = sub->startframe;
 		int subEndFrame = sub->endframe;
 
-		if(curTime >= subStartFrame && curTime <= subEndFrame)
+		if (curTime >= subStartFrame && curTime <= subEndFrame)
 		{
 			SetTextColour(120, 120, 120);
 			PrintStringCentred(sub->text, yPos);
@@ -158,7 +156,7 @@ void GetMissionXAData(int number)
 	char filename[64];
 
 	sprintf(filename, XANames[number], gDataFolder);
-	
+
 	CdSearchFile(&fp, XANames[number]);
 	XAMissionMessages[number].start = CdPosToInt((CdlLOC *)&fp);
 #endif
@@ -176,7 +174,7 @@ void GetXAData(int number)
 			GetMissionXAData(i++);
 		} while (i < 4);
 	}
-	else 
+	else
 	{
 		GetMissionXAData(number);
 	}
@@ -195,7 +193,6 @@ void SetXAVolume(int volume)
 	SsSetSerialVol(0, vol, vol);
 #endif
 }
-
 
 CdlCB oldreadycallback;
 void* olddatacallback;
@@ -261,7 +258,7 @@ void PlayXA(int num, int index)
 	CdlLOC loc;
 	u_char res[8];
 
-	if (xa_prepared && gPlaying != 1) 
+	if (xa_prepared && gPlaying != 1)
 	{
 		filt.chan = index;
 		StartPos = XAMissionMessages[num].start;
@@ -368,7 +365,7 @@ void UnprepareXA(void)
 		{
 			delete g_wavData;
 			g_wavData = NULL;
-			
+
 			delete g_XAWave;
 			g_XAWave = NULL;
 		}
@@ -400,14 +397,14 @@ void cbready(int intr, unsigned char *result)
 {
 	UNIMPLEMENTED();
 #if 0
-	if (intr == 1) 
+	if (intr == 1)
 	{
 		CdGetSector(buffer, 8);
 		ID = buffer[3];
 
 		CurrentChannel = ((u_int)buffer[3] & 0x7c00) >> 10; // there is buffer[3]+2 bytes
 
-		if (buffer[3] == 0x160) 
+		if (buffer[3] == 0x160)
 		{
 			finished_count = finished_count | 1 << (CurrentChannel + 1 & 0x1f);
 
@@ -485,8 +482,3 @@ void PauseXA(void)
 	}
 #endif
 }
-
-
-
-
-

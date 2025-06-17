@@ -41,18 +41,18 @@ OVERMAP overlaidmaps[4] =
 
 SXYPAIR MapSegmentPos[16];
 
-XYPAIR NVertex[4] = { 
-	{ -2, 3 }, 
-	{ -2, -3 }, 
-	{ 2, 3 }, 
-	{ 2, -3 } 
+XYPAIR NVertex[4] = {
+	{ -2, 3 },
+	{ -2, -3 },
+	{ 2, 3 },
+	{ 2, -3 }
 };
 
-XYPAIR north[4] = { 
+XYPAIR north[4] = {
 	{ 0, 20 },
-	{ 0, 20 }, 
-	{ 0, 20 }, 
-	{ 0, 20 } 
+	{ 0, 20 },
+	{ 0, 20 },
+	{ 0, 20 }
 };
 
 static short big_north[] =
@@ -83,7 +83,6 @@ static int map_z_offset = 0;
 int map_x_shift = 0;
 int map_z_shift = 0;
 
-
 static unsigned short MapTPage = 0;
 
 static int gUseRotatedMap = 0;
@@ -105,13 +104,13 @@ void DrawTargetBlip(VECTOR *pos, u_char r, u_char g, u_char b, int flags)
 
 	int map_minX, map_maxX;
 	int map_minY, map_maxY;
-	
+
 	map_minX = gMapXOffset;
 	map_maxX = gMapXOffset + MAP_SIZE_W;
 	map_minY = gMapYOffset;
 	map_maxY = gMapYOffset + MAP_SIZE_H;
 
-	if (flags & 0x20) 
+	if (flags & 0x20)
 	{
 		WorldToMultiplayerMap(pos, &vec);
 
@@ -132,20 +131,20 @@ void DrawTargetBlip(VECTOR *pos, u_char r, u_char g, u_char b, int flags)
 			return;
 		}
 	}
-	else 
+	else
 	{
 		WorldToFullscreenMap2(pos, &vec);
 	}
 
-	if ((flags & 1) == 0) 
+	if ((flags & 1) == 0)
 	{
 		vec.vx += map_x_offset;
 		vec.vz += map_z_offset;
 	}
 
-	if (flags & 0x10) 
+	if (flags & 0x10)
 		ysize = OverlayFlashValue / 2;
-	else if (flags & 0x2) 
+	else if (flags & 0x2)
 		ysize = 3;
 	else
 		ysize = 4;
@@ -170,7 +169,7 @@ void DrawTargetBlip(VECTOR *pos, u_char r, u_char g, u_char b, int flags)
 	poly->r0 = r;
 	poly->g0 = g;
 	poly->b0 = b;
-	
+
 	*(ushort*)&poly->u0 = *(ushort*)&light_texture.coords.u0;
 	*(ushort*)&poly->u1 = *(ushort*)&light_texture.coords.u1;
 	*(ushort*)&poly->u2 = *(ushort*)&light_texture.coords.u2;
@@ -204,7 +203,7 @@ void DrawTargetArrow(VECTOR *pos, int flags)
 	VECTOR vec;
 	VECTOR vec2;
 
-	if (flags & 0x8) 
+	if (flags & 0x8)
 	{
 		vec.vx = pos->vx;
 		vec.vz = pos->vz;
@@ -213,16 +212,16 @@ void DrawTargetArrow(VECTOR *pos, int flags)
 	{
 		WorldToOverheadMapPositions(pos, &vec, 1, 0, 0);
 	}
-	else 
+	else
 	{
 		WorldToFullscreenMap2(pos, &vec);
 	}
 
-	if (flags & 0x1) 
+	if (flags & 0x1)
 	{
 		WorldToOverheadMapPositions((VECTOR *)player, &vec2, 1, '\0', 0);
 	}
-	else 
+	else
 	{
 		vec.vx = vec.vx + map_x_offset;
 		vec.vz = vec.vz + map_z_offset;
@@ -250,7 +249,7 @@ void DrawTargetArrow(VECTOR *pos, int flags)
 
 	poly->x0 = vec2.vx + dy;
 	poly->y0 = vec2.vz - dx;
-	
+
 	poly->x1 = vec2.vx - dy;
 	poly->y1 = vec2.vz + dx;
 
@@ -270,7 +269,7 @@ void DrawTargetArrow(VECTOR *pos, int flags)
 	null->y2 = -1;
 
 	null->tpage = 0x40;
-	
+
 	if (flags & 0x4)
 	{
 		// fullscreen map
@@ -295,16 +294,16 @@ void DrawPlayerDot(VECTOR *pos, short rot, u_char r, u_char g, u_char b, int fla
 	VECTOR opos[3];
 	VECTOR vec;
 
-	if (flags & 0x20) 
+	if (flags & 0x20)
 	{
 		WorldToMultiplayerMap(pos, &vec);
-	
+
 		vec.vx += gMapXOffset;
 		vec.vz += gMapYOffset;
 	}
-	else 
+	else
 	{
-		if (flags & 0x8) 
+		if (flags & 0x8)
 		{
 			vec.vx = pos->vx;
 			vec.vz = pos->vz;
@@ -312,7 +311,7 @@ void DrawPlayerDot(VECTOR *pos, short rot, u_char r, u_char g, u_char b, int fla
 		else if (flags & 0x1)
 		{
 			WorldToOverheadMapPositions(pos, &vec, 1, 0, 0);
-			
+
 			if (vec.vx - 233U > 94)
 				return;
 
@@ -325,7 +324,7 @@ void DrawPlayerDot(VECTOR *pos, short rot, u_char r, u_char g, u_char b, int fla
 		}
 	}
 
-	if ((flags & 0x1) == 0) 
+	if ((flags & 0x1) == 0)
 	{
 		vec.vx += map_x_offset;
 		vec.vz += map_z_offset;
@@ -355,18 +354,18 @@ void DrawPlayerDot(VECTOR *pos, short rot, u_char r, u_char g, u_char b, int fla
 
 	poly->x0 = opos[0].vx;
 	poly->y0 = opos[0].vz;
-	
+
 	poly->x1 = opos[1].vx;
 	poly->y1 = opos[1].vz;
-	
+
 	poly->x2 = opos[2].vx;
 	poly->y2 = opos[2].vz;
 
-	if (flags & 0x4) 
+	if (flags & 0x4)
 	{
 		DrawPrim(poly);
 	}
-	else 
+	else
 	{
 		addPrim(current->ot + 1, poly);
 		current->primptr += sizeof(POLY_F3);
@@ -408,7 +407,6 @@ void ProcessOverlayLump(char *lump_ptr, int lump_size)
 	DrawSync(0);
 }
 
-
 // [D] [T]
 void LoadMapTile(int tpage, int x, int y)
 {
@@ -417,7 +415,7 @@ void LoadMapTile(int tpage, int x, int y)
 
 	MapSegment.w = 8;
 	MapSegment.h = 32;
-	
+
 	MapSegment.x = MapRect.x + (MapSegmentPos[tpage].x >> 2);
 	MapSegment.y = MapRect.y + MapSegmentPos[tpage].y;
 
@@ -824,12 +822,12 @@ void DrawSightCone(COP_SIGHT_DATA *pCopSightData, VECTOR *pPosition, int directi
 		addPrim(current->ot + 1, poly);
 
 		current->primptr += sizeof(POLY_G3);
-		
+
 		pVertex++;
 	}
 
 	// draw center
-	if(flags & 0x1)
+	if (flags & 0x1)
 	{
 		tile1 = (TILE_1*)current->primptr;
 		setTile1(tile1);
@@ -863,15 +861,15 @@ u_int Long2DDistance(VECTOR *pPoint1, VECTOR *pPoint2)
 		tempTheta = RSIN(theta);
 		result = delta.vz;
 	}
-	else 
+	else
 	{
 		tempTheta = RCOS(theta);
 		result = delta.vx;
 	}
 
-	if (result < 512 * 1024) 
+	if (result < 512 * 1024)
 		result = (result << 12) / tempTheta;
-	else 
+	else
 		result = (result << 9) / tempTheta << 3;
 
 	return result;
@@ -915,7 +913,7 @@ void InitOverheadMap(void)
 	else
 		gMapYOffset = SCREEN_H - MAP_SIZE_H - 15;
 
-	if (gMultiplayerLevels) 
+	if (gMultiplayerLevels)
 	{
 		InitMultiplayerMap();
 		return;
@@ -925,8 +923,8 @@ void InitOverheadMap(void)
 	tilehnum = overlaidmaps[GameLevel].width / 32;
 
 	tpage = 0;
-	
-	for (c = 0; c < 4; c++) 
+
+	for (c = 0; c < 4; c++)
 	{
 		for (d = 0; d < 4; d++)
 		{
@@ -940,7 +938,6 @@ void InitOverheadMap(void)
 	old_x_mod = x_map & 0x1f;
 	old_y_mod = y_map & 0x1f;
 }
-
 
 // [D] [T]
 void FlashOverheadMap(int r, int g, int b)
@@ -960,7 +957,6 @@ void FlashOverheadMap(int r, int g, int b)
 	prim->y0 = gMapYOffset;
 	prim->w = MAP_SIZE_W;
 	prim->h = MAP_SIZE_H;
-
 
 	addPrim(current->ot + 1, prim);
 
@@ -983,7 +979,6 @@ void FlashOverheadMap(int r, int g, int b)
 
 	current->primptr += sizeof(POLY_FT3);
 }
-
 
 // [D] [T]
 void DrawMultiplayerMap(void)
@@ -1008,7 +1003,7 @@ void DrawMultiplayerMap(void)
 	r = 255;
 	g = 0;
 
-	for (i = 0; i < NumPlayers; i++) 
+	for (i = 0; i < NumPlayers; i++)
 	{
 		pl = &player[i];
 
@@ -1086,7 +1081,7 @@ void DrawOverheadMap(void)
 	SVECTOR MapMesh[5][5];
 	VECTOR MapMeshO[5][5];
 	MAPTEX MapTex[4];
-	
+
 	SVECTOR direction;
 	RECT16 clipped_size;
 	VECTOR vec;
@@ -1109,7 +1104,7 @@ void DrawOverheadMap(void)
 	static u_char ptab2[] = {
 		255, 255, 240, 170,
 		120, 80, 55, 38,
-		23, 13,  10,  0, 
+		23, 13,  10,  0,
 		0
 	};
 
@@ -1118,7 +1113,7 @@ void DrawOverheadMap(void)
 		DrawMultiplayerMap();
 		return;
 	}
-	
+
 	if (NumPlayers > 1)
 		return;
 
@@ -1133,27 +1128,27 @@ void DrawOverheadMap(void)
 		map_minY + MAP_SIZE_H/2
 	};
 
-	SetMapPos();	
+	SetMapPos();
 	draw_box(map_minY, MAP_SIZE_H);
 
 	// flash the overhead map
-	if (player_position_known > 0) 
+	if (player_position_known > 0)
 	{
 		if (player[0].playerCarId < 0)
 			playerFelony = &pedestrianFelony;
-		else 
+		else
 			playerFelony = &car_data[player[0].playerCarId].felonyRating;
 
 		if (*playerFelony > FELONY_PURSUIT_MIN_VALUE)
 			FlashOverheadMap(ptab[CameraCnt & 0xf], 0, ptab[CameraCnt + 8U & 0xf]);
 	}
-	else 
+	else
 	{
 		if (player_position_known == -1)
 		{
 			if (flashtimer == 0)
 			{
-				if (player[0].playerCarId < 0) 
+				if (player[0].playerCarId < 0)
 					playerFelony = &pedestrianFelony;
 				else
 					playerFelony = &car_data[player[0].playerCarId].felonyRating;
@@ -1162,7 +1157,7 @@ void DrawOverheadMap(void)
 					flashtimer = 48;
 			}
 		}
-		
+
 		if (flashtimer)
 		{
 			flashtimer--;
@@ -1178,8 +1173,8 @@ void DrawOverheadMap(void)
 	WorldToOverheadMapPositions((VECTOR *)player->pos, &vec, 1, 0, 0);
 
 	// draw map center
-	if (vec.vx > map_minX && vec.vx < map_maxX && 
-		vec.vz > map_minY && vec.vz < map_maxY) 
+	if (vec.vx > map_minX && vec.vx < map_maxX &&
+		vec.vz > map_minY && vec.vz < map_maxY)
 	{
 		tile1 = (TILE_1 *)current->primptr;
 		setTile1(tile1);
@@ -1196,7 +1191,7 @@ void DrawOverheadMap(void)
 	}
 
 	DrawTargetBlip((VECTOR *)player->pos, 64, 64, 64, 3);
-	
+
 	DrawCompass();
 
 	DrawOverheadTargets();
@@ -1214,7 +1209,7 @@ void DrawOverheadMap(void)
 	y_mod = y_map & 31;
 
 	// next code loads map tiles depending on player position changes
-	
+
 	// X axis
 	if (x_mod < 16 && old_x_mod > 16)
 	{
@@ -1232,7 +1227,7 @@ void DrawOverheadMap(void)
 		}
 	}
 
-	if (x_mod > 16 && old_x_mod < 16) 
+	if (x_mod > 16 && old_x_mod < 16)
 	{
 		// right
 		for (i = 0; i < 4; i++)
@@ -1280,7 +1275,7 @@ void DrawOverheadMap(void)
 			LoadMapTile(tmp, (x_map >> 5) + i, (y_map >> 5));
 		}
 	}
-	
+
 	old_x_mod = x_mod;
 	old_y_mod = y_mod;
 
@@ -1308,13 +1303,13 @@ void DrawOverheadMap(void)
 
 	MapTex[1].h = MapTex[2].h = tile_size;
 	MapTex[1].v = MapTex[2].v = MapTex[3].v = 0;
-	
+
 	MapTex[0].u = 32 - ABS(MapMesh[0][0].vx - MapMesh[1][0].vx);
 	MapTex[0].w = ABS(MapMesh[0][0].vx - MapMesh[1][0].vx);
 
 	MapTex[3].w = ABS(MapMesh[3][0].vx - MapMesh[4][0].vx);
 	MapTex[0].v = 32 - ABS(MapMesh[0][0].vz - MapMesh[0][1].vz);
-	
+
 	MapTex[0].h = ABS(MapMesh[0][0].vz - MapMesh[0][1].vz);
 	MapTex[3].h = ABS(MapMesh[0][3].vz - MapMesh[0][4].vz);
 
@@ -1334,7 +1329,7 @@ void DrawOverheadMap(void)
 	// transform the map mesh
 	for (i = 0; i <= MeshWidth; i++)
 	{
-		for(j = 0; j <= MeshHeight; j++)
+		for (j = 0; j <= MeshHeight; j++)
 		{
 			RotTrans(&MapMesh[i][j], &MapMeshO[i][j], &flag);
 		}
@@ -1346,7 +1341,7 @@ void DrawOverheadMap(void)
 		for (j = 0; j < MeshWidth; j++)
 		{
 			int tile, px, py;
-			
+
 			tile = maptile[j][i];
 			tw = MapTex[j].w - 1;
 			th = MapTex[i].h - 1;
@@ -1363,7 +1358,7 @@ void DrawOverheadMap(void)
 
 			setPolyFT4(spt);
 			setSemiTrans(spt, 1);
-			
+
 			if (gTimeOfDay == TIME_NIGHT)
 				spt->r0 = spt->g0 = spt->b0 = 50;
 			else
@@ -1371,7 +1366,7 @@ void DrawOverheadMap(void)
 
 			spt->clut = MapClut;
 			spt->tpage = MapTPage;
-			
+
 			spt->x0 = MapMeshO[j][i].vx;
 			spt->y0 = MapMeshO[j][i].vz;
 
@@ -1491,7 +1486,7 @@ void DrawFullscreenMap(void)
 	int tw, th;
 
 	// toggle rotated map
-	if (Pads[0].dirnew & 0x20) 
+	if (Pads[0].dirnew & 0x20)
 	{
 		map_x_offset = 0;
 		map_z_offset = 0;
@@ -1523,7 +1518,7 @@ void DrawFullscreenMap(void)
 	polys->r0 = 0;
 	polys->g0 = 0;
 	polys->b0 = 0;
-	
+
 	polys->x0 = 0;
 	polys->y0 = 0;
 	polys->w = 320;
@@ -1539,14 +1534,14 @@ void DrawFullscreenMap(void)
 	WorldToFullscreenMap((VECTOR *)player->pos, &player_position);
 
 	// do map movement
-	if (gUseRotatedMap) 
+	if (gUseRotatedMap)
 	{
 		if (Pads[0].direct & 0x8000)
 			map_x_offset += 8;
 		else if (Pads[0].direct & 0x2000)
 			map_x_offset -= 8;
-		
-		if (Pads[0].direct & 0x1000) 
+
+		if (Pads[0].direct & 0x1000)
 			map_z_offset += 8;
 		else if (Pads[0].direct & 0x4000)
 			map_z_offset -= 8;
@@ -1568,11 +1563,11 @@ void DrawFullscreenMap(void)
 	}
 	else
 	{
-		if(player_position.vx + 160 <= width)
+		if (player_position.vx + 160 <= width)
 		{
 			map_x_offset = player_position.vx - 160;
-			
-			if(map_x_offset > -1)
+
+			if (map_x_offset > -1)
 				map_x_offset = 0;
 		}
 		else
@@ -1580,11 +1575,11 @@ void DrawFullscreenMap(void)
 			map_x_offset = (player_position.vx + 160) - width;
 		}
 
-		if(player_position.vz + 128 <= height)
+		if (player_position.vz + 128 <= height)
 		{
 			map_z_offset = player_position.vz - 128;
-			
-			if (map_z_offset > -1) 
+
+			if (map_z_offset > -1)
 				map_z_offset = 0;
 		}
 		else
@@ -1594,12 +1589,12 @@ void DrawFullscreenMap(void)
 
 		if (Pads[0].direct & 0x8000)
 		{
-			if (player_position.vx - map_x_offset - 160 - map_x_shift > 0) 
+			if (player_position.vx - map_x_offset - 160 - map_x_shift > 0)
 			{
 				map_x_shift += 8;
 			}
 		}
-		else if(Pads[0].direct & 0x2000)
+		else if (Pads[0].direct & 0x2000)
 		{
 			if (player_position.vx - map_x_offset + 160 - map_x_shift < width)
 			{
@@ -1607,14 +1602,14 @@ void DrawFullscreenMap(void)
 			}
 		}
 
-		if (Pads[0].direct & 0x1000) 
+		if (Pads[0].direct & 0x1000)
 		{
 			if (player_position.vz - map_z_offset - 128 - map_z_shift > 0)
 			{
 				map_z_shift += 8;
 			}
 		}
-		else if(Pads[0].direct & 0x4000)
+		else if (Pads[0].direct & 0x4000)
 		{
 			if (player_position.vz - map_z_offset + 128 - map_z_shift < height)
 			{
@@ -1652,10 +1647,10 @@ void DrawFullscreenMap(void)
 #endif
 
 	ntiles = 0;
-	
-	for(x = 0; x < width; x++)
+
+	for (x = 0; x < width; x++)
 	{
-		for(y = 0; y < height; y++)
+		for (y = 0; y < height; y++)
 		{
 			mesh[0].vy = 0;
 			mesh[1].vy = 0;
@@ -1695,9 +1690,9 @@ void DrawFullscreenMap(void)
 #endif
 			}
 
-			if(clipped == 4)
+			if (clipped == 4)
 				continue;
-			
+
 			LoadMapTile(ntiles & 15, x, y);
 
 			back = (POLY_FT4 *)current->primptr;
@@ -1707,13 +1702,13 @@ void DrawFullscreenMap(void)
 
 			back->x0 = meshO[0].vx;
 			back->y0 = meshO[0].vz;
-			
+
 			back->x1 = meshO[1].vx;
 			back->y1 = meshO[1].vz;
-			
+
 			back->x2 = meshO[2].vx;
 			back->y2 = meshO[2].vz;
-			
+
 			back->x3 = meshO[3].vx;
 			back->y3 = meshO[3].vz;
 
@@ -1731,7 +1726,7 @@ void DrawFullscreenMap(void)
 
 			back->u3 = MIN(255, px + tw);
 			back->v3 = MIN(255, py + th);
-			
+
 			back->clut = MapClut;
 			back->tpage = MapTPage;
 #ifdef PSX
@@ -1751,11 +1746,12 @@ void DrawFullscreenMap(void)
 				DrawSync(0);
 
 				// draw all polys
-				while(prevback <= back)
+				while (prevback <= back)
 					DrawPrim(prevback++);
 
 				DrawSync(0);
 			}
+
 			ntiles++;
 #endif
 		}
@@ -1768,7 +1764,7 @@ void DrawFullscreenMap(void)
 
 	if (gUseRotatedMap)
 		DrawBigCompass(&target, player[0].dir);
-	else 
+	else
 		DrawBigCompass(&target, 0);
 
 	DrawTargetBlip(&target, 64, 64, 64, 14);
@@ -1828,7 +1824,7 @@ void DrawCopIndicators(void)
 
 			p = FIXEDH(dx * cc - dz * cs) * 3 >> 2;
 			q = -FIXEDH(dx * cs + dz * cc);
-			
+
 			if (ABS(p) < q)
 			{
 				CopIndicator((p * 266) / q + 160, 0x3fff0 / ((q >> 3) + 600));
@@ -1874,13 +1870,13 @@ void WorldToOverheadMapPositions(VECTOR *pGlobalPosition, VECTOR *pOverheadMapPo
 	tempMatrix.m[1][0] = 0;
 	tempMatrix.m[1][2] = 0;
 	tempMatrix.m[2][1] = 0;
-	
+
 	tempMatrix.m[0][0] = cs;
 	tempMatrix.m[2][2] = cs;
 
 	tempMatrix.m[2][0] = -sn;
 	tempMatrix.m[0][2] = sn;
-	
+
 	tempMatrix.t[1] = 0;
 
 	if (outputRelative == 0)
@@ -1902,15 +1898,15 @@ void WorldToOverheadMapPositions(VECTOR *pGlobalPosition, VECTOR *pOverheadMapPo
 	playerPos.z = player[0].pos[2];
 
 	count--;
-	while (count >= 0) 
+	while (count >= 0)
 	{
 		tempVector.vy = 0;
-		if (inputRelative) 
+		if (inputRelative)
 		{
 			tempVector.vx = pGlobalPosition->vx / scale;
 			tempVector.vz = -pGlobalPosition->vz / scale;
 		}
-		else 
+		else
 		{
 			tempVector.vx = (pGlobalPosition->vx - playerPos.x) / scale;
 			tempVector.vz = (playerPos.z - pGlobalPosition->vz) / scale;
@@ -1919,8 +1915,8 @@ void WorldToOverheadMapPositions(VECTOR *pGlobalPosition, VECTOR *pOverheadMapPo
 		RotTrans(&tempVector, pOverheadMapPosition, &flag);
 
 		// might be faster on OG hardware... but not sure.
-		// pOverheadMapPosition->vx = tempMatrix.t[0] + (cs * tempVector.vx + sn * tempVector.vz >> 12);
-		// pOverheadMapPosition->vz = tempMatrix.t[2] + (cs * tempVector.vz - sn * tempVector.vx >> 12);
+		//pOverheadMapPosition->vx = tempMatrix.t[0] + (cs * tempVector.vx + sn * tempVector.vz >> 12);
+		//pOverheadMapPosition->vz = tempMatrix.t[2] + (cs * tempVector.vz - sn * tempVector.vx >> 12);
 
 		count--;
 		pGlobalPosition++;
@@ -1954,8 +1950,3 @@ void WorldToFullscreenMap2(VECTOR *in, VECTOR *out)
 
 	RotTrans(&pos, out, &flag);
 }
-
-
-
-
-

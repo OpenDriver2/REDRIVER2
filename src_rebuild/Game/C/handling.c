@@ -102,7 +102,6 @@ void InitCarPhysics(CAR_DATA* cp, LONGVECTOR4* startpos, int direction)
 	cp->hd.wheel_speed = 0;
 }
 
-
 // [D] [T]
 void TempBuildHandlingMatrix(CAR_DATA* cp, int init)
 {
@@ -128,7 +127,6 @@ void TempBuildHandlingMatrix(CAR_DATA* cp, int init)
 
 	RebuildCarMatrix(&cp->st, cp);
 }
-
 
 SVECTOR delta = { 0 };
 int doWheels = 1;
@@ -278,9 +276,9 @@ int playerhitcopsanyway = 0;
 // [D] [T]
 void GlobalTimeStep(void)
 {
-	static RigidBodyState _tp[MAX_CARS]; // offset 0x0
-	static RigidBodyState _d0[MAX_CARS]; // offset 0x410
-	static RigidBodyState _d1[MAX_CARS]; // offset 0x820
+	static RigidBodyState _tp[MAX_CARS];
+	static RigidBodyState _d0[MAX_CARS];
+	static RigidBodyState _d1[MAX_CARS];
 
 	int mayBeCollidingBits;
 	int tmp;
@@ -389,7 +387,7 @@ void GlobalTimeStep(void)
 	}
 
 	// do collision interactions
-	for(subframe = 0; subframe < 4; subframe++) 
+	for (subframe = 0; subframe < 4; subframe++)
 	{
 		for (RKstep = 0; RKstep < 2; RKstep++)
 		{
@@ -459,12 +457,12 @@ void GlobalTimeStep(void)
 					{
 						continue;
 					}
-							
+
 					if (RKstep > 0)
 						thisState_j = &_tp[j];
 					else
 						thisState_j = &c1->st;
-								
+
 					int c1InfiniteMass;
 					int c2InfiniteMass;
 
@@ -515,8 +513,8 @@ void GlobalTimeStep(void)
 								c1->ai.c.carMustDie = 1;
 						}
 
-						// wake up cops if they've ben touched
-						// [A] check player felony.
+						// wake up cops if they've been touched
+						// [A] check player felony
 						// If player touch them without felony player will be charged with felony (hit cop car)
 						if (numCopCars < 4 && numActiveCops < maxCopCars && GameType != GAME_GETAWAY && *felony >= FELONY_PURSUIT_MIN_VALUE)
 						{
@@ -849,7 +847,6 @@ void initOBox(CAR_DATA* cp)
 	gte_stsv(&cp->hd.oBox.radii[2]);
 }
 
-
 // [D] [T]
 void RebuildCarMatrix(RigidBodyState* st, CAR_DATA* cp)
 {
@@ -890,7 +887,6 @@ void RebuildCarMatrix(RigidBodyState* st, CAR_DATA* cp)
 
 	initOBox(cp);
 }
-
 
 // [D] [T]
 void StepCarPhysics(CAR_DATA* cp)
@@ -946,7 +942,6 @@ void StepCarPhysics(CAR_DATA* cp)
 	}
 }
 
-
 // [D] [T]
 void InitialiseCarHandling(void)
 {
@@ -980,7 +975,7 @@ void CheckCarToCarCollisions(void)
 			cp->controlType == CONTROL_TYPE_PLAYER && playerghost && !playerhitcopsanyway) // [A] required as game crashing
 		{
 			bb->y1 = INT_MAX;
-			
+
 			cp++;
 			bb++;
 			loop1++;
@@ -1356,13 +1351,12 @@ void ProcessCarPad(CAR_DATA* cp, u_int pad, char PadSteer, char use_analogue)
 	cp->lastPad = pad;
 }
 
-
 // [D] [T]
 void InitSkidding(void)
 {
 	int i;
 
-	for(i = 0; i < 2; i++)
+	for (i = 0; i < 2; i++)
 	{
 		player[i].wheelnoise.sound = -1;
 		player[i].wheelnoise.chan = -1;
@@ -1370,7 +1364,6 @@ void InitSkidding(void)
 		player[i].skidding.chan = -1;
 	}
 }
-
 
 // [D] [T]
 void TerminateSkidding(int player_id)
@@ -1423,7 +1416,7 @@ void jump_debris(CAR_DATA* cp)
 
 	wheel = cp->hd.wheel;
 
-	for(count = 0; count < 4; count++)
+	for (count = 0; count < 4; count++)
 	{
 		if (wheel->susCompression != 0)
 		{
@@ -1473,8 +1466,8 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 	char tracks_and_smoke;
 	char channel, desired_skid, desired_wheel;
 
-	if (cp->controlType != CONTROL_TYPE_PLAYER && 
-		cp->controlType != CONTROL_TYPE_LEAD_AI && 
+	if (cp->controlType != CONTROL_TYPE_PLAYER &&
+		cp->controlType != CONTROL_TYPE_LEAD_AI &&
 		cp->controlType != CONTROL_TYPE_CUTSCENE)
 	{
 		TerminateSkidding(player_id);
@@ -1520,7 +1513,7 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 			if (skidsound > 13000)
 				skidsound = 13000;
 		}
-		
+
 		if ((wheels_on_ground & 5) && front_vel > 15000)
 		{
 			lay_down_tracks |= 2;
@@ -1566,7 +1559,7 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 	}
 
 	// update skidding sound
-	if (player[player_id].skidding.sound > -1 && 
+	if (player[player_id].skidding.sound > -1 &&
 		player[player_id].skidding.chan > -1)
 	{
 		SetChannelPosition3(player[player_id].skidding.chan,
@@ -1626,7 +1619,7 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 	}
 
 	// update wheel noise
-	if (player[player_id].wheelnoise.sound > -1 && 
+	if (player[player_id].wheelnoise.sound > -1 &&
 		player[player_id].wheelnoise.chan > -1)
 	{
 		int pitch, spd;
@@ -1641,7 +1634,7 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 			pitch = 3584;
 
 		SetChannelPosition3(player[player_id].wheelnoise.chan,
-			(VECTOR*)cp->hd.where.t, 
+			(VECTOR*)cp->hd.where.t,
 			(LONGVECTOR3*)cp->st.n.linearVelocity,
 			spd * 50 - 10000,
 			pitch + player_id * 8, 0);
@@ -1714,8 +1707,3 @@ int GetPlayerId(CAR_DATA* cp)
 
 	return -1;
 }
-
-
-
-
-

@@ -11,4 +11,4 @@ extern void DrawThrownBombs(); // 0x0001E810
 extern void BombThePlayerToHellAndBack(int car); // 0x0001EA00
 extern void ExplosionCollisionCheck(CAR_DATA *cp, EXOBJECT *pE); // 0x0001ED18
 
-#endif
+#endif // BOMBERMAN_H

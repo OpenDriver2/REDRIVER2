@@ -27,26 +27,26 @@ struct REPLAY_ICON
 	short tx, ty;
 };
 
-TEXTURE_DETAILS icon_delcam; // address 0xC0EE0
-TEXTURE_DETAILS icon_incar; // address 0xBF950
-TEXTURE_DETAILS icon_lenschan; // address 0xC1DB0
-TEXTURE_DETAILS icon_lookcar; // address 0xC1CB0
-TEXTURE_DETAILS icon_movecam; // address 0xC1C18
-TEXTURE_DETAILS icon_movecampos; // address 0xC08C0
-TEXTURE_DETAILS icon_ok; // address 0xC1BD8
-TEXTURE_DETAILS icon_pause; // address 0xBF970
-TEXTURE_DETAILS icon_playpause; // address 0xC2A28
-TEXTURE_DETAILS icon_clock; // address 0xBF940
-TEXTURE_DETAILS icon_choosecar; // address 0xC2A08
-TEXTURE_DETAILS icon_chasecar; // address 0xC1D60
-TEXTURE_DETAILS icon_addcam; // address 0xC0A50
-TEXTURE_DETAILS icon_autocam; // address 0xC1CA0
-TEXTURE_DETAILS icon_playcam; // address 0xC1C08
-TEXTURE_DETAILS icon_restart; // address 0xC1CD0
-TEXTURE_DETAILS icon_save2card; // address 0xC1F40
-TEXTURE_DETAILS icon_editcam; // address 0xC1BE8
-TEXTURE_DETAILS icon_fixedcam; // address 0xC1D70
-TEXTURE_DETAILS icon_frameadv; // address 0xC1D80
+TEXTURE_DETAILS icon_delcam;
+TEXTURE_DETAILS icon_incar;
+TEXTURE_DETAILS icon_lenschan;
+TEXTURE_DETAILS icon_lookcar;
+TEXTURE_DETAILS icon_movecam;
+TEXTURE_DETAILS icon_movecampos;
+TEXTURE_DETAILS icon_ok;
+TEXTURE_DETAILS icon_pause;
+TEXTURE_DETAILS icon_playpause;
+TEXTURE_DETAILS icon_clock;
+TEXTURE_DETAILS icon_choosecar;
+TEXTURE_DETAILS icon_chasecar;
+TEXTURE_DETAILS icon_addcam;
+TEXTURE_DETAILS icon_autocam;
+TEXTURE_DETAILS icon_playcam;
+TEXTURE_DETAILS icon_restart;
+TEXTURE_DETAILS icon_save2card;
+TEXTURE_DETAILS icon_editcam;
+TEXTURE_DETAILS icon_fixedcam;
+TEXTURE_DETAILS icon_frameadv;
 
 REPLAY_ICON replay_icons[] =
 {
@@ -119,7 +119,6 @@ int CursorX = 0;
 int ClearCameras = 0;
 int DirectorMenuActive = 0;
 
-
 void setCamera(PLAYBACKCAMERA* Change);
 void deleteCamera(int count);
 PLAYBACKCAMERA* FindFreeCamera();
@@ -128,7 +127,6 @@ int SelectCameraCar(int current);
 int NoMoreCamerasErrorMessage();
 int FirstCamera();
 void SetCameraReturnedFromCutscene(int CameraCnt);
-
 
 // [D] [T]
 void InitDirectorVariables(void)
@@ -190,13 +188,13 @@ void setCamera(PLAYBACKCAMERA* Change)
 
 	scr_z = Change->scr_z;
 	gCameraMaxDistance = Change->gCameraMaxDistance;
-	
+
 	gCameraAngle = Change->gCameraAngle;
 	cameraview = Change->cameraview & 7;
 
 	tracking_car = (Change->cameraview & 8) >> 3;
 
-	if(cameraview != 0 && cameraview != 2)
+	if (cameraview != 0 && cameraview != 2)
 	{
 		player[0].cameraPos.vx = Change->position.vx;
 		player[0].cameraPos.vy = Change->position.vy;
@@ -372,17 +370,17 @@ int CheckCameraChange(int CameraCnt)
 		SetCameraReturnedFromCutscene(CameraCnt);
 	}
 
-	if(CameraCnt != -1)
+	if (CameraCnt != -1)
 	{
 		DoAutoDirect();
 
-		if(gStopPadReads == 0 && InvalidCamera(player[0].cameraCarId) != 0)
+		if (gStopPadReads == 0 && InvalidCamera(player[0].cameraCarId) != 0)
 		{
 			RecordCamera(CameraCnt);
 			return 0;
 		}
 	}
-	
+
 	if (NextChange->FrameCnt != CameraCnt)
 	{
 		if (CameraCnt < NextChange->FrameCnt)
@@ -415,7 +413,6 @@ int CheckCameraChange(int CameraCnt)
 	return 1;
 }
 
-
 // [D] [T]
 void SetPlaybackCamera(PLAYBACKCAMERA* camera)
 {
@@ -424,9 +421,9 @@ void SetPlaybackCamera(PLAYBACKCAMERA* camera)
 	camera_angle.vy = camera->angle.vy;
 	camera_angle.vz = camera->angle.vz;
 
-	if(gInGameCutsceneActive == 0) // [A] previously it was gCameraDistance so we don't change it in cutscenes
+	if (gInGameCutsceneActive == 0) // [A] previously it was gCameraDistance so we don't change it in cutscenes
 		scr_z = camera->scr_z;
-	
+
 	gCameraMaxDistance = camera->gCameraMaxDistance;
 	gCameraAngle = camera->gCameraAngle;
 	cameraview = camera->cameraview & 7;
@@ -435,7 +432,7 @@ void SetPlaybackCamera(PLAYBACKCAMERA* camera)
 
 	CameraChanged = 1;
 
-	if(cameraview != 0 && cameraview != 2)
+	if (cameraview != 0 && cameraview != 2)
 	{
 		player[0].cameraPos.vx = camera->position.vx;
 		player[0].cameraPos.vy = camera->position.vy;
@@ -444,7 +441,6 @@ void SetPlaybackCamera(PLAYBACKCAMERA* camera)
 
 	player[0].cameraCarId = camera->angle.pad;
 }
-
 
 // [D] [T]
 int IsMovingCamera(PLAYBACKCAMERA* lastcam, PLAYBACKCAMERA* nextcam, int cameracnt)
@@ -475,7 +471,7 @@ int IsMovingCamera(PLAYBACKCAMERA* lastcam, PLAYBACKCAMERA* nextcam, int camerac
 	s = (cameracnt * 2048) / f;
 	t = (RCOS(s*3) - RCOS(s) * 9 >> 4) + 2048;
 
-	
+
 	xdist = FixHalfRound((nextcam->position.vx - lastcam->position.vx) * 64 * t, 18);
 	ydist = FixHalfRound((nextcam->position.vy - lastcam->position.vy) * 64 * t, 18);
 	zdist = FixHalfRound((nextcam->position.vz - lastcam->position.vz) * 64 * t, 18);
@@ -516,7 +512,6 @@ int IsMovingCamera(PLAYBACKCAMERA* lastcam, PLAYBACKCAMERA* nextcam, int camerac
 
 	return 1;
 }
-
 
 // [D] [T]
 void CameraBar(int CameraCnt)
@@ -646,7 +641,7 @@ void CameraBar(int CameraCnt)
 			bar_x += 32;
 		}
 
-		switch(PlaybackCamera[idx].cameraview & 7)
+		switch (PlaybackCamera[idx].cameraview & 7)
 		{
 			case 1:
 			{
@@ -676,7 +671,7 @@ void CameraBar(int CameraCnt)
 					green = 255;
 					blue = 255;
 				}
-	
+
 				break;
 			}
 			case 5:
@@ -699,7 +694,7 @@ void CameraBar(int CameraCnt)
 		camera->r2 = (red >> 2);
 		camera->g2 = (green >> 2);
 		camera->b2 = (blue >> 2);
-		
+
 		camera->r0 = red;
 		camera->g0 = green;
 		camera->b0 = blue;
@@ -707,7 +702,7 @@ void CameraBar(int CameraCnt)
 		camera->r3 = (red >> 2);
 		camera->g3 = (green >> 2);
 		camera->b3 = (blue >> 2);
-		
+
 		idx = PlaybackCamera[idx].next;
 
 		if (min_x > 290)
@@ -741,7 +736,6 @@ void CameraBar(int CameraCnt)
 
 	} while (idx < MAX_REPLAY_CAMERAS);
 }
-
 
 // [D] [T]
 PLAYBACKCAMERA* FindFreeCamera(void)
@@ -788,7 +782,6 @@ void DeleteAllCameras(void)
 	LastChange->prev = -1;
 	LastChange->next = -2;
 }
-
 
 // [D] [T]
 void ShowIcons(unsigned char* menu, int selected, int x_offset)
@@ -968,7 +961,7 @@ void ShowReplayMenu(void)
 			{
 				ShowIcons(menu6, 99, MenuOffset);
 			}
-		}		
+		}
 	}
 
 	if (DirectorMenuActive == 3)
@@ -1018,8 +1011,8 @@ void ShowReplayOptions(void)
 // [D] [T]
 void ControlReplay(void)
 {
-	static int debounce; // offset 0x70
-	static int first_time; // offset 0x74
+	static int debounce;
+	static int first_time;
 
 	PLAYBACKCAMERA* pCam;
 	GAMEMODE new_mode;
@@ -1030,7 +1023,7 @@ void ControlReplay(void)
 	int move;
 
 	move = 0;
-	
+
 	if (gInGameCutsceneActive)
 		return;
 
@@ -1048,7 +1041,7 @@ void ControlReplay(void)
 			time_taken = vblcounter;
 			return;
 		}
-		
+
 		//pauseflag = 0;
 		return;
 	}
@@ -1103,7 +1096,7 @@ void ControlReplay(void)
 	{
 		move = 0;
 		speed = 1;
-	
+
 		if (padd & MPAD_R1)
 			speed = 8;
 
@@ -1199,14 +1192,14 @@ void ControlReplay(void)
 			{
 				EVENT* ev;
 				ev = events.track[-2 - cameraCar];
-				
+
 				basePos.vx = ev->position.vx;
 				basePos.vz = ev->position.vz;
 			}
 
 			dx = basePos.vx - player[0].cameraPos.vx;
 			dz = basePos.vz - player[0].cameraPos.vz;
-	
+
 			old_camera.vx = player[0].cameraPos.vx;
 			old_camera.vz = player[0].cameraPos.vz;
 			old_camera.vy = player[0].cameraPos.vy;
@@ -1245,7 +1238,7 @@ void ControlReplay(void)
 			if (tracking_car == 0)
 			{
 				d = z;
-				
+
 				z = x;
 				x = -d;
 			}
@@ -1257,7 +1250,7 @@ void ControlReplay(void)
 			tmpPos.vy = -player[0].cameraPos.vy;
 			tmpPos.vz = player[0].cameraPos.vz;
 
-			if ( dist(player[0].spoolXZ, &player[0].cameraPos) < 18433)
+			if (dist(player[0].spoolXZ, &player[0].cameraPos) < 18433)
 			{
 				if (QuickBuildingCollisionCheck(&tmpPos, dir, 10, 10, 10) != 0)
 				{
@@ -1271,15 +1264,15 @@ void ControlReplay(void)
 				player[0].cameraPos.vx = old_camera.vx;
 				player[0].cameraPos.vz = old_camera.vz;
 			}
-			
+
 			if (padd & MPAD_L1)
 				player[0].cameraPos.vy -= speed * 16;
 
 			if (padd & MPAD_L2)
-				player[0].cameraPos.vy += speed * 16;	
+				player[0].cameraPos.vy += speed * 16;
 
 			height = -MapHeight(&tmpPos);
-			
+
 			if (player[0].cameraPos.vy > height - MIN_TRIPOD_CAMERA_HEIGHT)
 				player[0].cameraPos.vy = height - MIN_TRIPOD_CAMERA_HEIGHT;
 
@@ -1303,12 +1296,12 @@ void ControlReplay(void)
 		else if (EditMode == 4)
 		{
 			// Tripod camera angle
-			
-			if(padd & MPAD_D_UP)
+
+			if (padd & MPAD_D_UP)
 			{
 				camera_angle.vx += speed * 4;
 
-				if((camera_angle.vx - 300U & 0xffff) < 1749)
+				if ((camera_angle.vx - 300U & 0xffff) < 1749)
 					camera_angle.vx = 300;
 			}
 
@@ -1316,7 +1309,7 @@ void ControlReplay(void)
 			{
 				camera_angle.vx -= speed * 4;
 
-				if((camera_angle.vx - 0x800U & 0xffff) < 1853)
+				if ((camera_angle.vx - 0x800U & 0xffff) < 1853)
 					camera_angle.vx = 3900;
 			}
 
@@ -1332,7 +1325,7 @@ void ControlReplay(void)
 		}
 		else if (EditMode == 5)
 		{
-			if(padd & MPAD_D_UP)
+			if (padd & MPAD_D_UP)
 			{
 				scr_z += speed * 4;
 
@@ -1343,7 +1336,7 @@ void ControlReplay(void)
 			if (padd & MPAD_D_DOWN)
 			{
 				scr_z -= speed * 4;
-				
+
 				if (scr_z < 256)
 					scr_z = 256;
 			}
@@ -1355,9 +1348,9 @@ void ControlReplay(void)
 	{
 		CursorX++;
 
-		if(CameraCnt < ReplayParameterPtr->RecordingEnd || DirectorMenuActive != 1 || CursorX != 5)
+		if (CameraCnt < ReplayParameterPtr->RecordingEnd || DirectorMenuActive != 1 || CursorX != 5)
 		{
-			if(FindFreeCamera() == NULL && DirectorMenuActive == 1 && CursorX == 5)
+			if (FindFreeCamera() == NULL && DirectorMenuActive == 1 && CursorX == 5)
 			{
 				CursorX = 6;
 			}
@@ -1418,7 +1411,7 @@ void ControlReplay(void)
 			DirectorMenuActive = 0;
 			return;
 		}
-	
+
 		first_time = 1;
 		DirectorMenuActive = 0;
 		return;
@@ -1482,7 +1475,7 @@ void ControlReplay(void)
 						vblcounter = 0;
 						break;
 					}
-					
+
 					first_time = 0;
 					CursorY = 0;
 					ReplayContinue = 0;
@@ -1566,7 +1559,7 @@ void ControlReplay(void)
 						ReplayContinue = 0;
 						break;
 					}
-				
+
 					if (frame_advance_count == 0)
 					{
 						first_time = 0;
@@ -1576,12 +1569,12 @@ void ControlReplay(void)
 						ReplayContinue = 1;
 						break;
 					}
-				
+
 					first_time = 0;
 					CursorY = 0;
 					ReplayContinue = 0;
 					frame_advance_count = frame_advance_count + -1;
-				
+
 					break;
 				case 4:
 					new_mode = GAMEMODE_DIRECTOR;
@@ -1592,10 +1585,10 @@ void ControlReplay(void)
 						ReplayContinue = 0;
 						break;
 					}
-				
+
 					EndGame(new_mode);
 					PlayMode = 0;
-				
+
 					break;
 				case 5:
 					if (ReplayParameterPtr->RecordingEnd <= CameraCnt)
@@ -1667,14 +1660,14 @@ void ControlReplay(void)
 					// force pause
 					NoPlayerControl = 0;
 					pauseflag = 0;
-					
+
 					EnablePause((PAUSEMODE)gMissionCompletionState);
 
 					pauseflag = 1;
 					NoPlayerControl = 1;
 					PlayMode = 0;
 					quick_replay = 1;
-				
+
 					break;
 				default:
 					first_time = 0;
@@ -1719,11 +1712,11 @@ void ControlReplay(void)
 					{
 						DirectorMenuActive = 4;
 						gCameraAngle = 2048;
-						
+
 						gCameraDistance = 1600;
 						gCameraMaxDistance = 1600;
 						cameraview = 0;
-						
+
 						gCameraOffset.vx = 0;
 						gCameraOffset.vy = 0;
 						gCameraOffset.vz = 0;
@@ -1844,7 +1837,7 @@ void ControlReplay(void)
 		case 3:
 		{
 			CursorY = 1;
-	
+
 			if (CursorX == 5)
 				DirectorMenuActive = 2;
 			else if (CursorX == 6 && move == 5)
@@ -1852,7 +1845,7 @@ void ControlReplay(void)
 
 			if (CursorX > 6)
 				CursorX = 6;
-			
+
 			break;
 		}
 		case 4:
@@ -1872,7 +1865,7 @@ void ControlReplay(void)
 
 			if (CursorX > 6)
 				CursorX = 6;
-			
+
 			break;
 		}
 		case 5:
@@ -1913,7 +1906,7 @@ void ControlReplay(void)
 				case 9:
 					if (tracking_car != 0)
 					{
-						if(move == 5)
+						if (move == 5)
 						{
 							if (cameraview == 1)
 								cameraview = 5;
@@ -1923,7 +1916,7 @@ void ControlReplay(void)
 					}
 					else
 					{
-						if(move == 5)
+						if (move == 5)
 						{
 							if (EditMode != 0)
 								EditMode = 0;
@@ -1931,7 +1924,7 @@ void ControlReplay(void)
 								EditMode = 5;
 						}
 					}
-				
+
 					break;
 			}
 
@@ -2185,7 +2178,7 @@ int InvalidCamera(int car_num)
 	// [A] bug fix of invalid player camera
 	if (CameraCnt < 3)
 		return 0;
-	
+
 	// check if camera is not too far
 	if (cameraview != 2)
 	{
@@ -2297,7 +2290,6 @@ int FirstCamera(void)
 	return 1;
 }
 
-
 // [D] [T]
 int dist(VECTOR* pos1, VECTOR* pos2)
 {
@@ -2310,7 +2302,6 @@ int dist(VECTOR* pos1, VECTOR* pos2)
 	return SquareRoot0(dx * dx + dz * dz) << 4;
 }
 
-
 // [D] [T]
 void SetCameraReturnedFromCutscene(int CameraCnt)
 {
@@ -2321,9 +2312,9 @@ void SetCameraReturnedFromCutscene(int CameraCnt)
 	next = &PlaybackCamera[0];
 
 	// how the fuck I'm supposed to untangle this logic?
-	while (NextChange = next, 
-		count < MAX_REPLAY_CAMERAS && 
-		(NextChange = &PlaybackCamera[count], CameraCnt < NextChange->FrameCnt || NextChange->next != 254 && 
+	while (NextChange = next,
+		count < MAX_REPLAY_CAMERAS &&
+		(NextChange = &PlaybackCamera[count], CameraCnt < NextChange->FrameCnt || NextChange->next != 254 &&
 		(next = &PlaybackCamera[NextChange->next], next->FrameCnt <= CameraCnt)))
 	{
 		count++;
@@ -2334,8 +2325,3 @@ void SetCameraReturnedFromCutscene(int CameraCnt)
 	SetPlaybackCamera(NextChange);
 	FindNextChange(CameraCnt + 1);
 }
-
-
-
-
-

@@ -79,4 +79,4 @@ extern CAR_DATA* CheckForCar(LPPEDESTRIAN pedestrian); // 0x00072738
 
 extern void CalculatePedestrianInterest(LPPEDESTRIAN pPed); // 0x00071E0C
 
-#endif
+#endif // PEDEST_H

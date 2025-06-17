@@ -4,11 +4,11 @@
 
 bool CSoundSource_WaveCache::Load(const char* szFilename)
 {
-	CRIFF_Parser reader( szFilename );
+	CRIFF_Parser reader(szFilename);
 
-	while ( reader.GetName( ) )
+	while (reader.GetName())
 	{
-		ParseChunk( reader );
+		ParseChunk(reader);
 		reader.ChunkNext();
 	}
 
@@ -29,23 +29,23 @@ void CSoundSource_WaveCache::ParseData(CRIFF_Parser &chunk)
 {
 	int sample;
 
-	m_dataCache = (u_char *)malloc( chunk.GetSize( ) );
-	m_cacheSize = chunk.GetSize( );
+	m_dataCache = (u_char *)malloc(chunk.GetSize());
+	m_cacheSize = chunk.GetSize();
 
 	m_numSamples = m_cacheSize / (m_format.channels * m_format.bitwidth / 8);
 
 	//
 	//  read
 	//
-	chunk.ReadChunk( m_dataCache );
+	chunk.ReadChunk(m_dataCache);
 
 	/*
 	//
 	//  convert
 	//
-	for ( int i = 0; i < m_numSamples; i++ )
+	for (int i = 0; i < m_numSamples; i++)
 	{
-		if ( m_format.bitwidth == 16 )
+		if (m_format.bitwidth == 16)
 		{
 			sample = ((short *)m_dataCache)[i];
 			((short *)m_dataCache)[i] = sample;
@@ -73,36 +73,36 @@ int CSoundSource_WaveCache::GetSamples(u_char *pOutput, int nSamples, int nOffse
 
 	int size = /*bLooping && */m_loopEnd ? m_loopEnd : m_cacheSize;
 
-	if ( nStart + nBytes > size)
+	if (nStart + nBytes > size)
 		nBytes = size - nStart;
 
-	memcpy( (void *)pOutput, (void *)(m_dataCache+nStart), nBytes );
+	memcpy((void *)pOutput, (void *)(m_dataCache + nStart), nBytes);
 
 	nRemaining -= nBytes;
 	nCompleted += nBytes;
 
 	// if we still have remaining data to fill stream for loop, but stream is at EOF, read it again
-	while ( nRemaining && bLooping )
+	while (nRemaining && bLooping)
 	{
 		nBytes = nRemaining;
 
-		if ( m_loopStart > 0 )
+		if (m_loopStart > 0)
 		{
 			int loopBytes = m_loopStart * nSampleSize;
 
-			if ( loopBytes + nBytes > size)
+			if (loopBytes + nBytes > size)
 				nBytes = size - loopBytes;
 
-			memcpy( (void *)(pOutput+nCompleted), (void *)(m_dataCache+loopBytes), nBytes );
+			memcpy((void *)(pOutput + nCompleted), (void *)(m_dataCache + loopBytes), nBytes);
 			nRemaining -= nBytes;
 			nCompleted += nBytes;
 		}
 		else
 		{
-			if ( nBytes > size)
+			if (nBytes > size)
 				nBytes = size;
 
-			memcpy( (void *)(pOutput+nCompleted), (void *)m_dataCache, nBytes );
+			memcpy((void *)(pOutput + nCompleted), (void *)m_dataCache, nBytes);
 			nRemaining -= nBytes;
 			nCompleted += nBytes;
 		}

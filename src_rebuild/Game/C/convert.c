@@ -142,7 +142,7 @@ void Getlong(char *dest, char *source)
 	dest[3] = source[3];
 }
 
-static int rseed[17]; // offset 0xBD510
+static int rseed[17];
 static int randomindex = 0;
 static int randomcounter = 0;
 
@@ -156,7 +156,7 @@ void RandomInit(int i1, int i2)
 	int*sd;
 
 	step = 0x3b1cb49;
-	
+
 	randomindex = 0;
 	randomcounter = 0;
 	rseed[0] = i1;
@@ -164,11 +164,11 @@ void RandomInit(int i1, int i2)
 
 	count = 14;
 	sd = rseed + 2;
-	
+
 	do {
 		*sd++ = step;
 		step += 0x1c05e5f;
-		
+
 		count--;
 	} while (count > -1);
 

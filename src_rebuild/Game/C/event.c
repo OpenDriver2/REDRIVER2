@@ -197,7 +197,7 @@ int LiftingBridges[55] = {
 	0x100, // goose island start
 
 	// 2
-	-312832, -305664, -298496, 
+	-312832, -305664, -298496,
 	1, 324096,
 
 	// 3
@@ -226,7 +226,6 @@ int LiftingBridges[55] = {
 	-6656, 512, 7680,
 	3, 4137, 27648, 128000
 };
-
 
 int ChicagoCameraHack[3] = {
 	-208006, 198, 657039
@@ -259,273 +258,272 @@ MissionTrain missionTrain[2] =
 
 FixedEvent chicagoDoor[3] =
 {
-  {
-	NULL,
-	{ -207616, 0, 659706, 0 },
-	0,
-	0,
-	80,
-	0,
-	0,
-	800u,
-	0u,
-	25u,
-	50u,
-	"WRGFLDDOOR"
-  },
-  {
-	NULL,
-	{ -209152, -512, 668928, 0 },
-	0,
-	0,
-	64,
-	0,
-	0,
-	2496u,
-	4096u,
-	25u,
-	50u,
-	"DOOR01"
-  },
-  {
-	NULL,
-	{ 195264, -3728, 74752, 0 },
-	0,
-	0,
-	1088,
-	0,
-	0,
-	0u,
-	0u,
-	0u,
-	0u,
-	"FRAME"
-  }
+	{
+		NULL,
+		{ -207616, 0, 659706, 0 },
+		0,
+		0,
+		80,
+		0,
+		0,
+		800u,
+		0u,
+		25u,
+		50u,
+		"WRGFLDDOOR"
+	},
+	{
+		NULL,
+		{ -209152, -512, 668928, 0 },
+		0,
+		0,
+		64,
+		0,
+		0,
+		2496u,
+		4096u,
+		25u,
+		50u,
+		"DOOR01"
+	},
+	{
+		NULL,
+		{ 195264, -3728, 74752, 0 },
+		0,
+		0,
+		1088,
+		0,
+		0,
+		0u,
+		0u,
+		0u,
+		0u,
+		"FRAME"
+	}
 };
 
 FixedEvent havanaFixed[3] =
 {
-  {
-	NULL,
-	{ -183296, -273, -41720, 0 },
-	0,
-	0,
-	64,
-	0,
-	0,
-	800,
-	0,
-	25,
-	50,
-	"DOOR"
-  },
-  {
-	NULL,
-	{ -455168, 1529, -125440, 0 },
-	0,
-	0,
-	1536,
-	0,
-	0,
-	0u,
-	0u,
-	0u,
-	0u,
-	"LIFT_SHAFT"
-  },
-  {
-	NULL,
-	{ -487936, 0, -136689, 0 },
-	0,
-	0,
-	80,
-	0,
-	0,
-	1152u,
-	0u,
-	10u,
-	20u,
-	"BASEDOOR"
-  }
+	{
+		NULL,
+		{ -183296, -273, -41720, 0 },
+		0,
+		0,
+		64,
+		0,
+		0,
+		800,
+		0,
+		25,
+		50,
+		"DOOR"
+	},
+	{
+		NULL,
+		{ -455168, 1529, -125440, 0 },
+		0,
+		0,
+		1536,
+		0,
+		0,
+		0u,
+		0u,
+		0u,
+		0u,
+		"LIFT_SHAFT"
+	},
+	{
+		NULL,
+		{ -487936, 0, -136689, 0 },
+		0,
+		0,
+		80,
+		0,
+		0,
+		1152u,
+		0u,
+		10u,
+		20u,
+		"BASEDOOR"
+	}
 };
 
 FixedEvent vegasDoor[5] =
 {
-  {
-	NULL,
-	{ -11851, 0, 844163, 0 },
-	0,
-	0,
-	80,
-	0,
-	0,
-	1700u,
-	3072u,
-	25u,
-	50u,
-	"DOOR"
-  },
-  {
-	NULL,
-	{ -106242, -239, -216960, 0 },
-	0,
-	0,
-	96,
-	0,
-	0,
-	800u,
-	0u,
-	25u,
-	50u,
-	"DOOR01"
-  },
-  {
-	NULL,
-	{ 63058, -231, 501184, 0 },
-	0,
-	0,
-	96,
-	0,
-	0,
-	3200u,
-	4096u,
-	25u,
-	50u,
-	"DOOR02"
-  },
-  {
-	NULL,
-	{ -159356, -176, 647024, 0 },
-	0,
-	0,
-	64,
-	0,
-	0,
-	3200u,
-	4096u,
-	25u,
-	50u,
-	"DOOR03"
-  },
-  {
-	NULL,
-	{ 123936, -170, 4928, 0 },
-	0,
-	0,
-	80,
-	0,
-	0,
-	3200u,
-	4096u,
-	25u,
-	50u,
-	"GATE01"
-  }
+	{
+		NULL,
+		{ -11851, 0, 844163, 0 },
+		0,
+		0,
+		80,
+		0,
+		0,
+		1700u,
+		3072u,
+		25u,
+		50u,
+		"DOOR"
+	},
+	{
+		NULL,
+		{ -106242, -239, -216960, 0 },
+		0,
+		0,
+		96,
+		0,
+		0,
+		800u,
+		0u,
+		25u,
+		50u,
+		"DOOR01"
+	},
+	{
+		NULL,
+		{ 63058, -231, 501184, 0 },
+		0,
+		0,
+		96,
+		0,
+		0,
+		3200u,
+		4096u,
+		25u,
+		50u,
+		"DOOR02"
+	},
+	{
+		NULL,
+		{ -159356, -176, 647024, 0 },
+		0,
+		0,
+		64,
+		0,
+		0,
+		3200u,
+		4096u,
+		25u,
+		50u,
+		"DOOR03"
+	},
+	{
+		NULL,
+		{ 123936, -170, 4928, 0 },
+		0,
+		0,
+		80,
+		0,
+		0,
+		3200u,
+		4096u,
+		25u,
+		50u,
+		"GATE01"
+	}
 };
-
 
 FixedEvent rioDoor[6] =
 {
-  {
-	NULL,
-	{ -123328, -177, -254720, 0 },
-	0,
-	0,
-	96,
-	0,
-	0,
-	3200u,
-	4096u,
-	25u,
-	50u,
-	"DOOR1"
-  },
-  {
-	NULL,
-	{ -125248, -17, -256208, 0 },
-	0,
-	0,
-	80,
-	0,
-	0,
-	1600u,
-	0u,
-	25u,
-	50u,
-	"DOOR2"
-  },
-  {
-	NULL,
-	{ -274000, -17, -321408, 0 },
-	0,
-	0,
-	80,
-	0,
-	0,
-	1748u,
-	3072u,
-	25u,
-	50u,
-	"GATE01"
-  },
-  {
-	NULL,
-	{ -274000, -17, -322432, 0 },
-	0,
-	0,
-	80,
-	0,
-	0,
-	2348u,
-	1024u,
-	25u,
-	50u,
-	"GATE01"
-  },
-  {
-	NULL,
-	{ -40432, -17, 383328, 0 },
-	0,
-	0,
-	80,
-	0,
-	0,
-	700u,
-	2048u,
-	25u,
-	50u,
-	"GATE03"
-  },
-  {
-	NULL,
-	{ -39424, -17, 383328, 0 },
-	0,
-	0,
-	80,
-	0,
-	0,
-	900u,
-	0u,
-	25u,
-	50u,
-	"GATE03"
-  }
+	{
+		NULL,
+		{ -123328, -177, -254720, 0 },
+		0,
+		0,
+		96,
+		0,
+		0,
+		3200u,
+		4096u,
+		25u,
+		50u,
+		"DOOR1"
+	},
+	{
+		NULL,
+		{ -125248, -17, -256208, 0 },
+		0,
+		0,
+		80,
+		0,
+		0,
+		1600u,
+		0u,
+		25u,
+		50u,
+		"DOOR2"
+	},
+	{
+		NULL,
+		{ -274000, -17, -321408, 0 },
+		0,
+		0,
+		80,
+		0,
+		0,
+		1748u,
+		3072u,
+		25u,
+		50u,
+		"GATE01"
+	},
+	{
+		NULL,
+		{ -274000, -17, -322432, 0 },
+		0,
+		0,
+		80,
+		0,
+		0,
+		2348u,
+		1024u,
+		25u,
+		50u,
+		"GATE01"
+	},
+	{
+		NULL,
+		{ -40432, -17, 383328, 0 },
+		0,
+		0,
+		80,
+		0,
+		0,
+		700u,
+		2048u,
+		25u,
+		50u,
+		"GATE03"
+	},
+	{
+		NULL,
+		{ -39424, -17, 383328, 0 },
+		0,
+		0,
+		80,
+		0,
+		0,
+		900u,
+		0u,
+		25u,
+		50u,
+		"GATE03"
+	}
 };
 
 Helicopter HelicopterData =
 {
-  400,
-  0,
-  0,
-  0,
-  0,
-  0,
-  0,
-  { { 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u }, 0u, 0u, 0, 0 },
-  0,
-  0,
-  0,
-  0
+	400,
+	0,
+	0,
+	0,
+	0,
+	0,
+	0,
+	{ { 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u }, 0u, 0u, 0, 0 },
+	0,
+	0,
+	0,
+	0
 };
 
 static Foam foam;
@@ -636,19 +634,17 @@ int GetVisValue(int index, int zDir)
 	return pos.vx;
 }
 
-
-
 static unsigned short* xVis;
 static unsigned short* zVis;
 
 // [D] [T]
 void VisibilityLists(VisType type, int i)
 {
-	static unsigned short xList[128]; // offset 0x0
-	static unsigned short zList[128]; // offset 0x100
-	static unsigned short(*firstX[2]); // offset 0x0
-	static unsigned short(*firstZ[2]); // offset 0x8
-	static int count; // offset 0x10
+	static unsigned short xList[128];
+	static unsigned short zList[128];
+	static unsigned short(*firstX[2]);
+	static unsigned short(*firstZ[2]);
+	static int count;
 
 	static unsigned short(*list[2]) = {
 		xList, zList
@@ -802,7 +798,6 @@ void SetElTrainRotation(EVENT* ev)
 		ev->rotation += 2048;
 }
 
-
 // [D] [T]
 void InitTrain(EVENT* ev, int count, int type)
 {
@@ -825,7 +820,7 @@ void InitTrain(EVENT* ev, int count, int type)
 	}
 	else if (type == 1)
 	{
-		if(ev->data == VegasMonorailData) // [A]
+		if (ev->data == VegasMonorailData) // [A]
 		{
 			length = 1850;
 			height = -1100;
@@ -1299,7 +1294,7 @@ void SetUpEvents(int full)
 			trainModel = FindModelIdxWithName("MONORAIL");
 
 		evt = &event[cEvents];
-		
+
 		// [A] add monorail. More than two for some unknown reason are not visible
 		cCarriages = 2;
 
@@ -1817,14 +1812,13 @@ void StepFromToEvent(EVENT* ev)
 		{
 			SetSpecialCamera(SPECIAL_CAMERA_RESET, 0);
 
-			if(direction == 16384)
+			if (direction == 16384)
 			{
 				SetMSoundVar(3, NULL);
 			}
 		}
 	}
 }
-
 
 // [D] [T]
 void StepPathEvent(EVENT* ev)
@@ -1853,9 +1847,9 @@ void StepPathEvent(EVENT* ev)
 
 			do
 			{
-				if(!(ev->data[2] & 0x10000))
+				if (!(ev->data[2] & 0x10000))
 					NextNode(ev);
-				
+
 				flags = ev->flags;
 
 				ev = ev->next;
@@ -1883,13 +1877,12 @@ void StepPathEvent(EVENT* ev)
 	if (speed == 0 && (flags & 0x400) == 0)
 		return;
 
-	//
 	// [A] completely custom code for Luxor Monorail because OG code for handling trains SUCKS!!!
-	if(ev->data[2] & 0x10000)
+	if (ev->data[2] & 0x10000)
 	{
 		from = ev->node;
 		to = &from[2];
-		
+
 		if (flags & 0x8000)
 			curr = &ev->position.vz;
 		else
@@ -1926,7 +1919,7 @@ void StepPathEvent(EVENT* ev)
 
 		int dist = (*to - *curr) * dir;
 
-		if(dist < (-dir)*2048 && ev->flags & 0x400)
+		if (dist < (-dir)*2048 && ev->flags & 0x400)
 		{
 			EVENT* _evit = ev;
 
@@ -1950,15 +1943,15 @@ void StepPathEvent(EVENT* ev)
 
 				_evit = _evit->next;
 			} while (_evit);
-		
+
 		}
 
 		return;
 	}
-	
+
 	from = ev->node;
 	to = &from[2];
-	
+
 	if (*from == PATH_NODE_STATION)
 	{
 		station = EVENT_LEAVING;
@@ -2152,7 +2145,7 @@ void StepPathEvent(EVENT* ev)
 	*curr += speed * dir;
 
 	int dist = (*to - *curr) * dir;
-	
+
 	if (station == EVENT_NO_STATION && (ev->flags & 0x7000))
 	{
 		if (dist < 2048)
@@ -2163,7 +2156,7 @@ void StepPathEvent(EVENT* ev)
 				ev->flags |= 0x1000;
 			}
 		}
-		
+
 		return;
 	}
 
@@ -2174,7 +2167,7 @@ void StepPathEvent(EVENT* ev)
 			// [A] preserve direction flag or train will get stuck
 			// i might have been decompiled it wrong but now it works
 			dir = ev->flags & 0x400;
-			
+
 			InitTrain(ev, 0, GameLevel == 0 ? 0 : 1);
 
 			if (dir)
@@ -2186,7 +2179,6 @@ void StepPathEvent(EVENT* ev)
 		}
 	}
 }
-
 
 // [D] [T]
 int GetBridgeRotation(int timer)
@@ -2220,7 +2212,7 @@ void StepHelicopter(EVENT* ev)
 	int vx, vz;
 	XZPAIR vel;
 	VECTOR pos;
-	VECTOR drift = { 2,3,2 };
+	VECTOR drift = { 2, 3, 2 };
 
 	if (ev->timer >= 0)
 	{
@@ -2677,6 +2669,7 @@ void StepEvents(void)
 
 								evt->flags |= 0x4;
 							}
+
 							z++;
 						}
 					}
@@ -2721,8 +2714,8 @@ void DrawFerrisWheel(MATRIX* matrix, VECTOR* pos)
 		return;
 
 	VECTOR spoke[2] = {
-		{0, 0, 2677},
-		{0, 2677, 0}
+		{ 0, 0, 2677 },
+		{ 0, 2677, 0 }
 	};
 
 	rotation = 0;
@@ -2769,11 +2762,11 @@ void DrawRotor(VECTOR pos, MATRIX* matrix)
 
 	int z;
 	SVECTOR v[5] = {
-		{0,-470,-120},
-		{1024,0,0 },
-		{0,0,1024 },
-		{0,0,0},
-		{0,0,0},
+		{ 0, -470, -120 },
+		{ 1024, 0, 0 },
+		{ 0, 0, 1024 },
+		{ 0, 0, 0 },
+		{ 0, 0, 0 }
 	};
 
 	InitMatrix(localMat);
@@ -2872,8 +2865,8 @@ void DrawRotor(VECTOR pos, MATRIX* matrix)
 // [D] [T]
 void DrawEvents(int camera)
 {
-	static EVENT* nearestTrain; // offset 0x28
-	static int distanceFromNearestTrain; // offset 0x2c
+	static EVENT* nearestTrain;
+	static int distanceFromNearestTrain;
 
 	int reflection;
 	int i;
@@ -3278,7 +3271,7 @@ sdPlane* EventSurface(VECTOR* pos, sdPlane* plane)
 		// this change was very sneaky
 		if (i > 8)
 			return plane;
-		
+
 		// Havana and Rio boats floating
 		if (ev->flags & 0x800)
 		{
@@ -3429,9 +3422,9 @@ VECTOR* TriggerEvent(int i)
 					if (stage[i] == 0)
 					{
 						int offset, nodePos;
-						
+
 						ev = missionTrain[i].engine;
-						
+
 						MakeEventTrackable(ev);
 						ev->flags |= 0x180;
 
@@ -3464,7 +3457,7 @@ VECTOR* TriggerEvent(int i)
 							ev->node = missionTrain[i].node;
 							ev->data = &missionTrain[i].cornerSpeed;
 							ev->timer = 0;
-							
+
 							ev->flags &= ~0x7000;
 							ev->flags |= 0x3000;
 
@@ -3477,9 +3470,9 @@ VECTOR* TriggerEvent(int i)
 					else
 					{
 						ev = missionTrain[i].engine;
-						
+
 						pos = &ev->position;
-						
+
 						if (ev->timer != 0)
 							ev->timer = 1;
 
@@ -3500,7 +3493,7 @@ VECTOR* TriggerEvent(int i)
 								ev->timer = 2600;
 							else
 								ev->timer = 1000;
-							
+
 							ev++;
 						}
 
@@ -3534,16 +3527,16 @@ VECTOR* TriggerEvent(int i)
 				case 1:
 					event->position.vx = HavanaFerryData[9];
 					event->position.vz = HavanaFerryData[10];
-				
+
 					event->timer = 1;
-				
+
 					event->node = &HavanaFerryData[10];
 					event->data = &HavanaFerryData[6];
 
 					// [A] reset Ferry angles
 					event->data[1] = RSIN(CameraCnt * 32) >> 9;
 					event->data[2] = RCOS(CameraCnt * 16) + 4096 >> 7;
-				
+
 					break;
 				case 2:
 					TriggerDoor(&havanaFixed[0], &stage[i], 1);
@@ -3578,9 +3571,9 @@ VECTOR* TriggerEvent(int i)
 						ev = &event[loop];
 
 						ev->data = VegasTrainData;
-						
+
 						InitTrain(ev, loop, 1);
-						
+
 						ev->flags |= 0x200;
 
 						if (loop > 1)
@@ -3646,10 +3639,10 @@ VECTOR* TriggerEvent(int i)
 				case 8:
 					// open gate to secret car
 					PingOutAllSpecialCivCars();
-				
+
 					TriggerDoor(&rioDoor[4], &stage[i], 0);
 					TriggerDoor(&rioDoor[5], &stage[i], 0);
-				
+
 					events.cameraEvent = (EVENT*)&rioDoor[4];
 			}
 		}
@@ -3672,7 +3665,7 @@ void OffsetTarget(VECTOR* target)
 //[D] [T]
 void SetSpecialCamera(SpecialCamera type, int change)
 {
-	static int rememberCamera[3]; // offset 0x230
+	static int rememberCamera[3];
 	static short boatCamera[6] = {
 		-1000, 2100, 6000,
 		-5000, 3584, -5000
@@ -3815,7 +3808,7 @@ void SetSpecialCamera(SpecialCamera type, int change)
 	{
 		Havana3DLevelDraw = -1;
 		camera_change = 1;
-		
+
 		VisibilityLists(VIS_SORT, 0);
 	}
 }
@@ -3834,8 +3827,8 @@ void ScreenShake(int count, SVECTOR* ang)
 // [D] [T]
 int DetonatorTimer(void)
 {
-	static SVECTOR rememberCameraAngle; // offset 0x30
-	static int count = 0; // offset 0x38
+	static SVECTOR rememberCameraAngle;
+	static int count = 0;
 
 	int cnt;
 	EVENT* ev;
@@ -3869,9 +3862,9 @@ int DetonatorTimer(void)
 					AddExplosion(pos, HEY_MOMMA);
 
 					rememberCameraAngle = camera_angle;
-					
+
 					Mission.timer[0].flags &= ~TIMER_FLAG_BOMB_COUNTDOWN;
-					
+
 					SetMissionComplete();
 				}
 				else
@@ -4011,7 +4004,7 @@ void MultiCarEvent(MS_TARGET* target)
 	// [A] validate
 	if (target->type != Target_MultiCar)
 		return;
-	
+
 	firstEvent = multiCar.event + multiCar.count;
 
 	for (i = 0; i < 5; i++)
@@ -4020,16 +4013,16 @@ void MultiCarEvent(MS_TARGET* target)
 
 		if (mcd->x == 0x80000000)
 			break;
-		
+
 		n = (multiCar.event - event) + multiCar.count;
 
 		ev = event + n;
 
 		ev->position.vx = mcd->x;
 		ev->position.vz = mcd->z;
-		
+
 		ev->position.vy = -312; // MapHeight may not be available due to region is not yet loaded
-	
+
 		ev->rotation = mcd->rot;
 
 		VisibilityLists(VIS_ADD, n);

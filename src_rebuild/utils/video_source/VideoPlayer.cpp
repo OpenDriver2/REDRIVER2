@@ -54,11 +54,11 @@ void PrintFMVText(char *str, int x, short y, int brightness)
 
 	str_w = 0;
 
-	if (brightness > 128) 
+	if (brightness > 128)
 		brightness = 128;
 
 	i = 0;
-	while (chr = str[i], chr != 0) 
+	while (chr = str[i], chr != 0)
 	{
 		if (chr == 32)
 			str_w += 4;
@@ -72,14 +72,14 @@ void PrintFMVText(char *str, int x, short y, int brightness)
 	drawnChars = 0;
 
 	ptr = (char *)str;
-	while( true )
+	while (true)
 	{
 		chr = *ptr;
 		ptr++;
-	
-		if (chr == 0 || drawnChars > 511) 
+
+		if (chr == 0 || drawnChars > 511)
 			break;
-		
+
 		if (chr == 32)	// space
 		{
 			x_ofs += 4;
@@ -87,7 +87,7 @@ void PrintFMVText(char *str, int x, short y, int brightness)
 		else
 		{
 			setPolyFT4(poly);
-			
+
 			poly->x0 = x_ofs;
 			poly->y0 = y;
 			poly->x1 = x_ofs + fmvFontUV[chr].w;
@@ -104,7 +104,7 @@ void PrintFMVText(char *str, int x, short y, int brightness)
 			poly->v2 = fmvFontUV[chr].v + fmvFontUV[chr].h;
 			poly->u3 = fmvFontUV[chr].u + fmvFontUV[chr].w;
 			poly->v3 = fmvFontUV[chr].v + fmvFontUV[chr].h;
-			poly->tpage = getTPage(0,0, 960, 0);
+			poly->tpage = getTPage(0, 0, 960, 0);
 			poly->clut = getClut(960, 72);
 
 			poly->r0 = brightness;
@@ -112,7 +112,7 @@ void PrintFMVText(char *str, int x, short y, int brightness)
 			poly->b0 = brightness;
 
 			addPrim(&ot, poly);
-			
+
 			x_ofs += fmvFontUV[chr].w;
 			drawnChars++;
 			poly++;
@@ -138,8 +138,8 @@ int UnpackJPEG(unsigned char* src_buf, unsigned src_length, unsigned bpp, unsign
 	width = cinfo.image_width;
 	height = cinfo.image_height;
 
-	for (u_char* curr_scanline = dst_buf; 
-		cinfo.output_scanline < cinfo.output_height; 
+	for (u_char* curr_scanline = dst_buf;
+		cinfo.output_scanline < cinfo.output_height;
 		curr_scanline += cinfo.output_width * cinfo.num_components)
 	{
 		jpeg_read_scanlines(&cinfo, &curr_scanline, 1);
@@ -161,12 +161,12 @@ void SetupMovieRectangle(int image_w, int image_h)
 
 	const float video_aspect = float(image_w) / float(image_h);
 	const float psx_aspect = (psxScreenH / psxScreenW);
-	
+
 	const float image_to_screen_w = float(psxScreenW) / float(windowWidth);// * psx_aspect;
 	const float image_to_screen_h = float(psxScreenH) / float(windowHeight);// * psx_aspect;
 
 	const float image_scale = float(windowHeight) / psxScreenH * video_aspect;
-	
+
 	float clipRectX = 0;
 	float clipRectY = 0;
 	float clipRectW = image_to_screen_w * image_scale;
@@ -174,7 +174,7 @@ void SetupMovieRectangle(int image_w, int image_h)
 
 	clipRectX -= clipRectW * 0.5f;
 	clipRectY -= clipRectH * 0.5f;
-	
+
 	u_char l = 0;
 	u_char t = 0;
 	u_char r = 1;
@@ -188,7 +188,7 @@ void SetupMovieRectangle(int image_w, int image_h)
 		{ clipRectX+ clipRectW,  clipRectY + clipRectH,		0, 0,    0, 0, 0, 0,	r, t, 0, 0, },
 		{ clipRectX, clipRectY,    							0, 0,    0, 0, 0, 0,	l, b, 0, 0, },
 		{ clipRectX, clipRectY + clipRectH,    				0, 0,    0, 0, 0, 0,	l, t, 0, 0, },
-		
+
 		{ clipRectX + clipRectW, clipRectY,    				0, 0,    0, 0, 0, 0,	r, b, 0, 0, },
 		{ clipRectX, clipRectY,    							0, 0,    0, 0, 0, 0,	l, b, 0, 0, },
 		{ clipRectX + clipRectW,  clipRectY + clipRectH,    0, 0,    0, 0, 0, 0,	r, t, 0, 0, },
@@ -260,10 +260,10 @@ u_char* g_FMVDecodedImageBuffer = NULL;
 
 void FMVPlayerInitGL()
 {
-	g_FMVDecodedImageBuffer = (u_char*)malloc(DECODE_BUFFER_ALLOC);	
+	g_FMVDecodedImageBuffer = (u_char*)malloc(DECODE_BUFFER_ALLOC);
 	memset(g_FMVDecodedImageBuffer, 0, DECODE_BUFFER_ALLOC);
 	// FIXME: double buffering?
-	
+
 #if defined(RENDERER_OGL) || defined(RENDERER_OGLES)
 	glGenTextures(1, &g_FMVTexture);
 
@@ -276,7 +276,7 @@ void FMVPlayerInitGL()
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	if(!g_FMVShader)
+	if (!g_FMVShader)
 	{
 		g_FMVShader = GR_Shader_Compile(fmv_shader);
 	}
@@ -293,7 +293,7 @@ void FMVPlayerShutdownGL()
 
 	free(g_FMVDecodedImageBuffer);
 	g_FMVDecodedImageBuffer = NULL;
-	
+
 	ClearImage(&rect, 0, 0, 0);
 	GR_SwapWindow();
 
@@ -334,7 +334,7 @@ char* g_CreditsLines[512];
 void InitCredits(const char* filename)
 {
 	memset(g_CreditsLines, 0, sizeof(g_CreditsLines));
-	
+
 	FILE* credFile = fopen(filename, "rb");
 	if (credFile)
 	{
@@ -350,30 +350,30 @@ void InitCredits(const char* filename)
 		fclose(credFile);
 	}
 
-	if(g_CreditsBuffer)
+	if (g_CreditsBuffer)
 	{
 		// make credits into lines
 		char* str = g_CreditsBuffer;
 		int numCreditsLines = 0;
 
-		while(*str)
+		while (*str)
 		{
-			if(!g_CreditsLines[numCreditsLines])
+			if (!g_CreditsLines[numCreditsLines])
 				g_CreditsLines[numCreditsLines] = str;
-			
-			if(*str == '\r')
+
+			if (*str == '\r')
 			{
 				*str = '\0';
-				
+
 				if (*++str == '\n')
 					numCreditsLines++;
 			}
-			else if(*str == '\n')
+			else if (*str == '\n')
 			{
 				*str = '\0';
 				numCreditsLines++;
 			}
-			
+
 			str++;
 		}
 	}
@@ -396,7 +396,7 @@ void DisplaySubtitles(int frame_number)
 	// draw subtitie text
 	for (int i = 0; i < g_NumSubtitles; i++)
 	{
-		if(frame_number >= g_Subtitles[i].startframe && frame_number <= g_Subtitles[i].endframe)
+		if (frame_number >= g_Subtitles[i].startframe && frame_number <= g_Subtitles[i].endframe)
 			PrintSubtitleText(&g_Subtitles[i]);
 	}
 }
@@ -413,7 +413,7 @@ void DisplayCredits(int frame_number)
 
 	if (frame > CREDITS_STOP_FRAME)
 		frame = CREDITS_STOP_FRAME;
-	
+
 	int height = (frame - CREDITS_START_FRAME) * 30 >> 5;
 
 	int fade = 0;
@@ -424,16 +424,16 @@ void DisplayCredits(int frame_number)
 			fade = 128;
 	}
 
-	for(i = 0; i < 512; i++)
+	for (i = 0; i < 512; i++)
 	{
 		int text_h = 250 - height + i * 16;
-		
+
 		if (text_h < -20 || text_h > 260)
 			continue;
-		
+
 		char* str = g_CreditsLines[i];
 
-		if(str)
+		if (str)
 			PrintFMVText(str, 256, text_h, 128 - fade);
 	}
 }
@@ -448,7 +448,7 @@ void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number, int cr
 	PsyX_BeginScene();
 
 	GR_Clear(0, 0, windowWidth, windowHeight, 0, 0, 0);
-	
+
 	glBindTexture(GL_TEXTURE_2D, g_FMVTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, image_w, image_h, 0, GL_RGB, GL_UNSIGNED_BYTE, g_FMVDecodedImageBuffer);
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -460,18 +460,18 @@ void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number, int cr
 	GR_EnableDepth(0);
 	GR_SetStencilMode(0);
 	GR_SetBlendMode(BM_NONE);
-	
+
 	SetupMovieRectangle(stream_format.image_width, stream_format.image_height);
 
 	GR_DrawTriangles(0, 2);
 
 	DisplaySubtitles(frame_number);
 
-	if(credits && frame_number >= CREDITS_START_FRAME)
+	if (credits && frame_number >= CREDITS_START_FRAME)
 	{
 		DisplayCredits(frame_number);
 	}
-	
+
 	PsyX_EndScene();
 }
 
@@ -486,13 +486,13 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	FS_FixPathSlashes(filename);
 
 	ReadAVI readAVI(filename);
-	
+
 	// also load subtitle file
 	if (subtitles)
 	{
 		sprintf(filename, "%sFMV\\%d\\RENDER%d.SBN", gDataFolder, fd, arg->render);
 		FS_FixPathSlashes(filename);
-	
+
 		InitSubtitles(filename);
 	}
 	else
@@ -500,11 +500,11 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 		g_NumSubtitles = 0;
 	}
 
-	if(arg->credits)
+	if (arg->credits)
 	{
 		sprintf(filename, "%sDATA\\CREDITS.ENG", gDataFolder);
 		FS_FixPathSlashes(filename);
-	
+
 		InitCredits(filename);
 	}
 
@@ -513,7 +513,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	ReadAVI::stream_format_t stream_format = readAVI.GetVideoFormat();
 	ReadAVI::stream_format_auds_t audio_format = readAVI.GetAudioFormat();
 
-	if (strcmp(stream_format.compression_type, "MJPG")) 
+	if (strcmp(stream_format.compression_type, "MJPG"))
 	{
 		printf("Only MJPG supported\n");
 		return;
@@ -549,7 +549,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 	int done_frames = 0;
 
 	Util_GetHPCTime(&fmvTimer, 1);
-	
+
 	// main loop
 	while (true)
 	{
@@ -574,7 +574,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 			break;
 
 		// handle recap
-		if(arg->recap && done_frames > arg->recap)
+		if (arg->recap && done_frames > arg->recap)
 			break;
 
 		// fade out sound and stop playback
@@ -593,7 +593,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 			{
 				int real_frame_width;
 				int real_frame_height;
-				
+
 				// Do video frame
 				int ret = UnpackJPEG(frame_entry.buf, frame_size, stream_format.bits_per_pixel, g_FMVDecodedImageBuffer, real_frame_width, real_frame_height);
 
@@ -607,7 +607,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 					nextFrameDelay += double(avi_header.TimeBetweenFrames) / 1000000.0;
 				else
 					nextFrameDelay = 0.0;
-				
+
 				done_frames++;
 			}
 			else if (frame_entry.type == ReadAVI::ctype_audio_data)
@@ -635,7 +635,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 						// restart
 						queue_counter = 0;
 					}
-					else if(numProcessed && queue_counter > 3)
+					else if (numProcessed && queue_counter > 3)
 					{
 						// dequeue one buffer
 						alSourceUnqueueBuffers(audioStreamSource, 1, &qbuffer);
@@ -647,7 +647,7 @@ void DoPlayFMV(RENDER_ARG* arg, int subtitles)
 				if (queue_counter < 4)
 					QueueAudioBuffer(audioStreamBuffers[queue_counter++], audioStreamSource, frame_entry, audio_format, 0, frame_size);
 
-				if((queue_counter > 1 || numProcessed == -1) && state != AL_PLAYING)
+				if ((queue_counter > 1 || numProcessed == -1) && state != AL_PLAYING)
 					alSourcePlay(audioStreamSource);
 			}
 		}
@@ -683,7 +683,7 @@ int FMV_main(RENDER_ARGS* args)
 	draw.clip.w = 1200;
 	draw.clip.y = -1;
 	draw.clip.h = 512;
-	
+
 	disp.isinter = 0;
 
 	PutDrawEnv(&draw);
@@ -704,4 +704,3 @@ int FMV_main(RENDER_ARGS* args)
 
 	return 0;
 }
-

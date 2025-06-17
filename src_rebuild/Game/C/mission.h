@@ -96,8 +96,8 @@ extern void HandleMission(); // 0x00061274
 
 extern void RegisterChaseHit(int car1, int car2); // 0x00061684
 
-extern void SetMissionComplete(void);
-extern void SetMissionFailed(FAIL_REASON reason);
+extern void SetMissionComplete(void); // 0x00063F84
+extern void SetMissionFailed(FAIL_REASON reason); // 0x00064B38
 extern void SetMissionMessage(char *message, int priority, int seconds); // 0x000642A8
 extern void SetPlayerMessage(int player, char *message, int priority, int seconds); // 0x00064348
 
@@ -110,4 +110,4 @@ extern void SetConfusedCar(int slot); // 0x0006444C
 
 extern void DrawMission(void);
 
-#endif
+#endif // MISSION_H

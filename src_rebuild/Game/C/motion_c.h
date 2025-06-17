@@ -32,5 +32,4 @@ extern void TannerShadow(LPPEDESTRIAN pDrawingPed, VECTOR *pPedPos, SVECTOR *pLi
 
 extern void DoCivHead(LPPEDESTRIAN pPed, SVECTOR *vert1, SVECTOR *vert2); // 0x00068B2C
 
-
-#endif
+#endif // MOTION_C_H

@@ -1,7 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#define CAMERA_COLLIDER_CARID (MAX_CARS+1)
+#define CAMERA_COLLIDER_CARID (MAX_CARS + 1)
 
 #ifdef PSX
 #define VIEW_DRAW_DISTANCE 16000
@@ -43,12 +43,10 @@ extern void PlaceCameraFollowCar(PLAYER *lp); // 0x0002003C
 extern void PlaceCameraAtLocation(PLAYER *lp, int zoom); // 0x00020904
 extern void PlaceCameraInCar(PLAYER *lp, int BumperCam); // 0x0002050C
 
-
-extern int PointAtTarget(VECTOR* pPosition, VECTOR* pTarget, SVECTOR* pAngleVec);
+extern int PointAtTarget(VECTOR* pPosition, VECTOR* pTarget, SVECTOR* pAngleVec); // 0x00020B08
 
 extern int OK_To_Zoom(); // 0x00020BC0
 
 extern void SetBasePos(VECTOR *pVec); // 0x00020C70
 
-
-#endif
+#endif // CAMERA_H

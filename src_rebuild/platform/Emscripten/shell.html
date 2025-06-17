@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>REDRIVER 2 WebAssembly build</title>
+    <title>REDRIVER2 WebAssembly build</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css?family=Oswald&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
@@ -25,19 +25,19 @@
         }
         /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
         canvas.emscripten {
-            border: 0px none;
+            border: 0 none;
             background-color: black;
         }
 
         .spinner {
             height: 50px;
             width: 50px;
-            margin: 0px auto;
+            margin: 0 auto;
             -webkit-animation: rotation .8s linear infinite;
             -moz-animation: rotation .8s linear infinite;
             -o-animation: rotation .8s linear infinite;
             animation: rotation 0.8s linear infinite;
-            background-color: rgb(200,100,250);
+            background-color: rgb(200, 100, 250);
         }
 
         @-webkit-keyframes rotation {
@@ -131,12 +131,12 @@
 			})(),
 			canvas: (() => {
 				var canvas = document.getElementById('canvas');
-			
+
 				// As a default initial behavior, pop up an alert when webgl context is lost. To make your
 				// application robust, you may want to override this behavior before shipping!
 				// See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
 				canvas.addEventListener("webglcontextlost", (e) => { alert('WebGL context lost. You will need to reload the page.'); e.preventDefault(); }, false);
-			
+
 				return canvas;
 			})(),
 			setStatus: (text) => {
@@ -172,7 +172,7 @@
 				// for save config/data
 				() => {
 					ENV.HOME = "/userstorage";
-					
+
 					// create LSFS and mount 'data' local storage item into '/data' directory
 					FS.mkdir('/userstorage'); // for old versions use: FS.createFolder(FS.root, 'data', true, true);
 					FS.mount(LSFS(), { key: 'userstorage' }, '/userstorage');
@@ -195,29 +195,29 @@
 				var data = Module._malloc(size);
 				Module.writeArrayToMemory(new Uint8Array(reader.result), data);
 				Module.ccall('WebLoadCDImage', 'null', ['number', 'number'], [data, size]);
-				
+
 				callMain();
-				
+
 				var element = document.getElementById('startup_panel');
-				element.style.display = "none"; 
-				
+				element.style.display = "none";
+
 				var canvas = document.getElementById('canvas');
 				canvas.style.display = null;
 			};
 			reader.readAsArrayBuffer(event.target.files[0]);
 		}
-		
+
 		function runDemo() {
 			callMain(["-ini", "demo_config.ini"]);
-			
+
 			var element = document.getElementById('startup_panel');
-			element.style.display = "none"; 
-			
+			element.style.display = "none";
+
 			var canvas = document.getElementById('canvas');
 			canvas.style.display = null;
 		}
 	</script>
-	<script src="lsfs.js"></script> 
+	<script src="lsfs.js"></script>
 	{{{ SCRIPT }}}
 </body>
 </html>

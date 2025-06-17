@@ -112,7 +112,7 @@ void LoadCurrentProfile(int init)
 {
 	int error;
 
-	if(init)
+	if (init)
 	{
 		RECT16 rect;
 
@@ -135,10 +135,10 @@ void LoadCurrentProfile(int init)
 
 	char filePath[2048];
 	int fileSize;
-	
+
 	GetGameProfilePath(filePath);
 	strcat(filePath, "/config.dat");
-	
+
 	// load config
 	FILE* fp = fopen(filePath, "rb");
 	if (fp)
@@ -319,10 +319,10 @@ int LoadReplayFromFile(char* fileName)
 			sub = fileName;
 			do
 			{
-				tmp = strchr(sub+1, '/');
+				tmp = strchr(sub + 1, '/');
 				if (tmp)
-					sub = tmp+1;
-			}while(tmp);
+					sub = tmp + 1;
+			} while (tmp);
 
 			strcpy(gCurrentReplayFilename, sub);
 
@@ -375,7 +375,6 @@ int SaveReplayData(char* buffer)
 	return SaveReplayToBuffer(buffer);
 }
 
-
 // [D] [T]
 int LoadReplayData(char* buffer)
 {
@@ -399,7 +398,7 @@ int SaveGameData(char* buffer)
 
 	saveHeader->magic = 0x54876421;
 	saveHeader->gMissionLadderPos = gMissionLadderPos;
-	
+
 	saveHeader->SavedData = MissionEndData;
 
 	return sizeof(GAME_SAVE_HEADER);
@@ -409,7 +408,7 @@ int SaveGameData(char* buffer)
 int LoadGameData(char* buffer)
 {
 	GAME_SAVE_HEADER* header;
-	
+
 	header = (GAME_SAVE_HEADER*)buffer;
 
 	if (header->magic != 0x54876421)
@@ -435,7 +434,7 @@ int CalcConfigDataSize(void)
 int SaveConfigData(char* buffer)
 {
 	CONFIG_SAVE_HEADER* header;
-	
+
 	header = (CONFIG_SAVE_HEADER*)buffer;
 
 	ClearMem((char*)buffer, sizeof(CONFIG_SAVE_HEADER));
@@ -447,7 +446,7 @@ int SaveConfigData(char* buffer)
 	header->gVibration = gVibration;
 	header->gCopDifficultyLevel = gCopDifficultyLevel;
 	header->gFurthestMission = gFurthestMission;
-	
+
 	header->PALAdjustX = draw_mode_pal.framex;
 	header->PALAdjustY = draw_mode_pal.framey;
 	header->NTSCAdjustX = draw_mode_ntsc.framex;
@@ -494,8 +493,3 @@ int LoadConfigData(char* buffer)
 
 	return 1;
 }
-
-
-
-
-

@@ -103,7 +103,7 @@ sdPlane* sdGetCell_alpha16(VECTOR* pos)
 
 	// Alpha 1.6 code, works too; not widely tested yet
 	//buffer = *(short**)((int)RoadMapDataRegions + (cellPos.x >> 14 & 4 ^ cellPos.y >> 13 & 8 ^ sdSelfModifyingCode));
-	
+
 	plane = NULL;
 
 	if (*buffer == 2)
@@ -169,31 +169,31 @@ int RoadInCell_alpha16(VECTOR *pos)
 {
 	int cellPos_x;
 	int cellPos_z;
-	
+
 	short* check;
-	
+
 	sdPlane* plane;
 	short* buffer;
 	bool moreLevels;
 
 	cellPos_x = pos->vx - 512;
 	cellPos_z = pos->vz - 512;
-	
+
 	buffer = RoadMapDataRegions[(cellPos_x >> 16 & 1U) ^ (regions_across / 2 & 1) +
 								(cellPos_z >> 15 & 2U) ^ (regions_down & 2)];
-	
-	if (*buffer == 2) 
+
+	if (*buffer == 2)
 	{
 		sdPlane* planeData = (sdPlane*)((char*)buffer + buffer[1]);
 		short* bspData = (short*)((char*)buffer + buffer[2]);
 		sdNode* nodeData = (sdNode*)((char*)buffer + buffer[3]);
-		
-		check = &buffer[(cellPos_x >> 10 & 0x3fU) + 
+
+		check = &buffer[(cellPos_x >> 10 & 0x3fU) +
 						(cellPos_z >> 10 & 0x3fU) * MAP_REGION_SIZE * 2 + 4];
 
 		if (*check == -1)
 			return -1;
-		
+
 		if (*check & 0xE000)
 		{
 			if (*check & 0x2000)
@@ -244,19 +244,20 @@ int RoadInCell_alpha16(VECTOR *pos)
 				plane = NULL;
 			}
 		}
-		else 
+		else
 		{
 			plane = &planeData[*check];
 		}
-	
+
 		if (plane == NULL)
 			return -1;
 
-		if (plane->surface >= 32) 
+		if (plane->surface >= 32)
 		{
 			pos->vy = sdHeightOnPlane(pos, plane) + 256;
 			return plane->surface - 32;
 		}
 	}
+
 	return -1;
 }

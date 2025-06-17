@@ -32,7 +32,7 @@ void InitHiresFonts()
 	u_char* data;
 
 	// init digits
-	if(!gHiresDigitsTexture)
+	if (!gHiresDigitsTexture)
 	{
 		int width, height, bpp;
 
@@ -51,7 +51,7 @@ void InitHiresFonts()
 	}
 
 	// init font2
-	if(!gHiresFontTexture)
+	if (!gHiresFontTexture)
 	{
 		gHiresFontRangeCount = 0;
 
@@ -63,7 +63,7 @@ void InitHiresFonts()
 		FS_FixPathSlashes(namebuffer);
 
 		fp = fopen(namebuffer, "rb");
-		if (fp) 
+		if (fp)
 		{
 			int i;
 
@@ -109,7 +109,7 @@ void SetHiresFontTexture(int enabled)
 	else
 		SetPsyXTexture(tex, 0, 0, 0);
 
-	if (gShowMap == 0) 
+	if (gShowMap == 0)
 	{
 		addPrim(current->ot, tex);
 		current->primptr += sizeof(DR_PSYX_TEX);
@@ -187,6 +187,7 @@ int StrighWidthHires(char* string)
 		GetHiresBakedQuad(chr, &fx, &fy, &q);
 		width += fx;
 	}
+
 	return width;
 }
 
@@ -210,7 +211,7 @@ int PrintStringHires(char* string, int x, int y)
 	{
 		if (chr >= 128 && chr <= 138)
 		{
-			if(showMap)
+			if (showMap)
 				SetHiresFontTexture(0);
 			else
 				SetHiresFontTexture(1);
@@ -280,7 +281,7 @@ int PrintStringHires(char* string, int x, int y)
 	}
 
 	SetHiresFontTexture(showMap == 0);
-	if(showMap)
+	if (showMap)
 		DrawSync(0);
 
 	return width;
@@ -384,18 +385,18 @@ int StringWidth(char *pString)
 	int w;
 
 	w = 0;
-	
+
 	while (true)
 	{
 		let = *pString++;
 		if (!let)
 			break;
-	
+
 		if (let == 32)
 			w += 4;
-		else if ((let + 128 & 0xff) < 11) 
+		else if ((let + 128 & 0xff) < 11)
 			w += 24;
-		else if (AsciiTable[let] != -1) 
+		else if (AsciiTable[let] != -1)
 			w += fontinfo[AsciiTable[let]].width;
 	}
 
@@ -409,7 +410,7 @@ int OutputString(char *pString, int formatting, int x, int y, int xw, int r, int
 
 	SetTextColour(r, g, b);
 
-	if (formatting & 1) 
+	if (formatting & 1)
 	{
 		PrintString(pString, x, y);
 	}
@@ -418,7 +419,7 @@ int OutputString(char *pString, int formatting, int x, int y, int xw, int r, int
 		xpos = (xw - StringWidth(pString)) / 2;
 		PrintString(pString, x + xpos, y);
 	}
-	else if (formatting & 4) 
+	else if (formatting & 4)
 	{
 		PrintString(pString, x - StringWidth(pString), y);
 	}
@@ -451,7 +452,7 @@ void LoadFont(char *buffer)
 	fontclutpos.y = 256;
 	fontclutpos.w = 16;
 	fontclutpos.h = 1;
-	
+
 	if (buffer != NULL)
 		file = buffer;
 	else
@@ -483,7 +484,7 @@ void LoadFont(char *buffer)
 
 	setRECT(&dest, 960, 466, 64, 46);
 
-	fonttpage = GetTPage(0,0, dest.x, dest.y);
+	fonttpage = GetTPage(0, 0, dest.x, dest.y);
 
 	LoadImage(&fontclutpos, (u_long*)clut);	// upload clut
 	LoadImage(&dest, (u_long*)(file + 32));	// upload font image
@@ -524,20 +525,20 @@ void SetCLUT16Flags(ushort clutID, ushort mask, char transparent)
 	pCurrent = buffer;
 	ctr = 1;
 
-	while (pCurrent < &buffer[16]) 
+	while (pCurrent < &buffer[16])
 	{
-		if ((mask >> ctr) & 1 != 0) 
+		if ((mask >> ctr) & 1 != 0)
 			*pCurrent |= 0x8000;
 		else
 			*pCurrent &= ~0x8000;
 
 		buffer[transparent] = 0;
-	
+
 		pCurrent++;
 		ctr++;
 	}
 
-	LoadClut2((u_long*)buffer, x,y);
+	LoadClut2((u_long*)buffer, x, y);
 }
 
 // [D] [T]
@@ -561,7 +562,7 @@ int PrintString(char *string, int x, int y)
 #endif
 
 	font = (SPRT *)current->primptr;
-	
+
 	if (showMap != 0)
 	{
 		font = (SPRT*)SetFontTPage(font);
@@ -577,7 +578,7 @@ int PrintString(char *string, int x, int y)
 			continue;
 		}
 
-		if (chr < 32 || chr > 138 || chr < 128) 
+		if (chr < 32 || chr > 138 || chr < 128)
 		{
 			if (AsciiTable[chr] == -1)
 				index = AsciiTable[63];	// place a question mark
@@ -590,22 +591,22 @@ int PrintString(char *string, int x, int y)
 			font->r0 = gFontColour.r;
 			font->g0 = gFontColour.g;
 			font->b0 = gFontColour.b;
-			
+
 			font->x0 = width;
 			font->y0 = fontinfo[index].offy + y;
 			font->u0 = fontinfo[index].x;
 			font->v0 = fontinfo[index].y - 46;
-			
+
 			font->w = fontinfo[index].width;
 			font->h = fontinfo[index].height;
-			
+
 			font->clut = fontclutid;
 
 			if (showMap == 0)
 			{
 				addPrim(current->ot, font);
 			}
-			else 
+			else
 			{
 				DrawPrim(font);
 			}
@@ -662,24 +663,24 @@ short PrintDigit(int x, int y, char *string)
 	{
 		if (chr == 58)
 			index = 11;
-		else if (chr == 47) 
+		else if (chr == 47)
 			index = 10;
-		else 
+		else
 			index = chr - 48 & 0xff;
 
 		pDigit = &fontDigit[index];
-		
-		if (chr == 58) 
+
+		if (chr == 58)
 			fixedWidth = 8;
 		else
 			fixedWidth = 16;
 
-		if (index < 6) 
+		if (index < 6)
 		{
 			vOff = 0;
 			h = 28;
 		}
-		else 
+		else
 		{
 			vOff = 28;
 			h = 31;
@@ -694,9 +695,9 @@ short PrintDigit(int x, int y, char *string)
 
 		font->x0 = width + (fixedWidth - pDigit->width) / 2;
 		font->y0 = y;
-		
+
 #ifdef HIRES_FONTS
-		if (gHiresDigitsTexture) 
+		if (gHiresDigitsTexture)
 		{
 			font->u0 = pDigit->xOffset;
 			font->v0 = vOff;
@@ -714,7 +715,7 @@ short PrintDigit(int x, int y, char *string)
 		font->clut = digit_texture.clutid;
 
 		addPrim(current->ot, font);
-		
+
 		width += fixedWidth;
 
 		font++;
@@ -733,7 +734,7 @@ short PrintDigit(int x, int y, char *string)
 	null->x2 = -1;
 	null->y2 = -1;
 	null->tpage = digit_texture.tpageid;
-	
+
 	addPrim(current->ot, null);
 	current->primptr += sizeof(POLY_FT3);
 
@@ -772,7 +773,7 @@ void PrintStringBoxed(char *string, int ix, int iy)
 	font = (SPRT *)current->primptr;
 
 	wordcount = 1;
-	
+
 	x = ix;
 	y = iy;
 
@@ -789,10 +790,10 @@ void PrintStringBoxed(char *string, int ix, int iy)
 		wpt = word;
 
 		u_char c = 0;
-		
-		while ((c = *wpt++) != 0) 
+
+		while ((c = *wpt++) != 0)
 		{
-			if (c == ' ') 
+			if (c == ' ')
 			{
 				x += 4;
 				continue;
@@ -800,7 +801,7 @@ void PrintStringBoxed(char *string, int ix, int iy)
 
 			index = AsciiTable[c];
 
-			if (index != -1) 
+			if (index != -1)
 			{
 				OUT_FONTINFO *pFontInfo = &fontinfo[index];
 
@@ -810,7 +811,7 @@ void PrintStringBoxed(char *string, int ix, int iy)
 				setXY0(font, x, y + pFontInfo->offy);
 				setUV0(font, pFontInfo->x, pFontInfo->y - 46);
 				setWH(font, pFontInfo->width, pFontInfo->height);
-					
+
 				font->clut = fontclutid;
 
 				addPrim(current->ot, font);
@@ -988,7 +989,7 @@ void* DrawButton(u_char button, void *prim, int x, int y)
 
 	btn = &button_textures[button - 128];
 	sprt = (SPRT*)prim;
-	 
+
 	setSprt(sprt);
 
 	sprt->r0 = 128;
@@ -1019,7 +1020,7 @@ void* DrawButton(u_char button, void *prim, int x, int y)
 		addPrim(current->ot, sprt);
 		addPrim(current->ot, null);
 	}
-	else 
+	else
 	{
 		DrawPrim(null);
 		DrawPrim(sprt);
@@ -1044,19 +1045,14 @@ void* SetFontTPage(void *prim)
 	null->y2 = -1;
 	null->tpage = fonttpage;
 
-	if (gShowMap == 0) 
+	if (gShowMap == 0)
 	{
 		addPrim(current->ot, null);
 	}
-	else 
+	else
 	{
 		DrawPrim(prim);
 	}
 
 	return null+1;
 }
-
-
-
-
-

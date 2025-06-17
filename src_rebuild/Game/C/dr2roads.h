@@ -84,6 +84,6 @@ extern void FindSurfaceD2(VECTOR *pos, VECTOR *normal, VECTOR *out, sdPlane **pl
 
 extern int GetSurfaceIndex(VECTOR *pos); // 0x0001380C
 extern int RoadInCell(VECTOR *pos); // 0x0001322C
-extern sdPlane* sdGetCell(VECTOR *pos);
+extern sdPlane* sdGetCell(VECTOR *pos); // 0x0001346C
 
-#endif
+#endif // DR2ROADS_H

@@ -13,11 +13,10 @@ CSoundSource_Wave::CSoundSource_Wave() : m_loopStart(0), m_loopEnd(0), m_numSamp
 
 CSoundSource_Wave::~CSoundSource_Wave()
 {
-	for(int i = 0; i < m_numSubtitles; i++)
+	for (int i = 0; i < m_numSubtitles; i++)
 	{
 		free(m_subtitles[i].text);
 	}
-	
 }
 
 void CSoundSource_Wave::ParseChunk(CRIFF_Parser &chunk)
@@ -32,22 +31,22 @@ void CSoundSource_Wave::ParseChunk(CRIFF_Parser &chunk)
 
 	//printf("chunk ID %s\n", namestr);
 
-    switch ( chunk.GetName() )
+    switch (chunk.GetName())
     {
 		case CHUNK_FMT:
-			ParseFormat( chunk );
+			ParseFormat(chunk);
 			break;
 		case CHUNK_CUE:
-			ParseCue( chunk );
+			ParseCue(chunk);
 			break;
 		case CHUNK_LIST:
-			ParseList( chunk );
+			ParseList(chunk);
 			break;
 		case CHUNK_DATA:
-			ParseData( chunk );
+			ParseData(chunk);
 			break;
 		case CHUNK_SAMPLE:
-			ParseSample( chunk );
+			ParseSample(chunk);
 		default:
 			break;
     }
@@ -56,7 +55,7 @@ void CSoundSource_Wave::ParseChunk(CRIFF_Parser &chunk)
 void CSoundSource_Wave::ParseFormat(CRIFF_Parser &chunk)
 {
     wavfmthdr_t wfx;
-    chunk.ReadChunk( (u_char*)&wfx, sizeof(wavfmthdr_t) );
+    chunk.ReadChunk((u_char*)&wfx, sizeof(wavfmthdr_t));
 
     m_format.format = wfx.Format;
     m_format.channels = wfx.Channels;
@@ -70,11 +69,11 @@ void CSoundSource_Wave::ParseCue(CRIFF_Parser &chunk)
 	chunk.ReadChunk(&count, sizeof(int));
 
 	// now read all CUEs
-	for(int i = 0; i < count; i++)
+	for (int i = 0; i < count; i++)
 	{
 		wavcuehdr_t cue;
 
-		chunk.ReadChunk( (u_char *)&cue, sizeof(wavcuehdr_t) );
+		chunk.ReadChunk((u_char *)&cue, sizeof(wavcuehdr_t));
 		m_loopStart = cue.SampleOffset;
 
 		//printf("CUE %d time: %d ms (%d)\n", i+1, sampleTimeMilliseconds, cue.SampleOffset);
@@ -104,12 +103,12 @@ void CSoundSource_Wave::ParseList(CRIFF_Parser &chunk)
 {
 	int adtl;
 	chunk.ReadChunk(&adtl, sizeof(int));
-	
-	if(adtl == CHUNK_ADTLLIST)
+
+	if (adtl == CHUNK_ADTLLIST)
 	{
 		int remainingSize = chunk.GetSize() -4;
 
-		while(remainingSize > 0)
+		while (remainingSize > 0)
 		{
 			RIFFchunk_t listChunk;
 
@@ -122,7 +121,7 @@ void CSoundSource_Wave::ParseList(CRIFF_Parser &chunk)
 			memcpy(namestr, name, 4);
 			namestr[4] = 0;
 
-			if(listChunk.Id == CHUNK_LTXT)
+			if (listChunk.Id == CHUNK_LTXT)
 			{
 				wavltxthdr_t ltxt;
 				int read = chunk.ReadChunk(&ltxt, sizeof(wavltxthdr_t));
@@ -130,23 +129,21 @@ void CSoundSource_Wave::ParseList(CRIFF_Parser &chunk)
 
 				m_subtitles[ltxt.CueId-1].sampleLength =  float(ltxt.SampleLen) / float(m_format.frequency) * 1000.0f;
 			}
-			else if(listChunk.Id == CHUNK_LABEL)
+			else if (listChunk.Id == CHUNK_LABEL)
 			{
 				char labelString[128];
-				
+
 				int cueId;
 				int stringSize = listChunk.Size - 4 + (listChunk.Size & 1);
 
-				int read = chunk.ReadChunk( &cueId, sizeof(int) );
+				int read = chunk.ReadChunk(&cueId, sizeof(int));
 				remainingSize -= read;
 
 				m_subtitles[cueId - 1].text = (char*)malloc(stringSize);
-				
-				read = chunk.ReadChunk( m_subtitles[cueId - 1].text, stringSize );
+
+				read = chunk.ReadChunk(m_subtitles[cueId - 1].text, stringSize);
 				remainingSize -= read;
 
-				
-				
 				//printf("Label cue = %d, size: %d, '%s'\n", cueId, stringSize, labelString);
 			}
 		}
@@ -167,7 +164,7 @@ void CSoundSource_Wave::ParseSample(CRIFF_Parser &chunk)
 
 float CSoundSource_Wave::GetLoopPosition(float flPosition)
 {
-    while ( flPosition > m_numSamples )
+    while (flPosition > m_numSamples)
         flPosition -= m_numSamples;
 
     return flPosition;

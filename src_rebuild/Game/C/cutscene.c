@@ -34,7 +34,7 @@ struct CUTSCENE_BUFFER
 
 	int bytesFree;
 	int reservedSize;
-	// char buffer[32*1024];				// was 8192, but we have some free mem now even for PSX. Using malloc.
+	//char buffer[32 * 1024];		// was 8192, but we have some free mem now even for PSX. Using malloc.
 };
 
 int gSkipInGameCutscene = 0;
@@ -85,7 +85,6 @@ int LoadCutsceneInformation(int cutscene);
 void FreeCutsceneBuffer();
 int IsCutsceneResident(int cutscene);
 
-
 // [D] [T]
 void InitInGameCutsceneVariables(void)
 {
@@ -116,7 +115,7 @@ void InitInGameCutsceneVariables(void)
 // [D] [T]
 void HandleInGameCutscene(void)
 {
-	if (gInGameCutsceneDelay != 0) 
+	if (gInGameCutsceneDelay != 0)
 	{
 		BlackBorderHeight = gInGameCutsceneDelay;
 		gInGameCutsceneDelay++;
@@ -138,14 +137,14 @@ void HandleInGameCutscene(void)
 	if (CameraCnt < 2)
 		BlackBorderHeight = 28;
 
-	if (CutsceneLength-28 < CutsceneFrameCnt) 
+	if (CutsceneLength-28 < CutsceneFrameCnt)
 	{
 		gSkipInGameCutscene = 0;
-		
+
 		if (BlackBorderHeight > 0)
 			BlackBorderHeight--;
 	}
-	else 
+	else
 	{
 		if (BlackBorderHeight < 28)
 			BlackBorderHeight++;
@@ -159,7 +158,7 @@ void HandleInGameCutscene(void)
 		UnprepareXA();
 	}
 
-	if (CutsceneFrameCnt == CutsceneLength) 
+	if (CutsceneFrameCnt == CutsceneLength)
 	{
 		gSkipInGameCutscene = 0;
 		gHaveInGameCutscene = 0;
@@ -180,7 +179,7 @@ void DrawInGameCutscene(void)
 #ifndef PSX
 	PrintXASubtitles(SCREEN_H - 28);
 #endif
-	
+
 	if (gInGameCutsceneActive == 0 && gInGameCutsceneDelay == 0)
 	{
 		return;
@@ -298,7 +297,7 @@ void TriggerInGameCutscene(int cutscene)
 
 		gInGameCutsceneActive = TriggerInGameCutsceneSystem(cutscene);
 
-		if (gInGameCutsceneActive) 
+		if (gInGameCutsceneActive)
 		{
 			TerminateSkidding(0);
 			TerminateSkidding(1);
@@ -306,13 +305,13 @@ void TriggerInGameCutscene(int cutscene)
 			gStopPadReads = 1;
 			scr_z = 256;
 
-			if (gCSDestroyPlayer) 
+			if (gCSDestroyPlayer)
 			{
 				DestroyPlayer(0, 1);
 			}
 		}
 	}
-	else 
+	else
 	{
 		gCutsceneAtEnd = 1;
 		gInGameCutsceneDelay = gInGameCutsceneDelay + 1;
@@ -358,9 +357,9 @@ int CalcInGameCutsceneSize(void)
 	{
 		ClearMem((char*)&CutsceneHeader, sizeof(CUTSCENE_HEADER));
 		ClearMem((char*)&ChaseHeader, sizeof(CUTSCENE_HEADER));
-		
+
 		// init user/re-chases and load cutscene file header
-		if(SelectCutsceneFile(filename, 1, 0))
+		if (SelectCutsceneFile(filename, 1, 0))
 			LoadfileSeg(filename, (char*)&CutsceneHeader, 0, sizeof(CUTSCENE_HEADER));
 
 		// load re-chase file header
@@ -390,7 +389,7 @@ void ReleaseInGameCutscene(void)
 {
 	int i;
 
-	if (gInGameChaseActive && Mission.ChaseTarget) 
+	if (gInGameChaseActive && Mission.ChaseTarget)
 	{
 		player[1].padid = -128;
 	}
@@ -426,7 +425,7 @@ void ReleaseInGameCutscene(void)
 
 				DestroyPlayer(i, 0);
 			}
-			else 
+			else
 			{
 				DestroyPlayer(i, 1);
 			}
@@ -445,7 +444,7 @@ void ReleaseInGameCutscene(void)
 		player[0].spoolXZ = SavedSpoolXZ;
 		player[0].cameraCarId = SavedCameraCarId;
 
-		if (i != -1) 
+		if (i != -1)
 		{
 			car_data[i].ai.padid = &player[0].padid;
 			car_data[i].controlType = CONTROL_TYPE_PLAYER;
@@ -462,7 +461,7 @@ void ReleaseInGameCutscene(void)
 		CutsceneEventTrigger = 0;
 	}
 
-	if (CutsceneReplayStart != NULL) 
+	if (CutsceneReplayStart != NULL)
 		replayptr = CutsceneReplayStart;
 
 	NumReplayStreams -= NumCutsceneStreams;
@@ -470,7 +469,7 @@ void ReleaseInGameCutscene(void)
 
 	CutsceneReplayStart = NULL;
 	CutsceneStreamIndex = 0;
-	
+
 	PreLoadedCutscene = -1;
 	gHaveInGameCutscene = 0;
 	gCSDestroyPlayer = 0;
@@ -502,15 +501,15 @@ int CutsceneCameraChange(int cameracnt)
 {
 	cameracnt -= CutsceneCameraOffset;
 
-	if (CutNextChange->FrameCnt != cameracnt) 
+	if (CutNextChange->FrameCnt != cameracnt)
 	{
-		if (CutNextChange->FrameCnt > cameracnt) 
+		if (CutNextChange->FrameCnt > cameracnt)
 		{
 			IsMovingCamera(CutLastChange, CutNextChange, cameracnt);
 			return 0;
 		}
 
-		if (CutNextChange->next == 254) 
+		if (CutNextChange->next == 254)
 			return 0;
 	}
 
@@ -519,7 +518,7 @@ int CutsceneCameraChange(int cameracnt)
 
 	SetPlaybackCamera(CutNextChange);
 
-	if (cameracnt > -1) 
+	if (cameracnt > -1)
 	{
 		InvalidCamera(player[0].cameraCarId);
 
@@ -565,11 +564,11 @@ int TriggerInGameCutsceneSystem(int cutscene)
 
 	bDamageOverride = 0;
 
-	if(cutscene > -1)
+	if (cutscene > -1)
 	{
 		gHaveInGameCutscene = LoadCutsceneInformation(cutscene);
 
-		if (gHaveInGameCutscene != 0) 
+		if (gHaveInGameCutscene != 0)
 		{
 			PingOutAllCivCarsAndCopCars();
 			InitCivCars();
@@ -583,7 +582,7 @@ int TriggerInGameCutsceneSystem(int cutscene)
 				SavedSpoolXZ = player[0].spoolXZ;
 			}
 
-			if (CutsceneEventTrigger != 0) 
+			if (CutsceneEventTrigger != 0)
 			{
 				TriggerEvent(CutsceneEventTrigger);
 			}
@@ -627,14 +626,14 @@ int TriggerInGameCutsceneSystem(int cutscene)
 						cp = &car_data[player_id];
 
 						InitPlayer(&player[player_id], cp,
-							stream->SourceType.controlType, 
+							stream->SourceType.controlType,
 							stream->SourceType.rotation,
 							(LONGVECTOR4* )&stream->SourceType.position,
 							stream->SourceType.model,
 							stream->SourceType.palette,
 							&padid[player_id]);
 
-						if (bDamageOverride) 
+						if (bDamageOverride)
 						{
 							slot = player[0].playerCarId;
 
@@ -652,14 +651,14 @@ int TriggerInGameCutsceneSystem(int cutscene)
 							DentCar(cp);
 						}
 					}
-					else 
+					else
 					{
-						slot = CreateStationaryCivCar(stream->SourceType.rotation, 0, 1024, 
+						slot = CreateStationaryCivCar(stream->SourceType.rotation, 0, 1024,
 							(LONGVECTOR4* )&stream->SourceType.position,
-							stream->SourceType.model, 
+							stream->SourceType.model,
 							stream->SourceType.palette, 0);
 
-						if (slot != -1) 
+						if (slot != -1)
 						{
 							player[player_id].playerCarId = slot;
 							SetNullPlayer(player_id);
@@ -668,12 +667,12 @@ int TriggerInGameCutsceneSystem(int cutscene)
 
 					if (player_id == CutsceneStreamIndex)
 					{
-						if (gStartOnFoot == 0) 
+						if (gStartOnFoot == 0)
 						{
 							player[0].spoolXZ = (VECTOR *)car_data[player_id].hd.where.t;
 							player[0].worldCentreCarId = CutsceneStreamIndex;
 						}
-						else 
+						else
 						{
 							player[0].worldCentreCarId = -1;
 							player[0].spoolXZ = (VECTOR *)&player[player_id].pPed->position;
@@ -697,8 +696,6 @@ int TriggerInGameCutsceneSystem(int cutscene)
 		}
 	}
 
-
-
 	ShowCutsceneError();
 	return 0;
 }
@@ -708,7 +705,7 @@ void SetNullPlayer(int plr)
 {
 	int carId = player[plr].playerCarId;
 
-	if (carId != -1) 
+	if (carId != -1)
 	{
 		car_data[carId].controlType = CONTROL_TYPE_CIV_AI;
 		car_data[carId].ai.c.thrustState = 3;
@@ -748,12 +745,12 @@ void DestroyPlayer(int plr, int fully)
 		return;
 	}
 
-	if (fully) 
+	if (fully)
 	{
-		if (player[plr].playerType == 1 && player[plr].playerCarId != gThePlayerCar) 
+		if (player[plr].playerType == 1 && player[plr].playerCarId != gThePlayerCar)
 			PingOutCar(&car_data[player[plr].playerCarId]);
 
-		if (player[plr].pPed != NULL) 
+		if (player[plr].pPed != NULL)
 			DestroyPedestrian(player[plr].pPed);
 	}
 
@@ -774,7 +771,7 @@ void FindNextCutChange(int cameracnt)
 	count = 0;
 
 	do {
-		if (cameracnt <= CutsceneCamera[count].FrameCnt && 
+		if (cameracnt <= CutsceneCamera[count].FrameCnt &&
 			CutsceneCamera[count].FrameCnt < nextframe)
 		{
 			found = true;
@@ -798,8 +795,8 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 
 	rheader = (REPLAY_SAVE_HEADER *)CutsceneBuffer.residentPointers[residentCutscene];
 
-	if (rheader == NULL || 
-		rheader && (rheader->magic != DRIVER2_REPLAY_MAGIC && 
+	if (rheader == NULL ||
+		rheader && (rheader->magic != DRIVER2_REPLAY_MAGIC &&
 					rheader->magic != REDRIVER2_CHASE_MAGIC ||	// [A]
 					rheader->NumReplayStreams == 0) )
 	{
@@ -809,12 +806,12 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 
 	CutsceneStreamIndex = NumReplayStreams; //rheader->NumReplayStreams;
 	NumCutsceneStreams = rheader->NumReplayStreams;
-	
+
 	CutsceneReplayStart = replayptr;
 	CutsceneEventTrigger = rheader->CutsceneEvent;
 
 	pt = (char *)(rheader + 1);
-	
+
 	// add to existing replay streams
 	for (int i = NumReplayStreams; i < (NumReplayStreams + rheader->NumReplayStreams); i++)
 	{
@@ -875,9 +872,9 @@ int LoadCutsceneToBuffer(int subindex)
 
 	CUTSCENE_HEADER header;
 	char filename[64];
-	
+
 	SelectCutsceneFile(filename, 0, subindex);
-	
+
 	printInfo("Loading cutscene '%s' (%d)\n", filename, subindex);
 
 	if (FileExists(filename))
@@ -892,7 +889,7 @@ int LoadCutsceneToBuffer(int subindex)
 			// [A] if starting game - allocate new buffer
 			if (CutsceneBuffer.currentPointer == NULL)
 			{
-				if(CutsceneInReplayBuffer)
+				if (CutsceneInReplayBuffer)
 				{
 					CutsceneBuffer.currentPointer = CutsceneBuffer.buffer;
 					CutsceneBuffer.bytesFree = CutsceneBuffer.reservedSize;
@@ -920,7 +917,7 @@ int LoadCutsceneToBuffer(int subindex)
 				pathAILoaded = 0;
 
 				CutsceneBuffer.currentPointer = (char*)_other_buffer2;
-				CutsceneBuffer.bytesFree = 0xC000;	
+				CutsceneBuffer.bytesFree = 0xC000;
 			}*/
 
 			LoadfileSeg(filename, CutsceneBuffer.currentPointer, offset, size);
@@ -928,7 +925,7 @@ int LoadCutsceneToBuffer(int subindex)
 			CutsceneBuffer.residentCutscenes[CutsceneBuffer.numResident] = subindex;
 			CutsceneBuffer.residentPointers[CutsceneBuffer.numResident] = CutsceneBuffer.currentPointer;
 			CutsceneBuffer.numResident++;
-			
+
 			CutsceneBuffer.currentPointer += size;
 			CutsceneBuffer.bytesFree -= size;
 
@@ -955,7 +952,7 @@ void ShowCutsceneError(void)
 	rect.w = 320;
 	rect.h = 256;
 
-	ClearImage2(&rect, 0,0,0);
+	ClearImage2(&rect, 0, 0, 0);
 	DrawSync(0);
 
 	SetTextColour(128, 0, 0);
@@ -972,7 +969,7 @@ int LoadCutsceneInformation(int cutscene)
 {
 	int i;
 
-	if (cutscene == PreLoadedCutscene) 
+	if (cutscene == PreLoadedCutscene)
 	{
 		PreLoadedCutscene = -1;
 		return 1;
@@ -980,7 +977,7 @@ int LoadCutsceneInformation(int cutscene)
 
 	ReleaseInGameCutscene();
 
-	for(i = 0; i < 4; i++)
+	for (i = 0; i < 4; i++)
 	{
 		if (cutscene == CutsceneBuffer.residentCutscenes[i])
 		{
@@ -1028,8 +1025,3 @@ int IsCutsceneResident(int cutscene)
 
 	return 0;
 }
-
-
-
-
-

@@ -20,4 +20,4 @@ inline void QuickUnpackCellObject(PACKED_CELL_OBJECT* ppco, XZPAIR* near, CELL_O
 	pco->type = (ppco->value >> 6) | ((ppco->pos.vy & 1) << 10);
 }
 
-#endif
+#endif // CELL_H

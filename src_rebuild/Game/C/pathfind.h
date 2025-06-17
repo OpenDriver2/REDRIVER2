@@ -9,4 +9,4 @@ extern void UpdateCopMap(); // 0x000E836C
 
 extern int getHeadingToPlayer(int vx, int vy, int vz); // 0x000E8F00
 
-#endif
+#endif // PATHFIND_H

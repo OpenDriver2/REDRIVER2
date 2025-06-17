@@ -38,13 +38,13 @@ int InitStringMng()
 	sprintf(filename, "%sLANG\\%s_GAME.LTXT", gDataFolder, LanguageNames[gUserLanguage]);
 	FS_FixPathSlashes(filename);
 
-	if(InitStringLanguage(filename, 0) == -1)
+	if (InitStringLanguage(filename, 0) == -1)
 		return 0;
-	
+
 	sprintf(filename, "%sLANG\\%s_MISSION.LTXT", gDataFolder, LanguageNames[gUserLanguage]);
 	FS_FixPathSlashes(filename);
-	
-	if(InitStringLanguage(filename, 1) == -1)
+
+	if (InitStringLanguage(filename, 1) == -1)
 		return 0;
 
 #ifdef DEBUG_OPTIONS
@@ -55,7 +55,7 @@ int InitStringMng()
 		char* file;
 
 		file = (char*)_frontend_buffer;
-		
+
 		Loadfile("GFX\\FONT2.FNT", file);
 
 		nchars = *(int *)file;
@@ -124,7 +124,7 @@ int InitStringLanguage(char *filename, int mission)
 	unsigned char *ln;
 	int i;
 	int size;
-	
+
 	FILE* fp = fopen(filename, "rb");
 	if (!fp)
 	{
@@ -139,7 +139,7 @@ int InitStringLanguage(char *filename, int mission)
 	buffer = (unsigned char*)malloc(size);
 	fread(buffer, 1, size, fp);
 	fclose(fp);
-	
+
 	if (mission)
 		gMisssionLanguageBuffer = (char*)buffer;
 	else
@@ -147,7 +147,7 @@ int InitStringLanguage(char *filename, int mission)
 
 	cptr = buffer;
 	for (i = 0; i < MAX_LANGUAGE_TEXT; i++)
-	{	
+	{
 		if (size <= 0)
 		{
 			if (mission)
@@ -168,24 +168,24 @@ int InitStringLanguage(char *filename, int mission)
 			{
 				if (*cptr == '\n' || *cptr == '\r')
 				{
-					while(*cptr == '\r')
+					while (*cptr == '\r')
 					{
 						*cptr++;
 						size--;
 					}
-			
+
 					break;
 				}
-				
+
 				if (*cptr >= 32)
 					ln = cptr + 1;
-				
+
 				size--;
 				cptr++;
 			} while (size > 1);
-	
+
 			*ln = 0; // zero on end of the line
-			
+
 			cptr++;
 			size--;
 		}
@@ -193,4 +193,5 @@ int InitStringLanguage(char *filename, int mission)
 
 	return i;
 }
+
 #endif

@@ -45,6 +45,7 @@ TYRE_TRACK track_buffer[MAX_TYRE_TRACK_PLAYERS][MAX_TYRE_TRACK_WHEELS][64];
 void InitTyreTracks(void)
 {
 	int i;
+
 	for (i = 0; i < MAX_TYRE_TRACK_PLAYERS; i++)
 	{
 		ClearMem((char*)num_tyre_tracks[i], sizeof(num_tyre_tracks[0]));
@@ -82,7 +83,7 @@ void GetTyreTrackPositions(CAR_DATA *cp, int player_id)
 	for (loop = (2 / MAX_TYRE_TRACK_WHEELS); loop < 4; loop += (4 / MAX_TYRE_TRACK_WHEELS), track++)
 	{
 		WheelPos.vx = car_cos->wheelDisp[loop].vx;
-		if (loop & 2) 
+		if (loop & 2)
 			WheelPos.vx += 17;
 		else
 			WheelPos.vx -= 17;
@@ -101,7 +102,6 @@ void GetTyreTrackPositions(CAR_DATA *cp, int player_id)
 		tyre_new_positions[player_id][track].vy = MapHeight(&WheelPos);
 	}
 }
-
 
 // [D] [T]
 void SetTyreTrackOldPositions(int player_id)
@@ -129,14 +129,13 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int player_id, int continuous_t
 	newtp = &tyre_new_positions[player_id][wheel];
 
 	// [A] disabled due to MP and SP bugs
-	/*
-	if (newtp->vx - camera_position.vx + 20480 > 40960)
+	/*if (newtp->vx - camera_position.vx + 20480 > 40960)
 		return;
 
 	if (newtp->vz - camera_position.vz + 20480 > 40960)
 		return;*/
 
-	if (tracksAndSmoke != 0) 
+	if (tracksAndSmoke != 0)
 	{
 		oldtp = &tyre_save_positions[player_id][wheel];
 
@@ -145,7 +144,7 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int player_id, int continuous_t
 		SurfaceDataPtr = sdGetCell(newtp);
 
 		// check surface type
-		if (SurfaceDataPtr != NULL) 
+		if (SurfaceDataPtr != NULL)
 		{
 			if (SurfaceDataPtr->surface == SURF_WATER)
 				return;
@@ -160,7 +159,7 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int player_id, int continuous_t
 				tt_p->surface = 1;
 			}
 		}
-		else 
+		else
 		{
 			tt_p->surface = 1;
 		}
@@ -178,7 +177,7 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int player_id, int continuous_t
 		if (SurfaceDataPtr->surface == SURF_GRASS)
 			trackSurface = 2;
 	}
-	
+
 	SmokePosition.vx = newtp->vx;
 	SmokePosition.vz = newtp->vz;
 	SmokePosition.vy = -50 - newtp->vy;
@@ -188,7 +187,7 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int player_id, int continuous_t
 	{
 		GetSmokeDrift(&SmokeDrift);
 
-		if (trackSurface == 2) 
+		if (trackSurface == 2)
 		{
 			grass_vector.vx = 0;
 			grass_vector.vy = 50;
@@ -198,7 +197,7 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int player_id, int continuous_t
 			Setup_Smoke(&SmokePosition, 50, 500, SMOKE_BROWN, 0, &SmokeDrift, 0);
 			Setup_Sparks(&SmokePosition, &grass_vector, 5, 2);
 		}
-		else if (wetness == 0) 
+		else if (wetness == 0)
 		{
 			Setup_Smoke(&SmokePosition, 50, 500, SMOKE_WHITE, 0, &SmokeDrift, 0);
 		}
@@ -212,7 +211,7 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int player_id, int continuous_t
 
 		x = FixHalfRound(RSIN(dir) * 35, 13);
 		z = FixHalfRound(RCOS(dir) * 35, 13);
-		
+
 		New1.vy = oldtp->vy + 10;
 		New3.vy = newtp->vy + 10;
 		New2.vx = oldtp->vx;
@@ -233,7 +232,7 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int player_id, int continuous_t
 			tyre_track_offset[player_id][wheel]++;
 			tyre_track_offset[player_id][wheel] &= 63;
 		}
-		else 
+		else
 		{
 			num_tyre_tracks[player_id][wheel]++;
 		}
@@ -248,15 +247,15 @@ void AddTyreTrack(int wheel, int tracksAndSmoke, int player_id, int continuous_t
 		tt_p->p1.vx = New1.vx;
 		tt_p->p1.vy = New1.vy;
 		tt_p->p1.vz = New1.vz;
-		
+
 		tt_p->p2.vx = New2.vx;
 		tt_p->p2.vy = New1.vy;
 		tt_p->p2.vz = New2.vz;
-		
+
 		tt_p->p3.vx = New3.vx;
 		tt_p->p3.vy = New3.vy;
 		tt_p->p3.vz = New3.vz;
-		
+
 		tt_p->p4.vx = New4.vx;
 		tt_p->p4.vy = New3.vy;
 		tt_p->p4.vz = New4.vz;
@@ -394,7 +393,6 @@ void DrawTyreTracks(void)
 			}
 		}
 	}
-
 }
 
 // [D] [T] [A] now better shadow code
@@ -417,7 +415,7 @@ void InitShadow(void)
 	shadowuv.v3 = texinf->y + texinf->height - 1;
 	shadowuv.v0 = texinf->y;
 
-	if (GameLevel == 3) 
+	if (GameLevel == 3)
 	{
 		shadowuv.v1 += 1;
 		shadowuv.v0 += 1;
@@ -438,7 +436,7 @@ void InitShadow(void)
 	*(ushort*)&shadowpoly.uv3 = *(ushort*)&shadowuv.u2;
 }
 
-// [D] [A] - this is a fuckery
+// [D] [A] this is a fuckery
 void SubdivShadow(int z0, int z1, int z2, int z3, POLY_FT4 *sps)
 {
 	// [A] we already have better car shadow code. This is UNUSED anyway
@@ -452,12 +450,11 @@ void SubdivShadow(int z0, int z1, int z2, int z3, POLY_FT4 *sps)
 	addPrim(current->ot + (z0 * 2 + z3 * 6 >> 6), spd);
 }
 
-
 extern VECTOR dummy;
 
 // [D] [T] [A] better shadow code
 void PlaceShadowForCar(VECTOR *shadowPoints, int subdiv, int zOfs, int flag)
-{	
+{
 	MVERTEX subdivVerts[5][5];
 	SVECTOR points[4];
 
@@ -515,7 +512,7 @@ static int numcv;
 static int lastcv;
 static SVECTOR cv[12];
 
-// [D] - refactored - NOT TESTED YET
+// [D] refactored - NOT TESTED YET
 int clipAgainstZ(void)
 {
 	SVECTOR *curr;
@@ -539,7 +536,7 @@ int clipAgainstZ(void)
 
 	do {
 
-		if (srccount < 0) 
+		if (srccount < 0)
 		{
 			numcv = dstcount;
 			lastcv = lastcv + 2;
@@ -551,10 +548,10 @@ int clipAgainstZ(void)
 		if (curr->vz > 0)
 			flags |= 2;
 
-		if (flags == 1) 
+		if (flags == 1)
 		{
 			d = prev->vz - curr->vz;
-			
+
 			dst->vx = (curr->vx * prev->vz - prev->vx * curr->vz) / d;
 			dst->vy = (curr->vy * prev->vz - prev->vy * curr->vz) / d;
 			dst->pad = (curr->pad * prev->vz - prev->pad * curr->vz) / d;
@@ -599,9 +596,8 @@ int clipAgainstZ(void)
 	} while (true);
 }
 
-
 // decompiled code
-// original method signature: 
+// original method signature:
 // void /*$ra*/ clippedPoly()
  // line 1081, offset 0x00076cd4
 	/* begin block 1 */
@@ -787,13 +783,12 @@ void clippedPoly(void)
 	return;*/
 }
 
-
 // [D] [T]
 void sQuad(SVECTOR *v0, SVECTOR *v1, SVECTOR *v2, SVECTOR *v3, CVECTOR* light_col, int LightSortCorrect)
 {
 	int z1;
 	int z[4];
-	
+
 	POLY_G4 *poly;
 
 	poly = (POLY_G4*)current->primptr;
@@ -861,12 +856,12 @@ void sQuad(SVECTOR *v0, SVECTOR *v1, SVECTOR *v2, SVECTOR *v3, CVECTOR* light_co
 		gte_stsxy(&poly->x3);
 
 		gte_stsz(&z[3]);
-		
+
 		z1 = (z[0] + z[1] + z[2] + z[3] >> 2) + LightSortCorrect;
 
 		if (z1 < 0)
 			z1 = 0;
-	
+
 		z1 >>= 3;
 
 		addPrim(current->ot + z1, poly);
@@ -887,8 +882,3 @@ void sQuad(SVECTOR *v0, SVECTOR *v1, SVECTOR *v2, SVECTOR *v3, CVECTOR* light_co
 		current->primptr += sizeof(POLY_FT3);
 	}
 }
-
-
-
-
-

@@ -26,7 +26,7 @@ extern int ObjectDrawnValue;
 
 extern int Havana3DLevelDraw;
 
-extern void SsSetSerialVol(short s_num, short voll, short volr);		// TEMPORARY
+extern void SsSetSerialVol(short s_num, short voll, short volr); // 0x00092B3C (TEMPORARY)
 
 extern void State_GameInit(void* param); // 0x00059330
 extern void State_GameLoop(void* param); // 0x0005A8DC
@@ -54,4 +54,4 @@ extern void DealWithHorn(char *hr, int i); // 0x0005BF74
 typedef void(*occlFunc)(int* comp_val);
 extern int Havana3DOcclusion(occlFunc func, int *param); // 0x0005C16C
 
-#endif
+#endif // MAIN_H

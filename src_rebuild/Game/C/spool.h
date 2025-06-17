@@ -71,4 +71,4 @@ extern void QuickSpoolSpecial(); // 0x0007E84C
 
 extern void PrepareSecretCar(); // 0x0007E8DC
 
-#endif
+#endif // SPOOL_H

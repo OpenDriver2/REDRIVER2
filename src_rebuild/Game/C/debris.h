@@ -95,7 +95,6 @@ extern void HandleDebris(); // 0x00038008
 
 extern void add_haze(int top_col, int bot_col, short ot_pos); // 0x00038CB4
 
-
 extern void SetupRain(); // 0x00039DF8
 extern void DrawRainDrops(); // 0x00038E08
 extern void DoLightning(); // 0x00039B78
@@ -104,9 +103,4 @@ extern void RequestThunder(); // 0x0003A120
 extern void DoThunder(); // 0x0003A144
 extern void DoWeather(int weather); // 0x0003A000
 
-
-
-extern void add_haze(int top_col, int bot_col, short ot_pos); // 0x00038CB4
-
-
-#endif
+#endif // DEBRIS_H

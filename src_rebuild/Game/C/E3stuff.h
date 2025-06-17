@@ -14,4 +14,4 @@ extern void CheckForCorrectDisc(int disc); // 0x00044A40
 
 extern void ShowBonusGallery();
 
-#endif
+#endif // E3STUFF_H

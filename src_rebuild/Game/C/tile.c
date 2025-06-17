@@ -160,7 +160,7 @@ void Tile1x1(MODEL *model)
 
 			*(uint*)&prims->r0 = plotContext.colour;
 			setPolyFT4(prims);
-			
+
 			// retrieve first three verts
 			gte_stsxy3(&prims->x0, &prims->x1, &prims->x2);
 
@@ -209,7 +209,6 @@ inline int fst_div_3(int x)
 	return x * 171 >> 9;
 }
 
-
 // [D] [T]
 void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 {
@@ -219,7 +218,7 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 	int previous_matrix, yang, dofse, Z;
 	int model_number;
 
-	if (gTimeOfDay > -1) 
+	if (gTimeOfDay > -1)
 	{
 		int combo = combointensity;
 		if (gTimeOfDay < TIME_NIGHT)
@@ -260,11 +259,11 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 	while (tile_amount--)
 	{
 		ppco = *tilePointers++;
-		
+
 		plotContext.scribble[0] = ppco->pos.vx;
 		plotContext.scribble[1] = (ppco->pos.vy << 0x10) >> 0x11;
 		plotContext.scribble[2] = ppco->pos.vz;
-	
+
 		yang = ppco->value & 0x3f;
 		model_number = (ppco->value >> 6) | (ppco->pos.vy & 1) << 10;
 
@@ -292,7 +291,7 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 		else
 		{
 			pModel = Z > DRAW_LOD_DIST_LOW ? pLodModels[model_number] : modelpointers[model_number];
-			
+
 #ifdef DYNAMIC_LIGHTING
 			(gEnableDlights ? Tile1x1Lit : Tile1x1)(pModel);
 #else
@@ -300,6 +299,7 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 #endif // DYNAMIC_LIGHTING
 		}
 	}
+
 	current->primptr = plotContext.primptr;
 }
 
@@ -388,7 +388,6 @@ void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 
 	SetVec(&e5, e5.vx >> 1, e5.vy >> 1, e5.vz >> 1);
 
-
 	VecAdd(&p5, &e5, &p1); // e5 * 0.5f + p1;
 	p5.uv.s.u0 = e5.uv.s.u0 + p1.uv.s.u0;
 	p5.uv.s.v0 = e5.uv.s.v0 + p1.uv.s.v0;
@@ -415,7 +414,6 @@ void makeMesh(MVERTEX(*VSP)[5][5], int m, int n)
 	(*VSP)[3][2] = v4;
 	(*VSP)[3][3] = p2;
 }
-
 
 // [A] custom implemented function
 void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
@@ -448,7 +446,7 @@ void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 		gte_stopz(&opz);
 
 		gte_avsz3();
-		
+
 		gte_stotz(&z);
 
 		if (pc->flags & (PLOT_NO_CULL | PLOT_INV_CULL))
@@ -589,7 +587,7 @@ void SubdivNxM(char *polys, int n, int m, int ofse)
 	SVECTOR* verts = plotContext.verts;
 
 	POLYFT4* pft4 = (POLYFT4*)polys;
-	
+
 	plotContext.clut = (u_int)(*plotContext.ptexture_cluts)[pft4->texture_set][pft4->texture_id];
 	plotContext.tpage = (u_int)(*plotContext.ptexture_pages)[pft4->texture_set];
 
@@ -632,7 +630,7 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 	tileTypes = *(u_int *)(model + 1) >> 2;
 
 	// grass should be under pavements and other things
-	if((model->shape_flags & SHAPE_FLAG_WATER) || (model->flags2 & MODEL_FLAG_GRASS))
+	if ((model->shape_flags & SHAPE_FLAG_WATER) || (model->flags2 & MODEL_FLAG_GRASS))
 		ofse = 229;
 	else
 		ofse = 133;
@@ -646,21 +644,22 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 
 	i = model->num_polys;
 	ttype = 0;
+
 	while (i--)
 	{
 #if USE_PGXP
 		switch (ttype)
 		{
-		case 0:
-		case 1:
-			PGXP_SetZOffsetScale(0.0f, ofse > 200 ? 1.008f : 0.995f);
-			break;
-		case 3:
-			PGXP_SetZOffsetScale(0.0f, ofse < 40 ? 1.0f : 0.991f);
-			break;
-		case 4:
-			PGXP_SetZOffsetScale(0.0f, 1.0f);
-			break;
+			case 0:
+			case 1:
+				PGXP_SetZOffsetScale(0.0f, ofse > 200 ? 1.008f : 0.995f);
+				break;
+			case 3:
+				PGXP_SetZOffsetScale(0.0f, ofse < 40 ? 1.0f : 0.991f);
+				break;
+			case 4:
+				PGXP_SetZOffsetScale(0.0f, 1.0f);
+				break;
 		}
 #endif
 
@@ -677,12 +676,11 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 #endif
 }
 
+// UNUSED - Driver 1 leftover
 void ProcessSubDivisionLump(char *lump_ptr, int lump_size)
 {
-	// Driver 1 leftover...
 	UNIMPLEMENTED();
-	/*
-	SubDivisionArrays = lump_ptr;
+	/*SubDivisionArrays = lump_ptr;
 	return;*/
 }
 
@@ -702,8 +700,3 @@ void ProcessLowDetailTable(char *lump_ptr, int lump_size)
 			pLodModels[i] = modelpointers[i];
 	}
 }
-
-
-
-
-

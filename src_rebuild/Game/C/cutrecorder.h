@@ -69,5 +69,4 @@ extern int		CutRec_SaveChase();
 
 #endif
 
-
 #endif // CUTRECORDER_H

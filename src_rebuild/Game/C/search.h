@@ -3,4 +3,4 @@
 
 extern void InitTextureNames(); // 0x0001BA88
 
-#endif
+#endif // SEARCH_H

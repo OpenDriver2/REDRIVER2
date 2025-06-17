@@ -58,19 +58,19 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 		{
 			model = 10 - (MissionHeader->residentModels[0] + MissionHeader->residentModels[1] + MissionHeader->residentModels[2]);
 
-			if (model < 1) 
+			if (model < 1)
 				model = 1;
-			else if (model > 4) 
+			else if (model > 4)
 				model = 4;
 		}
 
-		if (model != -1) 
+		if (model != -1)
 		{
 			offset = *(int*)(lump_ptr + model * sizeof(int));
 			car_cosmetics[i] = *(CAR_COSMETICS*)((u_char*)lump_ptr + offset);
 
 #if USE_PC_FILESYSTEM
-			if(gContentOverride)
+			if (gContentOverride)
 				LoadCustomCarCosmetics(&car_cosmetics[i], model);
 #endif
 			FixCarCos(&car_cosmetics[i], model);
@@ -126,7 +126,7 @@ void AddReverseLight(CAR_DATA *cp)
 		ShowCarlight(&v1, cp, &col, REVERSELIGHT_SIZE, REVERSELIGHT_SIZE * 3, &light_texture, 0);
 	}
 
-	if (cp->ap.damage[3] < 500) 
+	if (cp->ap.damage[3] < 500)
 	{
 		v1.vx = car_cos->cog.vx * 2 - v1.vx;
 		ShowCarlight(&v1, cp, &col, REVERSELIGHT_SIZE, REVERSELIGHT_SIZE * 3, &light_texture, 0);
@@ -207,7 +207,7 @@ void AddIndicatorLight(CAR_DATA *cp, int Type)
 			ShowCarlight(&vback, cp, &col, INDICATORLIGHT_SIZE, INDICATORLIGHT_SIZE * 4, &light_texture, 0);
 		}
 
-		if (cp->ap.damage[0] < 500) 
+		if (cp->ap.damage[0] < 500)
 		{
 			ShowCarlight(&vfrnt, cp, &col, INDICATORLIGHT_SIZE, INDICATORLIGHT_SIZE * 4, &light_texture, 1);
 		}
@@ -215,7 +215,7 @@ void AddIndicatorLight(CAR_DATA *cp, int Type)
 
 	if (Type - 1U < 2)
 	{
-		if (cp->ap.damage[3] < 500) 
+		if (cp->ap.damage[3] < 500)
 		{
 			vback.vx = car_cos->cog.vx * 2 - vback.vx;
 			*life2 += brightness >> 3;
@@ -223,7 +223,7 @@ void AddIndicatorLight(CAR_DATA *cp, int Type)
 			ShowCarlight(&vback, cp, &col, INDICATORLIGHT_SIZE, INDICATORLIGHT_SIZE * 4, &light_texture, 0);
 		}
 
-		if (cp->ap.damage[1] < 500) 
+		if (cp->ap.damage[1] < 500)
 		{
 			vfrnt.vx = car_cos->cog.vx * 2 - vfrnt.vx;
 			ShowCarlight(&vfrnt, cp, &col, INDICATORLIGHT_SIZE, INDICATORLIGHT_SIZE * 4, &light_texture, 1);
@@ -330,7 +330,7 @@ void AddBrakeLight(CAR_DATA *cp)
 		}
 
 		offset = -offset;
-				
+
 		vec.vx = car_cos->cog.vx * 2 - vec.vx;
 
 		loop++;
@@ -362,7 +362,7 @@ void AddCopCarLight(CAR_DATA *cp)
 	if (CameraCar == CAR_INDEX(cp) && cameraview == 2)
 		return;
 
-	if (FastForward != 0) 
+	if (FastForward != 0)
 		return;
 
 	// don't display on flipped cars
@@ -386,7 +386,7 @@ void AddCopCarLight(CAR_DATA *cp)
 		pos = 3;
 		count_speed = 16;
 	}
-	else 
+	else
 	{
 		side = 2;
 		num_lights = 3;
@@ -404,11 +404,11 @@ void AddCopCarLight(CAR_DATA *cp)
 
 		light = num_lights;
 
-		while (light-- >= 0) 
+		while (light-- >= 0)
 		{
 			v1.vx = car_cos->cog.vx;
 
-			if (GameLevel != 1 && GameLevel != 3) 
+			if (GameLevel != 1 && GameLevel != 3)
 				v1.vx += (xpos1[pos] + car_cos->policeLight.vx) * sign;
 
 			col.g = 90;
@@ -417,7 +417,7 @@ void AddCopCarLight(CAR_DATA *cp)
 			if (gNight != 0)
 				col.g = 50;
 
-			if (pauseflag == 0 && (CameraCnt & 1U) != 0 && GameLevel == 2) 
+			if (pauseflag == 0 && (CameraCnt & 1U) != 0 && GameLevel == 2)
 				pos++;
 
 			v1.vz = car_cos->policeLight.vz + car_cos->cog.vz;
@@ -430,18 +430,18 @@ void AddCopCarLight(CAR_DATA *cp)
 				col.b = 255;
 				col.r = col.g;
 			}
-			else 
+			else
 			{
 				col.r = 255;
 				col.b = col.g;
 			}
 
-			if (pauseflag == 0) 
+			if (pauseflag == 0)
 				cp->ap.coplife += count_speed;
 
-			ShowCarlight(&v1, cp, &col, size, size*3, &light_texture, 0xff);
+			ShowCarlight(&v1, cp, &col, size, size * 3, &light_texture, 0xff);
 
-			if (pauseflag == 0 && (CameraCnt & 1U) != 0 && GameLevel == 2) 
+			if (pauseflag == 0 && (CameraCnt & 1U) != 0 && GameLevel == 2)
 				pos++;
 
 			pos = pos & 7;
@@ -529,7 +529,7 @@ void AddNightLights(CAR_DATA *cp)
 				Position1.vz = vec.vz + (cp->ap.damage[loop] >> 6);
 				Position2.vz = vec.vz + (cp->ap.damage[loop] >> 6);
 
-				ShowCarlight(&Position1, cp, &col, HEADLIGHT_SIZE, HEADLIGHT_SIZE*4, &light_texture, lightFlag & 0xff | 1);
+				ShowCarlight(&Position1, cp, &col, HEADLIGHT_SIZE, HEADLIGHT_SIZE * 4, &light_texture, lightFlag & 0xff | 1);
 
 				lights = 1;
 				lit++;
@@ -671,7 +671,7 @@ void AddSmokingEngine(CAR_DATA *cp, int black_smoke, int WheelSpeed)
 	VECTOR Drift;
 	SVECTOR svec;
 
-	if((CameraCnt & 3U) == (CAR_INDEX(cp) & 3U) && pauseflag == 0)
+	if ((CameraCnt & 3U) == (CAR_INDEX(cp) & 3U) && pauseflag == 0)
 	{
 		car_cos = cp->ap.carCos;
 
@@ -682,10 +682,10 @@ void AddSmokingEngine(CAR_DATA *cp, int black_smoke, int WheelSpeed)
 		SmokePos.vx = cp->hd.where.t[0];
 		SmokePos.vy = -cp->hd.where.t[1];
 		SmokePos.vz = cp->hd.where.t[2];
-		
+
 		if (black_smoke != 0)
 			SmokePos.vy -= 50;
-	
+
 		gte_SetRotMatrix(cp->hd.drawCarMat.m);
 
 		InitFXPos(&SmokePos, &svec, cp);
@@ -772,6 +772,7 @@ void AddFlamingEngine(CAR_DATA *cp)
 
 		SetRotMatrix(&(cp->hd).drawCarMat);
 		InitFXPos(&SmokePos, &svec, cp);
+
 		Drift.vx = 0;
 		Drift.vy = 0;
 		Drift.vz = 0;
@@ -779,8 +780,3 @@ void AddFlamingEngine(CAR_DATA *cp)
 		Setup_Smoke(&SmokePos, 50, 100, SMOKE_FIRE, 0, &Drift, 0);
 	}
 }
-
-
-
-
-

@@ -21,7 +21,7 @@ struct tNode
 {
 	int vx, vy, vz;
 	u_short dist;
-	u_short ptoey;	// just a padding. 
+	u_short ptoey;	// just a padding.
 };
 
 struct XZDIR
@@ -50,54 +50,38 @@ u_int numHeapEntries = 0;
 
 XZDIR ends[6][2] = {
 	{
-		{0, 0},
-		{512, 0}
-	},
-
-	{
-		{0, 0},
-		{256, 512 }
-	},
-
-	{
-		{256, 512},
-		{512, 0}
-	},
-
-	{
-		{256, 512},
-		{-256, 512}
-	},
-
-	{
-		{256, 512},
-		{0, 1024}
+		{ 0, 0 },
+		{ 512, 0 }
 	},
 	{
-		{256, 512 },
-		{512, 1024}
+		{ 0, 0 },
+		{ 256, 512 }
+	},
+	{
+		{ 256, 512 },
+		{ 512, 0 }
+	},
+	{
+		{ 256, 512 },
+		{ -256, 512 }
+	},
+	{
+		{ 256, 512},
+		{ 0, 1024}
+	},
+	{
+		{ 256, 512 },
+		{ 512, 1024 }
 	}
 };
 
 XZDIR dirs[6] = {
-	{
-		512,0
-	},
-	{
-		256,-512
-	},
-	{
-		-256,-512
-	},
-	{
-		-512,0
-	},
-	{
-		-256,512
-	},
-	{
-		256,512
-	},
+	{ 512, 0 },
+	{ 256, -512 },
+	{ -256, -512 },
+	{ -512, 0 },
+	{ -256, 512 },
+	{ 256, 512 }
 };
 
 // cx, cz in range of 0..128
@@ -221,19 +205,19 @@ void popNode(tNode* __return_storage_ptr__)
 	here = 1;
 	res = heap[here];
 
-	if (numHeapEntries > 1) 
+	if (numHeapEntries > 1)
 	{
 		lastDist = heap[numHeapEntries].dist;
 
-		while (true) 
+		while (true)
 		{
 			child = here * 2;
-			
+
 			// [A] not sure yet but skipping this check causes memory overflow
 			// it doesn't makes much sense to increase heap size either as it works the same.
 			if (child + 1 >= 201)
 				break;
-			
+
 			d = heap[child].dist;
 
 			if (child >= numHeapEntries - 2 || d > heap[child + 1].dist)
@@ -310,7 +294,7 @@ void WunCell(VECTOR* pbase)
 	pbase->vz = pbase->vz - 512;
 	v[1].vy = v[0].vy;
 
-	for (i = 0; i < 2; i++) 
+	for (i = 0; i < 2; i++)
 	{
 		if (i != 0)
 			pbase->vx += 512;
@@ -350,11 +334,11 @@ void InvalidateMapEnds()
 	pos.x = (player[0].pos[0] & ~1023) >> 10;
 	pos.z = (player[0].pos[2] & ~1023) >> 10;
 
-	for(i = 0; i < 32; i++)
+	for (i = 0; i < 32; i++)
 	{
 		x = pos.x + 15 + i;
 		z = pos.z + 16;
-		
+
 		tile = DONEMAP_V(x, z);
 		DONEMAP_V(x, z) = tile ^ DONEMAP_GETVALUE(x, z, tile, 3);
 
@@ -383,16 +367,16 @@ void InvalidateMap(void)
 	bPos.vx = player[0].pos[0] & ~1023;
 	bPos.vz = player[0].pos[2] & ~1023;
 
-	for(count = 0; count < 1024; count++)
+	for (count = 0; count < 1024; count++)
 	{
 		px = bPos.vx >> 10;
 		pz = bPos.vz >> 10;
-	
+
 		tile = DONEMAP_V(px, pz);
 		i = DONEMAP_GETVALUE(px, pz, tile, 3);
 
 		DONEMAP_V(px, pz) = tile ^ i;
-		
+
 		if (dir == 0)
 		{
 			bPos.vx += MAP_CELL_SIZE / 2;
@@ -416,7 +400,6 @@ void InvalidateMap(void)
 	}
 }
 
-
 u_int cellsThisFrame;
 u_int cellsPerFrame = 4;
 
@@ -432,7 +415,7 @@ void BloodyHell(void)
 	int tile, i;
 
 	cellsThisFrame = 0;
-	
+
 	// [A] really it should be based on player's height
 	bPos.vy = player[0].pos[1];
 	bPos.vx = player[0].pos[0] & ~1023;
@@ -442,7 +425,7 @@ void BloodyHell(void)
 
 	if (CameraCnt < 4)
 		howMany = cellsPerFrame + 20;
-	
+
 	if (CameraCnt < 8)
 		howMany += 4;
 
@@ -512,7 +495,7 @@ int blocked(tNode* v1, tNode* v2)
 
 	int prev = DONEMAP_V(x >> 2, z >> 2);
 	int val = DONEMAP_GETVALUE(x >> 2, z >> 2, prev, 0);
-	
+
 	if (val != 0)
 		return 1;
 
@@ -554,7 +537,7 @@ int iterate(void)
 	nbr = pathNodes;
 
 	// check directions
-	for(dir = 0; dir < 6; dir++, nbr++)
+	for (dir = 0; dir < 6; dir++, nbr++)
 	{
 		nbr->vx = itHere.vx + dirs[dir].dx;
 		nbr->vy = itHere.vy;
@@ -574,7 +557,7 @@ int iterate(void)
 					continue;
 				}
 			}
-	
+
 			nbr->dist = 1;
 		}
 		else if (dist <= itHere.dist - 288)
@@ -582,9 +565,9 @@ int iterate(void)
 			nbr->dist = 1;
 		}
 	}
-	
+
 	// now we have distance let's compute the rest of the map
-	for(dir = 0; dir < 6; dir++)
+	for (dir = 0; dir < 6; dir++)
 	{
 		// visited?
 		if (pathNodes[dir].dist != 0)
@@ -713,7 +696,7 @@ int getInterpolatedDistance(VECTOR* pos)
 
 	n.dist = DISTMAP_V(n.vx, n.vy, n.vz);
 	b = n.dist;
-	
+
 	if (a < b)
 		min = a;
 	else
@@ -723,7 +706,7 @@ int getInterpolatedDistance(VECTOR* pos)
 	{
 		n.vx = sp.vx + 256;
 		n.vz = sp.vz - 512;
-		
+
 		if (OMAP_GETVALUE(n.vx >> 8, n.vz >> 8) != 0)
 		{
 			n.vy = MapHeight((VECTOR*)&n);
@@ -733,16 +716,16 @@ int getInterpolatedDistance(VECTOR* pos)
 		{
 			n.vy = 0;
 		}
-	
+
 		dist = DISTMAP_V(n.vx, n.vy, n.vz);
-		
+
 		if (min < dist)
 			c = min;
 		else
 			c = dist;
-	
+
 		c += 341;
-		
+
 		if (c > 0xffff)
 			c = 0xffff;
 		else if (a > c)
@@ -752,13 +735,13 @@ int getInterpolatedDistance(VECTOR* pos)
 			b = c;
 
 		x = dist - a;
-	
+
 		if (c < dist)
 		{
 			x = c - a;
 			dist = c;
 		}
-		
+
 		x = x * fx;
 		res = (b - dist) * fz;
 	}
@@ -778,7 +761,7 @@ int getInterpolatedDistance(VECTOR* pos)
 		}
 
 		dist = DISTMAP_V(n.vx, n.vy, n.vz);
-		
+
 		if (min < dist)
 			c = min;
 		else
@@ -795,19 +778,19 @@ int getInterpolatedDistance(VECTOR* pos)
 			b = c;
 
 		x = dist - a;
-	
+
 		if (c < dist)
 		{
 			x = c - a;
 			dist = c;
 		}
-		
+
 		x = x * fz;
 		res = (b - dist) * fx;
 	}
 
 	a = a + (x + res >> 9);
-	
+
 	lastDistanceFound = a ^ (a & 1 ^ a) & 1;
 
 	return lastDistanceFound;
@@ -828,10 +811,10 @@ void addCivs(void)
 		{
 			rx = cp->hd.oBox.radii[2].vx;
 			rz = cp->hd.oBox.radii[2].vz;
-			
+
 			x = cp->hd.oBox.location.vx;
 			z = cp->hd.oBox.location.vz;
-	
+
 			vx = x + rx >> 8;
 			vz = z + rz >> 8;
 
@@ -842,8 +825,8 @@ void addCivs(void)
 
 			vx2 = x - rx >> 8;
 			vz2 = z - rz >> 8;
-			
-			if ((vx ^ (vz & 0x7e) << 8) == vx2 && 
+
+			if ((vx ^ (vz & 0x7e) << 8) == vx2 &&
 				(vz2 & 0x7e) != 0 || (vz2 & 0x7e << 8) != 1)
 			{
 				bits = 3 << (vz2 & 6);
@@ -954,12 +937,12 @@ void UpdateCopMap(void)
 		}
 
 		DebugDisplayObstacleMap();
-		
+
 		// remove cars
 		addCivs();
 	}
-	
-	if(pathFrames == 0)
+
+	if (pathFrames == 0)
 	{
 		// restart from new search target position
 		if (player[0].playerType == 1 && (CopsCanSeePlayer != 0 || numActiveCops == 0))
@@ -991,15 +974,15 @@ void UpdateCopMap(void)
 
 			distanceCache[i] = d;
 		}
-		
+
 		startNode.vx = ((searchTarget.vx + (searchTarget.vz >> 1 & 511)) >> 9) * 512 - ((searchTarget.vz & 512) >> 1);
 		startNode.vz = (searchTarget.vz >> 9) << 9;
 		startNode.vy = searchTarget.vy;
-		
+
 		numHeapEntries = 0;
 
 		// pick the height
-		if(OMAP_GETVALUE(startNode.vx >> 8, startNode.vz >> 8) != 0)
+		if (OMAP_GETVALUE(startNode.vx >> 8, startNode.vz >> 8) != 0)
 		{
 			res = MapHeight((VECTOR*)&startNode);
 			startNode.vy = res ^ (res ^ sdLevel) & 3;
@@ -1018,7 +1001,7 @@ void UpdateCopMap(void)
 
 			startNode.vx += 256;
 			startNode.vz += 512;
-			
+
 			pushSeedNode(&startNode);
 
 			startNode.vx += 256;
@@ -1032,11 +1015,11 @@ void UpdateCopMap(void)
 
 			startNode.vx += 256;
 			startNode.vz += 512;
-	
+
 			pushSeedNode(&startNode);
-			
+
 			startNode.vx -= 512;
-			
+
 			pushSeedNode(&startNode);
 		}
 	}
@@ -1044,14 +1027,14 @@ void UpdateCopMap(void)
 	pathFrames++;
 
 	maxret = 0;
-	for(i = 0; i < 8; i++)
+	for (i = 0; i < 8; i++)
 	{
 		if (distanceReturnedLog[i] > maxret)
 			maxret = distanceReturnedLog[i];
 	}
 
 	if (pathFrames > 250 ||		 // [A] was (pathFrames < pathFrames)
-		heap[1].dist - maxret > 3000) 
+		heap[1].dist - maxret > 3000)
 	{
 		pathFrames = 0;
 	}

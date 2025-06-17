@@ -135,7 +135,7 @@ ACTIVE_CHEATS gCheatsBackup;
 void RestoreGameVars()
 {
 	_CutRec_Reset();
-	
+
 	gLoadedReplay = 0;
 	gVibration = gOldVibrationMode;
 	gCopDifficultyLevel = gSurvivalCopSettingsBackup;
@@ -157,7 +157,7 @@ void State_GameStart(void* param)
 
 	FreeXM();
 	SsSetSerialVol(0, 0, 0);
-	
+
 	gInFrontend = 0;
 	AttractMode = 0;
 	NewLevel = 1;
@@ -181,7 +181,7 @@ void State_GameStart(void* param)
 			gCurrentMissionNumber += GameLevel * 2 + gWantNight + gSubGameNumber * 440;
 
 			SetState(STATE_GAMELAUNCH);
-		
+
 			break;
 		case GAME_IDLEDEMO:
 			if (LoadAttractReplay(gCurrentMissionNumber))
@@ -212,7 +212,7 @@ void State_GameStart(void* param)
 
 			gCurrentMissionNumber += GameLevel * 8 + gWantNight * 4 + gSubGameNumber;
 			SetState(STATE_GAMELAUNCH);
-		
+
 			break;
 		case GAME_CHECKPOINT:
 			if (NumPlayers == 1)
@@ -281,7 +281,7 @@ void State_GameStart(void* param)
 			GameType = StoredGameType;
 
 			SetState(STATE_GAMELAUNCH);
-		
+
 			break;
 	}
 }
@@ -340,7 +340,7 @@ void ReInitFrontend(int returnToMain)
 
 	LoadSoundBankDynamic((char*)0x0, 0, 0);
 	LoadBankFromLump(1, 0);
-	
+
 	// load frontend
 	LOAD_OVERLAY("FRONTEND.BIN", _overlay_buffer);
 
@@ -357,7 +357,7 @@ void ReInitFrontend(int returnToMain)
 
 	LoadFrontendScreens(1);
 	ReInitScreens(returnToMain);
-	
+
 	DrawSync(0);
 	VSync(0);
 
@@ -401,10 +401,10 @@ void State_MissionLadder(void* param)
 		if (RenderArgs.nRenders == 4)
 		{
 			SetPleaseWait(NULL);
-			
+
 			PlayRender(&RenderArgs);
 			RenderArgs.nRenders = 0;
-			
+
 			SetPleaseWait(NULL);
 		}
 
@@ -418,10 +418,10 @@ void State_MissionLadder(void* param)
 			}
 
 			SetPleaseWait(NULL);
-			
+
 			gCurrentMissionNumber = CurrentStep->data;
 			SetState(STATE_GAMELAUNCH);
-			
+
 			quit = 1;
 		}
 		else if (CurrentStep->flags == DML_FMV) // any render
@@ -444,12 +444,12 @@ void State_MissionLadder(void* param)
 
 			SetPleaseWait(NULL);
 			AvailableCheats.cheat5 = true;
-			
+
 			SetState(STATE_INITFRONTEND);
 
 			quit = 1;
 		}
-		
+
 		CurrentStep++;
 		gMissionLadderPos = CurrentStep - MissionLadder;
 	} while (!quit);
@@ -460,7 +460,7 @@ void RunMissionLadder(int newgame)
 {
 	if (newgame)
 		gMissionLadderPos = 0;
-	
+
 	SetState(STATE_LADDER, (void*)newgame);
 }
 
@@ -529,9 +529,9 @@ MISSION_DATA MissionEndData;
 void State_LaunchGame(void* param)
 {
 	int quit;
-	
+
 	// STATE_GAMELAUNCH
-	
+
 	ResetGraph(1);
 	SetVideoMode(video_mode);
 
@@ -644,31 +644,31 @@ void State_GameComplete(void* param)
 
 			FadeScreen(255);
 
-			if(GameType == GAME_MISSION)
+			if (GameType == GAME_MISSION)
 			{
 				nextState = STATE_LADDER;
 				stateParam = 2; // don't do recap
 			}
 			else
 				nextState = STATE_INITFRONTEND;
-			
+
 			NoPlayerControl = 0;
 			quick_replay = 0;
 			AutoDirect = 0;
 		}
 	}
-	
+
 	CurrentGameMode = WantedGameMode;
 
 	SetState(nextState, (void*)stateParam);
 
-	if(nextState == STATE_INITFRONTEND)
+	if (nextState == STATE_INITFRONTEND)
 	{
 		RestoreGameVars();
-		
+
 		lead_car = 0;
 		NoPlayerControl = 0;
-		
+
 		SetDispMask(0);
 		EnableDisplay();
 

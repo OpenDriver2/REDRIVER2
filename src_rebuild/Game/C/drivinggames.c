@@ -35,7 +35,7 @@ struct SMASHED_CONE
 	u_char side : 1;
 };
 
-MODEL* gTrailblazerConeModel; 
+MODEL* gTrailblazerConeModel;
 SMASHED_CONE smashed_cones[MAX_SMASHED_CONES];
 
 TRAILBLAZER_DATA *gTrailblazerData;
@@ -55,18 +55,18 @@ void InitDrivingGames(void)
 
 	if (NewLevel)
 		gTrailblazerData = NULL;
-	
+
 	gPlayerScore.time = 0;
 	gPlayerScore.items = 0;
 	gPlayerScore.P2time = 0;
 	gPlayerScore.P2items = 0;
 
-	if (GameType == GAME_GATERACE || GameType == GAME_TRAILBLAZER) 
+	if (GameType == GAME_GATERACE || GameType == GAME_TRAILBLAZER)
 	{
 		gTrailblazerConeCount = 0;
 		gTrailblazerConeIndex = 0;
 
-		if(NewLevel)
+		if (NewLevel)
 		{
 			gTrailblazerData = (TRAILBLAZER_DATA*)D_MALLOC(sizeof(TRAILBLAZER_DATA) * 100); // [A] use malloc
 
@@ -95,14 +95,13 @@ void InitDrivingGames(void)
     gTrailblazerPrevConeDelay = 0;
 }
 
-
 // [D] [T]
 int CarConeCollision(VECTOR *pPos, int car)
 {
 	int model;
 	CDATA2D cd[2];
 	CAR_DATA* cp1;
-	
+
 	cd[0].x.vx = pPos->vx;
 	cd[0].x.vz = pPos->vz;
 	cd[0].length[0] = 40;
@@ -111,7 +110,7 @@ int CarConeCollision(VECTOR *pPos, int car)
 
 	cp1 = &car_data[car];
 
-	if (cp1->controlType == CONTROL_TYPE_NONE) 
+	if (cp1->controlType == CONTROL_TYPE_NONE)
 		return 0;
 
 	model = cp1->ap.model;
@@ -140,7 +139,7 @@ void SetSmashedCone(int cone, VECTOR *velocity, int player, int side)
 
 	if (current_smashed_cone > MAX_SMASHED_CONES-1)
 		current_smashed_cone = 0;
-	
+
 	sc->rot_speed = 256;
 	sc->side = side;
 	sc->cone = cone;
@@ -152,14 +151,14 @@ void SetSmashedCone(int cone, VECTOR *velocity, int player, int side)
 
 	if (sc->velocity.vx < 0)
 		sc->velocity.vy = velocity->vx;
-	else 
+	else
 		sc->velocity.vy = -velocity->vx;
 
 	if (sc->velocity.vz < 0)
 		sc->velocity.vy += velocity->vz;
 	else
 		sc->velocity.vy -= velocity->vz;
-	
+
 	sc->velocity.vy /= 2;
 
 	if ((rand() & 1) == 0)
@@ -172,16 +171,15 @@ void SetSmashedCone(int cone, VECTOR *velocity, int player, int side)
 
 	chan = GetFreeChannel();
 
-	if (chan != -1) 
+	if (chan != -1)
 	{
-		if (NumPlayers > 1 && NoPlayerControl == 0) 
+		if (NumPlayers > 1 && NoPlayerControl == 0)
 			SetPlayerOwnsChannel(chan, player);
 
 		tbd = &gTrailblazerData[cone];
 		Start3DSoundVolPitch(chan, SOUND_BANK_SFX, 1, tbd->x, tbd->y, tbd->z, -2000, 800);
 	}
 }
-
 
 // [D] [T]
 void MoveSmashedCones(void)
@@ -197,7 +195,7 @@ void MoveSmashedCones(void)
 
 	for (i = 0;  i < MAX_SMASHED_CONES; i++)
 	{
-		if (sc->cone != -1) 
+		if (sc->cone != -1)
 		{
 			tbd = &gTrailblazerData[sc->cone];
 
@@ -217,7 +215,7 @@ void MoveSmashedCones(void)
 				sc->active = 0;
 			}
 		}
-		
+
 		sc++;
 	}
 }
@@ -233,7 +231,7 @@ void DrawCone(VECTOR *position, int cone)
 
 	if (PositionVisible(position) == 0 || FrustrumCheck(position, gTrailblazerConeModel->bounding_sphere) == -1)
 		return;
-	
+
 	InitMatrix(matrix);
 	_RotMatrixY(&matrix, gTrailblazerData[cone].rot);
 
@@ -290,20 +288,20 @@ void GetConePos(int cone, VECTOR *pos, int side)
 		pos->vz = tbd->z;
 		pos->pad = tbd->rot;	// [A] store cone rotation
 	}
-	else 
+	else
 	{
 		radius = cone * -4 + 600;
 
 		x = radius * RCOS(tbd->rot);
 		z = -radius * RSIN(tbd->rot);
 
-		if (side == 0) 
+		if (side == 0)
 		{
 			pos->vx = tbd->x - FIXED(x);
 			pos->vy = tbd->y;
 			pos->vz = tbd->z - FIXED(z);
 		}
-		else 
+		else
 		{
 			pos->vx = tbd->x + FIXED(x);
 			pos->vy = tbd->y;
@@ -392,7 +390,7 @@ void HandleDrivingGames(void)
 							int radius;
 
 							tbd = &gTrailblazerData[cone];
-							
+
 							radius = (600 - (gTrailblazerConeIndex * 400 + i) / 100) * 4096;
 
 							sn = RSIN(tbd->rot);
@@ -546,6 +544,3 @@ void DrawDrivingGames(void)
 
 	DrawSmashedCones();
 }
-
-
-
