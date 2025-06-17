@@ -8,9 +8,6 @@ extern TEXTURE_DETAILS chest1_texture;
 extern TEXTURE_DETAILS head1_texture;
 
 extern MODEL* gPed1HeadModelPtr;
-extern MODEL* gPed2HeadModelPtr;
-extern MODEL* gPed3HeadModelPtr;
-extern MODEL* gPed4HeadModelPtr;
 
 extern int ThisMotion;
 

@@ -430,9 +430,6 @@ TEXTURE_DETAILS chest1_texture;
 TEXTURE_DETAILS head1_texture;
 
 MODEL* gPed1HeadModelPtr;
-MODEL* gPed2HeadModelPtr;
-MODEL* gPed3HeadModelPtr;
-MODEL* gPed4HeadModelPtr;
 
 char* MotionCaptureData[MAX_MOTION_CAPTURE];	// [A] actually, pointers
 int ThisMotion;

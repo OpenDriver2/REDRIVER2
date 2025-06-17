@@ -60,17 +60,17 @@
 #include "state.h"
 #include "cutrecorder.h"
 
-int levelstartpos[8][4] = {
-	{ 4785, -1024, -223340, 0 },
-	{ -223276, 2048, -235167, 0 },
-	{ 230347, -1024, 704030, 0 },
-	{ 91631, -1024, -347175, 0 },
+int levelstartpos[4][4] = {
+	{ 4785, -1024, -223340, 0 },	// CHICAGO
+	{ -223276, 2048, -235167, 0 },	// HAVANA
+	{ 230347, -1024, 704030, 0 },	// VEGAS
+	{ 91631, -1024, -347175, 0 },	// RIO
 
-	// what?
-	{ 148808, 6163, -112000, 0 },
-	{ -170000, 6163, 361000, 0 },
-	{ -10500, -6163, -22144, 0 },
-	{ -8995, -6163, 63655, 0 },
+	// UNUSED - Driver 1 leftover
+	//{ 148808, 6163, -112000, 0 },
+	//{ -170000, 6163, 361000, 0 },
+	//{ -10500, -6163, -22144, 0 },
+	//{ -8995, -6163, 63655, 0 },
 };
 
 XZPAIR gStartPos = { 0 };
@@ -161,10 +161,11 @@ void InitModelNames(void)
 	gCleanWheelModelPtr = FindModelPtrWithName("CLEANWHEEL");
 	gFastWheelModelPtr = FindModelPtrWithName("FASTWHEEL");
 	gDamWheelModelPtr = FindModelPtrWithName("DAMWHEEL");
+
 	gPed1HeadModelPtr = FindModelPtrWithName("PEDHEAD1");
-	gPed2HeadModelPtr = FindModelPtrWithName("HEAD");
-	gPed3HeadModelPtr = FindModelPtrWithName("HEAD");
-	gPed4HeadModelPtr = FindModelPtrWithName("HEAD");
+	//gPed2HeadModelPtr = FindModelPtrWithName("HEAD");
+	//gPed3HeadModelPtr = FindModelPtrWithName("HEAD");
+	//gPed4HeadModelPtr = FindModelPtrWithName("HEAD");
 
 	//gBoxModelPtr = FindModelPtrWithName("CRATE");
 	//gRotorPtr = FindModelPtrWithName("ROTOR");
