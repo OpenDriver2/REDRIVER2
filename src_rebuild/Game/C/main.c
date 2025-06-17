@@ -66,7 +66,7 @@ int levelstartpos[4][4] = {
 	{ 230347, -1024, 704030, 0 },	// VEGAS
 	{ 91631, -1024, -347175, 0 },	// RIO
 
-	// UNUSED - Driver 1 leftover
+	// [A] UNUSED - Driver 1 leftover
 	//{ 148808, 6163, -112000, 0 },
 	//{ -170000, 6163, 361000, 0 },
 	//{ -10500, -6163, -22144, 0 },
@@ -189,6 +189,7 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 	int* ptr;
 
 	int numLumps = -1;
+	int i;
 
 	quit = 0;
 	do {
@@ -196,176 +197,152 @@ void ProcessLumps(char* lump_ptr, int lump_size)
 		seg_size = *(int*)(lump_ptr + 4);
 		ptr = (int*)(lump_ptr + 8);
 
-		if (lump_type == LUMP_LOWDETAILTABLE)
+		switch (lump_type)
 		{
-			printInfo("LUMP_LOWDETAILTABLE: size: %d\n", seg_size);
-			ProcessLowDetailTable((char*)ptr, seg_size);
-		}
-		else if (lump_type == LUMP_CHAIR)
-		{
-			printInfo("LUMP_CHAIR: size: %d\n", seg_size);
-			ProcessChairLump((char*)ptr, seg_size);
-		}
-		else if (lump_type == LUMP_MOTIONCAPTURE)
-		{
-			printInfo("LUMP_MOTIONCAPTURE: size: %d\n", seg_size);
-			ProcessMotionLump((char*)ptr, seg_size);
-			gLoadedMotionCapture = 1;
-		}
-		else if (lump_type == LUMP_OVERLAYMAP)
-		{
-			printInfo("LUMP_OVERLAYMAP: size: %d\n", seg_size);
-			ProcessOverlayLump((char*)ptr, seg_size);
-			gLoadedOverlay = 1;
-		}
-		else if (lump_type == LUMP_MAP)
-		{
-			map_lump = (char*)ptr;
-		}
-		else if (lump_type == LUMP_SPOOLINFO)
-		{
-			printInfo("LUMP_SPOOLINFO: size: %d\n", seg_size);
-			ProcessSpoolInfoLump((char*)ptr, lump_size);
-			ProcessMapLump(map_lump, 0);
+			case LUMP_MODELS:
+				printInfo("LUMP_MODELS: size: %d\n", seg_size);
+				ProcessMDSLump((char*)ptr, seg_size);
+				ProcessCarModelLump(car_models_lump, 0);
 
-			// [A] only used in alpha 1.6
-			region_buffer_xor = (cells_down >> 5 & 2U | cells_across >> 6 & 1U) << 2;
-			sdSelfModifyingCode = sdSelfModifyingCode ^ (sdSelfModifyingCode ^ region_buffer_xor) & 12;
-		}
-		else if (lump_type == LUMP_CURVES2)
-		{
-			printInfo("LUMP_CURVES2: size: %d\n", seg_size);
-			ProcessCurvesDriver2Lump((char*)ptr, seg_size);
-		}
-		else if (lump_type == LUMP_TEXTURENAMES)
-		{
-			printInfo("LUMP_TEXTURENAMES: size: %d\n", seg_size);
+				InitModelNames();
+
+				SetUpEvents(1);
+				break;
+
+			case LUMP_MAP:
+				map_lump = (char*)ptr;
+				break;
+
+			case LUMP_TEXTURENAMES:
+				printInfo("LUMP_TEXTURENAMES: size: %d\n", seg_size);
 #ifndef PSX
-			// we need to copy texture names
-			texturename_buffer = D_MALLOC(seg_size);
-			memcpy(texturename_buffer, ptr, seg_size);
+				// we need to copy texture names
+				texturename_buffer = D_MALLOC(seg_size);
+				memcpy(texturename_buffer, ptr, seg_size);
 #else
-			// we need to copy texture names
-			texturename_buffer = (char*)ptr;
+				// we need to copy texture names
+				texturename_buffer = (char*)ptr;
 #endif
-		}
-		else if (lump_type == LUMP_PALLET)
-		{
-			printInfo("LUMP_PALLET: size: %d\n", seg_size);
-			palette_lump = (char*)ptr;
-		}
-		else if (lump_type == LUMP_TEXTUREINFO)
-		{
-			printInfo("LUMP_TEXTUREINFO: size: %d\n", seg_size);
-			ProcessTextureInfo((char*)ptr);
-		}
-		else if (lump_type == LUMP_STRAIGHTS2)
-		{
-			printInfo("LUMP_STRAIGHTS2: size: %d\n", seg_size);
-			ProcessStraightsDriver2Lump((char*)ptr, seg_size);
-		}
-		else if (lump_type == LUMP_JUNCTIONS2_NEW)
-		{
-			int cnt;
+				break;
 
-			printInfo("LUMP_JUNCTIONS2_NEW: size: %d\n", seg_size);
-			ProcessJunctionsDriver2Lump((char*)ptr, seg_size, 0);
+			case LUMP_ROADMAP:
+				printInfo("LUMP_ROADMAP: size: %d\n", seg_size);
+				NewProcessRoadMapLump(&roadMapLumpData, (char*)ptr);
+				break;
 
-			// put junction flags if any
-			cnt = 0;
+			case LUMP_ROADS:
+				printInfo("LUMP_ROADS: size: %d\n", seg_size);
+				ProcessRoadsLump((char*)ptr, seg_size);
+				break;
 
-			while (cnt < NumTempJunctions)
-			{
-				Driver2JunctionsPtr[cnt].flags = Driver2TempJunctionsPtr[cnt];
-				cnt++;
-			}
+			case LUMP_JUNCTIONS:
+				printInfo("LUMP_JUNCTIONS: size: %d\n", seg_size);
+				ProcessJunctionsLump((char*)ptr, seg_size);
+				break;
 
-			gDemoLevel = 0; // [A]
-		}
-		else if (lump_type == LUMP_JUNCTIONS2)
-		{
-			int cnt;
+			case LUMP_ROADSURF:
+				printInfo("LUMP_ROADSURF: size: %d\n", seg_size);
+				break;
 
-			printInfo("LUMP_JUNCTIONS2: size: %d\n", seg_size);
-			ProcessJunctionsDriver2Lump((char*)ptr, seg_size, 1);
+			case LUMP_MODELNAMES:
+				printInfo("LUMP_MODELNAMES: size: %d\n", seg_size);
+				modelname_buffer = (char*)ptr;
+				break;
 
-			// put junction flags if any
-			cnt = 0;
+			case LUMP_ROADBOUNDS:
+				printInfo("LUMP_ROADBOUNDS: size: %d\n", seg_size);
+				ProcessRoadBoundsLump((char*)ptr, seg_size);
+				break;
 
-			while (cnt < NumTempJunctions)
-			{
-				Driver2JunctionsPtr[cnt].flags = Driver2TempJunctionsPtr[cnt];
-				cnt++;
-			}
+			case LUMP_JUNCBOUNDS:
+				printInfo("LUMP_JUNCBOUNDS: size: %d\n", seg_size);
+				ProcessJuncBoundsLump((char*)ptr, seg_size);
+				break;
 
-			gDemoLevel = 1; // [A]
-			gLoadedMotionCapture = 0;
-		}
-		else if (lump_type == LUMP_JUNCTIONS)
-		{
-			printInfo("LUMP_JUNCTIONS: size: %d\n", seg_size);
-			ProcessJunctionsLump((char*)ptr, seg_size);
-		}
-		else if (lump_type == LUMP_CAR_MODELS)
-		{
-			printInfo("LUMP_CAR_MODELS: size: %d\n", seg_size);
-			car_models_lump = (char*)ptr;
-		}
-		else if (lump_type == LUMP_MODELS)
-		{
-			printInfo("LUMP_MODELS: size: %d\n", seg_size);
-			ProcessMDSLump((char*)ptr, seg_size);
-			ProcessCarModelLump(car_models_lump, 0);
+			case LUMP_SUBDIVISION:
+				printInfo("LUMP_SUBDIVISION: size: %d\n", seg_size);
+				ProcessSubDivisionLump((char*)ptr, seg_size);
+				break;
 
-			InitModelNames();
+			case LUMP_LOWDETAILTABLE:
+				printInfo("LUMP_LOWDETAILTABLE: size: %d\n", seg_size);
+				ProcessLowDetailTable((char*)ptr, seg_size);
+				break;
 
-			SetUpEvents(1);
-		}
-		else if (lump_type == LUMP_ROADMAP)
-		{
-			printInfo("LUMP_ROADMAP: size: %d\n", seg_size);
-			NewProcessRoadMapLump(&roadMapLumpData, (char*)ptr);
-		}
-		else if (lump_type == LUMP_ROADS)
-		{
-			printInfo("LUMP_ROADS: size: %d\n", seg_size);
-			ProcessRoadsLump((char*)ptr, seg_size);
-		}
-		else if (lump_type == LUMP_ROADBOUNDS)
-		{
-			printInfo("LUMP_ROADBOUNDS: size: %d\n", seg_size);
-			ProcessRoadBoundsLump((char*)ptr, seg_size);
-		}
-		else if (lump_type == LUMP_JUNCBOUNDS)
-		{
-			printInfo("LUMP_JUNCBOUNDS: size: %d\n", seg_size);
-			ProcessJuncBoundsLump((char*)ptr, seg_size);
-		}
-		else if (lump_type == LUMP_SUBDIVISION)
-		{
-			printInfo("LUMP_SUBDIVISION: size: %d\n", seg_size);
-			ProcessSubDivisionLump((char*)ptr, seg_size);
-		}
-		else if (lump_type == LUMP_ROADSURF)
-		{
-			printInfo("LUMP_ROADSURF: size: %d\n", seg_size);
-		}
-		else if (lump_type == LUMP_MODELNAMES)
-		{
-			printInfo("LUMP_MODELNAMES: size: %d\n", seg_size);
-			modelname_buffer = (char*)ptr;
-		}
-		else if (lump_type == 0xff)
-		{
-			quit = true;
-		}
-		else
-		{
-			printInfo("ERROR - unknown lump type %d\n", lump_type);
-			numLumps = lump_type;
+			case LUMP_MOTIONCAPTURE:
+				printInfo("LUMP_MOTIONCAPTURE: size: %d\n", seg_size);
+				ProcessMotionLump((char*)ptr, seg_size);
+				gLoadedMotionCapture = 1;
+				break;
 
-			lump_ptr += 4;
-			continue;
+			case LUMP_OVERLAYMAP:
+				printInfo("LUMP_OVERLAYMAP: size: %d\n", seg_size);
+				ProcessOverlayLump((char*)ptr, seg_size);
+				gLoadedOverlay = 1;
+				break;
+
+			case LUMP_PALLET:
+				printInfo("LUMP_PALLET: size: %d\n", seg_size);
+				palette_lump = (char*)ptr;
+				break;
+
+			case LUMP_SPOOLINFO:
+				printInfo("LUMP_SPOOLINFO: size: %d\n", seg_size);
+				ProcessSpoolInfoLump((char*)ptr, lump_size);
+				ProcessMapLump(map_lump, 0);
+
+				// [A] only used in alpha 1.6
+				region_buffer_xor = (cells_down >> 5 & 2U | cells_across >> 6 & 1U) << 2;
+				sdSelfModifyingCode = sdSelfModifyingCode ^ (sdSelfModifyingCode ^ region_buffer_xor) & 12;
+				break;
+
+			case LUMP_CAR_MODELS:
+				printInfo("LUMP_CAR_MODELS: size: %d\n", seg_size);
+				car_models_lump = (char*)ptr;
+				break;
+
+			case LUMP_CHAIR:
+				printInfo("LUMP_CHAIR: size: %d\n", seg_size);
+				ProcessChairLump((char*)ptr, seg_size);
+				break;
+
+			case LUMP_TEXTUREINFO:
+				printInfo("LUMP_TEXTUREINFO: size: %d\n", seg_size);
+				ProcessTextureInfo((char*)ptr);
+				break;
+
+			case LUMP_STRAIGHTS2:
+				printInfo("LUMP_STRAIGHTS2: size: %d\n", seg_size);
+				ProcessStraightsDriver2Lump((char*)ptr, seg_size);
+				break;
+
+			case LUMP_CURVES2:
+				printInfo("LUMP_CURVES2: size: %d\n", seg_size);
+				ProcessCurvesDriver2Lump((char*)ptr, seg_size);
+				break;
+
+			case LUMP_JUNCTIONS2:
+			case LUMP_JUNCTIONS2_NEW:
+				printInfo("LUMP_JUNCTIONS2: size: %d\n", seg_size);
+				ProcessJunctionsDriver2Lump((char*)ptr, seg_size,
+					gDemoLevel = (lump_type == LUMP_JUNCTIONS2) // [A]
+				);
+
+				// put junction flags if any
+				for (i = 0; i < NumTempJunctions; i++)
+					Driver2JunctionsPtr[i].flags = Driver2TempJunctionsPtr[i];
+				break;
+
+			case 0xff:
+				quit = 1;
+				break;
+
+			default:
+				printInfo("ERROR - unknown lump type %d\n", lump_type);
+				numLumps = lump_type;
+
+				lump_ptr += 4;
+				continue;
 		}
 
 		lump_ptr = (char*)ptr + ((seg_size + 3) & ~0x3); // aligned to 4-byte boundary
@@ -433,10 +410,10 @@ void LoadGameLevel(void)
 
 	SpoolLumpOffset = citylumps[GameLevel][CITYLUMP_SPOOL].x;
 
-	//Init_Reflection_Mapping();	// [A] I know that this is obsolete and used NOWHERE
+	//Init_Reflection_Mapping();	// [A] UNUSED - Driver 1 leftover
 	InitDebrisNames();
 	InitShadow();
-	//InitTextureNames();			// [A] I know that this is obsolete and used NOWHERE
+	//InitTextureNames();			// [A] UNUSED - Driver 1 leftover
 
 #if USE_PC_FILESYSTEM
 	extern int gContentOverride;

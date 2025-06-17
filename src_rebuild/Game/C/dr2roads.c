@@ -460,9 +460,7 @@ int RoadInCell(VECTOR *pos)
 
 #ifndef PSX
 	if (gDemoLevel)
-	{
 		return RoadInCell_alpha16(pos);
-	}
 #endif
 
 	cellPos.x = pos->vx - 512;
