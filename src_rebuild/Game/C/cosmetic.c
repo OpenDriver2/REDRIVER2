@@ -166,7 +166,7 @@ void AddIndicatorLight(CAR_DATA *cp, int Type)
 	SVECTOR vfrnt;
 	SVECTOR vback;
 
-	//if (cp->controlType != CONTROL_TYPE_CIV_AI)		// [A] weird way to disable it here
+	//if (cp->controlType != CONTROL_TYPE_CIV_AI)	// [A] weird way to disable it here
 	//	return;
 
 	life = &cp->ap.life;
@@ -203,7 +203,7 @@ void AddIndicatorLight(CAR_DATA *cp, int Type)
 	{
 		if (cp->ap.damage[4] < 500)
 		{
-			*life2 += brightness >> 3;
+			*life2 += col.r >> 3;
 			ShowCarlight(&vback, cp, &col, INDICATORLIGHT_SIZE, INDICATORLIGHT_SIZE * 4, &light_texture, 0);
 		}
 
@@ -218,7 +218,7 @@ void AddIndicatorLight(CAR_DATA *cp, int Type)
 		if (cp->ap.damage[3] < 500)
 		{
 			vback.vx = car_cos->cog.vx * 2 - vback.vx;
-			*life2 += brightness >> 3;
+			*life2 += col.r >> 3;
 
 			ShowCarlight(&vback, cp, &col, INDICATORLIGHT_SIZE, INDICATORLIGHT_SIZE * 4, &light_texture, 0);
 		}
