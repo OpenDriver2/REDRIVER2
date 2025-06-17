@@ -370,7 +370,7 @@ typedef struct _APPEARANCE_DATA
 	char coplife;
 	short qy;
 	short qw;
-	char life2;
+	CVECTOR life2;			// [A] now allows ARGB for back lights reflection at night
 	char model;
 	char palette;
 

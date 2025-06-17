@@ -933,7 +933,7 @@ void plotNewCarModel(CAR_MODEL* car, int palette)
 		(gEnableDlights ? plotCarPolyGT3Lit : plotCarPolyGT3)(car->numGT3, car->pGT3, car->vlist, car->nlist, &_pg, palette);
 #else
 		plotCarPolyGT3(car->numGT3, car->pGT3, car->vlist, car->nlist, &_pg, palette);
-#endif
+#endif // DYNAMIC_LIGHTING
 	}
 
 	current->primptr = (char*)_pg.primptr;

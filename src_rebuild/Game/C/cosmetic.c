@@ -9,6 +9,7 @@
 #include "camera.h"
 #include "director.h"
 #include "main.h"
+#include "draw.h"
 
 char* CosmeticFiles[] = {
 	"LEVELS\\CHICAGO.LCF",
@@ -106,10 +107,12 @@ void LoadCosmetics(int level)
 void AddReverseLight(CAR_DATA *cp)
 {
 	CAR_COSMETICS *car_cos;
+	CVECTOR *life2;
 	SVECTOR v1;
 	CVECTOR col;
 
 	car_cos = cp->ap.carCos;
+	life2 = &cp->ap.life2;
 
 	col.r = 100;
 	col.g = 90;
@@ -123,12 +126,29 @@ void AddReverseLight(CAR_DATA *cp)
 
 	if (cp->ap.damage[4] < 500)
 	{
+#ifdef DYNAMIC_LIGHTING
+		if (gEnableDlights) {
+			life2->r += col.r >> 3;
+			life2->g += col.g >> 3;
+			life2->b += col.b >> 3;
+		}
+#endif // DYNAMIC_LIGHTING
+
 		ShowCarlight(&v1, cp, &col, REVERSELIGHT_SIZE, REVERSELIGHT_SIZE * 3, &light_texture, 0);
 	}
 
 	if (cp->ap.damage[3] < 500)
 	{
 		v1.vx = car_cos->cog.vx * 2 - v1.vx;
+
+#ifdef DYNAMIC_LIGHTING
+		if (gEnableDlights) {
+			life2->r += col.r >> 3;
+			life2->g += col.g >> 3;
+			life2->b += col.b >> 3;
+		}
+#endif // DYNAMIC_LIGHTING
+
 		ShowCarlight(&v1, cp, &col, REVERSELIGHT_SIZE, REVERSELIGHT_SIZE * 3, &light_texture, 0);
 	}
 }
@@ -161,7 +181,7 @@ void AddIndicatorLight(CAR_DATA *cp, int Type)
 	u_int brightness;
 	char *life;
 	CAR_COSMETICS *car_cos;
-	char *life2;
+	CVECTOR *life2;
 	CVECTOR col;
 	SVECTOR vfrnt;
 	SVECTOR vback;
@@ -178,7 +198,6 @@ void AddIndicatorLight(CAR_DATA *cp, int Type)
 		brightness = cp->ap.life << 1;
 
 	col.r = brightness & 0xFF;
-
 	col.g = 0;
 	col.b = 0;
 
@@ -203,7 +222,14 @@ void AddIndicatorLight(CAR_DATA *cp, int Type)
 	{
 		if (cp->ap.damage[4] < 500)
 		{
-			*life2 += col.r >> 3;
+			life2->r += col.r >> 3;
+#ifdef DYNAMIC_LIGHTING
+			if (gEnableDlights) {
+				life2->g += col.g >> 3;
+				life2->b += col.b >> 3;
+			}
+#endif // DYNAMIC_LIGHTING
+
 			ShowCarlight(&vback, cp, &col, INDICATORLIGHT_SIZE, INDICATORLIGHT_SIZE * 4, &light_texture, 0);
 		}
 
@@ -218,7 +244,14 @@ void AddIndicatorLight(CAR_DATA *cp, int Type)
 		if (cp->ap.damage[3] < 500)
 		{
 			vback.vx = car_cos->cog.vx * 2 - vback.vx;
-			*life2 += col.r >> 3;
+
+			life2->r += col.r >> 3;
+#ifdef DYNAMIC_LIGHTING
+			if (gEnableDlights) {
+				life2->g += col.g >> 3;
+				life2->b += col.b >> 3;
+			}
+#endif // DYNAMIC_LIGHTING
 
 			ShowCarlight(&vback, cp, &col, INDICATORLIGHT_SIZE, INDICATORLIGHT_SIZE * 4, &light_texture, 0);
 		}
@@ -238,8 +271,8 @@ void AddBrakeLight(CAR_DATA *cp)
 	int damIndex;
 	short cogOffset;
 	CAR_COSMETICS *car_cos;
+	CVECTOR *life2;
 	int offset;
-	char *life2;
 	int loop;
 	SVECTOR v1;
 	SVECTOR v2;
@@ -249,11 +282,11 @@ void AddBrakeLight(CAR_DATA *cp)
 	short verticalFlag;
 
 	car_cos = cp->ap.carCos;
+	life2 = &cp->ap.life2;
+
 	col.r = 200;
 	col.g = 0;
 	col.b = 0;
-
-	life2 = &cp->ap.life2;
 
 	if (!(car_cos->extraInfo & 8))
 		return;
@@ -295,7 +328,18 @@ void AddBrakeLight(CAR_DATA *cp)
 				{
 					ShowCarlight(&v1, cp, &col, BRAKELIGHT_SIZE, BRAKELIGHT_SIZE * 4, &light_texture, 0);
 					ShowCarlight(&v2, cp, &col, BRAKELIGHT_SIZE, BRAKELIGHT_SIZE * 4, &light_texture, 0);
-					*life2 += 8;
+
+#ifdef DYNAMIC_LIGHTING
+					if (gEnableDlights) {
+						life2->r += col.r >> 4;
+						life2->g += col.g >> 4;
+						life2->b += col.b >> 4;
+					}
+					else
+						life2->r += 8;
+#else
+					life2->r += 8;
+#endif // DYNAMIC_LIGHTING
 				}
 			}
 			else
@@ -314,7 +358,18 @@ void AddBrakeLight(CAR_DATA *cp)
 				{
 					ShowCarlight(&v1, cp, &col, BRAKELIGHT_SIZE, BRAKELIGHT_SIZE * 4, &light_texture, 0);
 					ShowCarlight(&v2, cp, &col, BRAKELIGHT_SIZE, BRAKELIGHT_SIZE * 4, &light_texture, 0);
-					*life2 += 8;
+
+#ifdef DYNAMIC_LIGHTING
+					if (gEnableDlights) {
+						life2->r += col.r >> 4;
+						life2->g += col.g >> 4;
+						life2->b += col.b >> 4;
+					}
+					else
+						life2->r += 8;
+#else
+					life2->r += 8;
+#endif // DYNAMIC_LIGHTING
 				}
 			}
 		}
@@ -325,7 +380,18 @@ void AddBrakeLight(CAR_DATA *cp)
 			if (cp->ap.damage[damIndex] < 500)
 			{
 				ShowCarlight(&v1, cp, &col, BRAKELIGHT_SIZE, BRAKELIGHT_SIZE * 4, &light_texture, 0);
-				*life2 += 8;
+
+#ifdef DYNAMIC_LIGHTING
+					if (gEnableDlights) {
+						life2->r += col.r >> 4;
+						life2->g += col.g >> 4;
+						life2->b += col.b >> 4;
+					}
+					else
+						life2->r += 8;
+#else
+					life2->r += 8;
+#endif // DYNAMIC_LIGHTING
 			}
 		}
 
@@ -463,13 +529,13 @@ void AddNightLights(CAR_DATA *cp)
 	char lights;
 	int damIndex;
 	CAR_COSMETICS *car_cos;
+	CVECTOR *life2;
 	SVECTOR Position1;
 	SVECTOR Position2;
 	SVECTOR vec;
 	CVECTOR col;
 	CVECTOR col2;
 	int lit;
-	char *life2;
 	short loop;
 	short doubleFlag;
 	short verticalFlag;
@@ -631,7 +697,17 @@ void AddNightLights(CAR_DATA *cp)
 					ShowCarlight(&Position1, cp, &col, BACKLIGHT_SIZE, BACKLIGHT_SIZE * 3, &light_texture, lightFlag & 0xff);
 				}
 
-				*life2 += 16;
+#ifdef DYNAMIC_LIGHTING
+				if (gEnableDlights) {
+					life2->r += col.r >> 3;
+					life2->g += col.g >> 3;
+					life2->b += col.b >> 3;
+				}
+				else
+					life2->r += 16;
+#else
+				life2->r += 16;
+#endif // DYNAMIC_LIGHTING
 			}
 
 			vec.vx = cogOffset * 2 - vec.vx;
@@ -652,14 +728,18 @@ void AddNightLights(CAR_DATA *cp)
 	}
 
 	// back lights pool
-	col.r = *life2;
-	if (col.r)
-	{
-		col.b = 0;
-		col.g = 0;
+	// [A] no longer hard coded to red
+	col.r = life2->r;
+	col.g = life2->g;
+	col.b = life2->b;
 
+	if (col.r || col.g || col.b)
+	{
 		PlacePoolForCar(cp, &col, 0, 0);
-		*life2 = 0;
+
+		life2->r = 0;
+		life2->g = 0;
+		life2->b = 0;
 	}
 }
 

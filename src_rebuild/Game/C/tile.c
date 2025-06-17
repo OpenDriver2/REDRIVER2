@@ -113,7 +113,7 @@ void Tile1x1Lit(MODEL* model)
 	// done
 	plotContext.current->primptr = plotContext.primptr;
 }
-#endif
+#endif // DYNAMIC_LIGHTING
 
 // [D] [T] [A]
 void Tile1x1(MODEL *model)
@@ -233,7 +233,7 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 			plotContext.colour = fst_div_lut_3_5(combo >> 16 & 255, t) << 16 | fst_div_lut_3_5(combo >> 8 & 255, t) << 8 | fst_div_lut_3_5(combo & 255, t) | 0x2C000000U;
 #else
 			plotContext.colour = fst_div_3(combo >> 16 & 255) << 16 | fst_div_3(combo >> 8 & 255) << 8 | fst_div_3(combo & 255) | 0x2C000000U;
-#endif
+#endif // DYNAMIC_LIGHTING
 		}
 	}
 
@@ -610,7 +610,7 @@ void SubdivNxM(char *polys, int n, int m, int ofse)
 	(gEnableDlights ? drawMeshLit : drawMesh)((MVERTEX(*)[5][5])subdivVerts, m, n, &plotContext);
 #else
 	drawMesh((MVERTEX(*)[5][5])subdivVerts, m, n, &plotContext);
-#endif
+#endif // DYNAMIC_LIGHTING
 
 	plotContext.ot -= ofse;
 }

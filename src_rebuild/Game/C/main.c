@@ -2368,7 +2368,7 @@ void RenderGame(void)
 }
 
 int Havana3DLevelDraw = -1;
-int Havana3DLevelMode = -1;			// 0 = uses 1.0 LEV file, 1 = uses v1.1 LEV file
+int Havana3DLevelMode = -1;		// 0 = uses 1.0 LEV file, 1 = uses v1.1 LEV file
 
 // [D] [T]
 void InitGameVariables(void)
