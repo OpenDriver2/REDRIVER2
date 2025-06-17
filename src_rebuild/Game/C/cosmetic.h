@@ -4,6 +4,8 @@
 extern CAR_COSMETICS car_cosmetics[MAX_CAR_MODELS];
 extern CAR_COSMETICS dummyCosmetics;
 
+extern int gAmberTurnSignals;
+
 extern int gcar_num;
 
 extern void LoadCosmetics(int level); // 0x00031160

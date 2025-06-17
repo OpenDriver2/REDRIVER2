@@ -19,6 +19,7 @@
 #include "C/players.h"
 #include "C/time.h"
 #include "C/draw.h"
+#include "C/cosmetic.h"
 
 #include "utils/ini.h"
 
@@ -587,6 +588,7 @@ int main(int argc, char** argv)
 		ini_sget(config, "game", "fieldOfView", "%d", &newScrZ);
 		ini_sget(config, "game", "freeCamera", "%d", &enableFreecamera);
 		ini_sget(config, "game", "driver1music", "%d", &gDriver1Music);
+		ini_sget(config, "game", "amberTurnSignals", "%d", &gAmberTurnSignals);
 		ini_sget(config, "game", "widescreenOverlays", "%d", &gWidescreenOverlayAlign);
 		ini_sget(config, "game", "fastLoadingScreens", "%d", &gFastLoadingScreens);
 		ini_sget(config, "game", "languageId", "%d", &gUserLanguage);

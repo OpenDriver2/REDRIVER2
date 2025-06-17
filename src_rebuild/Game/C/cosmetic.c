@@ -175,6 +175,8 @@ void SetupSpecCosmetics(char *loadbuffer)
 	FixCarCos(&car_cosmetics[4], model);
 }
 
+int gAmberTurnSignals = 0;
+
 // [D] [T]
 void AddIndicatorLight(CAR_DATA *cp, int Type)
 {
@@ -200,6 +202,9 @@ void AddIndicatorLight(CAR_DATA *cp, int Type)
 	col.r = brightness & 0xFF;
 	col.g = 0;
 	col.b = 0;
+
+	if (gAmberTurnSignals)	// [A]
+		col.g = col.r >> 1;
 
 	if (pauseflag == 0)
 		*life += 8;
