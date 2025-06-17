@@ -539,13 +539,13 @@ void State_GameInit(void* param)
 	{
 		if (GameType == GAME_TAKEADRIVE)
 		{
-			if (GameLevel == 0)
+			if (GameLevel == LEVEL_CHICAGO)
 				musicType = 0 + (gCurrentMissionNumber & 1);
-			else if (GameLevel == 1)
+			else if (GameLevel == LEVEL_HAVANA)
 				musicType = 5 + (gCurrentMissionNumber & 1);
-			else if (GameLevel == 2)
+			else if (GameLevel == LEVEL_VEGAS)
 				musicType = 2 + (gCurrentMissionNumber & 1) * 5;
-			else if (GameLevel == 3)
+			else if (GameLevel == LEVEL_RIO)
 				musicType = 3 + (gCurrentMissionNumber & 1);
 		}
 		else
@@ -555,28 +555,28 @@ void State_GameInit(void* param)
 	}
 	else
 #endif
-	if (GameLevel == 1)
-	{
-		musicType = 1;
-
-		if ((gCurrentMissionNumber & 1U) != 0)
-			musicType = 5;
-	}
-	else if (GameLevel == 0)
+	if (GameLevel == LEVEL_CHICAGO)
 	{
 		musicType = 2;
 
 		if ((gCurrentMissionNumber & 1U) != 0)
 			musicType = 6;
 	}
-	else if (GameLevel == 2)
+	else if (GameLevel == LEVEL_HAVANA)
+	{
+		musicType = 1;
+
+		if ((gCurrentMissionNumber & 1U) != 0)
+			musicType = 5;
+	}
+	else if (GameLevel == LEVEL_VEGAS)
 	{
 		musicType = 0;
 
 		if ((gCurrentMissionNumber & 1U) == 0)
 			musicType = 3;
 	}
-	else if (GameLevel == 3)
+	else if (GameLevel == LEVEL_RIO)
 	{
 		musicType = 4;
 
@@ -2175,8 +2175,8 @@ void UpdatePlayerInformation(void)
 			// fade out and end the game
 			if (wheelsAboveWaterToDieWithFade > 0 && cp->hd.where.t[1] < -1000 && gDieWithFade == 0)
 			{
-				// fix for Havana tunnels and Chicago freeway
-				if (GameLevel <= 1)
+				// fix for Chicago freeway and Havana tunnels
+				if (GameLevel == LEVEL_CHICAGO || GameLevel == LEVEL_HAVANA)
 				{
 					if (wheelsAboveWaterToDieWithFade == 4)
 						gDieWithFade = 1;
@@ -2548,7 +2548,7 @@ int Havana3DOcclusion(occlFunc func, int* param)
 	}
 #endif
 
-	if (GameLevel == 1 &&
+	if (GameLevel == LEVEL_HAVANA &&
 		camera_position.vx <= -430044 && camera_position.vx >= -480278 &&
 		camera_position.vz <= -112814 && camera_position.vz >= -134323)
 	{

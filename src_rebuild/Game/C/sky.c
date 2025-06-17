@@ -243,11 +243,11 @@ void LoadSky(void)
 
 	} while (y < 7);
 
-	if (GameLevel == 1)
+	if (GameLevel == LEVEL_HAVANA)
 		skyNum = 1;
-	else if (GameLevel == 2)
+	else if (GameLevel == LEVEL_VEGAS)
 		skyNum = 2;
-	else if (GameLevel == 3)
+	else if (GameLevel == LEVEL_RIO)
 		skyNum = 3;
 	else
 		skyNum = 0;
@@ -692,7 +692,7 @@ void TunnelSkyFade(void)
 	int tun;
 	int px, pz;
 
-	if (GameLevel != 3 && gTunnelNum < 3)
+	if (GameLevel != LEVEL_RIO && gTunnelNum < 3)
 		tun = gTunnelNum;
 	else
 		tun = 2;
@@ -794,10 +794,10 @@ void calc_sky_brightness(RGB16* skycolor)
 	}
 
 	if (gTunnelNum == -1 ||
-		GameLevel == 0 ||
-		GameLevel == 1 && gTunnelNum == 2 ||
-		GameLevel == 2 ||
-		GameLevel == 3 && gTunnelNum != 1)
+		GameLevel == LEVEL_CHICAGO ||
+		GameLevel == LEVEL_HAVANA && gTunnelNum == 2 ||
+		GameLevel == LEVEL_VEGAS ||
+		GameLevel == LEVEL_RIO && gTunnelNum != 1)
 		return;
 
 	TunnelSkyFade();

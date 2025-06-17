@@ -92,7 +92,7 @@ GAMEMODE WantedGameMode = GAMEMODE_NORMAL;
 
 GAMETYPE StoredGameType;
 
-int GameLevel = 0;
+int GameLevel = LEVEL_CHICAGO;
 int gInvincibleCar = 0;
 int gPlayerImmune = 0;
 u_char NumPlayers = 1;
@@ -117,7 +117,7 @@ int gMinimumCops = 0;
 int gCopDesiredSpeedScale = 4096;
 int gCopMaxPowerScale = 4096;
 int gCurrentResidentSlot = 0;
-int gPuppyDogCop = 0;		// Driver 1 leftover
+int gPuppyDogCop = 0;	// Driver 1 leftover
 int CopsAllowed = 0;
 
 int MaxPlayerDamage[2] = { 0x1f40 };

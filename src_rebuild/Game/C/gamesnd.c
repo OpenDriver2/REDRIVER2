@@ -167,17 +167,17 @@ int CarHasSiren(int index)
 {
 	if (index == 4)
 	{
-		if (GameLevel == 0)
+		if (GameLevel == LEVEL_CHICAGO)
 		{
 			if (MissionHeader->residentModels[4] == 8)
 				return M_SHRT_2(SOUND_BANK_SFX, 12);
 		}
-		else if (GameLevel == 2)
+		else if (GameLevel == LEVEL_VEGAS)
 		{
 			if (MissionHeader->residentModels[4] == 9)
 				return M_SHRT_2(SOUND_BANK_SFX, 12);
 		}
-		else if (GameLevel == 3)
+		else if (GameLevel == LEVEL_RIO)
 		{
 			if (MissionHeader->residentModels[4] == 10)
 				return M_SHRT_2(SOUND_BANK_SFX, 12);
@@ -222,26 +222,26 @@ int ResidentModelsBodge(void)
 		return 5;
 	}
 
-	if (GameLevel == 0)
+	if (GameLevel == LEVEL_CHICAGO)
 	{
 		i = 11;
 
 		if (j != 9 && j != i)
 			return 3;
 	}
-	else if (GameLevel == 1)
+	else if (GameLevel == LEVEL_HAVANA)
 	{
 		if (j - 8U > 1)
 			return 3;
 	}
-	else if (GameLevel == 2)
+	else if (GameLevel == LEVEL_VEGAS)
 	{
 		i = 8;
 
 		if (j != i)
 			return 3;
 	}
-	else if (GameLevel == 3)
+	else if (GameLevel == LEVEL_RIO)
 	{
 		i = 11;
 
@@ -357,13 +357,13 @@ void LoadLevelSFX(int missionNum)
 	// load ambient effects
 	if (NumPlayers < 2 || NoPlayerControl != 0)
 	{
-		if (GameLevel == 0)
+		if (GameLevel == LEVEL_CHICAGO)
 			LoadBankFromLump(SOUND_BANK_ENVIRONMENT, SBK_CITY_EFFECTS_START + city_night_fx);
-		else if (GameLevel == 1)
+		else if (GameLevel == LEVEL_HAVANA)
 			LoadBankFromLump(SOUND_BANK_ENVIRONMENT, SBK_CITY_EFFECTS_START + city_night_fx + 2);
-		else if (GameLevel == 2)
+		else if (GameLevel == LEVEL_VEGAS)
 			LoadBankFromLump(SOUND_BANK_ENVIRONMENT, SBK_CITY_EFFECTS_START + city_night_fx + 4);
-		else if (GameLevel == 3)
+		else if (GameLevel == LEVEL_RIO)
 			LoadBankFromLump(SOUND_BANK_ENVIRONMENT, SBK_CITY_EFFECTS_START + city_night_fx + 6);
 	}
 
@@ -465,9 +465,9 @@ void LoadLevelSFX(int missionNum)
 		LoadBankFromLump(SOUND_BANK_MISSION, index);
 
 	// special siren bank
-	if (GameLevel == 0 || GameLevel == 3)
+	if (GameLevel == LEVEL_CHICAGO || GameLevel == LEVEL_RIO)
 		LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_SPECIAL_SIREN1);
-	else if (GameLevel == 2)
+	else if (GameLevel == LEVEL_VEGAS)
 		LoadBankFromLump(SOUND_BANK_SFX, SBK_ID_SPECIAL_SIREN2);
 
 	// [A] padding?

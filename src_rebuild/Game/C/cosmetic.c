@@ -372,14 +372,14 @@ void AddCopCarLight(CAR_DATA *cp)
 	car_cos = cp->ap.carCos;
 
 	// configure
-	if (GameLevel == 1 || GameLevel == 3)
+	if (GameLevel == LEVEL_HAVANA || GameLevel == LEVEL_RIO)
 	{
 		side = 1;
 		num_lights = 2;
 		pos = 3;
 		count_speed = 48;
 	}
-	else if (GameLevel == 0)
+	else if (GameLevel == LEVEL_CHICAGO)
 	{
 		side = 2;
 		num_lights = 2;
@@ -408,7 +408,7 @@ void AddCopCarLight(CAR_DATA *cp)
 		{
 			v1.vx = car_cos->cog.vx;
 
-			if (GameLevel != 1 && GameLevel != 3)
+			if (GameLevel != LEVEL_HAVANA && GameLevel != LEVEL_RIO)
 				v1.vx += (xpos1[pos] + car_cos->policeLight.vx) * sign;
 
 			col.g = 90;
@@ -417,7 +417,7 @@ void AddCopCarLight(CAR_DATA *cp)
 			if (gNight != 0)
 				col.g = 50;
 
-			if (pauseflag == 0 && (CameraCnt & 1U) != 0 && GameLevel == 2)
+			if (pauseflag == 0 && (CameraCnt & 1U) != 0 && GameLevel == LEVEL_VEGAS)
 				pos++;
 
 			v1.vz = car_cos->policeLight.vz + car_cos->cog.vz;
@@ -425,7 +425,7 @@ void AddCopCarLight(CAR_DATA *cp)
 			size = *coplife >> 1;
 
 			// switch colours if needed
-			if (GameLevel == 1 || GameLevel == 3 || GameLevel == 2 && side == 0)
+			if (GameLevel == LEVEL_HAVANA || GameLevel == LEVEL_RIO || GameLevel == LEVEL_VEGAS && side == 0)
 			{
 				col.b = 255;
 				col.r = col.g;
@@ -441,7 +441,7 @@ void AddCopCarLight(CAR_DATA *cp)
 
 			ShowCarlight(&v1, cp, &col, size, size * 3, &light_texture, 0xff);
 
-			if (pauseflag == 0 && (CameraCnt & 1U) != 0 && GameLevel == 2)
+			if (pauseflag == 0 && (CameraCnt & 1U) != 0 && GameLevel == LEVEL_VEGAS)
 				pos++;
 
 			pos = pos & 7;

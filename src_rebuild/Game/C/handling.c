@@ -1122,7 +1122,7 @@ void ProcessCarPad(CAR_DATA* cp, u_int pad, char PadSteer, char use_analogue)
 			{
 				if (player[player_id].dying == 0)
 				{
-					if (ActiveCheats.cheat12 && (GameLevel == 1 || GameLevel == 2))		// [A] play as Jericho cheat
+					if (ActiveCheats.cheat12 && (GameLevel == LEVEL_HAVANA || GameLevel == LEVEL_VEGAS)) // [A] play as Jericho cheat
 						whoExit = OTHER_MODEL;
 
 					ActivatePlayerPedestrian(cp, NULL, 0, NULL, whoExit);

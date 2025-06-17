@@ -917,7 +917,7 @@ int OnBoat(VECTOR* pos, EVENT* ev, int* dist)
 	int halfBoatLength;
 	int halfBoatWidth;
 
-	if (GameLevel == 1)
+	if (GameLevel == LEVEL_HAVANA)
 	{
 		halfBoatWidth = 853;
 		halfBoatLength = 2431;
@@ -987,7 +987,7 @@ void SetUpEvents(int full)
 	evt = event;
 	cEvents = 0;	// TODO: use D_MALLOC for each event?
 
-	if (GameLevel == 0)
+	if (GameLevel == LEVEL_CHICAGO)
 	{
 		int count;
 		int cBridges;
@@ -1173,7 +1173,7 @@ void SetUpEvents(int full)
 
 		cEvents += 7;
 	}
-	else if (GameLevel == 1)
+	else if (GameLevel == LEVEL_HAVANA)
 	{
 		evt = event;
 
@@ -1235,7 +1235,7 @@ void SetUpEvents(int full)
 			foam.model = FindModelPtrWithName("FOAM");
 		}
 	}
-	else if (GameLevel == 2)
+	else if (GameLevel == LEVEL_VEGAS)
 	{
 		int cCarriages;
 
@@ -1365,7 +1365,7 @@ void SetUpEvents(int full)
 			cEvents += 3;
 		}
 	}
-	else if (GameLevel == 3)
+	else if (GameLevel == LEVEL_RIO)
 	{
 		evt = event;
 
@@ -1553,7 +1553,7 @@ void SetCamera(EVENT* ev)
 
 		offset = boatOffset;
 
-		if (GameLevel == 1)
+		if (GameLevel == LEVEL_HAVANA)
 			pivot.vy = 111;
 		else
 			pivot.vy = 256;
@@ -2168,7 +2168,7 @@ void StepPathEvent(EVENT* ev)
 			// i might have been decompiled it wrong but now it works
 			dir = ev->flags & 0x400;
 
-			InitTrain(ev, 0, GameLevel == 0 ? 0 : 1);
+			InitTrain(ev, 0, (GameLevel == LEVEL_CHICAGO) ? 0 : 1);
 
 			if (dir)
 				ev->flags |= 0x400;
@@ -3209,7 +3209,7 @@ sdPlane* EventSurface(VECTOR* pos, sdPlane* plane)
 	ev = &event[i];
 
 	// chicago bridge plane
-	if (GameLevel == 0)
+	if (GameLevel == LEVEL_CHICAGO)
 	{
 		int dist;
 		int end;
@@ -3264,7 +3264,7 @@ sdPlane* EventSurface(VECTOR* pos, sdPlane* plane)
 
 		plane->d ^= 0x40000000;
 	}
-	else if (GameLevel == 1 || GameLevel == 3)
+	else if (GameLevel == LEVEL_HAVANA || GameLevel == LEVEL_RIO)
 	{
 		// make secret base solid due to we use surface Ids
 		// Havana 3D occlusion was made simpler in Rev 1.1
@@ -3281,7 +3281,7 @@ sdPlane* EventSurface(VECTOR* pos, sdPlane* plane)
 			if (OnBoat(pos, ev, &dist) == 0)
 				return GetSeaPlane();
 
-			if (GameLevel == 3)
+			if (GameLevel == LEVEL_RIO)
 				height = 256;
 			else
 				height = 200;
@@ -3294,7 +3294,7 @@ sdPlane* EventSurface(VECTOR* pos, sdPlane* plane)
 
 			offset = dist * -4096 + cos * -3328;
 
-			if (GameLevel == 3 && offset > 0)
+			if (GameLevel == LEVEL_RIO && offset > 0)
 			{
 				int sin2;
 				d = 160 - ev->data[1];
@@ -3396,7 +3396,7 @@ VECTOR* TriggerEvent(int i)
 		return NULL;
 	}
 
-	if (GameLevel >= 2 && i > 0 && i < 4) // Vegas and Rio detonators
+	if ((GameLevel == LEVEL_VEGAS || GameLevel == LEVEL_RIO) && i > 0 && i < 4) // Vegas and Rio detonators
 	{
 		if (stage[i] == 0)
 		{
@@ -3413,7 +3413,7 @@ VECTOR* TriggerEvent(int i)
 	}
 	else
 	{
-		if (GameLevel == 0)
+		if (GameLevel == LEVEL_CHICAGO)
 		{
 			switch (i)
 			{
@@ -3517,7 +3517,7 @@ VECTOR* TriggerEvent(int i)
 					TriggerDoor(&chicagoDoor[i - 5], &stage[i], 1);
 			}
 		}
-		else if (GameLevel == 1)
+		else if (GameLevel == LEVEL_HAVANA)
 		{
 			switch (i)
 			{
@@ -3559,7 +3559,7 @@ VECTOR* TriggerEvent(int i)
 					events.cameraEvent = &event[1];
 			}
 		}
-		else if (GameLevel == 2)
+		else if (GameLevel == LEVEL_VEGAS)
 		{
 			switch (i)
 			{
@@ -3603,7 +3603,7 @@ VECTOR* TriggerEvent(int i)
 					SetMSoundVar(5, NULL);
 			}
 		}
-		else if (GameLevel == 3)
+		else if (GameLevel == LEVEL_RIO)
 		{
 			switch (i)
 			{
@@ -3710,11 +3710,11 @@ void SetSpecialCamera(SpecialCamera type, int change)
 		rememberCamera[1] = camera_angle.vy;
 		rememberCamera[2] = camera_position.vz;
 
-		if (GameLevel == 0)
+		if (GameLevel == LEVEL_CHICAGO)
 		{
 			hackCamera = &ChicagoCameraHack[0];
 		}
-		else if (GameLevel == 1)
+		else if (GameLevel == LEVEL_HAVANA)
 		{
 			if (gCurrentMissionNumber == 15)
 			{
@@ -3739,7 +3739,7 @@ void SetSpecialCamera(SpecialCamera type, int change)
 				}
 			}
 		}
-		else if (GameLevel == 2)
+		else if (GameLevel == LEVEL_VEGAS)
 		{
 			hackCamera = &VegasCameraHack[0];
 
@@ -3767,7 +3767,7 @@ void SetSpecialCamera(SpecialCamera type, int change)
 				hackCamera += 3;
 			}
 		}
-		else if (GameLevel == 3)
+		else if (GameLevel == LEVEL_RIO)
 		{
 			if (gCurrentMissionNumber == 35)
 			{
@@ -3939,7 +3939,7 @@ int DetonatorTimer(void)
 					else if (detonator.timer == 160)
 					{
 
-						if (GameLevel == 3)
+						if (GameLevel == LEVEL_RIO)
 						{
 							event->flags &= ~0x1;
 							event->flags |= 0x20;
@@ -3975,7 +3975,7 @@ int DetonatorTimer(void)
 			pos.vy = ev->position.vy;
 			pos.vz = ev->position.vz;
 
-			if (GameLevel == 3)
+			if (GameLevel == LEVEL_RIO)
 			{
 				pos.vx -= boatOffset.vx;
 				pos.vy -= boatOffset.vy;

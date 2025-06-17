@@ -463,7 +463,7 @@ void animate_object(CELL_OBJECT* cop, int type)
 
 	yang = cop->yang * 64;
 
-	if (GameLevel == 0)
+	if (GameLevel == LEVEL_CHICAGO)
 	{
 		switch (type)
 		{
@@ -531,7 +531,7 @@ void animate_object(CELL_OBJECT* cop, int type)
 				AddLightEffect(cop, -234, -1146, 0, 0, 3);
 		}
 	}
-	else if (GameLevel == 1)
+	else if (GameLevel == LEVEL_HAVANA)
 	{
 		switch (type)
 		{
@@ -573,7 +573,7 @@ void animate_object(CELL_OBJECT* cop, int type)
 				break;
 		}
 	}
-	else if (GameLevel == 2)
+	else if (GameLevel == LEVEL_VEGAS)
 	{
 		switch (type)
 		{
@@ -643,7 +643,7 @@ void animate_object(CELL_OBJECT* cop, int type)
 				break;
 		}
 	}
-	else if (GameLevel == 3)
+	else if (GameLevel == LEVEL_RIO)
 	{
 		switch (type)
 		{

@@ -415,7 +415,7 @@ void InitShadow(void)
 	shadowuv.v3 = texinf->y + texinf->height - 1;
 	shadowuv.v0 = texinf->y;
 
-	if (GameLevel == 3)
+	if (GameLevel == LEVEL_RIO)
 	{
 		shadowuv.v1 += 1;
 		shadowuv.v0 += 1;

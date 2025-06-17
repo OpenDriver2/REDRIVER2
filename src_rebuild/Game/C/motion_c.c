@@ -1761,7 +1761,7 @@ void InitTannerShadow(void)
 	for (i = 0; i < 2; i++)
 	{
 		int offs = 0;
-		if (GameLevel == 2) // [A] bug fix for Vegas
+		if (GameLevel == LEVEL_VEGAS) // [A] bug fix for Vegas
 			offs = 18;
 
 		poly->u0 = tannerShadow_texture.coords.u1 / 4 - 1;

@@ -1300,7 +1300,7 @@ void MangleWheelModels(void)
 
 	// HACK: Show clean model only in Rio
 	// Leftover from Driver 1 used in Los Angeles
-	//if (GameLevel == 3)
+	//if (GameLevel == LEVEL_RIO)
 	//	gFastWheelModelPtr = gCleanWheelModelPtr;
 }
 

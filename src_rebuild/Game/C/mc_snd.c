@@ -384,11 +384,11 @@ void InitializeMissionSound(void)
 
 	jericho_in_back = 0;
 
-	if (GameLevel == 0)
+	if (GameLevel == LEVEL_CHICAGO)
 	{
 		es_mobile[0] = AddEnvSnd(3, 0, SOUND_BANK_ENVIRONMENT, 4, -10000, 0, 0, 0, 0);
 	}
-	else if (GameLevel == 1)
+	else if (GameLevel == LEVEL_HAVANA)
 	{
 		if (gCurrentMissionNumber - 15U < 2)
 		{
@@ -399,7 +399,7 @@ void InitializeMissionSound(void)
 			jericho_in_back = 1;
 		}
 	}
-	else if (GameLevel == 2)
+	else if (GameLevel == LEVEL_VEGAS)
 	{
 		if (gCurrentMissionNumber == 22)
 		{
@@ -410,7 +410,7 @@ void InitializeMissionSound(void)
 			AddEnvSnd(3, 0x20, SOUND_BANK_MISSION, GetMissionSound(31), 3000, -37000, 270500, 0, 0);
 		}
 	}
-	else if (GameLevel == 3)
+	else if (GameLevel == LEVEL_RIO)
 	{
 		if (gCurrentMissionNumber == 32)
 		{

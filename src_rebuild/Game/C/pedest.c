@@ -2519,7 +2519,7 @@ void IHaveThePower(void)
 	LONGVECTOR4 force = { 0x9000, 0, 0, 0 };
 	LONGVECTOR4 point = { 0, 0, 90, 0 };
 
-	if (GameLevel != 1)
+	if (GameLevel != LEVEL_HAVANA)
 		return;
 
 	if (player[0].pos[0] > -231749 || player[0].pos[0] < -232147 ||
@@ -2746,7 +2746,7 @@ void ProcessTannerPad(LPPEDESTRIAN pPed, u_int pad, char PadSteer, char use_anal
 	TannerCollision(pPed);
 
 	// chicago bridge slope
-	if (GameLevel == 0)
+	if (GameLevel == LEVEL_CHICAGO)
 	{
 		FindSurfaceD2((VECTOR*)lcp->pos, &normal, &out, &plane);
 

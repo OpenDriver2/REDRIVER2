@@ -172,7 +172,7 @@ void ProcessStraightsDriver2Lump(char *lump_file, int lump_size)
 	Driver2StraightsPtr = (DRIVER2_STRAIGHT *)(lump_file + 4);
 
 	// [A] patch Chicago & Vegas roads
-	if (GameLevel == 0 && gDisableChicagoBridges)
+	if (GameLevel == LEVEL_CHICAGO && gDisableChicagoBridges)
 	{
 		DRIVER2_STRAIGHT* str;
 		int grp, i, j;
@@ -201,7 +201,7 @@ void ProcessStraightsDriver2Lump(char *lump_file, int lump_size)
 			}
 		}
 	}
-	else if (GameLevel == 2)
+	else if (GameLevel == LEVEL_VEGAS)
 	{
 #if ENABLE_GAME_FIXES
 		int i;
@@ -250,7 +250,7 @@ void ProcessJunctionsDriver2Lump(char *lump_file, int lump_size, int fix)
 	}
 
 	// [A] patch Vegas roads
-	if (GameLevel == 2)
+	if (GameLevel == LEVEL_VEGAS)
 	{
 		Driver2JunctionsPtr[8244 & 0x1fff].ExitIdx[1] = 348;
 		Driver2JunctionsPtr[8244 & 0x1fff].ExitIdx[3] = 347;

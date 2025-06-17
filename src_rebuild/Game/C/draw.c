@@ -196,7 +196,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 	}
 	if (gTimeOfDay == TIME_NIGHT)
 	{
-		if (GameLevel == 0)
+		if (GameLevel == LEVEL_CHICAGO)
 			lightLevel *= 2;	// [A] level bug - Chicago trees lit wrong
 		else
 			lightLevel /= 3;

@@ -811,7 +811,7 @@ void SetVariable(int var)
 			ActiveCheats.cheat4 = value;
 			break;
 		case 12:
-			GameLevel = 3;
+			GameLevel = LEVEL_RIO;
 			gSubGameNumber = (value == 0) ? 2 : 0;
 			break;
 		case 13:
@@ -3319,7 +3319,7 @@ int ScoreScreen(int bSetup)
 {
 	if (bSetup)
 	{
-		GameLevel = 0;
+		GameLevel = LEVEL_CHICAGO;
 
 		DisplayScoreTable();
 
@@ -3335,8 +3335,8 @@ int ScoreScreen(int bSetup)
 		{
 			if (GameType == GAME_SURVIVAL || GameType == GAME_PURSUIT)
 			{
-				if (--GameLevel < 0)
-					GameLevel = 3;
+				if (--GameLevel < LEVEL_CHICAGO)
+					GameLevel = LEVEL_RIO;
 
 				GameNum = 0;
 			}
@@ -3346,8 +3346,8 @@ int ScoreScreen(int bSetup)
 
 				if (GameNum == 1)
 				{
-					if (--GameLevel < 0)
-						GameLevel = 3;
+					if (--GameLevel < LEVEL_CHICAGO)
+						GameLevel = LEVEL_RIO;
 				}
 			}
 		}
@@ -3355,8 +3355,8 @@ int ScoreScreen(int bSetup)
 		{
 			if (GameType == GAME_SURVIVAL || GameType == GAME_PURSUIT)
 			{
-				if (++GameLevel > 3)
-					GameLevel = 0;
+				if (++GameLevel > LEVEL_RIO)
+					GameLevel = LEVEL_CHICAGO;
 
 				GameNum = 0;
 			}
@@ -3366,8 +3366,8 @@ int ScoreScreen(int bSetup)
 
 				if (GameNum == 0)
 				{
-					if (++GameLevel > 3)
-						GameLevel = 0;
+					if (++GameLevel > LEVEL_RIO)
+						GameLevel = LEVEL_CHICAGO;
 				}
 			}
 		}
@@ -4086,7 +4086,7 @@ int TimeOfDaySelectScreen(int bSetup)
 			wantedTimeOfDay += dir;
 			wantedTimeOfDay &= 3;
 
-			gWantNight = wantedTimeOfDay == TIME_DUSK || wantedTimeOfDay == TIME_NIGHT;
+			gWantNight = (wantedTimeOfDay == TIME_DUSK || wantedTimeOfDay == TIME_NIGHT);
 		}
 		else if (i == 1)
 		{
@@ -4114,9 +4114,9 @@ int DemoScreen(int bSetup)
 		pButtonStack[ScreenDepth] = pCurrButton;
 
 		FESound(2);
-		GameType = GAME_PURSUIT;
 
-		GameLevel = 1;
+		GameType = GAME_PURSUIT;
+		GameLevel = LEVEL_HAVANA;
 		gWantNight = 0;
 		gSubGameNumber = 0;
 
