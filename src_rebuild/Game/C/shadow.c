@@ -442,7 +442,7 @@ void InitShadow(void)
 }
 
 // [D] [A] - this is a fuckery
-void SubdivShadow(long z0, long z1, long z2, long z3, POLY_FT4 *sps)
+void SubdivShadow(int z0, int z1, int z2, int z3, POLY_FT4 *sps)
 {
 	// [A] we already have better car shadow code. This is UNUSED anyway
 	POLY_FT4 *spd;

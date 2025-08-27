@@ -1,9 +1,9 @@
 #ifndef GAME_VERSION_N
-#define GAME_VERSION_N		"7.8"
+#define GAME_VERSION_N		"8.0"
 #endif
 
 #ifndef GAME_VERSION_RES
-#define GAME_VERSION_RES	7,8
+#define GAME_VERSION_RES	8,0
 #endif
 
 #define GAME_TITLE			"REDRIVER2"

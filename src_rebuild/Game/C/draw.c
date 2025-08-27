@@ -16,10 +16,6 @@
 #include "ASM/rndrasm.h"
 #include "event.h"
 
-#ifdef PSX
-#pragma GCC optimization ("O3")
-#endif
-
 MATRIX aspect =
 {
 	{
@@ -257,8 +253,8 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 			int numPolys;
 
 			numPolys = (u_int)model->num_polys;
-			src = (POLYFT4*)model->poly_block;
-			verts = (SVECTOR*)model->vertices;
+			src = GET_MODEL_DATA(POLYFT4, model, poly_block);
+			verts = GET_MODEL_DATA(SVECTOR, model, vertices);
 
 			plotContext.flags |= PLOT_NO_CULL;
 
@@ -309,10 +305,10 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 		{
 			gte_SetRotMatrix(&shadowMatrix);
 
-			addSubdivSpriteShadow((POLYFT4*)model->poly_block, (SVECTOR*)model->vertices, z);
+			addSubdivSpriteShadow(GET_MODEL_DATA(POLYFT4, model, poly_block), GET_MODEL_DATA(SVECTOR, model, vertices), z);
 
 			if (model->num_polys == 2)
-				addSubdivSpriteShadow((POLYFT4*)(model->poly_block + sizeof(POLYFT4)), (SVECTOR*)model->vertices, z);
+				addSubdivSpriteShadow(GET_MODEL_DATA(POLYFT4, model, poly_block) + 1, GET_MODEL_DATA(SVECTOR, model, vertices), z);
 
 			gte_SetRotMatrix(&face_camera);
 
@@ -691,8 +687,8 @@ void ConvertPolygonTypes(MODEL* model, _pct* pc)
 	
 	model->tri_verts |= 0x80;
 
-	srcVerts = (SVECTOR*)model->vertices;
-	polys = (PL_POLYFT4*)model->poly_block;
+	srcVerts = GET_MODEL_DATA(SVECTOR, model, vertices);
+	polys = GET_MODEL_DATA(PL_POLYFT4, model, poly_block);
 	i = model->num_polys;
 
 	// pre-process vertices
@@ -738,8 +734,8 @@ void PlotBuildingModel(MODEL* model, int rot, _pct* pc)
 	SVECTOR* srcVerts;
 	int combo;
 
-	srcVerts = (SVECTOR*)model->vertices;
-	polys = (PL_POLYFT4*)model->poly_block;
+	srcVerts = GET_MODEL_DATA(SVECTOR, model, vertices);
+	polys = GET_MODEL_DATA(PL_POLYFT4, model, poly_block);
 
 	combo = combointensity;
 
@@ -832,8 +828,8 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 	MVERTEX5x5 subdiVerts;
 #endif
 
-	srcVerts = (SVECTOR*)model->vertices;
-	polys = (PL_POLYFT4*)model->poly_block;
+	srcVerts = GET_MODEL_DATA(SVECTOR, model, vertices);
+	polys = GET_MODEL_DATA(PL_POLYFT4, model, poly_block);
 
 	combo = combointensity;
 
@@ -1023,7 +1019,7 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 		else
 			PlotBuildingModel(model, cop->yang, &plotContext);
 
-		drawlimit = (int)current->primptr - (int)current->primtab;
+		drawlimit = (int)(current->primptr - current->primtab);
 
 		if (PRIMTAB_SIZE - drawlimit < 60000)
 			break;
@@ -1057,8 +1053,8 @@ void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 
 	ConvertPolygonTypes(model, pc);
 
-	srcVerts = (SVECTOR*)model->vertices;
-	polys = (PL_POLYFT4*)model->poly_block;
+	srcVerts = GET_MODEL_DATA(SVECTOR, model, vertices);
+	polys = GET_MODEL_DATA(PL_POLYFT4, model, poly_block);
 
 	combo = combointensity;
 

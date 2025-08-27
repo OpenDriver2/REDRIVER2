@@ -19,7 +19,7 @@ mkdir -p "${APPVEYOR_BUILD_FOLDER}/.flatpak/lib" "${APPVEYOR_BUILD_FOLDER}/.flat
 find ${APPVEYOR_BUILD_FOLDER}/src_rebuild/bin/Release -name 'REDRIVER2*' -exec cp -t ${APPVEYOR_BUILD_FOLDER}/.flatpak/bin {} +
 
 # Copy missing libraries in the runtime
-for lib in libjpeg libopenal libsndio libbsd
+for lib in libjpeg libopenal
 do
     cp -Lf $(ldd "${APPVEYOR_BUILD_FOLDER}/src_rebuild/bin/Release/REDRIVER2" | awk '/ => / { print $3 }' | grep ${lib}) "${APPVEYOR_BUILD_FOLDER}/.flatpak/lib"
 done

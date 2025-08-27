@@ -13,15 +13,15 @@ typedef struct _EVENT EVENT;
 
 struct _EVENT
 {
+	EVENT* next;
 	VECTOR position;
 	short rotation;
 	short timer;
-	int* data;
-	int* node;
 	short flags;
 	short radius;
 	int model;
-	EVENT* next;
+	int* data;
+	int* node;
 };
 
 struct EventGlobal

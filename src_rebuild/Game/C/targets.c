@@ -281,7 +281,7 @@ void DrawStopZone(VECTOR *pPosition)
 	SVECTOR temp;
 	long p;
 	long flag;
-	long sz;
+	int sz;
 	int flash;
 	int height;
 
@@ -326,7 +326,7 @@ void DrawStopZone(VECTOR *pPosition)
 
 		RotTransPers(&temp, pOut, &p, &flag);
 
-		if (pOut == (long*)&pPoly->x0) 
+		if (pOut == (long*)&pPoly->x0)
 			pOut = (long*)&pPoly->x1;
 		else if (pOut == (long*)&pPoly->x1)
 			pOut = (long*)&pPoly->x2;

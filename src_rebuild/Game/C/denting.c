@@ -12,6 +12,29 @@
 #include "players.h"
 #include "main.h"
 
+#if USE_PC_FILESYSTEM
+extern int gContentOverride;
+
+// [A] loads car model from file
+char* LoadCustomCarDentingFromFile(char* dest, int modelNumber)
+{
+	char* mem;
+	char filename[64];
+
+	sprintf(filename, "LEVELS\\%s\\CARMODEL_%d.DEN", LevelNames[GameLevel], modelNumber);
+	if (FileExists(filename))
+	{
+		mem = dest ? dest : ((char*)_other_buffer + modelNumber * 4096);
+
+		// get model from file
+		Loadfile(filename, mem);
+		return mem;
+	}
+
+	return NULL;
+}
+#endif
+
 char* DentingFiles[] =
 {
 	"LEVELS\\CHICAGO.DEN",
@@ -91,8 +114,8 @@ void DentCar(CAR_DATA *cp)
 	// update vertices positon
 	if (gCarCleanModelPtr[model] != NULL && gCarDamModelPtr[model] != NULL) 
 	{
-		DamVertPtr = (SVECTOR *)gCarDamModelPtr[model]->vertices;
-		CleanVertPtr = (SVECTOR *)gCarCleanModelPtr[model]->vertices;
+		DamVertPtr = GET_MODEL_DATA(SVECTOR, gCarDamModelPtr[model], vertices);
+		CleanVertPtr = GET_MODEL_DATA(SVECTOR, gCarCleanModelPtr[model], vertices);
 
 		for (VertNo = 0; VertNo < pCleanModel->num_vertices; VertNo++, DamVertPtr++, CleanVertPtr++)
 		{
@@ -162,7 +185,7 @@ void CreateDentableCar(CAR_DATA *cp)
 	srcModel = gCarCleanModelPtr[model];
 	if (srcModel != NULL)
 	{
-		src = (SVECTOR *)srcModel->vertices;
+		src = GET_MODEL_DATA(SVECTOR, srcModel, vertices);
 		dst = gTempCarVertDump[cp->id];
 
 		vcount = srcModel->num_vertices;
@@ -377,27 +400,6 @@ void MoveHubcap()
 	}
 }
 
-#ifndef PSX
-// [A] loads car model from file
-char* LoadCarDentingFromFile(char* dest, int modelNumber)
-{
-	char* mem;
-	char filename[64];
-
-	sprintf(filename, "LEVELS\\%s\\CARMODEL_%d.DEN", LevelNames[GameLevel], modelNumber);
-	if(FileExists(filename))
-	{
-		mem = dest ? dest : ((char*)_other_buffer + modelNumber * 4096);
-
-		// get model from file
-		Loadfile(filename, mem);
-		return mem;
-	}
-
-	return NULL;
-}
-#endif
-
 // [D] [T]
 void ProcessDentLump(char *lump_ptr, int lump_size)
 {
@@ -424,11 +426,11 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 		{
 			offset = *(int *)(lump_ptr + model * 4);
 			mem = (u_char*)lump_ptr;
-#ifndef PSX
-			extern int gContentOverride;
+#if USE_PC_FILESYSTEM
 			if (gContentOverride)
 			{
-				char* newDenting = LoadCarDentingFromFile(NULL, model);
+				char* newDenting;
+				newDenting = LoadCustomCarDentingFromFile(NULL, model);
 				if (newDenting)
 				{
 					mem = (u_char*)newDenting;
@@ -453,6 +455,20 @@ void ProcessDentLump(char *lump_ptr, int lump_size)
 void SetupSpecDenting(char *loadbuffer)
 {
 	int offset;
+
+#if USE_PC_FILESYSTEM
+	if (gContentOverride)
+	{
+		char* newDenting;
+		int model;
+		model = MissionHeader->residentModels[4];
+
+		newDenting = LoadCustomCarDentingFromFile(NULL, model);
+		if (newDenting)
+			loadbuffer = newDenting;
+	}
+	
+#endif
 
 	// [A] this is better
 	memcpy((u_char*)gCarDamageZoneVerts[4], (u_char*)loadbuffer, NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_VERTS);

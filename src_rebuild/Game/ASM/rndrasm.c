@@ -2,10 +2,6 @@
 #include "C/camera.h"
 #include "C/draw.h"
 
-#ifdef PSX
-#pragma GCC optimization ("O3")
-#endif
-
 #define FRUSTUM_THRESHOLD (-80)
 
 // [D] [T]

@@ -47,8 +47,8 @@ int bcollided2d(CDATA2D *body, int* boxOverlap)
 	}
 
 	// hmmm, why?
-	as = RSIN(dtheta & 0x7ff);			// rcossin_tbl[(dtheta & 0x7ff) * 2];
-	ac = RSIN(dtheta + 1024 & 0x7ff);	// rcossin_tbl[(dtheta + 1024 & 0x7ff) * 2];
+	as = RSIN(dtheta & 2047);			// rcossin_tbl[(dtheta & 0x7ff) * 2];
+	ac = RSIN(dtheta + 1024 & 2047);	// rcossin_tbl[(dtheta + 1024 & 0x7ff) * 2];
 
 	delta.vx = body[0].x.vx - body[1].x.vx;
 	delta.vz = body[0].x.vz - body[1].x.vz;
@@ -671,112 +671,108 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 	cd[1].vel.vz = 0;
 	cd[1].avel = 0;
 
-	if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER) 
-	{
-		collided = bcollided2d(cd, &gCameraBoxOverlap);
-	}
-	else 
-	{
-		collided = bcollided2d(cd);
+	collided = bcollided2d(cd, cp->controlType == CONTROL_TYPE_CAMERACOLLIDER ? &gCameraBoxOverlap : 0);
 
 #if defined(COLLISION_DEBUG) && !defined(PSX)
-		extern int gShowCollisionDebug;
-		extern SVECTOR boatOffset;
-		if (gShowCollisionDebug == 1)
+	extern int gShowCollisionDebug;
+	extern SVECTOR boatOffset;
+	if (gShowCollisionDebug == 1)
+	{
+		extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
+		extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
+
+	CVECTOR bbcv = { 0, 0, 250 };
+	CVECTOR rrcv = { 250, 0, 0 };
+	CVECTOR yycv = { 250, 250, 0 };
+
+		VECTOR offset = { 0 };
+
+		// show both box axes
 		{
-			extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
-			extern void Debug_AddLineOfs(VECTOR & pointA, VECTOR & pointB, VECTOR & ofs, CVECTOR & color);
+			VECTOR _zero = { 0 };
+			VECTOR b1p = cd[0].x;
+			VECTOR b2p = cd[1].x;
+			b2p.vy = b1p.vy;
 
-			CVECTOR bbcv = { 0, 0, 250 };
-			CVECTOR rrcv = { 250, 0, 0 };
-			CVECTOR yycv = { 250, 250, 0 };
-
-			VECTOR offset = { 0 };
-
-			// show both box axes
+			if (carsOnBoat.count != 0 && carsOnBoat.cars[cp->id])
 			{
-				VECTOR _zero = { 0 };
-				VECTOR b1p = cd[0].x;
-				VECTOR b2p = cd[1].x;
-				b2p.vy = b1p.vy;
+				offset.vx = boatOffset.vx;
+				offset.vy = boatOffset.vy;
+				offset.vz = boatOffset.vz;
 
-				if (carsOnBoat.count != 0 && carsOnBoat.cars[cp->id])
-				{
-					offset.vx = boatOffset.vx;
-					offset.vy = boatOffset.vy;
-					offset.vz = boatOffset.vz;
+				b1p.vx -= offset.vx;
+				b1p.vy -= offset.vy;
+				b1p.vz -= offset.vz;
 
-					b1p.vx -= offset.vx;
-					b1p.vy -= offset.vy;
-					b1p.vz -= offset.vz;
+				b2p.vx -= offset.vx;
+				b2p.vy -= offset.vy;
+				b2p.vz -= offset.vz;
+			}
 
-					b2p.vx -= offset.vx;
-					b2p.vy -= offset.vy;
-					b2p.vz -= offset.vz;
-				}
+			// show position to position
+			//Debug_AddLine(b1p1, b2p1, yycv);
 
-				// show position to position
-				//Debug_AddLine(b1p1, b2p1, yycv);
+			VECTOR b1ax[2] = { {0} , {0} };
+			b1ax[0].vx = FIXEDH(cd[0].axis[0].vx * cd[0].length[0]);
+			b1ax[0].vz = FIXEDH(cd[0].axis[0].vz * cd[0].length[0]);
+			b1ax[1].vx = FIXEDH(cd[0].axis[1].vx * cd[0].length[1]);
+			b1ax[1].vz = FIXEDH(cd[0].axis[1].vz * cd[0].length[1]);
 
-				VECTOR b1ax[2] = { {0} , {0} };
-				b1ax[0].vx = FIXEDH(cd[0].axis[0].vx * cd[0].length[0]);
-				b1ax[0].vz = FIXEDH(cd[0].axis[0].vz * cd[0].length[0]);
-				b1ax[1].vx = FIXEDH(cd[0].axis[1].vx * cd[0].length[1]);
-				b1ax[1].vz = FIXEDH(cd[0].axis[1].vz * cd[0].length[1]);
+			// show axis of body 1
+			Debug_AddLineOfs(_zero, b1ax[0], b1p, rrcv);
+			Debug_AddLineOfs(_zero, b1ax[1], b1p, yycv);
 
-				// show axis of body 1
-				Debug_AddLineOfs(_zero, b1ax[0], b1p, rrcv);
-				Debug_AddLineOfs(_zero, b1ax[1], b1p, yycv);
+			// display 2D box 1
+			{
+				int h = b1ax[0].vy;
+				VECTOR box_points[4] = {
+					{b1ax[0].vx - b1ax[1].vx, h, b1ax[0].vz - b1ax[1].vz, 0},	// front left
+					{b1ax[0].vx + b1ax[1].vx, h, b1ax[0].vz + b1ax[1].vz, 0},	// front right
 
-				// display 2D box 1
-				{
-					int h = b1ax[0].vy;
-					VECTOR box_points[4] = {
-						{b1ax[0].vx - b1ax[1].vx, h, b1ax[0].vz - b1ax[1].vz, 0},	// front left
-						{b1ax[0].vx + b1ax[1].vx, h, b1ax[0].vz + b1ax[1].vz, 0},	// front right
+					{-b1ax[0].vx + b1ax[1].vx, h, -b1ax[0].vz + b1ax[1].vz, 0},	// back right
+					{-b1ax[0].vx - b1ax[1].vx, h, -b1ax[0].vz - b1ax[1].vz, 0}	// back left
+				};
 
-						{-b1ax[0].vx + b1ax[1].vx, h, -b1ax[0].vz + b1ax[1].vz, 0},	// back right
-						{-b1ax[0].vx - b1ax[1].vx, h, -b1ax[0].vz - b1ax[1].vz, 0}	// back left
-					};
+				Debug_AddLineOfs(box_points[0], box_points[1], b1p, bbcv);
+				Debug_AddLineOfs(box_points[1], box_points[2], b1p, bbcv);
+				Debug_AddLineOfs(box_points[2], box_points[3], b1p, bbcv);
+				Debug_AddLineOfs(box_points[3], box_points[0], b1p, bbcv);
+			}
 
-					Debug_AddLineOfs(box_points[0], box_points[1], b1p, bbcv);
-					Debug_AddLineOfs(box_points[1], box_points[2], b1p, bbcv);
-					Debug_AddLineOfs(box_points[2], box_points[3], b1p, bbcv);
-					Debug_AddLineOfs(box_points[3], box_points[0], b1p, bbcv);
-				}
+			VECTOR b2ax[2] = { {0} , {0} };
+			b2ax[0].vx += FIXEDH(cd[1].axis[0].vx * cd[1].length[0]);
+			b2ax[0].vz += FIXEDH(cd[1].axis[0].vz * cd[1].length[0]);
+			b2ax[1].vx += FIXEDH(cd[1].axis[1].vx * cd[1].length[1]);
+			b2ax[1].vz += FIXEDH(cd[1].axis[1].vz * cd[1].length[1]);
 
-				VECTOR b2ax[2] = { {0} , {0} };
-				b2ax[0].vx += FIXEDH(cd[1].axis[0].vx * cd[1].length[0]);
-				b2ax[0].vz += FIXEDH(cd[1].axis[0].vz * cd[1].length[0]);
-				b2ax[1].vx += FIXEDH(cd[1].axis[1].vx * cd[1].length[1]);
-				b2ax[1].vz += FIXEDH(cd[1].axis[1].vz * cd[1].length[1]);
+			// show axis of body 2
+			Debug_AddLineOfs(_zero, b2ax[0], b2p, rrcv);
+			Debug_AddLineOfs(_zero, b2ax[1], b2p, yycv);
 
-				// show axis of body 2
-				Debug_AddLineOfs(_zero, b2ax[0], b2p, rrcv);
-				Debug_AddLineOfs(_zero, b2ax[1], b2p, yycv);
+			CVECTOR& collColor = collided ? rrcv : yycv;
 
-				CVECTOR& collColor = collided ? rrcv : yycv;
+			// display 2D box 2
+			{
+				int h = b2ax[0].vy;
+				VECTOR box_points[4] = {
+					{b2ax[0].vx - b2ax[1].vx, h, b2ax[0].vz - b2ax[1].vz, 0},	// front left
+					{b2ax[0].vx + b2ax[1].vx, h, b2ax[0].vz + b2ax[1].vz, 0},	// front right
 
-				// display 2D box 2
-				{
-					int h = b2ax[0].vy;
-					VECTOR box_points[4] = {
-						{b2ax[0].vx - b2ax[1].vx, h, b2ax[0].vz - b2ax[1].vz, 0},	// front left
-						{b2ax[0].vx + b2ax[1].vx, h, b2ax[0].vz + b2ax[1].vz, 0},	// front right
+					{-b2ax[0].vx + b2ax[1].vx, h, -b2ax[0].vz + b2ax[1].vz, 0},	// back right
+					{-b2ax[0].vx - b2ax[1].vx, h, -b2ax[0].vz - b2ax[1].vz, 0}	// back left
+				};
 
-						{-b2ax[0].vx + b2ax[1].vx, h, -b2ax[0].vz + b2ax[1].vz, 0},	// back right
-						{-b2ax[0].vx - b2ax[1].vx, h, -b2ax[0].vz - b2ax[1].vz, 0}	// back left
-					};
-
-					Debug_AddLineOfs(box_points[0], box_points[1], b2p, collColor);
-					Debug_AddLineOfs(box_points[1], box_points[2], b2p, collColor);
-					Debug_AddLineOfs(box_points[2], box_points[3], b2p, collColor);
-					Debug_AddLineOfs(box_points[3], box_points[0], b2p, collColor);
-				}
+				Debug_AddLineOfs(box_points[0], box_points[1], b2p, collColor);
+				Debug_AddLineOfs(box_points[1], box_points[2], b2p, collColor);
+				Debug_AddLineOfs(box_points[2], box_points[3], b2p, collColor);
+				Debug_AddLineOfs(box_points[3], box_points[0], b2p, collColor);
 			}
 		}
+	}
 #endif
 
+	if (cp->controlType != CONTROL_TYPE_CAMERACOLLIDER) 
+	{
 		if (collided)
 		{
 			bFindCollisionTime(cd, &collisionResult);
@@ -983,34 +979,13 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 				// angular impulse calculation and modifiers
 				if (cp->controlType != CONTROL_TYPE_LEAD_AI)
 				{
-					int temp;
-					temp = FIXEDH(lever[1] * reaction[2]);
+					int reduction;
+					reduction = (cp->controlType == CONTROL_TYPE_PURSUER_AI);
 
-					if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
-						temp >>= 1;
-
-					cp->hd.aacc[0] += temp;
-
-					temp = FIXEDH(lever[2] * reaction[1]);
-
-					if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
-						temp >>= 1;
-						
-					cp->hd.aacc[0] -= temp;
-
-					temp = FIXEDH(lever[0] * reaction[1]);
-
-					if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
-						temp >>= 1;
-
-					cp->hd.aacc[2] += temp;
-
-					temp = FIXEDH(lever[1] * reaction[0]);
-
-					if (cp->controlType == CONTROL_TYPE_PURSUER_AI)
-						temp >>= 1;
-						
-					cp->hd.aacc[2] -= temp;
+					cp->hd.aacc[0] += FIXEDH(lever[1] * reaction[2]) >> reduction;
+					cp->hd.aacc[0] -= FIXEDH(lever[2] * reaction[1]) >> reduction;
+					cp->hd.aacc[2] += FIXEDH(lever[0] * reaction[1]) >> reduction;
+					cp->hd.aacc[2] -= FIXEDH(lever[1] * reaction[0]) >> reduction;
 
 					cp->st.n.linearVelocity[1] += reaction[1];
 				}

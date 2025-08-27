@@ -36,7 +36,7 @@ extern char OverlayFlashValue;
 extern void InitOverlays(); // 0x00014A58
 extern void DisplayOverlays(); // 0x00014C3C
 
-extern void SetFullscreenDrawing(); // 0x00015E70
+extern void SetFullscreenDrawing(int ofs); // 0x00015E70
 
 extern void InitPercentageBar(PERCENTAGE_BAR *bar, int size, COLOUR_BAND *pColourBand, char *tag); // 0x00015F20
 extern void EnablePercentageBar(PERCENTAGE_BAR *bar, int max); // 0x00015F58

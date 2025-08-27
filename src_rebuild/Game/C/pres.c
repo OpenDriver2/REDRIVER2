@@ -219,11 +219,15 @@ int PrintStringHires(char* string, int x, int y)
 		{
 			if(showMap)
 				SetHiresFontTexture(0);
+			else
+				SetHiresFontTexture(1);
 
-			DrawButton(chr, current->primptr, width, y);
+			current->primptr = (char*)DrawButton(chr, current->primptr, width, y);
 
 			if (showMap)
 				SetHiresFontTexture(1);
+			else
+				SetHiresFontTexture(0);
 
 			width += spacing;
 			x += spacing;
@@ -506,8 +510,8 @@ void LoadFont(char *buffer)
 
 	fonttpage = GetTPage(0,0, dest.x, dest.y);
 
-	LoadImage(&fontclutpos, (u_long *)clut);	// upload clut
-	LoadImage(&dest, (u_long *)(file + 32));	// upload font image
+	LoadImage(&fontclutpos, (u_long*)clut);	// upload clut
+	LoadImage(&dest, (u_long*)(file + 32));	// upload font image
 
 #ifdef HIRES_FONTS
 	InitHiresFonts();
@@ -517,7 +521,7 @@ void LoadFont(char *buffer)
 }
 
 // [D] [T]
-void StoreClut2(u_long *pDest, int x, int y)
+void StoreClut2(u_long* pDest, int x, int y)
 {
 	RECT16 rect;
 
@@ -540,7 +544,7 @@ void SetCLUT16Flags(ushort clutID, ushort mask, char transparent)
 	x = (clutID & 63) * 16;
 	y = (clutID >> 6);
 
-	StoreClut2((ulong *)buffer, x, y);
+	StoreClut2((u_long*)buffer, x, y);
 
 	pCurrent = buffer;
 	ctr = 1;
@@ -637,13 +641,17 @@ int PrintString(char *string, int x, int y)
 		else
 		{
 			if (showMap == 0)
-				font = (SPRT *)SetFontTPage(font);
+			{
+				font = (SPRT*)SetFontTPage(font);
+			}
 
 			font = (SPRT *)DrawButton(chr, font, width, y);
 			width += 24;
 
 			if (showMap != 0)
-				font = (SPRT *)SetFontTPage(font);
+			{
+				font = (SPRT*)SetFontTPage(font);
+			}
 		}
 	}
 

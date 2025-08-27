@@ -1548,7 +1548,7 @@ void SetupExtraPoly(char *fileName, int offset, int offset2)
 	rect.w = 64;
 	rect.h = 219;
 	
-	LoadImage(&rect, (u_long *)(_frontend_buffer + offset2 + offset * 0x8000));
+	LoadImage(&rect, (u_long*)(_frontend_buffer + offset2 + offset * 0x8000));
 	
 	DrawSync(0);
 	VSync(0);
@@ -2852,9 +2852,17 @@ int CarSelectScreen(int bSetup)
 		{
 			for (int i = 4; i < 9; i++)
 			{
+#if USE_PC_FILESYSTEM
+				// [A] minimal requirement for this car to be selectable
+				extern int gContentOverride;
+				if (i == 8)
+					CarAvailability[0][i] = gContentOverride && FileExists("LEVELS\\CHICAGO\\CARMODEL_11_clean.MDL");	// remove truck
+				else
+					CarAvailability[0][i] = 1;
+#else
 				if (i != 8)
 					CarAvailability[0][i] = 1;	// remove truck
-
+#endif
 				CarAvailability[1][i] = 1;
 				CarAvailability[2][i] = 1;
 				CarAvailability[3][i] = 1;
@@ -3005,7 +3013,7 @@ int CarSelectScreen(int bSetup)
 		}
 		
 		rect = extraRect;
-		LoadImage(&rect, (u_long *)(_frontend_buffer + carSelection * 0x8000));
+		LoadImage(&rect, (u_long*)(_frontend_buffer + carSelection * 0x8000));
 		DrawSync(0);
 
 #ifdef PSX
@@ -3420,7 +3428,7 @@ int MissionCityScreen(int bSetup)
 		}
 
 		rect = extraRect;
-		LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
+		LoadImage(&rect, (u_long*)(_frontend_buffer + currCity * 0x8000));
 		DrawSync(0);
 
 #ifdef PSX
@@ -3640,9 +3648,9 @@ int CutSceneCitySelectScreen(int bSetup)
 			bDrawExtra = 1;
 			
 			if (currCity == 4) 
-				LoadImage(&rect, (u_long *)_frontend_buffer);
+				LoadImage(&rect, (u_long*)_frontend_buffer);
 			else 
-				LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
+				LoadImage(&rect, (u_long*)(_frontend_buffer + currCity * 0x8000));
 
 			DrawSync(0);
 		}
@@ -3700,9 +3708,9 @@ int CutSceneCitySelectScreen(int bSetup)
 	rect = extraRect;
 
 	if (GameLevel != 4)
-		LoadImage(&rect, (u_long *)(_frontend_buffer + GameLevel * 0x8000));
+		LoadImage(&rect, (u_long*)(_frontend_buffer + GameLevel * 0x8000));
 	else
-		LoadImage(&rect, (u_long *)_frontend_buffer);
+		LoadImage(&rect, (u_long*)_frontend_buffer);
 
 	DrawSync(0);
 
@@ -4097,7 +4105,7 @@ int CityCutOffScreen(int bSetup)
 			bDrawExtra = 1;
 
 			RECT16 rect = extraRect;
-			LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
+			LoadImage(&rect, (u_long*)(_frontend_buffer + currCity * 0x8000));
 			DrawSync(0);
 		}
 #endif
@@ -4146,7 +4154,7 @@ int CityCutOffScreen(int bSetup)
 	}
 
 	RECT16 rect = extraRect;
-	LoadImage(&rect, (u_long *)(_frontend_buffer + currCity * 0x8000));
+	LoadImage(&rect, (u_long*)(_frontend_buffer + currCity * 0x8000));
 	DrawSync(0);
 #endif
 	return FN_OK;

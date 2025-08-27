@@ -25,7 +25,9 @@ CAR_COSMETICS car_cosmetics[MAX_CAR_MODELS];
 CAR_COSMETICS levelSpecCosmetics[5];
 #endif
 
-#ifndef PSX
+#if USE_PC_FILESYSTEM
+extern int gContentOverride;
+
 // [A] loads car cosmetics from file
 void LoadCustomCarCosmetics(CAR_COSMETICS* dest, int modelNumber)
 {
@@ -67,8 +69,7 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 			offset = *(int*)(lump_ptr + model * sizeof(int));
 			car_cosmetics[i] = *(CAR_COSMETICS*)((u_char*)lump_ptr + offset);
 
-#ifndef PSX
-			extern int gContentOverride;
+#if USE_PC_FILESYSTEM
 			if(gContentOverride)
 				LoadCustomCarCosmetics(&car_cosmetics[i], model);
 #endif
@@ -78,7 +79,7 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 
 	// [A] cache all special vehicle cosmetics
 #if ENABLE_GAME_FIXES
-	for (i = 0; i < 5; i++)
+	for (i = 0; i < MAX_CAR_MODELS; i++)
 	{
 		model = 8 + i;
 
@@ -145,6 +146,11 @@ void SetupSpecCosmetics(char *loadbuffer)
 	car_cosmetics[4] = *(CAR_COSMETICS*)loadbuffer;
 #endif
 
+#if USE_PC_FILESYSTEM
+	if (gContentOverride)
+		LoadCustomCarCosmetics(&car_cosmetics[4], model);
+#endif
+
 	// [A] don't forget
 	FixCarCos(&car_cosmetics[4], model);
 }
@@ -167,12 +173,11 @@ void AddIndicatorLight(CAR_DATA *cp, int Type)
 	life2 = &cp->ap.life2;
 
 	if (cp->ap.life < 0)
-		brightness = (0xff - (u_int)cp->ap.life) * 2;
+		brightness = (255 - (u_int)cp->ap.life) * 2 & 255;
 	else
-		brightness = cp->ap.life << 1;
+		brightness = cp->ap.life << 1 & 255;
 
-	col.r = brightness & 0xFF;
-
+	col.r = brightness;
 	col.g = 0;
 	col.b = 0;
 

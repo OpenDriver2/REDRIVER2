@@ -161,7 +161,7 @@ void DrawOverheadTarget(MS_TARGET *target)
 			break;
 		}
 		case Target_Event:	// event target
-			tv = *target->s.event.eventPos;
+			tv = *(*(VECTOR**)&target->s.event.eventPos);
 			break;
 		default:
 			return;
@@ -196,7 +196,7 @@ void DrawFullscreenTarget(MS_TARGET *target)
 			break;
 		}
 		case Target_Event:	// event target
-			tv = *target->s.event.eventPos;
+			tv = *(*(VECTOR**)&target->s.event.eventPos);
 			break;
 		default:
 			return;
@@ -299,7 +299,7 @@ void DrawWorldTarget(MS_TARGET *target)
 		}
 		case Target_Event:
 		{
-			tv = *target->s.event.eventPos;
+			tv = *(*(VECTOR**)&target->s.event.eventPos);
 			break;
 		}
 		default:
@@ -385,6 +385,19 @@ void DrawMultiplayerTarget(MS_TARGET *target)
 					{
 						tv.vx = player[gPlayerWithTheFlag].pos[0];
 						tv.vz = player[gPlayerWithTheFlag].pos[2];
+
+						if (gPlayerWithTheFlag == 0)
+						{
+							r = 128;
+							g = 0;
+							b = 0;
+						}
+						else if (gPlayerWithTheFlag == 1)
+						{
+							r = 0;
+							g = 128;
+							b = 0;
+						}
 					}
 
 					break;
@@ -413,7 +426,7 @@ void DrawMultiplayerTarget(MS_TARGET *target)
 		}
 		case Target_Event:
 		{
-			tv = *target->s.event.eventPos;
+			tv = *(*(VECTOR**)&target->s.event.eventPos);
 			break;
 		}
 		default:

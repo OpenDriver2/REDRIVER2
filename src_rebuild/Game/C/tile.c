@@ -8,10 +8,6 @@
 
 #include "ASM/rndrasm.h"
 
-#ifdef PSX
-#pragma GCC optimization ("O3")
-#endif
-
 #ifdef DYNAMIC_LIGHTING
 void Tile1x1Lit(MODEL* model)
 {
@@ -29,8 +25,8 @@ void Tile1x1Lit(MODEL* model)
 	POLY_GT4* prims;
 	SVECTOR* srcVerts;
 
-	srcVerts = (SVECTOR*)model->vertices;
-	polys = (PL_POLYFT4*)model->poly_block;
+	srcVerts = GET_MODEL_DATA(SVECTOR, model, vertices);
+	polys = GET_MODEL_DATA(PL_POLYFT4, model, poly_block);
 
 	// grass should be under pavements and other things
 	if ((model->shape_flags & SHAPE_FLAG_WATER) || (model->flags2 & MODEL_FLAG_GRASS))
@@ -61,10 +57,10 @@ void Tile1x1Lit(MODEL* model)
 		{
 			prims = (POLY_GT4*)plotContext.primptr;
 
-			*(ulong*)&prims->r0 = plotContext.colour;
-			*(ulong*)&prims->r1 = plotContext.colour;
-			*(ulong*)&prims->r2 = plotContext.colour;
-			*(ulong*)&prims->r3 = plotContext.colour;
+			*(uint*)&prims->r0 = plotContext.colour;
+			*(uint*)&prims->r1 = plotContext.colour;
+			*(uint*)&prims->r2 = plotContext.colour;
+			*(uint*)&prims->r3 = plotContext.colour;
 			setPolyGT4(prims);
 
 			// retrieve first three verts
@@ -136,8 +132,8 @@ void Tile1x1(MODEL *model)
 	POLY_FT4* prims;
 	SVECTOR* srcVerts;
 
-	srcVerts = (SVECTOR*)model->vertices;
-	polys = (PL_POLYFT4*)model->poly_block;
+	srcVerts = GET_MODEL_DATA(SVECTOR, model, vertices);
+	polys = GET_MODEL_DATA(PL_POLYFT4, model, poly_block);
 
 	// grass should be under pavements and other things
 	if ((model->shape_flags & SHAPE_FLAG_WATER) || (model->flags2 & MODEL_FLAG_GRASS))
@@ -168,7 +164,7 @@ void Tile1x1(MODEL *model)
 		{
 			prims = (POLY_FT4*)plotContext.primptr;
 
-			*(ulong*)&prims->r0 = plotContext.colour;
+			*(uint*)&prims->r0 = plotContext.colour;
 			setPolyFT4(prims);
 			
 			// retrieve first three verts
@@ -449,7 +445,7 @@ void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 	for (int index = 0; index < numPolys; index++)
 	{
 		setPolyFT4(prim);
-		*(ulong*)&prim->r0 = pc->colour; // FIXME: semiTransparency support
+		*(uint*)&prim->r0 = pc->colour; // FIXME: semiTransparency support
 
 		// test
 		gte_ldv3(&(*VSP)[index][0], &(*VSP)[index][1], &(*VSP)[index][2]);
@@ -551,10 +547,10 @@ void drawMeshLit(MVERTEX(*VSP)[5][5], int m, int n, _pct* pc)
 
 			gte_stsxy(&prim->x3);
 
-			*(ulong*)&prim->r0 = plotContext.colour;
-			*(ulong*)&prim->r1 = plotContext.colour;
-			*(ulong*)&prim->r2 = plotContext.colour;
-			*(ulong*)&prim->r3 = plotContext.colour;
+			*(uint*)&prim->r0 = plotContext.colour;
+			*(uint*)&prim->r1 = plotContext.colour;
+			*(uint*)&prim->r2 = plotContext.colour;
+			*(uint*)&prim->r3 = plotContext.colour;
 
 			SVECTOR tmpPos;
 			gte_ldv0(&(*VSP)[index][0]);
@@ -641,8 +637,8 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 	int i;
 	int ofse;
 
-	polys = (u_char *)model->poly_block;
-	plotContext.verts = (SVECTOR *)model->vertices;
+	polys = GET_MODEL_DATA(u_char, model, poly_block);
+	plotContext.verts = GET_MODEL_DATA(SVECTOR, model, vertices);
 
 	// WEIRD: tile types comes right after model header it seems
 	tileTypes = *(u_int *)(model + 1) >> 2;
