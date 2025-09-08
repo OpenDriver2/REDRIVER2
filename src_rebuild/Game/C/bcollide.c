@@ -612,8 +612,8 @@ int CarBuildingCollision(CAR_DATA *cp, BUILDING_BOX *building, CELL_OBJECT *cop,
 		cd[0].vel.vx = FIXEDH(cp->st.n.linearVelocity[0]);
 		cd[0].vel.vz = FIXEDH(cp->st.n.linearVelocity[2]);
 
-		cd[0].length[0] = 90;
-		cd[0].length[1] = 90;
+		cd[0].length[0] = 40;
+		cd[0].length[1] = 40;
 	}
 	else if (cp->controlType == CONTROL_TYPE_CAMERACOLLIDER)
 	{
