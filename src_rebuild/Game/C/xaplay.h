@@ -1,7 +1,7 @@
 #ifndef XAPLAY_H
 #define XAPLAY_H
 
-extern void PrintXASubtitles();
+extern void PrintXASubtitles(int yPos);
 extern void GetMissionXAData(int number); // 0x00082EC0
 
 extern void GetXAData(int number); // 0x00082D60

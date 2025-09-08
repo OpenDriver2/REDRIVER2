@@ -8,12 +8,12 @@ int timerflag = 0;
 int timerhz;
 int reentryflag;
 
-long tickset;
-long tickval;
-long ticks;
-long libticks = 0;
-long g_currentthread = 1;
-long timerevent;
+int tickset;
+int tickval;
+int ticks;
+int libticks = 0;
+int g_currentthread = 1;
+int timerevent;
 
 void resettick()
 {
@@ -30,7 +30,7 @@ void savegp(long* st)
 {
 }
 
-void restoregp(long gp)
+void restoregp(int gp)
 {
 }
 
@@ -64,9 +64,9 @@ long tmrint(void)
 }
 
 /*
-void timedwait(long ms)
+void timedwait(int ms)
 {
-	long oldTick;
+	int oldTick;
 
 	oldTick = gettick();
 	
@@ -109,9 +109,9 @@ void inittimer(int hz)
 {
 	if (hz == 0)
 		hz = 100;
-
+#ifdef PSX
 	EnterCriticalSection();
-
+#endif
 	if (timerflag == 0)
 	{
 		memset((u_char*)&tmrsub, 0, sizeof(tmrsub));
@@ -138,7 +138,9 @@ void inittimer(int hz)
 	SetRCnt(RCntCNT2, (4233600 / hz), EvSpTRAP);
 	StartRCnt(RCntCNT2);
 
+#ifdef PSX
 	ExitCriticalSection();
+#endif
 	resettick();
 
 	//addexit(restoretimer);

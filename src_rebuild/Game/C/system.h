@@ -59,7 +59,7 @@ extern void sys_freeall();
 #define D_TEMPALLOC(size)	sys_tempalloc(size)
 
 #ifdef _DEBUG
-#define D_MALLOC(size)		sys_malloc(size, __FUNCTION__, __LINE__)
+#define D_MALLOC(size)		sys_malloc(size, FUNCNAME, __LINE__)
 
 #else
 #define D_MALLOC(size)		sys_malloc(size, NULL, 0)
@@ -85,13 +85,13 @@ extern void sys_freeall();
 #define D_MALLOC_END() \
 		D_TEMPFREE();\
 		if(mallocptr > _oldmalloc)\
-			DMalloc_DebugPrint("malloc(%d) in %s, line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __FUNCTION__, __LINE__, (mallocptr-malloctab));\
+			DMalloc_DebugPrint("malloc(%d) in %s, line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, FUNCNAME, __LINE__, (mallocptr-malloctab));\
 	} // D_MALLOC_BEGIN block
 #else
 #define D_MALLOC_END() \
 		D_TEMPFREE();\
 		if(mallocptr > _oldmalloc)\
-			DMalloc_DebugPrint("malloc(%d) in " __FUNCTION__ ", line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __LINE__, (mallocptr-malloctab));\
+			DMalloc_DebugPrint("malloc(%d) in " FUNCNAME ", line %d. Malloc usage: %d\n", mallocptr-_oldmalloc, __LINE__, (mallocptr-malloctab));\
 	} // D_MALLOC_BEGIN block
 #endif
 
@@ -139,7 +139,7 @@ extern DRAW_MODE draw_mode_ntsc;
 #define	OTSIZE	0x2000
 #endif
 
-#ifdef USE_EXTENDED_PRIM_POINTERS
+#if USE_EXTENDED_PRIM_POINTERS
 #	define PRIMTAB_SIZE 0x50000
 #else
 #	define PRIMTAB_SIZE 0x1e000

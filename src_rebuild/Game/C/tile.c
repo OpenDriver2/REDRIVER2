@@ -19,8 +19,8 @@ void Tile1x1Lit(MODEL* model)
 	POLY_GT4* prims;
 	SVECTOR* srcVerts;
 
-	srcVerts = (SVECTOR*)model->vertices;
-	polys = (PL_POLYFT4*)model->poly_block;
+	srcVerts = GET_MODEL_DATA(SVECTOR, model, vertices);
+	polys = GET_MODEL_DATA(PL_POLYFT4, model, poly_block);
 
 	// grass should be under pavements and other things
 	if ((model->shape_flags & SHAPE_FLAG_WATER) || (model->flags2 & MODEL_FLAG_GRASS))
@@ -28,7 +28,7 @@ void Tile1x1Lit(MODEL* model)
 	else
 		ofse = 133;
 
-#ifdef USE_PGXP
+#if USE_PGXP
 	PGXP_SetZOffsetScale(0.0f, ofse > 200 ? 1.005f : 0.995f);
 #endif
 
@@ -51,10 +51,10 @@ void Tile1x1Lit(MODEL* model)
 		{
 			prims = (POLY_GT4*)plotContext.primptr;
 
-			*(ulong*)&prims->r0 = plotContext.colour;
-			*(ulong*)&prims->r1 = plotContext.colour;
-			*(ulong*)&prims->r2 = plotContext.colour;
-			*(ulong*)&prims->r3 = plotContext.colour;
+			*(uint*)&prims->r0 = plotContext.colour;
+			*(uint*)&prims->r1 = plotContext.colour;
+			*(uint*)&prims->r2 = plotContext.colour;
+			*(uint*)&prims->r3 = plotContext.colour;
 			setPolyGT4(prims);
 
 			// retrieve first three verts
@@ -106,7 +106,7 @@ void Tile1x1Lit(MODEL* model)
 		polys = (PL_POLYFT4*)((char*)polys + plotContext.polySizes[ptype]);
 	}
 
-#ifdef USE_PGXP
+#if USE_PGXP
 	PGXP_SetZOffsetScale(0.0f, 1.0f);
 #endif
 
@@ -126,8 +126,8 @@ void Tile1x1(MODEL *model)
 	POLY_FT4* prims;
 	SVECTOR* srcVerts;
 
-	srcVerts = (SVECTOR*)model->vertices;
-	polys = (PL_POLYFT4*)model->poly_block;
+	srcVerts = GET_MODEL_DATA(SVECTOR, model, vertices);
+	polys = GET_MODEL_DATA(PL_POLYFT4, model, poly_block);
 
 	// grass should be under pavements and other things
 	if ((model->shape_flags & SHAPE_FLAG_WATER) || (model->flags2 & MODEL_FLAG_GRASS))
@@ -135,7 +135,7 @@ void Tile1x1(MODEL *model)
 	else
 		ofse = 133;
 
-#ifdef USE_PGXP
+#if USE_PGXP
 	PGXP_SetZOffsetScale(0.0f, ofse > 200 ? 1.005f : 0.995f);
 #endif
 
@@ -158,7 +158,7 @@ void Tile1x1(MODEL *model)
 		{
 			prims = (POLY_FT4*)plotContext.primptr;
 
-			*(ulong*)&prims->r0 = plotContext.colour;
+			*(uint*)&prims->r0 = plotContext.colour;
 			setPolyFT4(prims);
 			
 			// retrieve first three verts
@@ -189,7 +189,7 @@ void Tile1x1(MODEL *model)
 		polys = (PL_POLYFT4*)((char*)polys + plotContext.polySizes[ptype]);
 	}
 
-#ifdef USE_PGXP
+#if USE_PGXP
 	PGXP_SetZOffsetScale(0.0f, 1.0f);
 #endif
 
@@ -222,18 +222,18 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 	if (gTimeOfDay > -1) 
 	{
 		int combo = combointensity;
-		if (gTimeOfDay < 3)
+		if (gTimeOfDay < TIME_NIGHT)
 		{
 			plotContext.colour = combo & 0xffffffU | 0x2C000000;
 		}
-		else if (gTimeOfDay == 3) 
+		else if (gTimeOfDay == TIME_NIGHT)
 		{
 #ifdef DYNAMIC_LIGHTING
 			int t;
 			t = GameLevel == 2 && gEnableDlights == 1;
 			plotContext.colour = fst_div_lut_3_5(combo >> 16 & 255, t) << 16 | fst_div_lut_3_5(combo >> 8 & 255, t) << 8 | fst_div_lut_3_5(combo & 255, t) | 0x2C000000U;
 #else
-			plotContext.colour = fst_div_3(combo >> 16 & 255, 0) << 16 | fst_div_3(combo >> 8 & 255, 0) << 8 | fst_div_3(combo & 255, 0) | 0x2C000000U;
+			plotContext.colour = fst_div_3(combo >> 16 & 255) << 16 | fst_div_3(combo >> 8 & 255) << 8 | fst_div_3(combo & 255) | 0x2C000000U;
 #endif
 		}
 	}
@@ -439,7 +439,7 @@ void drawMesh(MVERTEX(*VSP)[5][5], int m, int n, _pct *pc)
 	for (int index = 0; index < numPolys; index++)
 	{
 		setPolyFT4(prim);
-		*(ulong*)&prim->r0 = pc->colour; // FIXME: semiTransparency support
+		*(uint*)&prim->r0 = pc->colour; // FIXME: semiTransparency support
 
 		// test
 		gte_ldv3(&(*VSP)[index][0], &(*VSP)[index][1], &(*VSP)[index][2]);
@@ -535,10 +535,10 @@ void drawMeshLit(MVERTEX(*VSP)[5][5], int m, int n, _pct* pc)
 
 			gte_stsxy(&prim->x3);
 
-			*(ulong*)&prim->r0 = plotContext.colour;
-			*(ulong*)&prim->r1 = plotContext.colour;
-			*(ulong*)&prim->r2 = plotContext.colour;
-			*(ulong*)&prim->r3 = plotContext.colour;
+			*(uint*)&prim->r0 = plotContext.colour;
+			*(uint*)&prim->r1 = plotContext.colour;
+			*(uint*)&prim->r2 = plotContext.colour;
+			*(uint*)&prim->r3 = plotContext.colour;
 
 			SVECTOR tmpPos;
 			gte_ldv0(&(*VSP)[index][0]);
@@ -625,8 +625,8 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 	int i;
 	int ofse;
 
-	polys = (u_char *)model->poly_block;
-	plotContext.verts = (SVECTOR *)model->vertices;
+	polys = GET_MODEL_DATA(u_char, model, poly_block);
+	plotContext.verts = GET_MODEL_DATA(SVECTOR, model, vertices);
 
 	// WEIRD: tile types comes right after model header it seems
 	tileTypes = *(u_int *)(model + 1) >> 2;
@@ -648,7 +648,7 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 	ttype = 0;
 	while (i--)
 	{
-#ifdef USE_PGXP
+#if USE_PGXP
 		switch (ttype)
 		{
 		case 0:
@@ -672,7 +672,7 @@ void TileNxN(MODEL *model, int levels, int Dofse)
 		polys += plotContext.polySizes[*polys];
 	}
 
-#ifdef USE_PGXP
+#if USE_PGXP
 	PGXP_SetZOffsetScale(0.0f, 1.0f);
 #endif
 }

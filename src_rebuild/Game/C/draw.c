@@ -16,7 +16,6 @@
 #include "ASM/rndrasm.h"
 #include "event.h"
 
-
 MATRIX aspect =
 {
 	{
@@ -97,16 +96,20 @@ MATRIX2 CompoundMatrix[64];
 
 u_int farClip2Player = 36000;
 
+#ifdef PSX
+int goFaster = 1;
+#else
 int goFaster = 0;	// [A] was 1
+#endif
 int fasterToggle = 0;
 
 int combointensity;
 
-char CurrentPVS[444]; // 20*20+4
+char CurrentPVS[PVS_CELL_COUNT * PVS_CELL_COUNT + 3]; // 20*20+4
 MATRIX2 matrixtable[64];
 int setupYet = 0;
 
-int gDrawDistance = 441;
+int gDrawDistance = PVS_CELL_COUNT * PVS_CELL_COUNT;
 
 #ifndef PSX
 _pct& plotContext = *(_pct*)((u_char*)getScratchAddr(0) + 1024 - sizeof(_pct));	// orig offset: 0x1f800020
@@ -179,7 +182,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 #endif
 	SVECTOR* lightVec;
 
-	lightVec = (gTimeOfDay == 3) ? night_vectors : day_vectors;
+	lightVec = (gTimeOfDay == TIME_NIGHT) ? night_vectors : day_vectors;
 
 	lightdd =	FIXEDH(camera_matrix.m[2][0] * lightVec[GameLevel].vx) +
 				FIXEDH(camera_matrix.m[2][1] * lightVec[GameLevel].vy) +
@@ -187,11 +190,11 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 
 	lightLevel = (lightdd >> 18) + 32 & 255;
 
-	if (gWeather > 0 && gTimeOfDay == 1 || (M_BIT(gTimeOfDay) & (M_BIT(0) | M_BIT(2))))
+	if (gWeather > WEATHER_NONE && gTimeOfDay == TIME_DAY || (M_BIT(gTimeOfDay) & (M_BIT(TIME_DAWN) | M_BIT(TIME_DUSK))))
 	{
 		lightLevel = (lightLevel * 2 * NightAmbient) >> 8;
 	}
-	if (gTimeOfDay == 3)
+	if (gTimeOfDay == TIME_NIGHT)
 	{
 		if (GameLevel == 0)
 			lightLevel *= 2;	// [A] level bug - Chicago trees lit wrong
@@ -250,8 +253,8 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 			int numPolys;
 
 			numPolys = (u_int)model->num_polys;
-			src = (POLYFT4*)model->poly_block;
-			verts = (SVECTOR*)model->vertices;
+			src = GET_MODEL_DATA(POLYFT4, model, poly_block);
+			verts = GET_MODEL_DATA(SVECTOR, model, vertices);
 
 			plotContext.flags |= PLOT_NO_CULL;
 
@@ -295,17 +298,17 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 #define MAX_TREE_SHADOW_DISTANCE 14000
 #endif
 		
-		if (wetness == 0 && gTimeOfDay != 3 &&
+		if (wetness == 0 && gTimeOfDay != TIME_NIGHT &&
 			(pco->value & 32) == 0 && 
 			z < MAX_TREE_SHADOW_DISTANCE &&
 			numShadows < 40)
 		{
 			gte_SetRotMatrix(&shadowMatrix);
 
-			addSubdivSpriteShadow((POLYFT4*)model->poly_block, (SVECTOR*)model->vertices, z);
+			addSubdivSpriteShadow(GET_MODEL_DATA(POLYFT4, model, poly_block), GET_MODEL_DATA(SVECTOR, model, vertices), z);
 
 			if (model->num_polys == 2)
-				addSubdivSpriteShadow((POLYFT4*)(model->poly_block + sizeof(POLYFT4)), (SVECTOR*)model->vertices, z);
+				addSubdivSpriteShadow(GET_MODEL_DATA(POLYFT4, model, poly_block) + 1, GET_MODEL_DATA(SVECTOR, model, vertices), z);
 
 			gte_SetRotMatrix(&face_camera);
 
@@ -320,9 +323,9 @@ void SetupPlaneColours(u_int ambient)
 {
 	u_int r, g, b;
 
-	if (gWeather == 0 && (M_BIT(gTimeOfDay) & (M_BIT(0) | M_BIT(2))) == 0)
+	if (gWeather == 0 && (M_BIT(gTimeOfDay) & (M_BIT(TIME_DAWN) | M_BIT(TIME_DUSK))) == 0)
 	{
-		if (gTimeOfDay == 1)
+		if (gTimeOfDay == TIME_DAY)
 		{
 			b = ambient & 255;
 			g = ambient >> 8 & 255;
@@ -431,7 +434,6 @@ void InitFrustrumMatrix(void)
 	frustrum_matrix.m[2][1] = 0;
 	frustrum_matrix.m[2][0] = RSIN(a);
 	frustrum_matrix.m[2][2] = RCOS(a);
-	frustrum_matrix.t[0] = -80;
 }
 
 // [D] [T]
@@ -474,6 +476,12 @@ void PlotMDL_less_than_128(MODEL* model)
 	RenderModel(model, NULL, NULL, 0, 0, 0, 0);
 }
 
+// [D] [T]
+int PositionVisible(VECTOR* pos)
+{
+	return newPositionVisible(pos, CurrentPVS, current_cell_x, current_cell_z);
+}
+
 int gForceLowDetailCars = 0;
 int num_cars_drawn = 0;
 
@@ -508,9 +516,7 @@ void DrawAllTheCars(int view)
 			else
 				dist = dx + dz / 2;
 
-#ifdef PSX // do not account distance on PC
-			if (dist < 16000)
-#endif
+			if (dist < VIEW_DRAW_DISTANCE)
 			{
 				car_distance[num_cars_to_draw] = dx + dz;
 				cars_to_draw[num_cars_to_draw] = cp;
@@ -611,7 +617,7 @@ u_int normalIndex(SVECTOR* verts, u_int vidx)
 		if (x + y < 1)
 			th23 = x < 0 ? 6 : 7;
 		else
-			th23 = 0 < y ? 1 : 0;
+			th23 = y > 0 ? 1 : 0;
 	}
 
 	th23 *= 4;
@@ -648,8 +654,8 @@ void ConvertPolygonTypes(MODEL* model, _pct* pc)
 	
 	model->tri_verts |= 0x80;
 
-	srcVerts = (SVECTOR*)model->vertices;
-	polys = (PL_POLYFT4*)model->poly_block;
+	srcVerts = GET_MODEL_DATA(SVECTOR, model, vertices);
+	polys = GET_MODEL_DATA(PL_POLYFT4, model, poly_block);
 	i = model->num_polys;
 
 	// pre-process vertices
@@ -695,8 +701,8 @@ void PlotBuildingModel(MODEL* model, int rot, _pct* pc)
 	SVECTOR* srcVerts;
 	int combo;
 
-	srcVerts = (SVECTOR*)model->vertices;
-	polys = (PL_POLYFT4*)model->poly_block;
+	srcVerts = GET_MODEL_DATA(SVECTOR, model, vertices);
+	polys = GET_MODEL_DATA(PL_POLYFT4, model, poly_block);
 
 	combo = combointensity;
 
@@ -790,8 +796,8 @@ void PlotBuildingModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 	MVERTEX5x5 subdiVerts;
 #endif
 
-	srcVerts = (SVECTOR*)model->vertices;
-	polys = (PL_POLYFT4*)model->poly_block;
+	srcVerts = GET_MODEL_DATA(SVECTOR, model, vertices);
+	polys = GET_MODEL_DATA(PL_POLYFT4, model, poly_block);
 
 	combo = combointensity;
 
@@ -992,7 +998,7 @@ int DrawAllBuildings(CELL_OBJECT** objects, int num_buildings)
 		else
 			PlotBuildingModel(model, cop->yang, &plotContext);
 
-		drawlimit = (int)current->primptr - (int)current->primtab;
+		drawlimit = (int)(current->primptr - current->primtab);
 
 		if (PRIMTAB_SIZE - drawlimit < 60000)
 			break;
@@ -1026,8 +1032,8 @@ void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 
 	ConvertPolygonTypes(model, pc);
 
-	srcVerts = (SVECTOR*)model->vertices;
-	polys = (PL_POLYFT4*)model->poly_block;
+	srcVerts = GET_MODEL_DATA(SVECTOR, model, vertices);
+	polys = GET_MODEL_DATA(PL_POLYFT4, model, poly_block);
 
 	combo = combointensity;
 
@@ -1356,11 +1362,11 @@ void DrawMapPSX(int* comp_val)
 	// walk through all cells
 	do
 	{
-		if (ABS(hloop) + ABS(vloop) < 21)
+		if (ABS(hloop) + ABS(vloop) < PVS_CELL_COUNT)
 		{
 			// clamped vis values
-			int vis_h = MIN(MAX(hloop, -9), 10);
-			int vis_v = MIN(MAX(vloop, -9), 10);
+			int vis_h = MIN(MAX(hloop, -9), PVS_CELL_COUNT / 2);
+			int vis_v = MIN(MAX(vloop, -9), PVS_CELL_COUNT / 2);
 
 			cellx = drawData.cellxpos + hloop;
 			cellz = drawData.cellzpos + vloop;

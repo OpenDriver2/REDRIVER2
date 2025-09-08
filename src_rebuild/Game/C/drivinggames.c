@@ -27,11 +27,12 @@ struct TRAILBLAZER_DATA
 
 struct SMASHED_CONE
 {
+	VECTOR position;
+	VECTOR velocity;
+	short rot_speed;
 	char cone;
 	u_char active : 7;
 	u_char side : 1;
-	short rot_speed;
-	VECTOR velocity;
 };
 
 MODEL* gTrailblazerConeModel; 
@@ -67,7 +68,7 @@ void InitDrivingGames(void)
 
 		if(NewLevel)
 		{
-			gTrailblazerData = (TRAILBLAZER_DATA*)D_MALLOC(1200); // [A] use malloc
+			gTrailblazerData = (TRAILBLAZER_DATA*)D_MALLOC(sizeof(TRAILBLAZER_DATA) * 100); // [A] use malloc
 
 			sprintf(filename, "TRAILS\\TRAIL.%d", gCurrentMissionNumber);
 
@@ -125,7 +126,7 @@ int CarConeCollision(VECTOR *pPos, int car)
 	return bcollided2d(cd);
 }
 
-
+void GetConePos(int cone, VECTOR* pos, int side);
 
 // [D] [T]
 void SetSmashedCone(int cone, VECTOR *velocity, int player, int side)
@@ -143,6 +144,8 @@ void SetSmashedCone(int cone, VECTOR *velocity, int player, int side)
 	sc->rot_speed = 256;
 	sc->side = side;
 	sc->cone = cone;
+
+	GetConePos(cone, &sc->position, side);
 
 	sc->velocity.vx = velocity->vx >> 10;
 	sc->velocity.vz = velocity->vz >> 10;
@@ -198,11 +201,11 @@ void MoveSmashedCones(void)
 		{
 			tbd = &gTrailblazerData[sc->cone];
 
-			if (tbd->y < 50 - player[0].pos[1])
+			if (sc->position.vy < 50 - player[0].pos[1])
 			{
-				tbd->x += sc->velocity.vx;
-				tbd->y += sc->velocity.vy;
-				tbd->z += sc->velocity.vz;
+				sc->position.vx += sc->velocity.vx;
+				sc->position.vy += sc->velocity.vy;
+				sc->position.vz += sc->velocity.vz;
 
 				sc->velocity.vy += 10;
 				sc->active++;
@@ -245,19 +248,22 @@ void DrawCone(VECTOR *position, int cone)
 }
 
 // [D] [T]
-void DrawSmashedCone(SMASHED_CONE *sc, VECTOR *wpos)
+void DrawSmashedCone(SMASHED_CONE *sc)
 {
 	MATRIX object_matrix;
 	VECTOR pos;
 
+	if (FrustrumCheck(&sc->position, gTrailblazerConeModel->bounding_sphere) == -1)
+		return;
+
 	InitMatrix(object_matrix);
 
-	RotMatrixY(sc->rot_speed * sc->active * 3 & 0xfff, &object_matrix);
-	RotMatrixZ(sc->rot_speed * sc->active & 0xfff, &object_matrix);
+	RotMatrixY(sc->rot_speed * sc->active * 3 & 4095, &object_matrix);
+	RotMatrixZ(sc->rot_speed * sc->active & 4095, &object_matrix);
 
-	pos.vx = wpos->vx - camera_position.vx;
-	pos.vy = wpos->vy - camera_position.vy;
-	pos.vz = wpos->vz - camera_position.vz;
+	pos.vx = sc->position.vx - camera_position.vx;
+	pos.vy = sc->position.vy - camera_position.vy;
+	pos.vz = sc->position.vz - camera_position.vz;
 
 	Apply_Inv_CameraMatrix(&pos);
 	SetRotMatrix(&object_matrix);
@@ -265,11 +271,7 @@ void DrawSmashedCone(SMASHED_CONE *sc, VECTOR *wpos)
 	gte_SetTransVector(&pos);
 
 	SetFrustrumMatrix();
-
-	if (FrustrumCheck(wpos, gTrailblazerConeModel->bounding_sphere) != -1)
-	{
-		PlotMDL_less_than_128(gTrailblazerConeModel);
-	}
+	PlotMDL_less_than_128(gTrailblazerConeModel);
 }
 
 // [D] [T]
@@ -331,13 +333,11 @@ void DrawSmashedCones(void)
 		{
 			if (GameType == GAME_GATERACE)
 			{
-				GetConePos(sc->cone, &wpos, sc->side);
-				DrawSmashedCone(sc, &wpos);
+				DrawSmashedCone(sc);
 			}
 			else
 			{
-				GetConePos(sc->cone, &wpos, -1);
-				DrawSmashedCone(sc, &wpos);
+				DrawSmashedCone(sc);
 			}
 		}
 	}
@@ -477,7 +477,7 @@ void HandleDrivingGames(void)
 							vel.vy = -17;
 							vel.vz = FIXED(car_data[playerCarId].st.n.linearVelocity[2]);
 
-							SetSmashedCone(cone, &vel, id, 0);
+							SetSmashedCone(cone, &vel, id, -1);
 
 							gTrailblazerConeCount++;
 							gTrailblazerConeIndex += i + 1;

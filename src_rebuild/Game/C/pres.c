@@ -7,19 +7,24 @@ extern int gShowMap;
 
 #ifndef PSX
 
-#define STB_TRUETYPE_IMPLEMENTATION
-#include "../utils/stb_truetype.h"
-#include "../utils/targa.h"
-
 #include "PsyX/PsyX_render.h"
+#include "../utils/targa.h"
+#include "../utils/hqfont.h"
+
 #define HIRES_FONTS
-#define HIRES_FONT_SIZE_W 768
-#define HIRES_FONT_SIZE_H 512
+
+struct FONT_QUAD
+{
+	float x0, y0, s0, t0; // top-left
+	float x1, y1, s1, t1; // bottom-right
+};
 
 TextureID gHiresFontTexture = 0;
 TextureID gHiresDigitsTexture = 0;
 
-stbtt_bakedchar gSTBCharData[224];	// ASCII 32..126 is 95 glyphs
+OUT_FN2RANGE gHiresFontRanges[4];
+OUT_FN2INFO gHiresFontCharData[4][224];
+int gHiresFontRangeCount = 0;
 
 void InitHiresFonts()
 {
@@ -27,10 +32,11 @@ void InitHiresFonts()
 	u_char* data;
 
 	// init digits
+	if(!gHiresDigitsTexture)
 	{
 		int width, height, bpp;
 
-		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\DIGITS.TGA");
+		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\digits.tga");
 		FS_FixPathSlashes(namebuffer);
 
 		if (LoadTGAImage(namebuffer, &data, width, height, bpp))
@@ -40,43 +46,51 @@ void InitHiresFonts()
 				gHiresDigitsTexture = GR_CreateRGBATexture(width, height, data);
 			}
 			free(data);
+			data = NULL;
 		}
 	}
 
 	// init font2
+	if(!gHiresFontTexture)
 	{
+		gHiresFontRangeCount = 0;
+
+		int width, height, bpp;
 		int x, y;
 		int size;
 		FILE* fp;
-		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\ariblk.ttf");
+		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\font2.fn2");
+		FS_FixPathSlashes(namebuffer);
 
 		fp = fopen(namebuffer, "rb");
 		if (fp) 
 		{
-			// read whole file
-			fseek(fp, 0, SEEK_END);
-			size = ftell(fp);
-			fseek(fp, 0, SEEK_SET);
-			data = (u_char*)malloc(size);
-			fread(data, 1, size, fp);
-			fclose(fp);
+			int i;
 
-			// gen font
-			u_char* tmpBitmap = (u_char*)malloc(HIRES_FONT_SIZE_W * HIRES_FONT_SIZE_H);
-			u_int* bitmapRGBA = (u_int*)malloc(HIRES_FONT_SIZE_W * HIRES_FONT_SIZE_H * 4);
-			stbtt_BakeFontBitmap(data, 0, 90.0, tmpBitmap, HIRES_FONT_SIZE_W, HIRES_FONT_SIZE_H, 32, 224, gSTBCharData);
+			// read fn2 step by step
+			OUT_FN2HEADER fn2hdr;
+			fread(&fn2hdr, sizeof(fn2hdr), 1, fp);
 
-			for (x = 0; x < HIRES_FONT_SIZE_W; ++x)
+			gHiresFontRangeCount = fn2hdr.range_count;
+			for (i = 0; i < fn2hdr.range_count; ++i)
 			{
-				for (y = 0; y < HIRES_FONT_SIZE_H; ++y)
-				{
-					bitmapRGBA[x + y * HIRES_FONT_SIZE_W] = tmpBitmap[x + y * HIRES_FONT_SIZE_W] << 24 | 0xffffff;
-				}
+				fread(&gHiresFontRanges[i], sizeof(gHiresFontRanges[i]), 1, fp);
+				fread(gHiresFontCharData[i], sizeof(OUT_FN2INFO), gHiresFontRanges[i].count, fp);
 			}
 
-			gHiresFontTexture = GR_CreateRGBATexture(HIRES_FONT_SIZE_W, HIRES_FONT_SIZE_H, (u_char*)bitmapRGBA);
-			free(bitmapRGBA);
-			free(tmpBitmap);
+			fclose(fp);
+		}
+
+		// load TGA file
+		sprintf(namebuffer, "%s%s", gDataFolder, "GFX\\HQ\\font2.tga");
+		FS_FixPathSlashes(namebuffer);
+
+		if (LoadTGAImage(namebuffer, &data, width, height, bpp))
+		{
+			if (bpp == 32)
+			{
+				gHiresFontTexture = GR_CreateRGBATexture(HIRES_FONT_SIZE_W, HIRES_FONT_SIZE_H, data);
+			}
 			free(data);
 		}
 	}
@@ -123,29 +137,29 @@ void SetHiresDigitsTexture(int enabled)
 	current->primptr += sizeof(DR_PSYX_TEX);
 }
 
-void GetHiresBakedQuad(int char_index, float* xpos, float* ypos, stbtt_aligned_quad* q)
+void GetHiresBakedQuad(int char_index, float* xpos, float* ypos, FONT_QUAD* q)
 {
-	float bias = 0.0f;
-	float ipw = 1.0f / HIRES_FONT_SIZE_W;
-	float iph = 1.0f / HIRES_FONT_SIZE_H;
-	const stbtt_bakedchar* b = gSTBCharData + char_index;
+	float ipw = 1.0f / (float)HIRES_FONT_SIZE_W;
+	float iph = 1.0f / (float)HIRES_FONT_SIZE_H;
 
-	float scale = 0.2f;
+	const OUT_FN2INFO* b = gHiresFontCharData[0] + char_index - gHiresFontRanges[0].start;
 
-	float pos_x = (*xpos + b->xoff * scale);
-	float pos_y = (*ypos + b->yoff * scale);
+	float scale = 0.275f;
 
-	pos_y += 13;
+	float s_x = b->x1 - b->x0;
+	float s_y = b->y1 - b->y0;
 
-	q->x0 = pos_x + bias;
-	q->y0 = pos_y + bias;
-	q->x1 = (b->x1 - b->x0) * scale;
-	q->y1 = (b->y1 - b->y0) * scale;
+	q->x0 = *xpos + b->xoff * scale;
+	q->y0 = *ypos + b->yoff * scale;
+	q->x1 = (b->xoff2 - b->xoff) * scale;
+	q->y1 = (b->yoff2 - b->yoff) * scale;
 
-	q->s0 = b->x0 * 255 * ipw;
-	q->t0 = b->y0 * 255 * iph;
-	q->s1 = (b->x1 - b->x0) * 255 * ipw;
-	q->t1 = (b->y1 - b->y0) * 255 * iph;
+	q->s0 = b->x0 * 255.0f * ipw;
+	q->t0 = b->y0 * 255.0f * iph;
+	q->s1 = s_x * 255.0f * ipw;
+	q->t1 = s_y * 255.0f * iph;
+
+	q->y0 += 14.0f;
 
 	*xpos += b->xadvance * scale;
 }
@@ -153,7 +167,7 @@ void GetHiresBakedQuad(int char_index, float* xpos, float* ypos, stbtt_aligned_q
 int StrighWidthHires(char* string)
 {
 	u_char chr;
-	int width;
+	float width;
 	width = 0;
 
 	while ((chr = *string++) != 0)
@@ -167,10 +181,10 @@ int StrighWidthHires(char* string)
 		chr = (chr >= 32 && chr < 128 || chr > 138) ? chr : '?';
 
 		float fx, fy;
-		fx = 0;
-		fy = 0;
-		stbtt_aligned_quad q;
-		GetHiresBakedQuad(chr - 32, &fx, &fy, &q);
+		fx = 0.0f;
+		fy = 0.0f;
+		FONT_QUAD q;
+		GetHiresBakedQuad(chr, &fx, &fy, &q);
 		width += fx;
 	}
 	return width;
@@ -183,7 +197,7 @@ extern short fonttpage;
 int PrintStringHires(char* string, int x, int y)
 {
 	u_char chr;
-	int width;
+	float width;
 	u_int index;
 	int showMap;
 
@@ -198,11 +212,15 @@ int PrintStringHires(char* string, int x, int y)
 		{
 			if(showMap)
 				SetHiresFontTexture(0);
+			else
+				SetHiresFontTexture(1);
 
-			DrawButton(chr, current->primptr, width, y);
+			current->primptr = (char*)DrawButton(chr, current->primptr, width, y);
 
 			if (showMap)
 				SetHiresFontTexture(1);
+			else
+				SetHiresFontTexture(0);
 
 			width += 24;
 			x += 24;
@@ -214,10 +232,10 @@ int PrintStringHires(char* string, int x, int y)
 		POLY_FT4* fontFT4;
 		POLY_FT4* shadowFT4;
 		float fx, fy;
-		fx = x;
+		fx = width;
 		fy = y;
-		stbtt_aligned_quad q;
-		GetHiresBakedQuad(chr - 32, &fx, &fy, &q);
+		FONT_QUAD q;
+		GetHiresBakedQuad(chr, &fx, &fy, &q);
 
 		fontFT4 = (POLY_FT4*)current->primptr;
 
@@ -258,11 +276,12 @@ int PrintStringHires(char* string, int x, int y)
 			DrawPrim(fontFT4);
 		}
 
-		width += fx - x;
-		x = fx;
+		width += fx - width;
 	}
 
 	SetHiresFontTexture(showMap == 0);
+	if(showMap)
+		DrawSync(0);
 
 	return width;
 }
@@ -466,8 +485,8 @@ void LoadFont(char *buffer)
 
 	fonttpage = GetTPage(0,0, dest.x, dest.y);
 
-	LoadImage(&fontclutpos, (u_long *)clut);	// upload clut
-	LoadImage(&dest, (u_long *)(file + 32));	// upload font image
+	LoadImage(&fontclutpos, (u_long*)clut);	// upload clut
+	LoadImage(&dest, (u_long*)(file + 32));	// upload font image
 
 #ifdef HIRES_FONTS
 	InitHiresFonts();
@@ -477,7 +496,7 @@ void LoadFont(char *buffer)
 }
 
 // [D] [T]
-void StoreClut2(u_long *pDest, int x, int y)
+void StoreClut2(u_long* pDest, int x, int y)
 {
 	RECT16 rect;
 
@@ -500,7 +519,7 @@ void SetCLUT16Flags(ushort clutID, ushort mask, char transparent)
 	x = (clutID & 63) * 16;
 	y = (clutID >> 6);
 
-	StoreClut2((ulong *)buffer, x, y);
+	StoreClut2((u_long*)buffer, x, y);
 
 	pCurrent = buffer;
 	ctr = 1;
@@ -597,13 +616,17 @@ int PrintString(char *string, int x, int y)
 		else
 		{
 			if (showMap == 0)
-				font = (SPRT *)SetFontTPage(font);
+			{
+				font = (SPRT*)SetFontTPage(font);
+			}
 
 			font = (SPRT *)DrawButton(chr, font, width, y);
 			width += 24;
 
 			if (showMap != 0)
-				font = (SPRT *)SetFontTPage(font);
+			{
+				font = (SPRT*)SetFontTPage(font);
+			}
 		}
 	}
 

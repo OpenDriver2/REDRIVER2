@@ -1,6 +1,8 @@
 #ifndef MAP_H
 #define MAP_H
 
+#define PVS_CELL_COUNT		21		// cells. Do not modify
+
 #ifdef PSX
 
 // original Driver 2 definition
@@ -73,7 +75,6 @@ extern void ProcessJuncBoundsLump(char *lump_file, int lump_size); // 0x0005D6DC
 extern void ProcessMapLump(char* lump_ptr, int lump_size); // 0x00040608
 
 extern int newPositionVisible(VECTOR *pos, char *pvs, int ccx, int ccz); // 0x0005D61C
-extern int PositionVisible(VECTOR *pos); // 0x0005D560
 
 extern void ControlMap(); // 0x0005CC00
 extern void GetVisSetAtPosition(VECTOR *pos, char *tgt, int *ccx, int *ccz); // 0x0005D6E4

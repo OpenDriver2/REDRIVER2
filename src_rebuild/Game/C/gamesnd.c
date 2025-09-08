@@ -206,14 +206,16 @@ int ResidentModelsBodge(void)
 	int i;
 	int j;
 
-	j = MissionHeader->residentModels[4];
-
-	if (gCurrentMissionNumber == 24 || gCurrentMissionNumber == 27 ||
+	if (gCurrentMissionNumber == 24 || 
+		gCurrentMissionNumber == 27 ||
 		gCurrentMissionNumber == 29 ||
-		(gCurrentMissionNumber == 30 || gCurrentMissionNumber == 35))
+		gCurrentMissionNumber == 30 ||
+		gCurrentMissionNumber == 35)
 	{
 		return 3;
 	}
+
+	j = MissionHeader->residentModels[4];
 
 	if (gCurrentMissionNumber - 50U < 16 && j == 12)
 	{
@@ -224,7 +226,7 @@ int ResidentModelsBodge(void)
 	{
 		i = 11;
 
-		if (j != 9)
+		if (j != 9 && j != i)
 			return 3;
 	}
 	else if (GameLevel == 1) 
@@ -271,7 +273,6 @@ int MapCarIndexToBank(int index)
 
 	model = RM[index];
 
-	// [A] Rev 1.1 removes this block
 	if (gCurrentMissionNumber - 39U < 2 && RM[index] == 13)
 	{
 		model = 10 - (RM[0] + RM[1] + RM[2]);
@@ -304,7 +305,7 @@ void LoadLevelSFX(int missionNum)
 	int i;
 	u_int city_night_fx;
 
-	city_night_fx = (gTimeOfDay == 3);
+	city_night_fx = (gTimeOfDay == TIME_NIGHT);
 
 	cop_bank = missionNum % 4 + 1;
 	cop_model = 3;
@@ -1564,7 +1565,7 @@ void FunkUpDaBGMTunez(int funk)
 		if (copmusic != 0)
 		{
 			copmusic = 0;
-			XM_SetSongPos(Song_ID, 0);
+			Song_SetPos = 0;
 		}
 	}
 	else
@@ -1572,7 +1573,7 @@ void FunkUpDaBGMTunez(int funk)
 		if (copmusic == 0)
 		{
 			copmusic = 1;
-			XM_SetSongPos(Song_ID, xm_coptrackpos[current_music_id]);
+			Song_SetPos = xm_coptrackpos[current_music_id];
 		}
 	}
 }
@@ -1756,7 +1757,7 @@ void InitMusic(int musicnum)
 	{
 		printInfo("NewLevel in InitMusic()\n");
 		
-		music_pt = D_MALLOC(music_len + 3U & 0xfffffffc);
+		music_pt = D_MALLOC(music_len + 3U & ~3);
 		sample_pt = D_TEMPALLOC(sample_len);
 
 #ifdef USE_CRT_MALLOC
@@ -2032,6 +2033,16 @@ int AddEnvSnd(int type, char flags, int bank, int sample, int vol, int px, int p
 	return EStags.envsnd_cnt++;
 }
 
+// It computes a fast 1 / sqrtf(v) approximation
+inline float rsqrtf(float v)
+{
+	float v_half = v * 0.5f;
+	int i = *(int*)&v;
+	i = 0x5f3759df - (i >> 1);
+	v = *(float*)&i;
+	return v * (1.5f - v_half * v * v);
+}
+
 // [D] [T]
 void IdentifyZone(envsound* ep, envsoundinfo* E, int pl)
 {
@@ -2043,7 +2054,6 @@ void IdentifyZone(envsound* ep, envsoundinfo* E, int pl)
 	bitfield64 zones;
 	int snd;
 
-	// [A] does it really needed? we don't have that much sounds to be played
 	zones.l = 0;
 	zones.h = 0;
 
@@ -2080,7 +2090,7 @@ void IdentifyZone(envsound* ep, envsoundinfo* E, int pl)
 				ldz = ep[i].pos2.vz - ep[i].pos.vz;
 				
 				// find inverse length of line
-				l_inv_len = 1.0f / sqrt(ldx * ldx + ldz * ldz);
+				l_inv_len = rsqrtf(ldx * ldx + ldz * ldz);
 				
 				// find normal (perpendicular) by using cross product and normalize
 				ndx = ldz * l_inv_len;

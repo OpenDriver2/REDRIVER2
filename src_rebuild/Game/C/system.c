@@ -58,7 +58,7 @@ volatile char* _replay_buffer = NULL;		// 0x1FABBC
 
 #if defined(USE_CRT_MALLOC)
 
-char* mallocptr = NULL;
+volatile char* mallocptr = NULL;
 volatile char* malloctab = NULL;
 
 void* g_dynamicAllocs[1024] = { 0 };
@@ -627,7 +627,6 @@ void DisableDisplay(void)
 	SetDispMask(0);
 }
 
-int DoNotSwap = 0;
 DB* MPlast[2];
 DB* MPcurrent[2];
 
@@ -643,13 +642,7 @@ void SwapDrawBuffers(void)
 {
 	DrawSync(0);
 
-	if (DoNotSwap == 0)
-	{
-		PutDispEnv(&current->disp);
-	}
-
-	DoNotSwap = 0;
-
+	PutDispEnv(&current->disp);
 	PutDrawEnv(&current->draw);
 	DrawOTag((u_long*)(current->ot + OTSIZE-1));
 
@@ -664,7 +657,8 @@ void SwapDrawBuffers(void)
 		last = &MPBuff[0][0];
 	}
 
-	ClearCurrentDrawBuffers();
+	ClearOTagR((u_long*)current->ot, OTSIZE);
+	current->primptr = current->primtab;
 }
 
 // [D] [T]
@@ -680,17 +674,17 @@ void SwapDrawBuffers2(int player)
 	}
 
 	PutDrawEnv(&current->draw);
-	DrawOTag((u_long*)(current->ot + OTSIZE - 1));
+	DrawOTag((u_long*)(current->ot + OTSIZE-1));
 
 	if (player == 1)
 	{
 		toggle = FrameCnt & 1;
 
 		// [A] i guess it should work as intended
-		MPcurrent[0] = &MPBuff[0][-toggle + 1];
+		MPcurrent[0] = &MPBuff[0][1-toggle];
 		MPlast[0] = &MPBuff[0][toggle];
 
-		MPcurrent[1] = &MPBuff[1][-toggle + 1];
+		MPcurrent[1] = &MPBuff[1][1-toggle];
 		MPlast[1] = &MPBuff[1][toggle];
 	}
 
@@ -734,6 +728,8 @@ void SetupDrawBuffers(void)
 	MPBuff[0][1].disp.screen.h = SCREEN_H;
 	MPBuff[0][0].disp.screen.x = draw_mode.framex;
 	MPBuff[0][1].disp.screen.x = draw_mode.framex;
+	MPBuff[0][0].disp.screen.y = draw_mode.framey;
+	MPBuff[0][1].disp.screen.y = draw_mode.framey;
 
 	if (NoPlayerControl == 0)
 		SetupDrawBufferData(NumPlayers);
@@ -795,26 +791,26 @@ void SetupDrawBufferData(int num_players)
 	{
 		for (j = 0; j < num_players; j++)
 		{
-			u_long* otpt;
+			u_int* otpt;
 			u_char* primpt;
 
 			if (toggle)
 			{
-				otpt = (u_long*)_OT2;
+				otpt = (u_int*)_OT2;
 				primpt = (u_char*)_primTab2; // _primTab1 + PRIMTAB_SIZE
 			}
 			else
 			{
-				otpt = (u_long*)_OT1;
+				otpt = (u_int*)_OT1;
 				primpt = (u_char*)_primTab1;
 			}
 
 			toggle ^= 1;
 			InitaliseDrawEnv(MPBuff[j], x[j], y[j], 320, height);
 	
-			MPBuff[i][j].primtab = (char*)primpt;
-			MPBuff[i][j].primptr = (char*)primpt;
-			MPBuff[i][j].ot = (OTTYPE*)otpt;
+			MPBuff[j][i].primtab = (char*)primpt;
+			MPBuff[j][i].primptr = (char*)primpt;
+			MPBuff[j][i].ot = (OTTYPE*)otpt;
 		}
 	}
 
@@ -830,17 +826,8 @@ void SetupDrawBufferData(int num_players)
 // [D] [T]
 void InitaliseDrawEnv(DB* pBuff, int x, int y, int w, int h)
 {
-#ifdef PSX
-#define DB1 pBuff[0]
-#define DB2 pBuff[1]
-#else
-// on PsyX we have to prevent flicker
-#define DB1 pBuff[1]
-#define DB2 pBuff[0]
-#endif
-
-	SetDefDrawEnv(&DB1.draw, x, y, w, h);
-	SetDefDrawEnv(&DB2.draw, x, y + 256, w, h);
+	SetDefDrawEnv(&pBuff[0].draw, x, y, w, h);
+	SetDefDrawEnv(&pBuff[1].draw, x, y + 256, w, h);
 
 	pBuff[0].id = 0;
 	pBuff[0].draw.dfe = 1;
@@ -848,7 +835,8 @@ void InitaliseDrawEnv(DB* pBuff, int x, int y, int w, int h)
 	pBuff[1].id = 1;
 	pBuff[1].draw.dfe = 1;
 
-#ifdef USE_PGXP
+#if USE_PGXP
+	// extend clip rectangles for widscreen
 	if(NumPlayers == 2)
 	{
 		pBuff[0].draw.clip.x -= 256;

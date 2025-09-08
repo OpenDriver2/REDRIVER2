@@ -46,7 +46,7 @@ extern void SetUpTrafficLightPhase(); // 0x0002D220
 extern int TrafficLightCycle(int exit); // 0x0002CF18
 
 extern int CreateCivCarWotDrivesABitThenStops(int direction, LONGVECTOR4* startPos, LONGVECTOR4* stopPos, unsigned char internalModel, int palette); // 0x000286E0
-extern int CreateStationaryCivCar(int direction, long orientX, long orientZ, LONGVECTOR4* startPos, int externalModel, int palette, int controlFlags); // 0x00028960
+extern int CreateStationaryCivCar(int direction, int orientX, int orientZ, LONGVECTOR4* startPos, int externalModel, int palette, int controlFlags); // 0x00028960
 
 extern int CheckChangeLanes(DRIVER2_STRAIGHT* straight, DRIVER2_CURVE* curve, int distAlongSegment, CAR_DATA* cp, int tryToPark); // 0x00026F20
 extern int NotTravellingAlongCurve(int x, int z, int dir, DRIVER2_CURVE* cv);

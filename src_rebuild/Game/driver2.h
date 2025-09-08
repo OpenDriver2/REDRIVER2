@@ -26,8 +26,12 @@
 
 #include "platform.h"
 
-#define USE_PC_FILESYSTEM (!defined(PSX))		// PC filesystem is prioritized over CD
-#define USE_CD_FILESYSTEM 1						// use always
+#define USE_PC_FILESYSTEM			(!defined(PSX))		// PC filesystem is prioritized over CD
+#define USE_CD_FILESYSTEM			1					// use always
+#define ENABLE_MISSION_FIXES		1
+#define ENABLE_GAME_FIXES			1
+#define ENABLE_GAME_ENCHANCEMENTS	1
+#define ENABLE_BONUS_CONTENT		1
 
 #ifdef PSX
 // TODO: Include PSX STUFF

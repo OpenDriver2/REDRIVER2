@@ -291,7 +291,7 @@ int CameraCollisionCheck(void)
 				int type = (ppco->value >> 6) | ((ppco->pos.vy & 1) << 10);
 
 				model = modelpointers[type];
-				boxptr = (int *)model->collision_block;
+				boxptr = GET_MODEL_DATA(int, model, collision_block);
 
 				if (boxptr != NULL && (model->flags2 & MODEL_FLAG_SMASHABLE) == 0)
 				{
@@ -704,7 +704,7 @@ void PlaceCameraAtLocation(PLAYER* lp, int zoom)
 
 		d = PointAtTarget(&lp->cameraPos, &temp, &camera_angle);
 
-		if (d > 16000)
+		if (d > VIEW_DRAW_DISTANCE)
 		{
 			lp->cameraView = 0;
 			return;

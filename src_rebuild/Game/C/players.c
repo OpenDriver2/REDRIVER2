@@ -148,11 +148,13 @@ void ChangeCarPlayerToPed(int playerID)
 	if (CarHasSiren(lcp->ap.model))
 		locPlayer->horn.on = 0;
 
+#if ENABLE_MISSION_FIXES
 	// [A] carry over felony from car to Tanner if cops see player
 	// don't clear player felony in Destroy the Yard
 	if (CopsCanSeePlayer || gCurrentMissionNumber == 30)
 		pedestrianFelony = lcp->felonyRating;
 	else
+#endif
 		pedestrianFelony = 0;
 }
 
@@ -207,10 +209,12 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 		newCar->ai.padid = &lPlayer->padid;
 		newCar->hndType = 0;
 
-		if (playerID == 0 &&
-			!(newCar->controlFlags & CONTROL_FLAG_PLAYER_START_CAR))	// [A] bug fix: don't give felony if player owns his cop car
+		if (playerID == 0 
+#if ENABLE_GAME_FIXES
+			&& !(newCar->controlFlags & CONTROL_FLAG_PLAYER_START_CAR)	// [A] bug fix: don't give felony if player owns his cop car
+#endif
+		)
 		{
-			// [A] Rev 1.1 removes felony override for "Steal the cop car"
 			if (gCurrentMissionNumber != 32 && MissionHeader->residentModels[newCar->ap.model] == 0)
 			{
 				NoteFelony(&felonyData, 11, 4096);
@@ -230,12 +234,14 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 			HaveCarSoundStraightAway(playerID);
 
 		// [A] carry over felony from Tanner to car if cops see player. Force in Destroy the yard
+#if ENABLE_MISSION_FIXES
 		if (CopsCanSeePlayer || gCurrentMissionNumber == 30)
 		{
 			if (newCar->felonyRating < pedestrianFelony)
 				newCar->felonyRating = pedestrianFelony;
 		}
 		else
+#endif
 			pedestrianFelony = 0;
 	}
 

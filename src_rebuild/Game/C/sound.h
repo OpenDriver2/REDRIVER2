@@ -35,13 +35,14 @@ extern int gMusicVolume;
 extern int gSoundMode;
 
 extern int Song_ID;
+extern int Song_SetPos;
 extern int VABID;
 extern int music_paused;
 
 extern void InitSound(); // 0x000790E4
 extern void ResetSound(); // 0x00079250
 
-extern void AllocateReverb(long mode, long depth); // 0x0007AB3C
+extern void AllocateReverb(int mode, int depth); // 0x0007AB3C
 extern void SetReverbState(int on); // 0x0007A6C0
 extern void SetReverbInGameState(int on); // 0x0007A704
 extern int SetReverbChannelState(int ch, int on); // 0x0007A75C

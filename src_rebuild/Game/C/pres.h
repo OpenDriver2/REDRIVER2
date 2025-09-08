@@ -3,12 +3,9 @@
 
 struct OUT_FONTINFO
 {
-	u_char x;
-	u_char y;
-	char offx;
-	char offy;
-	u_char width;
-	u_char height;
+	u_char x, y;
+	char offx, offy;
+	u_char width, height;
 	u_short pad;
 };
 

@@ -101,7 +101,7 @@ int GetSurfaceRoadInfo(DRIVER2_ROAD_INFO* outRoadInfo, int surfId)
 	if(IS_CURVED_SURFACE(surfId))
 	{
 		outRoadInfo->curve = curve = GET_CURVE(surfId);
-		outRoadInfo->ConnectIdx = &curve->ConnectIdx;
+		outRoadInfo->ConnectIdx = curve->ConnectIdx;
 		outRoadInfo->NumLanes = curve->NumLanes;
 		outRoadInfo->LaneDirs = curve->LaneDirs;
 		outRoadInfo->AILanes = curve->AILanes;
@@ -110,7 +110,7 @@ int GetSurfaceRoadInfo(DRIVER2_ROAD_INFO* outRoadInfo, int surfId)
 	else if (IS_STRAIGHT_SURFACE(surfId))
 	{
 		outRoadInfo->straight = straight = GET_STRAIGHT(surfId);
-		outRoadInfo->ConnectIdx = &straight->ConnectIdx;
+		outRoadInfo->ConnectIdx = straight->ConnectIdx;
 		outRoadInfo->NumLanes = straight->NumLanes;
 		outRoadInfo->LaneDirs = straight->LaneDirs;
 		outRoadInfo->AILanes = straight->AILanes;
@@ -119,7 +119,7 @@ int GetSurfaceRoadInfo(DRIVER2_ROAD_INFO* outRoadInfo, int surfId)
 	else if (IS_JUNCTION_SURFACE(surfId))
 	{
 		junction = GET_JUNCTION(surfId);
-		outRoadInfo->ConnectIdx = &junction->ExitIdx;
+		outRoadInfo->ConnectIdx = junction->ExitIdx;
 	}
 
 	return 0;
@@ -203,11 +203,13 @@ void ProcessStraightsDriver2Lump(char *lump_file, int lump_size)
 	}
 	else if (GameLevel == 2)
 	{
+#if ENABLE_GAME_FIXES
 		int i;
 		DRIVER2_STRAIGHT* str;
 
 		Driver2StraightsPtr[348].ConnectIdx[2] = 8244;
 		Driver2StraightsPtr[348].ConnectIdx[3] = 351;
+#endif
 	}
 }
 
@@ -350,7 +352,7 @@ sdPlane* sdGetCell(VECTOR *pos)
 	plane = GetSeaPlane();
 	
 	if (*buffer != 2)
-		return plane;
+		return &default_plane;
 	
 	sdPlane* planeData = (sdPlane*)((char*)buffer + buffer[1]);
 	short* bspData = (short*)((char*)buffer + buffer[2]);

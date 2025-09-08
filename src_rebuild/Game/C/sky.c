@@ -232,7 +232,7 @@ void LoadSky(void)
 				skytexuv[i].v3 = v + 83;
 			}
 	
-			skytpage[i] = GetTPage(0,0,tp_x & 0xffffffc0,ry * 84 & 768);
+			skytpage[i] = GetTPage(0,0,tp_x & ~0x3f, ry * 84 & 768);
 			skyclut[i] = GetClut(clut_x,ry + 252);
 
 			tp_x += 32;
@@ -257,20 +257,20 @@ void LoadSky(void)
 
 	if (gWeather - 1U < 2)
 	{
-		if (gTimeOfDay == 3)
+		if (gTimeOfDay == TIME_NIGHT)
 			offset = 0x10000;
 		else
 			offset = 0x20000;
 	}
 	else
 	{
-		if (gTimeOfDay == 0)
+		if (gTimeOfDay == TIME_DAWN)
 			offset = 0x30000;
-		else if (gTimeOfDay == 1)
+		else if (gTimeOfDay == TIME_DAY)
 			offset = 0;
-		else if (gTimeOfDay == 2)
+		else if (gTimeOfDay == TIME_DUSK)
 			offset = 0x40000;
-		else if (gTimeOfDay == 3)
+		else if (gTimeOfDay == TIME_NIGHT)
 			offset = 0x10000;
 	}
 
@@ -285,7 +285,7 @@ void LoadSky(void)
 }
 
 // [D] [T]
-#ifdef USE_PGXP
+#if USE_PGXP
 void DisplaySun(DVECTORF* pos, CVECTOR* col, int flare_col)
 #else
 void DisplaySun(DVECTOR* pos, CVECTOR* col, int flare_col)
@@ -393,7 +393,7 @@ void DisplaySun(DVECTOR* pos, CVECTOR* col, int flare_col)
 }
 
 // [D] [T]
-#ifdef USE_PGXP
+#if USE_PGXP
 void DisplayMoon(DVECTORF* pos, CVECTOR* col, int flip)
 #else
 void DisplayMoon(DVECTOR* pos, CVECTOR* col, int flip)
@@ -492,7 +492,7 @@ void DrawLensFlare(void)
 	
 	int haze_col;
 
-#ifdef USE_PGXP
+#if USE_PGXP
 	DVECTORF sun_pers_conv_position;
 #else
 	DVECTOR sun_pers_conv_position;
@@ -503,10 +503,10 @@ void DrawLensFlare(void)
 
 	source = sun_source;
 
-	if (gWeather - 1U <= 1 || (M_BIT(gTimeOfDay) & (M_BIT(0) | M_BIT(2))))
+	if (gWeather - 1U <= 1 || (M_BIT(gTimeOfDay) & (M_BIT(TIME_DAWN) | M_BIT(TIME_DUSK))))
 		return;
 	
-	if (gTimeOfDay == 3)
+	if (gTimeOfDay == TIME_NIGHT)
 		col.r = 128;
 	else
 		col.r = 254;
@@ -517,7 +517,7 @@ void DrawLensFlare(void)
 	col.b = col.r;
 
 	// get the sun brightness from framebuffer copy
-	if (gTimeOfDay != 3 && last_attempt_failed == 0)
+	if (gTimeOfDay != TIME_NIGHT && last_attempt_failed == 0)
 	{
 		pwBuffer = buffer;
 		StoreImage(&source, (u_long*)buffer);
@@ -546,7 +546,7 @@ void DrawLensFlare(void)
 	gte_SetRotMatrix(&inv_camera_matrix);
 	gte_SetTransVector(&dummy);
 
-	if (gTimeOfDay == 3)
+	if (gTimeOfDay == TIME_NIGHT)
 	{
 		gte_ldv0(&moon_position[GameLevel]);
 	}
@@ -568,7 +568,7 @@ void DrawLensFlare(void)
 	
 	distance_to_sun = SquareRoot0(xgap * xgap + ygap * ygap);
 
-	if (gTimeOfDay == 3)
+	if (gTimeOfDay == TIME_NIGHT)
 	{
 		if (distance_to_sun < 500)
 		{
@@ -644,7 +644,7 @@ void DrawLensFlare(void)
 			}
 		}
 
-#ifdef USE_PGXP
+#if USE_PGXP
 		// remap
 		PsyX_GetPSXWidescreenMappedViewport(&viewp);
 		sun_pers_conv_position.vx = RemapVal(sun_pers_conv_position.vx, float(viewp.x), float(viewp.w), 0.0f, 320.0f);
@@ -764,14 +764,14 @@ void calc_sky_brightness(RGB16* skycolor)
 	int dawn;
 	dawn = DawnCount >> 5;
 
-	if(M_BIT(gTimeOfDay) & (M_BIT(0) | M_BIT(2)))
+	if(M_BIT(gTimeOfDay) & (M_BIT(TIME_DAWN) | M_BIT(TIME_DUSK)))
 	{
-		if (gTimeOfDay == 0)
+		if (gTimeOfDay == TIME_DAWN)
 		{
 			skycolor->r = dawn + 41;
 			skycolor->b = dawn + 28;
 		}
-		else if (gTimeOfDay == 2)
+		else if (gTimeOfDay == TIME_DUSK)
 		{
 			skycolor->r = 143 - dawn;
 			skycolor->b = 128 - dawn;
@@ -815,7 +815,7 @@ void calc_sky_brightness(RGB16* skycolor)
 		skycolor->b = skyFade;
 }
 
-#ifdef USE_PGXP
+#if USE_PGXP
 DVECTORF scratchPad_skyVertices[35];	// 1f800044
 #else
 #define scratchPad_skyVertices ((DVECTOR*)getScratchAddr(0x11))	// 1f800044
@@ -831,7 +831,7 @@ void PlotSkyPoly(POLYFT4* polys, int skytexnum, unsigned char r, unsigned char g
 	src = polys;
 	poly = (POLY_FT4*)current->primptr;
 
-#ifdef USE_PGXP
+#if USE_PGXP
 	DVECTORF* outpoints = scratchPad_skyVertices;
 #else
 	DVECTOR* outpoints = scratchPad_skyVertices;
@@ -864,7 +864,7 @@ void PlotSkyPoly(POLYFT4* polys, int skytexnum, unsigned char r, unsigned char g
 
 		addPrim(current->ot + OTSIZE - 1, poly);
 
-#if defined(USE_PGXP) && defined(USE_EXTENDED_PRIM_POINTERS)
+#if USE_PGXP && USE_EXTENDED_PRIM_POINTERS
 		poly->pgxp_index = outpoints[src->v0].pgxp_index;
 #endif 
 
@@ -877,7 +877,7 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset, RGB16* skycolor)
 {
 	SVECTOR* verts;
 
-#ifdef USE_PGXP
+#if USE_PGXP
 	DVECTORF* dv;
 #else
 	DVECTOR* dv;
@@ -889,11 +889,11 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset, RGB16* skycolor)
 	int z;
 
 	z = -1;
-	verts = (SVECTOR*)model->vertices;
+	verts = GET_MODEL_DATA(SVECTOR, model, vertices);
 	dv = scratchPad_skyVertices;
 	count = model->num_vertices;
 
-#ifdef USE_PGXP
+#if USE_PGXP
 	PGXP_SetZOffsetScale(0.0f, 256.0f);
 #endif
 
@@ -906,7 +906,7 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset, RGB16* skycolor)
 		if(count == 15)
 			gte_stszotz(&z);
 
-#ifdef USE_PGXP
+#if USE_PGXP
 		// store PGXP index
 		// HACK: -1 is needed here for some reason
 		dv[0].pgxp_index = dv[1].pgxp_index = dv[2].pgxp_index = PGXP_GetIndex(0) - 1;
@@ -916,7 +916,7 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset, RGB16* skycolor)
 		count -= 3;
 	} while (count);
 
-#ifdef USE_PGXP
+#if USE_PGXP
 	PGXP_SetZOffsetScale(0.0f, 1.0f);
 #endif
 
@@ -924,7 +924,7 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset, RGB16* skycolor)
 	{
 		int polySize;
 		u_char* horizonTex = &HorizonTextures[horizontaboffset];
-		polys = (unsigned char*)model->poly_block;
+		polys = GET_MODEL_DATA(u_char, model, poly_block);
 		polySize = PolySizes[*polys];
 
 		red = skycolor->r;

@@ -11,7 +11,6 @@ extern CAR_DATA car_data[MAX_CARS + 2];	// all cars + Tanner cbox + Camera cbox
 
 // active cars
 extern CAR_DATA* active_car_list[MAX_CARS];
-extern BOUND_BOX bbox[MAX_CARS];
 extern unsigned char lightsOnDelay[MAX_CARS];
 
 extern CAR_MODEL NewCarModel[MAX_CAR_MODELS];
@@ -43,8 +42,14 @@ extern u_short civ_clut[8][32][6];
 
 extern void DrawCar(CAR_DATA *cp, int view); // 0x000210B8
 
-extern void buildNewCars(); // 0x00022860
-extern void buildNewCarFromModel(CAR_MODEL *car, MODEL *model, int first); // 0x00022960
+#ifndef PSX
+// [A] loads car model from file
+char* LoadCarModelFromFile(char* dest, int modelNumber, int type);
+#endif
+
+extern MODEL* GetCarModel(char *src, char **dest, int KeepNormals); // 0x00065134
+extern void startBuildNewCars(int isSpecial); // 0x00022860
+extern void buildNewCarFromModel(int index, int detail, char* polySrc, MODEL* model); // 0x00022960
 
 extern void MangleWheelModels(); // 0x000230C8
 

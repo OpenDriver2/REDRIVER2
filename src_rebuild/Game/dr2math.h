@@ -39,6 +39,8 @@ extern short rcossin_tbl[8192];
 #define isin(a)			(rcossin_tbl[( ( a ) & 4095) * 2])
 #define icos(a)			(rcossin_tbl[((( a )+1024) & 4095) * 2])
 
+#define RAND(seed)		((seed) * 0x19660D + 0x3C6EF35F)
+
 #define DIFF_ANGLES_R( A, B, RANGE ) \
 	(((((B) - (A)) + (RANGE>>1)) & RANGE-1) - (RANGE>>1))
 
@@ -126,21 +128,20 @@ extern short rcossin_tbl[8192];
 
 #define numberOf(sexToys)					(sizeof(sexToys) / sizeof(sexToys[0]))
 
-#ifndef MIN
+#ifdef MIN
+#undef MIN
+#endif
 #define MIN(a,b)	fst_min(a,b)
-#endif
 
-#ifndef MAX
+#ifdef MAX
+#undef MAX
+#endif
 #define MAX(a,b)	fst_max(a,b)
-#endif
 
-#ifdef PSX
+#ifdef ABS
 #undef ABS		// don't use PsyQ's silly ABS that might not be optimized
 #endif
-
-#ifndef ABS
 #define ABS(a)		fst_abs(a)
-#endif
 
 inline int fst_min(int a, int b)
 {

@@ -16,7 +16,7 @@
 #include "cars.h"
 #include "convert.h"
 
-#ifdef USE_PGXP
+#if USE_PGXP
 #include <math.h>
 #endif
 
@@ -607,7 +607,7 @@ void DrawBodySprite(LPPEDESTRIAN pDrawingPed, int boneId, VERTTYPE v1[2], VERTTY
 	prims->x3 = v2[0] - FIXEDH(cs) - dx1;
 	prims->y3 = v2[1] - FIXEDH(sn) - dy1;
 
-#ifdef USE_PGXP
+#if USE_PGXP
 	if (!bDoingShadow) // [A] Psy-X is currently incorrectly offsets the offscreen PGXP geometry. We don't need it anyway.
 	{
 		ushort pgxpIdx = PGXP_GetIndex(0) - 64;
@@ -831,7 +831,7 @@ void StoreVertexLists(void)
 		cTannerVNumbers[i] = counter;
 
 		destVerts = &vTannerList[counter];
-		srcVerts = (SVECTOR*)pModel->vertices;
+		srcVerts = GET_MODEL_DATA(SVECTOR, pModel, vertices);
 
 		for (j = 0; j < pModel->num_vertices; j++)
 		{
@@ -857,7 +857,7 @@ void StoreVertexLists(void)
 			continue;
 		}
 
-		srcVerts = (SVECTOR*)pModel->vertices;
+		srcVerts = GET_MODEL_DATA(SVECTOR, pModel, vertices);
 
 		// store start index
 		cJerichoVNumbers[i] = counter;
@@ -1119,7 +1119,7 @@ void newShowTanner(LPPEDESTRIAN pDrawingPed)
 
 					for (int c = 0; c < model->num_vertices; c++)
 					{
-						SVECTOR* mVerts = (SVECTOR*)model->vertices + c;
+						SVECTOR* mVerts = GET_MODEL_DATA(SVECTOR, model, vertices) + c;
 
 						mVerts->vx += (vJPos[lval].vx + playerPos->vx - cameraPos->vx);
 						mVerts->vy += (vJPos[lval].vy + playerPos->vy - cameraPos->vy);
@@ -1394,7 +1394,7 @@ void newRotateBones(LPPEDESTRIAN pDrawingPed, BONE* poBone)
 				{
 					pModel = *pBone->pModel;
 
-					SVECTOR* pmVerts = (SVECTOR*)pModel->vertices;
+					SVECTOR* pmVerts = GET_MODEL_DATA(SVECTOR, pModel, vertices);
 					int numVerts = pModel->num_vertices;
 
 					for (int c = 0; c < numVerts; c++)
@@ -1651,7 +1651,7 @@ void DrawTanner(LPPEDESTRIAN pPed)
 
 	if (pPed->padId == 0)
 	{
-		if (gTimeOfDay == 3)
+		if (gTimeOfDay == TIME_NIGHT)
 		{
 			cV.b = 12;
 			cV.g = 12;
@@ -1699,7 +1699,7 @@ int DrawCharacter(LPPEDESTRIAN pPed)
 		bDoingShadow = 1;
 		v.vy = -camera_position.vy - MapHeight((VECTOR*)&pPed->position);
 
-		if (gTimeOfDay == 3)
+		if (gTimeOfDay == TIME_NIGHT)
 		{
 			cV.b = cV.g = cV.r = 12;
 			TannerShadow(pPed, &v, moon_position + GameLevel, &cV, pPed->dir.vy);
@@ -1753,7 +1753,7 @@ void InitTannerShadow(void)
 	POLY_FT4* poly;
 	int i;
 
-	if (gTimeOfDay == 3)
+	if (gTimeOfDay == TIME_NIGHT)
 		brightness = 12;
 	else
 		brightness = 32;

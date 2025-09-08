@@ -19,9 +19,29 @@ char* CosmeticFiles[] = {
 
 CAR_COSMETICS car_cosmetics[MAX_CAR_MODELS];
 
+#if ENABLE_GAME_FIXES
 // [A] storage for spooled models
 // remember: we already have more than 1k of free memory with optimizations
 CAR_COSMETICS levelSpecCosmetics[5];
+#endif
+
+#if USE_PC_FILESYSTEM
+extern int gContentOverride;
+
+// [A] loads car cosmetics from file
+void LoadCustomCarCosmetics(CAR_COSMETICS* dest, int modelNumber)
+{
+	char filename[64];
+
+	sprintf(filename, "LEVELS\\%s\\CARMODEL_%d.COS", LevelNames[GameLevel], modelNumber);
+	if (!FileExists(filename))
+	{
+		return;
+	}
+
+	LoadfileSeg(filename, (char*)dest, 0, sizeof(CAR_COSMETICS));
+}
+#endif
 
 // [D] [T]
 void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
@@ -49,18 +69,24 @@ void ProcessCosmeticsLump(char *lump_ptr, int lump_size)
 			offset = *(int*)(lump_ptr + model * sizeof(int));
 			car_cosmetics[i] = *(CAR_COSMETICS*)((u_char*)lump_ptr + offset);
 
+#if USE_PC_FILESYSTEM
+			if(gContentOverride)
+				LoadCustomCarCosmetics(&car_cosmetics[i], model);
+#endif
 			FixCarCos(&car_cosmetics[i], model);
 		}
 	}
 
 	// [A] cache all special vehicle cosmetics
-	for (i = 0; i < 5; i++)
+#if ENABLE_GAME_FIXES
+	for (i = 0; i < MAX_CAR_MODELS; i++)
 	{
 		model = 8 + i;
 
 		offset = *(int*)(lump_ptr + model * sizeof(int));
 		levelSpecCosmetics[i] = *(CAR_COSMETICS*)((u_char*)lump_ptr + offset);
 	}
+#endif
 }
 
 // [D] [T]
@@ -113,11 +139,16 @@ void SetupSpecCosmetics(char *loadbuffer)
 	int model;
 	model = MissionHeader->residentModels[4];
 
-#if 1
+#if ENABLE_GAME_FIXES
 	// [A] always use cached cosmetics
 	car_cosmetics[4] = levelSpecCosmetics[model - 8];
 #else
 	car_cosmetics[4] = *(CAR_COSMETICS*)loadbuffer;
+#endif
+
+#if USE_PC_FILESYSTEM
+	if (gContentOverride)
+		LoadCustomCarCosmetics(&car_cosmetics[4], model);
 #endif
 
 	// [A] don't forget
@@ -142,12 +173,11 @@ void AddIndicatorLight(CAR_DATA *cp, int Type)
 	life2 = &cp->ap.life2;
 
 	if (cp->ap.life < 0)
-		brightness = (0xff - (u_int)cp->ap.life) * 2;
+		brightness = (255 - (u_int)cp->ap.life) * 2 & 255;
 	else
-		brightness = cp->ap.life << 1;
+		brightness = cp->ap.life << 1 & 255;
 
-	col.r = brightness & 0xFF;
-
+	col.r = brightness;
 	col.g = 0;
 	col.b = 0;
 

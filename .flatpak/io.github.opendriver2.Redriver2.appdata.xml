@@ -4,9 +4,9 @@
   <metadata_license>MIT</metadata_license>
   <project_license>MIT</project_license>
   <name>REDRIVER2</name>
-  <summary>Driver 2 Playstation game reverse engineering effort</summary>
+  <summary>Driver 2 - Back On The Streets / The Wheelman Is Back</summary>
   <description>
-    <p>Driver 2 Playstation game reverse engineering effort </p>
+    <p>Reverse-Engineered version of Driver 2. https://opendriver2.github.io</p>
   </description>
   <categories>
     <category>Game</category>
