@@ -215,10 +215,7 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 #endif
 		)
 		{
-			if (gCurrentMissionNumber != 32 && MissionHeader->residentModels[newCar->ap.model] == 0)
-			{
-				NoteFelony(&felonyData, 11, 4096);
-			}
+			NoteFelony(&felonyData, 11, FELONY_PURSUIT_MIN_VALUE);
 		}
 
 		if (gCurrentMissionNumber == 33 && newCar->ap.model == 4)
