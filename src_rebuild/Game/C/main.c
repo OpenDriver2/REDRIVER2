@@ -840,7 +840,6 @@ void StepSim(void)
 	static char t2; // offset 0x5
 
 	char padAcc;
-	short* playerFelony;
 	int stream;
 	CAR_DATA* cp;
 	PLAYER* pl;
@@ -871,13 +870,8 @@ void StepSim(void)
 
 	lead_pad = (u_int)controller_bits;
 
-	if (player[0].playerCarId < 0)
-		playerFelony = &pedestrianFelony;
-	else
-		playerFelony = &car_data[player[0].playerCarId].felonyRating;
-
 	// control cop roadblocks
-	if (*playerFelony <= FELONY_ROADBLOCK_MIN_VALUE || numRoadblockCars != 0)
+	if (*GetPlayerFelonyData() <= FELONY_ROADBLOCK_MIN_VALUE || numRoadblockCars != 0)
 	{
 		if (roadblockCount != 0)
 		{
@@ -910,13 +904,16 @@ void StepSim(void)
 			for (i = 0; i < 10; i++)
 				PingInCivCar(15900);
 		}
-		else if (numCivCars < maxCivCars && (NumPlayers == 1 || (NumPlayers == 2 && GameType == GAME_COPSANDROBBERS)))
+		else
 		{
-			// make 5 tries
-			for (i = 0; i < 5; i++)
+			if (numCivCars < maxCivCars && (NumPlayers == 1 || (NumPlayers == 2 && GameType == GAME_COPSANDROBBERS)))
 			{
-				if (PingInCivCar(15900))
-					break;
+				// make 5 tries
+				for (i = 0; i < 5; i++)
+				{
+					if (PingInCivCar(15900))
+						break;
+				}
 			}
 		}
 
@@ -1327,10 +1324,10 @@ void StepGame(void)
 	{
 		gLightsOn = 0;
 
-		if (gWeather - 1U > 1)
-			NightAmbient = 128;
-		else
+		if (gWeather == WEATHER_RAIN || gWeather == WEATHER_WET)
 			NightAmbient = 78;
+		else
+			NightAmbient = 128;
 	}
 	else if (gTimeOfDay == TIME_DUSK)
 	{
@@ -1349,7 +1346,7 @@ void StepGame(void)
 			}
 		}
 
-		if (gWeather - 1U < 2)
+		if (gWeather == WEATHER_RAIN || gWeather == WEATHER_WET)
 			NightAmbient = 78 - (DawnCount >> 7);
 		else
 			NightAmbient = 96 - (DawnCount >> 5);
@@ -2130,15 +2127,7 @@ void UpdatePlayerInformation(void)
 	PlayerDamageBar.max = MaxPlayerDamage[0];
 	Player2DamageBar.max = MaxPlayerDamage[1];
 
-	if (player[0].playerCarId < 0)
-		playerFelony = &pedestrianFelony;
-	else
-		playerFelony = &car_data[player[0].playerCarId].felonyRating;
-
-	if (gPlayerImmune != 0)
-		*playerFelony = 0;
-
-	FelonyBar.position = *playerFelony;
+	UpdatePlayerFelonyData();
 
 	for (i = 0; i < NumPlayers; i++)
 	{
@@ -2207,11 +2196,17 @@ void UpdatePlayerInformation(void)
 		}
 
 		// die with fade on mountain race track
-		if ((gCurrentMissionNumber > 479 && gCurrentMissionNumber < 482 ||
-			gCurrentMissionNumber > 483 && gCurrentMissionNumber < 486) &&
-			cp->hd.where.t[1] < -750 && gDieWithFade == 0)
+		switch (gCurrentMissionNumber)
 		{
-			gDieWithFade = 1;
+			case 480:
+			case 481:
+			case 484:
+			case 485:
+			case 486:
+			case 487:
+				if (cp->hd.where.t[1] < -750 && !gDieWithFade)
+					gDieWithFade = 1;
+				break;
 		}
 	}
 }
@@ -2352,7 +2347,7 @@ void RenderGame2(int view)
 	}
 
 	// Steven Adams and Andreas Tawn of Havana team
-	notInDreaAndStevesEvilLair = Havana3DOcclusion(DrawMapPSX, (int*)&ObjectDrawnValue);
+	notInDreaAndStevesEvilLair = Havana3DOcclusion(DrawMapPSX, &ObjectDrawnValue);
 
 	if (notInDreaAndStevesEvilLair)
 	{		
@@ -2428,6 +2423,7 @@ void InitGameVariables(void)
 	CopsCanSeePlayer = 0;
 
 	Havana3DLevelDraw = -1;
+	Havana3DLevelMode = -1;
 
 	srand(0x1234);
 	RandomInit(0xd431, 0x350b1);
@@ -2448,11 +2444,24 @@ void InitGameVariables(void)
 		PlayerStartInfo[0]->controlType = CONTROL_TYPE_PLAYER;
 		PlayerStartInfo[0]->flags = 0;
 
-		PlayerStartInfo[0]->rotation = levelstartpos[GameLevel + (gWantNight * 4)][1];
-
 		PlayerStartInfo[0]->position.vy = 0;
-		PlayerStartInfo[0]->position.vx = levelstartpos[GameLevel + (gWantNight * 4)][0];
-		PlayerStartInfo[0]->position.vz = levelstartpos[GameLevel + (gWantNight * 4)][2];
+
+#if 0 // !!! NOT IMPLEMENTED YET !!!
+		if (wantedStartPos != -1)
+		{
+			// select player 1 custom spawn point and save the car position
+			// ...
+			// ...
+
+			SetSavedCar(0, PlayerStartInfo[0]);
+		}
+		else
+#endif
+		{
+			PlayerStartInfo[0]->rotation = levelstartpos[GameLevel + (gWantNight * 4)][1];
+			PlayerStartInfo[0]->position.vx = levelstartpos[GameLevel + (gWantNight * 4)][0];
+			PlayerStartInfo[0]->position.vz = levelstartpos[GameLevel + (gWantNight * 4)][2];
+		}
 
 		numPlayersToCreate = 1;
 
@@ -2467,17 +2476,31 @@ void InitGameVariables(void)
 			PlayerStartInfo[1]->controlType = CONTROL_TYPE_PLAYER;
 			PlayerStartInfo[1]->flags = 0;
 
-			PlayerStartInfo[1]->rotation = levelstartpos[GameLevel][1];
 
 			PlayerStartInfo[1]->position.vy = 0;
-			PlayerStartInfo[1]->position.vx = levelstartpos[GameLevel][0] + 600;
-			PlayerStartInfo[1]->position.vz = levelstartpos[GameLevel][2];
+
+#if 0 // !!! NOT IMPLEMENTED YET !!!
+			if (wantedStartPos != -1)
+			{
+				// select player 2 custom spawn point and save the car position
+				// ...
+				// ...
+
+				SetSavedCar(1, PlayerStartInfo[1]);
+			}
+			else
+#endif
+			{
+				PlayerStartInfo[1]->rotation = levelstartpos[GameLevel][1];
+				PlayerStartInfo[1]->position.vx = levelstartpos[GameLevel][0] + 600;
+				PlayerStartInfo[1]->position.vz = levelstartpos[GameLevel][2];
+			}
 
 			numPlayersToCreate = NumPlayers;
 		}
 	}
 
-	InitCivCars();
+	InitCivCars(0);
 }
 
 // [D] [T]
@@ -2727,9 +2750,6 @@ int Havana3DOcclusion(occlFunc func, int* param)
 			events.camera = 0;
 			return outside;
 		}
-	
-		(*func)(param);
-		return 1;
 	}
 
 	(*func)(param);

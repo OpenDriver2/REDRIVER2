@@ -93,6 +93,8 @@ void DrawDebugOverlays()
 		extern int numParkedCars;
 		extern int maxCopCars;
 		extern int maxCivCars;
+		extern int num_pedestrians;
+		extern int max_pedestrians;
 		extern int current_region;
 		extern int LoadedArea;
 
@@ -101,7 +103,7 @@ void DrawDebugOverlays()
 		sprintf(tempBuf, "Spooling: %d spec: %d, active: %d, Reg: %d, Ar: %d, Cn: %d %d", doSpooling, allowSpecSpooling, spoolactive, current_region, LoadedArea, spoolptr->connected_areas[0] & 0x3f, spoolptr->connected_areas[1] & 0x3f);
 		PrintString(tempBuf, 10, 30);
 
-		sprintf(tempBuf, "Civs: %d - %d parked - max %d", numCivCars, numParkedCars, maxCivCars);
+		sprintf(tempBuf, "Civs: %d - %d parked - max %d, Peds: %d - max %d", numCivCars, numParkedCars, maxCivCars, num_pedestrians, max_pedestrians);
 		PrintString(tempBuf, 10, 40);
 
 		sprintf(tempBuf, "Cops: %d - %d active - max %d - seen: %d", numCopCars, numActiveCops, maxCopCars, CopsCanSeePlayer);

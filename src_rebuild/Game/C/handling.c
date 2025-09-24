@@ -269,11 +269,24 @@ void FixCarCos(CAR_COSMETICS* carCos, int externalModelNumber)
 	{
 		car_cosmetics[2].mass *= 3;
 	}
+
+	// [A] wibbly wobbly fuckery hacks...
+	// flag certain cars that have a tendency to go CRAZY at a stand-still
+	if (GameLevel == 2 && externalModelNumber == 10) // vegas box truck
+	{
+		carCos->extraInfo |= 4;
+	}
 }
 
 int ghost_mode = 0;
 int playerghost = 0;
 int playerhitcopsanyway = 0;
+
+#ifndef PSX
+typedef char COLLISION_LIST[MAX_CARS];
+
+COLLISION_LIST collided_cars[MAX_CARS];
+#endif
 
 // [D] [T]
 void GlobalTimeStep(void)
@@ -282,7 +295,12 @@ void GlobalTimeStep(void)
 	static RigidBodyState _d0[MAX_CARS]; // offset 0x410
 	static RigidBodyState _d1[MAX_CARS]; // offset 0x820
 
+#ifndef PSX
+	COLLISION_LIST *collisions;
+#else
 	int mayBeCollidingBits;
+#endif
+
 	int tmp;
 	RigidBodyState* thisState_i, *thisState_j, * thisDelta;
 	CAR_DATA* cp, * c1;
@@ -298,12 +316,6 @@ void GlobalTimeStep(void)
 	int do1, do2;
 	int m1, m2;
 	int carsDentedThisFrame;
-	short *felony;
-
-	if (player[0].playerCarId < 0)
-		felony = &pedestrianFelony;
-	else
-		felony = &car_data[player[0].playerCarId].felonyRating;
 
 	StepCars();
 	CheckCarToCarCollisions();
@@ -314,6 +326,22 @@ void GlobalTimeStep(void)
 		cp = active_car_list[i];
 
 		st = &cp->st;
+
+		// [A] bugfix: wibbly wobbly cars
+		// (see end of FixCarCos for cars that have this flag)
+		if (car_cosmetics[cp->ap.model].extraInfo & 4)
+		{			
+			if (cp->handbrake && cp->wasOnGround && cp->hd.speed < 3)
+			{
+				cp->hd.aacc[0] >>= 1;
+				cp->hd.aacc[1] >>= 1;
+				cp->hd.aacc[2] >>= 1;
+
+				cp->hd.acc[0] >>= 1;
+				cp->hd.acc[1] >>= 1;
+				cp->hd.acc[2] >>= 1;
+			}
+		}
 
 		st->n.linearVelocity[0] += cp->hd.acc[0];
 		st->n.linearVelocity[1] += cp->hd.acc[1];
@@ -403,13 +431,21 @@ void GlobalTimeStep(void)
 					CheckScenaryCollisions(cp);
 				}
 
-				mayBeCollidingBits = cp->hd.mayBeColliding;
-
 				// if has any collision, process with double precision
-				if (mayBeCollidingBits == 0)
+#ifndef PSX
+				if (!cp->hd.mayBeColliding)
 				{
 					continue;
 				}
+
+				collisions = &collided_cars[CAR_INDEX(cp)];
+#else
+				mayBeCollidingBits = cp->hd.mayBeColliding;
+				if (!mayBeCollidingBits)
+				{
+					continue;
+				}
+#endif
 
 				if (RKstep == 0)
 				{
@@ -448,10 +484,14 @@ void GlobalTimeStep(void)
 				{
 					c1 = active_car_list[j];
 
-					// [A] optimized run to not use the box checking
-					// as it has already composed bitfield / pairs
-					if ((mayBeCollidingBits & (1 << CAR_INDEX(c1))) == 0 || (c1->hd.speed == 0 && cp->hd.speed == 0))
-					{
+					if (
+#ifdef PSX
+					/* [A] optimized run to not use the box checking as it has already composed bitfield / pairs */
+					(mayBeCollidingBits & (1 << CAR_INDEX(c1))) == 0
+#else
+					collisions[CAR_INDEX(c1)] == 0
+#endif
+					|| (c1->hd.speed == 0 && cp->hd.speed == 0)) {
 						continue;
 					}
 
@@ -518,7 +558,7 @@ void GlobalTimeStep(void)
 						// wake up cops if they've ben touched
 						// [A] check player felony.
 						// If player touch them without felony player will be charged with felony (hit cop car)
-						if (numCopCars < 4 && numActiveCops < maxCopCars && GameType != GAME_GETAWAY && *felony >= FELONY_PURSUIT_MIN_VALUE)
+						if (numCopCars < 4 && numActiveCops < maxCopCars && GameType != GAME_GETAWAY && *GetPlayerFelonyData() >= FELONY_PURSUIT_MIN_VALUE)
 						{
 							if (cp->controlType == CONTROL_TYPE_PLAYER && IS_ROADBLOCK_CAR(c1))
 							{
@@ -974,6 +1014,10 @@ void CheckCarToCarCollisions(void)
 	cp = car_data;
 	loop1 = 0;
 
+#ifndef PSX
+	memset(collided_cars, 0, sizeof(collided_cars));
+#endif
+
 	// build boxes
 	do {
 		if (cp->controlType == CONTROL_TYPE_NONE ||
@@ -1008,23 +1052,28 @@ void CheckCarToCarCollisions(void)
 		bb->z1 = (cp->hd.where.t[2] + zz) / 16;
 
 		if (cp->st.n.linearVelocity[0] < 0)
-			bb->x0 = (cp->hd.where.t[0] - xx) / 16 + FIXEDH(cp->st.n.linearVelocity[0]) / 8;
+			bb->x0 += FIXEDH(cp->st.n.linearVelocity[0]) / 8;
 		else
-			bb->x1 = (cp->hd.where.t[0] + xx) / 16 + FIXEDH(cp->st.n.linearVelocity[0]) / 8;
+			bb->x1 += FIXEDH(cp->st.n.linearVelocity[0]) / 8;
 
 		if (cp->st.n.linearVelocity[2] < 0)
-			bb->z0 = bb->z0 + (FIXEDH(cp->st.n.linearVelocity[2]) / 8);
+			bb->z0 += FIXEDH(cp->st.n.linearVelocity[2]) / 8;
 		else
-			bb->z1 = bb->z1 + (FIXEDH(cp->st.n.linearVelocity[2]) / 8);
+			bb->z1 += FIXEDH(cp->st.n.linearVelocity[2]) / 8;
 
 		// [A] 2400 for box size - bye bye collision check performance under bridges
 		bb->y0 = (cp->hd.where.t[1] - colBox->vy * 2) / 16;
 		bb->y1 = (cp->hd.where.t[1] + colBox->vy * 4) / 16;
 
-		// make player handled cars always processed with precision
+		// make player handled cars always processed with double precision
 		if (cp->hndType == 0)
 		{
+#ifndef PSX
+			if (cp->controlType != CONTROL_TYPE_CIV_AI)
+				cp->hd.mayBeColliding = 2;
+#else
 			cp->hd.mayBeColliding = (1 << 31);
+#endif
 		}
 
 		loop1++;
@@ -1044,11 +1093,23 @@ void CheckCarToCarCollisions(void)
 		while (loop2 < MAX_CARS)
 		{
 			if (bb1->y1 != INT_MAX && bb2->y1 != INT_MAX &&
-				bb2->x0 < bb1->x1 && bb2->z0 < bb1->z1 && bb1->x0 < bb2->x1 &&
-				bb1->z0 < bb2->z1 && bb2->y0 < bb1->y1 && bb1->y0 < bb2->y1)
+				bb2->x0 < bb1->x1 &&
+				bb2->z0 < bb1->z1 &&
+				bb1->x0 < bb2->x1 &&
+				bb1->z0 < bb2->z1 &&
+				bb2->y0 < bb1->y1 &&
+				bb1->y0 < bb2->y1)
 			{
+#ifndef PSX
+				collided_cars[loop1][loop2] = 1;
+				collided_cars[loop2][loop1] = 1;
+
+				car_data[loop1].hd.mayBeColliding |= 1;
+				car_data[loop2].hd.mayBeColliding |= 1;
+#else
 				car_data[loop1].hd.mayBeColliding |= (1 << loop2);
 				car_data[loop2].hd.mayBeColliding |= (1 << loop1);
+#endif
 			}
 
 			loop2++;
@@ -1062,10 +1123,14 @@ void CheckCarToCarCollisions(void)
 			extern void Debug_AddLine(VECTOR & pointA, VECTOR & pointB, CVECTOR & color);
 
 			CVECTOR bbcv = { 0, 0, 250 };
+			CVECTOR ggcv = { 0, 250, 0 };
+			CVECTOR ppcv = { 250, 0, 250 };
 			CVECTOR rrcv = { 250, 0, 0 };
 			CVECTOR yycv = { 250, 250, 0 };
 
-			CVECTOR bbcol = car_data[loop1].hd.mayBeColliding ? rrcv : yycv;
+			int mayBeColliding = car_data[loop1].hd.mayBeColliding;
+
+			CVECTOR bbcol = (mayBeColliding == 1) ? rrcv : ((mayBeColliding == 2) ? ggcv : ((mayBeColliding == 3) ? ppcv : yycv));
 
 			VECTOR box_pointsy0[4] = {
 				{bb1->x0 * 16, bb1->y0 * 16, bb1->z0 * 16, 0},	// front left
@@ -1095,6 +1160,29 @@ void CheckCarToCarCollisions(void)
 			Debug_AddLine(box_pointsy0[1], box_pointsy1[1], bbcol);
 			Debug_AddLine(box_pointsy0[2], box_pointsy1[2], bbcol);
 			Debug_AddLine(box_pointsy0[3], box_pointsy1[3], bbcol);
+
+			if (car_data[loop1].hd.mayBeColliding)
+			{
+				for (loop2 = loop1 + 1; loop2 < MAX_CARS; loop2++)
+				{
+					if (!collided_cars[loop1][loop2])
+						continue;
+
+					bb2 = &bbox[loop2];
+
+					VECTOR box_pointsy3[4] = {
+						{bb1->x0 * 16, bb1->y0 * 16, bb1->z0 * 16, 0},	// front left
+						{bb2->x0 * 16, bb2->y0 * 16, bb2->z0 * 16, 0},	// front right
+						{bb1->x1 * 16, bb1->y0 * 16, bb1->z1 * 16, 0},	// back right
+						{bb2->x0 * 16, bb2->y0 * 16, bb2->z1 * 16, 0},	// back left
+					};
+
+					Debug_AddLine(box_pointsy3[0], box_pointsy3[1], bbcv);
+					Debug_AddLine(box_pointsy3[1], box_pointsy3[2], bbcv);
+					Debug_AddLine(box_pointsy3[2], box_pointsy3[3], bbcv);
+					Debug_AddLine(box_pointsy3[3], box_pointsy3[0], bbcv);
+				}
+			}
 		}
 #endif
 
@@ -1110,8 +1198,10 @@ void ProcessCarPad(CAR_DATA* cp, u_int pad, char PadSteer, char use_analogue)
 	int player_id;
 	int int_steer;
 	int analog_angle;
+	int leaving_car;
 	PED_MODEL_TYPES whoExit;
 
+	leaving_car = 0;
 	whoExit = TANNER_MODEL;
 
 	int_steer = PadSteer;
@@ -1131,6 +1221,7 @@ void ProcessCarPad(CAR_DATA* cp, u_int pad, char PadSteer, char use_analogue)
 						whoExit = OTHER_MODEL;
 
 					ActivatePlayerPedestrian(cp, NULL, 0, NULL, whoExit);
+					leaving_car = 1;
 				}
 			}
 			else if (lockAllTheDoors != 0)
@@ -1140,17 +1231,28 @@ void ProcessCarPad(CAR_DATA* cp, u_int pad, char PadSteer, char use_analogue)
 			}
 		}
 
+		int noPlayerInput = gStopPadReads != 0 || gCantDrive != 0;
+
 		// Lock car if it has mission lock or fully damaged
-		if (gStopPadReads != 0 || MaxPlayerDamage[*cp->ai.padid] <= cp->totalDamage || gCantDrive != 0)
+		if (noPlayerInput || cp->totalDamage >= MaxPlayerDamage[*cp->ai.padid])
 		{
+			u_int oldpad = pad;
+
 			pad = CAR_PAD_HANDBRAKE;
 
 			// apply brakes
 			if (cp->hd.wheel_speed > 36864)
 				pad = CAR_PAD_BRAKE;
 
-			int_steer = 0;
-			use_analogue = 1;
+			if (noPlayerInput)
+			{
+				int_steer = 0;
+				use_analogue = 1;
+			}
+			else if (gExtraConfig.m.AllowParkedTurnedWheels)
+			{
+				pad |= (oldpad & (CAR_PAD_LEFT | CAR_PAD_RIGHT | CAR_PAD_FASTSTEER));
+			}
 		}
 
 		// turn of horning
@@ -1230,8 +1332,8 @@ void ProcessCarPad(CAR_DATA* cp, u_int pad, char PadSteer, char use_analogue)
 			}
 		}
 
-		if (pad & (CAR_PAD_LEFT | CAR_PAD_RIGHT))
-			cp->hd.autoBrake++;
+		if (pad & (CAR_PAD_LEFT | CAR_PAD_RIGHT) && !leaving_car) // [A] bugfix: wibbly wobbly cars
+ 			cp->hd.autoBrake++;
 		else
 			cp->hd.autoBrake = 0;
 	}
@@ -1272,6 +1374,7 @@ void ProcessCarPad(CAR_DATA* cp, u_int pad, char PadSteer, char use_analogue)
 	cp->thrust = 0;
 
 	//if (gTimeInWater != 0)
+	if (!leaving_car) // [A] bugfix: wibbly wobbly cars
 	{
 		if (pad & CAR_PAD_BRAKE)
 		{
@@ -1416,23 +1519,14 @@ void nose_down(CAR_DATA* cp)
 // [D] [T]
 void jump_debris(CAR_DATA* cp)
 {
-	WHEEL* wheel;
-	int count;
-	VECTOR position;
-	VECTOR velocity;
-
-	wheel = cp->hd.wheel;
-
-	for(count = 0; count < 4; count++)
+	for(int count = 0; count < 4; count++)
 	{
-		if (wheel->susCompression != 0)
+		if (cp->hd.wheel[count].susCompression != 0)
 		{
 			DebrisTimer = 0;
 			cp->wasOnGround = 1;
 			return;
 		}
-
-		wheel++;
 	}
 
 	if (cp->wasOnGround == 1)
@@ -1445,17 +1539,15 @@ void jump_debris(CAR_DATA* cp)
 
 	if (DebrisTimer != 0 && --DebrisTimer < 75)
 	{
+		VECTOR position, velocity;
+
 		memset((u_char*)&velocity, 0, sizeof(velocity));
 
 		velocity.vx = cp->hd.where.t[0] + ((rand() & 0x1ff) - 256);
 		velocity.vy = 200 - cp->hd.where.t[1];
+		velocity.vz = cp->hd.where.t[2] + ((rand() & 0x1ff) - 256);
 
-		position.vz = cp->hd.where.t[2] + ((rand() & 0x1ff) - 256);
-		position.vx = velocity.vx;
-		position.vy = velocity.vy;
-		position.pad = velocity.pad;
-
-		velocity.vz = position.vz;
+		position = velocity;
 
 		memset((u_char*)&velocity, 0, sizeof(velocity));
 		Setup_Debris(&position, &velocity, 5, 0xb);
@@ -1534,7 +1626,7 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 	// should be on asphalt
 	if (skidsound != 0 && ((cp->hd.wheel[1].surface & 0x80) == 0 || (cp->hd.wheel[3].surface & 0x80) == 0))
 	{
-		if (gWeather - 1U < 2)
+		if (gWeather == WEATHER_RAIN || gWeather == WEATHER_WET)
 			desired_skid = -1;
 		else
 			desired_skid = 7;
@@ -1589,15 +1681,18 @@ void CheckCarEffects(CAR_DATA* cp, int player_id)
 		if (wheel2 > wnse)
 			wnse = wheel2;
 
-		if (gWeather - 1U > 1)
+		if (gWeather == WEATHER_RAIN || gWeather == WEATHER_WET)
 		{
-			if (wnse != 0)
-				desired_wheel = wnse + 8;
-			else
-				desired_wheel = -1;
+			desired_wheel = 13 - 4;
+		}
+		else if (wnse != 0)
+		{
+			desired_wheel = wnse + 8;
 		}
 		else
-			desired_wheel = 13 - 4;
+		{
+			desired_wheel = -1;
+		}
 	}
 
 	// play noise sound

@@ -16,6 +16,9 @@
 
 #define M_BIT(x) (1 << (x))
 
+// makes RGB int out of three bytes
+#define M_INT_RGB(r,g,b) (((r) << 16) | ((g) << 8) | (b))
+
 //---------------------------------------
 
 #if !defined( __TYPEINFOGEN__ ) && !defined( _lint ) && defined(_WIN32)	// pcLint has problems with assert_offsetof()

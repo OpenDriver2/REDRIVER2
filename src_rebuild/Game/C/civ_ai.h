@@ -12,7 +12,7 @@ typedef struct _EXTRA_CIV_DATA
 	u_char controlFlags;
 } EXTRA_CIV_DATA;
 
-extern const u_char speedLimits[3];
+extern u_char speedLimits[4];
 extern unsigned char reservedSlots[MAX_CARS];
 extern int frameStart;
 
@@ -23,7 +23,7 @@ extern char makeLimoPullOver;
 
 extern char junctionLightsPhase[2];
 
-extern void InitCivCars(); // 0x0002CDA4
+extern void InitCivCars(int recording); // 0x0002CDA4
 
 extern int InitCar(CAR_DATA *cp, int direction, LONGVECTOR4* startPos, unsigned char control, int model, int palette, char *extraData); // 0x00023DE8
 extern int InitCivState(CAR_DATA* cp, EXTRA_CIV_DATA* extraData); // 0x000280D8

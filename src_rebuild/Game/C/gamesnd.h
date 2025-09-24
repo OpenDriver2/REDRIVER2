@@ -74,9 +74,41 @@ extern int TimeSinceLastSpeech;
 
 extern char phrase_top;
 
+#ifndef PSX
+extern char noisy_cars[MAX_CARS];
+
+#define CARNOISE_FLAG_NONE 0
+#define CARNOISE_FLAG_NOISY 1
+#define CARNOISE_FLAG_FORCE_IDLE 2
+#define CARNOISE_FLAG_FORCE_SIREN 4
+
+#define CARNOISE_GET_FLAG(id,f) (noisy_cars[id] & f)
+#define CARNOISE_SET_FLAG(id,f) (noisy_cars[id] |= f)
+#define CARNOISE_CLEAR_FLAG(id,f) (noisy_cars[id] &= ~(f))
+
+#define CARNOISE_IS_ACTIVE(id) CARNOISE_GET_FLAG(id,CARNOISE_FLAG_NOISY)
+#define CARNOISE_ENABLE(id) CARNOISE_SET_FLAG(id,CARNOISE_FLAG_NOISY)
+#define CARNOISE_DISABLE(id) CARNOISE_CLEAR_FLAG(id,CARNOISE_FLAG_NOISY)
+
+#define CARNOISE_HAS_FORCED_IDLE(id) CARNOISE_GET_FLAG(id,CARNOISE_FLAG_FORCE_IDLE)
+#define CARNOISE_SET_FORCED_IDLE(id) CARNOISE_SET_FLAG(id,CARNOISE_FLAG_FORCE_IDLE)
+#define CARNOISE_CLEAR_FORCED_IDLE(id) CARNOISE_CLEAR_FLAG(id,CARNOISE_FLAG_FORCE_IDLE)
+
+#define CARNOISE_HAS_FORCED_SIREN(id) CARNOISE_GET_FLAG(id,CARNOISE_FLAG_FORCE_SIREN)
+#define CARNOISE_SET_FORCED_SIREN(id) CARNOISE_SET_FLAG(id,CARNOISE_FLAG_FORCE_SIREN)
+#define CARNOISE_CLEAR_FORCED_SIREN(id) CARNOISE_CLEAR_FLAG(id,CARNOISE_FLAG_FORCE_SIREN)
+#else
 extern char force_idle[8];
 extern char force_siren[8];
 
+#define CARNOISE_HAS_FORCED_IDLE(id) (force_idle[id] > -1)
+#define CARNOISE_SET_FORCED_IDLE(id) (force_idle[id] = 0)
+#define CARNOISE_CLEAR_FORCED_IDLE(id) (force_idle[id] = -1)
+
+#define CARNOISE_HAS_FORCED_SIREN(id) (force_siren[id] != 0)
+#define CARNOISE_SET_FORCED_SIREN(id) (force_siren[id] = 1)
+#define CARNOISE_CLEAR_FORCED_SIREN(id) (force_siren[id] = 0)
+#endif
 extern SPEECH_QUEUE gSpeechQueue;
 
 extern void LoadBankFromLump(int bank, int lump); // 0x00052460

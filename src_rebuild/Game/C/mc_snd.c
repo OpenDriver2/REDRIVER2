@@ -26,70 +26,41 @@ typedef struct __xa_request
 } xa_request;
 
 char missionstarts[42] = {
-	0xFF, 0xFF, 0, 2, 4, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-	6, 8, 0xFF, 9, 0xFF, 12, 13, 0xFF, 14, 0xFF, 19,
-	20, 0xFF, 21, 24, 26, 0xFF, 28, 0xFF, 30,
-	33, 0xFF, 37, 39, 0xFF, 41, 0xFF, 0xFF, 0xFF,
-	46, 48, 49
+	-1,
+	-1, 0, 2, 4, -1, -1, -1, -1, -1,
+	6, 8, -1, 9, -1, 12, 13, -1, 14, -1, 19,
+	20, -1, 21, 24, 26, -1, 28, -1, 30, 33,
+	-1, 37, 39, -1, 41, -1, -1, -1, 46, 48,
+	49,
 };
 
 io id_map[49] =
 {
-	{0, 0},{0, 1},
-	
-	{2, 0},
-	{3, 1},
-	{4, 0},
-	{5, 1},
-	{4, 0},
-	{5, 1},
-	{11, 0},
-	
-	{12, 0},{12, 1},
-	
-	{11, 2},
-	
-	{14, 0},{14, 0},
-	
-	{15, 0},
-	
-	{16, 1},{16, 2},
-	
-	{18, 3},{18, 4},
-	
-	{11, 0},{11, 0},
-	
-	{20, 0},
-	
-	{12, 1},
-	
-	{13, 2},
+	/*00*/{0, 0},{0, 1},
+	/*02*/{2, 0},{3, 1},
+	/*04*/{4, 0},{5, 1},
+	/*06*/{4, 0},{5, 1},
 
-	{21, 0},
-	{31, 1},{31, 0},
-	{11, 1},
-	{23, 0},
-	{24, 1},
-	{26, 0},
-	{27, 1},
-	{28, 2},
-	{34, 0},
-	
-	{29, 1}, {29, 2},
-	
-	{20, 3},
-	{31, 0},
-	{11, 1},
-	{31, 0},
-	{33, 1},
-	{34, 0},
-	{36, 1},
-	{29, 2},
-	{29, 3},
-	{20, 4},
-	{37, 0},
-	{38, 1},
-	{39, 0},
+	/*08*/{11, 0},
+	/*09*/{12, 0},{12, 1},{11, 2},
+	/*12*/{14, 0},
+	/*13*/{14, 0},
+	/*14*/{15, 0},{16, 1},{16, 2},{18, 3},{18, 4},
+	/*19*/{11, 0},
+
+	/*20*/{11, 0},
+	/*21*/{20, 0},{12, 1},{13, 2},
+	/*24*/{21, 0},{31, 1},
+	/*26*/{31, 0},{11, 1},
+	/*28*/{23, 0},{24, 1},
+	/*30*/{26, 0},{27, 1},{28, 2},
+	/*33*/{34, 0},{29, 1}, {29, 2},{20, 3},
+
+	/*37*/{31, 0},{11, 1},
+	/*39*/{31, 0},{33, 1},
+	/*41*/{34, 0},{36, 1},{29, 2},{29, 3},{20, 4},
+	/*46*/{37, 0},{38, 1},
+	/*48*/{39, 0},
 };
 
 xa_request xa_data[26] = {
@@ -119,7 +90,7 @@ xa_request xa_data[26] = {
 	{16, 2, 7, 39, 0},
 	{750, 3, 0, 33, 1},
 	
-	{0, 0, 0, 0xFF, 0},
+	{0, 0, 0, -1, 0},
 };
 
 int cutscene_timer = 0;
@@ -129,41 +100,40 @@ static intptr_t bodgevar = 0;
 // [D] [T]
 char GetMissionSound(char id)
 {
-	u_char end;
-	u_char rnd;
-	u_char c;
-	u_char start;
+	char c;
+	char start;
+	char end;
+	char rnd;
 
-	start =  missionstarts[gCurrentMissionNumber];
-	rnd = Random2(5);
+	// [A]
+	if (gCurrentMissionNumber > 40)
+		return -1;
 
-	if (start != 0xff)
+	c = 0;
+
+	start = missionstarts[gCurrentMissionNumber];
+	rnd = Random2(5) % 2;
+
+	if (start != -1)
 	{
-		c = 1;
-		do {
-			end = missionstarts[gCurrentMissionNumber + c];
-			c++;
-		} while (end == 0xff);
-
-		while (start < end) 
+		do
 		{
-			c = start + 1;
-	
-			if (id_map[start].in == id) 
+			c++;
+			end = missionstarts[gCurrentMissionNumber + c];
+		} while (end == -1);
+
+		for (c = start; c < end; c++)
+		{
+			if (id_map[c].in == id)
 			{
-				if (c == end)
-					return id_map[start].out + phrase_top;
-				
-				if(id_map[c].in == id)
-					return id_map[start + (rnd % 2 & 0xffU)].out + phrase_top;
+				if (c + 1 != end && id_map[c + 1].in == id)
+					return id_map[c + rnd].out + phrase_top;
 
-				return id_map[start].out + phrase_top;
-
+				return id_map[c].out + phrase_top;
 			}
-	
-			start = c;
 		}
 	}
+
 	return -1;
 }
 
@@ -216,12 +186,18 @@ void InitializeCutsceneSound(int cutscene)
 	int i;
 
 	cutscene_timer = 0;
-	i = 0;
-	while (i < 8)
+#ifndef PSX
+	for (i = 0; i < MAX_CARS; i++)
 	{
-		force_idle[i] = -1;
-		force_siren[i++] = 0;
+		CARNOISE_CLEAR_FLAG(i, CARNOISE_FLAG_FORCE_IDLE|CARNOISE_FLAG_FORCE_SIREN);
 	}
+#else
+	for (i = 0; i < 8; i++)
+	{
+		CARNOISE_CLEAR_FORCED_IDLE(i);
+		CARNOISE_CLEAR_FORCED_SIREN(i);
+	}
+#endif
 }
 
 
@@ -240,9 +216,9 @@ void DoCutsceneSound(void)
 				return;
 
 			if (cutscene_timer > 74)
-				force_idle[1] = -1;
+				CARNOISE_CLEAR_FORCED_IDLE(1);
 			else
-				force_idle[1] = 0;
+				CARNOISE_SET_FORCED_IDLE(1);
 			break;
 		case 5:
 			if (gInGameCutsceneID != 0)
@@ -250,18 +226,18 @@ void DoCutsceneSound(void)
 
 			if (cutscene_timer > 150)
 			{
-				force_siren[2] = 1;
-				force_siren[1] = 1;
+				CARNOISE_SET_FORCED_SIREN(2);
+				CARNOISE_SET_FORCED_SIREN(1);
 			}
 			else if (cutscene_timer > 140)
 			{
-				force_siren[1] = 1;
-				force_siren[2] = 0;
+				CARNOISE_SET_FORCED_SIREN(1);
+				CARNOISE_CLEAR_FORCED_SIREN(2);
 			}
 			else
 			{
-				force_siren[1] = 0;
-				force_siren[2] = 0;
+				CARNOISE_CLEAR_FORCED_SIREN(1);
+				CARNOISE_CLEAR_FORCED_SIREN(2);
 			}
 
 			break;
@@ -269,14 +245,14 @@ void DoCutsceneSound(void)
 			if (gInGameCutsceneID == 0)
 			{
 				if (cutscene_timer < 100)
-					force_idle[1] = 0;
+					CARNOISE_SET_FORCED_IDLE(1);
 				else
-					force_idle[1] = -1;
+					CARNOISE_CLEAR_FORCED_IDLE(1);
 			}
 			if (gInGameCutsceneID != 1)
 				return;
 
-			force_idle[1] = 0;
+			CARNOISE_SET_FORCED_IDLE(1);
 			break;
 		case 18:
 			if (gInGameCutsceneID == 0)
@@ -308,8 +284,8 @@ void DoCutsceneSound(void)
 			if (gInGameCutsceneID != 0)
 				return;
 
-			force_siren[2] = 1;
-			force_siren[1] = 1;
+			CARNOISE_SET_FORCED_SIREN(2);
+			CARNOISE_SET_FORCED_SIREN(1);
 			break;
 		case 27:
 			if (gInGameCutsceneID != 0)
@@ -318,12 +294,12 @@ void DoCutsceneSound(void)
 			if (cutscene_timer == 460)
 			{
 				Start3DTrackingSound(-1, SOUND_BANK_MISSION, GetMissionSound(24), (VECTOR*)car_data[2].hd.where.t, NULL);
-				force_siren[7] = 1;
-				force_siren[6] = 1;
-				force_siren[5] = 1;
-				force_siren[4] = 1;
-				force_siren[3] = 1;
-				force_siren[2] = 1;
+				CARNOISE_SET_FORCED_SIREN(7);
+				CARNOISE_SET_FORCED_SIREN(6);
+				CARNOISE_SET_FORCED_SIREN(5);
+				CARNOISE_SET_FORCED_SIREN(4);
+				CARNOISE_SET_FORCED_SIREN(3);
+				CARNOISE_SET_FORCED_SIREN(2);
 			}
 
 			if (cutscene_timer == 510)
@@ -332,7 +308,7 @@ void DoCutsceneSound(void)
 			if (cutscene_timer < 51)
 				return;
 
-			force_idle[1] = 0;
+			CARNOISE_SET_FORCED_IDLE(1);
 			break;
 
 		case 29:
@@ -350,9 +326,9 @@ void DoCutsceneSound(void)
 				}
 
 				if (cutscene_timer < 641)
-					force_siren[3] = 0;
+					CARNOISE_CLEAR_FORCED_SIREN(3);
 				else
-					force_siren[3] = 1;
+					CARNOISE_SET_FORCED_SIREN(3);
 			}
 			break;
 		case 33:
@@ -365,7 +341,7 @@ void DoCutsceneSound(void)
 			if (cutscene_timer == 960)
 				SetEnvSndVol(rio_alarm, 3000);
 
-			force_idle[1] = 0;
+			CARNOISE_SET_FORCED_IDLE(1);
 			break;
 
 	}
@@ -390,7 +366,7 @@ void InitializeMissionSound(void)
 	}
 	else if (GameLevel == 1)
 	{
-		if (gCurrentMissionNumber - 15U < 2)
+		if (gCurrentMissionNumber == 15 || gCurrentMissionNumber == 16)
 		{
 			es_mobile[0] = AddEnvSnd(3, 0x20, SOUND_BANK_MISSION, GetMissionSound(14), 0, -10000, 0, 0, 0);
 		}
@@ -450,7 +426,7 @@ void DoMissionSound(void)
 			{
 				channel = GetFreeChannel();
 				
-				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, GetMissionSound(11), pos[0], pos[1], pos[2], -1000, 0x1000);
+				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, GetMissionSound(11), pos[0], pos[1], pos[2], -1000, 4096);
 				bodgevar = 2;
 			}
 			else if (bodgevar == 3)
@@ -480,7 +456,7 @@ void DoMissionSound(void)
 		case 23:
 			if (holdall == -1)
 			{
-				for (i = 0; i < 16; i++)
+				for (i = 0; i < MAX_MISSION_TARGETS; i++)
 				{
 					if (MissionTargets[i].type == Target_Car)
 					{
@@ -516,7 +492,7 @@ void DoMissionSound(void)
 			{
 				channel = GetFreeChannel();
 
-				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, GetMissionSound(11), pos[0], pos[1], pos[2], -1000, 0x1000);
+				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, GetMissionSound(11), pos[0], pos[1], pos[2], -1000, 4096);
 				holdall++;
 				bodgevar = 2;
 			}
@@ -540,7 +516,7 @@ void DoMissionSound(void)
 			{
 				P = &Q[bodgevar - 1];
 
-				Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, GetMissionSound(34), P->vx, P->vy, P->vz, -1000, 0x1000);
+				Start3DSoundVolPitch(-1, SOUND_BANK_MISSION, GetMissionSound(34), P->vx, P->vy, P->vz, -1000, 4096);
 
 				bodgevar += 4;
 			}
@@ -572,7 +548,7 @@ void DoMissionSound(void)
 				if (bodgevar == 1)
 				{
 					channel = GetFreeChannel();
-					Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, GetMissionSound(11), pos[0], pos[1], pos[2], -1000, 0x1000);
+					Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, GetMissionSound(11), pos[0], pos[1], pos[2], -1000, 4096);
 					bodgevar = 2;
 				}
 				else if (bodgevar == 3)
@@ -590,7 +566,7 @@ void DoMissionSound(void)
 		case 33:
 			if (holdall == -1)
 			{
-				StartSound(2, SOUND_BANK_VOICES, 0, -10000, 0x81);
+				StartSound(2, SOUND_BANK_VOICES, 0, -10000, 129);
 				holdall = 0;
 			}
 			break;
@@ -632,7 +608,7 @@ void DoMissionSound(void)
 		case 39:
 			if (holdall == -1)
 			{
-				for (i = 0; i < 16; i++)
+				for (i = 0; i < MAX_MISSION_TARGETS; i++)
 				{
 					if (MissionTargets[i].type == Target_Car)
 					{

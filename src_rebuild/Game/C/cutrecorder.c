@@ -545,6 +545,11 @@ int CutRec_LoadCutsceneAsReplayFromBuffer(char* buffer)
 	NumPlayers = header->NumPlayers;
 	gRandomChase = header->RandomChase;
 	CutsceneEventTrigger = header->CutsceneEvent;
+
+	StoreGameVars(1);
+
+	LoadExtraData(&header->ExtraData, 0);
+
 	gCopDifficultyLevel = header->gCopDifficultyLevel;
 	ActiveCheats = header->ActiveCheats; // TODO: restore old value
 
@@ -640,7 +645,7 @@ int CutRec_LoadCutsceneAsReplayFromBuffer(char* buffer)
 	
 	replayptr = (char*)(PingBuffer + MAX_REPLAY_PINGS);
 
-	if (header->HaveStoredData == 0x91827364)	// -0x6e7d8c9c
+	if (header->HaveStoredData == 0x91827364)
 	{
 		memcpy((u_char*)&MissionStartData, (u_char*)pt, sizeof(MISSION_DATA));
 		gHaveStoredData = 1;
@@ -710,9 +715,11 @@ int CutRec_SaveReplayToBuffer(char* buffer)
 	// [A] is that ever valid?
 	if (gHaveStoredData)
 	{
-		header->HaveStoredData = 0x91827364;	// -0x6e7d8c9c
+		header->HaveStoredData = 0x91827364;
 		memcpy((u_char*)pt, (u_char*)&MissionStartData, sizeof(MISSION_DATA));
 	}
+
+	SaveExtraData(&header->ExtraData, 0);
 
 	return pt - buffer;
 }

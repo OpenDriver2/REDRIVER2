@@ -213,12 +213,15 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 	int player_id;
 	int oldCutRoughness;
 
-	oldSpeed = cp->hd.speed * 3 >> 1;
+	// NB: skips precision every 3rd increment or so
+	int speed = cp->hd.speed * 3 >> 1;
 
-	if (oldSpeed < 32)
-		oldSpeed = oldSpeed * -72 + 3696;
+	if (speed < 32)
+		oldSpeed = 4096 - (72 * speed);
 	else
-		oldSpeed = 1424 - oldSpeed;
+		oldSpeed = 1824 - speed;
+
+	oldSpeed -= 400;
 
 	dir = cp->hd.direction;
 	cdx = RSIN(dir);
@@ -412,7 +415,7 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 				if (slidevel < -12500)
 					slidevel = -12500;
 			}
-			
+
 			if ((i & 1U) != 0)
 			{
 				// rear wheels
@@ -437,12 +440,12 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 			else
 			{
 				// front wheels
-				sidevel = frontFS * slidevel + 2048 >> 12;
+				sidevel = FIXEDH(frontFS * slidevel);
 				
 				if (wheel->locked)
 				{
-					sidevel = (frontFS * slidevel + 2048 >> 13) + sidevel >> 1;
-					
+					sidevel = (sidevel >> 1) + sidevel >> 1;
+
 					forcefac = FixHalfRound(FIXEDH(-sidevel * lfx) * sdz - FIXEDH(-sidevel * lfz) * sdx, 11);
 					
 					force.vx = forcefac * sdz;
@@ -462,8 +465,8 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 
 			}
 
-			force.vx += (susForce * surfaceNormal[0] - sidevel * lfx) - cl->vel[0] * 12;
-			force.vz += (susForce * surfaceNormal[2] - sidevel * lfz) - cl->vel[2] * 12;
+			force.vx += (susForce * surfaceNormal[0] - sidevel * lfx) + cl->vel[0] * -12;
+			force.vz += (susForce * surfaceNormal[2] - sidevel * lfz) + cl->vel[2] * -12;
 
 			// apply speed reduction by water
 			if ((wheel->surface & 7) == 1)
@@ -489,7 +492,7 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 			if (surfaceNormal[1] < 3276)
 				friction_coef = friction_coef * surfaceNormal[1] * 5 >> 0xe;
 
-			force.vy = FIXEDH(susForce * surfaceNormal[1] - cl->vel[1] * 12);
+			force.vy = FIXEDH(susForce * surfaceNormal[1] + cl->vel[1] * -12);
 			force.vx = FIXEDH(force.vx) * friction_coef >> 0xc;
 			force.vz = FIXEDH(force.vz) * friction_coef >> 0xc;
 
@@ -519,9 +522,9 @@ void AddWheelForcesDriver1(CAR_DATA* cp, CAR_LOCALS* cl)
 	if (cp->hd.wheel[1].susCompression == 0 && cp->hd.wheel[3].susCompression == 0)
 	{
 		if (cp->thrust >= 1)
-			cp->hd.wheel_speed = 1703936 + 0x4000;
+			cp->hd.wheel_speed = 0x1A0000 + 0x4000;
 		else if (cp->thrust <= -1)
-			cp->hd.wheel_speed = -1245184 + 0x4000;
+			cp->hd.wheel_speed = -0x130000 + 0x4000;
 		else
 			cp->hd.wheel_speed = 0;
 	}

@@ -208,136 +208,57 @@ void initExplosion(void)
 	}
 }
 
-
-// [D] [T]
-void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
+void DrawGlobe(int time,
+	int step,
+	int hscale,
+	int rscale,
+	int smoke,
+	int polyCount,
+	u_int u0,
+	u_int u1,
+	u_int u2,
+	u_int u3)
 {
 	int j;
 	POLY_FT4 *poly;
 	SVECTOR *src;
-	
+
 	int rgb, transparency;
 	int red, green, blue;
-	int sf, sf1, sf2;
-	
-	u_int u0, u1,u2,u3;
+	int sf, st;
+
 	int i;
-	VECTOR v;
 	MATRIX workmatrix;
 	int z;
 
-	u0 = *(ushort*)&smoke_texture.coords.u0 + 0x200 | *(ushort*)&smoke_texture.clutid << 0x10;
-	u1 = *(ushort*)&smoke_texture.coords.u1 + 0x200 | (*(ushort*)&smoke_texture.tpageid | 0x20) << 0x10;
-	u2 = *(ushort*)&smoke_texture.coords.u2 - 0x800;
-	u3 = *(ushort*)&smoke_texture.coords.u3 - 0x800;
-
-	v.vx = position.vx - camera_position.vx;
-	v.vy = position.vy - camera_position.vy;
-	v.vz = position.vz - camera_position.vz;
-
 	transparency = 255 - (time >> 4);
-	rgb = (transparency * transparency >> 10 << 8 |
-		(255 - transparency) * (transparency >> 2) + transparency * (transparency >> 1) >> 8) << 8 | 
-		transparency | 
-		0x2e000000;
 
-	Apply_Inv_CameraMatrix(&v);
-	gte_SetTransVector(&v);
-
-	// [A] modify scale factor to make explosions prettier
-	sf1 = FIXEDH(time * (5000 - time) * 4) + 12;
-	sf2 = FIXEDH(time * (10000 - time) * 2) + 12;
-
-	for (i = 0; i < 2; i++)
+	if (step > 0)
 	{
-		sf = CameraCnt * (64 - i * 90);
+		rgb = transparency >> step;
 
-		SS.m[1][1] = FIXED(sf1 * hscale);
-		SS.m[0][0] = FIXEDH(FIXED(sf1 * rscale) * RCOS(sf));
-		SS.m[2][0] = FIXEDH(FIXED(sf1 * rscale) * RSIN(sf));
-		SS.m[0][2] = -SS.m[2][0];
-		SS.m[2][2] = SS.m[0][0];
-
-		MulMatrix0(&inv_camera_matrix, &SS, &workmatrix);
-
-		gte_SetRotMatrix(&workmatrix);
-
-		src = globemesh;
-
-		for (j = 0; j < 12; j++)
-		{
-			poly = (POLY_FT4*)current->primptr;
-
-			gte_ldv3(&src[0], &src[1], &src[2]);
-			gte_rtpt();
-
-			*(u_int*)&poly[0].r0 = rgb;
-			*(u_int*)&poly[1].r0 = rgb;
-
-			setPolyFT4(&poly[0]);
-			setSemiTrans(&poly[0], 1);
-
-			setPolyFT4(&poly[1]);
-			setSemiTrans(&poly[1], 1);
-
-			gte_stsxy3(&poly[0].x0, &poly[0].x1, &poly[0].x2);
-
-			gte_stsxy2(&poly[1].x0);
-
-			gte_stsz(&z);
-
-			if (z > 32)
-			{
-				gte_ldv3(&src[3], &src[4], &src[5]);
-				gte_rtpt();
-
-				*(u_int*)&poly[0].u0 = u0;
-				*(u_int*)&poly[0].u1 = u1;
-				*(u_int*)&poly[0].u2 = u2;
-				*(u_int*)&poly[0].u3 = u3;
-
-				*(u_int*)&poly[1].u0 = u0;
-				*(u_int*)&poly[1].u1 = u1;
-				*(u_int*)&poly[1].u2 = u2;
-				*(u_int*)&poly[1].u3 = u3;
-
-				setPolyFT4(poly);
-				setSemiTrans(poly, 1);
-
-				setPolyFT4(&poly[1]);
-				setSemiTrans(&poly[1], 1);
-
-				gte_stsxy3(&poly[1].x1, &poly[1].x2, &poly[1].x3);
-
-				gte_stsxy0(&poly[0].x3);
-
-				addPrim(current->ot + (z >> 3), &poly[0]);
-				addPrim(current->ot + (z >> 3), &poly[1]);
-
-				current->primptr += sizeof(POLY_FT4) * 2;
-			}
-
-			if ((j & 3) == 3)
-				src += 6;
-			else
-				src += 4;
-		}
+		red = rgb + (transparency * transparency >> 10) >> step;
+		green = rgb + ((255 - transparency) * (transparency >> 2) + transparency * rgb >> 8) >> step;
+		blue = rgb;
+	}
+	else
+	{
+		red = transparency * transparency >> 10;
+		green = (255 - transparency) * (transparency >> 2) + transparency * (transparency >> 1) >> 8;
+		blue = transparency;
 	}
 
-	transparency = 255 - (time >> 4);
+	rgb = (red << 8 | green) << 8 | blue | 0x2e000000;
 
-	rgb = transparency >> 1;
-	rgb = (rgb + (transparency * transparency >> 10) >> 1 << 8 | 
-			rgb + ((255 - transparency) * (transparency >> 2) + transparency * rgb >> 8) >> 1) << 8 | 
-			rgb | 0x2e000000;
+	st = FIXEDH(time * ((5000 << step) - time) * (4 >> step)) + 12;
 
 	for (i = 0; i < 2; i++)
 	{
 		sf = CameraCnt * (i * -90 + 64);
-	
-		SS.m[1][1] = FIXED(sf2 * hscale);
-		SS.m[0][0] = FIXEDH(FIXED(sf2 * rscale) * RCOS(sf));
-		SS.m[2][0] = FIXEDH(FIXED(sf2 * rscale) * RSIN(sf));
+
+		SS.m[1][1] = FIXED(st * hscale);
+		SS.m[0][0] = FIXEDH(FIXED(st * rscale) * RCOS(sf));
+		SS.m[2][0] = FIXEDH(FIXED(st * rscale) * RSIN(sf));
 		SS.m[0][2] = -SS.m[2][0];
 		SS.m[2][2] = SS.m[0][0];
 
@@ -346,7 +267,7 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 
 		src = globemesh;
 
-		for (j = 0; j < 8; j++)
+		for (j = 0; j < polyCount; j++)
 		{
 			poly = (POLY_FT4 *)current->primptr;
 
@@ -356,6 +277,15 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 
 			*(u_int *)&poly[1].r0 = rgb;
 			*(u_int *)&poly[0].r0 = rgb;
+
+			if (smoke)
+			{
+				setPolyFT4(&poly[0]);
+				setSemiTrans(&poly[0], 1);
+
+				setPolyFT4(&poly[1]);
+				setSemiTrans(&poly[1], 1);
+			}
 
 			gte_stsxy3(&poly[0].x0, &poly[0].x1, &poly[0].x2);
 
@@ -399,6 +329,40 @@ void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
 				src += 4;
 		}
 	}
+}
+
+
+// [D] [T]
+void DrawExplosion(int time, VECTOR position, int hscale, int rscale)
+{
+	int j;
+	POLY_FT4 *poly;
+	SVECTOR *src;
+	
+	int rgb, transparency;
+	int red, green, blue;
+	int sf, sf1, sf2;
+	
+	u_int u0, u1,u2,u3;
+	int i;
+	VECTOR v;
+	MATRIX workmatrix;
+	int z;
+
+	u0 = *(ushort*)&smoke_texture.coords.u0 + 0x200 | *(ushort*)&smoke_texture.clutid << 0x10;
+	u1 = *(ushort*)&smoke_texture.coords.u1 + 0x200 | (*(ushort*)&smoke_texture.tpageid | 0x20) << 0x10;
+	u2 = *(ushort*)&smoke_texture.coords.u2 - 0x800;
+	u3 = *(ushort*)&smoke_texture.coords.u3 - 0x800;
+
+	v.vx = position.vx - camera_position.vx;
+	v.vy = position.vy - camera_position.vy;
+	v.vz = position.vz - camera_position.vz;
+
+	Apply_Inv_CameraMatrix(&v);
+	gte_SetTransVector(&v);
+
+	DrawGlobe(time, 0, hscale, rscale, 0, 12, u0, u1, u2, u3);
+	DrawGlobe(time, 1, hscale, rscale, 1, 8, u0, u1, u2, u3);
 }
 
 

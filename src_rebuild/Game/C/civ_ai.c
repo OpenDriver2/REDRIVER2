@@ -25,8 +25,11 @@
 #include "overlay.h"
 #include "cutrecorder.h"
 #include "draw.h"
+#include "glaunch.h"
+#include "pad.h"
 
-const u_char speedLimits[3] = { 56, 97, 138 };
+// [A] keep track of player's speed limit using last one
+u_char speedLimits[4] = { 56, 97, 138 };
 
 #ifdef DEBUG
 struct
@@ -44,7 +47,13 @@ struct
 } civPingTest;
 #endif // DEBUG
 
-char modelRandomList[] = { 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 0, 1, 0, 4 };
+char modelRandomList[] = {
+	0, 0, 0, 0,
+	1, 1, 1, 1,
+	2, 2, 2, 2,
+	0, 1, 0, 4
+};
+
 u_char reservedSlots[MAX_CARS] = { 0 };
 
 int distFurthestCivCarSq = 0;
@@ -83,6 +92,15 @@ int test555 = 0;
 #else
 #define CIV_STATE_SET_CONFUSED(cp) \
 	cp->ai.c.thrustState = 3; cp->ai.c.ctrlState = 7;
+#endif
+
+#ifndef PSX
+char UglyLowCarLODs[4][10] = {
+	{ 0,0,0,0,0, 1,0,0,0, 0 },
+	{ 0,0,0,0,0, 0,0,0,0, 0 },
+	{ 0,0,0,0,0, 0,0,1,1, 0 },
+	{ 1,0,0,0,0, 1,1,1,0, 0 },
+};
 #endif
 
 int GetNodePos(DRIVER2_STRAIGHT* straight, DRIVER2_JUNCTION* junction, DRIVER2_CURVE* curve, int distAlongPath, CAR_DATA* cp, int* x, int* z, int laneNo);
@@ -160,6 +178,16 @@ int InitCar(CAR_DATA* cp, int direction, LONGVECTOR4* startPos, unsigned char co
 			cp->hndType = 5;
 			break;
 	}
+
+#ifndef PSX
+	int rm = MissionHeader->residentModels[cp->ap.model];
+
+	if (rm >= 8)
+		rm -= 3;
+
+	if (UglyLowCarLODs[GameLevel][rm])
+		cp->controlFlags |= CONTROL_FLAG_DONT_USE_LOW_LOD;
+#endif
 
 	CreateDentableCar(cp);
 	DentCar(cp);
@@ -1680,8 +1708,30 @@ int TrafficLightCycle(int exit)
 	return 2;
 }
 
+struct TRAFFIC_DENSITY_DATA
+{
+	int maxCivCars;
+	int maxParkedCars;
+};
+
+TRAFFIC_DENSITY_DATA trafficDensityMap[2][4] = {
+	{
+		{ 14, 7 },
+		{ 25, 11 },
+		{ 40, 24 },
+		{ 64, 32 },
+	},
+	{
+		// recording-specific densities
+		{ 14, 7 },
+		{ 25, 11 },
+		{ 32, 24 }, // <-- recordings have fixed limits above Medium
+		{ 32, 24 },
+	},
+};
+
 // [D] [T]
-void InitCivCars(void)
+void InitCivCars(/*[A]*/int recording)
 {
 	PingBufferPos = 0;
 	cookieCount = 0;
@@ -1702,6 +1752,22 @@ void InitCivCars(void)
 	testNumPingedOut = 0;
 	currentAngle = 0;
 	closeEncounter = 3;
+
+#ifndef PSX
+	if (gExtraConfig.gTrafficDensity != 0)
+	{
+		TRAFFIC_DENSITY_DATA *trafficDensity = &trafficDensityMap[recording & 1][(gExtraConfig.gTrafficDensity - 1) & 3];
+
+		maxCivCars = trafficDensity->maxCivCars;
+		maxParkedCars = trafficDensity->maxParkedCars;
+	}
+	else
+	{
+		// make sure we always have the bare minimum amount available
+		maxCivCars = 14;
+		maxParkedCars = 7;
+	}
+#endif
 }
 
 const int EVENT_CAR_SPEED = 60;
@@ -1909,7 +1975,7 @@ int PingInCivCar(int minPingInDist)
 	u_int retDistSq;
 	unsigned char* slot;
 
-	civDat.distAlongSegment = -5;
+	int distAlongSegment = -5;
 	lane = -1;
 	dir = 0xffffff;
 
@@ -2209,14 +2275,15 @@ int PingInCivCar(int minPingInDist)
 		model = 3;
 		civDat.controlFlags = CONTROL_FLAG_COP;
 	}
+	else if (minPingInDist == 666)
+	{
+		// force spawn limo nearby in Caine's Cash
+		model = 4;
+	}
 	else
 	{
 		model = modelRandomList[Random2(0) & 0xf];
 	}
-
-	// force spawn limo nearby in Caine's Cash
-	if (minPingInDist == 666)
-		model = 4;
 
 	// select car color palette
 	if (MissionHeader->residentModels[model] == 0 || MissionHeader->residentModels[model] > 4)
@@ -2243,20 +2310,18 @@ int PingInCivCar(int minPingInDist)
 	{
 		int theta;
 		int minDistAlong;
-		int scDist;
 
+		// don't spawn outside straight
 		if (requestCopCar == 0)
 		{
-			scDist = lbody * 2;
 			minDistAlong = lbody * 3;
 		}
 		else
 		{
-			scDist = lbody * 2;
 			minDistAlong = 0;
 		}
 
-		if (roadInfo.straight->length <= (scDist + lbody) * 2) // don't spawn outside straight
+		if (roadInfo.straight->length <= lbody * 6)
 			return 0;
 
 		dx = randomLoc.vx - roadInfo.straight->Midx;
@@ -2264,15 +2329,15 @@ int PingInCivCar(int minPingInDist)
 
 		theta = roadInfo.straight->angle - ratan2(dx, dz);
 
-		civDat.distAlongSegment = (roadInfo.straight->length / 2) + FIXEDH(RCOS(theta) * SquareRoot0(dx * dx + dz * dz));
+		distAlongSegment = (roadInfo.straight->length / 2) + FIXEDH(RCOS(theta) * SquareRoot0(dx * dx + dz * dz));
 
 		if (requestCopCar == 0)
 		{
-			if (civDat.distAlongSegment < minDistAlong)
-				civDat.distAlongSegment = minDistAlong;
+			if (distAlongSegment < minDistAlong)
+				distAlongSegment = minDistAlong;
 
-			if (roadInfo.straight->length - civDat.distAlongSegment < minDistAlong)
-				civDat.distAlongSegment = roadInfo.straight->length - minDistAlong;
+			if (roadInfo.straight->length - distAlongSegment < minDistAlong)
+				distAlongSegment = roadInfo.straight->length - minDistAlong;
 		}
 
 		if (ROAD_LANE_DIR(roadInfo.straight, lane) == 0)
@@ -2299,24 +2364,25 @@ int PingInCivCar(int minPingInDist)
 		}
 
 		segmentLen = (roadInfo.curve->end - roadInfo.curve->start) - minDistAlong & 0xfff;
+		distAlongSegment = (currentAngle & 0xfffU) - roadInfo.curve->start;
 
 		if (roadInfo.curve->inside < 10)
-			civDat.distAlongSegment = (currentAngle & 0xfffU) - roadInfo.curve->start & 0xf80;
+			distAlongSegment &= 0xf80;
 		else if (roadInfo.curve->inside < 20)
-			civDat.distAlongSegment = (currentAngle & 0xfffU) - roadInfo.curve->start & 0xfc0;
+			distAlongSegment &= 0xfc0;
 		else
-			civDat.distAlongSegment = (currentAngle & 0xfffU) - roadInfo.curve->start & 0xfe0;
+			distAlongSegment &= 0xfe0;
 		
-		if (civDat.distAlongSegment <= minDistAlong)
-			civDat.distAlongSegment = minDistAlong;
+		if (distAlongSegment <= minDistAlong)
+			distAlongSegment = minDistAlong;
 
-		if (civDat.distAlongSegment >= segmentLen)
-			civDat.distAlongSegment = segmentLen;
+		if (distAlongSegment >= segmentLen)
+			distAlongSegment = segmentLen;
 
 		if (ROAD_LANE_DIR(roadInfo.curve, lane) == 0)
-			dir = civDat.distAlongSegment + roadInfo.curve->start + 1024;
+			dir = distAlongSegment + roadInfo.curve->start + 1024;
 		else
-			dir = civDat.distAlongSegment + roadInfo.curve->start - 1024;
+			dir = distAlongSegment + roadInfo.curve->start - 1024;
 
 		curveLength = ((roadInfo.curve->end - roadInfo.curve->start & 0xfffU) * roadInfo.curve->inside * 11) / 7;
 
@@ -2330,13 +2396,13 @@ int PingInCivCar(int minPingInDist)
 		return 0;
 	}
 
-	if (dir == 0xffffff || lane < 0 || civDat.distAlongSegment < 0)
+	if (dir == 0xffffff || lane < 0 || distAlongSegment < 0)
 	{
 		//CIV_STATE_SET_CONFUSED(newCar);
 		return 0;
 	}
 
-	GetNodePos(roadInfo.straight, NULL, roadInfo.curve, civDat.distAlongSegment, newCar, &newCar->ai.c.targetRoute[0].x, &newCar->ai.c.targetRoute[0].z, lane);
+	GetNodePos(roadInfo.straight, NULL, roadInfo.curve, distAlongSegment, newCar, &newCar->ai.c.targetRoute[0].x, &newCar->ai.c.targetRoute[0].z, lane);
 
 	retDistSq = INT_MAX;
 	pos[0] = newCar->ai.c.targetRoute[0].x;
@@ -2395,7 +2461,7 @@ int PingInCivCar(int minPingInDist)
 		return 0;
 	}
 
-	
+	civDat.distAlongSegment = distAlongSegment;
 	civDat.angle = dir;
 	InitCar(newCar, dir, &pos, 2, model, 0, (char*)&civDat);
 
@@ -2408,6 +2474,19 @@ int PingInCivCar(int minPingInDist)
 	if (newCar->ai.c.ctrlState == 5)
 	{
 		numParkedCars++;
+
+		if (gExtraConfig.m.AllowParkedTurnedWheels)
+		{
+			int tmp = ((Random2(0) & 0xff) + 1536) & 0x1ff;
+
+			if (FrameCnt % 16)
+			{
+				if (tmp & 8)
+					tmp = -tmp;
+
+				newCar->wheel_angle = tmp;
+			}
+		}
 
 		// parked car is going to unpark
 		if (newCar->ai.c.thrustState == 3)
@@ -3585,9 +3664,11 @@ int CivControl(CAR_DATA* cp)
 			steer = CivSteerAngle(cp);
 
 		thrust = CivAccel(cp);
-		if (thrust != 0) // [A] reduce acceleration when steering is applied
-			thrust = CivAccel(cp) - MAX(ABS(steer), 4) * 3;
 		
+		// [A] reduce acceleration when steering is applied
+		if (thrust != 0)
+			thrust -= MAX(ABS(steer), 4) * 3;
+
 		// [A] fix backwards crawl
 		if (thrust < 0 && cp->hd.wheel_speed < 100)
 			thrust = 0;

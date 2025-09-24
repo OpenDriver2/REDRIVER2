@@ -118,6 +118,11 @@ int AttractMode = 0;
 int gLoadedReplay = 0;
 int gHaveStoredData = 0;
 
+int gHaveExtraData = 0;
+
+EXTRA_CONFIG_DATA gExtraConfig = { 0 };
+SAVED_CAR_POS gSavedCars[2] = { 0 };
+
 int gLastChase = 0;
 int gChaseNumber = 0;
 int gRandomChase = 0;
@@ -131,15 +136,307 @@ int gWantNight = 0;
 int gOldVibrationMode;
 int gSurvivalCopSettingsBackup;
 ACTIVE_CHEATS gCheatsBackup;
+EXTRA_CONFIG_DATA gExtraConfigBackup;
 
-void RestoreGameVars()
+int vars_stored = 0;
+
+void RestoreGameVars(int replay)
 {
-	_CutRec_Reset();
-	
-	gLoadedReplay = 0;
-	gVibration = gOldVibrationMode;
-	gCopDifficultyLevel = gSurvivalCopSettingsBackup;
-	ActiveCheats = gCheatsBackup;
+	if (vars_stored)
+	{
+		if (replay == 0)
+		{
+#ifdef DEBUG
+			printInfo("**** Restoring game vars ****\n");
+#endif
+			gVibration = gOldVibrationMode;
+			gCopDifficultyLevel = gSurvivalCopSettingsBackup;
+			ActiveCheats = gCheatsBackup;
+
+			vars_stored = 0;
+		}
+#ifdef DEBUG
+		printInfo("**** Restoring extra data ****\n");
+#endif
+		gExtraConfig = gExtraConfigBackup;
+		gHaveExtraData = (gExtraConfig.magic == EXTRA_DATA_MAGIC);
+	}
+}
+
+void StoreGameVars(int replay)
+{
+	if (!vars_stored)
+	{
+#ifdef DEBUG
+		printInfo("**** Backing up game vars (replay=%d) ****\n", replay);
+#endif
+		gOldVibrationMode = gVibration;
+		gSurvivalCopSettingsBackup = gCopDifficultyLevel;
+		gCheatsBackup = ActiveCheats;
+		gExtraConfigBackup = gExtraConfig;
+
+		vars_stored = 1;
+	}
+
+	if (replay != 0)
+	{
+		// clear all extra config data:
+		// - any zero value means 'do backwards compatiblity'
+		// - ensures older replays are fully backwards compatible
+		// - newer replays always have this data stored (even if empty)
+		memset((u_char*)&gExtraConfig, 0, sizeof(EXTRA_CONFIG_DATA));
+		gHaveExtraData = 0;
+
+		// clear saved cars
+		memset((u_char*)&gSavedCars, 0, sizeof(gSavedCars));
+	}
+}
+
+int GetOptionOrDefault(int option_value, int default_value)
+{
+	if (option_value < 1)
+		return default_value;
+
+	return option_value - 1;
+}
+
+void LoadExtraData(EXTRA_CONFIG_DATA *extraData, int profile)
+{
+	if (extraData->magic == EXTRA_DATA_MAGIC)
+	{
+		memcpy((u_char*)&gExtraConfig, (u_char*)extraData, sizeof(EXTRA_CONFIG_DATA));
+		gHaveExtraData = 1;
+	}
+
+	if (profile)
+	{
+		if (gHaveExtraData)
+		{
+			if (gExtraConfig.sdType == 1)
+			{
+				extern void SetDrawDistance(int level);
+				extern int gEnableDlights;
+				extern int gUserLanguage;
+
+				gUserLanguage = GetOptionOrDefault(gExtraConfig.p.Language, syscfg.gUserLanguage);
+
+				// NB: not implemented yet
+				int fullScreen = GetOptionOrDefault(gExtraConfig.p.FullScreen, syscfg.fullScreen);
+
+				int pgxpMode = GetOptionOrDefault(gExtraConfig.p.PGXPMode, syscfg.psyx_cfg_pgxpMode);
+
+				g_cfg_pgxpZBuffer = (pgxpMode & 2);
+				g_cfg_pgxpTextureCorrection = (pgxpMode & 1);
+				g_cfg_swapInterval = GetOptionOrDefault(gExtraConfig.p.VSync, syscfg.vsync);
+				g_cfg_bilinearFiltering = GetOptionOrDefault(gExtraConfig.p.Bilinear, syscfg.psyx_cfg_bilinearFiltering);
+
+				int drawDistance = GetOptionOrDefault(gExtraConfig.p.DrawDistance, syscfg.gDrawDistanceLevelBackup);
+
+				SetDrawDistance(drawDistance);
+
+				gEnableDlights = GetOptionOrDefault(gExtraConfig.p.DynamicLights, syscfg.gEnableDlights);
+			}
+			else
+			{
+				// init profile configuration
+				gExtraConfig.sdType = 1;
+				gExtraConfig.gTrafficDensity = syscfg.gTrafficDensity + 1;
+				gExtraConfig.gPedestrianDensity = syscfg.gPedestrianDensity + 1;
+
+				gExtraConfig.p.Language = syscfg.gUserLanguage + 1;
+				gExtraConfig.p.FullScreen = syscfg.fullScreen + 1;
+				gExtraConfig.p.VSync = syscfg.vsync + 1;
+				gExtraConfig.p.Bilinear = syscfg.psyx_cfg_bilinearFiltering + 1;
+				gExtraConfig.p.PGXPMode = syscfg.psyx_cfg_pgxpMode + 1;
+				gExtraConfig.p.DrawDistance = syscfg.gDrawDistanceLevel + 1;
+				gExtraConfig.p.DynamicLights = syscfg.gEnableDlights + 1;
+			}
+		}
+	}
+	else if (gHaveExtraData)
+	{
+		if (gExtraConfig.sdType == 2)
+		{
+			// load mission overrides
+			REPLAY_SAVE_HEADER *header = (REPLAY_SAVE_HEADER*)((char*)&extraData[1] - sizeof(REPLAY_SAVE_HEADER));
+
+			// resolve saved position slots
+			for (int i = 0; i < 2; i++)
+			{
+				if (gExtraConfig.m.SavedSlot[i] != -1)
+				{
+					gSavedCars[i] = header->SavedData.CarPos[gExtraConfig.m.SavedSlot[i]];
+
+					header->wantedCar[i] = gSavedCars[i].model;
+					wantedColour[i] = gSavedCars[i].palette;
+
+					gExtraConfig.m.SavedPos[i] = &gSavedCars[i];
+				}
+				else
+				{
+					gExtraConfig.m.SavedPos[i] = NULL;
+				}
+			}
+		}
+		else if (gExtraConfig.sdType != 0)
+		{
+			// clear out invalid data
+			gExtraConfig.cookie = 0;
+			memset((u_char*)&gExtraConfig.data, 0, sizeof(gExtraConfig.data));
+		}
+	}
+}
+
+void SaveExtraData(EXTRA_CONFIG_DATA *extraData, int profile)
+{
+	// always save extra data, even if it's empty;
+	// this will make future backwards compat. efforts easier ;)
+	memcpy((u_char*)extraData, (u_char*)&gExtraConfig, sizeof(EXTRA_CONFIG_DATA));
+	extraData->magic = EXTRA_DATA_MAGIC;
+
+	int invalid = 0;
+
+	if (profile)
+	{
+		if (extraData->sdType != 1)
+		{
+			// don't save non-profile data
+			invalid = 1;
+		}
+	}
+	else if (extraData->sdType == 2)
+	{
+		REPLAY_SAVE_HEADER *header = (REPLAY_SAVE_HEADER*)((char*)&extraData[1] - sizeof(REPLAY_SAVE_HEADER));
+
+		if (extraData->mfStartPos)
+		{
+			int slot = 0;
+
+			if (header->HaveStoredData != 0)
+			{
+				do
+				{
+					// find first free slot
+					if (!header->SavedData.CarPos[slot].active)
+						break;
+				} while (++slot < 6);
+			}
+
+			// fixup pointers; store info in first free saved car slot
+			// if no free slots are available, well.. sorry!
+			for (int i = 0; i < 2; i++)
+			{
+				if (extraData->m.SavedPos[i] == NULL)
+				{
+					extraData->m.SavedSlot[i] = -1;
+					continue;
+				}
+
+				if (slot >= 6)
+				{
+					printWarning("Couldn't save player %d start position - no more slots available!\n", i + 1);
+					continue;
+				}
+
+				header->SavedData.CarPos[slot] = *extraData->m.SavedPos[i];
+				extraData->m.SavedSlot[i] = slot++;
+			}
+		}
+	}
+	else
+	{
+		// don't save non-mission data
+		invalid = 1;
+	}
+
+	if (invalid)
+	{
+		// clear out invalid data
+		extraData->cookie = 0;
+		memset((u_char*)&extraData->data, 0, sizeof(extraData->data));
+	}
+}
+
+int GetSavedCar(STREAM_SOURCE *player, int slot)
+{
+	if (slot > 1 || !gExtraConfig.mfStartPos)
+		return -1;
+
+	if (gExtraConfig.m.SavedPos[slot] == NULL)
+		return 0;
+
+	player->model = gExtraConfig.m.SavedPos[slot]->model;
+	player->palette = gExtraConfig.m.SavedPos[slot]->palette;
+	player->rotation = gExtraConfig.m.SavedPos[slot]->direction & 0xfff;
+	player->position.vx = gExtraConfig.m.SavedPos[slot]->vx;
+	player->position.vz = gExtraConfig.m.SavedPos[slot]->vz;
+
+	wantedCar[slot] = player->model;
+	wantedColour[slot] = player->palette;
+
+	return 1;
+}
+
+int SetSavedCar(int slot, STREAM_SOURCE *player)
+{
+	if (slot > 1)
+		return -1;
+
+	if (gExtraConfig.m.SavedPos[slot] == NULL)
+	{
+		gExtraConfig.mfStartPos = 1;
+		gExtraConfig.m.SavedPos[slot] = &gSavedCars[slot];
+	}
+
+	gExtraConfig.m.SavedPos[slot]->model = player->model;
+	gExtraConfig.m.SavedPos[slot]->palette = player->palette;
+	gExtraConfig.m.SavedPos[slot]->direction = player->rotation & 0xfff;
+	gExtraConfig.m.SavedPos[slot]->vx = player->position.vx;
+	gExtraConfig.m.SavedPos[slot]->vz = player->position.vz;
+
+	return 1;
+}
+
+int SavePlayerCarSpawn(int slot)
+{
+	if (slot > 1)
+		return -1;
+
+	if (gExtraConfig.m.SavedPos[slot] == NULL)
+	{
+		gExtraConfig.mfStartPos = 1;
+		gExtraConfig.m.SavedPos[slot] = &gSavedCars[slot];
+	}
+
+	extern PLAYER player[];
+	extern CAR_DATA car_data[];
+
+	PLAYER *plr = &player[slot];
+
+	if (plr->cameraCarId == -1)
+		return 0;
+
+	CAR_DATA *lcp = &car_data[plr->cameraCarId];
+
+	gExtraConfig.m.SavedPos[slot]->direction = lcp->hd.direction & 0xfff;
+	gExtraConfig.m.SavedPos[slot]->vx = lcp->hd.where.t[0];
+	gExtraConfig.m.SavedPos[slot]->vz = lcp->hd.where.t[2];
+
+	return 1;
+}
+
+extern int ResetPlayerCarSpawn(int slot)
+{
+	if (slot > 1)
+		return -1;
+
+	if (gExtraConfig.m.SavedPos[slot] != NULL)
+	{
+		gExtraConfig.m.SavedPos[slot] = NULL;
+		gExtraConfig.mfStartPos = gExtraConfig.m.SavedPos[slot ^ 1] != NULL;
+	}
+
+	return 1;
 }
 
 // [D] [T]
@@ -162,9 +459,14 @@ void State_GameStart(void* param)
 	AttractMode = 0;
 	NewLevel = 1;
 
-	gOldVibrationMode = gVibration;
-	gSurvivalCopSettingsBackup = gCopDifficultyLevel;
-	gCheatsBackup = ActiveCheats;
+	StoreGameVars(0);
+
+	// clear the data since we're done with it
+	memset((u_char*)&gExtraConfig.data, 0, sizeof(gExtraConfig.data));
+
+	// initialize extra data for missions
+	gExtraConfig.sdType = 2;
+	gExtraConfig.m.AllowParkedTurnedWheels = 1;
 
 	switch (GameType)
 	{
@@ -319,6 +621,9 @@ void ReInitFrontend(int returnToMain)
 	wantedCar[1] = -1;
 	wantedCar[0] = -1;
 
+	wantedColour[1] = -1;
+	wantedColour[0] = -1;
+
 	wantedWeather = -1;
 	wantedTimeOfDay = -1;
 
@@ -338,8 +643,8 @@ void ReInitFrontend(int returnToMain)
 	SpuSetReverbVoice(0, SPU_ALLCH);
 	UnPauseSound();
 
-	LoadSoundBankDynamic((char*)0x0, 0, 0);
-	LoadBankFromLump(1, 0);
+	LoadSoundBankDynamic(NULL, 0, 0);
+	LoadBankFromLump(SOUND_BANK_SFX, 0);
 	
 	// load frontend
 	LOAD_OVERLAY("FRONTEND.BIN", _overlay_buffer);
@@ -664,7 +969,11 @@ void State_GameComplete(void* param)
 
 	if(nextState == STATE_INITFRONTEND)
 	{
-		RestoreGameVars();
+		_CutRec_Reset();
+
+		gLoadedReplay = 0;
+
+		RestoreGameVars(0);
 		
 		lead_car = 0;
 		NoPlayerControl = 0;

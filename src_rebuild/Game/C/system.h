@@ -1,6 +1,41 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
+#ifndef PSX
+struct SYSTEM_CONFIG
+{
+	int windowWidth;
+	int windowHeight;
+	int screenWidth;
+	int screenHeight;
+	int fullScreen;
+	int vsync;
+
+	int psyx_cfg_pad1device;
+	int psyx_cfg_pad2device;
+	int psyx_cfg_swapInterval;
+	int psyx_cfg_pgxpMode;
+	int psyx_cfg_bilinearFiltering;
+
+	int gUserLanguage;
+	int gDrawDistance;
+	int gDrawDistanceLevel;
+	int gDrawDistanceLevelBackup;
+	int gEnableDlights;
+	int gDisableChicagoBridges;
+	int gCameraDefaultScrZ;
+	int gDriver1Music;
+	int gWidescreenOverlayAlign;
+	int gFastLoadingScreens;
+	int gContentOverride;
+
+	int gTrafficDensity;
+	int gPedestrianDensity;
+};
+
+extern SYSTEM_CONFIG syscfg;
+#endif
+
 struct DRAW_MODE
 {
 	short x1, y1;
@@ -139,8 +174,8 @@ extern DRAW_MODE draw_mode_ntsc;
 #define	OTSIZE	0x2000
 #endif
 
-#if USE_EXTENDED_PRIM_POINTERS
-#	define PRIMTAB_SIZE 0x50000
+#ifdef USE_EXTENDED_PRIM_POINTERS
+#	define PRIMTAB_SIZE 0xA0000
 #else
 #	define PRIMTAB_SIZE 0x1e000
 #endif

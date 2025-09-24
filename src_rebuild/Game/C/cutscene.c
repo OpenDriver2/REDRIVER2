@@ -397,8 +397,10 @@ void ReleaseInGameCutscene(void)
 
 	if (gInGameCutsceneActive != 0)
 	{
+		RestoreGameVars(-1);
+
 		PingOutAllCivCarsAndCopCars();
-		InitCivCars();
+		InitCivCars(0);
 
 		for (i = CutsceneStreamIndex; i < NumReplayStreams; i++)
 		{
@@ -572,7 +574,7 @@ int TriggerInGameCutsceneSystem(int cutscene)
 		if (gHaveInGameCutscene != 0) 
 		{
 			PingOutAllCivCarsAndCopCars();
-			InitCivCars();
+			InitCivCars(1);
 			DestroyCivPedestrians();
 
 			if (CutsceneStreamIndex <= player[0].playerCarId)
@@ -806,6 +808,10 @@ int LoadCutsceneToReplayBuffer(int residentCutscene)
 		ShowCutsceneError();
 		return 0;
 	}
+
+	StoreGameVars(-1);
+
+	LoadExtraData(&rheader->ExtraData, 0);
 
 	CutsceneStreamIndex = NumReplayStreams; //rheader->NumReplayStreams;
 	NumCutsceneStreams = rheader->NumReplayStreams;

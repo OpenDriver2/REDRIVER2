@@ -16,6 +16,9 @@ extern int bReverseYRotation;
 
 extern LPPEDESTRIAN pUsedPeds;
 
+// [A] for PC version adjustable density
+extern int max_pedestrians;
+
 extern void ProcessChairLump(char *lump_file, int lump_size); // 0x00073328
 
 extern void InitTanner(); // 0x0006E408

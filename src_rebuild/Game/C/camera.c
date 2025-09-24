@@ -415,7 +415,7 @@ short gCameraDefaultScrZ = 256;
 
 
 CAR_DATA *jcam = NULL;
-int switch_detail_distance = 10000;
+int switch_detail_distance = SWITCH_LOD_DIST;
 
 // [D] [T]
 void PlaceCameraFollowCar(PLAYER *lp)
@@ -545,7 +545,7 @@ void PlaceCameraFollowCar(PLAYER *lp)
 	camera_angle.vz = 0;
 
 	SetGeomScreen(scr_z = gCameraDefaultScrZ);
-	switch_detail_distance = 10000;
+	switch_detail_distance = SWITCH_LOD_DIST;
 
 	BuildWorldMatrix();
 }
@@ -651,7 +651,7 @@ void PlaceCameraInCar(PLAYER *lp, int BumperCam)
 
 	SetGeomScreen(scr_z = gCameraDefaultScrZ);
 
-	switch_detail_distance = 10000;
+	switch_detail_distance = SWITCH_LOD_DIST;
 }
 
 // [D] [T]
@@ -727,6 +727,6 @@ void PlaceCameraAtLocation(PLAYER* lp, int zoom)
 		scr_z = gCameraDefaultScrZ;
 
 	SetGeomScreen(scr_z);
-	switch_detail_distance = 10000 + (d >> 1);
+	switch_detail_distance = SWITCH_LOD_DIST + (d >> 1);
 	BuildWorldMatrix();
 }
