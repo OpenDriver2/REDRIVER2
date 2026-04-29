@@ -555,11 +555,11 @@ void DrawAllTheCars(int view)
 		for (i = 0; i < num_cars_to_draw; i++)
 		{
 			// Don't exceed draw buffers
-			if ((int)(current->primtab + (-3000 - (int)(current->primptr - PRIMTAB_SIZE))) < 5800)
+			if ((int)(intptr_t)(current->primtab + (-3000 - (int)(intptr_t)(current->primptr - PRIMTAB_SIZE))) < 5800)
 				return;
 
 			// make cars look uglier
-			if ((int)(current->primtab + (-3000 - (int)(current->primptr - PRIMTAB_SIZE)) - spacefree) < 5800)
+			if ((int)(intptr_t)(current->primtab + (-3000 - (int)(intptr_t)(current->primptr - PRIMTAB_SIZE)) - spacefree) < 5800)
 				gForceLowDetailCars = 1;
 
 			if (cars_to_draw[i]->controlType == CONTROL_TYPE_PLAYER)

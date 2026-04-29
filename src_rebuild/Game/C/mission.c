@@ -441,7 +441,7 @@ void LoadMission(int missionnum)
 	MissionStrings = (char*)(MissionScript + MissionLoadAddress->strings);
 	
 	if (MissionLoadAddress->route && !NewLevel)
-		loadsize = (u_int)((char*)MissionStrings + ((char*)MissionLoadAddress->route - (char*)MissionLoadAddress));
+		loadsize = (u_int)(uintptr_t)((char*)MissionStrings + ((char*)MissionLoadAddress->route - (char*)MissionLoadAddress));
 	else
 		loadsize = length;
 

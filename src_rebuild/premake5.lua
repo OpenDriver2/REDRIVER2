@@ -1,6 +1,7 @@
 -- premake5.lua
 
-require "premake_modules/usage"
+-- "usage"/"uses" custom API was incompatible with premake5 5.0.0-beta8+;
+-- we now use plain dependson+links+includedirs in each project.
 require "premake_modules/emscripten"
 
 IS_ANDROID = (_ACTION == "androidndk")
@@ -12,6 +13,19 @@ newoption {
    description = "adds specific define for compiling on Raspberry Pi"
 }
 
+newoption {
+   trigger     = "renderer",
+   value       = "API",
+   description = "Rendering backend (default: opengl)",
+   allowed     = { { "opengl", "OpenGL / OpenGL ES (default)" },
+                   { "vulkan", "Vulkan / MoltenVK" } }
+}
+
+if _OPTIONS["renderer"] == nil then
+	_OPTIONS["renderer"] = "opengl"
+end
+USE_VULKAN_RENDERER = (_OPTIONS["renderer"] == "vulkan")
+
 table.insert(premake.option.get("os").allowed, { "emscripten", "Emscripten" })
 
 ------------------------------------------
@@ -20,6 +34,26 @@ table.insert(premake.option.get("os").allowed, { "emscripten", "Emscripten" })
 SDL2_DIR = os.getenv("SDL2_DIR") or "dependencies/SDL2"
 OPENAL_DIR = os.getenv("OPENAL_DIR") or "dependencies/openal-soft"
 JPEG_DIR = os.getenv("JPEG_DIR") or "dependencies/jpeg"
+
+-- macOS Homebrew prefixes (Apple Silicon: /opt/homebrew, Intel: /usr/local)
+HOMEBREW_PREFIX = os.getenv("HOMEBREW_PREFIX")
+if HOMEBREW_PREFIX == nil and os.target() == "macosx" then
+	if os.isdir("/opt/homebrew") then
+		HOMEBREW_PREFIX = "/opt/homebrew"
+	else
+		HOMEBREW_PREFIX = "/usr/local"
+	end
+end
+if os.target() == "macosx" then
+	MAC_SDL2_DIR    = os.getenv("MAC_SDL2_DIR")    or (HOMEBREW_PREFIX .. "/opt/sdl2")
+	MAC_OPENAL_DIR  = os.getenv("MAC_OPENAL_DIR")  or (HOMEBREW_PREFIX .. "/opt/openal-soft")
+	MAC_JPEG_DIR    = os.getenv("MAC_JPEG_DIR")    or (HOMEBREW_PREFIX .. "/opt/jpeg")
+	if USE_VULKAN_RENDERER then
+		MAC_VULKAN_HEADERS = os.getenv("MAC_VULKAN_HEADERS") or (HOMEBREW_PREFIX .. "/opt/vulkan-headers")
+		MAC_VULKAN_LOADER  = os.getenv("MAC_VULKAN_LOADER")  or (HOMEBREW_PREFIX .. "/opt/vulkan-loader")
+		MAC_MOLTENVK       = os.getenv("MAC_MOLTENVK")       or (HOMEBREW_PREFIX .. "/opt/molten-vk")
+	end
+end
 
 WEBDEMO_DIR = os.getenv("WEBDEMO_DIR") or "../../../../content/web_demo@/"	-- FIXME: make it better
 RED2_DIR = os.getenv("RED2_DIR") or "../../data@/"
@@ -128,14 +162,23 @@ workspace "REDRIVER2"
 
 		filter "platforms:*-arm64"
 			architecture "arm64"
+	elseif os.target() == "macosx" then
+		platforms { "x64", "arm64" }
+
+		filter "platforms:x64"
+			architecture "x86_64"
+
+		filter "platforms:arm64"
+			architecture "ARM64"
 	else
 		platforms { "x86", "x64" }
 	end
 	
 	startproject "REDRIVER2"
 	
-	configuration "raspberry-pi"
+	filter "options:raspberry-pi"
 		defines { "__RPI__" }
+	filter {}
 
 	filter "system:Linux"
 		buildoptions {
@@ -146,17 +189,33 @@ workspace "REDRIVER2"
 			"-Wno-unused-result",
             "-fpermissive"
         }
-		
+
 		cppdialect "C++11"
-		
+
 	filter {"system:Linux", "platforms:x86"}
 		buildoptions {
 			"-m32"
 		}
-		
+
 		linkoptions {
 			"-m32"
 		}
+
+	filter "system:macosx"
+		buildoptions {
+			"-Wno-narrowing",
+			"-Wno-endif-labels",
+			"-Wno-write-strings",
+			"-Wno-format-security",
+			"-Wno-unused-result",
+			"-Wno-deprecated-declarations", -- OpenGL is deprecated on macOS but still works (4.1)
+			"-fpermissive",
+			-- Force-include types.h so its u_long override (uint32_t) wins over
+			-- macOS <sys/types.h> which would otherwise typedef u_long as 64-bit.
+			"-include " .. path.getabsolute("PsyCross/include/psx/types.h"),
+		}
+
+		cppdialect "C++11"
 
 	filter "system:Windows"
 		disablewarnings { "4996", "4554", "4244", "4101", "4838", "4309" }
@@ -199,13 +258,14 @@ project "REDRIVER2"
     language "c++"
     targetdir "bin/%{cfg.buildcfg}"
 
-    includedirs { 
-        "Game", 
+    includedirs {
+        "Game",
+        "PsyCross/include",
+        "PsyCross/include/psx",
     }
-	
-	uses { 
-		"PsyCross",
-	}
+
+    dependson { "PsyCross" }
+    links { "PsyCross" }
 
     defines { GAME_REGION }
 	defines { "BUILD_CONFIGURATION_STRING=\"%{cfg.buildcfg}\"" }
@@ -221,10 +281,10 @@ project "REDRIVER2"
         "Game/**.c"
     }
 
-    filter {"system:Windows or linux or platforms:emscripten"}
+    filter {"system:Windows or linux or macosx or platforms:emscripten"}
         --dependson { "PsyX" }
         links { "jpeg" }
-				
+
 		files {
 			"utils/**.h",
 			"utils/**.cpp",
@@ -277,6 +337,57 @@ project "REDRIVER2"
             "SDL2",
             "dl",
         }
+
+    filter "system:macosx"
+        includedirs {
+            MAC_SDL2_DIR.."/include",
+            MAC_SDL2_DIR.."/include/SDL2",
+            MAC_OPENAL_DIR.."/include",
+            MAC_JPEG_DIR.."/include",
+        }
+
+        libdirs {
+            MAC_SDL2_DIR.."/lib",
+            MAC_OPENAL_DIR.."/lib",
+            MAC_JPEG_DIR.."/lib",
+        }
+
+        links {
+            "Cocoa.framework",
+            "openal",
+            "SDL2",
+            "jpeg",
+            "dl",
+        }
+
+        -- Embed Homebrew rpaths so the binary finds dylibs at runtime
+        linkoptions {
+            "-Wl,-rpath," .. MAC_SDL2_DIR .. "/lib",
+            "-Wl,-rpath," .. MAC_OPENAL_DIR .. "/lib",
+            "-Wl,-rpath," .. MAC_JPEG_DIR .. "/lib",
+        }
+
+        if USE_VULKAN_RENDERER then
+            local SHADERC_DIR = HOMEBREW_PREFIX .. "/opt/shaderc"
+            defines { "RENDERER_VK", "USE_VULKAN", "USE_OPENGL_RENDERER=0" }
+            includedirs {
+                MAC_VULKAN_HEADERS .. "/include",
+                SHADERC_DIR .. "/include",
+            }
+            libdirs    {
+                MAC_VULKAN_LOADER .. "/lib",
+                SHADERC_DIR .. "/lib",
+            }
+            links      { "vulkan", "Metal.framework", "QuartzCore.framework", "IOSurface.framework" }
+            -- libshaderc_combined.a is referenced from libPsyCross.a; the
+            -- final executable must pull it in directly to satisfy symbols.
+            linkoptions {
+                "-Wl,-rpath," .. MAC_VULKAN_LOADER .. "/lib",
+                SHADERC_DIR .. "/lib/libshaderc_combined.a",
+            }
+        else
+            links { "OpenGL.framework" }
+        end
 
     filter "configurations:Debug"
 		targetsuffix "_dbg"

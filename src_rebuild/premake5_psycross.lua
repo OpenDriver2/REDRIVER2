@@ -56,6 +56,57 @@ project "PsyCross"
             "SDL2",
         }
 
+    filter "system:macosx"
+        includedirs {
+            MAC_SDL2_DIR.."/include",
+            MAC_SDL2_DIR.."/include/SDL2",
+            MAC_OPENAL_DIR.."/include",
+        }
+
+        libdirs {
+            MAC_SDL2_DIR.."/lib",
+            MAC_OPENAL_DIR.."/lib",
+        }
+
+        links {
+            "Cocoa.framework",
+            "openal",
+            "SDL2",
+        }
+
+        if USE_VULKAN_RENDERER then
+            local SHADERC_DIR = HOMEBREW_PREFIX .. "/opt/shaderc"
+            defines { "RENDERER_VK", "USE_VULKAN", "USE_OPENGL_RENDERER=0" }
+            includedirs {
+                MAC_VULKAN_HEADERS .. "/include",
+                SHADERC_DIR .. "/include",
+            }
+            libdirs    {
+                MAC_VULKAN_LOADER .. "/lib",
+                SHADERC_DIR .. "/lib",
+            }
+            -- libshaderc_combined.a bundles glslang+SPIRV-Tools statically;
+            -- gives us GLSL→SPIR-V compilation at runtime without any dylib.
+            linkoptions { SHADERC_DIR .. "/lib/libshaderc_combined.a" }
+            links {
+                "vulkan",
+                "Metal.framework",
+                "QuartzCore.framework",
+                "IOSurface.framework",
+            }
+            -- Exclude OpenGL backend sources when building Vulkan
+            removefiles {
+                "PsyCross/src/render/PsyX_render.cpp",
+                "PsyCross/src/render/glad.c",
+            }
+        else
+            links { "OpenGL.framework" }
+            -- Exclude Vulkan backend sources when building OpenGL
+            removefiles {
+                "PsyCross/src/render/PsyX_render_vk.cpp",
+            }
+        end
+
     filter "configurations:Release"
         optimize "Speed"
 

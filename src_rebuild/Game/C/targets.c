@@ -324,7 +324,10 @@ void DrawStopZone(VECTOR *pPosition)
 		temp.vy = pVector->vy;
 		temp.vz = pVector->vz;
 
-		RotTransPers(&temp, pOut, &p, &flag);
+		{
+			long otz;
+			gte_RotTransPers(&temp, pOut, &p, &flag, &otz);
+		}
 
 		if (pOut == (long*)&pPoly->x0)
 			pOut = (long*)&pPoly->x1;

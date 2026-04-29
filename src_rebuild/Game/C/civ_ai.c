@@ -1083,7 +1083,7 @@ int CheckChangeLanes(DRIVER2_STRAIGHT* straight, DRIVER2_CURVE* curve, int distA
 			segLen = straight->length;
 		}
 
-		newLane = currentLane + (Random2((int)straight) >> 7 & 2U) + 0xff & 0xff;
+		newLane = currentLane + (Random2((int)(intptr_t)straight) >> 7 & 2U) + 0xff & 0xff;
 		
 		if (tryToPark)
 		{

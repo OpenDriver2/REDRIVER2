@@ -5,7 +5,10 @@
 
 #ifndef PSX
 #include <stdio.h>
+#include <stdlib.h>
+#if !defined(__APPLE__)
 #include <malloc.h>
+#endif
 #endif
 
 

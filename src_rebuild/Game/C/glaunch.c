@@ -288,14 +288,14 @@ void State_GameStart(void* param)
 
 void State_InitFrontEnd(void* param)
 {
-	if ((int)param == 2)
+	if ((int)(intptr_t)param == 2)
 	{
 		InitFrontend();
 		InitFrontendDisplay();
 	}
 	else
 	{
-		ReInitFrontend((int)param == 0);
+		ReInitFrontend((int)(intptr_t)param == 0);
 	}
 
 	SetState(STATE_FRONTEND);
@@ -304,7 +304,7 @@ void State_InitFrontEnd(void* param)
 // [D] [T]
 void State_FMVPlay(void* param)
 {
-	PlayFMV((int)param);
+	PlayFMV((int)(intptr_t)param);
 	SetState(STATE_INITFRONTEND, (void*)1);
 }
 
@@ -376,7 +376,7 @@ void State_MissionLadder(void* param)
 	MISSION_STEP* CurrentStep;
 	RENDER_ARGS RenderArgs;
 
-	newgame = (int)param;
+	newgame = (int)(intptr_t)param;
 	quit = 0;
 
 	RenderArgs.nRenders = 0;
