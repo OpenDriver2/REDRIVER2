@@ -22,7 +22,7 @@ struct VERTEX
 	u_char pad[2];
 };
 
-extern void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount); // 0x00041D7C
+extern void DrawTILES(CELL_OBJECT** tiles, int tile_amount); // 0x00041D7C
 
 extern void Tile1x1(MODEL *model); // 0x00041B10
 

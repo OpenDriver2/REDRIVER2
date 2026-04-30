@@ -46,6 +46,7 @@ extern MATRIX aspect;
 extern MATRIX identity;
 extern MATRIX inv_camera_matrix;
 extern MATRIX face_camera;
+extern MATRIX frustrum_matrix;
 
 extern MATRIX2 matrixtable[64];
 extern MATRIX2 CompoundMatrix[64];
@@ -85,6 +86,11 @@ extern int pvs_square_sq;
 extern int PolySizes[56];
 
 extern int setupYet;
+extern int current_pvs_cell;
+extern int current_pvs_region;
+extern int current_pvs_source_region;
+extern int current_pvs_loaded_region;
+extern int current_pvs_loading_region;
 
 extern int combointensity;
 

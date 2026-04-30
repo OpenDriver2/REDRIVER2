@@ -862,14 +862,14 @@ void PlotSkyPoly(POLYFT4* polys, int skytexnum, unsigned char r, unsigned char g
 		poly->clut = skyclut[skytexnum];
 		poly->tpage = skytpage[skytexnum];
 
-		addPrim(current->ot + OTSIZE - 1, poly);
+			addPrim(current->ot + OTSIZE - 1, poly);
 
 #if USE_PGXP && USE_EXTENDED_PRIM_POINTERS
-		poly->pgxp_index = outpoints[src->v0].pgxp_index;
+			poly->pgxp_index = 0xffff;
 #endif 
 
-		current->primptr += sizeof(POLY_FT4);
-	}
+			current->primptr += sizeof(POLY_FT4);
+		}
 }
 
 // [D] [T]
@@ -906,14 +906,9 @@ void PlotHorizonMDL(MODEL* model, int horizontaboffset, RGB16* skycolor)
 		if(count == 15)
 			gte_stszotz(&z);
 
-#if USE_PGXP
-		// store PGXP index
-		// HACK: -1 is needed here for some reason
-		dv[0].pgxp_index = dv[1].pgxp_index = dv[2].pgxp_index = PGXP_GetIndex(0) - 1;
-#endif
-		dv += 3;
-		verts += 3;
-		count -= 3;
+			dv += 3;
+			verts += 3;
+			count -= 3;
 	} while (count);
 
 #if USE_PGXP
@@ -986,4 +981,3 @@ void DrawSkyDome(void)
 #endif
 
 }
-

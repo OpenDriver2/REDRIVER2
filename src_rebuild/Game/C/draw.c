@@ -1,5 +1,7 @@
 #include "driver2.h"
 
+#include <stdlib.h>
+
 #include "draw.h"
 #include "main.h"
 #include "map.h"
@@ -8,6 +10,7 @@
 #include "camera.h"
 #include "mission.h"
 #include "cell.h"
+#include "spool.h"
 #include "tile.h"
 #include "objanim.h"
 #include "texture.h"
@@ -89,6 +92,8 @@ void* model_object_ptrs[MAX_DRAWN_BUILDINGS];
 void* model_tile_ptrs[MAX_DRAWN_TILES];
 void* anim_obj_buffer[MAX_DRAWN_ANIMATING];
 void* spriteList[MAX_DRAWN_SPRITES];
+CELL_OBJECT model_tile_objects[MAX_DRAWN_TILES];
+CELL_OBJECT sprite_objects[MAX_DRAWN_SPRITES];
 
 MATRIX inv_camera_matrix;
 MATRIX face_camera;
@@ -105,11 +110,92 @@ int fasterToggle = 0;
 
 int combointensity;
 
-char CurrentPVS[PVS_CELL_COUNT * PVS_CELL_COUNT + 3]; // 20*20+4
+char CurrentPVS[PVS_CELL_COUNT * PVS_CELL_COUNT + 3];
 MATRIX2 matrixtable[64];
 int setupYet = 0;
 
 int gDrawDistance = PVS_CELL_COUNT * PVS_CELL_COUNT;
+
+#ifndef PSX
+struct DrawMapDiagStats
+{
+	int cells_tested;
+	int cells_visible;
+	int cells_range_rejected;
+	int cells_plane_rejected;
+	int cells_pvs_rejected;
+	int cells_unloaded_region;
+	int pvs_oob_reads;
+	int packed_objects;
+	int frustum_passed;
+	int frustum_rejected;
+	int sprites_overflow;
+	int tiles_overflow;
+	int buildings_overflow;
+	int anim_overflow;
+};
+
+struct DrawPvsDiagState
+{
+	int source_region;
+	int region;
+	int cell;
+	int reloaded;
+	int reload_count;
+	int last_reload_frame;
+	int loaded_region;
+	int loading_region;
+	int visible_entries;
+};
+
+static DrawPvsDiagState gDrawPvsDiag;
+
+static int DrawDiagEnabled(void)
+{
+	static int initialized = 0;
+	static int enabled = 0;
+
+	if (!initialized)
+	{
+		const char* value = getenv("REDRIVER2_DRAW_DIAG");
+
+		if (value == NULL)
+			value = getenv("REDRIVER2_VK_DIAG");
+
+		enabled = value != NULL && value[0] != '\0' && value[0] != '0';
+		initialized = 1;
+	}
+
+	return enabled;
+}
+
+static int DrawDiagInterval(void)
+{
+	static int initialized = 0;
+	static int interval = 60;
+
+	if (!initialized)
+	{
+		const char* value = getenv("REDRIVER2_DRAW_DIAG_INTERVAL");
+
+		if (value == NULL)
+			value = getenv("REDRIVER2_VK_DIAG_INTERVAL");
+
+		if (value != NULL)
+		{
+			int parsed = atoi(value);
+
+			if (parsed > 0)
+				interval = parsed;
+		}
+
+		initialized = 1;
+	}
+
+	return interval;
+}
+
+#endif
 
 #ifndef PSX
 _pct& plotContext = *(_pct*)((u_char*)getScratchAddr(0) + 1024 - sizeof(_pct));	// orig offset: 0x1f800020
@@ -162,15 +248,15 @@ void addSubdivSpriteShadow(POLYFT4* src, SVECTOR* verts, int z)
 }
 
 // [D] [T] [A]
-void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
+void DrawSprites(CELL_OBJECT** sprites, int numFound)
 {
 	int i;
 	int z;
 	u_int spriteColour, lightdd;
 	u_char lightLevel;
 	MODEL* model;
-	PACKED_CELL_OBJECT* pco;
-	PACKED_CELL_OBJECT** list;
+	CELL_OBJECT* pco;
+	CELL_OBJECT** list;
 	int numShadows;
 
 #if 0 //def PSX
@@ -228,10 +314,10 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 		pco = *list;
 		list++;
 
-		modelnumber = (pco->value >> 6) | (pco->pos.vy & 1) << 10;
+		modelnumber = pco->type;
 		model = modelpointers[modelnumber];
 
-		if ((pco->value & 63) == 63 || litSprites[modelnumber >> 5] & 1 << (modelnumber & 31))  // [A] multiple sprites lighting fixes
+		if (pco->yang == 63 || litSprites[modelnumber >> 5] & 1 << (modelnumber & 31))  // [A] multiple sprites lighting fixes
 		{
 			plotContext.colour = 0x2c808080;
 		}
@@ -240,11 +326,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 			plotContext.colour = spriteColour;
 		}
 
-		plotContext.scribble[0] = pco->pos.vx;
-		plotContext.scribble[1] = (pco->pos.vy << 0x10) >> 0x11;
-		plotContext.scribble[2] = pco->pos.vz;
-
-		z = Apply_InvCameraMatrixAndSetMatrix((VECTOR_NOPAD*)plotContext.scribble, (MATRIX2*)&face_camera);
+		z = Apply_InvCameraMatrixAndSetMatrix(&pco->pos, (MATRIX2*)&face_camera);
 
 		if (z < 1000)
 		{
@@ -299,7 +381,7 @@ void DrawSprites(PACKED_CELL_OBJECT** sprites, int numFound)
 #endif
 		
 		if (wetness == 0 && gTimeOfDay != TIME_NIGHT &&
-			(pco->value & 32) == 0 && 
+			(pco->yang & 32) == 0 &&
 			z < MAX_TREE_SHADOW_DISTANCE &&
 			numShadows < 40)
 		{
@@ -364,7 +446,11 @@ void SetupPlaneColours(u_int ambient)
 }
 
 
-int current_pvs_cell;
+int current_pvs_cell = -1;
+int current_pvs_region = -1;
+int current_pvs_source_region = -1;
+int current_pvs_loaded_region = -2;
+int current_pvs_loading_region = -2;
 
 
 // [D] [T]
@@ -373,6 +459,14 @@ void SetupDrawMapPSX(void)
 	int cell_x, cell_z;
 	int theta;
 	int pvs_cell;
+	int region_x1;
+	int region_z1;
+	int current_barrel_region_x1;
+	int current_barrel_region_z1;
+	int pvs_region;
+	int pvs_source_region;
+	int pvs_loaded_region;
+	int pvs_loading_region;
 
 	if (setupYet != 0)
 	{
@@ -385,23 +479,55 @@ void SetupDrawMapPSX(void)
 	current_cell_x = cell_x;
 	current_cell_z = cell_z;
 
-	pvs_cell = (cell_z % MAP_REGION_SIZE) * MAP_REGION_SIZE + (cell_x % MAP_REGION_SIZE);
-	if (pvs_cell != current_pvs_cell)
+	region_x1 = cell_x / MAP_REGION_SIZE;
+	region_z1 = cell_z / MAP_REGION_SIZE;
+
+	current_barrel_region_x1 = (region_x1 & 1);
+	current_barrel_region_z1 = (region_z1 & 1);
+
+	pvs_region = region_x1 + region_z1 * regions_across;
+	pvs_source_region = current_barrel_region_x1 + current_barrel_region_z1 * 2;
+	pvs_cell = (cell_z - region_z1 * MAP_REGION_SIZE) * MAP_REGION_SIZE + cell_x - region_x1 * MAP_REGION_SIZE;
+	pvs_loaded_region = regions_unpacked[pvs_source_region];
+	pvs_loading_region = loading_region[pvs_source_region];
+
+#ifndef PSX
+	gDrawPvsDiag.source_region = pvs_source_region;
+	gDrawPvsDiag.region = pvs_region;
+	gDrawPvsDiag.cell = pvs_cell;
+	gDrawPvsDiag.reloaded = (gDrawPvsDiag.reload_count > 0 && gDrawPvsDiag.last_reload_frame == FrameCnt);
+	gDrawPvsDiag.loaded_region = pvs_loaded_region;
+	gDrawPvsDiag.loading_region = pvs_loading_region;
+#endif
+
+	if (pvs_cell != current_pvs_cell ||
+		pvs_region != current_pvs_region ||
+		pvs_source_region != current_pvs_source_region ||
+		pvs_loaded_region != current_pvs_loaded_region ||
+		pvs_loading_region != current_pvs_loading_region)
 	{
-		int region_x1, region_z1;
-		int current_barrel_region_x1, current_barrel_region_z1;
-
-		region_x1 = cell_x / MAP_REGION_SIZE;
-		region_z1 = cell_z / MAP_REGION_SIZE;
-
-		current_barrel_region_x1 = (region_x1 & 1);
-		current_barrel_region_z1 = (region_z1 & 1);
-
 		current_pvs_cell = pvs_cell;
+		current_pvs_region = pvs_region;
+		current_pvs_source_region = pvs_source_region;
+		current_pvs_loaded_region = pvs_loaded_region;
+		current_pvs_loading_region = pvs_loading_region;
 		GetPVSRegionCell2(
-			current_barrel_region_x1 + current_barrel_region_z1 * 2,
-			region_x1 + region_z1 * regions_across,
+			pvs_source_region,
+			pvs_region,
 			pvs_cell, CurrentPVS);
+
+#ifndef PSX
+		gDrawPvsDiag.reloaded = 1;
+		gDrawPvsDiag.reload_count++;
+		gDrawPvsDiag.last_reload_frame = FrameCnt;
+		gDrawPvsDiag.visible_entries = 0;
+
+		for (int i = 0; i < pvs_square_sq; i++)
+		{
+			if (CurrentPVS[i])
+				gDrawPvsDiag.visible_entries++;
+		}
+#endif
 	}
 
 	InitFrustrumMatrix();
@@ -1301,6 +1427,10 @@ void DrawMapPSX(int* comp_val)
 	static int treecount = 0;
 	static int alleycount = 0;
 
+#ifndef PSX
+	DrawMapDiagStats diag = {};
+#endif
+
 	SetupDrawMapPSX();
 
 	// clean cell cache
@@ -1344,7 +1474,7 @@ void DrawMapPSX(int* comp_val)
 	drawData.cellzpos = current_cell_z;
 	drawData.cellxpos = current_cell_x;
 
-	PVS_ptr = CurrentPVS + 220;
+	PVS_ptr = CurrentPVS + view_dist * pvs_square + view_dist;
 
 	vloop = 0;
 	hloop = 0;
@@ -1364,38 +1494,99 @@ void DrawMapPSX(int* comp_val)
 	{
 		if (ABS(hloop) + ABS(vloop) < PVS_CELL_COUNT)
 		{
+#ifndef PSX
+			diag.cells_tested++;
+#endif
 			// clamped vis values
-			int vis_h = MIN(MAX(hloop, -9), PVS_CELL_COUNT / 2);
-			int vis_v = MIN(MAX(vloop, -9), PVS_CELL_COUNT / 2);
+			int vis_h = MIN(MAX(hloop, 1 - view_dist), view_dist);
+			int vis_v = MIN(MAX(vloop, 1 - view_dist), view_dist);
+			int pvs_index = view_dist * pvs_square + view_dist + vis_v * pvs_square + vis_h;
 
 			cellx = drawData.cellxpos + hloop;
 			cellz = drawData.cellzpos + vloop;
 
-			if (drawData.rightPlane < 0 &&
-				drawData.leftPlane > 0 &&
-				drawData.backPlane < drawData.farClipLimit &&  // check planes
-				cellx > -1 && cellx < cells_across &&							// check cell ranges
-				cellz > -1 && cellz < cells_down &&
-				PVS_ptr[vis_v * pvs_square + vis_h]) // check PVS table
+			if (pvs_index < 0 || pvs_index >= pvs_square_sq)
 			{
+#ifndef PSX
+				diag.pvs_oob_reads++;
+#endif
+			}
+			else if (drawData.rightPlane >= 0 ||
+				drawData.leftPlane <= 0 ||
+				drawData.backPlane >= drawData.farClipLimit)
+			{
+#ifndef PSX
+				diag.cells_plane_rejected++;
+#endif
+			}
+			else if (cellx <= -1 || cellx >= cells_across ||
+				cellz <= -1 || cellz >= cells_down)
+			{
+#ifndef PSX
+				diag.cells_range_rejected++;
+#endif
+			}
+			else if (!PVS_ptr[vis_v * pvs_square + vis_h])
+			{
+#ifndef PSX
+				diag.cells_pvs_rejected++;
+#endif
+			}
+			else
+			{
+#ifndef PSX
+				diag.cells_visible++;
+				{
+					int region_x = cellx / MAP_REGION_SIZE;
+					int region_z = cellz / MAP_REGION_SIZE;
+					int source_region = (region_x & 1) + (region_z & 1) * 2;
+					int region = region_x + region_z * regions_across;
+
+					if (loading_region[source_region] != -1 || RoadMapRegions[source_region] != region)
+						diag.cells_unloaded_region++;
+				}
+#endif
 				// walk each cell object in cell
 				for (ppco = GetFirstPackedCop(cellx, cellz, &ci, 1, drawData.cellLevel); ppco; ppco = GetNextPackedCop(&ci))
 				{
 					model = modelpointers[(ppco->value >> 6) | ((ppco->pos).vy & 1) << 10];
 
-					if (FrustrumCheck16(ppco, model->bounding_sphere) != -1)
+#ifndef PSX
+					diag.packed_objects++;
+#endif
+
+					if (FrustrumCheck16(ppco, &ci.nearCell, model->bounding_sphere) != -1)
 					{
+#ifndef PSX
+						diag.frustum_passed++;
+#endif
 						// sprity type
 						if (model->shape_flags & SHAPE_FLAG_SPRITE)
 						{
 							if (drawData.sprites_found < MAX_DRAWN_SPRITES)
-								spriteList[drawData.sprites_found++] = ppco;
+							{
+								QuickUnpackCellObject(ppco, &ci.nearCell, &sprite_objects[drawData.sprites_found]);
+								spriteList[drawData.sprites_found] = &sprite_objects[drawData.sprites_found];
+								drawData.sprites_found++;
+							}
+#ifndef PSX
+							else
+							{
+								diag.sprites_overflow++;
+							}
+#endif
 
 							if ((model->flags2 & MODEL_FLAG_ANIMOBJ) && drawData.anim_objs_found < MAX_DRAWN_ANIMATING)
 							{
 								cop = UnpackCellObject(ppco, &ci.nearCell);
 								anim_obj_buffer[drawData.anim_objs_found++] = cop;
 							}
+#ifndef PSX
+							else if (model->flags2 & MODEL_FLAG_ANIMOBJ)
+							{
+								diag.anim_overflow++;
+							}
+#endif
 
 							if (model->flags2 & MODEL_FLAG_TREE)
 							{
@@ -1453,7 +1644,17 @@ void DrawMapPSX(int* comp_val)
 								}
 
 								if (drawData.tiles_found < MAX_DRAWN_TILES)
-									model_tile_ptrs[drawData.tiles_found++] = ppco;
+								{
+									QuickUnpackCellObject(ppco, &ci.nearCell, &model_tile_objects[drawData.tiles_found]);
+									model_tile_ptrs[drawData.tiles_found] = &model_tile_objects[drawData.tiles_found];
+									drawData.tiles_found++;
+								}
+#ifndef PSX
+								else
+								{
+									diag.tiles_overflow++;
+								}
+#endif
 							}
 							else
 							{
@@ -1461,12 +1662,26 @@ void DrawMapPSX(int* comp_val)
 
 								if (drawData.other_models_found < MAX_DRAWN_BUILDINGS)
 									model_object_ptrs[drawData.other_models_found++] = cop;
+#ifndef PSX
+								else
+									diag.buildings_overflow++;
+#endif
 
 								if (drawData.anim_objs_found < MAX_DRAWN_ANIMATING && (model->flags2 & MODEL_FLAG_ANIMOBJ))
 									anim_obj_buffer[drawData.anim_objs_found++] = cop;
+#ifndef PSX
+								else if (model->flags2 & MODEL_FLAG_ANIMOBJ)
+									diag.anim_overflow++;
+#endif
 							}
 						}
 					}
+#ifndef PSX
+					else
+					{
+						diag.frustum_rejected++;
+					}
+#endif
 				}
 			}
 		}
@@ -1503,6 +1718,33 @@ void DrawMapPSX(int* comp_val)
 		}
 	}while (i-- > 0);
 
+#ifndef PSX
+	if (DrawDiagEnabled())
+	{
+		int interval = DrawDiagInterval();
+
+		if (FrameCnt % interval == 0)
+		{
+			printInfo("[DRAWDIAG] frame=%d cam=%d,%d,%d cell=%d,%d pvs src/reg/cell=%d/%d/%d reload=%d last/count=%d/%d loaded/loading=%d/%d entries=%d cells vis/test=%d/%d reject plane/range/pvs/oob=%d/%d/%d/%d unloaded=%d objects=%d frustum=%d/%d draw b/s/t/a=%d/%d/%d/%d overflow b/s/t/a=%d/%d/%d/%d\n",
+				FrameCnt,
+				camera_position.vx, camera_position.vy, camera_position.vz,
+				drawData.cellxpos, drawData.cellzpos,
+				gDrawPvsDiag.source_region, gDrawPvsDiag.region, gDrawPvsDiag.cell,
+				gDrawPvsDiag.reloaded,
+				gDrawPvsDiag.last_reload_frame, gDrawPvsDiag.reload_count,
+				gDrawPvsDiag.loaded_region, gDrawPvsDiag.loading_region,
+				gDrawPvsDiag.visible_entries,
+				diag.cells_visible, diag.cells_tested,
+				diag.cells_plane_rejected, diag.cells_range_rejected, diag.cells_pvs_rejected, diag.pvs_oob_reads,
+				diag.cells_unloaded_region,
+				diag.packed_objects,
+				diag.frustum_passed, diag.frustum_rejected,
+				drawData.other_models_found, drawData.sprites_found, drawData.tiles_found, drawData.anim_objs_found,
+				diag.buildings_overflow, diag.sprites_overflow, diag.tiles_overflow, diag.anim_overflow);
+		}
+	}
+#endif
+
 #if 0
 	char tempBuf[512];
 
@@ -1530,10 +1772,10 @@ void DrawMapPSX(int* comp_val)
 		DrawAllAnimatingObjects((CELL_OBJECT**)anim_obj_buffer, drawData.anim_objs_found);
 
 	if (drawData.sprites_found)
-		DrawSprites((PACKED_CELL_OBJECT**)spriteList, drawData.sprites_found);
+		DrawSprites((CELL_OBJECT**)spriteList, drawData.sprites_found);
 
 	if (drawData.tiles_found)
-		DrawTILES((PACKED_CELL_OBJECT**)model_tile_ptrs, drawData.tiles_found);
+		DrawTILES((CELL_OBJECT**)model_tile_ptrs, drawData.tiles_found);
 
 	if (drawData.other_models_found)
 		DrawAllBuildings((CELL_OBJECT**)model_object_ptrs, drawData.other_models_found);
