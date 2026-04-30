@@ -448,10 +448,12 @@ void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number, int cr
 	PsyX_BeginScene();
 
 	GR_Clear(0, 0, windowWidth, windowHeight, 0, 0, 0);
-	
+
+#if defined(RENDERER_OGL) || defined(RENDERER_OGLES)
 	glBindTexture(GL_TEXTURE_2D, g_FMVTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, image_w, image_h, 0, GL_RGB, GL_UNSIGNED_BYTE, g_FMVDecodedImageBuffer);
 	glBindTexture(GL_TEXTURE_2D, 0);
+#endif
 
 	GR_SetShader(g_FMVShader);
 	GR_SetTexture(g_FMVTexture, (TexFormat)-1);

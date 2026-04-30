@@ -2989,7 +2989,7 @@ void DrawEvents(int camera)
 
 										pos.vx = pos.vx - boatOffset.vx;
 										pos.vz = pos.vz - boatOffset.vz;
-										pos.vy = (pos.vy - boatOffset.vy) + FIXEDH((int)ev->node * RSIN(*ev->data));
+										pos.vy = (pos.vy - boatOffset.vy) + FIXEDH((int)(intptr_t)ev->node * RSIN(*ev->data));
 									}
 									else if (type == 0x400)
 									{

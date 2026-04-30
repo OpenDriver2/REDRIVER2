@@ -5,7 +5,7 @@
 #include <direct.h>
 #define HOME_ENV "USERPROFILE"
 
-#elif defined (__unix__)
+#elif defined (__unix__) || defined(__APPLE__)
 #include <sys/stat.h>
 #define HOME_ENV "HOME"
 

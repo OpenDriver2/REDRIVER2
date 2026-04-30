@@ -72,14 +72,17 @@
 	local sourcesStack = Stack:Create()
 
 --
--- 'uses' api
+-- 'uses' api (only register if not already provided by core premake)
 --
 
-p.api.register {
-	name = "uses",
-		scope = { "config" },
-		kind = "list:string",
-	}
+if not (p.field and p.field.get and p.field.get("uses")) then
+	local ok = pcall(p.api.register, {
+		name = "uses",
+			scope = { "config" },
+			kind = "list:string",
+		})
+	-- if already registered by core premake, that's fine
+end
 
 --
 -- 'usage' container

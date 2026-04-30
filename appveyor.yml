@@ -10,6 +10,7 @@ skip_tags: true
 image:
 - Visual Studio 2019
 - Ubuntu2004
+- macos-sonoma
 
 environment:
   data_folder: '%APPVEYOR_BUILD_FOLDER%\data'
@@ -50,6 +51,9 @@ artifacts:
 
   - path: src_rebuild\bin\*\*.tar.gz
     name: Linux Binaries
-  
+
   - path: io.github.opendriver2.Redriver2.flatpak
     name: Linux Flatpak
+
+  - path: src_rebuild/bin/*/REDRIVER2_macOS_arm64_*.tar.gz
+    name: macOS Binaries

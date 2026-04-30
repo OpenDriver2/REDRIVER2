@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -ex
 
+# AppVeyor runs `sh:` steps on every non-Windows image. Delegate to a
+# macOS-specific script when the worker is macOS so the Linux-only
+# apt/flatpak path below doesn't try to run.
+if [ "$(uname -s)" = "Darwin" ]; then
+    exec "${APPVEYOR_BUILD_FOLDER}/.appveyor/Install.macos.sh"
+fi
+
 cd "$APPVEYOR_BUILD_FOLDER/src_rebuild"
 
 # Download premake5

@@ -1,5 +1,8 @@
 #include "snd_wav_cache.h"
+#if !defined(__APPLE__)
 #include <malloc.h>
+#endif
+#include <stdlib.h>
 #include <string.h>
 
 bool CSoundSource_WaveCache::Load(const char* szFilename)

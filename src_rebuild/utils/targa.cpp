@@ -1,7 +1,10 @@
 #include "targa.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#if !defined(__APPLE__)
 #include <malloc.h>
+#endif
 
 bool LoadTGAImage(const char* filename, u_char** data, int& width, int& height, int& bpp)
 {

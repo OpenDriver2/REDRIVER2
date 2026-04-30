@@ -211,11 +211,11 @@ inline int fst_div_3(int x)
 
 
 // [D] [T]
-void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
+void DrawTILES(CELL_OBJECT** tiles, int tile_amount)
 {
 	MODEL* pModel;
-	PACKED_CELL_OBJECT *ppco;
-	PACKED_CELL_OBJECT** tilePointers;
+	CELL_OBJECT *pco;
+	CELL_OBJECT** tilePointers;
 	int previous_matrix, yang, dofse, Z;
 	int model_number;
 
@@ -255,26 +255,22 @@ void DrawTILES(PACKED_CELL_OBJECT** tiles, int tile_amount)
 	plotContext.flags = 0;
 	plotContext.polySizes = PolySizes;
 
-	tilePointers = (PACKED_CELL_OBJECT **)tiles;
+	tilePointers = (CELL_OBJECT **)tiles;
 
 	while (tile_amount--)
 	{
-		ppco = *tilePointers++;
-		
-		plotContext.scribble[0] = ppco->pos.vx;
-		plotContext.scribble[1] = (ppco->pos.vy << 0x10) >> 0x11;
-		plotContext.scribble[2] = ppco->pos.vz;
+		pco = *tilePointers++;
 	
-		yang = ppco->value & 0x3f;
-		model_number = (ppco->value >> 6) | (ppco->pos.vy & 1) << 10;
+		yang = pco->yang;
+		model_number = pco->type;
 
 		if (previous_matrix == yang)
 		{
-			Z = Apply_InvCameraMatrixSetTrans((VECTOR_NOPAD *)plotContext.scribble);
+			Z = Apply_InvCameraMatrixSetTrans(&pco->pos);
 		}
 		else
 		{
-			Z = Apply_InvCameraMatrixAndSetMatrix((VECTOR_NOPAD *)plotContext.scribble, &CompoundMatrix[previous_matrix = yang]);
+			Z = Apply_InvCameraMatrixAndSetMatrix(&pco->pos, &CompoundMatrix[previous_matrix = yang]);
 		}
 
 		if (Z <= DRAW_LOD_DIST_HIGH)
@@ -702,7 +698,6 @@ void ProcessLowDetailTable(char *lump_ptr, int lump_size)
 			pLodModels[i] = modelpointers[i];
 	}
 }
-
 
 
 

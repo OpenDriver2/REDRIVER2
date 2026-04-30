@@ -8,8 +8,6 @@
 #include <direct.h>
 #include <wtypes.h>
 
-#define HOME_ENV "USERPROFILE"
-
 void FS_FixPathSlashes(char* pathbuff)
 {
     while (*pathbuff)
@@ -20,11 +18,14 @@ void FS_FixPathSlashes(char* pathbuff)
     }
 }
 
-#elif defined (__unix__)
+#elif defined (__unix__) || defined(__APPLE__)
 
 #include <sys/stat.h>
 #include <glob.h>		// glob(), globfree()
+#include <stdlib.h>		// malloc(), free()
+#if !defined(__APPLE__)
 #include <malloc.h>
+#endif
 
 void FS_FixPathSlashes(char* pathbuff)
 {

@@ -101,6 +101,11 @@ void ProcessMapLump(char* lump_ptr, int lump_size)
 	view_dist = PVS_CELL_COUNT / 2;
 	pvs_square = PVS_CELL_COUNT;
 	pvs_square_sq = PVS_CELL_COUNT * PVS_CELL_COUNT;
+	current_pvs_cell = -1;
+	current_pvs_region = -1;
+	current_pvs_source_region = -1;
+	current_pvs_loaded_region = -2;
+	current_pvs_loading_region = -2;
 
 	units_across_halved = cells_across / 2 * MAP_CELL_SIZE;
 	units_down_halved = cells_down / 2 * MAP_CELL_SIZE;
@@ -167,14 +172,14 @@ int newPositionVisible(VECTOR *pos, char *pvs, int ccx, int ccz)
 	cellz = (dz / MAP_CELL_SIZE) - ccz;
 
 #ifndef PSX
-	cellx = MIN(MAX(cellx, -9), PVS_CELL_COUNT / 2);
-	cellz = MIN(MAX(cellz, -9), PVS_CELL_COUNT / 2);
+	cellx = MIN(MAX(cellx, 1 - view_dist), view_dist);
+	cellz = MIN(MAX(cellz, 1 - view_dist), view_dist);
 #endif // PSX
 
 	if (ABS(cellx) <= view_dist && 
 		ABS(cellz) <= view_dist)
 	{
-		return pvs[cellx + 10 + (cellz + 10) * pvs_square] != 0;
+		return pvs[cellx + view_dist + (cellz + view_dist) * pvs_square] != 0;
 	}
 
 	return 0;
@@ -534,7 +539,9 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 				goto spod;
 			}
 
-			sym = ((sym & 3) * 16 + nybblearray[i++]) * 16 + nybblearray[i++ + 1];
+			int symMid = nybblearray[i++];
+			int symLow = nybblearray[i++];
+			sym = ((sym & 3) * 16 + symMid) * 16 + symLow;
 		}
 
 		pixelIndex += (sym >> 1);
@@ -586,7 +593,7 @@ void PVSDecode(char *output, char *celldata, ushort sz, int havanaCorruptCellBod
 	}
 	printf("=========================\n");
 #endif
-	memcpy((u_char*)output, decodebuf, pvs_square_sq-1);	// 110*4
+	memcpy((u_char*)output, decodebuf, pvs_square_sq);
 }
 
 
@@ -637,8 +644,4 @@ void GetPVSRegionCell2(int source_region, int region, int cell, char *output)
 			output[k] = 0;
 	}
 }
-
-
-
-
 

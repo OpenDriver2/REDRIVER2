@@ -40,3 +40,15 @@ src_rebuild/obj/*
 src_rebuild/project_*
 src_rebuild/*.make
 src_rebuild/Makefile
+
+# Driver 2 game data (CD images + extracted FMV/XA — too large for git)
+data/install/*.bin
+data/install/*.cue
+data/DRIVER2/FMV/
+data/DRIVER2/XA/
+data/REDRIVER2.log
+
+# Build outputs
+src_rebuild/bin/
+src_rebuild/obj/
+src_rebuild/project_gmake_*/

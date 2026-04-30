@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -ex
 
+if [ "$(uname -s)" = "Darwin" ]; then
+    exec "${APPVEYOR_BUILD_FOLDER}/.appveyor/Build.macos.sh"
+fi
+
 # Configure
 cd "$APPVEYOR_BUILD_FOLDER/src_rebuild"
 ./premake5 gmake2

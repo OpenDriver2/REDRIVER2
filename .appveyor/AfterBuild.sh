@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -ex
 
+if [ "$(uname -s)" = "Darwin" ]; then
+    exec "${APPVEYOR_BUILD_FOLDER}/.appveyor/AfterBuild.macos.sh"
+fi
+
 for config in debug release release_dev
 do
     cd "${APPVEYOR_BUILD_FOLDER}/src_rebuild/bin/${config^}"

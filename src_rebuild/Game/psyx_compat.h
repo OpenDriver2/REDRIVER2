@@ -27,7 +27,7 @@ typedef u_int		u_intptr;
 
 #else
 
-#if defined(_M_X64) || defined(__amd64__)
+#if defined(_M_X64) || defined(__amd64__) || defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64)
 typedef OT_TAG OTTYPE;
 #else
 typedef unsigned long long OTTYPE;
