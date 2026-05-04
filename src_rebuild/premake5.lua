@@ -37,7 +37,11 @@ end
 	
 workspace "REDRIVER2"
 	if _ACTION ~= "vscode" then
-    	location "build"
+		if os.target() == "emscripten" then
+    		location "build_web"
+		else
+    		location "build"
+		end
 	else
 		-- setup VSCode generator settings
 		vscode_makefile "build"
