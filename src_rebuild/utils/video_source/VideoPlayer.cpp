@@ -253,6 +253,7 @@ const char* fmv_shader =
 
 TextureID g_FMVTexture = 0;
 ShaderID g_FMVShader = 0;
+GLuint g_FMVTextureLoc = 0;
 
 #define DECODE_BUFFER_ALLOC (3840 * 2160 * 3)	// RGB in 4K frame
 
@@ -267,6 +268,7 @@ void FMVPlayerInitGL()
 #if defined(RENDERER_OGL) || defined(RENDERER_OGLES)
 	glGenTextures(1, &g_FMVTexture);
 
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, g_FMVTexture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -278,7 +280,8 @@ void FMVPlayerInitGL()
 
 	if(!g_FMVShader)
 	{
-		g_FMVShader = GR_Shader_Compile(fmv_shader);
+		g_FMVShader = GR_Shader_Compile(fmv_shader, false);
+		g_FMVTextureLoc = glGetUniformLocation(g_FMVShader, "s_texture");
 	}
 #endif
 }
@@ -447,12 +450,12 @@ void DrawFrame(ReadAVI::stream_format_t& stream_format, int frame_number, int cr
 
 	GR_Clear(0, 0, windowWidth, windowHeight, 0, 0, 0);
 	
-	glBindTexture(GL_TEXTURE_2D, g_FMVTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, image_w, image_h, 0, GL_RGB, GL_UNSIGNED_BYTE, g_FMVDecodedImageBuffer);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
 	GR_SetShader(g_FMVShader);
 	GR_SetTexture(g_FMVTexture, (TexFormat)-1);
+
+	glUniform1i(g_FMVTextureLoc, 0);
+	glBindTexture(GL_TEXTURE_2D, g_FMVTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, image_w, image_h, 0, GL_RGB, GL_UNSIGNED_BYTE, g_FMVDecodedImageBuffer);
 
 	GR_SetScissorState(0);
 	GR_EnableDepth(0);
