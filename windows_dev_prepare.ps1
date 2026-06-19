@@ -10,6 +10,11 @@ $project_folder = '.\\src_rebuild'
 $dependency_folder = $project_folder + '\\dependencies'
 
 # Download required dependencies
+echo $windows_premake_url
+echo $windows_sdl2_url
+echo $windows_openal_url
+echo $windows_jpeg_url
+
 Invoke-WebRequest -Uri $windows_premake_url -OutFile PREMAKE.zip
 Expand-Archive PREMAKE.zip -DestinationPath $project_folder
 
