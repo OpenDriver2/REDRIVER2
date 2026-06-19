@@ -175,21 +175,21 @@ void GameDebugKeys(int nKey, char down)
 	}
 	else if (nKey == SDL_SCANCODE_PAGEUP)
 	{
-		player[0].cameraCarId++;
+		MainPlayer.cameraCarId++;
 
-		if (player[0].cameraCarId > MAX_CARS - 1)
-			player[0].cameraCarId = MAX_CARS - 1;
+		if (MainPlayer.cameraCarId > MAX_CARS - 1)
+			MainPlayer.cameraCarId = MAX_CARS - 1;
 
-		printf("Car on camera: %d\n", player[0].cameraCarId);
+		printf("Car on camera: %d\n", MainPlayer.cameraCarId);
 	}
 	else if (nKey == SDL_SCANCODE_PAGEDOWN)
 	{
-		player[0].cameraCarId--;
+		MainPlayer.cameraCarId--;
 
-		if (player[0].cameraCarId < 0)
-			player[0].cameraCarId = 0;
+		if (MainPlayer.cameraCarId < 0)
+			MainPlayer.cameraCarId = 0;
 
-		printf("Car on camera: %d\n", player[0].cameraCarId);
+		printf("Car on camera: %d\n", MainPlayer.cameraCarId);
 	}
 	else if (nKey == SDL_SCANCODE_KP_DIVIDE)
 	{
@@ -226,7 +226,7 @@ void GameDebugKeys(int nKey, char down)
 		LeadValues.hWidth		= 320;	LeadValues.hWidthMul	= 7;
 		LeadValues.hWidth80		= 225;	LeadValues.hWidth80Mul	= 3;
 
-		CAR_DATA *pCar = &car_data[player[0].playerCarId];
+		CAR_DATA *pCar = &car_data[MainPlayer.playerCarId];
 
 		LONGVECTOR4 startpos = {
 			pCar->hd.where.t[0],
@@ -324,7 +324,7 @@ void GameDebugKeys(int nKey, char down)
 }
 #endif
 
-#ifndef USE_CRT_MALLOC
+#if !USE_CRT_MALLOC
 char g_Overlay_buffer[0x50000];		// 0x1C0000
 char g_Frontend_buffer[0x60000];	// 0xFB400
 char g_Other_buffer[0x50000];		// 0xF3000
@@ -484,7 +484,7 @@ int main(int argc, char** argv)
 {
 	ini_t* config;
 
-#ifdef USE_CRT_MALLOC
+#if USE_CRT_MALLOC
 	_overlay_buffer = (char*)malloc(0x50000);			// 0x1C0000
 	_frontend_buffer = (char*)malloc(0x60000);			// 0xFB400
 	_other_buffer = (char*)malloc(0x50000);				// 0xF3000

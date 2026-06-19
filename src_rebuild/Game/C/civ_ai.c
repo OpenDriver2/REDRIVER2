@@ -79,10 +79,10 @@ int test555 = 0;
 #ifdef _DEBUG
 #define CIV_STATE_SET_CONFUSED(cp) \
 	printInfo("CIV confused: at %s, %d\n", FUNCNAME, __LINE__);\
-	cp->ai.c.thrustState = 3; cp->ai.c.ctrlState = 7;
+	cp->ai.c.thrustState = CIV_AI_THRUST_STOP; cp->ai.c.ctrlState = CIV_AI_CTRL_EMPTY;
 #else
 #define CIV_STATE_SET_CONFUSED(cp) \
-	cp->ai.c.thrustState = 3; cp->ai.c.ctrlState = 7;
+	cp->ai.c.thrustState = CIV_AI_THRUST_STOP; cp->ai.c.ctrlState = CIV_AI_CTRL_EMPTY;
 #endif
 
 int GetNodePos(DRIVER2_STRAIGHT* straight, DRIVER2_JUNCTION* junction, DRIVER2_CURVE* curve, int distAlongPath, CAR_DATA* cp, int* x, int* z, int laneNo);
@@ -226,7 +226,7 @@ int NotTravellingAlongCurve(int x, int z, int dir, DRIVER2_CURVE* cv)
 // [D] [T]
 void CivCarFX(CAR_DATA* cp)
 {
-	if (cp->ai.c.thrustState != 3)
+	if (cp->ai.c.thrustState != CIV_AI_THRUST_STOP)
 	{
 		if (cp->ai.c.turnNode != -1)
 			AddIndicatorLight(cp, cp->ai.c.turnDir);
@@ -555,22 +555,20 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 		junctionFlags = jn->flags;
 
 		// manage states
-		if (cp->ai.c.ctrlState != 8)
+		if (cp->ai.c.ctrlState != CIV_AI_CTRL_STOP_AT_NODE)
 		{
-			cp->ai.c.ctrlState = 0;
-
 			if (junctionFlags & 1)
 			{
 				// wait for traffic light
 				cp->ai.c.trafficLightPhaseId = (exitFrom & 1);
-				cp->ai.c.ctrlState = 1;
+				cp->ai.c.ctrlState = CIV_AI_CTRL_WAIT_TRAFFIC_LIGHT;
 
 				if (junctionLightsPhase[exitFrom & 1] == 3)
 				{
 					if (*turnAngle != 0)
 						cp->ai.c.ctrlNode = oldNode;
 					else
-						cp->ai.c.ctrlState = 6;
+						cp->ai.c.ctrlState = CIV_AI_CTRL_YIELD_STRAIGHT;
 				}
 				else
 					cp->ai.c.ctrlNode = oldNode;
@@ -587,22 +585,20 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 					if (yield || *turnAngle != 0)
 					{
 						cp->ai.c.ctrlNode = oldNode;
-						cp->ai.c.ctrlState = 4;
+						cp->ai.c.ctrlState = CIV_AI_CTRL_YIELD_TURN;
 					}
 					else
-						cp->ai.c.ctrlState = 6;
+						cp->ai.c.ctrlState = CIV_AI_CTRL_YIELD_STRAIGHT;
 				}
 				else
 				{
-					
-
 					if (!yield || *turnAngle != 0)
 					{
 						cp->ai.c.ctrlNode = oldNode;
-						cp->ai.c.ctrlState = 4;
+						cp->ai.c.ctrlState = CIV_AI_CTRL_YIELD_TURN;
 					}
 					else
-						cp->ai.c.ctrlState = 6;
+						cp->ai.c.ctrlState = CIV_AI_CTRL_YIELD_STRAIGHT;
 				}
 			}
 		}
@@ -801,7 +797,7 @@ int GetNextRoadInfo(CAR_DATA* cp, int randomExit, int* turnAngle, int* startDist
 		newRoad = tmpNewRoad[newExit];
 		newLane = tmpNewLane[newExit];
 		
-		if (cp->ai.c.ctrlState != 7)
+		if (cp->ai.c.ctrlState != CIV_AI_CTRL_EMPTY)
 		{
 			// [A] removed old lane fitting code
 			
@@ -1067,7 +1063,7 @@ int CheckChangeLanes(DRIVER2_STRAIGHT* straight, DRIVER2_CURVE* curve, int distA
 	oldLane = cp->ai.c.currentLane;
 	currentLane = oldLane;
 
-	if (cp->ai.c.ctrlState != 8 && cp->ai.c.changeLaneIndicateCount == 0)
+	if (cp->ai.c.ctrlState != CIV_AI_CTRL_STOP_AT_NODE && cp->ai.c.changeLaneIndicateCount == 0)
 	{
 		int roadWidthInLanes;
 		int segLen;
@@ -1351,13 +1347,13 @@ int CreateNewNode(CAR_DATA * cp)
 					if (gCurrentMissionNumber == 33 && cp->ap.model == 4)
 					{
 						int dx, dz;
-						CAR_DATA* playerCar = &car_data[player[0].playerCarId];
+						CAR_DATA* playerCar = &car_data[MainPlayer.playerCarId];
 
 						dx = playerCar->hd.where.t[0] - cp->hd.where.t[0];
 						dz = playerCar->hd.where.t[1] - cp->hd.where.t[1];
 
 						// check if siren is on and we near the car
-						if (CarHasSiren(playerCar->ap.model) && player[0].horn.on &&
+						if (CarHasSiren(playerCar->ap.model) && MainPlayer.horn.on &&
 							dx * dx + dz * dz < 16000000)
 						{
 							makeLimoPullOver = 1;
@@ -1390,11 +1386,11 @@ int CreateNewNode(CAR_DATA * cp)
 
 							if (tryToPark)
 							{
-								if (makeLimoPullOver || cp->ai.c.ctrlState == 0 && ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, newLane))
+								if (makeLimoPullOver || cp->ai.c.ctrlState == CIV_AI_CTRL_DRIVE && ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, newLane))
 								{
 									makeNextNodeCtrlNode = cp->id;
 
-									cp->ai.c.ctrlState = 8;
+									cp->ai.c.ctrlState = CIV_AI_CTRL_STOP_AT_NODE;
 									cp->ai.c.ctrlNode = newNode; // [A]
 									cp->ai.c.changeLaneCount = 0;
 								}
@@ -1503,15 +1499,15 @@ int InitCivState(CAR_DATA * cp, EXTRA_CIV_DATA * extraData)
 	cp->controlType = CONTROL_TYPE_CIV_AI;
 
 	if (extraData == NULL)
-		cp->ai.c.thrustState = 0;
+		cp->ai.c.thrustState = CIV_AI_THRUST_ACCELERATE;
 	else
 		cp->ai.c.thrustState = extraData->thrustState;
 
 	// not moving in that state
-	if (cp->ai.c.thrustState == 3)
+	if (cp->ai.c.thrustState == CIV_AI_THRUST_STOP)
 	{
 		if (extraData == NULL)
-			cp->ai.c.ctrlState = 0;
+			cp->ai.c.ctrlState = CIV_AI_CTRL_DRIVE;
 		else
 			cp->ai.c.ctrlState = extraData->ctrlState;
 
@@ -1564,7 +1560,7 @@ int PingOutCar(CAR_DATA * cp)
 
 		numCivCars--;
 
-		if (cp->ai.c.thrustState == 3 && cp->ai.c.ctrlState == 5)
+		if (cp->ai.c.thrustState == CIV_AI_THRUST_STOP && cp->ai.c.ctrlState == CIV_AI_CTRL_PARKED)
 			numParkedCars--;
 	}
 	else if (PingOutCivsOnly != 0 && valid_region(cp->hd.where.t[0], cp->hd.where.t[2]))
@@ -1632,8 +1628,8 @@ int CheckPingOut(CAR_DATA * cp)
 	int dx, dz;
 	int dist;
 
-	dx = player[0].spoolXZ->vx - cp->hd.where.t[0];
-	dz = player[0].spoolXZ->vz - cp->hd.where.t[2];
+	dx = MainPlayer.spoolXZ->vx - cp->hd.where.t[0];
+	dz = MainPlayer.spoolXZ->vz - cp->hd.where.t[2];
 	dist = dx * dx + dz * dz;
 
 	if (dist > 24000 * 24000 && PingOutCar(cp))
@@ -1738,15 +1734,15 @@ int CreateCivCarWotDrivesABitThenStops(int direction, LONGVECTOR4* startPos, LON
 	if (pNewCar == NULL)
 		return -1;
 
-	civDat.thrustState = 3;
-	civDat.ctrlState = 8;
+	civDat.thrustState = CIV_AI_THRUST_STOP;
+	civDat.ctrlState = CIV_AI_CTRL_STOP_AT_NODE;
 	civDat.controlFlags = 0;
 	civDat.palette = palette;
 	civDat.angle = direction;
 
-	InitCar(pNewCar, direction, startPos, 2, internalModel, 0, (char*)&civDat);
+	InitCar(pNewCar, direction, startPos, CONTROL_TYPE_CIV_AI, internalModel, 0, (char*)&civDat);
 
-	pNewCar->ai.c.ctrlState = 8;
+	pNewCar->ai.c.ctrlState = CIV_AI_CTRL_STOP_AT_NODE;
 	pNewCar->ai.c.maxSpeed = EVENT_CAR_SPEED;
 
 	pNewCar->st.n.linearVelocity[1] = 0;
@@ -1827,8 +1823,8 @@ int CreateStationaryCivCar(int direction, int orientX, int orientZ, LONGVECTOR4*
 		{
 			int dx, dz;
 			
-			civDat.thrustState = 3;
-			civDat.ctrlState = 7;
+			civDat.thrustState = CIV_AI_THRUST_STOP;
+			civDat.ctrlState = CIV_AI_CTRL_EMPTY;
 
 			if (controlFlags & CONTROL_FLAG_COP)
 			{
@@ -1845,7 +1841,7 @@ int CreateStationaryCivCar(int direction, int orientX, int orientZ, LONGVECTOR4*
 			civDat.palette = palette;
 			civDat.angle = direction;
 
-			InitCar(newCar, direction, startPos, 2, model, 0, (char*)&civDat);
+			InitCar(newCar, direction, startPos, CONTROL_TYPE_CIV_AI, model, 0, (char*)&civDat);
 			
 			dx = RSIN(orientZ / 2);
 			dz = RCOS(orientZ / 2);
@@ -2132,12 +2128,12 @@ int PingInCivCar(int minPingInDist)
 		// check if need to make a parked car
 		if (ROAD_IS_PARKING_ALLOWED_AT(&roadInfo, lane))
 		{
-			civDat.thrustState = 3;
-			civDat.ctrlState = 7;
+			civDat.thrustState = CIV_AI_THRUST_STOP;
+			civDat.ctrlState = CIV_AI_CTRL_EMPTY;
 
 			// set to drive off
 			if (ROAD_IS_AI_LANE(&roadInfo, lane))
-				civDat.ctrlState = 5;
+				civDat.ctrlState = CIV_AI_CTRL_PARKED;
 		}
 		else
 		{
@@ -2150,8 +2146,8 @@ int PingInCivCar(int minPingInDist)
 				return 0;
 			}
 
-			civDat.thrustState = 0;
-			civDat.ctrlState = 0;
+			civDat.thrustState = CIV_AI_THRUST_ACCELERATE;
+			civDat.ctrlState = CIV_AI_CTRL_DRIVE;
 		}
 	}
 
@@ -2163,7 +2159,7 @@ int PingInCivCar(int minPingInDist)
 
 	// seems like this mission check (Get a cop car) is a bug fix
 	// choose to spawn parked cops
-	if (gCurrentMissionNumber == 32 || civDat.thrustState != 3)
+	if (gCurrentMissionNumber == 32 || civDat.thrustState != CIV_AI_THRUST_STOP)
 	{
 		modelRandomList[12] = 0;
 	}
@@ -2237,12 +2233,12 @@ int PingInCivCar(int minPingInDist)
 	{
 		civDat.palette = 0;
 	}
-	else if (player[0].playerType == 1 && car_data[player[0].playerCarId].ap.model == model)
+	else if (MainPlayer.playerType == PLAYER_TYPE_CAR && car_data[MainPlayer.playerCarId].ap.model == model)
 	{
 		civDat.palette = Random2(0) % 5; // [A] was % 4; use previously unused palette slot
 
 		// if player got the same color we better select other
-		if (car_data[player[0].playerCarId].ap.palette <= civDat.palette)
+		if (car_data[MainPlayer.playerCarId].ap.palette <= civDat.palette)
 			civDat.palette++;
 	}
 	else
@@ -2338,8 +2334,8 @@ int PingInCivCar(int minPingInDist)
 			return 0;
 	}
 
-	// too much parked cars?
-	if (civDat.thrustState == 3 && civDat.ctrlState == 5 && numParkedCars >= maxParkedCars)
+	// too many parked cars?
+	if (civDat.thrustState == CIV_AI_THRUST_STOP && civDat.ctrlState == CIV_AI_CTRL_PARKED && numParkedCars >= maxParkedCars)
 	{
 		return 0;
 	}
@@ -2411,7 +2407,7 @@ int PingInCivCar(int minPingInDist)
 
 	
 	civDat.angle = dir;
-	InitCar(newCar, dir, &pos, 2, model, 0, (char*)&civDat);
+	InitCar(newCar, dir, &pos, CONTROL_TYPE_CIV_AI, model, 0, (char*)&civDat);
 
 	// set the lane
 	newCar->ai.c.currentLane = lane;
@@ -2419,12 +2415,12 @@ int PingInCivCar(int minPingInDist)
 	if (minPingInDist == 666)
 		limoId = newCar->id;
 
-	if (newCar->ai.c.ctrlState == 5)
+	if (newCar->ai.c.ctrlState == CIV_AI_CTRL_PARKED)
 	{
 		numParkedCars++;
 
 		// parked car is going to unpark
-		if (newCar->ai.c.thrustState == 3)
+		if (newCar->ai.c.thrustState == CIV_AI_THRUST_STOP)
 			newCar->controlFlags |= CONTROL_FLAG_WAS_PARKED;
 	}
 
@@ -2495,14 +2491,14 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 	// P.S. it's the only one with the music
 	if (cp->id == 1 && cp->ai.c.carMustDie == 1)
 	{
-		cp->ai.c.thrustState = 3;
-		cp->ai.c.ctrlState = 9;
+		cp->ai.c.thrustState = CIV_AI_THRUST_STOP;
+		cp->ai.c.ctrlState = CIV_AI_CTRL_DIED_WITH_MUSIC;
 		cp->ai.c.carMustDie = 0;
 	}
 
 	switch (cp->ai.c.thrustState)
 	{
-		case 0:
+		case CIV_AI_THRUST_ACCELERATE:
 		{
 			cp->ai.c.brakeLight = 0;
 
@@ -2538,7 +2534,7 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 					}
 
 					cp->ai.c.velRatio = properVel;
-					cp->ai.c.thrustState = 1;
+					cp->ai.c.thrustState = CIV_AI_THRUST_STOP_AT_NODE;
 				}
 			}
 
@@ -2548,13 +2544,13 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 
 			return newAccel;
 		}
-		case 1:
+		case CIV_AI_THRUST_STOP_AT_NODE:
 		{
 			int properVel;
 			int distToEnd;
 			int accelRatio;
 
-			if (cp->ai.c.ctrlState == 5 || cp->ai.c.ctrlState == 8)
+			if (cp->ai.c.ctrlState == CIV_AI_CTRL_PARKED || cp->ai.c.ctrlState == CIV_AI_CTRL_STOP_AT_NODE)
 				distToEnd = 100;
 			else
 				distToEnd = lbody * 3;
@@ -2563,9 +2559,9 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 
 			if (cp->ai.c.ctrlNode != NULL && cp->ai.c.ctrlNode->pathType != 127)
 			{
-				if (cp->ai.c.ctrlState == 1 && junctionLightsPhase[cp->ai.c.trafficLightPhaseId] == 3)
+				if (cp->ai.c.ctrlState == CIV_AI_CTRL_WAIT_TRAFFIC_LIGHT && junctionLightsPhase[cp->ai.c.trafficLightPhaseId] == 3)
 				{
-					cp->ai.c.thrustState = 0;
+					cp->ai.c.thrustState = CIV_AI_THRUST_ACCELERATE;
 					cp->ai.c.ctrlNode = NULL;
 
 					return newAccel;
@@ -2573,9 +2569,9 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 
 				if (*distToNode < distToEnd + 32) // [A] add some number to make Havana cops not getting stuck while yielding
 				{
-					if (cp->ai.c.ctrlState == 6)
+					if (cp->ai.c.ctrlState == CIV_AI_CTRL_YIELD_STRAIGHT)
 					{
-						cp->ai.c.thrustState = 0;
+						cp->ai.c.thrustState = CIV_AI_THRUST_ACCELERATE;
 						cp->ai.c.ctrlNode = NULL;
 
 						return newAccel;
@@ -2583,11 +2579,11 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 
 					accelRatio = (-cp->hd.wheel_speed) / 4;
 
-					cp->ai.c.thrustState = 3;
+					cp->ai.c.thrustState = CIV_AI_THRUST_STOP;
 				}
 				else
 				{
-					if (cp->ai.c.ctrlState == 6)
+					if (cp->ai.c.ctrlState == CIV_AI_CTRL_YIELD_STRAIGHT)
 					{
 						properVel = (*distToNode - distToEnd) * cp->ai.c.velRatio + 70000;
 					}
@@ -2620,12 +2616,12 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 			CIV_STATE_SET_CONFUSED(cp);
 			return 0;
 		}
-		case 3:
+		case CIV_AI_THRUST_STOP:
 		{
 			break;
 		}
-		case 5:
-		case 6:
+		case 5:	// unused state
+		case CIV_AI_THRUST_YIELD:
 		{
 			int distToObstacle;
 			int checkObstDist;
@@ -2634,7 +2630,7 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 
 			cp->ai.c.brakeLight = 1;
 
-			if (cp->ai.c.ctrlState == 4)
+			if (cp->ai.c.ctrlState == CIV_AI_CTRL_YIELD_TURN)
 				checkObstDist = 2048;
 			else
 				checkObstDist = 512;
@@ -2645,8 +2641,8 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 			lcp = &car_data[MAX_CARS-1];
 			while (lcp >= car_data)
 			{
-				if (lcp->ai.c.thrustState != 3 &&
-					lcp->ai.c.ctrlState != 4 &&		// [A] don't check cars that are yielding
+				if (lcp->ai.c.thrustState != CIV_AI_THRUST_STOP &&
+					lcp->ai.c.ctrlState != CIV_AI_CTRL_YIELD_TURN &&		// [A] don't check cars that are yielding
 					lcp != cp && 
 					lcp->controlType != CONTROL_TYPE_NONE)
 				{
@@ -2684,8 +2680,8 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 				return newAccel;
 			}
 
-			cp->ai.c.ctrlState = 0;
-			cp->ai.c.thrustState = 0;
+			cp->ai.c.ctrlState = CIV_AI_CTRL_DRIVE;
+			cp->ai.c.thrustState = CIV_AI_THRUST_ACCELERATE;
 			cp->ai.c.ctrlNode = 0;
 
 			return newAccel;
@@ -2700,18 +2696,18 @@ int CivAccelTrafficRules(CAR_DATA * cp, int* distToNode)
 	// switch lights
 	switch (cp->ai.c.ctrlState)
 	{
-		case 1:
+		case CIV_AI_CTRL_WAIT_TRAFFIC_LIGHT:
 			if (junctionLightsPhase[cp->ai.c.trafficLightPhaseId] == 3)
-				cp->ai.c.thrustState = 0;
-		case 2:
+				cp->ai.c.thrustState = CIV_AI_THRUST_ACCELERATE;
+		case 2:	// unused state
 			cp->ai.c.brakeLight = 1;
 			return 0;
-		case 3:
+		case 3:	// unused state
 			cp->ai.c.thrustState = 5;
 			cp->ai.c.brakeLight = 1;
 			break;
-		case 4:
-			cp->ai.c.thrustState = 6;
+		case CIV_AI_CTRL_YIELD_TURN:
+			cp->ai.c.thrustState = CIV_AI_THRUST_YIELD;
 			cp->ai.c.brakeLight = 1;
 			break;
 		default:
@@ -2789,17 +2785,17 @@ void SetUpCivCollFlags(void)
 			isTanner = 0;
 			if (CAR_INDEX(cp1) == TANNER_COLLIDER_CARID)
 			{
-				if (player[0].playerType != 2)
+				if (MainPlayer.playerType != PLAYER_TYPE_PEDESTRIAN)
 				{
 					continue;
 				}
 						
 				cd[1].length[0] = 60;
 				cd[1].length[1] = 60;
-				cd[1].x.vx = player[0].pos[0];
-				cd[1].x.vy = player[0].pos[1];
-				cd[1].x.vz = player[0].pos[2];
-				cd[1].theta = player[0].dir;
+				cd[1].x.vx = MainPlayer.pos[0];
+				cd[1].x.vy = MainPlayer.pos[1];
+				cd[1].x.vz = MainPlayer.pos[2];
+				cd[1].theta = MainPlayer.dir;
 
 				isTanner = 1;
 			}
@@ -2855,7 +2851,7 @@ void SetUpCivCollFlags(void)
 			}
 
 			// don't do anything further when it tries to park
-			if (cp0->ai.c.thrustState == 3)
+			if (cp0->ai.c.thrustState == CIV_AI_THRUST_STOP)
 			{
 				continue;
 			}
@@ -2868,7 +2864,7 @@ void SetUpCivCollFlags(void)
 
 			// do horns
 			// horn to player and chased cars (except Steal the Ambulance)
-			if (cp0->ai.c.thrustState != 3 &&
+			if (cp0->ai.c.thrustState != CIV_AI_THRUST_STOP &&
 				(isTanner || cp1->controlType == CONTROL_TYPE_PLAYER || cp1->controlType == CONTROL_TYPE_CUTSCENE && gCurrentMissionNumber != 26 && ProxyBar.active == 0))
 			{
 				int dont;
@@ -2942,7 +2938,7 @@ int CivAccel(CAR_DATA * cp)
 	node = cp->ai.c.ctrlNode;
 	carnum = CAR_INDEX(cp);
 
-	if (node == NULL || cp->ai.c.thrustState == 3)
+	if (node == NULL || cp->ai.c.thrustState == CIV_AI_THRUST_STOP)
 	{
 		distToNode = -1;
 	}
@@ -2955,14 +2951,14 @@ int CivAccel(CAR_DATA * cp)
 		distToNode = SquareRoot0(dx * dx + dz * dz);
 	}
 
-	if (cp->ai.c.thrustState != 3 && node && node->pathType == 127)
+	if (cp->ai.c.thrustState != CIV_AI_THRUST_STOP && node && node->pathType == 127)
 	{
 		distToNode = -distToNode;
 	}
 
 	ret = CivAccelTrafficRules(cp, &distToNode);
 
-	if (cp->ai.c.thrustState != 3)
+	if (cp->ai.c.thrustState != CIV_AI_THRUST_STOP)
 	{
 		int lbd2;
 		int lbody;
@@ -3310,11 +3306,11 @@ void CreateRoadblock(void)
 	externalCopModel = residentCarModels[3];
 
 	// [A] use player instead of car
-	dir = player[0].dir;
+	dir = MainPlayer.dir;
 	
-	baseLoc.vx = player[0].pos[0];
-	baseLoc.vy = player[0].pos[1];
-	baseLoc.vz = player[0].pos[2];
+	baseLoc.vx = MainPlayer.pos[0];
+	baseLoc.vy = MainPlayer.pos[1];
+	baseLoc.vz = MainPlayer.pos[2];
 	currentPos.vy = baseLoc.vy;
 
 	angle = 0;
@@ -3582,7 +3578,7 @@ int CivControl(CAR_DATA* cp)
 		if (cp->ai.c.changeLaneIndicateCount != 0)
 			cp->ai.c.changeLaneIndicateCount--;
 
-		if (cp->ai.c.ctrlState == 5 && cp->ai.c.thrustState == 3 &&
+		if (cp->ai.c.ctrlState == CIV_AI_CTRL_PARKED && cp->ai.c.thrustState == CIV_AI_THRUST_STOP &&
 			cp->totalDamage < 4 && (cp->ap.model != 3 && (Random2(0) + (25 - cp->id) * 16 & 0xff8) == 0xf00))
 		{
 			AttemptUnPark(cp);
@@ -3590,7 +3586,7 @@ int CivControl(CAR_DATA* cp)
 
 		steer = cp->wheel_angle;
 
-		if (cp->ai.c.thrustState != 3)
+		if (cp->ai.c.thrustState != CIV_AI_THRUST_STOP)
 			steer = CivSteerAngle(cp);
 
 		thrust = CivAccel(cp);

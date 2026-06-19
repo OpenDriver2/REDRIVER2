@@ -1626,7 +1626,7 @@ void DrawCar(CAR_DATA* cp, int view)
 	{
 		if (cp->controlType == CONTROL_TYPE_CIV_AI)
 		{
-			if (cp->ai.c.thrustState != 3 || (cp->ai.c.ctrlState != 5 && cp->ai.c.ctrlState != 7 && cp->ai.c.ctrlState != 8))
+			if (cp->ai.c.thrustState != CIV_AI_THRUST_STOP || (cp->ai.c.ctrlState != CIV_AI_CTRL_PARKED && cp->ai.c.ctrlState != CIV_AI_CTRL_EMPTY && cp->ai.c.ctrlState != CIV_AI_CTRL_STOP_AT_NODE))
 				AddNightLights(cp);
 		}
 		else if (SilenceThisCar(cp->id) == 0)

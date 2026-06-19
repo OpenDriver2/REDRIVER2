@@ -1341,33 +1341,33 @@ int Swap2Cars(int curslot, int newslot)
 	car_data[curslot].id = curslot;
 
 	// swap target car id
-	if (player[0].cameraCarId == newslot)
-		player[0].cameraCarId = curslot;
-	else if (player[0].cameraCarId == curslot)
-		player[0].cameraCarId = newslot;
+	if (MainPlayer.cameraCarId == newslot)
+		MainPlayer.cameraCarId = curslot;
+	else if (MainPlayer.cameraCarId == curslot)
+		MainPlayer.cameraCarId = newslot;
 
 	// swap target car id
-	if (player[0].targetCarId == newslot)
-		player[0].targetCarId = curslot;
-	else if (player[0].targetCarId == curslot)
-		player[0].targetCarId = newslot;
+	if (MainPlayer.targetCarId == newslot)
+		MainPlayer.targetCarId = curslot;
+	else if (MainPlayer.targetCarId == curslot)
+		MainPlayer.targetCarId = newslot;
 
 	// swap player car id
-	if (player[0].playerCarId == newslot)
-		player[0].playerCarId = curslot;
-	else if (player[0].playerCarId == curslot)
-		player[0].playerCarId = newslot;
+	if (MainPlayer.playerCarId == newslot)
+		MainPlayer.playerCarId = curslot;
+	else if (MainPlayer.playerCarId == curslot)
+		MainPlayer.playerCarId = newslot;
 
 	// swap world center car
-	if (player[0].worldCentreCarId == newslot) 
+	if (MainPlayer.worldCentreCarId == newslot) 
 	{
-		player[0].spoolXZ = (VECTOR *)car_data[curslot].hd.where.t;
-		player[0].worldCentreCarId = curslot;
+		MainPlayer.spoolXZ = (VECTOR *)car_data[curslot].hd.where.t;
+		MainPlayer.worldCentreCarId = curslot;
 	}
-	else if (player[0].worldCentreCarId == curslot)
+	else if (MainPlayer.worldCentreCarId == curslot)
 	{
-		player[0].spoolXZ = (VECTOR *)car_data[newslot].hd.where.t;
-		player[0].worldCentreCarId = newslot;
+		MainPlayer.spoolXZ = (VECTOR *)car_data[newslot].hd.where.t;
+		MainPlayer.worldCentreCarId = newslot;
 	}
 
 	gDontResetCarDamage = 1;
@@ -1434,15 +1434,15 @@ void SetConfusedCar(int slot)
 {
 	car_data[slot].controlType = CONTROL_TYPE_CIV_AI;
 
-	car_data[slot].ai.c.thrustState = 3;
-	car_data[slot].ai.c.ctrlState = 7;
+	car_data[slot].ai.c.thrustState = CIV_AI_THRUST_STOP;
+	car_data[slot].ai.c.ctrlState = CIV_AI_CTRL_EMPTY;
 
 	car_data[slot].ai.c.ctrlNode = NULL;
 
-	if (slot == player[0].worldCentreCarId) // [A] Rev 1.1
+	if (slot == MainPlayer.worldCentreCarId) // [A] Rev 1.1
 	{
-		if (player[0].playerCarId >= 0)
-			player[0].worldCentreCarId = player[0].playerCarId;
+		if (MainPlayer.playerCarId >= 0)
+			MainPlayer.worldCentreCarId = MainPlayer.playerCarId;
 	}
 }
 
@@ -1573,10 +1573,10 @@ int MRCommand(MR_THREAD *thread, u_int cmd)
 
 		MR_DebugWarn("MR %d command: SetPlayerFelony(%d)\n", thread - MissionThreads, val1);
 
-		if (player[0].playerCarId < 0)
+		if (MainPlayer.playerCarId < 0)
 			pedestrianFelony = val1;
 		else
-			car_data[player[0].playerCarId].felonyRating = val1;
+			car_data[MainPlayer.playerCarId].felonyRating = val1;
 	}
 	else if (cmd == 0x1000050)			// ShowPlayerMessage
 	{
@@ -2110,7 +2110,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						if (target->s.target_flags & 0x400000)
 							return 1;
 
-						if ((target->s.target_flags & TARGET_FLAG_POINT_PLAYER_MUSTHAVE_CAR) && player[thread->player].playerType != 1)
+						if ((target->s.target_flags & TARGET_FLAG_POINT_PLAYER_MUSTHAVE_CAR) && player[thread->player].playerType != PLAYER_TYPE_CAR)
 							ret = 0;
 
 						break;
@@ -2140,8 +2140,8 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 
 								SetPlayerMessage(thread->player, G_LTXT(GTXT_WellDone), 2, 1);
 
-								player[0].targetCarId = -1;
-								player[1].targetCarId = -1;
+								MainPlayer.targetCarId = -1;
+								SecondPlayer.targetCarId = -1;
 
 								ActivateNextFlag();
 							}
@@ -2237,7 +2237,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 								if (gInGameChaseActive == 0)
 								{
 									Mission.ChaseTarget = NULL;
-									player[0].targetCarId = -1;
+									MainPlayer.targetCarId = -1;
 									gBombTargetVehicle = NULL;
 
 									if ((target->s.car.flags & 0xf0) != CARTARGET_FLAG_STEAL_TARGET)
@@ -2258,7 +2258,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 									target->s.car.cutscene = -1;
 									target->s.car.slot = slot;
 
-									player[0].targetCarId = slot;
+									MainPlayer.targetCarId = slot;
 									Mission.ChaseTarget = target;
 								}
 							}
@@ -2335,7 +2335,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 							ReleaseInGameCutscene();
 
 							Mission.ChaseTarget = NULL;
-							player[0].targetCarId = -1;
+							MainPlayer.targetCarId = -1;
 
 							gBombTargetVehicle = NULL;
 
@@ -2503,7 +2503,7 @@ int MRProcessTarget(MR_THREAD *thread, MS_TARGET *target)
 						failIfDamaged = (gCurrentMissionNumber != 14 && gCurrentMissionNumber != 19 && gCurrentMissionNumber != 28);
 
 						// check if player entered the car
-						if (player[0].playerCarId == slot)
+						if (MainPlayer.playerCarId == slot)
 						{
 							// signal to mission about stolen car so Find the Clue/Steal the keys can progress
 							if (!failIfDamaged)
@@ -2703,7 +2703,7 @@ int MRCreateCar(MS_TARGET *target)
 	{
 		playerid = 0xFF;
 
-		InitPlayer(&player[1], &car_data[curslot],
+		InitPlayer(&SecondPlayer, &car_data[curslot],
 			CONTROL_TYPE_LEAD_AI, target->s.car.rotation, &pos,
 			target->s.car.model, target->s.car.palette, (char *)&playerid);
 
@@ -2878,7 +2878,7 @@ int HandleGameOver(void)
 	{
 		lp = &player[player_id];
 
-		if (lp->playerType == 1)
+		if (lp->playerType == PLAYER_TYPE_CAR)
 		{
 			if ((Mission.timer[0].flags & TIMER_FLAG_BOMB_COUNTDOWN) || 
 				TannerStuckInCar(0, player_id))
@@ -2911,7 +2911,7 @@ int HandleGameOver(void)
 			// reset timer
 			tannerDeathTimer = 0;
 		}
-		else if (lp->playerType == 2)
+		else if (lp->playerType == PLAYER_TYPE_PEDESTRIAN)
 		{
 			int surf = GetSurfaceIndex((VECTOR*)lp->pos);
 
@@ -2930,7 +2930,7 @@ int HandleGameOver(void)
 			if (Mission.timer[player_id].flags & TIMER_FLAG_BOMB_COUNTDOWN)
 				BombThePlayerToHellAndBack(gCarWithABerm);
 
-			if (lp->playerType == 2) 
+			if (lp->playerType == PLAYER_TYPE_PEDESTRIAN)
 				SetPlayerMessage(player_id, MissionStrings + MissionHeader->msgDrowned, 2, 2);
 			else 
 				SetPlayerMessage(player_id, MissionStrings + MissionHeader->msgCarWrecked, 2, 2);
@@ -3144,8 +3144,8 @@ int CalcLapTime(int player, int time, int lap)
 void MakePhantomCarEqualPlayerCar(void)
 {
 	// store player car id
-	if (player[0].playerType == 1)
-		Mission.PhantomCarId = player[0].playerCarId;
+	if (MainPlayer.playerType == PLAYER_TYPE_CAR)
+		Mission.PhantomCarId = MainPlayer.playerCarId;
 }
 
 // [D] [T]

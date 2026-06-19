@@ -178,8 +178,8 @@ void LeadUpdateState(CAR_DATA* cp)
 
 	// is he spooled in?
 	if (!valid_region(x, z)
-		|| ABS(x - player[0].pos[0]) > 15900
-		|| ABS(z - player[0].pos[2]) > 15900)
+		|| ABS(x - MainPlayer.pos[0]) > 15900
+		|| ABS(z - MainPlayer.pos[2]) > 15900)
 	{
 		// request that we spool him in
 		cp->ai.l.dstate = LeadDrive_FakeMotion;
@@ -2783,9 +2783,9 @@ u_int FreeRoamer(CAR_DATA* cp)
 	// re-randomize
 	if (CameraCnt == 100)
 	{
-		if(player[0].playerCarId >= 0)
+		if(MainPlayer.playerCarId >= 0)
 		{
-			pCar = &car_data[player[0].playerCarId];
+			pCar = &car_data[MainPlayer.playerCarId];
 			seed = (pCar->hd.where.t[0] + pCar->hd.where.t[2]) / (pCar->hd.speed + 1);
 
 			randIndex = 0;

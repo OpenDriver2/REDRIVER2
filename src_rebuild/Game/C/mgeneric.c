@@ -15,9 +15,9 @@ void StorePlayerPosition(SAVED_PLAYER_POS *data)
 	CAR_DATA* cp;
 	int slot;
 
-	pl = &player[0];
+	pl = &MainPlayer;
 
-	if (pl->playerType == 1 || Mission.PhantomCarId != -1)
+	if (pl->playerType == PLAYER_TYPE_CAR || Mission.PhantomCarId != -1)
 	{
 		// store previous player car?
 		slot = Mission.PhantomCarId != -1 ? Mission.PhantomCarId : pl->playerCarId;
@@ -91,10 +91,10 @@ void RestorePlayerPosition(SAVED_PLAYER_POS *data)
 	PlayerStartInfo[0]->damage[4] = data->damage[4];
 	PlayerStartInfo[0]->damage[5] = data->damage[5];
 
-	if (player[0].playerCarId < 0)
+	if (MainPlayer.playerCarId < 0)
 		pedestrianFelony = data->felony;
 	else
-		car_data[player[0].playerCarId].felonyRating = data->felony;
+		car_data[MainPlayer.playerCarId].felonyRating = data->felony;
 }
 
 // [D] [T]
@@ -108,7 +108,7 @@ void StoreCarPosition(MS_TARGET *target, SAVED_CAR_POS *data)
 	if (slot == -1)
 		return;
 
-	//if (slot == player[0].playerCarId)
+	//if (slot == MainPlayer.playerCarId)
 	//	return;
 
 	cp = &car_data[slot];

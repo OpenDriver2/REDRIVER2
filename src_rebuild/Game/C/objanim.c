@@ -710,14 +710,11 @@ void animate_garage_door(void)
 	if (CurrentGarage.cop == NULL)
 		return;
 
-	int playerCarId = player[0].playerCarId;
+	int playerCarId = MainPlayer.playerCarId;
 
 	if (gCurrentMissionNumber != 53 && CopsCanSeePlayer)
 	{
-		if (playerCarId < 0)
-			felony = &pedestrianFelony;
-		else
-			felony = &car_data[playerCarId].felonyRating;
+		felony = GetPlayerFelony(&MainPlayer);
 
 		if (*felony > FELONY_PURSUIT_MIN_VALUE)
 		{

@@ -47,7 +47,7 @@ extern char gDataFolder[32];
 extern volatile char* malloctab;
 extern volatile char* mallocptr;
 
-#ifdef USE_CRT_MALLOC
+#if USE_CRT_MALLOC
 
 extern char* sys_malloc(int size, char* funcname, int line);
 extern char* sys_tempalloc(int size);

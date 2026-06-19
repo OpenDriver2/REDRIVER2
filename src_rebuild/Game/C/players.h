@@ -3,6 +3,9 @@
 
 extern PLAYER player[MAX_PLAYERS];
 
+#define MainPlayer		player[0]
+#define SecondPlayer	player[1]
+
 extern void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction, LONGVECTOR4* startPos, int externModel, int palette, char *padid); // 0x000739D8
 
 extern void ChangeCarPlayerToPed(int playerID); // 0x00073334

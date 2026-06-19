@@ -714,7 +714,7 @@ void CheckScenaryCollisions(CAR_DATA *cp)
 							if (CarBuildingCollision(cp, &bbox, cop, 0))
 							{
 								if (!bKillTanner)
-									player[0].dying = 1;
+									MainPlayer.dying = 1;
 
 								bKillTanner = 1;
 							}

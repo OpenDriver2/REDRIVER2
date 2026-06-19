@@ -600,7 +600,7 @@ void StartGameSounds(void)
 	lcp = player;
 	for (i = 0; i < NumPlayers; i++)
 	{
-		if (lcp->playerType == 1)
+		if (lcp->playerType == PLAYER_TYPE_CAR)
 		{
 			cp = &car_data[lcp->playerCarId];
 			StartPlayerCarSounds(i, cp->ap.model, (VECTOR*)cp->hd.where.t);
@@ -1010,7 +1010,7 @@ void DoDopplerSFX(void)
 
 		if (ABS(dx) < 16384 && ABS(dz) < 16384)
 		{
-			if (car_ptr->controlType == CONTROL_TYPE_CIV_AI && car_ptr->ai.c.ctrlState != 5 && car_ptr->ai.c.ctrlState != 7)
+			if (car_ptr->controlType == CONTROL_TYPE_CIV_AI && car_ptr->ai.c.ctrlState != CIV_AI_CTRL_PARKED && car_ptr->ai.c.ctrlState != CIV_AI_CTRL_EMPTY)
 			{
 				dist = jsqrt(dx * dx + dz * dz) + 0x6000;
 			}
@@ -1324,10 +1324,7 @@ void DoDopplerSFX(void)
 	// bark on player
 	if (CopsCanSeePlayer)
 	{
-		if (player[0].playerCarId < 0)
-			playerFelony = &pedestrianFelony;
-		else
-			playerFelony = &car_data[player[0].playerCarId].felonyRating;
+		playerFelony = GetPlayerFelony(&MainPlayer);
 
 		if (*playerFelony > FELONY_PURSUIT_MIN_VALUE)
 			DoPoliceLoudhailer(num_noisy_cars, indexlist, car_dist);
@@ -1411,13 +1408,13 @@ void CollisionSound(char player_id, CAR_DATA* cp, int impact, int car_car)
 		u_int p0dst;
 		u_int p1dst;
 
-		dx = cp->hd.where.t[0] - player[0].pos[0];
-		dz = cp->hd.where.t[2] - player[0].pos[2];
+		dx = cp->hd.where.t[0] - MainPlayer.pos[0];
+		dz = cp->hd.where.t[2] - MainPlayer.pos[2];
 
 		p0dst = (dx * dx + dz * dz);
 
-		dx = cp->hd.where.t[0] - player[1].pos[0];
-		dz = cp->hd.where.t[2] - player[1].pos[2];
+		dx = cp->hd.where.t[0] - SecondPlayer.pos[0];
+		dz = cp->hd.where.t[2] - SecondPlayer.pos[2];
 
 		p1dst = (dx * dx + dz * dz);
 
@@ -1545,9 +1542,9 @@ void ExplosionSound(VECTOR* pos, int type)
 	}
 	
 
-	P.vx = pos->vx * sc1 + player[0].cameraPos.vx * sc2;
-	P.vy = pos->vy * sc1 + player[0].cameraPos.vy * sc2;
-	P.vz = pos->vz * sc1 + player[0].cameraPos.vz * sc2;
+	P.vx = pos->vx * sc1 + MainPlayer.cameraPos.vx * sc2;
+	P.vy = pos->vy * sc1 + MainPlayer.cameraPos.vy * sc2;
+	P.vz = pos->vz * sc1 + MainPlayer.cameraPos.vz * sc2;
 
 	Start3DSoundVolPitch(-1, SOUND_BANK_MISSION,
 		bang, P.vx / 4, P.vy / 4, P.vz / 4,
@@ -1567,10 +1564,7 @@ void JerichoSpeak(void)
 	if (CopsCanSeePlayer == 0)
 		return;
 
-	if (player[0].playerCarId < 0)
-		playerFelony = &pedestrianFelony;
-	else
-		playerFelony = &car_data[player[0].playerCarId].felonyRating;
+	playerFelony = GetPlayerFelony(&MainPlayer);
 
 	if (*playerFelony > FELONY_PURSUIT_MIN_VALUE && rnd == rnd / 5 * 5)
 	{
@@ -1727,8 +1721,8 @@ void SoundTasks(void)
 	}
 
 	// do annoying lead car horn
-	if (gInGameChaseActive != 0 && player[0].targetCarId >= 0)
-		LeadHorn(&car_data[player[0].targetCarId]);		// use target id instead
+	if (gInGameChaseActive != 0 && MainPlayer.targetCarId >= 0)
+		LeadHorn(&car_data[MainPlayer.targetCarId]);		// use target id instead
 
 	// FIXME: move it to MC_SND?
 	if (jericho_in_back != 0 && (gCurrentMissionNumber == 20 || gCurrentMissionNumber == 25 || gCurrentMissionNumber == 39))
@@ -1787,7 +1781,7 @@ void InitMusic(int musicnum)
 		music_pt = D_MALLOC(music_len + 3U & ~3);
 		sample_pt = D_TEMPALLOC(sample_len);
 
-#ifdef USE_CRT_MALLOC
+#if USE_CRT_MALLOC
 		LoadfileSeg(name, music_pt, musicpos[0], music_len);
 		LoadfileSeg(name, sample_pt, musicpos[0] + music_len, sample_len);
 #else

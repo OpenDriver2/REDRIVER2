@@ -58,17 +58,10 @@ int TannerStuckInCar(int doSpeedCheck, int player_id)
 	cp = NULL;
 	lp = &player[player_id];
 
-	if (lp->playerType == 1)
+	if (lp->playerType == PLAYER_TYPE_CAR)
 	{
-		if (lp->playerCarId < 0)
-		{
-			playerFelony = &pedestrianFelony;
-		}
-		else 
-		{
-			cp = &car_data[lp->playerCarId];
-			playerFelony = &cp->felonyRating;
-		}
+		cp = &car_data[lp->playerCarId];
+		playerFelony = GetPlayerFelony(lp);
 
 		if ((*playerFelony <= FELONY_PURSUIT_MIN_VALUE || player_position_known < 1) &&
 			cp &&

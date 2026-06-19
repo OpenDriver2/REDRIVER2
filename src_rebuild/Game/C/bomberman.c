@@ -224,7 +224,7 @@ void ExplosionCollisionCheck(CAR_DATA *cp, EXOBJECT *pE)
 
 	isCar = (cp != &car_data[TANNER_COLLIDER_CARID]);
 
-	if (player[0].playerType == 2 || isCar)
+	if (MainPlayer.playerType == PLAYER_TYPE_PEDESTRIAN || isCar)
 	{
 		cd[1].x.vx = cp->hd.where.t[0];
 		cd[1].length[0] = car_cosmetics[cp->ap.model].colBox.vz;
@@ -260,17 +260,17 @@ void ExplosionCollisionCheck(CAR_DATA *cp, EXOBJECT *pE)
 			{
 				if (isCar)
 				{
-					if (CAR_INDEX(cp) == player[0].playerCarId)
+					if (CAR_INDEX(cp) == MainPlayer.playerCarId)
 					{
 						cp->totalDamage = MaxPlayerDamage[0];
-						player[0].dying = 1;
+						MainPlayer.dying = 1;
 						lockAllTheDoors = 1;
 					}
 				}
 				else
 				{
 					bKillTanner = 1;
-					player[0].dying = 1;
+					MainPlayer.dying = 1;
 				}
 			}
 			else
@@ -385,7 +385,7 @@ void AddFlash(VECTOR *pos)
 {
 	int dist;
 
-	dist = Long2DDistance(pos, NoPlayerControl ? &player[0].cameraPos : (VECTOR*)player[0].pos);
+	dist = Long2DDistance(pos, NoPlayerControl ? &MainPlayer.cameraPos : (VECTOR*)MainPlayer.pos);
 
 	if (dist < 2500)
 	{
@@ -429,7 +429,7 @@ void HandleThrownBombs(void)
 
 			bomb->velocity.vx = velocity.vx >> 10;
 			bomb->velocity.vz = velocity.vz >> 10;
-			bomb->velocity.vy = -(Long2DDistance(&bomb->position, (VECTOR*)player[0].pos) >> 7);
+			bomb->velocity.vy = -(Long2DDistance(&bomb->position, (VECTOR*)MainPlayer.pos) >> 7);
 
 			if ((rand() & 1) == 0)
 				bomb->rot_speed = -bomb->velocity.vy;
@@ -473,11 +473,11 @@ void HandleThrownBombs(void)
 					AddExplosion(bomb->position, LITTLE_BANG);
 					AddFlash(&bomb->position);
 
-					dx = (bomb->position.vx - player[0].pos[0]);
-					dz = (bomb->position.vz - player[0].pos[2]);
+					dx = (bomb->position.vx - MainPlayer.pos[0]);
+					dz = (bomb->position.vz - MainPlayer.pos[2]);
 
 					if (FIXEDH(dx * dx + dz * dz) < 1024)
-						SetPadVibration(player[0].padid, 3);		// [A] bug fix
+						SetPadVibration(MainPlayer.padid, 3);		// [A] bug fix
 				}
 			}
 

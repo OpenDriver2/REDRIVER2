@@ -451,8 +451,8 @@ void SetMapPos(void)
 
 	scale = overlaidmaps[GameLevel].scale;
 
-	x_map = overlaidmaps[GameLevel].x_offset + player[0].pos[0] / scale + 1;
-	y_map = overlaidmaps[GameLevel].y_offset - player[0].pos[2] / scale + 1;
+	x_map = overlaidmaps[GameLevel].x_offset + MainPlayer.pos[0] / scale + 1;
+	y_map = overlaidmaps[GameLevel].y_offset - MainPlayer.pos[2] / scale + 1;
 }
 
 // [D] [T]
@@ -1139,10 +1139,7 @@ void DrawOverheadMap(void)
 	// flash the overhead map
 	if (player_position_known > 0) 
 	{
-		if (player[0].playerCarId < 0)
-			playerFelony = &pedestrianFelony;
-		else 
-			playerFelony = &car_data[player[0].playerCarId].felonyRating;
+		playerFelony = GetPlayerFelony(&MainPlayer);
 
 		if (*playerFelony > FELONY_PURSUIT_MIN_VALUE)
 			FlashOverheadMap(ptab[CameraCnt & 0xf], 0, ptab[CameraCnt + 8U & 0xf]);
@@ -1153,10 +1150,10 @@ void DrawOverheadMap(void)
 		{
 			if (flashtimer == 0)
 			{
-				if (player[0].playerCarId < 0) 
+				if (MainPlayer.playerCarId < 0) 
 					playerFelony = &pedestrianFelony;
 				else
-					playerFelony = &car_data[player[0].playerCarId].felonyRating;
+					playerFelony = &car_data[MainPlayer.playerCarId].felonyRating;
 
 				if (*playerFelony > FELONY_PURSUIT_MIN_VALUE)
 					flashtimer = 48;
@@ -1320,10 +1317,10 @@ void DrawOverheadMap(void)
 
 	direction.vx = 0;
 	direction.vz = 0;
-	direction.vy = player[0].dir & 0xfff;
+	direction.vy = MainPlayer.dir & 0xfff;
 
 	InitMatrix(map_matrix);
-	_RotMatrixY(&map_matrix, player[0].dir & 0xfff);
+	_RotMatrixY(&map_matrix, MainPlayer.dir & 0xfff);
 
 	gte_SetRotMatrix(&map_matrix);
 	gte_SetTransVector(&translate);
@@ -1461,7 +1458,7 @@ void SetFullscreenMapMatrix(void)
 	if (gUseRotatedMap == 0)
 		direction = 0;
 	else
-		direction = player[0].dir & 0xfff;
+		direction = MainPlayer.dir & 0xfff;
 
 	InitMatrix(map_matrix);
 	_RotMatrixY(&map_matrix, direction);
@@ -1767,7 +1764,7 @@ void DrawFullscreenMap(void)
 	DrawFullscreenTargets();
 
 	if (gUseRotatedMap)
-		DrawBigCompass(&target, player[0].dir);
+		DrawBigCompass(&target, MainPlayer.dir);
 	else 
 		DrawBigCompass(&target, 0);
 
@@ -1816,15 +1813,15 @@ void DrawCopIndicators(void)
 	int p, q;
 	CAR_DATA *cp;
 
-	cc = RCOS(player[0].dir);
-	cs = RSIN(player[0].dir);
+	cc = RCOS(MainPlayer.dir);
+	cs = RSIN(MainPlayer.dir);
 
 	cp = car_data;
 	do {
 		if (cp->controlType == CONTROL_TYPE_PURSUER_AI && cp->ai.p.dying == 0)
 		{
-			dx = cp->hd.where.t[0] - player[0].pos[0];
-			dz = cp->hd.where.t[2] - player[0].pos[2];
+			dx = cp->hd.where.t[0] - MainPlayer.pos[0];
+			dz = cp->hd.where.t[2] - MainPlayer.pos[2];
 
 			p = FIXEDH(dx * cc - dz * cs) * 3 >> 2;
 			q = -FIXEDH(dx * cs + dz * cc);
@@ -1867,8 +1864,8 @@ void WorldToOverheadMapPositions(VECTOR *pGlobalPosition, VECTOR *pOverheadMapPo
 	XZPAIR playerPos;
 	long flag;
 
-	cs = RCOS(player[0].dir);
-	sn = RSIN(player[0].dir);
+	cs = RCOS(MainPlayer.dir);
+	sn = RSIN(MainPlayer.dir);
 
 	tempMatrix.m[0][1] = 0;
 	tempMatrix.m[1][0] = 0;
@@ -1898,8 +1895,8 @@ void WorldToOverheadMapPositions(VECTOR *pGlobalPosition, VECTOR *pOverheadMapPo
 	gte_SetTransMatrix(&tempMatrix);
 
 	scale = overlaidmaps[GameLevel].scale;
-	playerPos.x = player[0].pos[0];
-	playerPos.z = player[0].pos[2];
+	playerPos.x = MainPlayer.pos[0];
+	playerPos.z = MainPlayer.pos[2];
 
 	count--;
 	while (count >= 0) 

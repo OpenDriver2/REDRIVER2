@@ -349,8 +349,8 @@ void ControlMap(void)
 {
 	int region_to_unpack;
 
-	current_cell_x = (player[0].spoolXZ->vx + units_across_halved) / MAP_CELL_SIZE;
-	current_cell_z = (player[0].spoolXZ->vz + units_down_halved) / MAP_CELL_SIZE;
+	current_cell_x = (MainPlayer.spoolXZ->vx + units_across_halved) / MAP_CELL_SIZE;
+	current_cell_z = (MainPlayer.spoolXZ->vz + units_down_halved) / MAP_CELL_SIZE;
 
 	region_x = current_cell_x / MAP_REGION_SIZE;
 	region_z = current_cell_z / MAP_REGION_SIZE;

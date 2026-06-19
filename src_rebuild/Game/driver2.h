@@ -28,8 +28,10 @@
 
 #ifdef PSX
 #define USE_PC_FILESYSTEM			0
+#define USE_CRT_MALLOC				0
 #else
 #define USE_PC_FILESYSTEM			1   // PC filesystem is prioritized over CD
+#define USE_CRT_MALLOC				0
 #endif
 
 #define USE_CD_FILESYSTEM			1	// use always

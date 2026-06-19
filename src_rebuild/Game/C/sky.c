@@ -712,8 +712,8 @@ void TunnelSkyFade(void)
 	if (DIFF_ANGLES(camera_angle.vy, tunnelDir[tun][1]) + 1247 < 2495) // (((tunnelDir[tun][1] - camera_angle.vy) + 2048 & 4095) - 801 < 2495)
 		v2 = &tunnelPos[tun][1];
 
-	px = player[0].pos[0];
-	pz = player[0].pos[2];
+	px = MainPlayer.pos[0];
+	pz = MainPlayer.pos[2];
 
 	if(v1 && v2)
 	{
