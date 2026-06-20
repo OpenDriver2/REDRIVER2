@@ -184,7 +184,7 @@ void FixCarCos(CAR_COSMETICS* carCos, int externalModelNumber)
 
 	if (ActiveCheats.cheat10) // [A] cheat for secret car - Fireboyd78
 	{
-		if (carCos == &car_cosmetics[MAX_CAR_RESIDENT_MODELS - 1] && externalModelNumber == 12)
+		if (carCos == &car_cosmetics[SPECIAL_CAR_SLOT] && externalModelNumber == 12)
 		{
 			carCos->powerRatio += (carCos->powerRatio / 2);
 			carCos->mass *= 3;

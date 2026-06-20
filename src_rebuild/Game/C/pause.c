@@ -148,7 +148,7 @@ int lastCar = -1;
 
 void ToggleSecretCarFun(int direction)
 {
-	extern CAR_COSMETICS car_cosmetics[MAX_CAR_RESIDENT_MODELS - 1];
+	extern CAR_COSMETICS car_cosmetics[SPECIAL_CAR_SLOT];
 	extern int wantedCar[2];
 
 	int active = (ActiveCheats.cheat10 ^= 1);
@@ -171,7 +171,7 @@ void ToggleSecretCarFun(int direction)
 		}
 	}
 
-	FixCarCos(&car_cosmetics[MAX_CAR_RESIDENT_MODELS - 1], 12);
+	FixCarCos(&car_cosmetics[SPECIAL_CAR_SLOT], 12);
 }
 
 void ToggleJerichoMode(int direction)

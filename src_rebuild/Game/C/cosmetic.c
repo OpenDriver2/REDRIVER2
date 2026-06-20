@@ -137,22 +137,22 @@ void AddReverseLight(CAR_DATA *cp)
 void SetupSpecCosmetics(char *loadbuffer)
 {
 	int model;
-	model = residentCarModels[MAX_CAR_RESIDENT_MODELS - 1];
+	model = residentCarModels[SPECIAL_CAR_SLOT];
 
 #if ENABLE_GAME_FIXES
 	// [A] always use cached cosmetics
-	car_cosmetics[MAX_CAR_RESIDENT_MODELS - 1] = levelSpecCosmetics[model - 8];
+	car_cosmetics[SPECIAL_CAR_SLOT] = levelSpecCosmetics[model - 8];
 #else
-	car_cosmetics[MAX_CAR_RESIDENT_MODELS - 1] = *(CAR_COSMETICS*)loadbuffer;
+	car_cosmetics[SPECIAL_CAR_SLOT] = *(CAR_COSMETICS*)loadbuffer;
 #endif
 
 #if USE_PC_FILESYSTEM
 	if (gContentOverride)
-		LoadCustomCarCosmetics(&car_cosmetics[MAX_CAR_RESIDENT_MODELS - 1], model);
+		LoadCustomCarCosmetics(&car_cosmetics[SPECIAL_CAR_SLOT], model);
 #endif
 
 	// [A] don't forget
-	FixCarCos(&car_cosmetics[MAX_CAR_RESIDENT_MODELS - 1], model);
+	FixCarCos(&car_cosmetics[SPECIAL_CAR_SLOT], model);
 }
 
 // [D] [T]

@@ -2998,7 +2998,7 @@ void DeActivatePlayerPedestrian(LPPEDESTRIAN pPed)
 	if (!cp)
 		return;
 
-	if (cp->ap.model == MAX_CAR_RESIDENT_MODELS-1)
+	if (cp->ap.model == SPECIAL_CAR_SLOT)
 		getIn = FindPointOfCollision(cp, pPed);
 	else if (cp && TannerCanEnterCar(cp, distToCarSq))
 		getIn = 1;

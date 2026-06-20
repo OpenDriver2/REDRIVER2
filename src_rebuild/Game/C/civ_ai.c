@@ -1344,7 +1344,7 @@ int CreateNewNode(CAR_DATA * cp)
 					}
 
 					// Caine's Cash limo can be stopped by player in police car
-					if (gCurrentMissionNumber == 33 && cp->ap.model == MAX_CAR_RESIDENT_MODELS-1)
+					if (gCurrentMissionNumber == 33 && cp->ap.model == SPECIAL_CAR_SLOT)
 					{
 						int dx, dz;
 						CAR_DATA* playerCar = &car_data[MainPlayer.playerCarId];
@@ -1372,7 +1372,7 @@ int CreateNewNode(CAR_DATA * cp)
 							tryToPark = (Random2(0) & 2U) != 0;
 
 						// apply our Caine's Cash logic
-						if (gCurrentMissionNumber == 33 && cp->ap.model == MAX_CAR_RESIDENT_MODELS-1 && limoId == cp->id) // [A] limoId was skipped, bringing it back.
+						if (gCurrentMissionNumber == 33 && cp->ap.model == SPECIAL_CAR_SLOT && limoId == cp->id) // [A] limoId was skipped, bringing it back.
 						{
 							tryToPark = makeLimoPullOver;
 						}
@@ -2165,7 +2165,7 @@ int PingInCivCar(int minPingInDist)
 	}
 
 	// check if special car is loaded and add it to random list
-	if ((specModelValid == 0 || allowSpecSpooling == 0 || residentCarModels[MAX_CAR_RESIDENT_MODELS - 1] == 12) && residentCarModels[MAX_CAR_RESIDENT_MODELS - 1] != 13)
+	if ((specModelValid == 0 || allowSpecSpooling == 0 || residentCarModels[SPECIAL_CAR_SLOT] == 12) && residentCarModels[SPECIAL_CAR_SLOT] != 13)
 	{
 #if MAX_CAR_RESIDENT_MODELS == 6
 		modelRandomList[15] = 4;
@@ -2185,7 +2185,7 @@ int PingInCivCar(int minPingInDist)
 #endif
 
 		if ((Random2(0) & 0x100) != 0)
-			modelRandomList[14] = MAX_CAR_RESIDENT_MODELS-1;
+			modelRandomList[14] = SPECIAL_CAR_SLOT;
 	}
 
 	// another change for Caine's compound
@@ -2218,7 +2218,7 @@ int PingInCivCar(int minPingInDist)
 
 	// force spawn limo nearby in Caine's Cash
 	if (minPingInDist == 666)
-		model = MAX_CAR_RESIDENT_MODELS - 1;
+		model = SPECIAL_CAR_SLOT;
 
 #if MAX_CAR_RESIDENT_MODELS == 6
 	// [A] fix crashes on missing models

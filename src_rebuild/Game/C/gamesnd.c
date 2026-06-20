@@ -172,21 +172,21 @@ void LoadBankFromLump(int bank, int lump)
 // [D] [T]
 int CarHasSiren(int index)
 {
-	if (index == MAX_CAR_RESIDENT_MODELS - 1)
+	if (index == SPECIAL_CAR_SLOT)
 	{
 		if (GameLevel == 0)
 		{
-			if (residentCarModels[MAX_CAR_RESIDENT_MODELS - 1] == 8)
+			if (residentCarModels[SPECIAL_CAR_SLOT] == 8)
 				return M_SHRT_2(SOUND_BANK_SFX, 12);
 		}
 		else if (GameLevel == 2)
 		{
-			if (residentCarModels[MAX_CAR_RESIDENT_MODELS - 1] == 9)
+			if (residentCarModels[SPECIAL_CAR_SLOT] == 9)
 				return M_SHRT_2(SOUND_BANK_SFX, 12);
 		}
 		else if (GameLevel == 3)
 		{
-			if (residentCarModels[MAX_CAR_RESIDENT_MODELS - 1] == 10)
+			if (residentCarModels[SPECIAL_CAR_SLOT] == 10)
 				return M_SHRT_2(SOUND_BANK_SFX, 12);
 		}
 	}
@@ -222,7 +222,7 @@ int ResidentModelsBodge(void)
 		return 3;
 	}
 
-	j = residentCarModels[MAX_CAR_RESIDENT_MODELS - 1];
+	j = residentCarModels[SPECIAL_CAR_SLOT];
 
 	if (gCurrentMissionNumber - 50U < 16 && j == 12)
 	{
@@ -265,7 +265,7 @@ int ResidentModelsBodge(void)
 int GetCarBankSample(int model)
 {
 	int bankStartSample;
-	if (model == MAX_CAR_RESIDENT_MODELS - 1)
+	if (model == SPECIAL_CAR_SLOT)
 	{
 #if MAX_CAR_RESIDENT_MODELS > 5
 		bankStartSample = ResidentModelsBodge() + 1;
@@ -505,7 +505,7 @@ void LoadLevelSFX(int missionNum)
 
 	// special vehicle 1 bank
 	if (missionNum == 40 || missionNum >= 400 && missionNum <= 404)
-		LoadBankFromLump(SOUND_BANK_CARS, MapCarIndexToBank(MAX_CAR_RESIDENT_MODELS-1));
+		LoadBankFromLump(SOUND_BANK_CARS, MapCarIndexToBank(SPECIAL_CAR_SLOT));
 	else
 		LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(0));
 
@@ -1065,7 +1065,7 @@ void DoDopplerSFX(void)
 		// sound up ambulance we're going to steal
 		if (gCurrentMissionNumber == 26)
 		{
-			if (car_ptr->ap.model == MAX_CAR_RESIDENT_MODELS-1 && car_ptr->controlType == CONTROL_TYPE_CUTSCENE)
+			if (car_ptr->ap.model == SPECIAL_CAR_SLOT && car_ptr->controlType == CONTROL_TYPE_CUTSCENE)
 			{
 				siren = 1;
 			}

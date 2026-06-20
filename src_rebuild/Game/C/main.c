@@ -493,7 +493,7 @@ void State_GameInit(void* param)
 	LoadMission(gCurrentMissionNumber);
 
 	if (gCurrentMissionNumber == 38)
-		residentCarModels[MAX_CAR_RESIDENT_MODELS - 1] = 9;
+		residentCarModels[SPECIAL_CAR_SLOT] = 9;
 
 	if (GameType == GAME_MISSION)
 		SetupFadePolys();

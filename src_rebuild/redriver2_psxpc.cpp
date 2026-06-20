@@ -246,7 +246,7 @@ void GameDebugKeys(int nKey, char down)
 		if (ShiftModifier)
 		{
 			// force a special car
-			model = residentCarModels[MAX_CAR_RESIDENT_MODELS - 1];
+			model = residentCarModels[SPECIAL_CAR_SLOT];
 			palette = 0;
 			lastmodel = model;
 		}
@@ -267,7 +267,7 @@ void GameDebugKeys(int nKey, char down)
 					if (tmp & 4)
 					{
 						// rare chance of spawning special car
-						model = residentCarModels[MAX_CAR_RESIDENT_MODELS - 1];
+						model = residentCarModels[SPECIAL_CAR_SLOT];
 						palette = 0;
 						lastmodel = model;
 						break;

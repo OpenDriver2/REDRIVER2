@@ -218,7 +218,7 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 			}
 		}
 
-		if (gCurrentMissionNumber == 33 && newCar->ap.model == MAX_CAR_RESIDENT_MODELS-1)
+		if (gCurrentMissionNumber == 33 && newCar->ap.model == SPECIAL_CAR_SLOT)
 		{
 			makeLimoPullOver = 0;
 		}

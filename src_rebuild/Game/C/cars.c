@@ -1637,7 +1637,7 @@ void DrawCar(CAR_DATA* cp, int view)
 	{
 		if ((IS_ROADBLOCK_CAR(cp) || cp->controlType == CONTROL_TYPE_PURSUER_AI) ||		// any regular cop car including roadblock
 			gInGameCutsceneActive && cp->controlType == CONTROL_TYPE_CUTSCENE && force_siren[CAR_INDEX(cp)] != 0 ||		// any car with siren in cutscene
-			gCurrentMissionNumber == 26 && cp->controlType == CONTROL_TYPE_CUTSCENE && cp->ap.model == MAX_CAR_RESIDENT_MODELS-1)				// Vegas ambulance
+			gCurrentMissionNumber == 26 && cp->controlType == CONTROL_TYPE_CUTSCENE && cp->ap.model == SPECIAL_CAR_SLOT)				// Vegas ambulance
 		{
 			if (cp->ai.p.dying < 75)
 				AddCopCarLight(cp);

@@ -346,7 +346,7 @@ void SetupResidentModels()
 	if (residentCarModels[3] != 0 && gCurrentMissionNumber != 33)
 		residentCarModels[4] = residentCarModels[3];
 
-	residentCarModels[MAX_CAR_RESIDENT_MODELS - 1] = MissionHeader->residentModels[4];
+	residentCarModels[SPECIAL_CAR_SLOT] = MissionHeader->residentModels[4];
 #endif // MAX_CAR_RESIDENT_MODELS > 5
 
 	// check if start data is required
@@ -356,7 +356,7 @@ void SetupResidentModels()
 		RestoreStartData();
 
 		if (PlayerStartInfo[0]->model > 5)
-			residentCarModels[MAX_CAR_RESIDENT_MODELS - 1] = PlayerStartInfo[0]->model;
+			residentCarModels[SPECIAL_CAR_SLOT] = PlayerStartInfo[0]->model;
 	}
 
 	takenSlots = 0;
@@ -383,7 +383,7 @@ void SetupResidentModels()
 			// check if chosen cop car or special car
 			if (wantedCar[i] > 5)// && NumPlayers == 1)
 			{		
-				residentCarModels[MAX_CAR_RESIDENT_MODELS - 1] = wantedCar[i];
+				residentCarModels[SPECIAL_CAR_SLOT] = wantedCar[i];
 			}
 			else if(foundRM == -1)
 			{
