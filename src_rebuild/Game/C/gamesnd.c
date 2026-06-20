@@ -959,16 +959,17 @@ void InitDopplerSFX(void)
 	for (i = 0; i < MAX_SIREN_NOISES; i++)
 	{
 		siren_noise[i].chan = -1;
-		siren_noise[i].car = 20;
+		siren_noise[i].car = MAX_CARS;
 		siren_noise[i].in_use = 0;
+		siren_noise[i].stopped = 1;
 	}
 
 	for (i = 0; i < MAX_CAR_NOISES; i++)
 	{
 		car_noise[i].chan = -1;
-		car_noise[i].chan = -1;
-		car_noise[i].car = 20;
+		car_noise[i].car = MAX_CARS;
 		car_noise[i].in_use = 0;
+		car_noise[i].stopped = 1;
 	}
 
 	if (GameType == GAME_GETAWAY)
@@ -1099,19 +1100,21 @@ void DoDopplerSFX(void)
 	// stop unused siren noises
 	for (i = 0; i < MAX_SIREN_NOISES; i++)
 	{
-		int siren;
-		siren = (car_flags & 1 << siren_noise[i].car) != 0;
+		int in_use, music;
+		
+		in_use = (car_flags & 1 << siren_noise[i].car) != 0;
+		music = siren_noise[i].idle;
 
-		siren_noise[i].in_use = siren;
-		car_flags &= ~(siren << siren_noise[i].car);
+		siren_noise[i].in_use = in_use;
+		car_flags &= ~(in_use << siren_noise[i].car);
 
-		if (siren == 0 && siren_noise[i].stopped == 0)
+		if ((in_use == 0 || music != (car_data[siren_noise[i].car].controlType == CONTROL_TYPE_CIV_AI)) && siren_noise[i].stopped == 0)
 		{
 			StopChannel(siren_noise[i].chan);
 			UnlockChannel(siren_noise[i].chan);
 
 			siren_noise[i].chan = -1;
-			siren_noise[i].car = 20;
+			siren_noise[i].car = MAX_CARS;
 			siren_noise[i].stopped = 1;
 		}
 	}
@@ -1126,14 +1129,18 @@ void DoDopplerSFX(void)
 			// dispatch siren sounds
 			for (j = 0; j < MAX_SIREN_NOISES; j++)
 			{
+				int siren;
 				if (siren_noise[j].in_use != 0)
 					continue;
+
+				siren = car_data[car].controlType != CONTROL_TYPE_CIV_AI;
 
 				siren_noise[j].in_use = 1;
 				siren_noise[j].stopped = 0;
 				siren_noise[j].car = car;
+				siren_noise[j].idle = siren == 0;
 
-				if (car_data[car].controlType != CONTROL_TYPE_CIV_AI)
+				if (siren)
 				{
 					int siren;
 					siren = CarHasSiren(car_data[car].ap.model);
@@ -1206,7 +1213,7 @@ void DoDopplerSFX(void)
 			UnlockChannel(car_noise[j].chan);
 
 			car_noise[j].chan = -1;
-			car_noise[j].car = 20;
+			car_noise[j].car = MAX_CARS;
 			car_noise[j].stopped = 1;
 		}
 	}
