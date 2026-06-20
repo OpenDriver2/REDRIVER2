@@ -1183,9 +1183,6 @@ void FEDrawCDicon(void)
 
 	DrawPrim(&cd_sprite);
 	DrawSync(0);
-#ifndef PSX
-	PsyX_EndScene();
-#endif
 }
 
 // [D] [T]
