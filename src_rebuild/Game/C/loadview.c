@@ -165,7 +165,6 @@ void ShowLoadingScreen(char *screen_name, int effect, int loading_steps)
 	load_draw.clip.y = 0;
 	load_draw.clip.w = 320;
 	load_draw.clip.h = 512;
-	load_disp.isinter = 1;
 #endif
 
 	PutDispEnv(&load_disp);
