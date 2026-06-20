@@ -1359,7 +1359,7 @@ void InitSkidding(void)
 {
 	int i;
 
-	for(i = 0; i < 2; i++)
+	for(i = 0; i < MAX_PLAYERS; i++)
 	{
 		player[i].wheelnoise.sound = -1;
 		player[i].wheelnoise.chan = -1;

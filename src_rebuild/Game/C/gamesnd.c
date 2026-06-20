@@ -1456,7 +1456,11 @@ void CollisionSound(char player_id, CAR_DATA* cp, int impact, int car_car)
 
 	chan = GetFreeChannel();
 
-	SetPlayerOwnsChannel(chan, playerid);
+	if (NumPlayers > 1 && NoPlayerControl == 0)
+		SetPlayerOwnsChannel(chan, playerid);
+	else if(playerid > 0)
+		return;
+	
 	Start3DSoundVolPitch(chan, SOUND_BANK_SFX, sample, cp->hd.where.t[0], cp->hd.where.t[1], cp->hd.where.t[2], -2750, impact - (impact / 1024) * 1024 + 3584);
 
 	player[playerid].crash_timer = 2;
