@@ -2346,6 +2346,10 @@ int PingInCivCar(int minPingInDist)
 		return 0;
 	}
 
+	// [A] fix car getting placed waaay outside of the road
+	newCar->ai.c.currentLane = lane;
+	newCar->ai.c.currentRoad = roadSeg;
+	newCar->ai.c.changeLaneCount = 0;
 	GetNodePos(roadInfo.straight, NULL, roadInfo.curve, civDat.distAlongSegment, newCar, &newCar->ai.c.targetRoute[0].x, &newCar->ai.c.targetRoute[0].z, lane);
 
 	retDistSq = INT_MAX;
@@ -2405,7 +2409,6 @@ int PingInCivCar(int minPingInDist)
 		return 0;
 	}
 
-	
 	civDat.angle = dir;
 	InitCar(newCar, dir, &pos, CONTROL_TYPE_CIV_AI, model, 0, (char*)&civDat);
 
