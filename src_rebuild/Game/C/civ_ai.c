@@ -1344,7 +1344,7 @@ int CreateNewNode(CAR_DATA * cp)
 					}
 
 					// Caine's Cash limo can be stopped by player in police car
-					if (gCurrentMissionNumber == 33 && cp->ap.model == 4)
+					if (gCurrentMissionNumber == 33 && cp->ap.model == MAX_CAR_RESIDENT_MODELS-1)
 					{
 						int dx, dz;
 						CAR_DATA* playerCar = &car_data[MainPlayer.playerCarId];
@@ -1372,7 +1372,7 @@ int CreateNewNode(CAR_DATA * cp)
 							tryToPark = (Random2(0) & 2U) != 0;
 
 						// apply our Caine's Cash logic
-						if (gCurrentMissionNumber == 33 && cp->ap.model == 4 && limoId == cp->id) // [A] limoId was skipped, bringing it back.
+						if (gCurrentMissionNumber == 33 && cp->ap.model == MAX_CAR_RESIDENT_MODELS-1 && limoId == cp->id) // [A] limoId was skipped, bringing it back.
 						{
 							tryToPark = makeLimoPullOver;
 						}

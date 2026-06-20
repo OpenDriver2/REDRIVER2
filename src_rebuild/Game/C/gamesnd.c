@@ -1065,7 +1065,7 @@ void DoDopplerSFX(void)
 		// sound up ambulance we're going to steal
 		if (gCurrentMissionNumber == 26)
 		{
-			if (car_ptr->ap.model == 4 && car_ptr->controlType == CONTROL_TYPE_CUTSCENE)
+			if (car_ptr->ap.model == MAX_CAR_RESIDENT_MODELS-1 && car_ptr->controlType == CONTROL_TYPE_CUTSCENE)
 			{
 				siren = 1;
 			}
@@ -1081,7 +1081,7 @@ void DoDopplerSFX(void)
 		// vans in 'Caine's Compound' should not listen to it
 		if (gCurrentMissionNumber != 7 && 
 			car_ptr->controlType == CONTROL_TYPE_CIV_AI && 
-			car_ptr->ap.model > 0 && car_ptr->ap.model < 3 &&
+			car_ptr->ap.model > 0 && car_ptr->ap.model < (MAX_CAR_RESIDENT_MODELS-2) &&
 			indexlist[i] == 1)
 		{
 			siren = 1;
