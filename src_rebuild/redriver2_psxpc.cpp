@@ -53,12 +53,11 @@ void CheckModifierKeys(int nKey, bool down)
 }
 
 extern int gDrawDistance;
-
-int cursorX, cursorY, cursorOldX, cursorOldY;
 extern int g_FreeCameraEnabled;
 
-void FreeCameraMouseHandler(int x, int y)
+void FreeCameraMouseHandler(int x, int y, int dx, int dy)
 {
+	PsyX_SetCursorRelative(g_FreeCameraEnabled);
 	if (g_FreeCameraEnabled)
 	{
 		extern SVECTOR g_FreeCameraRotation;
@@ -66,19 +65,10 @@ void FreeCameraMouseHandler(int x, int y)
 		int width, height;
 		PsyX_GetScreenSize(&width, &height);
 
-		cursorX = x;
-		cursorY = y;
-
 		PsyX_SetCursorPosition(width / 2, height / 2);
 
-		g_FreeCameraRotation.vy -= cursorX - cursorOldX;
-		g_FreeCameraRotation.vx += cursorY - cursorOldY;
-
-		cursorX = width / 2;
-		cursorY = height / 2;
-
-		cursorOldX = cursorX;
-		cursorOldY = cursorY;
+		g_FreeCameraRotation.vy -= dx;
+		g_FreeCameraRotation.vx += dy;
 	}
 }
 
