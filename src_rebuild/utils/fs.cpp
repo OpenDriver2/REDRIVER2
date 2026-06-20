@@ -108,7 +108,7 @@ const char* FS_FindFirst(const char* wildcard, FS_FINDDATA** findData)
 
 	if (glob(newFind->wildcard, 0, NULL, &newFind->gl) == 0 && newFind->gl.gl_pathc > 0)
 	{
-		newFind->pathlen = strchr(newFind->wildcard, '.') - newFind->wildcard;
+		newFind->pathlen = strchr(newFind->wildcard, '.') - newFind->wildcard - 1;
 		newFind->index = 0;
 		return newFind->gl.gl_pathv[newFind->index] + newFind->pathlen;
 	}
@@ -130,6 +130,7 @@ const char* FS_FindNext(FS_FINDDATA* findData)
 	if (!::FindNextFileA(findData->fileHandle, &findData->wfd))
 		return nullptr;
 #else
+	findData->index++;
 	if (findData->index < 0 || findData->index >= findData->gl.gl_pathc)
 		return nullptr;
 #endif // _WIN32
@@ -137,7 +138,6 @@ const char* FS_FindNext(FS_FINDDATA* findData)
 #ifdef _WIN32
 	return findData->wfd.cFileName;
 #else
-	findData->index++;
 	return findData->gl.gl_pathv[findData->index] + findData->pathlen;
 #endif // _WIN32
 }
