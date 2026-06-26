@@ -87,7 +87,7 @@ void GetFrictionScalesDriver1(CAR_DATA* cp, CAR_LOCALS* cl, int* frontFS, int* r
 	}
 
 	if ((cp->thrust < 0 && cp->hd.wheel_speed > 41943 && cp->hndType == 0) ||
-		(cp->controlType == CONTROL_TYPE_CIV_AI && cp->ai.c.thrustState == 3 && cp->ai.c.ctrlState != 9))
+		(cp->controlType == CONTROL_TYPE_CIV_AI && cp->ai.c.thrustState == CIV_AI_THRUST_STOP && cp->ai.c.ctrlState != CIV_AI_CTRL_DIED_WITH_MUSIC))
 	{
 		cp->hd.wheel[3].locked = 1;
 		cp->hd.wheel[2].locked = 1;

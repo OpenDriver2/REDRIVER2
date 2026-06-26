@@ -1183,9 +1183,6 @@ void FEDrawCDicon(void)
 
 	DrawPrim(&cd_sprite);
 	DrawSync(0);
-#ifndef PSX
-	PsyX_EndScene();
-#endif
 }
 
 // [D] [T]
@@ -1791,7 +1788,9 @@ void SetFEDrawMode(void)
 	SetDefDispEnv(&MPBuff[0][1].disp, draw_mode.x1, draw_mode.y1, 640, 512);
 
 	MPBuff[0][0].draw.isbg = 0;
+#ifdef PSX
 	MPBuff[0][0].disp.isinter = 1;
+#endif
 	MPBuff[0][0].draw.dfe = 1;
 	MPBuff[0][0].disp.screen.h = 256;
 	MPBuff[0][0].primtab = (char*)_primTab1;
@@ -1799,7 +1798,9 @@ void SetFEDrawMode(void)
 	MPBuff[0][0].ot = (OTTYPE*)_OT1;
 
 	MPBuff[0][1].draw.isbg = 0;
+#ifdef PSX
 	MPBuff[0][1].disp.isinter = 1;
+#endif
 	MPBuff[0][1].draw.dfe = 1;
 	MPBuff[0][1].disp.screen.h = 256;
 	MPBuff[0][1].primtab = (char*)_primTab2;

@@ -662,9 +662,9 @@ int OK_To_Zoom(void)
 
 	old_z = scr_z;
 
-	temp.vx = player[0].pos[0];
-	temp.vy = -player[0].pos[1];
-	temp.vz = player[0].pos[2];
+	temp.vx = MainPlayer.pos[0];
+	temp.vy = -MainPlayer.pos[1];
+	temp.vz = MainPlayer.pos[2];
 
 	scr_z = (dist(&camera_position, &temp) >> 4) + 256;
 

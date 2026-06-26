@@ -545,7 +545,7 @@ void LoadPermanentTPages(int *sector)
 	slot_clutpos[slotsused].vy = clutpos.y;
 
 	// init special slot texture
-	specmodel = (residentCarModels[MAX_CAR_RESIDENT_MODELS - 1] - 8) * 2;
+	specmodel = (residentCarModels[SPECIAL_CAR_SLOT] - 8) * 2;
 	specialSlot = (short)slotsused;
 
 	// get special slot tpage

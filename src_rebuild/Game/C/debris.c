@@ -1300,7 +1300,7 @@ int MoveSmashable_object(void)
 	do {
 		if (dam->active) 
 		{
-			if (dam->cop.pos.vy < 50 - player[0].pos[1]) 
+			if (dam->cop.pos.vy < 50 - MainPlayer.pos[1]) 
 			{
 				dam->vx += dam->velocity.vx;
 	

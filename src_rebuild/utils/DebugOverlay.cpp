@@ -110,7 +110,7 @@ void DrawDebugOverlays()
 		sprintf(tempBuf, "Mission %d Chase: %d", gCurrentMissionNumber, gRandomChase);
 		PrintString(tempBuf, 10, 60);
 
-		int playerCar = player[0].playerCarId;
+		int playerCar = MainPlayer.playerCarId;
 		if(playerCar >= 0)
 		{
 			
@@ -292,7 +292,7 @@ void BuildFreeCameraMatrix()
 	if (g_FreeCameraEnabled == 0)
 		return;
 
-	player[0].cameraPos = g_FreeCameraPosition;
+	MainPlayer.cameraPos = g_FreeCameraPosition;
 	camera_position = g_FreeCameraPosition;
 	camera_angle = g_FreeCameraRotation;
 	lis_pos = camera_position;

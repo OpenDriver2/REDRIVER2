@@ -461,7 +461,7 @@ void SetupSpecDenting(char *loadbuffer)
 	{
 		char* newDenting;
 		int model;
-		model = residentCarModels[MAX_CAR_RESIDENT_MODELS - 1];
+		model = residentCarModels[SPECIAL_CAR_SLOT];
 
 		newDenting = LoadCustomCarDentingFromFile(NULL, model);
 		if (newDenting)
@@ -471,13 +471,13 @@ void SetupSpecDenting(char *loadbuffer)
 #endif
 
 	// [A] this is better
-	memcpy((u_char*)gCarDamageZoneVerts[MAX_CAR_RESIDENT_MODELS - 1], (u_char*)loadbuffer, NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_VERTS);
+	memcpy((u_char*)gCarDamageZoneVerts[SPECIAL_CAR_SLOT], (u_char*)loadbuffer, NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_VERTS);
 	offset = NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_VERTS;
 
-	memcpy((u_char*)gHDCarDamageZonePolys[MAX_CAR_RESIDENT_MODELS - 1], (u_char*)loadbuffer + offset, NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_POLYS);
+	memcpy((u_char*)gHDCarDamageZonePolys[SPECIAL_CAR_SLOT], (u_char*)loadbuffer + offset, NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_POLYS);
 	offset += NUM_DAMAGE_ZONES * MAX_FILE_DAMAGE_ZONE_POLYS;
 
-	memcpy((u_char*)gHDCarDamageLevels[MAX_CAR_RESIDENT_MODELS - 1], (u_char*)loadbuffer + offset, MAX_FILE_DAMAGE_LEVELS);
+	memcpy((u_char*)gHDCarDamageLevels[SPECIAL_CAR_SLOT], (u_char*)loadbuffer + offset, MAX_FILE_DAMAGE_LEVELS);
 }
 
 // [D] [T]

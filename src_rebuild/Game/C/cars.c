@@ -1626,7 +1626,7 @@ void DrawCar(CAR_DATA* cp, int view)
 	{
 		if (cp->controlType == CONTROL_TYPE_CIV_AI)
 		{
-			if (cp->ai.c.thrustState != 3 || (cp->ai.c.ctrlState != 5 && cp->ai.c.ctrlState != 7 && cp->ai.c.ctrlState != 8))
+			if (cp->ai.c.thrustState != CIV_AI_THRUST_STOP || (cp->ai.c.ctrlState != CIV_AI_CTRL_PARKED && cp->ai.c.ctrlState != CIV_AI_CTRL_EMPTY && cp->ai.c.ctrlState != CIV_AI_CTRL_STOP_AT_NODE))
 				AddNightLights(cp);
 		}
 		else if (SilenceThisCar(cp->id) == 0)
@@ -1637,7 +1637,7 @@ void DrawCar(CAR_DATA* cp, int view)
 	{
 		if ((IS_ROADBLOCK_CAR(cp) || cp->controlType == CONTROL_TYPE_PURSUER_AI) ||		// any regular cop car including roadblock
 			gInGameCutsceneActive && cp->controlType == CONTROL_TYPE_CUTSCENE && force_siren[CAR_INDEX(cp)] != 0 ||		// any car with siren in cutscene
-			gCurrentMissionNumber == 26 && cp->controlType == CONTROL_TYPE_CUTSCENE && cp->ap.model == 4)				// Vegas ambulance
+			gCurrentMissionNumber == 26 && cp->controlType == CONTROL_TYPE_CUTSCENE && cp->ap.model == SPECIAL_CAR_SLOT)				// Vegas ambulance
 		{
 			if (cp->ai.p.dying < 75)
 				AddCopCarLight(cp);

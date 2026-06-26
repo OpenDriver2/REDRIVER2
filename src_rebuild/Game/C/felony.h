@@ -9,6 +9,8 @@
 extern int CopsCanSeePlayer;
 extern short pedestrianFelony;
 
+#define GetPlayerFelony(pl) ((pl)->playerCarId < 0 ? &pedestrianFelony : &car_data[(pl)->playerCarId].felonyRating)
+
 extern FELONY_DATA felonyData;
 
 extern void InitFelonySystem(); // 0x0004D280

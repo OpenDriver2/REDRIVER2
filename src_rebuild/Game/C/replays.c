@@ -576,8 +576,8 @@ void RecordWaypoint(void)
 	{
 		TimeToWay = way_distance;
 
-		PlayerWayRecordPtr->x = (player[0].pos[0] >> 10);
-		PlayerWayRecordPtr->y = (player[0].pos[2] >> 10);
+		PlayerWayRecordPtr->x = (MainPlayer.pos[0] >> 10);
+		PlayerWayRecordPtr->y = (MainPlayer.pos[2] >> 10);
 
 		PlayerWayRecordPtr++;
 		PlayerWaypoints++;

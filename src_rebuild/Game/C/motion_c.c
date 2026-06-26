@@ -586,7 +586,7 @@ void DrawBodySprite(LPPEDESTRIAN pDrawingPed, int boneId, VERTTYPE v1[2], VERTTY
 	{
 		tmp2 = MainPed[bone].cAdj >> 4;
 		
-		dx1 = x >>tmp2;
+		dx1 = x >> tmp2;
 		dy1 = y >> tmp2;
 	}
 
@@ -665,27 +665,29 @@ void DrawBodySprite(LPPEDESTRIAN pDrawingPed, int boneId, VERTTYPE v1[2], VERTTY
 			}
 		}
 
+		const float W_SCALE = 0.01f;
+
 		PGXPVData v0data = { PGXP_LOOKUP_VALUE(prims->x0, prims->y0),
-			vdata1.px + (FIXEDH(sn) - dx1) * 0.01f,
-			vdata1.py + (FIXEDH(cs) + dy1) * 0.01f,
+			vdata1.px + (FIXEDH(sn) - dx1) * W_SCALE,
+			vdata1.py + (FIXEDH(cs) + dy1) * W_SCALE,
 			vdata1.pz, vdata1.scr_h, vdata1.ofx, vdata1.ofy };
 
 
 		PGXPVData v1data = { PGXP_LOOKUP_VALUE(prims->x1, prims->y1),
-			vdata1.px - (FIXEDH(sn) - dx1) * 0.01f,
-			vdata1.py - (FIXEDH(cs) - dy1) * 0.01f,
+			vdata1.px - (FIXEDH(sn) - dx1) * W_SCALE,
+			vdata1.py - (FIXEDH(cs) - dy1) * W_SCALE,
 			vdata1.pz, vdata1.scr_h, vdata1.ofx, vdata1.ofy };
 
 
 		PGXPVData v2data = { PGXP_LOOKUP_VALUE(prims->x2, prims->y2),
-			vdata2.px + (FIXEDH(sn) + dx2) * 0.01f,
-			vdata2.py + (FIXEDH(cs) - dy2) * 0.01f,
+			vdata2.px + (FIXEDH(sn) + dx2) * W_SCALE,
+			vdata2.py + (FIXEDH(cs) - dy2) * W_SCALE,
 			vdata2.pz, vdata2.scr_h, vdata2.ofx, vdata2.ofy };
 
 
 		PGXPVData v3data = { PGXP_LOOKUP_VALUE(prims->x3, prims->y3),
-			vdata2.px - (FIXEDH(sn) + dx2) * 0.01f,
-			vdata2.py - (FIXEDH(cs) + dy2) * 0.01f,
+			vdata2.px - (FIXEDH(sn) + dx2) * W_SCALE,
+			vdata2.py - (FIXEDH(cs) + dy2) * W_SCALE,
 			vdata2.pz, vdata2.scr_h, vdata2.ofx, vdata2.ofy };
 
 		PGXP_EmitCacheData(&v0data);
@@ -1808,9 +1810,9 @@ void InitTannerShadow(void)
 // [D] [T]
 void TannerShadow(LPPEDESTRIAN pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos, CVECTOR* col, short angle)
 {
+	POLY_FT4* curPoly;
 	DR_ENV* dr_env;
 	SVECTOR vert[4];
-	VECTOR d;
 	DRAWENV drEnv;
 
 	VECTOR cp;
@@ -1837,8 +1839,6 @@ void TannerShadow(LPPEDESTRIAN pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos,
 	if (NumPlayers > 1)
 		return;
 
-	memset((u_char*)&d, 0, sizeof(VECTOR));
-
 	SetDefDrawEnv(&drEnv, 0, current->draw.clip.y, 320, 256);
 
 	dr_env = (DR_ENV*)current->primptr;
@@ -1846,6 +1846,8 @@ void TannerShadow(LPPEDESTRIAN pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos,
 
 	addPrim(current->ot + OTSIZE - 1, dr_env);
 	current->primptr += sizeof(DR_ENV);
+
+	curPoly = &ft4TannerShadow[current->id];
 
 	Tangle = ratan2(-pLightPos->vx, pLightPos->vz);
 
@@ -1867,19 +1869,19 @@ void TannerShadow(LPPEDESTRIAN pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos,
 	}
 
 	gte_SetRotMatrix(&inv_camera_matrix);
-	gte_SetTransVector(&d);
+	gte_SetTransVector(&dummy);
 
 	gte_ldv3(&vert[0], &vert[1], &vert[2]);
 	gte_rtpt();
 
-	gte_stsxy3(&ft4TannerShadow[current->id].x0, &ft4TannerShadow[current->id].x1, &ft4TannerShadow[current->id].x2);
+	gte_stsxy3(&curPoly->x0, &curPoly->x1, &curPoly->x2);
 	gte_stsz3(&z0, &z1, &z2);
 
 	gte_ldv0(&vert[3]);
 
 	gte_rtps();
 
-	gte_stsxy(&ft4TannerShadow[current->id].x3);
+	gte_stsxy(&curPoly->x3);
 	gte_stsz(&z3);
 
 	if (z0 < z1)
@@ -1912,9 +1914,9 @@ void TannerShadow(LPPEDESTRIAN pDrawingPed, VECTOR* pPedPos, SVECTOR* pLightPos,
 	else
 		z3 = 8;
 
-	addPrim(current->ot + (z0 * 2 + z3 * 6 >> 6), &ft4TannerShadow[current->id]);
+	addPrim(current->ot + (z0 * 2 + z3 * 6 >> 6), curPoly);
 	//SubdivShadow(z0, z1, z2, z3, ft4TannerShadow + current->id);
-	
+
 	{
 		// store vectors
 		cp = camera_position;

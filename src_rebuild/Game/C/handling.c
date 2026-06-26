@@ -184,7 +184,7 @@ void FixCarCos(CAR_COSMETICS* carCos, int externalModelNumber)
 
 	if (ActiveCheats.cheat10) // [A] cheat for secret car - Fireboyd78
 	{
-		if (carCos == &car_cosmetics[MAX_CAR_RESIDENT_MODELS - 1] && externalModelNumber == 12)
+		if (carCos == &car_cosmetics[SPECIAL_CAR_SLOT] && externalModelNumber == 12)
 		{
 			carCos->powerRatio += (carCos->powerRatio / 2);
 			carCos->mass *= 3;
@@ -300,10 +300,7 @@ void GlobalTimeStep(void)
 	int carsDentedThisFrame;
 	short *felony;
 
-	if (player[0].playerCarId < 0)
-		felony = &pedestrianFelony;
-	else
-		felony = &car_data[player[0].playerCarId].felonyRating;
+	felony = GetPlayerFelony(&MainPlayer);
 
 	StepCars();
 	CheckCarToCarCollisions();
@@ -672,13 +669,13 @@ void GlobalTimeStep(void)
 						thisDelta[j].n.angularVelocity[2] += torque[2];
 					}
 
-					if (cp->id == player[0].playerCarId || c1->id == player[0].playerCarId)
+					if (cp->id == MainPlayer.playerCarId || c1->id == MainPlayer.playerCarId)
 						RegisterChaseHit(cp->id, c1->id);
 
-					if (cp->id == player[0].playerCarId)
+					if (cp->id == MainPlayer.playerCarId)
 						CarHitByPlayer(c1, howHard);
 
-					if (c1->id == player[0].playerCarId)
+					if (c1->id == MainPlayer.playerCarId)
 						CarHitByPlayer(cp, howHard);
 
 				} // j loop
@@ -1295,8 +1292,8 @@ void ProcessCarPad(CAR_DATA* cp, u_int pad, char PadSteer, char use_analogue)
 				// accelerate faster if closer to player
 				int dx, dz, dist;
 
-				dx = car_data[player[0].playerCarId].hd.where.t[0] - cp->hd.where.t[0] >> 10;
-				dz = car_data[player[0].playerCarId].hd.where.t[2] - cp->hd.where.t[2] >> 10;
+				dx = car_data[MainPlayer.playerCarId].hd.where.t[0] - cp->hd.where.t[0] >> 10;
+				dz = car_data[MainPlayer.playerCarId].hd.where.t[2] - cp->hd.where.t[2] >> 10;
 
 				dist = dx * dx + dz * dz;
 
@@ -1319,10 +1316,10 @@ void ProcessCarPad(CAR_DATA* cp, u_int pad, char PadSteer, char use_analogue)
 				CAR_DATA* tp;
 				int targetCarId, cx, cz, chase_square_dist;
 
-				if (player[0].playerCarId == cp->id)
-					targetCarId = player[0].targetCarId;
-				else if (player[1].playerCarId == cp->id)
-					targetCarId = player[1].targetCarId;
+				if (MainPlayer.playerCarId == cp->id)
+					targetCarId = MainPlayer.targetCarId;
+				else if (SecondPlayer.playerCarId == cp->id)
+					targetCarId = SecondPlayer.targetCarId;
 				else
 					targetCarId = -1;
 
@@ -1362,7 +1359,7 @@ void InitSkidding(void)
 {
 	int i;
 
-	for(i = 0; i < 2; i++)
+	for(i = 0; i < MAX_PLAYERS; i++)
 	{
 		player[i].wheelnoise.sound = -1;
 		player[i].wheelnoise.chan = -1;

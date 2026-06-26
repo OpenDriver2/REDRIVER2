@@ -198,11 +198,11 @@ void setCamera(PLAYBACKCAMERA* Change)
 
 	if(cameraview != 0 && cameraview != 2)
 	{
-		player[0].cameraPos.vx = Change->position.vx;
-		player[0].cameraPos.vy = Change->position.vy;
-		player[0].cameraPos.vz = Change->position.vz;
+		MainPlayer.cameraPos.vx = Change->position.vx;
+		MainPlayer.cameraPos.vy = Change->position.vy;
+		MainPlayer.cameraPos.vz = Change->position.vz;
 	}
-	player[0].cameraCarId = Change->angle.pad;
+	MainPlayer.cameraCarId = Change->angle.pad;
 }
 
 // [D] [T]
@@ -219,13 +219,13 @@ void EditCamera(int CameraCnt)
 	ThisChange = LastChange;
 	LastChange->cameraview = cameraview & 7 | tracking_car << 3;
 
-	ThisChange->position.vx = player[0].cameraPos.vx;
-	ThisChange->position.vy = player[0].cameraPos.vy;
-	ThisChange->position.vz = player[0].cameraPos.vz;
+	ThisChange->position.vx = MainPlayer.cameraPos.vx;
+	ThisChange->position.vy = MainPlayer.cameraPos.vy;
+	ThisChange->position.vz = MainPlayer.cameraPos.vz;
 	ThisChange->angle.vx = camera_angle.vx;
 	ThisChange->angle.vy = camera_angle.vy;
 	ThisChange->angle.vz = camera_angle.vz;
-	ThisChange->angle.pad = player[0].cameraCarId;
+	ThisChange->angle.pad = MainPlayer.cameraCarId;
 	ThisChange->scr_z = scr_z;
 
 	ThisChange->gCameraAngle = gCameraAngle;
@@ -285,7 +285,7 @@ void RecordCamera(int CameraCnt)
 	{
 		if (LastChange == NULL ||
 			LastChange->cameraview != (cameraview & 7 | tracking_car << 3) ||
-			player[0].cameraCarId != LastChange->angle.pad ||
+			MainPlayer.cameraCarId != LastChange->angle.pad ||
 			cameraview == 1 ||
 			(cameraview & 7) == 5 ||
 			LastChange->scr_z != scr_z ||
@@ -312,13 +312,13 @@ void RecordCamera(int CameraCnt)
 
 			ThisChange->cameraview = cameraview & 7 | tracking_car << 3;
 
-			LastChange->position.vx = player[0].cameraPos.vx;
-			LastChange->position.vy = player[0].cameraPos.vy;
-			LastChange->position.vz = player[0].cameraPos.vz;
+			LastChange->position.vx = MainPlayer.cameraPos.vx;
+			LastChange->position.vy = MainPlayer.cameraPos.vy;
+			LastChange->position.vz = MainPlayer.cameraPos.vz;
 			LastChange->angle.vx = camera_angle.vx;
 			LastChange->angle.vy = camera_angle.vy;
 			LastChange->angle.vz = camera_angle.vz;
-			LastChange->angle.pad = player[0].cameraCarId;
+			LastChange->angle.pad = MainPlayer.cameraCarId;
 			LastChange->scr_z = scr_z;
 			LastChange->FrameCnt = CameraCnt;
 			LastChange->gCameraMaxDistance = gCameraMaxDistance;
@@ -376,7 +376,7 @@ int CheckCameraChange(int CameraCnt)
 	{
 		DoAutoDirect();
 
-		if(gStopPadReads == 0 && InvalidCamera(player[0].cameraCarId) != 0)
+		if(gStopPadReads == 0 && InvalidCamera(MainPlayer.cameraCarId) != 0)
 		{
 			RecordCamera(CameraCnt);
 			return 0;
@@ -399,7 +399,7 @@ int CheckCameraChange(int CameraCnt)
 
 	SetPlaybackCamera(NextChange);
 
-	if (InvalidCamera(player[0].cameraCarId) == 0)
+	if (InvalidCamera(MainPlayer.cameraCarId) == 0)
 	{
 		LastChange = NextChange;
 		FindNextChange(CameraCnt + 1);
@@ -437,12 +437,12 @@ void SetPlaybackCamera(PLAYBACKCAMERA* camera)
 
 	if(cameraview != 0 && cameraview != 2)
 	{
-		player[0].cameraPos.vx = camera->position.vx;
-		player[0].cameraPos.vy = camera->position.vy;
-		player[0].cameraPos.vz = camera->position.vz;
+		MainPlayer.cameraPos.vx = camera->position.vx;
+		MainPlayer.cameraPos.vy = camera->position.vy;
+		MainPlayer.cameraPos.vz = camera->position.vz;
 	}
 
-	player[0].cameraCarId = camera->angle.pad;
+	MainPlayer.cameraCarId = camera->angle.pad;
 }
 
 
@@ -1129,14 +1129,14 @@ void ControlReplay(void)
 			{
 				gCameraDistance -= speed * 16;		// [A] restore
 				gCameraMaxDistance -= speed * 16;
-				player[0].cameraDist = gCameraDistance;
+				MainPlayer.cameraDist = gCameraDistance;
 			}
 
 			if ((padd & MPAD_D_DOWN) != 0 && gCameraDistance < 2750)
 			{
 				gCameraDistance += speed * 16;		// [A] restore
 				gCameraMaxDistance += speed * 16;
-				player[0].cameraDist = gCameraDistance;
+				MainPlayer.cameraDist = gCameraDistance;
 			}
 
 			if ((padd & MPAD_D_LEFT) != 0)
@@ -1153,19 +1153,19 @@ void ControlReplay(void)
 
 			// OBSOLETE DRIVER 1 CODE
 			/*
-			ROADS_GetRouteData(player[0].cameraPos.vx, player[0].cameraPos.vz, &routeData1);
+			ROADS_GetRouteData(MainPlayer.cameraPos.vx, MainPlayer.cameraPos.vz, &routeData1);
 
 			if (modelpointers[routeData1.type]->flags2 & MODEL_FLAG_INDOORS)
 			{
 				int road_height;
-				road_height = -450 - MapHeight(&player[0].cameraPos);
+				road_height = -450 - MapHeight(&MainPlayer.cameraPos);
 
-				player[0].cameraPos.vy = gCameraOffset.vy - player[0].pos[1];
+				MainPlayer.cameraPos.vy = gCameraOffset.vy - MainPlayer.pos[1];
 
-				if (road_height > gCameraOffset.vy - player[0].pos[1])
+				if (road_height > gCameraOffset.vy - MainPlayer.pos[1])
 				{
-					gCameraOffset.vy = road_height + player[0].pos[1];
-					player[0].cameraPos.vy = road_height;
+					gCameraOffset.vy = road_height + MainPlayer.pos[1];
+					MainPlayer.cameraPos.vy = road_height;
 				}
 			}
 			*/
@@ -1183,7 +1183,7 @@ void ControlReplay(void)
 			x = 0;
 			z = 0;
 
-			cameraCar = player[0].cameraCarId;
+			cameraCar = MainPlayer.cameraCarId;
 
 			if (cameraCar >= 0)
 			{
@@ -1192,8 +1192,8 @@ void ControlReplay(void)
 			}
 			else if (cameraCar == -1)
 			{
-				basePos.vx = player[0].pos[0];
-				basePos.vz = player[0].pos[2];
+				basePos.vx = MainPlayer.pos[0];
+				basePos.vz = MainPlayer.pos[2];
 			}
 			else
 			{
@@ -1204,12 +1204,12 @@ void ControlReplay(void)
 				basePos.vz = ev->position.vz;
 			}
 
-			dx = basePos.vx - player[0].cameraPos.vx;
-			dz = basePos.vz - player[0].cameraPos.vz;
+			dx = basePos.vx - MainPlayer.cameraPos.vx;
+			dz = basePos.vz - MainPlayer.cameraPos.vz;
 	
-			old_camera.vx = player[0].cameraPos.vx;
-			old_camera.vz = player[0].cameraPos.vz;
-			old_camera.vy = player[0].cameraPos.vy;
+			old_camera.vx = MainPlayer.cameraPos.vx;
+			old_camera.vz = MainPlayer.cameraPos.vz;
+			old_camera.vy = MainPlayer.cameraPos.vy;
 
 			d = SquareRoot0(dx * dx + dz * dz);
 
@@ -1250,49 +1250,49 @@ void ControlReplay(void)
 				x = -d;
 			}
 
-			player[0].cameraPos.vx = (player[0].cameraPos.vx + FIXED(z * RSIN(dir))) - FIXED(x * RCOS(dir));
-			player[0].cameraPos.vz = (player[0].cameraPos.vz - FIXED(z * RCOS(dir))) - FIXED(x * RSIN(dir));
+			MainPlayer.cameraPos.vx = (MainPlayer.cameraPos.vx + FIXED(z * RSIN(dir))) - FIXED(x * RCOS(dir));
+			MainPlayer.cameraPos.vz = (MainPlayer.cameraPos.vz - FIXED(z * RCOS(dir))) - FIXED(x * RSIN(dir));
 
-			tmpPos.vx = player[0].cameraPos.vx;
-			tmpPos.vy = -player[0].cameraPos.vy;
-			tmpPos.vz = player[0].cameraPos.vz;
+			tmpPos.vx = MainPlayer.cameraPos.vx;
+			tmpPos.vy = -MainPlayer.cameraPos.vy;
+			tmpPos.vz = MainPlayer.cameraPos.vz;
 
-			if ( dist(player[0].spoolXZ, &player[0].cameraPos) < 18433)
+			if ( dist(MainPlayer.spoolXZ, &MainPlayer.cameraPos) < 18433)
 			{
 				if (QuickBuildingCollisionCheck(&tmpPos, dir, 10, 10, 10) != 0)
 				{
-					player[0].cameraPos.vx = old_camera.vx;
-					player[0].cameraPos.vz = old_camera.vz;
+					MainPlayer.cameraPos.vx = old_camera.vx;
+					MainPlayer.cameraPos.vz = old_camera.vz;
 				}
 			}
 			else
 			{
-				player[0].cameraPos.vy = old_camera.vy;
-				player[0].cameraPos.vx = old_camera.vx;
-				player[0].cameraPos.vz = old_camera.vz;
+				MainPlayer.cameraPos.vy = old_camera.vy;
+				MainPlayer.cameraPos.vx = old_camera.vx;
+				MainPlayer.cameraPos.vz = old_camera.vz;
 			}
 			
 			if (padd & MPAD_L1)
-				player[0].cameraPos.vy -= speed * 16;
+				MainPlayer.cameraPos.vy -= speed * 16;
 
 			if (padd & MPAD_L2)
-				player[0].cameraPos.vy += speed * 16;	
+				MainPlayer.cameraPos.vy += speed * 16;	
 
 			height = -MapHeight(&tmpPos);
 			
-			if (player[0].cameraPos.vy > height - MIN_TRIPOD_CAMERA_HEIGHT)
-				player[0].cameraPos.vy = height - MIN_TRIPOD_CAMERA_HEIGHT;
+			if (MainPlayer.cameraPos.vy > height - MIN_TRIPOD_CAMERA_HEIGHT)
+				MainPlayer.cameraPos.vy = height - MIN_TRIPOD_CAMERA_HEIGHT;
 
-			if (player[0].cameraPos.vy < height - 1050)
-				player[0].cameraPos.vy = height - 1050;
+			if (MainPlayer.cameraPos.vy < height - 1050)
+				MainPlayer.cameraPos.vy = height - 1050;
 
 			// OBSOLETE DRIVER 1 CODE
 			/*
-			ROADS_GetRouteData(player[0].cameraPos.vx, player[0].cameraPos.vz, &routeData);
+			ROADS_GetRouteData(MainPlayer.cameraPos.vx, MainPlayer.cameraPos.vz, &routeData);
 
-			if ((modelpointers[routeData.type]->flags2 & MODEL_FLAG_INDOORS) && player[0].cameraPos.vy < height - 450)
+			if ((modelpointers[routeData.type]->flags2 & MODEL_FLAG_INDOORS) && MainPlayer.cameraPos.vy < height - 450)
 			{
-				player[0].cameraPos.vy = height - 450;
+				MainPlayer.cameraPos.vy = height - 450;
 			}*/
 
 			if (cameraview == 1 && OK_To_Zoom() == 0)
@@ -1738,7 +1738,7 @@ void ControlReplay(void)
 						if (cameraview == 2)
 						{
 							cameraview = 0;
-							InitCamera(&player[0]);
+							InitCamera(&MainPlayer);
 						}
 
 						if (cameraview != 5 && cameraview != 1)
@@ -1848,7 +1848,7 @@ void ControlReplay(void)
 			if (CursorX == 5)
 				DirectorMenuActive = 2;
 			else if (CursorX == 6 && move == 5)
-				player[0].cameraCarId = SelectCameraCar(player[0].cameraCarId);
+				MainPlayer.cameraCarId = SelectCameraCar(MainPlayer.cameraCarId);
 
 			if (CursorX > 6)
 				CursorX = 6;
@@ -1988,7 +1988,7 @@ void DoAutoDirect(void)
 				case 5:
 					gCameraOffset.vy = 0;
 					cameraview = 2;
-					player[0].cameraCarId = player[0].playerCarId;
+					MainPlayer.cameraCarId = MainPlayer.playerCarId;
 					break;
 				case 6:
 				case 7:
@@ -1999,34 +1999,34 @@ void DoAutoDirect(void)
 			if (ReplayParameterPtr->RecordingEnd < CameraCnt + way_distance)
 			{
 				cameraview = 0;
-				player[0].cameraCarId = -1;
+				MainPlayer.cameraCarId = -1;
 
-				if (player[0].playerType != 2)
-					player[0].cameraCarId = player[0].playerCarId;
+				if (MainPlayer.playerType != PLAYER_TYPE_PEDESTRIAN)
+					MainPlayer.cameraCarId = MainPlayer.playerCarId;
 
 			}
 			else
 			{
-				player[0].cameraPos.vx = PlayerWayRecordPtr->x << 10;
-				player[0].cameraPos.vz = PlayerWayRecordPtr->y << 10;
+				MainPlayer.cameraPos.vx = PlayerWayRecordPtr->x << 10;
+				MainPlayer.cameraPos.vz = PlayerWayRecordPtr->y << 10;
 			}
 
-			player[0].cameraPos.vy = (-70 - MapHeight(&player[0].cameraPos)) - (rand() & 0x3ff);
+			MainPlayer.cameraPos.vy = (-70 - MapHeight(&MainPlayer.cameraPos)) - (rand() & 0x3ff);
 
-			height = MapHeight((VECTOR*)car_data[player[0].cameraCarId].hd.where.t);
+			height = MapHeight((VECTOR*)car_data[MainPlayer.cameraCarId].hd.where.t);
 
-			if (-height < player[0].cameraPos.vy)
+			if (-height < MainPlayer.cameraPos.vy)
 			{
-				player[0].cameraPos.vy = -height - 100;
+				MainPlayer.cameraPos.vy = -height - 100;
 			}
 
-			cammapht2 = MapHeight(&player[0].cameraPos);
+			cammapht2 = MapHeight(&MainPlayer.cameraPos);
 			cammapht2 = -cammapht2;
 
-			if (cammapht2 < player[0].cameraPos.vy)
-				player[0].cameraPos.vy = cammapht2 - 100;
+			if (cammapht2 < MainPlayer.cameraPos.vy)
+				MainPlayer.cameraPos.vy = cammapht2 - 100;
 
-			MapHeight(&player[0].cameraPos);
+			MapHeight(&MainPlayer.cameraPos);
 
 			if (savemapinfo != NULL)
 				mapstuff = *savemapinfo;
@@ -2053,10 +2053,10 @@ void DoAutoDirect(void)
 				else
 					gCameraOffset.vy = 0;
 
-				if (player[0].playerType == 2)
-					player[0].cameraCarId = -1;
+				if (MainPlayer.playerType == PLAYER_TYPE_PEDESTRIAN)
+					MainPlayer.cameraCarId = -1;
 				else
-					player[0].cameraCarId = player[0].playerCarId;
+					MainPlayer.cameraCarId = MainPlayer.playerCarId;
 			}
 
 			if (NoMoreCamerasErrorMessage() == 0)
@@ -2121,15 +2121,15 @@ int SelectCameraCar(int current)
 			{
 				if (car->controlType == CONTROL_TYPE_PLAYER)
 				{
-					if (player[1].playerCarId == car->id)
-						return player[1].playerCarId;
+					if (SecondPlayer.playerCarId == car->id)
+						return SecondPlayer.playerCarId;
 
-					return player[0].playerCarId;
+					return MainPlayer.playerCarId;
 				}
 
 				car = NULL;
 
-				if (count == -1 && player[0].playerType == 2)
+				if (count == -1 && MainPlayer.playerType == PLAYER_TYPE_PEDESTRIAN)
 					return -1;
 			}
 		}
@@ -2139,7 +2139,7 @@ int SelectCameraCar(int current)
 
 			if (event == NULL)
 			{
-				if (player[0].playerType == 2)
+				if (MainPlayer.playerType == PLAYER_TYPE_PEDESTRIAN)
 					count = -2;
 				else
 					count = -1;
@@ -2153,8 +2153,8 @@ int SelectCameraCar(int current)
 
 		if (car != NULL || event != NULL)
 		{
-			dx = ABS(player[0].pos[0] - pos.x);
-			dz = ABS(player[0].pos[2] - pos.z);
+			dx = ABS(MainPlayer.pos[0] - pos.x);
+			dz = ABS(MainPlayer.pos[2] - pos.z);
 
 			if (dx < 15000 && dz < 15000 &&
 				dx * dx + dz * dz < 225000000)
@@ -2171,7 +2171,7 @@ int SelectCameraCar(int current)
 
 	printError("ERROR:_SelectCameraCar\n");
 
-	return player[0].playerCarId;
+	return MainPlayer.playerCarId;
 }
 
 // [D] [T]
@@ -2189,25 +2189,25 @@ int InvalidCamera(int car_num)
 	// check if camera is not too far
 	if (cameraview != 2)
 	{
-		if (Long2DDistance(player[0].spoolXZ, &player[0].cameraPos) > 20000)
+		if (Long2DDistance(MainPlayer.spoolXZ, &MainPlayer.cameraPos) > 20000)
 		{
-			if (player[0].playerType == 2)
-				player[0].cameraCarId = -1;
+			if (MainPlayer.playerType == PLAYER_TYPE_PEDESTRIAN)
+				MainPlayer.cameraCarId = -1;
 			else
-				player[0].cameraCarId = player[0].playerCarId;
+				MainPlayer.cameraCarId = MainPlayer.playerCarId;
 
 			gCameraOffset.vy = 0;
 			cameraview = 0;
 			return 1;
 		}
 
-		if (valid_region(player[0].cameraPos.vx, player[0].cameraPos.vz) != 0)
+		if (valid_region(MainPlayer.cameraPos.vx, MainPlayer.cameraPos.vz) != 0)
 			return 0;
 
-		player[0].cameraCarId = -1;
+		MainPlayer.cameraCarId = -1;
 
-		if (player[0].playerType != 2)
-			player[0].cameraCarId = player[0].playerCarId;
+		if (MainPlayer.playerType != PLAYER_TYPE_PEDESTRIAN)
+			MainPlayer.cameraCarId = MainPlayer.playerCarId;
 
 		// change it to the default view
 		cameraview = 2;
@@ -2222,7 +2222,7 @@ int InvalidCamera(int car_num)
 		invalidCamera = (car_data[car_num].controlType == CONTROL_TYPE_NONE);
 
 	// check if player is incorrect (pedestrian)
-	if (car_num == -1 && player[0].playerType != 2)
+	if (car_num == -1 && MainPlayer.playerType != PLAYER_TYPE_PEDESTRIAN)
 		invalidCamera = true;
 
 	// check events
@@ -2246,8 +2246,8 @@ int InvalidCamera(int car_num)
 		pos.x = event->position.vx;
 		pos.z = event->position.vx;
 
-		dx = ABS(player[0].pos[0] - pos.x);
-		dz = ABS(player[0].pos[2] - pos.z);
+		dx = ABS(MainPlayer.pos[0] - pos.x);
+		dz = ABS(MainPlayer.pos[2] - pos.z);
 
 		if (dx < 15000 && dz < 15000 &&
 			dx * dx + dz * dz < 225000000)
@@ -2258,10 +2258,10 @@ int InvalidCamera(int car_num)
 
 	if (invalidCamera)
 	{
-		if (player[0].playerType == 2)
-			player[0].cameraCarId = -1;
+		if (MainPlayer.playerType == PLAYER_TYPE_PEDESTRIAN)
+			MainPlayer.cameraCarId = -1;
 		else
-			player[0].cameraCarId = player[0].playerCarId;
+			MainPlayer.cameraCarId = MainPlayer.playerCarId;
 
 		gCameraOffset.vy = 0;
 		return 1;

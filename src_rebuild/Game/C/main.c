@@ -459,7 +459,7 @@ void State_GameInit(void* param)
 
 	if (NewLevel)
 	{
-#ifdef USE_CRT_MALLOC
+#if USE_CRT_MALLOC
 		sys_freeall();
 		malloctab = D_MALLOC(0x200000);
 #endif // USE_CRT_MALLOC
@@ -493,7 +493,7 @@ void State_GameInit(void* param)
 	LoadMission(gCurrentMissionNumber);
 
 	if (gCurrentMissionNumber == 38)
-		residentCarModels[MAX_CAR_RESIDENT_MODELS - 1] = 9;
+		residentCarModels[SPECIAL_CAR_SLOT] = 9;
 
 	if (GameType == GAME_MISSION)
 		SetupFadePolys();
@@ -603,7 +603,7 @@ void State_GameInit(void* param)
 
 	ClearMem((char*)car_data, sizeof(car_data));
 
-	player[0].spoolXZ = (VECTOR*)car_data[0].hd.where.t;
+	MainPlayer.spoolXZ = (VECTOR*)car_data[0].hd.where.t;
 	car_data[0].hd.where.t[0] = PlayerStartInfo[0]->position.vx;
 	car_data[0].hd.where.t[2] = PlayerStartInfo[0]->position.vz;
 
@@ -663,7 +663,7 @@ void State_GameInit(void* param)
 	if (pathAILoaded)
 		InitCops();
 
-	InitCamera(&player[0]);
+	InitCamera(&MainPlayer);
 
 	if (gLoadedOverlay && NoPlayerControl == 0)
 	{
@@ -871,10 +871,7 @@ void StepSim(void)
 
 	lead_pad = (u_int)controller_bits;
 
-	if (player[0].playerCarId < 0)
-		playerFelony = &pedestrianFelony;
-	else
-		playerFelony = &car_data[player[0].playerCarId].felonyRating;
+	playerFelony = GetPlayerFelony(&MainPlayer);
 
 	// control cop roadblocks
 	if (*playerFelony <= FELONY_ROADBLOCK_MIN_VALUE || numRoadblockCars != 0)
@@ -946,7 +943,7 @@ void StepSim(void)
 			if (cp->controlFlags & CONTROL_FLAG_COP)
 				numCopCars++;
 
-			if (cp->ai.c.thrustState == 3 && cp->ai.c.ctrlState == 5)
+			if (cp->ai.c.thrustState == CIV_AI_THRUST_STOP && cp->ai.c.ctrlState == CIV_AI_CTRL_PARKED)
 				numParkedCars++;
 
 			if (cp->controlFlags & CONTROL_FLAG_COP_SLEEPING)
@@ -1062,7 +1059,7 @@ void StepSim(void)
 	{
 		pl = &player[i];
 
-		if (pl->playerType != 2)
+		if (pl->playerType != PLAYER_TYPE_PEDESTRIAN)
 			continue;
 
 		stream = pl->padid;
@@ -1208,11 +1205,11 @@ void StepSim(void)
 		if (gInGameCutsceneActive != 0 && gCurrentMissionNumber == 23 && gInGameCutsceneID == 0)
 			stupid_logic[0] = 2;
 		else
-			stupid_logic[0] = player[0].playerCarId;
+			stupid_logic[0] = MainPlayer.playerCarId;
 
-		stupid_logic[1] = player[1].playerCarId;
+		stupid_logic[1] = SecondPlayer.playerCarId;
 		stupid_logic[2] = gThePlayerCar;
-		stupid_logic[3] = player[0].targetCarId; // [A]
+		stupid_logic[3] = MainPlayer.targetCarId; // [A]
 	}
 
 	for (i = 0; i < 3; i++)
@@ -1454,7 +1451,7 @@ void StepGame(void)
 	// player flip cheat
 	if (gRightWayUp)
 	{
-		TempBuildHandlingMatrix(&car_data[player[0].playerCarId], 0);
+		TempBuildHandlingMatrix(&car_data[MainPlayer.playerCarId], 0);
 		gRightWayUp = 0;
 	}
 
@@ -1585,7 +1582,7 @@ void State_GameLoop(void* param)
 	while (--cnt >= 0)
 	{
 		if(cnt != 0)
-			InitCamera(&player[0]);
+			InitCamera(&MainPlayer);
 
 		StepGame();
 	}
@@ -2130,10 +2127,7 @@ void UpdatePlayerInformation(void)
 	PlayerDamageBar.max = MaxPlayerDamage[0];
 	Player2DamageBar.max = MaxPlayerDamage[1];
 
-	if (player[0].playerCarId < 0)
-		playerFelony = &pedestrianFelony;
-	else
-		playerFelony = &car_data[player[0].playerCarId].felonyRating;
+	playerFelony = GetPlayerFelony(&MainPlayer);
 
 	if (gPlayerImmune != 0)
 		*playerFelony = 0;
@@ -2142,7 +2136,7 @@ void UpdatePlayerInformation(void)
 
 	for (i = 0; i < NumPlayers; i++)
 	{
-		if (player[i].playerType == 1)
+		if (player[i].playerType == PLAYER_TYPE_CAR)
 		{
 			cp = &car_data[player[i].playerCarId];
 

@@ -25,6 +25,8 @@
 #define MAX_CAR_RESIDENT_MODELS	5
 #endif
 
+#define SPECIAL_CAR_SLOT        (MAX_CAR_RESIDENT_MODELS-1)
+
 #define MAX_PEDESTRIANS			28
 #define MAX_SEATED_PEDS			20
 #define MAX_PLACED_PEDS			15

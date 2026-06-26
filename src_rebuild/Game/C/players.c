@@ -49,7 +49,7 @@ void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction
 		locPlayer->worldCentreCarId = cp->id;
 		locPlayer->cameraView = 0;// (NumPlayers == 2) << 1; // [A]
 		locPlayer->playerCarId = cp->id;
-		locPlayer->playerType = 1;
+		locPlayer->playerType = PLAYER_TYPE_CAR;
 		locPlayer->spoolXZ = (VECTOR *)cp->hd.where.t;
 		locPlayer->cameraCarId = cp->id;
 		locPlayer->car_is_sounding = 0;
@@ -63,7 +63,7 @@ void InitPlayer(PLAYER *locPlayer, CAR_DATA *cp, char carCtrlType, int direction
 
 		pPlayerPed = locPlayer->pPed;
 
-		locPlayer->playerType = 2;
+		locPlayer->playerType = PLAYER_TYPE_PEDESTRIAN;
 		locPlayer->spoolXZ = (VECTOR *)&pPlayerPed->position;
 		locPlayer->playerCarId = -1;
 		locPlayer->car_is_sounding = 2;
@@ -121,8 +121,8 @@ void ChangeCarPlayerToPed(int playerID)
 
 	lcp->controlType = CONTROL_TYPE_CIV_AI;
 	lcp->wheel_angle = 0;
-	lcp->ai.c.thrustState = 3;
-	lcp->ai.c.ctrlState = 7;
+	lcp->ai.c.thrustState = CIV_AI_THRUST_STOP;
+	lcp->ai.c.ctrlState = CIV_AI_CTRL_EMPTY;
 
 	// stop skidding for P1 or P2
 	StopChannel(playerID != 0 ? 4 : 1);
@@ -167,7 +167,7 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 	lPlayer = &player[playerID];
 
 	if (newCar->controlType == CONTROL_TYPE_CIV_AI && 
-		newCar->ai.c.thrustState == 3 && (newCar->ai.c.ctrlState == 7 || newCar->ai.c.ctrlState == 5) || 
+		newCar->ai.c.thrustState == CIV_AI_THRUST_STOP && (newCar->ai.c.ctrlState == CIV_AI_CTRL_EMPTY || newCar->ai.c.ctrlState == CIV_AI_CTRL_PARKED) ||
 		newCar->controlType == CONTROL_TYPE_CUTSCENE)
 	{
 		carParked = 1;
@@ -177,7 +177,7 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 		carParked = 0;
 	}
 
-	lPlayer->playerType = 1;
+	lPlayer->playerType = PLAYER_TYPE_CAR;
 	lPlayer->playerCarId = newCar->id;
 	lPlayer->cameraCarId = newCar->id;
 
@@ -218,7 +218,7 @@ void ChangePedPlayerToCar(int playerID, CAR_DATA *newCar)
 			}
 		}
 
-		if (gCurrentMissionNumber == 33 && newCar->ap.model == 4)
+		if (gCurrentMissionNumber == 33 && newCar->ap.model == SPECIAL_CAR_SLOT)
 		{
 			makeLimoPullOver = 0;
 		}
@@ -262,9 +262,9 @@ void UpdatePlayers(void)
 		locPlayer = &player[i];
 
 		if (gInGameCutsceneActive == 0)
-			locPlayer->playerType = (locPlayer->pPed != NULL) ? 2 : 1;
+			locPlayer->playerType = (locPlayer->pPed != NULL) ? PLAYER_TYPE_PEDESTRIAN : PLAYER_TYPE_CAR;
 
-		if (locPlayer->playerType == 1)
+		if (locPlayer->playerType == PLAYER_TYPE_CAR)
 		{
 			carId = locPlayer->playerCarId;
 
@@ -281,7 +281,7 @@ void UpdatePlayers(void)
 				locPlayer->dir = cp->hd.direction;
 			}
 		}
-		else if (locPlayer->playerType == 2)
+		else if (locPlayer->playerType == PLAYER_TYPE_PEDESTRIAN)
 		{
 			ped = locPlayer->pPed;
 

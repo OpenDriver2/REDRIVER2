@@ -2434,7 +2434,7 @@ void StepEvents(void)
 				} while (i < MAX_CARS && i < 32);
 
 				// make Tanner on boat also
-				if (player[0].playerType == 2 && OnBoat((VECTOR*)player[0].pos, ev, &dist))
+				if (MainPlayer.playerType == PLAYER_TYPE_PEDESTRIAN && OnBoat((VECTOR*)MainPlayer.pos, ev, &dist))
 					carsOnBoat |= (1 << TANNER_COLLIDER_CARID) | 0x200000;// 0x300000;
 
 				BoatOffset(&boatOffset, ev);
@@ -2483,7 +2483,7 @@ void StepEvents(void)
 
 					if (i == TANNER_COLLIDER_CARID)
 					{
-						pos = (VECTOR*)player[0].pos;
+						pos = (VECTOR*)MainPlayer.pos;
 						vel = NULL;
 					}
 					else
@@ -3695,10 +3695,10 @@ void SetSpecialCamera(SpecialCamera type, int change)
 		camera_angle.vy = (short)rememberCamera[1];
 		camera_position.vz = rememberCamera[2];
 
-		player[0].cameraPos.vx = rememberCamera[0];
-		player[0].cameraPos.vy = camera_position.vy;
-		player[0].cameraPos.vz = rememberCamera[2];
-		player[0].cameraPos.pad = camera_position.pad;
+		MainPlayer.cameraPos.vx = rememberCamera[0];
+		MainPlayer.cameraPos.vy = camera_position.vy;
+		MainPlayer.cameraPos.vz = rememberCamera[2];
+		MainPlayer.cameraPos.pad = camera_position.pad;
 	}
 	else if (type == SPECIAL_CAMERA_WAIT)
 	{
@@ -3800,7 +3800,7 @@ void SetSpecialCamera(SpecialCamera type, int change)
 			camera_position.vz = event->position.vz + boat[2];
 		}
 
-		player[0].cameraPos = camera_position;
+		MainPlayer.cameraPos = camera_position;
 
 		if (events.cameraEvent != NULL)
 		{
@@ -3876,7 +3876,7 @@ int DetonatorTimer(void)
 					detonator.timer = detonator.timer + 1;
 				}
 
-				player[0].cameraPos.vz = camera_position.vz;
+				MainPlayer.cameraPos.vz = camera_position.vz;
 			}
 			else if (detonator.timer == 0)
 			{

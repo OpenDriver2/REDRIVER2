@@ -201,7 +201,7 @@ void MoveSmashedCones(void)
 		{
 			tbd = &gTrailblazerData[sc->cone];
 
-			if (sc->position.vy < 50 - player[0].pos[1])
+			if (sc->position.vy < 50 - MainPlayer.pos[1])
 			{
 				sc->position.vx += sc->velocity.vx;
 				sc->position.vy += sc->velocity.vy;

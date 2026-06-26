@@ -52,7 +52,7 @@ void DisplayPlayerPosition(void)
 {
 	char string[40];
 
-	sprintf(string, "X: %d, Y: %d, Z: %d", player[0].pos[0], player[0].pos[1], player[0].pos[2]);
+	sprintf(string, "X: %d, Y: %d, Z: %d", MainPlayer.pos[0], MainPlayer.pos[1], MainPlayer.pos[2]);
 	PrintString(string, 20, 210);
 }
 
@@ -304,7 +304,7 @@ void DrawWorldTarget(MS_TARGET *target)
 			return;
 	}
 
-	if (gMultiplayerLevels && doSpooling == 0 || Long2DDistance(player[0].spoolXZ, &tv) <= 15900)
+	if (gMultiplayerLevels && doSpooling == 0 || Long2DDistance(MainPlayer.spoolXZ, &tv) <= 15900)
 	{
 		if((flags & 0x10) == 0)
 		{

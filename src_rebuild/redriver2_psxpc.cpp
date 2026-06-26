@@ -53,12 +53,11 @@ void CheckModifierKeys(int nKey, bool down)
 }
 
 extern int gDrawDistance;
-
-int cursorX, cursorY, cursorOldX, cursorOldY;
 extern int g_FreeCameraEnabled;
 
-void FreeCameraMouseHandler(int x, int y)
+void FreeCameraMouseHandler(int x, int y, int dx, int dy)
 {
+	PsyX_SetCursorRelative(g_FreeCameraEnabled);
 	if (g_FreeCameraEnabled)
 	{
 		extern SVECTOR g_FreeCameraRotation;
@@ -66,19 +65,10 @@ void FreeCameraMouseHandler(int x, int y)
 		int width, height;
 		PsyX_GetScreenSize(&width, &height);
 
-		cursorX = x;
-		cursorY = y;
-
 		PsyX_SetCursorPosition(width / 2, height / 2);
 
-		g_FreeCameraRotation.vy -= cursorX - cursorOldX;
-		g_FreeCameraRotation.vx += cursorY - cursorOldY;
-
-		cursorX = width / 2;
-		cursorY = height / 2;
-
-		cursorOldX = cursorX;
-		cursorOldY = cursorY;
+		g_FreeCameraRotation.vy -= dx;
+		g_FreeCameraRotation.vx += dy;
 	}
 }
 
@@ -175,21 +165,21 @@ void GameDebugKeys(int nKey, char down)
 	}
 	else if (nKey == SDL_SCANCODE_PAGEUP)
 	{
-		player[0].cameraCarId++;
+		MainPlayer.cameraCarId++;
 
-		if (player[0].cameraCarId > MAX_CARS - 1)
-			player[0].cameraCarId = MAX_CARS - 1;
+		if (MainPlayer.cameraCarId > MAX_CARS - 1)
+			MainPlayer.cameraCarId = MAX_CARS - 1;
 
-		printf("Car on camera: %d\n", player[0].cameraCarId);
+		printf("Car on camera: %d\n", MainPlayer.cameraCarId);
 	}
 	else if (nKey == SDL_SCANCODE_PAGEDOWN)
 	{
-		player[0].cameraCarId--;
+		MainPlayer.cameraCarId--;
 
-		if (player[0].cameraCarId < 0)
-			player[0].cameraCarId = 0;
+		if (MainPlayer.cameraCarId < 0)
+			MainPlayer.cameraCarId = 0;
 
-		printf("Car on camera: %d\n", player[0].cameraCarId);
+		printf("Car on camera: %d\n", MainPlayer.cameraCarId);
 	}
 	else if (nKey == SDL_SCANCODE_KP_DIVIDE)
 	{
@@ -226,7 +216,7 @@ void GameDebugKeys(int nKey, char down)
 		LeadValues.hWidth		= 320;	LeadValues.hWidthMul	= 7;
 		LeadValues.hWidth80		= 225;	LeadValues.hWidth80Mul	= 3;
 
-		CAR_DATA *pCar = &car_data[player[0].playerCarId];
+		CAR_DATA *pCar = &car_data[MainPlayer.playerCarId];
 
 		LONGVECTOR4 startpos = {
 			pCar->hd.where.t[0],
@@ -246,7 +236,7 @@ void GameDebugKeys(int nKey, char down)
 		if (ShiftModifier)
 		{
 			// force a special car
-			model = residentCarModels[MAX_CAR_RESIDENT_MODELS - 1];
+			model = residentCarModels[SPECIAL_CAR_SLOT];
 			palette = 0;
 			lastmodel = model;
 		}
@@ -267,7 +257,7 @@ void GameDebugKeys(int nKey, char down)
 					if (tmp & 4)
 					{
 						// rare chance of spawning special car
-						model = residentCarModels[MAX_CAR_RESIDENT_MODELS - 1];
+						model = residentCarModels[SPECIAL_CAR_SLOT];
 						palette = 0;
 						lastmodel = model;
 						break;
@@ -324,7 +314,7 @@ void GameDebugKeys(int nKey, char down)
 }
 #endif
 
-#ifndef USE_CRT_MALLOC
+#if !USE_CRT_MALLOC
 char g_Overlay_buffer[0x50000];		// 0x1C0000
 char g_Frontend_buffer[0x60000];	// 0xFB400
 char g_Other_buffer[0x50000];		// 0xF3000
@@ -484,7 +474,7 @@ int main(int argc, char** argv)
 {
 	ini_t* config;
 
-#ifdef USE_CRT_MALLOC
+#if USE_CRT_MALLOC
 	_overlay_buffer = (char*)malloc(0x50000);			// 0x1C0000
 	_frontend_buffer = (char*)malloc(0x60000);			// 0xFB400
 	_other_buffer = (char*)malloc(0x50000);				// 0xF3000

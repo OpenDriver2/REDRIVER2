@@ -174,9 +174,9 @@ void SetTannerPosition(VECTOR* pVec)
 			pPed->position.vy = -pVec->vy;
 			pPed->position.vz = pVec->vz;
 
-			player[0].pos[0] = pVec->vx;
-			player[0].pos[1] = pVec->vy;
-			player[0].pos[2] = pVec->vz;
+			MainPlayer.pos[0] = pVec->vx;
+			MainPlayer.pos[1] = pVec->vy;
+			MainPlayer.pos[2] = pVec->vz;
 		}
 
 		pPed = pPed->pNext;
@@ -388,9 +388,9 @@ void PlaceRoadBlockCops(void)
 		sn = rsin(pCar->hd.direction);
 		cs = rcos(pCar->hd.direction);
 
-		disp[0] = pCar->hd.where.t[0] - player[0].pos[0];
-		disp[1] = player[0].pos[1] - pCar->hd.where.t[1];
-		disp[2] = pCar->hd.where.t[2] - player[0].pos[2];
+		disp[0] = pCar->hd.where.t[0] - MainPlayer.pos[0];
+		disp[1] = MainPlayer.pos[1] - pCar->hd.where.t[1];
+		disp[2] = pCar->hd.where.t[2] - MainPlayer.pos[2];
 
 		lbody = car_cosmetics[pCar->ap.model].colBox.vz - 120;
 		wbody = car_cosmetics[pCar->ap.model].colBox.vx + 400;
@@ -525,7 +525,7 @@ void DrawAllPedestrians(void)
 // [D] [T]
 int TannerActionHappening(void)
 {
-	LPPEDESTRIAN pPed = player[0].pPed;
+	LPPEDESTRIAN pPed = MainPlayer.pPed;
 
 	if (pPed && pPed->type == PED_ACTION_PRESSBUTTON)
 		return pPed->frame1 == 14;
@@ -768,8 +768,8 @@ void CivGetIn(LPPEDESTRIAN pPed)		// [A] UNUSED
 void CopStand(LPPEDESTRIAN pPed)
 {
 	VECTOR v;
-	v.vx = pPed->position.vx - player[0].pos[0];
-	v.vz = pPed->position.vz - player[0].pos[2];
+	v.vx = pPed->position.vx - MainPlayer.pos[0];
+	v.vz = pPed->position.vz - MainPlayer.pos[2];
 
 	pPed->frame1 = 0;
 	pPed->dir.vy = 1024 - ratan2(v.vz, v.vx);
@@ -1194,7 +1194,7 @@ void SetupGetInCar(LPPEDESTRIAN pPed)
 
 	if ((carToGetIn->controlFlags & CONTROL_FLAG_WAS_PARKED) == 0)
 	{
-		if (carToGetIn->controlType == CONTROL_TYPE_CIV_AI && carToGetIn->ai.c.thrustState == 3 && carToGetIn->ai.c.ctrlState == 5)
+		if (carToGetIn->controlType == CONTROL_TYPE_CIV_AI && carToGetIn->ai.c.thrustState == CIV_AI_THRUST_STOP && carToGetIn->ai.c.ctrlState == CIV_AI_CTRL_PARKED)
 		{
 			carToGetIn->controlFlags |= CONTROL_FLAG_WAS_PARKED;
 		}
@@ -1430,9 +1430,9 @@ void PingInPedestrians(void)
 	if (num_pedestrians >= MAX_PLACED_PEDS || pFreePeds == NULL || pFreePeds->pNext == NULL)
 		return;
 
-	baseLoc.vx = player[0].pos[0];
-	baseLoc.vy = player[0].pos[1];
-	baseLoc.vz = player[0].pos[2];
+	baseLoc.vx = MainPlayer.pos[0];
+	baseLoc.vy = MainPlayer.pos[1];
+	baseLoc.vz = MainPlayer.pos[2];
 
 	if (gWeather == WEATHER_NONE && FindSeated() != NULL)
 		return;
@@ -1774,13 +1774,13 @@ int PingOutPed(LPPEDESTRIAN pPed)
 	int px;
 	int ps;
 
-	px = pPed->position.vx - player[0].pos[0];
-	pz = pPed->position.vz - player[0].pos[2];
+	px = pPed->position.vx - MainPlayer.pos[0];
+	pz = pPed->position.vz - MainPlayer.pos[2];
 
 	ps = px * px + pz * pz;
 
 	if (ps <= 20496 * 20496)
-		return (-player[0].pos[1] - pPed->position.vy < 513) ^ 1;
+		return (-MainPlayer.pos[1] - pPed->position.vy < 513) ^ 1;
 
 	return 1;
 }
@@ -1800,9 +1800,9 @@ void SetupCivJump(LPPEDESTRIAN pPed, CAR_DATA* cp)
 		pPed->speed = 30;
 
 		// if player horns make scare box bigger and give player felony
-		if (cp == &car_data[player[0].playerCarId])
+		if (cp == &car_data[MainPlayer.playerCarId])
 		{
-			if (player[0].horn.on != 0)
+			if (MainPlayer.horn.on != 0)
 				scale = 2048;
 			else
 				scale = 4096;
@@ -1827,13 +1827,13 @@ void SetupCivJump(LPPEDESTRIAN pPed, CAR_DATA* cp)
 		{
 			int d;
 			
-			dx = player[0].pPed->position.vx - pPed->position.vx;
-			dz = player[0].pPed->position.vz - pPed->position.vz;
+			dx = MainPlayer.pPed->position.vx - pPed->position.vx;
+			dz = MainPlayer.pPed->position.vz - pPed->position.vz;
 
-			d = player[0].pPed->dir.vy - 2048;
+			d = MainPlayer.pPed->dir.vy - 2048;
 
-			dir[0] = player[0].pPed->speed * RCOS(d);
-			dir[2] = player[0].pPed->speed * RSIN(d);
+			dir[0] = MainPlayer.pPed->speed * RCOS(d);
+			dir[2] = MainPlayer.pPed->speed * RSIN(d);
 			
 			// [A] fuck....
 			if (FIXED(-dir[0]) * dx + FIXED(dir[2]) * dz + 2048 < 0)
@@ -1841,7 +1841,7 @@ void SetupCivJump(LPPEDESTRIAN pPed, CAR_DATA* cp)
 			else
 				angle = 1024;
 
-			angle += player[0].pPed->dir.vy;
+			angle += MainPlayer.pPed->dir.vy;
 		}
 	}
 	else
@@ -2188,8 +2188,8 @@ SEATEDPTR FindSeated(void)
 			seatedptr = seated_pedestrian;
 		}
 
-		dx = FIXED(seatedptr->x - player[0].pos[0]);
-		dz = FIXED(seatedptr->z - player[0].pos[2]);
+		dx = FIXED(seatedptr->x - MainPlayer.pos[0]);
+		dz = FIXED(seatedptr->z - MainPlayer.pos[2]);
 
 		if (seatedptr->index == 0)
 		{
@@ -2282,7 +2282,7 @@ void add_seated(SEATEDPTR seatedptr, int seat_index)
 		pedptr->dir.vy = seatedptr->rotation;
 		pedptr->position.vx = seatedptr->x;
 		pedptr->position.vz = seatedptr->z;
-		pedptr->position.vy = player[0].pos[1];
+		pedptr->position.vy = MainPlayer.pos[1];
 		
 		pedptr->position.vy = -75 - MapHeight((VECTOR*)&pedptr->position);
 
@@ -2319,9 +2319,9 @@ void set_coll_box(int index, CAR_DATA* cp, int offset)
 
 	boxSize = 400;
 
-	isPlayerCar = (cp == &car_data[player[0].playerCarId]);
+	isPlayerCar = (cp == &car_data[MainPlayer.playerCarId]);
 	
-	if (player[0].horn.on)
+	if (MainPlayer.horn.on)
 	{
 		if (isPlayerCar)
 			boxSize = 1200;
@@ -2358,10 +2358,10 @@ void BuildCarCollisionBox(void)
 	EXOBJECT* expl;
 	CAR_DATA* cp;
 
-	if (player[0].playerCarId != -1) // [A] ASan bug fix
+	if (MainPlayer.playerCarId != -1) // [A] ASan bug fix
 	{
-		set_coll_box(0, &car_data[player[0].playerCarId], 8);
-		set_coll_box(1, &car_data[player[0].playerCarId], 9);
+		set_coll_box(0, &car_data[MainPlayer.playerCarId], 8);
+		set_coll_box(1, &car_data[MainPlayer.playerCarId], 9);
 	}
 
 	cp = &car_data[(CameraCnt & 3)];
@@ -2370,7 +2370,7 @@ void BuildCarCollisionBox(void)
 
 	while (cp < &car_data[MAX_CARS])
 	{
-		if (cp != &car_data[player[0].playerCarId] && cp->controlType != CONTROL_TYPE_NONE)
+		if (cp != &car_data[MainPlayer.playerCarId] && cp->controlType != CONTROL_TYPE_NONE)
 		{
 			set_coll_box(collision_boxes_set, cp, 8);
 			collision_boxes_set++;
@@ -2379,17 +2379,17 @@ void BuildCarCollisionBox(void)
 		cp += 4; // [A] WTF?
 	}
 
-	if (player[0].playerType == 2)
+	if (MainPlayer.playerType == PLAYER_TYPE_PEDESTRIAN)
 	{
-		dir = player[0].pPed->dir.vy - 2048;
+		dir = MainPlayer.pPed->dir.vy - 2048;
 
-		vx = FIXED(player[0].pPed->speed * RSIN(dir) * 4);
-		vz = FIXED(player[0].pPed->speed * RCOS(dir) * 4);
+		vx = FIXED(MainPlayer.pPed->speed * RSIN(dir) * 4);
+		vz = FIXED(MainPlayer.pPed->speed * RCOS(dir) * 4);
 		
-		tanner_collision_box.min_x = player[0].pPed->position.vx + vx - 148;
-		tanner_collision_box.max_x = player[0].pPed->position.vx + vx + 148;
-		tanner_collision_box.min_z = player[0].pPed->position.vz + vz - 148;
-		tanner_collision_box.max_z = player[0].pPed->position.vz + vz + 148;
+		tanner_collision_box.min_x = MainPlayer.pPed->position.vx + vx - 148;
+		tanner_collision_box.max_x = MainPlayer.pPed->position.vx + vx + 148;
+		tanner_collision_box.min_z = MainPlayer.pPed->position.vz + vz - 148;
+		tanner_collision_box.max_z = MainPlayer.pPed->position.vz + vz + 148;
 	}
 
 	num_extra_boxes_set = 0;
@@ -2444,7 +2444,7 @@ CAR_DATA* CheckForCar(LPPEDESTRIAN pedestrian)
 	}
 
 
-	if (player[0].playerType == 2 && CheckForPlayerCar(pedestrian, &tanner_collision_box) != 0)
+	if (MainPlayer.playerType == PLAYER_TYPE_PEDESTRIAN && CheckForPlayerCar(pedestrian, &tanner_collision_box) != 0)
 		bAvoidTanner = 1;
 
 	return NULL;
@@ -2475,7 +2475,7 @@ void CalculatePedestrianInterest(LPPEDESTRIAN pPed)
 	VECTOR v1;
 	VECTOR v2;
 
-	carId = player[0].playerCarId;
+	carId = MainPlayer.playerCarId;
 
 	if (carId == -1) // [A] ASan bug fix
 	{
@@ -2535,8 +2535,8 @@ void IHaveThePower(void)
 	if (GameLevel != 1)
 		return;
 
-	if (player[0].pos[0] > -231749 || player[0].pos[0] < -232147 ||
-		player[0].pos[2] < -236229 || player[0].pos[2] > -235831)
+	if (MainPlayer.pos[0] > -231749 || MainPlayer.pos[0] < -232147 ||
+		MainPlayer.pos[2] < -236229 || MainPlayer.pos[2] > -235831)
 	{
 		// if player gets out the zone, restore weather back
 		if (bPower != 0)
@@ -2674,7 +2674,7 @@ void ProcessTannerPad(LPPEDESTRIAN pPed, u_int pad, char PadSteer, char use_anal
 		(!ActiveCheats.cheat12 || pPed->pedType != OTHER_MODEL))
 	{
 		lcp->pPed = NULL;
-		lcp->playerType = 0;
+		lcp->playerType = PLAYER_TYPE_NONE;
 
 		DestroyPedestrian(pPed);
 		return;
@@ -2751,7 +2751,7 @@ void ProcessTannerPad(LPPEDESTRIAN pPed, u_int pad, char PadSteer, char use_anal
 			camAngle.vz = camera_angle.vz;
 		}
 
-		camAngle.vy = lcp->headPos - player[0].dir & 0xfff;
+		camAngle.vy = lcp->headPos - MainPlayer.dir & 0xfff;
 		TannerCameraHandler(pPed);
 	}
 
@@ -2916,7 +2916,7 @@ int ActivatePlayerPedestrian(CAR_DATA* pCar, char* padId, int direction, LONGVEC
 		lp->headPos = 0;
 		lp->headTarget = 0;
 		lp->headTimer = 0;
-		lp->playerType = 2;
+		lp->playerType = PLAYER_TYPE_PEDESTRIAN;
 		lp->cameraAngle = dir;
 		lp->cameraCarId = -1;
 		lp->worldCentreCarId = -1;
@@ -2998,7 +2998,7 @@ void DeActivatePlayerPedestrian(LPPEDESTRIAN pPed)
 	if (!cp)
 		return;
 
-	if (cp->ap.model == 4)
+	if (cp->ap.model == SPECIAL_CAR_SLOT)
 		getIn = FindPointOfCollision(cp, pPed);
 	else if (cp && TannerCanEnterCar(cp, distToCarSq))
 		getIn = 1;
@@ -3009,7 +3009,7 @@ void DeActivatePlayerPedestrian(LPPEDESTRIAN pPed)
 		pPed->type = PED_ACTION_GETINCAR;
 		pPed->fpAgitatedState = PedGetInCar;
 
-		Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 2, player[0].pos[0], player[0].pos[1], player[0].pos[2], 0, 0x1000);
+		Start3DSoundVolPitch(-1, SOUND_BANK_TANNER, 2, MainPlayer.pos[0], MainPlayer.pos[1], MainPlayer.pos[2], 0, 0x1000);
 		SetupPedestrian(pPed);
 		SetupGetInCar(pPed);
 	}

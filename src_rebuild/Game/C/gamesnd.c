@@ -172,21 +172,21 @@ void LoadBankFromLump(int bank, int lump)
 // [D] [T]
 int CarHasSiren(int index)
 {
-	if (index == MAX_CAR_RESIDENT_MODELS - 1)
+	if (index == SPECIAL_CAR_SLOT)
 	{
 		if (GameLevel == 0)
 		{
-			if (residentCarModels[MAX_CAR_RESIDENT_MODELS - 1] == 8)
+			if (residentCarModels[SPECIAL_CAR_SLOT] == 8)
 				return M_SHRT_2(SOUND_BANK_SFX, 12);
 		}
 		else if (GameLevel == 2)
 		{
-			if (residentCarModels[MAX_CAR_RESIDENT_MODELS - 1] == 9)
+			if (residentCarModels[SPECIAL_CAR_SLOT] == 9)
 				return M_SHRT_2(SOUND_BANK_SFX, 12);
 		}
 		else if (GameLevel == 3)
 		{
-			if (residentCarModels[MAX_CAR_RESIDENT_MODELS - 1] == 10)
+			if (residentCarModels[SPECIAL_CAR_SLOT] == 10)
 				return M_SHRT_2(SOUND_BANK_SFX, 12);
 		}
 	}
@@ -222,7 +222,7 @@ int ResidentModelsBodge(void)
 		return 3;
 	}
 
-	j = residentCarModels[MAX_CAR_RESIDENT_MODELS - 1];
+	j = residentCarModels[SPECIAL_CAR_SLOT];
 
 	if (gCurrentMissionNumber - 50U < 16 && j == 12)
 	{
@@ -265,7 +265,7 @@ int ResidentModelsBodge(void)
 int GetCarBankSample(int model)
 {
 	int bankStartSample;
-	if (model == MAX_CAR_RESIDENT_MODELS - 1)
+	if (model == SPECIAL_CAR_SLOT)
 	{
 #if MAX_CAR_RESIDENT_MODELS > 5
 		bankStartSample = ResidentModelsBodge() + 1;
@@ -505,7 +505,7 @@ void LoadLevelSFX(int missionNum)
 
 	// special vehicle 1 bank
 	if (missionNum == 40 || missionNum >= 400 && missionNum <= 404)
-		LoadBankFromLump(SOUND_BANK_CARS, MapCarIndexToBank(MAX_CAR_RESIDENT_MODELS-1));
+		LoadBankFromLump(SOUND_BANK_CARS, MapCarIndexToBank(SPECIAL_CAR_SLOT));
 	else
 		LoadBankFromLump(SOUND_BANK_CARS, SpecialVehicleKludge(0));
 
@@ -600,7 +600,7 @@ void StartGameSounds(void)
 	lcp = player;
 	for (i = 0; i < NumPlayers; i++)
 	{
-		if (lcp->playerType == 1)
+		if (lcp->playerType == PLAYER_TYPE_CAR)
 		{
 			cp = &car_data[lcp->playerCarId];
 			StartPlayerCarSounds(i, cp->ap.model, (VECTOR*)cp->hd.where.t);
@@ -959,16 +959,17 @@ void InitDopplerSFX(void)
 	for (i = 0; i < MAX_SIREN_NOISES; i++)
 	{
 		siren_noise[i].chan = -1;
-		siren_noise[i].car = 20;
+		siren_noise[i].car = MAX_CARS;
 		siren_noise[i].in_use = 0;
+		siren_noise[i].stopped = 1;
 	}
 
 	for (i = 0; i < MAX_CAR_NOISES; i++)
 	{
 		car_noise[i].chan = -1;
-		car_noise[i].chan = -1;
-		car_noise[i].car = 20;
+		car_noise[i].car = MAX_CARS;
 		car_noise[i].in_use = 0;
+		car_noise[i].stopped = 1;
 	}
 
 	if (GameType == GAME_GETAWAY)
@@ -1010,7 +1011,7 @@ void DoDopplerSFX(void)
 
 		if (ABS(dx) < 16384 && ABS(dz) < 16384)
 		{
-			if (car_ptr->controlType == CONTROL_TYPE_CIV_AI && car_ptr->ai.c.ctrlState != 5 && car_ptr->ai.c.ctrlState != 7)
+			if (car_ptr->controlType == CONTROL_TYPE_CIV_AI && car_ptr->ai.c.ctrlState != CIV_AI_CTRL_PARKED && car_ptr->ai.c.ctrlState != CIV_AI_CTRL_EMPTY)
 			{
 				dist = jsqrt(dx * dx + dz * dz) + 0x6000;
 			}
@@ -1065,7 +1066,7 @@ void DoDopplerSFX(void)
 		// sound up ambulance we're going to steal
 		if (gCurrentMissionNumber == 26)
 		{
-			if (car_ptr->ap.model == 4 && car_ptr->controlType == CONTROL_TYPE_CUTSCENE)
+			if (car_ptr->ap.model == SPECIAL_CAR_SLOT && car_ptr->controlType == CONTROL_TYPE_CUTSCENE)
 			{
 				siren = 1;
 			}
@@ -1081,7 +1082,7 @@ void DoDopplerSFX(void)
 		// vans in 'Caine's Compound' should not listen to it
 		if (gCurrentMissionNumber != 7 && 
 			car_ptr->controlType == CONTROL_TYPE_CIV_AI && 
-			car_ptr->ap.model > 0 && car_ptr->ap.model < 3 &&
+			car_ptr->ap.model > 0 && car_ptr->ap.model < (MAX_CAR_RESIDENT_MODELS-2) &&
 			indexlist[i] == 1)
 		{
 			siren = 1;
@@ -1099,19 +1100,21 @@ void DoDopplerSFX(void)
 	// stop unused siren noises
 	for (i = 0; i < MAX_SIREN_NOISES; i++)
 	{
-		int siren;
-		siren = (car_flags & 1 << siren_noise[i].car) != 0;
+		int in_use, music;
+		
+		in_use = (car_flags & 1 << siren_noise[i].car) != 0;
+		music = siren_noise[i].idle;
 
-		siren_noise[i].in_use = siren;
-		car_flags &= ~(siren << siren_noise[i].car);
+		siren_noise[i].in_use = in_use;
+		car_flags &= ~(in_use << siren_noise[i].car);
 
-		if (siren == 0 && siren_noise[i].stopped == 0)
+		if ((in_use == 0 || music != (car_data[siren_noise[i].car].controlType == CONTROL_TYPE_CIV_AI)) && siren_noise[i].stopped == 0)
 		{
 			StopChannel(siren_noise[i].chan);
 			UnlockChannel(siren_noise[i].chan);
 
 			siren_noise[i].chan = -1;
-			siren_noise[i].car = 20;
+			siren_noise[i].car = MAX_CARS;
 			siren_noise[i].stopped = 1;
 		}
 	}
@@ -1126,14 +1129,18 @@ void DoDopplerSFX(void)
 			// dispatch siren sounds
 			for (j = 0; j < MAX_SIREN_NOISES; j++)
 			{
+				int siren;
 				if (siren_noise[j].in_use != 0)
 					continue;
+
+				siren = car_data[car].controlType != CONTROL_TYPE_CIV_AI;
 
 				siren_noise[j].in_use = 1;
 				siren_noise[j].stopped = 0;
 				siren_noise[j].car = car;
+				siren_noise[j].idle = siren == 0;
 
-				if (car_data[car].controlType != CONTROL_TYPE_CIV_AI)
+				if (siren)
 				{
 					int siren;
 					siren = CarHasSiren(car_data[car].ap.model);
@@ -1206,7 +1213,7 @@ void DoDopplerSFX(void)
 			UnlockChannel(car_noise[j].chan);
 
 			car_noise[j].chan = -1;
-			car_noise[j].car = 20;
+			car_noise[j].car = MAX_CARS;
 			car_noise[j].stopped = 1;
 		}
 	}
@@ -1324,10 +1331,7 @@ void DoDopplerSFX(void)
 	// bark on player
 	if (CopsCanSeePlayer)
 	{
-		if (player[0].playerCarId < 0)
-			playerFelony = &pedestrianFelony;
-		else
-			playerFelony = &car_data[player[0].playerCarId].felonyRating;
+		playerFelony = GetPlayerFelony(&MainPlayer);
 
 		if (*playerFelony > FELONY_PURSUIT_MIN_VALUE)
 			DoPoliceLoudhailer(num_noisy_cars, indexlist, car_dist);
@@ -1411,13 +1415,13 @@ void CollisionSound(char player_id, CAR_DATA* cp, int impact, int car_car)
 		u_int p0dst;
 		u_int p1dst;
 
-		dx = cp->hd.where.t[0] - player[0].pos[0];
-		dz = cp->hd.where.t[2] - player[0].pos[2];
+		dx = cp->hd.where.t[0] - MainPlayer.pos[0];
+		dz = cp->hd.where.t[2] - MainPlayer.pos[2];
 
 		p0dst = (dx * dx + dz * dz);
 
-		dx = cp->hd.where.t[0] - player[1].pos[0];
-		dz = cp->hd.where.t[2] - player[1].pos[2];
+		dx = cp->hd.where.t[0] - SecondPlayer.pos[0];
+		dz = cp->hd.where.t[2] - SecondPlayer.pos[2];
 
 		p1dst = (dx * dx + dz * dz);
 
@@ -1459,7 +1463,11 @@ void CollisionSound(char player_id, CAR_DATA* cp, int impact, int car_car)
 
 	chan = GetFreeChannel();
 
-	SetPlayerOwnsChannel(chan, playerid);
+	if (NumPlayers > 1 && NoPlayerControl == 0)
+		SetPlayerOwnsChannel(chan, playerid);
+	else if(playerid > 0)
+		return;
+	
 	Start3DSoundVolPitch(chan, SOUND_BANK_SFX, sample, cp->hd.where.t[0], cp->hd.where.t[1], cp->hd.where.t[2], -2750, impact - (impact / 1024) * 1024 + 3584);
 
 	player[playerid].crash_timer = 2;
@@ -1545,9 +1553,9 @@ void ExplosionSound(VECTOR* pos, int type)
 	}
 	
 
-	P.vx = pos->vx * sc1 + player[0].cameraPos.vx * sc2;
-	P.vy = pos->vy * sc1 + player[0].cameraPos.vy * sc2;
-	P.vz = pos->vz * sc1 + player[0].cameraPos.vz * sc2;
+	P.vx = pos->vx * sc1 + MainPlayer.cameraPos.vx * sc2;
+	P.vy = pos->vy * sc1 + MainPlayer.cameraPos.vy * sc2;
+	P.vz = pos->vz * sc1 + MainPlayer.cameraPos.vz * sc2;
 
 	Start3DSoundVolPitch(-1, SOUND_BANK_MISSION,
 		bang, P.vx / 4, P.vy / 4, P.vz / 4,
@@ -1567,10 +1575,7 @@ void JerichoSpeak(void)
 	if (CopsCanSeePlayer == 0)
 		return;
 
-	if (player[0].playerCarId < 0)
-		playerFelony = &pedestrianFelony;
-	else
-		playerFelony = &car_data[player[0].playerCarId].felonyRating;
+	playerFelony = GetPlayerFelony(&MainPlayer);
 
 	if (*playerFelony > FELONY_PURSUIT_MIN_VALUE && rnd == rnd / 5 * 5)
 	{
@@ -1727,8 +1732,8 @@ void SoundTasks(void)
 	}
 
 	// do annoying lead car horn
-	if (gInGameChaseActive != 0 && player[0].targetCarId >= 0)
-		LeadHorn(&car_data[player[0].targetCarId]);		// use target id instead
+	if (gInGameChaseActive != 0 && MainPlayer.targetCarId >= 0)
+		LeadHorn(&car_data[MainPlayer.targetCarId]);		// use target id instead
 
 	// FIXME: move it to MC_SND?
 	if (jericho_in_back != 0 && (gCurrentMissionNumber == 20 || gCurrentMissionNumber == 25 || gCurrentMissionNumber == 39))
@@ -1787,7 +1792,7 @@ void InitMusic(int musicnum)
 		music_pt = D_MALLOC(music_len + 3U & ~3);
 		sample_pt = D_TEMPALLOC(sample_len);
 
-#ifdef USE_CRT_MALLOC
+#if USE_CRT_MALLOC
 		LoadfileSeg(name, music_pt, musicpos[0], music_len);
 		LoadfileSeg(name, sample_pt, musicpos[0] + music_len, sample_len);
 #else

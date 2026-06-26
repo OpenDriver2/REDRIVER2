@@ -492,7 +492,7 @@ void DoMissionSound(void)
 			else
 			{
 				// car bomb timer
-				int carId = player[0].playerCarId;
+				int carId = MainPlayer.playerCarId;
 
 				if (carId == holdall)
 				{
@@ -647,7 +647,7 @@ void DoMissionSound(void)
 					}
 				}
 			}
-			else if (player[0].playerCarId == holdall)
+			else if (MainPlayer.playerCarId == holdall)
 			{
 				jericho_in_back = 1;
 			}
@@ -667,8 +667,8 @@ void DoMissionSound(void)
 				int dx, dz;
 				int* C = (int*)bodgevar; // Ahhh, Reflections...	// LONGVECTOR3
 
-				dx = C[0] - car_data[player[0].playerCarId].hd.where.t[0];
-				dz = C[2] - car_data[player[0].playerCarId].hd.where.t[2];
+				dx = C[0] - car_data[MainPlayer.playerCarId].hd.where.t[0];
+				dz = C[2] - car_data[MainPlayer.playerCarId].hd.where.t[2];
 
 				if (ABS(dx) < 32768 && ABS(dz) < 32768)
 				{
@@ -766,7 +766,7 @@ char SilenceThisCar(int car)
 {
 	if (gInGameCutsceneActive == 0)
 	{
-		return car_data[car].controlType == CONTROL_TYPE_CUTSCENE && car_data[car].ai.c.ctrlState == 7;
+		return car_data[car].controlType == CONTROL_TYPE_CUTSCENE && car_data[car].ai.c.ctrlState == CIV_AI_CTRL_EMPTY;
 	}
 
 	switch (gCurrentMissionNumber)
@@ -934,13 +934,13 @@ void AdjustPlayerCarVolume(void)
 
 	if (gCurrentMissionNumber == 3 || gCurrentMissionNumber == 5 || gCurrentMissionNumber == 27)
 	{
-		player[0].revsvol = -6750;
-		player[0].idlevol = -10000;
+		MainPlayer.revsvol = -6750;
+		MainPlayer.idlevol = -10000;
 	}
 	else
 	{
-		player[0].revsvol = -10000;
-		player[0].idlevol = -8000;
+		MainPlayer.revsvol = -10000;
+		MainPlayer.idlevol = -8000;
 	}
 }
 

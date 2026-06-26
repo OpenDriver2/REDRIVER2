@@ -266,7 +266,7 @@ void TriggerChase(int *car, int cutscene)
 		Mission.timer[0].flags = TIMER_FLAG_ACTIVE;
 
 		*car = CutsceneStreamIndex;
-		player[0].targetCarId = CutsceneStreamIndex;
+		MainPlayer.targetCarId = CutsceneStreamIndex;
 
 		InitLeadHorn();
 	}
@@ -290,11 +290,11 @@ void TriggerInGameCutscene(int cutscene)
 
 	if (CameraCnt < 3 || gInGameCutsceneDelay > 27)
 	{
-		SavedCameraCarId = player[0].cameraCarId;
+		SavedCameraCarId = MainPlayer.cameraCarId;
 		SavedCameraView = cameraview;
-		SavedWorldCentreCarId = player[0].worldCentreCarId;
+		SavedWorldCentreCarId = MainPlayer.worldCentreCarId;
 		SavedCameraAngle = gCameraAngle;
-		SavedSpoolXZ = player[0].spoolXZ;
+		SavedSpoolXZ = MainPlayer.spoolXZ;
 
 		gInGameCutsceneActive = TriggerInGameCutsceneSystem(cutscene);
 
@@ -392,7 +392,7 @@ void ReleaseInGameCutscene(void)
 
 	if (gInGameChaseActive && Mission.ChaseTarget) 
 	{
-		player[1].padid = -128;
+		SecondPlayer.padid = -128;
 	}
 
 	if (gInGameCutsceneActive != 0)
@@ -404,22 +404,22 @@ void ReleaseInGameCutscene(void)
 		{
 			if (PlayerStartInfo[i]->flags & 4)
 			{
-				player[0] = player[i];
+				MainPlayer = player[i];
 
-				if (player[0].playerType == 2)
+				if (MainPlayer.playerType == PLAYER_TYPE_PEDESTRIAN)
 				{
-					player[0].pPed->padId = 0;
+					MainPlayer.pPed->padId = 0;
 					SavedWorldCentreCarId = -1;
-					SavedSpoolXZ = (VECTOR *)&player[0].pPed->position;
+					SavedSpoolXZ = (VECTOR *)&MainPlayer.pPed->position;
 				}
 				else
 				{
-					Swap2Cars(player[0].playerCarId, 0);
-					SavedWorldCentreCarId = player[0].playerCarId;
+					Swap2Cars(MainPlayer.playerCarId, 0);
+					SavedWorldCentreCarId = MainPlayer.playerCarId;
 
 					SavedSpoolXZ = (VECTOR *)car_data[SavedWorldCentreCarId].hd.where.t;
 
-					car_data[SavedWorldCentreCarId].ai.padid = &player[0].padid;
+					car_data[SavedWorldCentreCarId].ai.padid = &MainPlayer.padid;
 				}
 
 				SavedCameraCarId = SavedWorldCentreCarId;
@@ -433,31 +433,31 @@ void ReleaseInGameCutscene(void)
 		}
 
 		gThePlayerCar = -1;
-		player[0].targetCarId = -1;
+		MainPlayer.targetCarId = -1;
 
 		DestroyCivPedestrians();
 		AdjustPlayerCarVolume();
 
-		i = player[0].playerCarId;
+		i = MainPlayer.playerCarId;
 
-		player[0].padid = 0;
-		player[0].worldCentreCarId = SavedWorldCentreCarId;
-		player[0].spoolXZ = SavedSpoolXZ;
-		player[0].cameraCarId = SavedCameraCarId;
+		MainPlayer.padid = 0;
+		MainPlayer.worldCentreCarId = SavedWorldCentreCarId;
+		MainPlayer.spoolXZ = SavedSpoolXZ;
+		MainPlayer.cameraCarId = SavedCameraCarId;
 
 		if (i != -1) 
 		{
-			car_data[i].ai.padid = &player[0].padid;
+			car_data[i].ai.padid = &MainPlayer.padid;
 			car_data[i].controlType = CONTROL_TYPE_PLAYER;
 		}
 
 		cameraview = SavedCameraView;
 		gCameraAngle = SavedCameraAngle;
 
-		InitCamera(&player[0]);
+		InitCamera(&MainPlayer);
 
-		player[0].cameraAngle = 0;
-		player[0].cameraDist = 1000;
+		MainPlayer.cameraAngle = 0;
+		MainPlayer.cameraDist = 1000;
 
 		CutsceneEventTrigger = 0;
 	}
@@ -521,7 +521,7 @@ int CutsceneCameraChange(int cameracnt)
 
 	if (cameracnt > -1) 
 	{
-		InvalidCamera(player[0].cameraCarId);
+		InvalidCamera(MainPlayer.cameraCarId);
 
 		CutLastChange = CutNextChange;
 		FindNextCutChange(cameracnt + 1);
@@ -575,12 +575,12 @@ int TriggerInGameCutsceneSystem(int cutscene)
 			InitCivCars();
 			DestroyCivPedestrians();
 
-			if (CutsceneStreamIndex <= player[0].playerCarId)
+			if (CutsceneStreamIndex <= MainPlayer.playerCarId)
 			{
-				Swap2Cars(player[0].playerCarId, 0);
-				SavedCameraCarId = player[0].cameraCarId;
-				SavedWorldCentreCarId = player[0].playerCarId;
-				SavedSpoolXZ = player[0].spoolXZ;
+				Swap2Cars(MainPlayer.playerCarId, 0);
+				SavedCameraCarId = MainPlayer.cameraCarId;
+				SavedWorldCentreCarId = MainPlayer.playerCarId;
+				SavedSpoolXZ = MainPlayer.spoolXZ;
 			}
 
 			if (CutsceneEventTrigger != 0) 
@@ -606,10 +606,10 @@ int TriggerInGameCutsceneSystem(int cutscene)
 						{
 							gThePlayerCar = player_id;
 
-							if (gCutsceneAtEnd != 0 && player[0].playerType == 1)
+							if (gCutsceneAtEnd != 0 && MainPlayer.playerType == PLAYER_TYPE_CAR)
 							{
-								stream->SourceType.palette = car_data[player[0].playerCarId].ap.palette;
-								stream->SourceType.model = residentCarModels[car_data[player[0].playerCarId].ap.model];
+								stream->SourceType.palette = car_data[MainPlayer.playerCarId].ap.palette;
+								stream->SourceType.model = residentCarModels[car_data[MainPlayer.playerCarId].ap.model];
 
 								bDamageOverride = 1;
 								gCutsceneAtEnd = 0;
@@ -636,7 +636,7 @@ int TriggerInGameCutsceneSystem(int cutscene)
 
 						if (bDamageOverride) 
 						{
-							slot = player[0].playerCarId;
+							slot = MainPlayer.playerCarId;
 
 							cp->ap.needsDenting = 1;
 							cp->ap.damage[0] = car_data[slot].ap.damage[0];
@@ -670,13 +670,13 @@ int TriggerInGameCutsceneSystem(int cutscene)
 					{
 						if (gStartOnFoot == 0) 
 						{
-							player[0].spoolXZ = (VECTOR *)car_data[player_id].hd.where.t;
-							player[0].worldCentreCarId = CutsceneStreamIndex;
+							MainPlayer.spoolXZ = (VECTOR *)car_data[player_id].hd.where.t;
+							MainPlayer.worldCentreCarId = CutsceneStreamIndex;
 						}
 						else 
 						{
-							player[0].worldCentreCarId = -1;
-							player[0].spoolXZ = (VECTOR *)&player[player_id].pPed->position;
+							MainPlayer.worldCentreCarId = -1;
+							MainPlayer.spoolXZ = (VECTOR *)&player[player_id].pPed->position;
 						}
 					}
 
@@ -711,14 +711,14 @@ void SetNullPlayer(int plr)
 	if (carId != -1) 
 	{
 		car_data[carId].controlType = CONTROL_TYPE_CIV_AI;
-		car_data[carId].ai.c.thrustState = 3;
-		car_data[carId].ai.c.ctrlState = 7;
+		car_data[carId].ai.c.thrustState = CIV_AI_THRUST_STOP;
+		car_data[carId].ai.c.ctrlState = CIV_AI_CTRL_EMPTY;
 		car_data[carId].ai.c.ctrlNode = NULL;
 
 		player[plr].playerCarId = -1;
 	}
 
-	player[plr].playerType = 3;
+	player[plr].playerType = PLAYER_TYPE_NULL;
 }
 
 // [D] [T]
@@ -729,14 +729,14 @@ void SetNullPlayerDontKill(int plr)
 	if (carId != -1)
 	{
 		car_data[carId].controlType = CONTROL_TYPE_CUTSCENE;
-		car_data[carId].ai.c.thrustState = 3;
-		car_data[carId].ai.c.ctrlState = 7;
+		car_data[carId].ai.c.thrustState = CIV_AI_THRUST_STOP;
+		car_data[carId].ai.c.ctrlState = CIV_AI_CTRL_EMPTY;
 		car_data[carId].ai.c.ctrlNode = NULL;
 
 		player[plr].playerCarId = -1;
 	}
 
-	player[plr].playerType = 3;
+	player[plr].playerType = PLAYER_TYPE_NULL;
 }
 
 // [D] [T]
@@ -750,14 +750,14 @@ void DestroyPlayer(int plr, int fully)
 
 	if (fully) 
 	{
-		if (player[plr].playerType == 1 && player[plr].playerCarId != gThePlayerCar) 
+		if (player[plr].playerType == PLAYER_TYPE_CAR && player[plr].playerCarId != gThePlayerCar)
 			PingOutCar(&car_data[player[plr].playerCarId]);
 
 		if (player[plr].pPed != NULL) 
 			DestroyPedestrian(player[plr].pPed);
 	}
 
-	player[plr].playerType = 3;
+	player[plr].playerType = PLAYER_TYPE_NULL;
 	player[plr].playerCarId = -1;
 	player[plr].pPed = NULL;
 }

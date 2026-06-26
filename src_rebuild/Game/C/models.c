@@ -282,7 +282,7 @@ int ProcessCarModelLump(char *lump_ptr, int lump_size)
 		gCarDamModelPtr[i] = NULL;
 		gCarLowModelPtr[i] = NULL;
 
-		if (i == MAX_CAR_RESIDENT_MODELS-1)
+		if (i == SPECIAL_CAR_SLOT)
 		{
 			startBuildNewCars(1);
 			specmallocptr = (char*)mallocptr;
