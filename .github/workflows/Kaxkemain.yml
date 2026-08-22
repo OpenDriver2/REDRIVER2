@@ -1,4 +1,4 @@
-name: Build final REDRIVER2 for R36S (RK3326)
+name: Build second REDRIVER2 for R36S (RK3326)
 
 on:
   push:
@@ -19,14 +19,17 @@ jobs:
       - name: Generate Makefiles with Premake5 on Host
         run: |
           echo "Downloading Premake5 for x86_64 Host..."
-          curl -L https://github.com/premake/premake-core/releases/download/v5.0.0-alpha15/premake-5.0.0-alpha15-linux.tar.gz -o /tmp/premake5.tar.gz
+          curl -L https://github.com/premake/premake-core/releases/download/v5.0.0-beta2/premake-5.0.0-beta2-linux.tar.gz -o /tmp/premake5.tar.gz
           tar -xzf /tmp/premake5.tar.gz -C /tmp
           chmod +x /tmp/premake5
           
           cd src_rebuild
-          sed -i 's/"x86"/"ARM64"/g' premake5.lua
+          # Architektur-Patches in premake5.lua
           sed -i 's/"x86_64"/"ARM64"/g' premake5.lua
-          /tmp/premake5 gmake
+          sed -i 's/"x86"/"ARM"/g' premake5.lua
+          
+          # Makefiles im korrekten 'build'-Ordner generieren
+          /tmp/premake5 gmake2
           cd ..
           echo "Makefiles successfully generated on host!"
 
@@ -82,11 +85,19 @@ jobs:
               set -e
               echo '===== Build-Step: Kompilierung für RK3326 (arm64) ====='
               cd src_rebuild
+              
+              # Cortex-A35 Optimierungen und Memory-Sicherheit
               export CFLAGS='-mcpu=cortex-a35 -mtune=cortex-a35 -O3 -pipe -fno-strict-aliasing'
               export CXXFLAGS='-mcpu=cortex-a35 -mtune=cortex-a35 -O3 -pipe -fno-strict-aliasing'
               export LDFLAGS='-mcpu=cortex-a35'
-              cd project_gmake_linux
-              make config=release_arm64 -j$(nproc) || make config=release_dev_arm64 -j$(nproc) || make -j$(nproc)
+              
+              cd build
+              # Durchprobieren der Config-Namen, falls Premake sie umbenannt hat
+              make config=release_arm64 -j$(nproc) || \
+              make config=release_dev_arm64 -j$(nproc) || \
+              make config=release_dev_x64 -j$(nproc) || \
+              make -j$(nproc)
+              
               cd /workspace
               mkdir -p dist/REDRIVER2_arkos
               find src_rebuild -type f -name 'REDRIVER2' -exec cp {} dist/REDRIVER2_arkos/ \;
