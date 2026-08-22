@@ -1,0 +1,54 @@
+name: Build REDRIVER2 for R36S (aarch64)
+
+on:
+  workflow_dispatch: 
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: ARM64 Kompilierung in QEMU
+        uses: uraimo/run-on-arch-action@v2
+        with:
+          arch: aarch64
+          distro: ubuntu20.04
+          run: |
+            apt-get update
+            # Installiere die neuen Abhängigkeiten des Entwicklers + git/curl zum Bauen
+            apt-get install -y g++ gcc make libsdl2-dev libopenal-dev libjpeg-turbo8-dev git curl
+            
+            # 1. Premake5 für ARM64 aus dem Source-Code bauen
+            git clone https://github.com/premake/premake-core.git --depth 1
+            cd premake-core
+            make -f Bootstrap.mak linux
+            cp bin/release/premake5 /usr/local/bin/
+            cd ..
+            
+            # 2. In das Build-Verzeichnis von REDRIVER2 wechseln
+            cd src_rebuild
+            
+            # 3. Workaround: Architektur-Beschränkungen (x86) für ARM64 aufbrechen
+            sed -i 's/architecture "x86_64"/architecture "ARM64"/g' premake5.lua
+            sed -i 's/architecture "x86"/architecture "ARM64"/g' premake5.lua
+            
+            # 4. Makefiles mit Premake5 generieren
+            premake5 gmake2
+            
+            # 5. Das Spiel kompilieren! (Es nutzt den Namen release_dev_x64, wird aber als ARM64 gebaut)
+            cd build
+            make config=release_dev_x64 -j$(nproc)
+            
+            # 6. Spiel-Binary in einen Ausgabeordner kopieren, um es leichter hochzuladen
+            mkdir -p ../../R36S-Output
+            find . -type f -name "REDRIVER2" -exec cp {} ../../R36S-Output/ \;
+            
+      - name: Fertiges Spiel hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: REDRIVER2-PortMaster
+          path: R36S-Output/REDRIVER2
