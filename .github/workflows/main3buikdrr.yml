@@ -1,0 +1,118 @@
+name: construct REDRIVER2 for R36S (RK3326)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Repository klonen
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # 2. QEMU-Setup für ARM64-Emulation
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/arm64
+
+      # 3. Build in ARM64-Container via run-on-arch-action (v3)
+      - name: Build in ARM64 container
+        uses: uraimo/run-on-arch-action@v3
+        with:
+          arch: none
+          distro: none
+          base_image: '--platform=linux/arm64 ubuntu:22.04'
+          githubToken: ${{ github.token }}
+          env: |
+            ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+          install: |
+            apt-get update
+            apt-get install -y --no-install-recommends \
+              build-essential \
+              make \
+              gcc-9 \
+              g++-9 \
+              gfortran-9 \
+              libsdl2-dev \
+              libopenal-dev \
+              libjpeg-dev \
+              libgl1-mesa-dev \
+              libgles2-mesa-dev \
+              libxrandr-dev \
+              libxinerama-dev \
+              libxcursor-dev \
+              libxi-dev \
+              libglu1-mesa-dev \
+              libpulse-dev \
+              libdbus-1-dev \
+              libibus-1.0-dev \
+              pkg-config \
+              cpio \
+              wget \
+              curl
+          run: |
+            echo "===== Build-Step: Cross-Compilation für RK3326 (arm64) ====="
+            
+            # 4. Premake5 herunterladen und korrekt platzieren
+            echo "Downloading Premake5..."
+            wget -q "https://github.com/premake/premake-core/releases/download/v5.0.0-alpha15/premake-5.0.0-alpha15-linux.tar.gz" -O /tmp/premake5.tar.gz
+            tar -xzf /tmp/premake5.tar.gz -C /tmp
+            cp /tmp/premake5 /usr/local/bin/
+            chmod +x /usr/local/bin/premake5
+            premake5 --version
+
+            # 5. Architektur-Patch (wichtig: von x86 auf ARM64 ändern)
+            echo "Patching premake5.lua..."
+            cd /__w/REDRIVER2-arkos/REDRIVER2-arkos/src_rebuild/
+            sed -i 's/"x86"/"ARM64"/g' premake5.lua
+            sed -i 's/"x86_64"/"ARM64"/g' premake5.lua
+            grep -n "platforms" premake5.lua | head -5
+
+            # 6. Premake5 Projektdateien generieren
+            echo "Generating Makefiles..."
+            premake5 gmake
+            ls -la project_gmake_linux
+
+            # 7. Kompilierung mit aggressiven Optimierungen für RK3326
+            echo "Building REDRIVER2..."
+            export CFLAGS="-mcpu=cortex-a35 -mtune=cortex-a35 -O3 -pipe -fno-strict-aliasing"
+            export CXXFLAGS="-mcpu=cortex-a35 -mtune=cortex-a35 -O3 -pipe -fno-strict-aliasing"
+            export LDFLAGS="-mcpu=cortex-a35"
+            
+            cd project_gmake_linux/
+            make config=release_arm64 -j$(nproc) || \
+            make config=release_dev_arm64 -j$(nproc) || \
+            make -j$(nproc)
+
+            # 8. Artefakt vorbereiten und hochladen
+            echo "Locating built binary..."
+            ls -laR ../bin/ | grep -E "REDRIVER2|\.so" || true
+            find .. -name "REDRIVER2" -type f 2>/dev/null || true
+            
+            # 9. Artefakt inkl. Build-Info verpacken
+            echo "Packaging artifacts..."
+            cd ..
+            mkdir -p dist/REDRIVER2_arkos
+            cp bin/Release/REDRIVER2 dist/REDRIVER2_arkos/ 2>/dev/null || \
+            cp bin/Release_dev/REDRIVER2 dist/REDRIVER2_arkos/ 2>/dev/null || \
+            cp bin/*/REDRIVER2 dist/REDRIVER2_arkos/ 2>/dev/null
+            echo "SD-Karten-Struktur für ArkOS:" > dist/REDRIVER2_arkos/README.txt
+            echo "Lege die Binärdatei als /roms/ports/redriver2/redriver2 ab." >> dist/REDRIVER2_arkos/README.txt
+            echo "Lege die originalen PSX-Dateien (.cue/.bin) in denselben Ordner." >> dist/REDRIVER2_arkos/README.txt
+            ls -laR dist/
+
+      # 10. Artefakt als GitHub Release hochladen
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: REDRIVER2-arkos-arm64
+          path: dist/REDRIVER2_arkos/
+          if-no-files-found: error
