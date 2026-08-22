@@ -1,0 +1,32 @@
+name: Build REDRIVER2 for R36S (aarch64)
+
+on:
+  workflow_dispatch: # Ermöglicht den manuellen Start
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: ARM64 Kompilierung in QEMU
+        uses: uraimo/run-on-arch-action@v2
+        with:
+          arch: aarch64
+          distro: ubuntu20.04
+          run: |
+            apt-get update
+            apt-get install -y cmake g++ gcc make libsdl2-dev libgl1-mesa-dev
+            mkdir build && cd build
+            # Optimierung für Rockchip und Release-Build
+            cmake .. -DCMAKE_BUILD_TYPE=Release 
+            make -j$(nproc)
+            
+      - name: Fertiges Spiel hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: REDRIVER2-PortMaster
+          path: build/REDRIVER2
