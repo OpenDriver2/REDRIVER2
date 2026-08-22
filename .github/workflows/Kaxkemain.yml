@@ -1,4 +1,4 @@
-name: Build second REDRIVER2 for R36S (RK3326)
+name: Building 2 REDRIVER2 for R36S (RK3326)
 
 on:
   push:
@@ -20,8 +20,11 @@ jobs:
         run: |
           echo "Downloading Premake5 for x86_64 Host..."
           curl -L https://github.com/premake/premake-core/releases/download/v5.0.0-beta2/premake-5.0.0-beta2-linux.tar.gz -o /tmp/premake5.tar.gz
-          tar -xzf /tmp/premake5.tar.gz -C /tmp
-          chmod +x /tmp/premake5
+          
+          # Fix: In einen eigenen Unterordner entpacken, um Berechtigungsfehler auf /tmp zu verhindern
+          mkdir -p /tmp/premake_bin
+          tar -xzf /tmp/premake5.tar.gz -C /tmp/premake_bin
+          chmod +x /tmp/premake_bin/premake5
           
           cd src_rebuild
           # Architektur-Patches in premake5.lua
@@ -29,7 +32,7 @@ jobs:
           sed -i 's/"x86"/"ARM"/g' premake5.lua
           
           # Makefiles im korrekten 'build'-Ordner generieren
-          /tmp/premake5 gmake2
+          /tmp/premake_bin/premake5 gmake2
           cd ..
           echo "Makefiles successfully generated on host!"
 
