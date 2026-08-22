@@ -1,4 +1,4 @@
-name: kein Plan REDRIVER2 for R36S (RK3326)
+name: wixx REDRIVER2 for R36S (RK3326)
 
 on:
   push:
@@ -85,10 +85,9 @@ jobs:
               set -e
               echo '===== Build-Step: Kompilierung für RK3326 (arm64) ====='
               
-              # FIX: Korrekter Pfad zum Submodule im Workspace
-              echo 'Patching PsyCross 64-bit assertions...'
-              sed -i '/DR_PSYX_TEX/d' src_rebuild/PsyCross/include/psx/libgpu.h
-              sed -i '/DR_ENV/d' src_rebuild/PsyCross/include/psx/libgpu.h
+              # FIX: Nur die static_assert-Zeilen auskommentieren, damit die Strukturen erhalten bleiben
+              echo 'Patching PsyCross 64-bit assertions safely...'
+              sed -i 's/static_assert/\/\/ static_assert/g' src_rebuild/PsyCross/include/psx/libgpu.h
 
               cd src_rebuild
               
