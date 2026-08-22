@@ -1,4 +1,4 @@
-name: kack auf REDRIVER2 for R36S (RK3326)
+name: Build final REDRIVER2 for R36S (RK3326)
 
 on:
   push:
@@ -11,42 +11,33 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # 1. Repository klonen
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      # 2. Premake5 auf dem x86_64 Host ausführen & Makefiles generieren (Umgehung des ARM64-Premake-Fehlers)
       - name: Generate Makefiles with Premake5 on Host
         run: |
-          echo 'Downloading Premake5 for x86_64 Host...'
+          echo "Downloading Premake5 for x86_64 Host..."
           curl -L https://github.com/premake/premake-core/releases/download/v5.0.0-alpha15/premake-5.0.0-alpha15-linux.tar.gz -o /tmp/premake5.tar.gz
           tar -xzf /tmp/premake5.tar.gz -C /tmp
           chmod +x /tmp/premake5
           
-          # In das Quellverzeichnis wechseln
           cd src_rebuild
-          
-          # Architektur-Patch für Premake5
-          sed -i 's/\"x86\"/\"ARM64\"/g' premake5.lua
-          sed -i 's/\"x86_64\"/\"ARM64\"/g' premake5.lua
-          
-          # Makefiles auf dem Host generieren
+          sed -i 's/"x86"/"ARM64"/g' premake5.lua
+          sed -i 's/"x86_64"/"ARM64"/g' premake5.lua
           /tmp/premake5 gmake
           cd ..
-          echo 'Makefiles successfully generated on host!'
+          echo "Makefiles successfully generated on host!"
 
-      # 3. QEMU-Setup für ARM64-Emulation
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         with:
           platforms: linux/arm64
 
-      # 4. Docker-Image für ARM64 erstellen
       - name: Build ARM64 Docker container image
         run: |
-          cat > Dockerfile <<'EOF'
+          cat << 'EOF' > Dockerfile
           FROM --platform=linux/arm64 ubuntu:22.04
           
           RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -80,43 +71,29 @@ jobs:
 
           docker build -t redriver2-arm64-builder -f Dockerfile .
 
-      # 5. Kompilierung im ARM64-Container ausführen (nur noch make)
       - name: Run build inside container
         run: |
           docker run --rm \
             --platform linux/arm64 \
-            -v "$GITHUB_WORKSPACE:/workspace" \
+            -v "${{ github.workspace }}:/workspace" \
             -w /workspace \
             redriver2-arm64-builder \
             bash -c "
               set -e
-
               echo '===== Build-Step: Kompilierung für RK3326 (arm64) ====='
-              
               cd src_rebuild
-
-              # Kompilierung mit aggressiven Optimierungen für Cortex-A35
               export CFLAGS='-mcpu=cortex-a35 -mtune=cortex-a35 -O3 -pipe -fno-strict-aliasing'
               export CXXFLAGS='-mcpu=cortex-a35 -mtune=cortex-a35 -O3 -pipe -fno-strict-aliasing'
               export LDFLAGS='-mcpu=cortex-a35'
-
               cd project_gmake_linux
-              make config=release_arm64 -j\$(nproc) || \
-              make config=release_dev_arm64 -j\$(nproc) || \
-              make -j\$(nproc)
-
-              # Artefakt robust verpacken (sucht die Binärdatei unabhängig vom Unterordner)
-              echo 'Packaging artifacts...'
+              make config=release_arm64 -j$(nproc) || make config=release_dev_arm64 -j$(nproc) || make -j$(nproc)
               cd /workspace
               mkdir -p dist/REDRIVER2_arkos
               find src_rebuild -type f -name 'REDRIVER2' -exec cp {} dist/REDRIVER2_arkos/ \;
-              
               echo 'SD-Karten-Struktur für ArkOS:' > dist/REDRIVER2_arkos/README.txt
               echo 'Lege die Binärdatei als /roms/ports/redriver2/redriver2 ab.' >> dist/REDRIVER2_arkos/README.txt
-              ls -laR dist
             "
 
-      # 6. Artefakt hochladen
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
