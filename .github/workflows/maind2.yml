@@ -1,0 +1,65 @@
+name: compile REDRIVER2 for R36S (RK3326 Optimized)
+
+on:
+  workflow_dispatch: 
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Vorgefertigtes Premake5 herunterladen (Umgehung des Bootstrap-Fehlers)
+        run: |
+          curl -sL https://github.com/premake/premake-core/releases/download/v5.0.0-beta2/premake-5.0.0-beta2-linux.tar.gz -o premake5.tar.gz
+          tar -zxvf premake5.tar.gz
+          chmod +x premake5
+
+      - name: ARM64 Kompilierung in QEMU (Cortex-A35 optimiert)
+        uses: uraimo/run-on-arch-action@v2
+        with:
+          arch: aarch64
+          distro: ubuntu20.04
+          github-token: ${{ github.token }}
+          run: |
+            apt-get update
+            apt-get install -y g++ gcc make libsdl2-dev libopenal-dev libjpeg-turbo8-dev
+            
+            # Premake-Binary in den ARM-Container verschieben
+            cp /__w/REDRIVER2-arkos/REDRIVER2-arkos/premake5 /usr/local/bin/premake5
+            
+            # In das Source-Verzeichnis wechseln
+            src_dir=$(find . -maxdepth 2 -name "src_rebuild" -type d)
+            if [ -z "$src_dir" ]; then
+              src_dir="src_rebuild"
+            fi
+            cd "$src_dir"
+            
+            # Architektur im Build-Skript patchen
+            sed -i 's/"x86_64"/"arm64"/g' premake5.lua
+            sed -i 's/"x86"/"arm"/g' premake5.lua
+            
+            # Makefiles mit Premake generieren
+            premake5 gmake2
+            
+            # R36S / RK3326 Hardware-Optimierungen + Memory-Sicherheit (strict-aliasing Fix)
+            export CFLAGS="-mcpu=cortex-a35 -mtune=cortex-a35 -O3 -pipe -fno-strict-aliasing"
+            export CXXFLAGS="-mcpu=cortex-a35 -mtune=cortex-a35 -O3 -pipe -fno-strict-aliasing"
+            
+            # Kompilieren (Fallbacks für unterschiedliche Config-Namen)
+            cd build
+            make config=release_arm64 -j$(nproc) || make config=release_dev_arm64 -j$(nproc) || make -j$(nproc)
+            
+            # Datei für den Upload vorbereiten
+            mkdir -p ../../../R36S-Output
+            find . -type f -name "REDRIVER2" -exec cp {} ../../../R36S-Output/ \;
+            
+      - name: Optimiertes Spiel hochladen
+        uses: upload/artifact@v4 # Beibehalten bzw. standardkonform
+        uses: actions/upload-artifact@v4
+        with:
+          name: REDRIVER2-PortMaster-RK3326
+          path: R36S-Output/REDRIVER2
