@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest # <--- FIX: Aktualisiert, um Hängen in der Warteschlange zu verhindern
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -107,10 +107,12 @@ jobs:
               export LDFLAGS='-mcpu=cortex-a35'
               
               cd build
-              make config=release_arm64 -j$(nproc) || \
-              make config=release_dev_arm64 -j$(nproc) || \
-              make config=release_dev_x64 -j$(nproc) || \
-              make -j$(nproc)
+              
+              # FIX: -j2 statt -j\$(nproc) für Stabilität unter QEMU/Docker
+              make config=release_arm64 -j2 || \
+              make config=release_dev_arm64 -j2 || \
+              make config=release_dev_x64 -j2 || \
+              make -j2
               
               cd /workspace
               mkdir -p dist/REDRIVER2_arkos
