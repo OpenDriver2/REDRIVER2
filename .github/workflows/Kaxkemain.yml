@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -41,7 +41,11 @@ jobs:
       - name: Build ARM64 Docker container image
         run: |
           cat << 'EOF' > Dockerfile
-          FROM --platform=linux/arm64 ubuntu:22.04
+          # FIX: Ubuntu 20.04 erzwingt GLIBC 2.31 - perfekt für ArkOS / M9 Pro!
+          FROM --platform=linux/arm64 ubuntu:20.04
+          
+          # Verhindert, dass der Installer bei der Zeitzonen-Abfrage hängen bleibt
+          ENV DEBIAN_FRONTEND=noninteractive
           
           RUN apt-get update && apt-get install -y --no-install-recommends \
               ca-certificates \
@@ -111,11 +115,10 @@ jobs:
               cd /workspace
               mkdir -p dist/REDRIVER2_arkos
               
-              # FIX 3: Case-insensitive Suche nach der Binärdatei, da Linux kleinschreibt ('redriver2')
+              # FIX 3: Case-insensitive Suche nach der Binärdatei
               echo 'Locating and copying built binaries...'
               find src_rebuild -iname '*redriver2*' -type f -executable -exec cp {} dist/REDRIVER2_arkos/ \;
               
-              # Falls die Datei im bin-Verzeichnis liegt, sicherheitshalber auch dort suchen
               find src_rebuild/bin -type f -executable -exec cp {} dist/REDRIVER2_arkos/ \; || true
               
               echo 'SD-Karten-Struktur für ArkOS:' > dist/REDRIVER2_arkos/README.txt
