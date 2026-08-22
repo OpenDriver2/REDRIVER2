@@ -1,4 +1,4 @@
-name: Bixxd REDRIVER2 for R36S (RK3326)
+name: krawild REDRIVER2 for R36S (RK3326)
 
 on:
   push:
@@ -89,7 +89,7 @@ jobs:
               echo 'Patching PsyCross 64-bit assertions safely...'
               sed -i 's/static_assert/\/\/ static_assert/g' src_rebuild/PsyCross/include/psx/libgpu.h
 
-              # FIX 2: x86 'int3' Assembler-Befehle durch __builtin_trap() ersetzen (ARM64-kompatibel)
+              # FIX 2: x86 'int3' Assembler-Befehle durch __builtin_trap() ersetzen
               echo 'Replacing x86 int3 breakpoints with cross-platform traps...'
               find . -type f \( -name '*.c' -o -name '*.h' -o -name '*.cpp' -o -name '*.hpp' \) -exec sed -i 's/__asm__(\"int3\")/__builtin_trap()/g' {} +
               find . -type f \( -name '*.c' -o -name '*.h' -o -name '*.cpp' -o -name '*.hpp' \) -exec sed -i 's/asm(\"int3\")/__builtin_trap()/g' {} +
@@ -110,9 +110,19 @@ jobs:
               
               cd /workspace
               mkdir -p dist/REDRIVER2_arkos
-              find src_rebuild -type f -name 'REDRIVER2' -exec cp {} dist/REDRIVER2_arkos/ \;
+              
+              # FIX 3: Case-insensitive Suche nach der Binärdatei, da Linux kleinschreibt ('redriver2')
+              echo 'Locating and copying built binaries...'
+              find src_rebuild -iname '*redriver2*' -type f -executable -exec cp {} dist/REDRIVER2_arkos/ \;
+              
+              # Falls die Datei im bin-Verzeichnis liegt, sicherheitshalber auch dort suchen
+              find src_rebuild/bin -type f -executable -exec cp {} dist/REDRIVER2_arkos/ \; || true
+              
               echo 'SD-Karten-Struktur für ArkOS:' > dist/REDRIVER2_arkos/README.txt
               echo 'Lege die Binärdatei als /roms/ports/redriver2/redriver2 ab.' >> dist/REDRIVER2_arkos/README.txt
+              
+              echo 'Inhalt des Ausgabeordners:'
+              ls -la dist/REDRIVER2_arkos/
             "
 
       - name: Upload Artifact
