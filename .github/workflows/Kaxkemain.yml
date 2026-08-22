@@ -1,4 +1,4 @@
-name: wixx REDRIVER2 for R36S (RK3326)
+name: Bixxd REDRIVER2 for R36S (RK3326)
 
 on:
   push:
@@ -85,9 +85,15 @@ jobs:
               set -e
               echo '===== Build-Step: Kompilierung für RK3326 (arm64) ====='
               
-              # FIX: Nur die static_assert-Zeilen auskommentieren, damit die Strukturen erhalten bleiben
+              # FIX 1: PsyCross static_assert auskommentieren
               echo 'Patching PsyCross 64-bit assertions safely...'
               sed -i 's/static_assert/\/\/ static_assert/g' src_rebuild/PsyCross/include/psx/libgpu.h
+
+              # FIX 2: x86 'int3' Assembler-Befehle durch __builtin_trap() ersetzen (ARM64-kompatibel)
+              echo 'Replacing x86 int3 breakpoints with cross-platform traps...'
+              find . -type f \( -name '*.c' -o -name '*.h' -o -name '*.cpp' -o -name '*.hpp' \) -exec sed -i 's/__asm__(\"int3\")/__builtin_trap()/g' {} +
+              find . -type f \( -name '*.c' -o -name '*.h' -o -name '*.cpp' -o -name '*.hpp' \) -exec sed -i 's/asm(\"int3\")/__builtin_trap()/g' {} +
+              find . -type f \( -name '*.c' -o -name '*.h' -o -name '*.cpp' -o -name '*.hpp' \) -exec sed -i 's/\bint3\b/__builtin_trap()/g' {} +
 
               cd src_rebuild
               
