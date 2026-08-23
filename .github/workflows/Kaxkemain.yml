@@ -35,7 +35,6 @@ jobs:
         uses: actions/cache@v4
         with:
           path: prebuilt_libs
-          # v4/focal: Cache-Key aktualisiert für Multiarch-PkgConfig-Fix
           key: gl4es-${{ env.GL4ES_VERSION }}-${{ env.TARGET_CPU }}-focal-armhf-v4
 
       - name: Cross-Compile GL4ES with GBM Support (Ubuntu 20.04 container)
@@ -76,7 +75,6 @@ jobs:
               git clone --branch "${GL4ES_VERSION}" --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es
               mkdir -p /tmp/gl4es/build && cd /tmp/gl4es/build
 
-              # WICHTIG: Pkg-Config für ARMhf-Multiarch-Pfade zwingend konfigurieren
               export PKG_CONFIG_LIBDIR="/usr/lib/arm-linux-gnueabihf/pkgconfig:/usr/share/pkgconfig"
               export PKG_CONFIG_ALLOW_CROSS=1
 
@@ -112,7 +110,7 @@ jobs:
           echo "gl4es-Lib gefunden: $(ls -la prebuilt_libs/libgl4es.so)"
 
       - name: Set up QEMU
-        uses: actions/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v3
         with:
           platforms: linux/arm/v7
 
