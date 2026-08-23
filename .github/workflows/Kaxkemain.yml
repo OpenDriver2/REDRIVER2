@@ -95,12 +95,18 @@ jobs:
 
               make -j"$(nproc)"
 
-              if [ ! -f lib/libGL.so.1 ]; then
+              # Der genaue Ausgabepfad hängt von der CMake-Version/Struktur ab
+              # (z.B. build/lib/libGL.so.1 ODER build/src/lib/libGL.so.1) -
+              # daher robust im gesamten Build-Verzeichnis danach suchen statt
+              # einen festen Pfad anzunehmen.
+              BUILT_LIB=$(find . -name "libGL.so.1" -type f | head -n1)
+              if [ -z "${BUILT_LIB}" ]; then
                 echo "gl4es-Build hat keine libGL.so.1 erzeugt - Abbruch." >&2
                 exit 1
               fi
+              echo "gl4es-Lib gefunden unter: ${BUILT_LIB}"
 
-              cp lib/libGL.so.1 /workspace/prebuilt_libs/libgl4es.so
+              cp "${BUILT_LIB}" /workspace/prebuilt_libs/libgl4es.so
             '
 
       - name: Verify cached/prebuilt gl4es library exists
