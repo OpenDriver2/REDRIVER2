@@ -24,11 +24,25 @@ jobs:
           sed -i 's/"x86"/"ARM"/g' premake5.lua
           /tmp/premake_bin/premake5 gmake2
 
-      - name: Cross-Compile GL4ES on Host (Ubuntu 22.04 Jammy Basis)
+      - name: Cross-Compile GL4ES on Host (Using Ubuntu Ports)
         run: |
-          echo "===== Kompiliere GL4ES nativ auf Ubuntu 22.04 Host ====="
+          echo "===== Konfiguriere ARMhf Quellen via Ubuntu Ports ====="
           
+          # 1. ARMhf Architektur hinzufügen
           sudo dpkg --add-architecture armhf
+          
+          # 2. Auf Ubuntu-Ports umleiten, damit armhf-Pakete gefunden werden
+          sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
+          sudo bash -c 'cat > /etc/apt/sources.list << EOF
+          deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ jammy main restricted universe multiverse
+          deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ jammy-updates main restricted universe multiverse
+          deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ jammy-security main restricted universe multiverse
+          
+          deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ jammy main restricted universe multiverse
+          deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ jammy-updates main restricted universe multiverse
+          deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ jammy-security main restricted universe multiverse
+          EOF'
+          
           sudo apt-get update
           sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf cmake git libx11-dev:armhf
           
