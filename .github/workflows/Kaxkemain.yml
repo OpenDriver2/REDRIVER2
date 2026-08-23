@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest # <--- FIX: Aktualisiert, um Hängen in der Warteschlange zu verhindern
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,7 +26,7 @@ jobs:
           chmod +x /tmp/premake_bin/premake5
           
           cd src_rebuild
-          sed -i 's/"x86_64"/"ARM64"/g' premake5.lua
+          # 32-Bit ARM Target für Premake konfigurieren
           sed -i 's/"x86"/"ARM"/g' premake5.lua
           
           /tmp/premake_bin/premake5 gmake2
@@ -36,15 +36,14 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         with:
-          platforms: linux/arm64
+          platforms: linux/arm/v7
 
-      - name: Build ARM64 Docker container image
+      - name: Build ARM32 (armhf) Docker container image
         run: |
           cat << 'EOF' > Dockerfile
-          # FIX: Ubuntu 20.04 erzwingt GLIBC 2.31 - perfekt für ArkOS / M9 Pro!
-          FROM --platform=linux/arm64 ubuntu:20.04
+          # Ubuntu 20.04 32-Bit (armhf) für GLIBC 2.31 und Stabilität unter ArkOS
+          FROM --platform=linux/arm/v7 ubuntu:20.04
           
-          # Verhindert, dass der Installer bei der Zeitzonen-Abfrage hängen bleibt
           ENV DEBIAN_FRONTEND=noninteractive
           
           RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -53,7 +52,6 @@ jobs:
               make \
               gcc-9 \
               g++-9 \
-              gfortran-9 \
               libsdl2-dev \
               libopenal-dev \
               libjpeg-dev \
@@ -76,24 +74,20 @@ jobs:
           WORKDIR /workspace
           EOF
 
-          docker build -t redriver2-arm64-builder -f Dockerfile .
+          docker build -t redriver2-armhf-builder -f Dockerfile .
 
       - name: Run build inside container
         run: |
           docker run --rm \
-            --platform linux/arm64 \
+            --platform linux/arm/v7 \
             -v "${{ github.workspace }}:/workspace" \
             -w /workspace \
-            redriver2-arm64-builder \
+            redriver2-armhf-builder \
             bash -c "
               set -e
-              echo '===== Build-Step: Kompilierung für RK3326 (arm64) ====='
+              echo '===== Build-Step: Kompilierung für RK3326 (armhf 32-Bit) ====='
               
-              # FIX 1: PsyCross static_assert auskommentieren
-              echo 'Patching PsyCross 64-bit assertions safely...'
-              sed -i 's/static_assert/\/\/ static_assert/g' src_rebuild/PsyCross/include/psx/libgpu.h
-
-              # FIX 2: x86 'int3' Assembler-Befehle durch __builtin_trap() ersetzen
+              # x86 'int3' Assembler-Befehle durch __builtin_trap() ersetzen
               echo 'Replacing x86 int3 breakpoints with cross-platform traps...'
               find . -type f \( -name '*.c' -o -name '*.h' -o -name '*.cpp' -o -name '*.hpp' \) -exec sed -i 's/__asm__(\"int3\")/__builtin_trap()/g' {} +
               find . -type f \( -name '*.c' -o -name '*.h' -o -name '*.cpp' -o -name '*.hpp' \) -exec sed -i 's/asm(\"int3\")/__builtin_trap()/g' {} +
@@ -101,38 +95,50 @@ jobs:
 
               cd src_rebuild
               
-              # Cortex-A35 Optimierungen und Memory-Sicherheit
-              export CFLAGS='-mcpu=cortex-a35 -mtune=cortex-a35 -O3 -pipe -fno-strict-aliasing'
-              export CXXFLAGS='-mcpu=cortex-a35 -mtune=cortex-a35 -O3 -pipe -fno-strict-aliasing'
-              export LDFLAGS='-mcpu=cortex-a35'
+              # Cortex-A35 32-Bit Optimierungen (NEON-Support & Hard-Float)
+              export CFLAGS='-mcpu=cortex-a35 -mfpu=neon-fp-armv8 -mfloat-abi=hard -O3 -pipe -fno-strict-aliasing'
+              export CXXFLAGS='-mcpu=cortex-a35 -mfpu=neon-fp-armv8 -mfloat-abi=hard -O3 -pipe -fno-strict-aliasing'
+              export LDFLAGS='-mcpu=cortex-a35 -mfpu=neon-fp-armv8 -mfloat-abi=hard'
               
               cd build
               
-              # FIX: -j2 statt -j\$(nproc) für Stabilität unter QEMU/Docker
-              make config=release_arm64 -j2 || \
-              make config=release_dev_arm64 -j2 || \
-              make config=release_dev_x64 -j2 || \
+              make config=release_arm -j2 || \
+              make config=release_dev_arm -j2 || \
               make -j2
               
               cd /workspace
+              
+              # Erstelle Ausgabeordner
               mkdir -p dist/REDRIVER2_arkos
               
-              # FIX 3: Case-insensitive Suche nach der Binärdatei
-              echo 'Locating and copying built binaries...'
+              echo 'Kopiere kompilierte Binärdatei...'
               find src_rebuild -iname '*redriver2*' -type f -executable -exec cp {} dist/REDRIVER2_arkos/ \;
-              
               find src_rebuild/bin -type f -executable -exec cp {} dist/REDRIVER2_arkos/ \; || true
               
-              echo 'SD-Karten-Struktur für ArkOS:' > dist/REDRIVER2_arkos/README.txt
-              echo 'Lege die Binärdatei als /roms/ports/redriver2/redriver2 ab.' >> dist/REDRIVER2_arkos/README.txt
+              echo 'Kopiere Spieldaten (DRIVER2-Ordner)...'
+              if [ -d "DRIVER2" ]; then
+                cp -r DRIVER2 dist/REDRIVER2_arkos/
+              elif [ -d "driver2" ]; then
+                cp -r driver2 dist/REDRIVER2_arkos/
+              fi
+
+              echo 'Kopiere Konfigurationsdateien und zusätzliche Assets...'
+              cp -f config.ini dist/REDRIVER2_arkos/ 2>/dev/null || true
+              cp -f *.ini dist/REDRIVER2_arkos/ 2>/dev/null || true
+              cp -rf data dist/REDRIVER2_arkos/ 2>/dev/null || true
+              cp -rf mod_assets/* dist/REDRIVER2_arkos/ 2>/dev/null || true
               
-              echo 'Inhalt des Ausgabeordners:'
+              echo 'Erstelle Installationsanleitung...'
+              echo 'SD-Karten-Struktur für ArkOS:' > dist/REDRIVER2_arkos/README.txt
+              echo 'Kopiere den Inhalt dieses Ordners vollständig nach /roms/ports/redriver2/' >> dist/REDRIVER2_arkos/README.txt
+              
+              echo 'Inhalt des fertigen Release-Ordners:'
               ls -la dist/REDRIVER2_arkos/
             "
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: REDRIVER2-arkos-arm64
+          name: REDRIVER2-arkos-armhf
           path: dist/REDRIVER2_arkos/
           if-no-files-found: error
