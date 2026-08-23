@@ -40,7 +40,7 @@ jobs:
           ENV DEBIAN_FRONTEND=noninteractive
           
           RUN apt-get update && apt-get install -y --no-install-recommends \
-              ca-certificates build-essential make gcc-9 g++-9 cmake git \
+              ca-certificates build-essential cmake git gcc g++ \
               libsdl2-dev libopenal-dev libjpeg-dev libgl1-mesa-dev libgles2-mesa-dev \
               libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev pkg-config cpio wget curl \
               && rm -rf /var/lib/apt/lists/*
@@ -59,11 +59,22 @@ jobs:
             bash -c "
               set -e
               
-              echo '===== 1. Kompiliere GL4ES v1.1.4 (Stabiler Handheld-Release) ====='
+              echo '===== 1. Kompiliere GL4ES (mit Fix für QEMU/CMake) ====='
               git clone --branch v1.1.4 --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es_build
               cd /tmp/gl4es_build
               mkdir build && cd build
-              cmake .. -DSTATICLIB=OFF -DNOX11=ON -DDEFAULT_ES=2
+              
+              export CC=gcc
+              export CXX=g++
+              
+              cmake .. \
+                -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
+                -DCMAKE_C_COMPILER=gcc \
+                -DCMAKE_CXX_COMPILER=g++ \
+                -DSTATICLIB=OFF \
+                -DNOX11=ON \
+                -DDEFAULT_ES=2
+                
               make -j2
               
               cd /workspace
