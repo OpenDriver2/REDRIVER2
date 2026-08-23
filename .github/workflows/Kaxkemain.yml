@@ -35,9 +35,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: prebuilt_libs
-          key: gl4es-${{ env.GL4ES_VERSION }}-${{ env.TARGET_CPU }}-focal-armhf-v4
+          # v5: Cache-Key aktualisiert, um GBM komplett zu deaktivieren (Fix für Segfault)
+          key: gl4es-${{ env.GL4ES_VERSION }}-${{ env.TARGET_CPU }}-focal-armhf-nogbm-v5
 
-      - name: Cross-Compile GL4ES with GBM Support (Ubuntu 20.04 container)
+      - name: Cross-Compile GL4ES without GBM (Standard ArkOS Mode)
         if: steps.gl4es-cache.outputs.cache-hit != 'true'
         run: |
           set -euo pipefail
@@ -49,7 +50,7 @@ jobs:
               set -euo pipefail
               export DEBIAN_FRONTEND=noninteractive
 
-              echo "===== Konfiguriere ARMhf Quellen mit GBM/DRM Support ====="
+              echo "===== Konfiguriere ARMhf Quellen ====="
               dpkg --add-architecture armhf
               cp /etc/apt/sources.list /etc/apt/sources.list.bak
               cat > /etc/apt/sources.list << EOF
@@ -70,7 +71,7 @@ jobs:
 
               apt-get install -y --no-install-recommends \
                 gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf cmake make git ca-certificates pkg-config \
-                libx11-dev:armhf libgbm-dev:armhf libdrm-dev:armhf libegl1-mesa-dev:armhf libgles2-mesa-dev:armhf
+                libx11-dev:armhf libegl1-mesa-dev:armhf libgles2-mesa-dev:armhf
 
               git clone --branch "${GL4ES_VERSION}" --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es
               mkdir -p /tmp/gl4es/build && cd /tmp/gl4es/build
@@ -78,6 +79,7 @@ jobs:
               export PKG_CONFIG_LIBDIR="/usr/lib/arm-linux-gnueabihf/pkgconfig:/usr/share/pkgconfig"
               export PKG_CONFIG_ALLOW_CROSS=1
 
+              # WICHTIG: DGBM=OFF, damit gl4es sich sauber in SDL2 / kmsdrm einklinkt
               cmake .. \
                 -DCMAKE_SYSTEM_NAME=Linux \
                 -DCMAKE_SYSTEM_PROCESSOR=arm \
@@ -85,7 +87,7 @@ jobs:
                 -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ \
                 -DSTATICLIB=OFF \
                 -DNOX11=ON \
-                -DGBM=ON \
+                -DGBM=OFF \
                 -DDEFAULT_ES=2
 
               make -j"$(nproc)"
@@ -160,10 +162,7 @@ jobs:
 
             echo "===== Paketiere Dateien ====="
             BIN=$(find src_rebuild -iname "*redriver2*" -type f -executable | head -n1)
-            if [ -z "${BIN}" ]; then
-              echo "::error::Keine ausfuehrbare redriver2-Binary gefunden."
-              exit 1
-            fi
+            [ -z "${BIN}" ] && { echo "::error::Keine Binary gefunden."; exit 1; }
             cp "${BIN}" dist/redriver2/redriver2
 
             cp prebuilt_libs/libgl4es.so dist/redriver2/
