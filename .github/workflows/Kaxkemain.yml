@@ -5,6 +5,12 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+env:
+  # Zentral änderbar, falls ihr später weitere Targets (z.B. Cortex-A72/RK3399) braucht
+  TARGET_CPU: cortex-a35
+  TARGET_FPU: neon-fp-armv8
+  GL4ES_VERSION: v1.1.4
+
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -16,7 +22,8 @@ jobs:
 
       - name: Generate Makefiles with Premake5
         run: |
-          curl -L https://github.com/premake/premake-core/releases/download/v5.0.0-beta2/premake-5.0.0-beta2-linux.tar.gz -o /tmp/premake5.tar.gz
+          set -euo pipefail
+          curl -fsSL https://github.com/premake/premake-core/releases/download/v5.0.0-beta2/premake-5.0.0-beta2-linux.tar.gz -o /tmp/premake5.tar.gz
           mkdir -p /tmp/premake_bin
           tar -xzf /tmp/premake5.tar.gz -C /tmp/premake_bin
           chmod +x /tmp/premake_bin/premake5
@@ -24,41 +31,88 @@ jobs:
           sed -i 's/"x86"/"ARM"/g' premake5.lua
           /tmp/premake_bin/premake5 gmake2
 
-      - name: Cross-Compile GL4ES on Host (Using Ubuntu Ports)
+      - name: Cache gl4es build
+        id: gl4es-cache
+        uses: actions/cache@v4
+        with:
+          path: prebuilt_libs
+          # v2/focal: Cache-Key bewusst geändert, damit eine alte, gegen zu neue
+          # glibc (Ubuntu 22.04/Jammy) gelinkte Lib aus früheren Runs NICHT
+          # wiederverwendet wird (Ursache des "GLIBC_2.34 not found"-Fehlers).
+          key: gl4es-${{ env.GL4ES_VERSION }}-${{ env.TARGET_CPU }}-focal-armhf-v2
+
+      - name: Cross-Compile GL4ES (Ubuntu 20.04 container - matches device glibc)
+        if: steps.gl4es-cache.outputs.cache-hit != 'true'
         run: |
-          echo "===== Konfiguriere ARMhf Quellen via Ubuntu Ports ====="
-          
-          sudo dpkg --add-architecture armhf
-          sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
-          sudo bash -c 'cat > /etc/apt/sources.list << EOF
-          deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ jammy main restricted universe multiverse
-          deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ jammy-updates main restricted universe multiverse
-          deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ jammy-security main restricted universe multiverse
-          
-          deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ jammy main restricted universe multiverse
-          deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ jammy-updates main restricted universe multiverse
-          deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ jammy-security main restricted universe multiverse
-          EOF'
-          
-          sudo apt-get update
-          sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf cmake git libx11-dev:armhf
-          
-          git clone --branch v1.1.4 --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es
-          mkdir -p /tmp/gl4es/build && cd /tmp/gl4es/build
-          
-          cmake .. \
-            -DCMAKE_SYSTEM_NAME=Linux \
-            -DCMAKE_SYSTEM_PROCESSOR=arm \
-            -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc \
-            -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ \
-            -DSTATICLIB=OFF \
-            -DNOX11=ON \
-            -DDEFAULT_ES=2
-            
-          make -j$(nproc)
-          
-          mkdir -p ${{ github.workspace }}/prebuilt_libs
-          cp /tmp/gl4es/lib/libGL.so.1 ${{ github.workspace }}/prebuilt_libs/libgl4es.so
+          set -euo pipefail
+          mkdir -p prebuilt_libs
+
+          # WICHTIG: Wir bauen hier bewusst NICHT auf dem ubuntu-22.04-Runner selbst
+          # (dessen arm-linux-gnueabihf-gcc linkt gegen glibc 2.35 -> zu neu für
+          # die meisten RK3326-Firmwares), sondern in einem ubuntu:20.04-Container.
+          # Das ist ein normaler x86_64-Container (KEIN --platform arm/v7), es wird
+          # nur der ARMhf-Cross-Compiler aus den focal-Paketquellen genutzt - daher
+          # läuft das nativ und braucht kein QEMU.
+          docker run --rm -v "${{ github.workspace }}:/workspace" -w /workspace \
+            -e GL4ES_VERSION="${GL4ES_VERSION}" \
+            ubuntu:20.04 bash -c '
+              set -euo pipefail
+              export DEBIAN_FRONTEND=noninteractive
+
+              echo "===== Konfiguriere ARMhf Quellen (Ubuntu 20.04 / focal) ====="
+              dpkg --add-architecture armhf
+              cp /etc/apt/sources.list /etc/apt/sources.list.bak
+              cat > /etc/apt/sources.list << EOF
+          deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ focal main restricted universe multiverse
+          deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ focal-updates main restricted universe multiverse
+          deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ focal-security main restricted universe multiverse
+
+          deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ focal main restricted universe multiverse
+          deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ focal-updates main restricted universe multiverse
+          deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ focal-security main restricted universe multiverse
+          EOF
+
+              for i in 1 2 3; do
+                apt-get update && break
+                echo "apt-get update fehlgeschlagen, Versuch $i/3 ..."
+                sleep 5
+              done
+
+              apt-get install -y --no-install-recommends \
+                gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf cmake git ca-certificates libx11-dev:armhf
+
+              git clone --branch "${GL4ES_VERSION}" --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es
+              mkdir -p /tmp/gl4es/build && cd /tmp/gl4es/build
+
+              cmake .. \
+                -DCMAKE_SYSTEM_NAME=Linux \
+                -DCMAKE_SYSTEM_PROCESSOR=arm \
+                -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc \
+                -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ \
+                -DSTATICLIB=OFF \
+                -DNOX11=ON \
+                -DDEFAULT_ES=2
+
+              make -j"$(nproc)"
+
+              if [ ! -f lib/libGL.so.1 ]; then
+                echo "gl4es-Build hat keine libGL.so.1 erzeugt - Abbruch." >&2
+                exit 1
+              fi
+
+              cp lib/libGL.so.1 /workspace/prebuilt_libs/libgl4es.so
+            '
+
+      - name: Verify cached/prebuilt gl4es library exists
+        run: |
+          set -euo pipefail
+          if [ ! -f prebuilt_libs/libgl4es.so ]; then
+            echo "::error::prebuilt_libs/libgl4es.so fehlt (weder gebaut noch aus Cache geladen)."
+            exit 1
+          fi
+          echo "gl4es-Lib gefunden: $(ls -la prebuilt_libs/libgl4es.so)"
+          echo "Benoetigte GLIBC-Symbolversionen (zur Kontrolle):"
+          objdump -T prebuilt_libs/libgl4es.so 2>/dev/null | grep -o 'GLIBC_[0-9.]*' | sort -Vu || true
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -67,6 +121,7 @@ jobs:
 
       - name: Build ARM32 Environment
         run: |
+          set -euo pipefail
           cat << 'EOF' > Dockerfile
           FROM --platform=linux/arm/v7 ubuntu:20.04
           ENV DEBIAN_FRONTEND=noninteractive
@@ -80,38 +135,56 @@ jobs:
 
       - name: Compile Game and Package Artifact
         run: |
-          docker run --rm --platform linux/arm/v7 -v "${{ github.workspace }}:/workspace" -w /workspace redriver2-armhf bash -c "
-            set -e
-            
-            echo '===== Kompiliere REDRIVER2 im Container ====='
-            find . -type f -exec sed -i 's/__asm__(\"int3\")/__builtin_trap()/g' {} +
-            find . -type f -exec sed -i 's/asm(\"int3\")/__builtin_trap()/g' {} +
-            
+          set -euo pipefail
+          docker run --rm --platform linux/arm/v7 -v "${{ github.workspace }}:/workspace" -w /workspace \
+            -e TARGET_CPU="${TARGET_CPU}" -e TARGET_FPU="${TARGET_FPU}" \
+            redriver2-armhf bash -c '
+            set -euo pipefail
+
+            echo "===== Kompiliere REDRIVER2 im Container ====="
+            find . -path ./.git -prune -o -type f -print0 \
+              | xargs -0 grep -Il "" 2>/dev/null \
+              | xargs -r sed -i \
+                  -e "s/__asm__(\"int3\")/__builtin_trap()/g" \
+                  -e "s/asm(\"int3\")/__builtin_trap()/g"
+
             cd src_rebuild
-            export CFLAGS='-mcpu=cortex-a35 -mfpu=neon-fp-armv8 -mfloat-abi=hard -O3 -pipe -fno-strict-aliasing'
-            export CXXFLAGS='-mcpu=cortex-a35 -mfpu=neon-fp-armv8 -mfloat-abi=hard -O3 -pipe -fno-strict-aliasing'
-            
+            export CFLAGS="-mcpu=${TARGET_CPU} -mfpu=${TARGET_FPU} -mfloat-abi=hard -O3 -pipe -fno-strict-aliasing"
+            export CXXFLAGS="${CFLAGS}"
+
             cd build
-            make config=release_arm -j2 || make -j2
-            
+            if make config=release_arm -j2; then
+              echo "release_arm Config erfolgreich gebaut."
+            else
+              echo "::error::make config=release_arm fehlgeschlagen - kein automatischer Fallback, bitte Buildlog pruefen."
+              exit 1
+            fi
+
             cd /workspace
             mkdir -p dist/redriver2
-            
-            echo '===== Paketiere Dateien ====='
-            find src_rebuild -iname '*redriver2*' -type f -executable -exec cp {} dist/redriver2/redriver2 \;
-            
+
+            echo "===== Paketiere Dateien ====="
+            BIN=$(find src_rebuild -iname "*redriver2*" -type f -executable | head -n1)
+            if [ -z "${BIN}" ]; then
+              echo "::error::Keine ausfuehrbare redriver2-Binary gefunden."
+              exit 1
+            fi
+            cp "${BIN}" dist/redriver2/redriver2
+
             cp prebuilt_libs/libgl4es.so dist/redriver2/
-            
-            if [ -d 'DRIVER2' ]; then cp -r DRIVER2 dist/redriver2/; fi
-            if [ -d 'driver2' ]; then cp -r driver2 dist/redriver2/; fi
+
+            if [ -d "DRIVER2" ]; then cp -r DRIVER2 dist/redriver2/; fi
+            if [ -d "driver2" ]; then cp -r driver2 dist/redriver2/; fi
             cp -f config.ini dist/redriver2/ 2>/dev/null || true
-            
-            echo 'Fertiger Inhalt des Release-Ordners:'
+
+            echo "Fertiger Inhalt des Release-Ordners:"
             ls -la dist/redriver2/
-          "
+          '
 
       - name: Upload PortMaster Artifact
         uses: actions/upload-artifact@v4
         with:
           name: REDRIVER2-PortMaster
           path: dist/redriver2/
+          if-no-files-found: error
+          
