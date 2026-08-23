@@ -28,10 +28,7 @@ jobs:
         run: |
           echo "===== Konfiguriere ARMhf Quellen via Ubuntu Ports ====="
           
-          # 1. ARMhf Architektur hinzufügen
           sudo dpkg --add-architecture armhf
-          
-          # 2. Auf Ubuntu-Ports umleiten, damit armhf-Pakete gefunden werden
           sudo cp /etc/apt/sources.list /etc/apt/sources.list.bak
           sudo bash -c 'cat > /etc/apt/sources.list << EOF
           deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ jammy main restricted universe multiverse
@@ -61,7 +58,7 @@ jobs:
           make -j$(nproc)
           
           mkdir -p ${{ github.workspace }}/prebuilt_libs
-          cp lib/libgl4es.so ${{ github.workspace }}/prebuilt_libs/
+          cp /tmp/gl4es/lib/libGL.so.1 ${{ github.workspace }}/prebuilt_libs/libgl4es.so
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
