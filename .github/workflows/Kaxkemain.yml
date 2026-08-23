@@ -27,13 +27,17 @@ jobs:
       - name: Cross-Compile GL4ES on Host (Bypass QEMU CMake Bug)
         run: |
           echo "===== Kompiliere GL4ES nativ auf dem Host ====="
+          
+          # Fix: armhf Architektur für saubere Header-Auflösung hinzufügen
+          sudo dpkg --add-architecture armhf
           sudo apt-get update
-          sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf cmake git
+          
+          # Fix: libx11-dev:armhf hinzugefügt, damit EGL seine Datentypen findet
+          sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf cmake git libx11-dev:armhf
           
           git clone --branch v1.1.4 --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es
           mkdir -p /tmp/gl4es/build && cd /tmp/gl4es/build
           
-          # Cross-Compilation Flags für 32-Bit ARM
           cmake .. \
             -DCMAKE_SYSTEM_NAME=Linux \
             -DCMAKE_SYSTEM_PROCESSOR=arm \
@@ -45,7 +49,6 @@ jobs:
             
           make -j$(nproc)
           
-          # Zwischenspeichern für den Container-Build
           mkdir -p ${{ github.workspace }}/prebuilt_libs
           cp lib/libgl4es.so ${{ github.workspace }}/prebuilt_libs/
 
@@ -87,13 +90,10 @@ jobs:
             mkdir -p dist/redriver2
             
             echo '===== Paketiere Dateien ====='
-            # 1. Spiel-Binary
             find src_rebuild -iname '*redriver2*' -type f -executable -exec cp {} dist/redriver2/redriver2 \;
             
-            # 2. GL4ES vom Host-Build übernehmen
             cp prebuilt_libs/libgl4es.so dist/redriver2/
             
-            # 3. Spieldaten und Config
             if [ -d 'DRIVER2' ]; then cp -r DRIVER2 dist/redriver2/; fi
             if [ -d 'driver2' ]; then cp -r driver2 dist/redriver2/; fi
             cp -f config.ini dist/redriver2/ 2>/dev/null || true
