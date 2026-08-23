@@ -95,11 +95,10 @@ jobs:
 
               make -j"$(nproc)"
 
-              # Der genaue Ausgabepfad hängt von der CMake-Version/Struktur ab
-              # (z.B. build/lib/libGL.so.1 ODER build/src/lib/libGL.so.1) -
-              # daher robust im gesamten Build-Verzeichnis danach suchen statt
-              # einen festen Pfad anzunehmen.
-              BUILT_LIB=$(find . -name "libGL.so.1" -type f | head -n1)
+              # Der Ausgabepfad liegt bei gl4es typischerweise im Quellverzeichnis
+              # (gl4es/lib/libGL.so.1), NICHT im build/-Verzeichnis - daher wird
+              # im gesamten Klon-Verzeichnis (/tmp/gl4es) gesucht statt nur in build/.
+              BUILT_LIB=$(find /tmp/gl4es -name "libGL.so.1" -type f | head -n1)
               if [ -z "${BUILT_LIB}" ]; then
                 echo "gl4es-Build hat keine libGL.so.1 erzeugt - Abbruch." >&2
                 exit 1
