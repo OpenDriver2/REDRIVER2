@@ -79,7 +79,7 @@ jobs:
               done
 
               apt-get install -y --no-install-recommends \
-                gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf cmake git ca-certificates libx11-dev:armhf
+                gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf cmake make git ca-certificates libx11-dev:armhf
 
               git clone --branch "${GL4ES_VERSION}" --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es
               mkdir -p /tmp/gl4es/build && cd /tmp/gl4es/build
@@ -187,4 +187,3 @@ jobs:
           name: REDRIVER2-PortMaster
           path: dist/redriver2/
           if-no-files-found: error
-          
