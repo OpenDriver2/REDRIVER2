@@ -108,7 +108,7 @@ jobs:
           echo "gl4es-Lib gefunden: $(ls -la prebuilt_libs/libgl4es.so)"
 
       - name: Set up QEMU
-        uses: actions/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@v3
         with:
           platforms: linux/arm/v7
 
@@ -134,7 +134,7 @@ jobs:
             redriver2-armhf bash -c '
             set -euo pipefail
 
-            echo "===== Kompiliere REDRIVER2 im Container ====="
+            echo "===== Kompiliere REDRIVER2 im Container ====="[cite: 4]
             find . -path ./.git -prune -o -type f -print0 \
               | xargs -0 grep -IlZ "" 2>/dev/null \
               | xargs -0 -r sed -i \
@@ -147,16 +147,16 @@ jobs:
 
             cd build
             if make config=release_arm -j2; then
-              echo "release_arm Config erfolgreich gebaut."
+              echo "release_arm Config erfolgreich gebaut."[cite: 4]
             else
-              echo "::error::make config=release_arm fehlgeschlagen."
+              echo "::error::make config=release_arm fehlgeschlagen."[cite: 4]
               exit 1
             fi
 
             cd /workspace
             mkdir -p dist/redriver2
 
-            echo "===== Paketiere Dateien für PortMaster ====="
+            echo "===== Durchsuche Repo und paketiere alle benötigten Dateien ====="
             BIN=$(find src_rebuild -iname "*redriver2*" -type f -executable | head -n1)
             [ -z "${BIN}" ] && { echo "::error::Keine Binary gefunden."; exit 1; }
             cp "${BIN}" dist/redriver2/redriver2
@@ -165,10 +165,13 @@ jobs:
             # 32-Bit libgl4es.so kopieren
             cp prebuilt_libs/libgl4es.so dist/redriver2/
 
-            # Optionale Spieldateien kopieren falls vorhanden
-            if [ -d "DRIVER2" ]; then cp -r DRIVER2 dist/redriver2/; fi
-            if [ -d "driver2" ]; then cp -r driver2 dist/redriver2/; fi
-            cp -f config.ini dist/redriver2/ 2>/dev/null || true
+            # Automatisches Durchsuchen des Repos nach allen Laufzeitordnern und Dateien (z.B. data, configs, assets)
+            for item in data assets configs shaders *.ini *.cfg; do
+              if [ -e "$item" ]; then
+                cp -r "$item" dist/redriver2/
+                echo "[+] Laufzeit-Element gefunden und kopiert: $item"
+              fi
+            done
 
             # 1. port.json erstellen
             cat << 'EOF_JSON' > dist/redriver2/port.json
