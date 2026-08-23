@@ -2,7 +2,7 @@ name: REDRIVER2 PortMaster Build (RK3326)
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   workflow_dispatch:
 
 env:
@@ -35,7 +35,6 @@ jobs:
         uses: actions/cache@v4
         with:
           path: prebuilt_libs
-          # v5: Cache-Key aktualisiert, um GBM komplett zu deaktivieren (Fix für Segfault)
           key: gl4es-${{ env.GL4ES_VERSION }}-${{ env.TARGET_CPU }}-focal-armhf-nogbm-v5
 
       - name: Cross-Compile GL4ES without GBM (Standard ArkOS Mode)
@@ -54,14 +53,14 @@ jobs:
               dpkg --add-architecture armhf
               cp /etc/apt/sources.list /etc/apt/sources.list.bak
               cat > /etc/apt/sources.list << EOF
-          deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ focal main restricted universe multiverse
-          deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ focal-updates main restricted universe multiverse
-          deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ focal-security main restricted universe multiverse
+              deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ focal main restricted universe multiverse
+              deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ focal-updates main restricted universe multiverse
+              deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ focal-security main restricted universe multiverse
 
-          deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ focal main restricted universe multiverse
-          deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ focal-updates main restricted universe multiverse
-          deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ focal-security main restricted universe multiverse
-          EOF
+              deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ focal main restricted universe multiverse
+              deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ focal-updates main restricted universe multiverse
+              deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ focal-security main restricted universe multiverse
+              EOF
 
               for i in 1 2 3; do
                 apt-get update && break
@@ -79,7 +78,6 @@ jobs:
               export PKG_CONFIG_LIBDIR="/usr/lib/arm-linux-gnueabihf/pkgconfig:/usr/share/pkgconfig"
               export PKG_CONFIG_ALLOW_CROSS=1
 
-              # WICHTIG: DGBM=OFF, damit gl4es sich sauber in SDL2 / kmsdrm einklinkt
               cmake .. \
                 -DCMAKE_SYSTEM_NAME=Linux \
                 -DCMAKE_SYSTEM_PROCESSOR=arm \
@@ -97,8 +95,6 @@ jobs:
                 echo "gl4es-Build hat keine libGL.so.1 erzeugt - Abbruch." >&2
                 exit 1
               fi
-              echo "gl4es-Lib gefunden unter: ${BUILT_LIB}"
-
               cp "${BUILT_LIB}" /workspace/prebuilt_libs/libgl4es.so
             '
 
@@ -106,13 +102,13 @@ jobs:
         run: |
           set -euo pipefail
           if [ ! -f prebuilt_libs/libgl4es.so ]; then
-            echo "::error::prebuilt_libs/libgl4es.so fehlt (weder gebaut noch aus Cache geladen)."
+            echo "::error::prebuilt_libs/libgl4es.so fehlt."
             exit 1
           fi
           echo "gl4es-Lib gefunden: $(ls -la prebuilt_libs/libgl4es.so)"
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: actions/setup-qemu-action@v3
         with:
           platforms: linux/arm/v7
 
@@ -153,23 +149,117 @@ jobs:
             if make config=release_arm -j2; then
               echo "release_arm Config erfolgreich gebaut."
             else
-              echo "::error::make config=release_arm fehlgeschlagen - kein automatischer Fallback, bitte Buildlog pruefen."
+              echo "::error::make config=release_arm fehlgeschlagen."
               exit 1
             fi
 
             cd /workspace
             mkdir -p dist/redriver2
 
-            echo "===== Paketiere Dateien ====="
+            echo "===== Paketiere Dateien für PortMaster ====="
             BIN=$(find src_rebuild -iname "*redriver2*" -type f -executable | head -n1)
             [ -z "${BIN}" ] && { echo "::error::Keine Binary gefunden."; exit 1; }
             cp "${BIN}" dist/redriver2/redriver2
+            chmod +x dist/redriver2/redriver2
 
+            # 32-Bit libgl4es.so kopieren
             cp prebuilt_libs/libgl4es.so dist/redriver2/
 
+            # Optionale Spieldateien kopieren falls vorhanden
             if [ -d "DRIVER2" ]; then cp -r DRIVER2 dist/redriver2/; fi
             if [ -d "driver2" ]; then cp -r driver2 dist/redriver2/; fi
             cp -f config.ini dist/redriver2/ 2>/dev/null || true
+
+            # 1. port.json erstellen
+            cat << 'EOF_JSON' > dist/redriver2/port.json
+            {
+              "version": 2,
+              "name": "redriver2.zip",
+              "items": [
+                "Redriver2.sh",
+                "redriver2"
+              ],
+              "items_opt": null,
+              "attr": {
+                "title": "Driver 2 (Redriver2)",
+                "desc": "Der Open-Source Driver 2 PC Port für Linux Handhelds.",
+                "inst": "Bereit zum Starten.",
+                "genres": ["action", "driving"],
+                "porter": ["St0len-One"],
+                "rtr": true,
+                "runtime": null,
+                "reqs": [],
+                "arch": ["armhf"]
+              }
+            }
+            EOF_JSON
+
+            # 2. Perfektes PortMaster Start-Skript erstellen
+            cat << 'EOF_SH' > dist/redriver2/Redriver2.sh
+            #!/bin/bash
+            XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
+            if [ -d "/opt/system/Tools/PortMaster/" ]; then
+              controlfolder="/opt/system/Tools/PortMaster"
+            elif [ -d "/roms/tools/PortMaster/" ]; then
+              controlfolder="/roms/tools/PortMaster"
+            elif [ -d "$XDG_DATA_HOME/PortMaster" ]; then
+              controlfolder="$XDG_DATA_HOME/PortMaster"
+            else
+              controlfolder="/roms/ports/PortMaster"
+            fi
+            if [ -f "$controlfolder/funcs.txt" ]; then
+              source "$controlfolder/funcs.txt"
+            else
+              echo "PortMaster funcs.txt nicht gefunden!" >&2
+              exit 1
+            fi
+            pm_init
+            GAMEDIR="/roms/ports/redriver2"
+            cd "$GAMEDIR"
+            exec > >(tee "$GAMEDIR/redriver2_debug.log") 2>&1
+            if [ -f "${controlfolder}/libgl_${CFW_NAME}.txt" ]; then
+              source "${controlfolder}/libgl_${CFW_NAME}.txt"
+            else
+              source "${controlfolder}/libgl_default.txt"
+            fi
+            export SDL_GAMECONTROLLERCONFIG="$sdl_controllerconfig"
+            export LD_LIBRARY_PATH="$GAMEDIR/libs:$LD_LIBRARY_PATH"
+            if [ -f "$GAMEDIR/libgl4es.so" ]; then
+              export LIBGL_FB=2
+              export LD_PRELOAD="$GAMEDIR/libgl4es.so"
+            fi
+            echo "Starte Redriver2 auf M9 Pro (ArkOS / RK3326)..."
+            $GPTOKEYB "redriver2" -c "$GAMEDIR/redriver2.gptk" &
+            ./redriver2
+            pm_finish
+            EOF_SH
+            chmod +x dist/redriver2/Redriver2.sh
+
+            # 3. Controller-Mapping (gptk) erstellen
+            cat << 'EOF_GPTK' > dist/redriver2/redriver2.gptk
+            back = esc
+            start = enter
+            up = up
+            down = down
+            left = left
+            right = right
+            left_analog_up = up
+            left_analog_down = down
+            left_analog_left = left
+            left_analog_right = right
+            right_analog_up = up
+            right_analog_down = down
+            right_analog_left = left
+            right_analog_right = right
+            a = space
+            b = alt
+            x = ctrl
+            y = shift
+            l1 = q
+            r1 = e
+            l2 = tab
+            r2 = enter
+            EOF_GPTK
 
             echo "Fertiger Inhalt des Release-Ordners:"
             ls -la dist/redriver2/
