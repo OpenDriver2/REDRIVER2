@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -24,15 +24,12 @@ jobs:
           sed -i 's/"x86"/"ARM"/g' premake5.lua
           /tmp/premake_bin/premake5 gmake2
 
-      - name: Cross-Compile GL4ES on Host (Bypass QEMU CMake Bug)
+      - name: Cross-Compile GL4ES on Host (Ubuntu 22.04 Jammy Basis)
         run: |
-          echo "===== Kompiliere GL4ES nativ auf dem Host ====="
+          echo "===== Kompiliere GL4ES nativ auf Ubuntu 22.04 Host ====="
           
-          # Fix: armhf Architektur für saubere Header-Auflösung hinzufügen
           sudo dpkg --add-architecture armhf
           sudo apt-get update
-          
-          # Fix: libx11-dev:armhf hinzugefügt, damit EGL seine Datentypen findet
           sudo apt-get install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf cmake git libx11-dev:armhf
           
           git clone --branch v1.1.4 --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es
