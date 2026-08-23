@@ -147,9 +147,10 @@ jobs:
             set -euo pipefail
 
             echo "===== Kompiliere REDRIVER2 im Container ====="
+            # Fix: grep gibt nun per -Z Null-terminierte Strings aus, xargs verarbeitet diese mit -0 weiter
             find . -path ./.git -prune -o -type f -print0 \
-              | xargs -0 grep -Il "" 2>/dev/null \
-              | xargs -r sed -i \
+              | xargs -0 grep -IlZ "" 2>/dev/null \
+              | xargs -0 -r sed -i \
                   -e "s/__asm__(\"int3\")/__builtin_trap()/g" \
                   -e "s/asm(\"int3\")/__builtin_trap()/g"
 
