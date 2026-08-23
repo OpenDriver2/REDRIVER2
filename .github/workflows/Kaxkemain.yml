@@ -126,7 +126,7 @@ jobs:
           EOF
           docker build -t redriver2-armhf -f Dockerfile .
 
-      - name: Compile Game and Package Artifact
+      - name: Compile Game in Docker Container
         run: |
           set -euo pipefail
           docker run --rm --platform linux/arm/v7 -v "${{ github.workspace }}:/workspace" -w /workspace \
@@ -152,121 +152,126 @@ jobs:
               echo "::error::make config=release_arm fehlgeschlagen."[cite: 4]
               exit 1
             fi
-
-            cd /workspace
-            mkdir -p dist/redriver2
-
-            echo "===== Durchsuche Repo und paketiere alle benötigten Dateien ====="
-            BIN=$(find src_rebuild -iname "*redriver2*" -type f -executable | head -n1)
-            [ -z "${BIN}" ] && { echo "::error::Keine Binary gefunden."; exit 1; }
-            cp "${BIN}" dist/redriver2/redriver2
-            chmod +x dist/redriver2/redriver2
-
-            # 32-Bit libgl4es.so kopieren
-            cp prebuilt_libs/libgl4es.so dist/redriver2/
-
-            # Automatisches Durchsuchen des Repos nach allen Laufzeitordnern und Dateien (z.B. data, configs, assets)
-            for item in data assets configs shaders *.ini *.cfg; do
-              if [ -e "$item" ]; then
-                cp -r "$item" dist/redriver2/
-                echo "[+] Laufzeit-Element gefunden und kopiert: $item"
-              fi
-            done
-
-            # 1. port.json erstellen
-            cat << 'EOF_JSON' > dist/redriver2/port.json
-            {
-              "version": 2,
-              "name": "redriver2.zip",
-              "items": [
-                "Redriver2.sh",
-                "redriver2"
-              ],
-              "items_opt": null,
-              "attr": {
-                "title": "Driver 2 (Redriver2)",
-                "desc": "Der Open-Source Driver 2 PC Port für Linux Handhelds.",
-                "inst": "Bereit zum Starten.",
-                "genres": ["action", "driving"],
-                "porter": ["St0len-One"],
-                "rtr": true,
-                "runtime": null,
-                "reqs": [],
-                "arch": ["armhf"]
-              }
-            }
-            EOF_JSON
-
-            # 2. Perfektes PortMaster Start-Skript erstellen
-            cat << 'EOF_SH' > dist/redriver2/Redriver2.sh
-            #!/bin/bash
-            XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
-            if [ -d "/opt/system/Tools/PortMaster/" ]; then
-              controlfolder="/opt/system/Tools/PortMaster"
-            elif [ -d "/roms/tools/PortMaster/" ]; then
-              controlfolder="/roms/tools/PortMaster"
-            elif [ -d "$XDG_DATA_HOME/PortMaster" ]; then
-              controlfolder="$XDG_DATA_HOME/PortMaster"
-            else
-              controlfolder="/roms/ports/PortMaster"
-            fi
-            if [ -f "$controlfolder/funcs.txt" ]; then
-              source "$controlfolder/funcs.txt"
-            else
-              echo "PortMaster funcs.txt nicht gefunden!" >&2
-              exit 1
-            fi
-            pm_init
-            GAMEDIR="/roms/ports/redriver2"
-            cd "$GAMEDIR"
-            exec > >(tee "$GAMEDIR/redriver2_debug.log") 2>&1
-            if [ -f "${controlfolder}/libgl_${CFW_NAME}.txt" ]; then
-              source "${controlfolder}/libgl_${CFW_NAME}.txt"
-            else
-              source "${controlfolder}/libgl_default.txt"
-            fi
-            export SDL_GAMECONTROLLERCONFIG="$sdl_controllerconfig"
-            export LD_LIBRARY_PATH="$GAMEDIR/libs:$LD_LIBRARY_PATH"
-            if [ -f "$GAMEDIR/libgl4es.so" ]; then
-              export LIBGL_FB=2
-              export LD_PRELOAD="$GAMEDIR/libgl4es.so"
-            fi
-            echo "Starte Redriver2 auf M9 Pro (ArkOS / RK3326)..."
-            $GPTOKEYB "redriver2" -c "$GAMEDIR/redriver2.gptk" &
-            ./redriver2
-            pm_finish
-            EOF_SH
-            chmod +x dist/redriver2/Redriver2.sh
-
-            # 3. Controller-Mapping (gptk) erstellen
-            cat << 'EOF_GPTK' > dist/redriver2/redriver2.gptk
-            back = esc
-            start = enter
-            up = up
-            down = down
-            left = left
-            right = right
-            left_analog_up = up
-            left_analog_down = down
-            left_analog_left = left
-            left_analog_right = right
-            right_analog_up = up
-            right_analog_down = down
-            right_analog_left = left
-            right_analog_right = right
-            a = space
-            b = alt
-            x = ctrl
-            y = shift
-            l1 = q
-            r1 = e
-            l2 = tab
-            r2 = enter
-            EOF_GPTK
-
-            echo "Fertiger Inhalt des Release-Ordners:"
-            ls -la dist/redriver2/
           '
+
+      - name: Package PortMaster Artifact on Host
+        run: |
+          set -euo pipefail
+          mkdir -p dist/redriver2
+
+          echo "===== Paketiere Dateien für PortMaster ====="
+          BIN=$(find src_rebuild -iname "*redriver2*" -type f -executable | head -n1)
+          if [ -z "${BIN}" ]; then
+            echo "::error::Keine kompilierte Binary gefunden."
+            exit 1
+          fi
+          cp "${BIN}" dist/redriver2/redriver2
+          chmod +x dist/redriver2/redriver2
+
+          # 32-Bit libgl4es.so kopieren
+          cp prebuilt_libs/libgl4es.so dist/redriver2/
+
+          # Repo komplett nach Laufzeit-Ordnern/Dateien durchsuchen und mitnehmen
+          for item in data assets configs shaders *.ini *.cfg; do
+            if [ -e "$item" ]; then
+              cp -r "$item" dist/redriver2/
+              echo "[+] Laufzeit-Element kopiert: $item"
+            fi
+          done
+
+          # 1. port.json erstellen
+          cat << 'EOF_JSON' > dist/redriver2/port.json
+          {
+            "version": 2,
+            "name": "redriver2.zip",
+            "items": [
+              "Redriver2.sh",
+              "redriver2"
+            ],
+            "items_opt": null,
+            "attr": {
+              "title": "Driver 2 (Redriver2)",
+              "desc": "Der Open-Source Driver 2 PC Port für Linux Handhelds.",
+              "inst": "Bereit zum Starten.",
+              "genres": ["action", "driving"],
+              "porter": ["St0len-One"],
+              "rtr": true,
+              "runtime": null,
+              "reqs": [],
+              "arch": ["armhf"]
+            }
+          }
+          EOF_JSON
+
+          # 2. Perfektes PortMaster Start-Skript erstellen
+          cat << 'EOF_SH' > dist/redriver2/Redriver2.sh
+          #!/bin/bash
+          XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
+          if [ -d "/opt/system/Tools/PortMaster/" ]; then
+            controlfolder="/opt/system/Tools/PortMaster"
+          elif [ -d "/roms/tools/PortMaster/" ]; then
+            controlfolder="/roms/tools/PortMaster"
+          elif [ -d "$XDG_DATA_HOME/PortMaster" ]; then
+            controlfolder="$XDG_DATA_HOME/PortMaster"
+          else
+            controlfolder="/roms/ports/PortMaster"
+          fi
+          if [ -f "$controlfolder/funcs.txt" ]; then
+            source "$controlfolder/funcs.txt"
+          else
+            echo "PortMaster funcs.txt nicht gefunden!" >&2
+            exit 1
+          fi
+          pm_init
+          GAMEDIR="/roms/ports/redriver2"
+          cd "$GAMEDIR"
+          exec > >(tee "$GAMEDIR/redriver2_debug.log") 2>&1
+          if [ -f "${controlfolder}/libgl_${CFW_NAME}.txt" ]; then
+            source "${controlfolder}/libgl_${CFW_NAME}.txt"
+          else
+            source "${controlfolder}/libgl_default.txt"
+          fi
+          export SDL_GAMECONTROLLERCONFIG="$sdl_controllerconfig"
+          export LD_LIBRARY_PATH="$GAMEDIR/libs:$LD_LIBRARY_PATH"
+          if [ -f "$GAMEDIR/libgl4es.so" ]; then
+            export LIBGL_FB=2
+            export LD_PRELOAD="$GAMEDIR/libgl4es.so"
+          fi
+          echo "Starte Redriver2 auf M9 Pro (ArkOS / RK3326)..."
+          $GPTOKEYB "redriver2" -c "$GAMEDIR/redriver2.gptk" &
+          ./redriver2
+          pm_finish
+          EOF_SH
+          chmod +x dist/redriver2/Redriver2.sh
+
+          # 3. Controller-Mapping (gptk) erstellen
+          cat << 'EOF_GPTK' > dist/redriver2/redriver2.gptk
+          back = esc
+          start = enter
+          up = up
+          down = down
+          left = left
+          right = right
+          left_analog_up = up
+          left_analog_down = down
+          left_analog_left = left
+          left_analog_right = right
+          right_analog_up = up
+          right_analog_down = down
+          right_analog_left = left
+          right_analog_right = right
+          a = space
+          b = alt
+          x = ctrl
+          y = shift
+          l1 = q
+          r1 = e
+          l2 = tab
+          r2 = enter
+          EOF_GPTK
+
+          echo "Fertiger Inhalt des Release-Ordners:"
+          ls -la dist/redriver2/
 
       - name: Upload PortMaster Artifact
         uses: actions/upload-artifact@v4
