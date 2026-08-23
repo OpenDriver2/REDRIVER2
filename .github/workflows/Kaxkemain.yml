@@ -59,8 +59,8 @@ jobs:
             bash -c "
               set -e
               
-              echo '===== 1. Kompiliere GL4ES Übersetzer-Bibliothek ====='
-              git clone --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es_build
+              echo '===== 1. Kompiliere GL4ES v1.1.4 (Stabiler Handheld-Release) ====='
+              git clone --branch v1.1.4 --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es_build
               cd /tmp/gl4es_build
               mkdir build && cd build
               cmake .. -DSTATICLIB=OFF -DNOX11=ON -DDEFAULT_ES=2
