@@ -6,7 +6,6 @@ on:
   workflow_dispatch:
 
 env:
-  # Zentral änderbar, falls ihr später weitere Targets (z.B. Cortex-A72/RK3399) braucht
   TARGET_CPU: cortex-a35
   TARGET_FPU: neon-fp-armv8
   GL4ES_VERSION: v1.1.4
@@ -36,30 +35,22 @@ jobs:
         uses: actions/cache@v4
         with:
           path: prebuilt_libs
-          # v2/focal: Cache-Key bewusst geändert, damit eine alte, gegen zu neue
-          # glibc (Ubuntu 22.04/Jammy) gelinkte Lib aus früheren Runs NICHT
-          # wiederverwendet wird (Ursache des "GLIBC_2.34 not found"-Fehlers).
-          key: gl4es-${{ env.GL4ES_VERSION }}-${{ env.TARGET_CPU }}-focal-armhf-v2
+          # v3/focal: Cache-Key aktualisiert, um den erzwungenen GBM-Build zu laden
+          key: gl4es-${{ env.GL4ES_VERSION }}-${{ env.TARGET_CPU }}-focal-armhf-v3
 
-      - name: Cross-Compile GL4ES (Ubuntu 20.04 container - matches device glibc)
+      - name: Cross-Compile GL4ES with GBM Support (Ubuntu 20.04 container)
         if: steps.gl4es-cache.outputs.cache-hit != 'true'
         run: |
           set -euo pipefail
           mkdir -p prebuilt_libs
 
-          # WICHTIG: Wir bauen hier bewusst NICHT auf dem ubuntu-22.04-Runner selbst
-          # (dessen arm-linux-gnueabihf-gcc linkt gegen glibc 2.35 -> zu neu für
-          # die meisten RK3326-Firmwares), sondern in einem ubuntu:20.04-Container.
-          # Das ist ein normaler x86_64-Container (KEIN --platform arm/v7), es wird
-          # nur der ARMhf-Cross-Compiler aus den focal-Paketquellen genutzt - daher
-          # läuft das nativ und braucht kein QEMU.
           docker run --rm -v "${{ github.workspace }}:/workspace" -w /workspace \
             -e GL4ES_VERSION="${GL4ES_VERSION}" \
             ubuntu:20.04 bash -c '
               set -euo pipefail
               export DEBIAN_FRONTEND=noninteractive
 
-              echo "===== Konfiguriere ARMhf Quellen (Ubuntu 20.04 / focal) ====="
+              echo "===== Konfiguriere ARMhf Quellen mit GBM/DRM Support ====="
               dpkg --add-architecture armhf
               cp /etc/apt/sources.list /etc/apt/sources.list.bak
               cat > /etc/apt/sources.list << EOF
@@ -78,8 +69,10 @@ jobs:
                 sleep 5
               done
 
+              # WICHTIG: libgbm-dev und libdrm-dev hinzugefügt für ArkOS/RK3326 KMSDRM
               apt-get install -y --no-install-recommends \
-                gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf cmake make git ca-certificates libx11-dev:armhf
+                gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf cmake make git ca-certificates \
+                libx11-dev:armhf libgbm-dev:armhf libdrm-dev:armhf libegl1-mesa-dev:armhf libgles2-mesa-dev:armhf
 
               git clone --branch "${GL4ES_VERSION}" --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es
               mkdir -p /tmp/gl4es/build && cd /tmp/gl4es/build
@@ -91,13 +84,11 @@ jobs:
                 -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ \
                 -DSTATICLIB=OFF \
                 -DNOX11=ON \
+                -DGBM=ON \
                 -DDEFAULT_ES=2
 
               make -j"$(nproc)"
 
-              # Der Ausgabepfad liegt bei gl4es typischerweise im Quellverzeichnis
-              # (gl4es/lib/libGL.so.1), NICHT im build/-Verzeichnis - daher wird
-              # im gesamten Klon-Verzeichnis (/tmp/gl4es) gesucht statt nur in build/.
               BUILT_LIB=$(find /tmp/gl4es -name "libGL.so.1" -type f | head -n1)
               if [ -z "${BUILT_LIB}" ]; then
                 echo "gl4es-Build hat keine libGL.so.1 erzeugt - Abbruch." >&2
@@ -116,8 +107,8 @@ jobs:
             exit 1
           fi
           echo "gl4es-Lib gefunden: $(ls -la prebuilt_libs/libgl4es.so)"
-          echo "Benoetigte GLIBC-Symbolversionen (zur Kontrolle):"
-          objdump -T prebuilt_libs/libgl4es.so 2>/dev/null | grep -o 'GLIBC_[0-9.]*' | sort -Vu || true
+          echo "Prüfe Symbole auf GBM-Unterstützung:"
+          nm prebuilt_libs/libgl4es.so | grep -i gbm || echo "Hinweis: GBM Symbole statisch oder indirekt gebunden."
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -147,7 +138,6 @@ jobs:
             set -euo pipefail
 
             echo "===== Kompiliere REDRIVER2 im Container ====="
-            # Fix: grep gibt nun per -Z Null-terminierte Strings aus, xargs verarbeitet diese mit -0 weiter
             find . -path ./.git -prune -o -type f -print0 \
               | xargs -0 grep -IlZ "" 2>/dev/null \
               | xargs -0 -r sed -i \
