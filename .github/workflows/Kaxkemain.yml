@@ -18,59 +18,32 @@ jobs:
 
       - name: Generate Makefiles with Premake5 on Host
         run: |
-          echo "Downloading Premake5 for x86_64 Host..."
           curl -L https://github.com/premake/premake-core/releases/download/v5.0.0-beta2/premake-5.0.0-beta2-linux.tar.gz -o /tmp/premake5.tar.gz
-          
           mkdir -p /tmp/premake_bin
           tar -xzf /tmp/premake5.tar.gz -C /tmp/premake_bin
           chmod +x /tmp/premake_bin/premake5
           
           cd src_rebuild
-          # 32-Bit ARM Target für Premake konfigurieren
           sed -i 's/"x86"/"ARM"/g' premake5.lua
-          
           /tmp/premake_bin/premake5 gmake2
           cd ..
-          echo "Makefiles successfully generated on host!"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
         with:
           platforms: linux/arm/v7
 
-      - name: Build ARM32 (armhf) Docker container image
+      - name: Build ARM32 (armhf) Container Image
         run: |
           cat << 'EOF' > Dockerfile
-          # Ubuntu 20.04 32-Bit (armhf) für GLIBC 2.31 und Stabilität unter ArkOS
           FROM --platform=linux/arm/v7 ubuntu:20.04
-          
           ENV DEBIAN_FRONTEND=noninteractive
           
           RUN apt-get update && apt-get install -y --no-install-recommends \
-              ca-certificates \
-              build-essential \
-              make \
-              gcc-9 \
-              g++-9 \
-              libsdl2-dev \
-              libopenal-dev \
-              libjpeg-dev \
-              libgl1-mesa-dev \
-              libgles2-mesa-dev \
-              libxrandr-dev \
-              libxinerama-dev \
-              libxcursor-dev \
-              libxi-dev \
-              libglu1-mesa-dev \
-              libpulse-dev \
-              libdbus-1-dev \
-              libibus-1.0-dev \
-              pkg-config \
-              cpio \
-              wget \
-              curl \
+              ca-certificates build-essential make gcc-9 g++-9 cmake git \
+              libsdl2-dev libopenal-dev libjpeg-dev libgl1-mesa-dev libgles2-mesa-dev \
+              libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev pkg-config cpio wget curl \
               && rm -rf /var/lib/apt/lists/*
-          
           WORKDIR /workspace
           EOF
 
@@ -85,54 +58,38 @@ jobs:
             redriver2-armhf-builder \
             bash -c "
               set -e
-              echo '===== Build-Step: Kompilierung für RK3326 (armhf 32-Bit) ====='
               
-              # x86 'int3' Assembler-Befehle durch __builtin_trap() ersetzen
-              echo 'Replacing x86 int3 breakpoints with cross-platform traps...'
+              echo '===== 1. Kompiliere GL4ES Übersetzer-Bibliothek ====='
+              git clone --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es_build
+              cd /tmp/gl4es_build
+              mkdir build && cd build
+              cmake .. -DSTATICLIB=OFF -DNOX11=ON -DDEFAULT_ES=2
+              make -j2
+              
+              cd /workspace
+              mkdir -p dist/REDRIVER2_arkos
+              cp /tmp/gl4es_build/lib/libgl4es.so dist/REDRIVER2_arkos/
+              
+              echo '===== 2. Kompiliere REDRIVER2 ====='
               find . -type f \( -name '*.c' -o -name '*.h' -o -name '*.cpp' -o -name '*.hpp' \) -exec sed -i 's/__asm__(\"int3\")/__builtin_trap()/g' {} +
               find . -type f \( -name '*.c' -o -name '*.h' -o -name '*.cpp' -o -name '*.hpp' \) -exec sed -i 's/asm(\"int3\")/__builtin_trap()/g' {} +
-              find . -type f \( -name '*.c' -o -name '*.h' -o -name '*.cpp' -o -name '*.hpp' \) -exec sed -i 's/\bint3\b/__builtin_trap()/g' {} +
-
-              cd src_rebuild
               
-              # Cortex-A35 32-Bit Optimierungen (NEON-Support & Hard-Float)
+              cd src_rebuild
               export CFLAGS='-mcpu=cortex-a35 -mfpu=neon-fp-armv8 -mfloat-abi=hard -O3 -pipe -fno-strict-aliasing'
               export CXXFLAGS='-mcpu=cortex-a35 -mfpu=neon-fp-armv8 -mfloat-abi=hard -O3 -pipe -fno-strict-aliasing'
               export LDFLAGS='-mcpu=cortex-a35 -mfpu=neon-fp-armv8 -mfloat-abi=hard'
               
               cd build
-              
-              make config=release_arm -j2 || \
-              make config=release_dev_arm -j2 || \
-              make -j2
+              make config=release_arm -j2 || make -j2
               
               cd /workspace
-              
-              # Erstelle Ausgabeordner
-              mkdir -p dist/REDRIVER2_arkos
-              
-              echo 'Kopiere kompilierte Binärdatei...'
+              echo '===== 3. Paketiere Artefakt ====='
               find src_rebuild -iname '*redriver2*' -type f -executable -exec cp {} dist/REDRIVER2_arkos/ \;
-              find src_rebuild/bin -type f -executable -exec cp {} dist/REDRIVER2_arkos/ \; || true
               
-              echo 'Kopiere Spieldaten (DRIVER2-Ordner)...'
-              if [ -d "DRIVER2" ]; then
-                cp -r DRIVER2 dist/REDRIVER2_arkos/
-              elif [ -d "driver2" ]; then
-                cp -r driver2 dist/REDRIVER2_arkos/
-              fi
-
-              echo 'Kopiere Konfigurationsdateien und zusätzliche Assets...'
+              if [ -d "DRIVER2" ]; then cp -r DRIVER2 dist/REDRIVER2_arkos/; fi
+              if [ -d "driver2" ]; then cp -r driver2 dist/REDRIVER2_arkos/; fi
               cp -f config.ini dist/REDRIVER2_arkos/ 2>/dev/null || true
-              cp -f *.ini dist/REDRIVER2_arkos/ 2>/dev/null || true
-              cp -rf data dist/REDRIVER2_arkos/ 2>/dev/null || true
-              cp -rf mod_assets/* dist/REDRIVER2_arkos/ 2>/dev/null || true
               
-              echo 'Erstelle Installationsanleitung...'
-              echo 'SD-Karten-Struktur für ArkOS:' > dist/REDRIVER2_arkos/README.txt
-              echo 'Kopiere den Inhalt dieses Ordners vollständig nach /roms/ports/redriver2/' >> dist/REDRIVER2_arkos/README.txt
-              
-              echo 'Inhalt des fertigen Release-Ordners:'
               ls -la dist/REDRIVER2_arkos/
             "
 
