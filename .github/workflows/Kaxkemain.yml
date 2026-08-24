@@ -46,7 +46,6 @@ jobs:
           chmod +x /tmp/premake_bin/premake5
           cd src_rebuild
           
-          # Wir aendern die Architektur fuer Premake auf ARM64
           sed -i 's/"x86"/"ARM64"/g' premake5.lua
           /tmp/premake_bin/premake5 gmake2
 
@@ -55,7 +54,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: prebuilt_libs
-          key: gl4es-${{ env.GL4ES_VERSION }}-aarch64-v1
+          key: gl4es-${{ env.GL4ES_VERSION }}-aarch64-v2
 
       - name: Compile GL4ES (AArch64)
         if: steps.gl4es-cache.outputs.cache-hit != 'true'
@@ -63,10 +62,9 @@ jobs:
           set -euo pipefail
           mkdir -p prebuilt_libs
           docker run --rm --platform linux/arm64 -v "${{ github.workspace }}:/workspace" redriver2-aarch64 bash -c '
-            git clone --branch "${GL4ES_VERSION}" --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es
+            git clone --branch "${{ env.GL4ES_VERSION }}" --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es
             cd /tmp/gl4es
             mkdir build && cd build
-            # PortMaster auf aarch64 profitiert oft von GBM (Direct Rendering)
             cmake .. -DCMAKE_SYSTEM_NAME=Linux -DSTATICLIB=OFF -DNOX11=ON -DGBM=ON -DDEFAULT_ES=2
             make -j$(nproc)
             cp ../lib/libGL.so.1 /workspace/prebuilt_libs/libgl4es.so
@@ -79,7 +77,6 @@ jobs:
             set -euo pipefail
             echo "===== Kompiliere REDRIVER2 (AArch64) ====="
             
-            # Trap/Int3 Fix fuer ARM
             find . -path ./.git -prune -o -type f -print0 \
               | xargs -0 grep -IlZ "" 2>/dev/null \
               | xargs -0 -r sed -i \
@@ -87,7 +84,6 @@ jobs:
                   -e "s/asm(\"int3\")/__builtin_trap()/g"
 
             cd src_rebuild
-            # Bereinigte CFLAGS fuer 64-Bit (keine float-abi Flags noetig!)
             export CFLAGS="-O3 -pipe -fno-strict-aliasing"
             export CXXFLAGS="${CFLAGS}"
 
@@ -103,7 +99,6 @@ jobs:
       - name: Package PortMaster Artifact
         run: |
           set -euo pipefail
-          # PortMaster Struktur: Skript aussen, Daten im Ordner
           mkdir -p dist/redriver2
 
           echo "===== Paketiere Dateien für PortMaster ====="
@@ -123,7 +118,6 @@ jobs:
             fi
           done
 
-          # port.json geaendert auf aarch64
           cat << 'EOF_JSON' > dist/redriver2/port.json
           {
             "version": 2,
@@ -147,7 +141,6 @@ jobs:
           }
           EOF_JSON
 
-          # Start-Skript (liegt parallel zum redriver2-Ordner)
           cat << 'EOF_SH' > dist/Redriver2.sh
           #!/bin/bash
           XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
@@ -173,7 +166,6 @@ jobs:
           cd "$GAMEDIR"
           exec > >(tee "$GAMEDIR/redriver2_debug.log") 2>&1
           
-          # GL4ES Konfiguration (nutzt systemeigenes gl4es falls das mitgelieferte Probleme macht)
           export SDL_GAMECONTROLLERCONFIG="$sdl_controllerconfig"
           export LD_LIBRARY_PATH="$GAMEDIR:$LD_LIBRARY_PATH"
           export LIBGL_FB=2
@@ -189,7 +181,6 @@ jobs:
           EOF_SH
           chmod +x dist/Redriver2.sh
 
-          # Controller-Mapping
           cat << 'EOF_GPTK' > dist/redriver2/redriver2.gptk
           back = esc
           start = enter
