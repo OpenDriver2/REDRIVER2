@@ -1,4 +1,4 @@
-name: REDRIVER2 PortMaster Build (RK3326 / ARMhf - Full Libs)
+name: REDRIVER2 PortMaster Build (RK3326 / ARMhf - Verified Libs)
 
 on:
   push:
@@ -10,7 +10,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -22,14 +22,14 @@ jobs:
         with:
           platforms: linux/arm/v7
 
-      - name: Build ARMhf Environment
+      - name: Build ARMhf Environment (Ubuntu 20.04 fuer ArkOS-GLIBC)
         run: |
           set -euo pipefail
           cat << 'EOF' > Dockerfile
           FROM --platform=linux/arm/v7 ubuntu:20.04
           ENV DEBIAN_FRONTEND=noninteractive
           RUN apt-get update && apt-get install -y --no-install-recommends \
-              build-essential cmake git ca-certificates pkg-config \
+              build-essential cmake git ca-certificates pkg-config gcc g++ \
               libsdl2-dev libopenal-dev libjpeg-dev \
               libgl1-mesa-dev libgles2-mesa-dev libx11-dev \
               && rm -rf /var/lib/apt/lists/*
@@ -48,22 +48,21 @@ jobs:
           sed -i 's/"x86"/"ARM"/g' premake5.lua
           /tmp/premake_bin/premake5 gmake2
 
-      - name: Compile GL4ES, Game, and Bundle Libraries
+      - name: Compile GL4ES, Game, and Verify Symbols
         run: |
           set -euo pipefail
           docker run --rm --platform linux/arm/v7 -v "${{ github.workspace }}:/workspace" redriver2-armhf bash -c '
             set -euo pipefail
             mkdir -p /workspace/prebuilt_libs
 
-            # 1. GL4ES bauen
+            # 1. GL4ES bauen (Ohne X11, reines ES2)
             git clone --branch "${{ env.GL4ES_VERSION }}" --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es
             cd /tmp/gl4es && mkdir build && cd build
-            cmake .. -DCMAKE_SYSTEM_NAME=Linux -DSTATICLIB=OFF -DNOX11=ON -DGBM=OFF -DDEFAULT_ES=2
+            cmake .. -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_SYSTEM_NAME=Linux -DSTATICLIB=OFF -DNOX11=ON -DGBM=OFF -DDEFAULT_ES=2
             make -j$(nproc)
             cp ../lib/libGL.so.1 /workspace/prebuilt_libs/libgl4es.so
 
-            # 2. Shared Libraries aus dem Container isolieren
-            cp -L /usr/lib/arm-linux-gnueabihf/libSDL2-2.0.so.0* /workspace/prebuilt_libs/ 2>/dev/null || true
+            # 2. Kritische Runtime-Libraries isolieren (OpenAL & JPEG)
             cp -L /usr/lib/arm-linux-gnueabihf/libopenal.so.1* /workspace/prebuilt_libs/ 2>/dev/null || true
             cp -L /usr/lib/arm-linux-gnueabihf/libjpeg.so.* /workspace/prebuilt_libs/ 2>/dev/null || true
 
@@ -81,6 +80,19 @@ jobs:
             export CXXFLAGS="${CFLAGS}"
             cd build
             make config=release_arm -j$(nproc)
+
+            # 5. Automatische Symbol- & Library-Verifikation
+            echo "===== PRUEFE DYNAMISCHE SYMBOLE UND DEPENDENCIES ====="
+            BIN=$(find . -iname "*redriver2*" -type f -executable | head -n1)
+            export LD_LIBRARY_PATH="/workspace/prebuilt_libs:$LD_LIBRARY_PATH"
+            
+            MISSING=$(ldd "$BIN" | grep "not found" || true)
+            if [ -n "$MISSING" ]; then
+              echo "::error::Fehlende Bibliotheken erkannt:"
+              echo "$MISSING"
+              exit 1
+            fi
+            echo "Alle Shared Libraries & Symbole erfolgreich aufgelöst!"
           '
 
       - name: Package PortMaster Artifact
@@ -92,7 +104,7 @@ jobs:
           cp "${BIN}" dist/redriver2/redriver2
           chmod +x dist/redriver2/redriver2
 
-          # Alle aus dem Container isolierten Shared Libraries nach dist/redriver2/libs/ kopieren
+          # Nur verifizierte Hilfsbibliotheken packen
           cp -P prebuilt_libs/* dist/redriver2/libs/
 
           for item in data assets configs shaders *.ini *.cfg; do
@@ -149,6 +161,7 @@ jobs:
           exec > >(tee "$GAMEDIR/redriver2_debug.log") 2>&1
           
           export SDL_GAMECONTROLLERCONFIG="$sdl_controllerconfig"
+          # Eigene Libs einbinden, aber ArkOS SDL2 den Vorrang lassen
           export LD_LIBRARY_PATH="$GAMEDIR/libs:$LD_LIBRARY_PATH"
           export LIBGL_FB=2
           export LIBGL_ES=2
