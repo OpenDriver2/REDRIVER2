@@ -22,16 +22,17 @@ jobs:
         with:
           platforms: linux/arm/v7
 
-      - name: Build ARMhf Environment (Ubuntu 20.04 fuer ArkOS-GLIBC)
+      - name: Build ARMhf Environment (Ubuntu 20.04 + Upgraded CMake)
         run: |
           set -euo pipefail
           cat << 'EOF' > Dockerfile
           FROM --platform=linux/arm/v7 ubuntu:20.04
           ENV DEBIAN_FRONTEND=noninteractive
           RUN apt-get update && apt-get install -y --no-install-recommends \
-              build-essential cmake git ca-certificates pkg-config gcc g++ \
+              build-essential git ca-certificates pkg-config gcc g++ python3-pip \
               libsdl2-dev libopenal-dev libjpeg-dev \
               libgl1-mesa-dev libgles2-mesa-dev libx11-dev \
+              && pip3 install --no-cache-dir cmake \
               && rm -rf /var/lib/apt/lists/*
           WORKDIR /workspace
           EOF
@@ -55,14 +56,14 @@ jobs:
             set -euo pipefail
             mkdir -p /workspace/prebuilt_libs
 
-            # 1. GL4ES bauen (Ohne X11, reines ES2)
+            # 1. GL4ES bauen (Mit neuem CMake aus pip)
             git clone --branch "${{ env.GL4ES_VERSION }}" --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es
             cd /tmp/gl4es && mkdir build && cd build
-            cmake .. -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_SYSTEM_NAME=Linux -DSTATICLIB=OFF -DNOX11=ON -DGBM=OFF -DDEFAULT_ES=2
+            cmake .. -DCMAKE_SYSTEM_NAME=Linux -DSTATICLIB=OFF -DNOX11=ON -DGBM=OFF -DDEFAULT_ES=2
             make -j$(nproc)
             cp ../lib/libGL.so.1 /workspace/prebuilt_libs/libgl4es.so
 
-            # 2. Kritische Runtime-Libraries isolieren (OpenAL & JPEG)
+            # 2. ArkOS-kompatible Hilfsbibliotheken isolieren
             cp -L /usr/lib/arm-linux-gnueabihf/libopenal.so.1* /workspace/prebuilt_libs/ 2>/dev/null || true
             cp -L /usr/lib/arm-linux-gnueabihf/libjpeg.so.* /workspace/prebuilt_libs/ 2>/dev/null || true
 
@@ -81,7 +82,7 @@ jobs:
             cd build
             make config=release_arm -j$(nproc)
 
-            # 5. Automatische Symbol- & Library-Verifikation
+            # 5. Automatische Verifikation aller Bibliotheken
             echo "===== PRUEFE DYNAMISCHE SYMBOLE UND DEPENDENCIES ====="
             BIN=$(find . -iname "*redriver2*" -type f -executable | head -n1)
             export LD_LIBRARY_PATH="/workspace/prebuilt_libs:$LD_LIBRARY_PATH"
@@ -92,7 +93,7 @@ jobs:
               echo "$MISSING"
               exit 1
             fi
-            echo "Alle Shared Libraries & Symbole erfolgreich aufgelöst!"
+            echo "Alle Shared Libraries & Symbole erfolgreich auf ArkOS-Kompatibilitaet geprueft!"
           '
 
       - name: Package PortMaster Artifact
@@ -104,7 +105,6 @@ jobs:
           cp "${BIN}" dist/redriver2/redriver2
           chmod +x dist/redriver2/redriver2
 
-          # Nur verifizierte Hilfsbibliotheken packen
           cp -P prebuilt_libs/* dist/redriver2/libs/
 
           for item in data assets configs shaders *.ini *.cfg; do
@@ -161,7 +161,6 @@ jobs:
           exec > >(tee "$GAMEDIR/redriver2_debug.log") 2>&1
           
           export SDL_GAMECONTROLLERCONFIG="$sdl_controllerconfig"
-          # Eigene Libs einbinden, aber ArkOS SDL2 den Vorrang lassen
           export LD_LIBRARY_PATH="$GAMEDIR/libs:$LD_LIBRARY_PATH"
           export LIBGL_FB=2
           export LIBGL_ES=2
