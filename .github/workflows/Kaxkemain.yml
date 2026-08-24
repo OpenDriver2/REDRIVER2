@@ -59,10 +59,10 @@ jobs:
             set -euo pipefail
             mkdir -p /workspace/prebuilt_libs
 
-            # 1. GL4ES bauen (mit aktuellem Kitware CMake)
+            # 1. GL4ES bauen (mit Policy Minimum Flag fuer Abwaertskompatibilitaet)
             git clone --branch "${{ env.GL4ES_VERSION }}" --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es
             cd /tmp/gl4es && mkdir build && cd build
-            cmake .. -DCMAKE_SYSTEM_NAME=Linux -DSTATICLIB=OFF -DNOX11=ON -DGBM=OFF -DDEFAULT_ES=2
+            cmake .. -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_SYSTEM_NAME=Linux -DSTATICLIB=OFF -DNOX11=ON -DGBM=OFF -DDEFAULT_ES=2
             make -j$(nproc)
             cp ../lib/libGL.so.1 /workspace/prebuilt_libs/libgl4es.so
 
