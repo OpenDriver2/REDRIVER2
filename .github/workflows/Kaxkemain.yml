@@ -59,14 +59,14 @@ jobs:
             set -euo pipefail
             mkdir -p /workspace/prebuilt_libs
 
-            # 1. GL4ES bauen
+            # 1. GL4ES bauen und Symlinks aufloesen (-L)
             git clone --branch "${{ env.GL4ES_VERSION }}" --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es
             cd /tmp/gl4es && mkdir build && cd build
             cmake .. -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_SYSTEM_NAME=Linux -DSTATICLIB=OFF -DNOX11=ON -DGBM=OFF -DDEFAULT_ES=2
             make -j$(nproc)
-            cp ../lib/libGL.so.1 /workspace/prebuilt_libs/libgl4es.so
+            cp -L ../lib/libGL.so.1 /workspace/prebuilt_libs/libgl4es.so
 
-            # 2. Hilfsbibliotheken isolieren
+            # 2. Hilfsbibliotheken isolieren (mit Dereferenzierung)
             cp -L /usr/lib/arm-linux-gnueabihf/libopenal.so.1* /workspace/prebuilt_libs/ 2>/dev/null || true
             cp -L /usr/lib/arm-linux-gnueabihf/libjpeg.so.* /workspace/prebuilt_libs/ 2>/dev/null || true
 
@@ -85,7 +85,7 @@ jobs:
             cd build
             make config=release_arm -j$(nproc)
 
-            # 5. Automatische Verifikation aller Bibliotheken (Unbound Variable Fix angewendet)
+            # 5. Automatische Verifikation aller Bibliotheken
             echo "===== PRUEFE DYNAMISCHE SYMBOLE UND DEPENDENCIES ====="
             BIN=$(find . -iname "*redriver2*" -type f -executable | head -n1)
             export LD_LIBRARY_PATH="/workspace/prebuilt_libs:${LD_LIBRARY_PATH:-}"
@@ -108,7 +108,8 @@ jobs:
           cp "${BIN}" dist/redriver2/redriver2
           chmod +x dist/redriver2/redriver2
 
-          cp -P prebuilt_libs/* dist/redriver2/libs/
+          # Kopiere Bibliotheken inklusive dereferenzierter Symlinks (-L)
+          cp -L prebuilt_libs/* dist/redriver2/libs/
 
           for item in data assets configs shaders *.ini *.cfg; do
             if [ -e "$item" ]; then
@@ -167,7 +168,10 @@ jobs:
           export LD_LIBRARY_PATH="$GAMEDIR/libs:$LD_LIBRARY_PATH"
           export LIBGL_FB=2
           export LIBGL_ES=2
-          export LD_PRELOAD="$GAMEDIR/libs/libgl4es.so"
+          
+          if [ -f "$GAMEDIR/libs/libgl4es.so" ]; then
+            export LD_PRELOAD="$GAMEDIR/libs/libgl4es.so"
+          fi
 
           echo "Starte Redriver2 auf RK3326..."
           $GPTOKEYB "redriver2" -c "$GAMEDIR/redriver2.gptk" &
