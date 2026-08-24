@@ -22,21 +22,24 @@ jobs:
         with:
           platforms: linux/arm/v7
 
-      - name: Build ARMhf Environment (Ubuntu 20.04 + Upgraded CMake)
+      - name: Build ARMhf Environment (Ubuntu 20.04 + Kitware CMake)
         run: |
           set -euo pipefail
           cat << 'EOF' > Dockerfile
-          FROM --platform=linux/arm/v7 ubuntu:20.04
+          FROM ubuntu:20.04
           ENV DEBIAN_FRONTEND=noninteractive
           RUN apt-get update && apt-get install -y --no-install-recommends \
-              build-essential git ca-certificates pkg-config gcc g++ python3-pip \
-              libsdl2-dev libopenal-dev libjpeg-dev \
-              libgl1-mesa-dev libgles2-mesa-dev libx11-dev \
-              && pip3 install --no-cache-dir cmake \
+              ca-certificates curl gnupg \
+              && curl -fsSL https://apt.kitware.com/keys/kitware-archive-latest.asc | gpg --dearmor -o /usr/share/keyrings/kitware-archive-keyring.gpg \
+              && echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ focal main' > /etc/apt/sources.list.d/kitware.list \
+              && apt-get update && apt-get install -y --no-install-recommends \
+                  build-essential cmake git pkg-config gcc g++ \
+                  libsdl2-dev libopenal-dev libjpeg-dev \
+                  libgl1-mesa-dev libgles2-mesa-dev libx11-dev \
               && rm -rf /var/lib/apt/lists/*
           WORKDIR /workspace
           EOF
-          docker build -t redriver2-armhf -f Dockerfile .
+          docker build --platform linux/arm/v7 -t redriver2-armhf -f Dockerfile .
 
       - name: Generate Makefiles with Premake5
         run: |
@@ -56,14 +59,14 @@ jobs:
             set -euo pipefail
             mkdir -p /workspace/prebuilt_libs
 
-            # 1. GL4ES bauen (Mit neuem CMake aus pip)
+            # 1. GL4ES bauen (mit aktuellem Kitware CMake)
             git clone --branch "${{ env.GL4ES_VERSION }}" --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es
             cd /tmp/gl4es && mkdir build && cd build
             cmake .. -DCMAKE_SYSTEM_NAME=Linux -DSTATICLIB=OFF -DNOX11=ON -DGBM=OFF -DDEFAULT_ES=2
             make -j$(nproc)
             cp ../lib/libGL.so.1 /workspace/prebuilt_libs/libgl4es.so
 
-            # 2. ArkOS-kompatible Hilfsbibliotheken isolieren
+            # 2. Hilfsbibliotheken isolieren
             cp -L /usr/lib/arm-linux-gnueabihf/libopenal.so.1* /workspace/prebuilt_libs/ 2>/dev/null || true
             cp -L /usr/lib/arm-linux-gnueabihf/libjpeg.so.* /workspace/prebuilt_libs/ 2>/dev/null || true
 
