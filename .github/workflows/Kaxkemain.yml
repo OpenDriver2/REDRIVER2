@@ -1,4 +1,4 @@
-name: REDRIVER2 PortMaster Build (RK3326)
+name: REDRIVER2 PortMaster Build (RK3326 / AArch64)
 
 on:
   push:
@@ -6,18 +6,36 @@ on:
   workflow_dispatch:
 
 env:
-  TARGET_CPU: cortex-a35
-  TARGET_FPU: neon-fp-armv8
   GL4ES_VERSION: v1.1.4
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Set up QEMU for AArch64
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/arm64
+
+      - name: Build Unified AArch64 Environment
+        run: |
+          set -euo pipefail
+          cat << 'EOF' > Dockerfile
+          FROM --platform=linux/arm64 ubuntu:22.04
+          ENV DEBIAN_FRONTEND=noninteractive
+          RUN apt-get update && apt-get install -y --no-install-recommends \
+              build-essential cmake git ca-certificates pkg-config \
+              libsdl2-dev libopenal-dev libjpeg-dev \
+              libgl1-mesa-dev libgles2-mesa-dev libdrm-dev libgbm-dev libx11-dev \
+              && rm -rf /var/lib/apt/lists/*
+          WORKDIR /workspace
+          EOF
+          docker build -t redriver2-aarch64 -f Dockerfile .
 
       - name: Generate Makefiles with Premake5
         run: |
@@ -27,7 +45,9 @@ jobs:
           tar -xzf /tmp/premake5.tar.gz -C /tmp/premake_bin
           chmod +x /tmp/premake_bin/premake5
           cd src_rebuild
-          sed -i 's/"x86"/"ARM"/g' premake5.lua
+          
+          # Wir aendern die Architektur fuer Premake auf ARM64
+          sed -i 's/"x86"/"ARM64"/g' premake5.lua
           /tmp/premake_bin/premake5 gmake2
 
       - name: Cache gl4es build
@@ -35,106 +55,31 @@ jobs:
         uses: actions/cache@v4
         with:
           path: prebuilt_libs
-          key: gl4es-${{ env.GL4ES_VERSION }}-${{ env.TARGET_CPU }}-focal-armhf-nogbm-v5
+          key: gl4es-${{ env.GL4ES_VERSION }}-aarch64-v1
 
-      - name: Cross-Compile GL4ES without GBM (Standard ArkOS Mode)
+      - name: Compile GL4ES (AArch64)
         if: steps.gl4es-cache.outputs.cache-hit != 'true'
         run: |
           set -euo pipefail
           mkdir -p prebuilt_libs
+          docker run --rm --platform linux/arm64 -v "${{ github.workspace }}:/workspace" redriver2-aarch64 bash -c '
+            git clone --branch "${GL4ES_VERSION}" --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es
+            cd /tmp/gl4es
+            mkdir build && cd build
+            # PortMaster auf aarch64 profitiert oft von GBM (Direct Rendering)
+            cmake .. -DCMAKE_SYSTEM_NAME=Linux -DSTATICLIB=OFF -DNOX11=ON -DGBM=ON -DDEFAULT_ES=2
+            make -j$(nproc)
+            cp ../lib/libGL.so.1 /workspace/prebuilt_libs/libgl4es.so
+          '
 
-          docker run --rm -v "${{ github.workspace }}:/workspace" -w /workspace \
-            -e GL4ES_VERSION="${GL4ES_VERSION}" \
-            ubuntu:20.04 bash -c '
-              set -euo pipefail
-              export DEBIAN_FRONTEND=noninteractive
-
-              echo "===== Konfiguriere ARMhf Quellen ====="
-              dpkg --add-architecture armhf
-              cp /etc/apt/sources.list /etc/apt/sources.list.bak
-              cat > /etc/apt/sources.list << EOF
-              deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ focal main restricted universe multiverse
-              deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ focal-updates main restricted universe multiverse
-              deb [arch=amd64] http://archive.ubuntu.com/ubuntu/ focal-security main restricted universe multiverse
-
-              deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ focal main restricted universe multiverse
-              deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ focal-updates main restricted universe multiverse
-              deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports/ focal-security main restricted universe multiverse
-              EOF
-
-              for i in 1 2 3; do
-                apt-get update && break
-                echo "apt-get update fehlgeschlagen, Versuch $i/3 ..."
-                sleep 5
-              done
-
-              apt-get install -y --no-install-recommends \
-                gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf cmake make git ca-certificates pkg-config \
-                libx11-dev:armhf libegl1-mesa-dev:armhf libgles2-mesa-dev:armhf
-
-              git clone --branch "${GL4ES_VERSION}" --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es
-              mkdir -p /tmp/gl4es/build && cd /tmp/gl4es/build
-
-              export PKG_CONFIG_LIBDIR="/usr/lib/arm-linux-gnueabihf/pkgconfig:/usr/share/pkgconfig"
-              export PKG_CONFIG_ALLOW_CROSS=1
-
-              cmake .. \
-                -DCMAKE_SYSTEM_NAME=Linux \
-                -DCMAKE_SYSTEM_PROCESSOR=arm \
-                -DCMAKE_C_COMPILER=arm-linux-gnueabihf-gcc \
-                -DCMAKE_CXX_COMPILER=arm-linux-gnueabihf-g++ \
-                -DSTATICLIB=OFF \
-                -DNOX11=ON \
-                -DGBM=OFF \
-                -DDEFAULT_ES=2
-
-              make -j"$(nproc)"
-
-              BUILT_LIB=$(find /tmp/gl4es -name "libGL.so.1" -type f | head -n1)
-              if [ -z "${BUILT_LIB}" ]; then
-                echo "gl4es-Build hat keine libGL.so.1 erzeugt - Abbruch." >&2
-                exit 1
-              fi
-              cp "${BUILT_LIB}" /workspace/prebuilt_libs/libgl4es.so
-            '
-
-      - name: Verify cached/prebuilt gl4es library exists
+      - name: Compile REDRIVER2 in AArch64 Container
         run: |
           set -euo pipefail
-          if [ ! -f prebuilt_libs/libgl4es.so ]; then
-            echo "::error::prebuilt_libs/libgl4es.so fehlt."
-            exit 1
-          fi
-          echo "gl4es-Lib gefunden: $(ls -la prebuilt_libs/libgl4es.so)"
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: linux/arm/v7
-
-      - name: Build ARM32 Environment
-        run: |
-          set -euo pipefail
-          cat << 'EOF' > Dockerfile
-          FROM --platform=linux/arm/v7 ubuntu:20.04
-          ENV DEBIAN_FRONTEND=noninteractive
-          RUN apt-get update && apt-get install -y --no-install-recommends \
-              build-essential gcc g++ libsdl2-dev libopenal-dev \
-              libjpeg-dev libgl1-mesa-dev libgles2-mesa-dev pkg-config \
-              && rm -rf /var/lib/apt/lists/*
-          WORKDIR /workspace
-          EOF
-          docker build -t redriver2-armhf -f Dockerfile .
-
-      - name: Compile Game in Docker Container
-        run: |
-          set -euo pipefail
-          docker run --rm --platform linux/arm/v7 -v "${{ github.workspace }}:/workspace" -w /workspace \
-            -e TARGET_CPU="${TARGET_CPU}" -e TARGET_FPU="${TARGET_FPU}" \
-            redriver2-armhf bash -c '
+          docker run --rm --platform linux/arm64 -v "${{ github.workspace }}:/workspace" redriver2-aarch64 bash -c '
             set -euo pipefail
-
-            echo "===== Kompiliere REDRIVER2 im Container ====="[cite: 4]
+            echo "===== Kompiliere REDRIVER2 (AArch64) ====="
+            
+            # Trap/Int3 Fix fuer ARM
             find . -path ./.git -prune -o -type f -print0 \
               | xargs -0 grep -IlZ "" 2>/dev/null \
               | xargs -0 -r sed -i \
@@ -142,21 +87,23 @@ jobs:
                   -e "s/asm(\"int3\")/__builtin_trap()/g"
 
             cd src_rebuild
-            export CFLAGS="-mcpu=${TARGET_CPU} -mfpu=${TARGET_FPU} -mfloat-abi=hard -O3 -pipe -fno-strict-aliasing"
+            # Bereinigte CFLAGS fuer 64-Bit (keine float-abi Flags noetig!)
+            export CFLAGS="-O3 -pipe -fno-strict-aliasing"
             export CXXFLAGS="${CFLAGS}"
 
             cd build
-            if make config=release_arm -j2; then
-              echo "release_arm Config erfolgreich gebaut."[cite: 4]
+            if make config=release_arm64 -j$(nproc); then
+              echo "release_arm64 Config erfolgreich gebaut."
             else
-              echo "::error::make config=release_arm fehlgeschlagen."[cite: 4]
+              echo "::error::make config=release_arm64 fehlgeschlagen."
               exit 1
             fi
           '
 
-      - name: Package PortMaster Artifact on Host
+      - name: Package PortMaster Artifact
         run: |
           set -euo pipefail
+          # PortMaster Struktur: Skript aussen, Daten im Ordner
           mkdir -p dist/redriver2
 
           echo "===== Paketiere Dateien für PortMaster ====="
@@ -168,45 +115,43 @@ jobs:
           cp "${BIN}" dist/redriver2/redriver2
           chmod +x dist/redriver2/redriver2
 
-          # 32-Bit libgl4es.so kopieren
           cp prebuilt_libs/libgl4es.so dist/redriver2/
 
-          # Repo komplett nach Laufzeit-Ordnern/Dateien durchsuchen und mitnehmen
           for item in data assets configs shaders *.ini *.cfg; do
             if [ -e "$item" ]; then
               cp -r "$item" dist/redriver2/
-              echo "[+] Laufzeit-Element kopiert: $item"
             fi
           done
 
-          # 1. port.json erstellen
+          # port.json geaendert auf aarch64
           cat << 'EOF_JSON' > dist/redriver2/port.json
           {
             "version": 2,
             "name": "redriver2.zip",
             "items": [
               "Redriver2.sh",
-              "redriver2"
+              "redriver2/"
             ],
             "items_opt": null,
             "attr": {
               "title": "Driver 2 (Redriver2)",
-              "desc": "Der Open-Source Driver 2 PC Port für Linux Handhelds.",
+              "desc": "Der Open-Source Driver 2 PC Port fuer Linux Handhelds.",
               "inst": "Bereit zum Starten.",
               "genres": ["action", "driving"],
               "porter": ["St0len-One"],
               "rtr": true,
               "runtime": null,
               "reqs": [],
-              "arch": ["armhf"]
+              "arch": ["aarch64"]
             }
           }
           EOF_JSON
 
-          # 2. Perfektes PortMaster Start-Skript erstellen
-          cat << 'EOF_SH' > dist/redriver2/Redriver2.sh
+          # Start-Skript (liegt parallel zum redriver2-Ordner)
+          cat << 'EOF_SH' > dist/Redriver2.sh
           #!/bin/bash
           XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
+          
           if [ -d "/opt/system/Tools/PortMaster/" ]; then
             controlfolder="/opt/system/Tools/PortMaster"
           elif [ -d "/roms/tools/PortMaster/" ]; then
@@ -216,35 +161,35 @@ jobs:
           else
             controlfolder="/roms/ports/PortMaster"
           fi
-          if [ -f "$controlfolder/funcs.txt" ]; then
-            source "$controlfolder/funcs.txt"
-          else
-            echo "PortMaster funcs.txt nicht gefunden!" >&2
-            exit 1
-          fi
-          pm_init
-          GAMEDIR="/roms/ports/redriver2"
+          
+          source "$controlfolder/control.txt"
+          source "$controlfolder/device_info.txt"
+          
+          [ -f "${controlfolder}/mod_${CFW_NAME}.txt" ] && source "${controlfolder}/mod_${CFW_NAME}.txt"
+          
+          get_controls
+          
+          GAMEDIR="/$directory/ports/redriver2"
           cd "$GAMEDIR"
           exec > >(tee "$GAMEDIR/redriver2_debug.log") 2>&1
-          if [ -f "${controlfolder}/libgl_${CFW_NAME}.txt" ]; then
-            source "${controlfolder}/libgl_${CFW_NAME}.txt"
-          else
-            source "${controlfolder}/libgl_default.txt"
-          fi
+          
+          # GL4ES Konfiguration (nutzt systemeigenes gl4es falls das mitgelieferte Probleme macht)
           export SDL_GAMECONTROLLERCONFIG="$sdl_controllerconfig"
-          export LD_LIBRARY_PATH="$GAMEDIR/libs:$LD_LIBRARY_PATH"
-          if [ -f "$GAMEDIR/libgl4es.so" ]; then
-            export LIBGL_FB=2
-            export LD_PRELOAD="$GAMEDIR/libgl4es.so"
-          fi
-          echo "Starte Redriver2 auf M9 Pro (ArkOS / RK3326)..."
+          export LD_LIBRARY_PATH="$GAMEDIR:$LD_LIBRARY_PATH"
+          export LIBGL_FB=2
+          export LD_PRELOAD="$GAMEDIR/libgl4es.so"
+
+          echo "Starte Redriver2..."
           $GPTOKEYB "redriver2" -c "$GAMEDIR/redriver2.gptk" &
           ./redriver2
-          pm_finish
+          
+          $ESUDO kill -9 $(pidof gptokeyb)
+          $ESUDO systemctl restart oga_events &
+          printf "\033c" > /dev/tty0
           EOF_SH
-          chmod +x dist/redriver2/Redriver2.sh
+          chmod +x dist/Redriver2.sh
 
-          # 3. Controller-Mapping (gptk) erstellen
+          # Controller-Mapping
           cat << 'EOF_GPTK' > dist/redriver2/redriver2.gptk
           back = esc
           start = enter
@@ -270,12 +215,9 @@ jobs:
           r2 = enter
           EOF_GPTK
 
-          echo "Fertiger Inhalt des Release-Ordners:"
-          ls -la dist/redriver2/
-
       - name: Upload PortMaster Artifact
         uses: actions/upload-artifact@v4
         with:
           name: REDRIVER2-PortMaster
-          path: dist/redriver2/
+          path: dist/
           if-no-files-found: error
