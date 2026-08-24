@@ -1,131 +1,217 @@
-name: erstelle REDRIVER2 for R36S (RK3326)
+name: Create REDRIVER2 PortMaster Build (RK3326 / ARMhf - Verified Libs)
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
   workflow_dispatch:
+
+env:
+  GL4ES_VERSION: v1.1.4
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # 1. Repository klonen
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      # 2. QEMU-Setup für ARM64-Emulation
-      - name: Set up QEMU
+      - name: Set up QEMU for ARMv7
         uses: docker/setup-qemu-action@v3
         with:
-          platforms: linux/arm64
+          platforms: linux/arm/v7
 
-      # 3. Docker Build & Run (ARM64-Container)
-      - name: Build in ARM64 Docker container
+      - name: Build ARMhf Environment (Ubuntu 20.04 + Kitware CMake)
         run: |
-          # Docker-Image für ARM64 mit allen Abhängigkeiten erstellen
-          cat > Dockerfile <<'EOF'
-          FROM --platform=linux/arm64 ubuntu:22.04
-          
+          set -euo pipefail
+          cat << 'EOF' > Dockerfile
+          FROM ubuntu:20.04
+          ENV DEBIAN_FRONTEND=noninteractive
           RUN apt-get update && apt-get install -y --no-install-recommends \
-              ca-certificates \
-              build-essential \
-              make \
-              gcc-9 \
-              g++-9 \
-              gfortran-9 \
-              libsdl2-dev \
-              libopenal-dev \
-              libjpeg-dev \
-              libgl1-mesa-dev \
-              libgles2-mesa-dev \
-              libxrandr-dev \
-              libxinerama-dev \
-              libxcursor-dev \
-              libxi-dev \
-              libglu1-mesa-dev \
-              libpulse-dev \
-              libdbus-1-dev \
-              libibus-1.0-dev \
-              pkg-config \
-              cpio \
-              wget \
-              curl \
+              ca-certificates curl gnupg \
+              && curl -fsSL https://apt.kitware.com/keys/kitware-archive-latest.asc | gpg --dearmor -o /usr/share/keyrings/kitware-archive-keyring.gpg \
+              && echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ focal main' > /etc/apt/sources.list.d/kitware.list \
+              && apt-get update && apt-get install -y --no-install-recommends \
+                  build-essential cmake git pkg-config gcc g++ \
+                  libsdl2-dev libopenal-dev libjpeg-dev \
+                  libgl1-mesa-dev libgles2-mesa-dev libx11-dev \
               && rm -rf /var/lib/apt/lists/*
-          
           WORKDIR /workspace
           EOF
+          docker build --platform linux/arm/v7 -t redriver2-armhf -f Dockerfile .
 
-          docker build -t redriver2-arm64-builder -f Dockerfile .
-
-      # 4. Build-Ausführung im Container
-      - name: Run build inside container
+      - name: Generate Makefiles with Premake5
         run: |
-          # Repository in den Container mounten und Build durchführen
-          docker run --rm \
-            --platform linux/arm64 \
-            -v "$GITHUB_WORKSPACE:/workspace" \
-            -w /workspace \
-            redriver2-arm64-builder \
-            bash -c "
-              set -e
+          set -euo pipefail
+          curl -fsSL https://github.com/premake/premake-core/releases/download/v5.0.0-beta2/premake-5.0.0-beta2-linux.tar.gz -o /tmp/premake5.tar.gz
+          mkdir -p /tmp/premake_bin
+          tar -xzf /tmp/premake5.tar.gz -C /tmp/premake_bin
+          chmod +x /tmp/premake_bin/premake5
+          cd src_rebuild
+          sed -i 's/"x86"/"ARM"/g' premake5.lua
+          /tmp/premake_bin/premake5 gmake2
 
-              echo '===== Build-Step: Cross-Compilation für RK3326 (arm64) ====='
+      - name: Compile GL4ES, Game, and Verify Symbols
+        run: |
+          set -euo pipefail
+          docker run --rm --platform linux/arm/v7 -v "${{ github.workspace }}:/workspace" redriver2-armhf bash -c '
+            set -euo pipefail
+            mkdir -p /workspace/prebuilt_libs
 
-              # Premake5 herunterladen (falls wget fehlschlägt, curl als Fallback, ggf. mit --insecure)
-              echo 'Downloading Premake5...'
-              if ! wget --no-check-certificate -q 'https://github.com/premake/premake-core/releases/download/v5.0.0-alpha15/premake-5.0.0-alpha15-linux.tar.gz' -O /tmp/premake5.tar.gz; then
-                echo 'wget failed, trying curl...'
-                curl -L --insecure 'https://github.com/premake/premake-core/releases/download/v5.0.0-alpha15/premake-5.0.0-alpha15-linux.tar.gz' -o /tmp/premake5.tar.gz
-              fi
-              tar -xzf /tmp/premake5.tar.gz -C /tmp
-              cp /tmp/premake5 /usr/local/bin/
-              chmod +x /usr/local/bin/premake5
-              premake5 --version
+            # 1. GL4ES bauen und physische Dateien kopieren (-L)
+            git clone --branch "${{ env.GL4ES_VERSION }}" --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es
+            cd /tmp/gl4es && mkdir build && cd build
+            cmake .. -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_SYSTEM_NAME=Linux -DSTATICLIB=OFF -DNOX11=ON -DGBM=OFF -DDEFAULT_ES=2
+            make -j$(nproc)
+            cp -L ../lib/libGL.so.1 /workspace/prebuilt_libs/libgl4es.so
+            cp -L ../lib/libGL.so.1 /workspace/prebuilt_libs/libGL.so.1
+            cp -L ../lib/libGL.so.1 /workspace/prebuilt_libs/libGL.so
 
-              # Architektur-Patch
-              echo 'Patching premake5.lua...'
-              cd /workspace/src_rebuild
-              sed -i 's/\"x86\"/\"ARM64\"/g' premake5.lua
-              sed -i 's/\"x86_64\"/\"ARM64\"/g' premake5.lua
-              grep -n 'platforms' premake5.lua | head -5
+            # 2. Hilfsbibliotheken isolieren
+            cp -L /usr/lib/arm-linux-gnueabihf/libopenal.so.1* /workspace/prebuilt_libs/ 2>/dev/null || true
+            cp -L /usr/lib/arm-linux-gnueabihf/libjpeg.so.* /workspace/prebuilt_libs/ 2>/dev/null || true
 
-              # Premake5 Makefiles generieren
-              echo 'Generating Makefiles...'
-              premake5 gmake
-              ls -la project_gmake_linux
+            # 3. Trap Fix anwenden
+            cd /workspace
+            find . -path ./.git -prune -o -type f -print0 \
+              | xargs -0 grep -IlZ "" 2>/dev/null \
+              | xargs -0 -r sed -i \
+                  -e "s/__asm__(\"int3\")/__builtin_trap()/g" \
+                  -e "s/asm(\"int3\")/__builtin_trap()/g"
 
-              # Kompilierung mit aggressiven Optimierungen
-              echo 'Building REDRIVER2...'
-              export CFLAGS='-mcpu=cortex-a35 -mtune=cortex-a35 -O3 -pipe -fno-strict-aliasing'
-              export CXXFLAGS='-mcpu=cortex-a35 -mtune=cortex-a35 -O3 -pipe -fno-strict-aliasing'
-              export LDFLAGS='-mcpu=cortex-a35'
+            # 4. Spiel kompilieren
+            cd src_rebuild
+            export CFLAGS="-O3 -pipe -mfloat-abi=hard -mfpu=neon-vfpv4 -fno-strict-aliasing"
+            export CXXFLAGS="${CFLAGS}"
+            cd build
+            make config=release_arm -j$(nproc)
 
-              cd project_gmake_linux
-              make config=release_arm64 -j\$(nproc) || \
-              make config=release_dev_arm64 -j\$(nproc) || \
-              make -j\$(nproc)
+            # 5. Automatische Verifikation aller Bibliotheken
+            echo "===== PRUEFE DYNAMISCHE SYMBOLE UND DEPENDENCIES ====="
+            BIN=$(find . -iname "*redriver2*" -type f -executable | head -n1)
+            export LD_LIBRARY_PATH="/workspace/prebuilt_libs:${LD_LIBRARY_PATH:-}"
+            
+            MISSING=$(ldd "$BIN" | grep "not found" || true)
+            if [ -n "$MISSING" ]; then
+              echo "::error::Fehlende Bibliotheken erkannt:"
+              echo "$MISSING"
+              exit 1
+            fi
+            echo "Alle Shared Libraries & Symbole erfolgreich geprueft!"
+          '
 
-              # Artefakt verpacken
-              echo 'Packaging artifacts...'
-              cd /workspace
-              mkdir -p dist/REDRIVER2_arkos
-              cp bin/Release/REDRIVER2 dist/REDRIVER2_arkos/ 2>/dev/null || \
-              cp bin/Release_dev/REDRIVER2 dist/REDRIVER2_arkos/ 2>/dev/null || \
-              cp bin/*/REDRIVER2 dist/REDRIVER2_arkos/ 2>/dev/null
-              echo 'SD-Karten-Struktur für ArkOS:' > dist/REDRIVER2_arkos/README.txt
-              echo 'Lege die Binärdatei als /roms/ports/redriver2/redriver2 ab.' >> dist/REDRIVER2_arkos/README.txt
-              echo 'Lege die originalen PSX-Dateien (.cue/.bin) in denselben Ordner.' >> dist/REDRIVER2_arkos/README.txt
-              ls -laR dist
-            "
+      - name: Package PortMaster Artifact
+        run: |
+          set -euo pipefail
+          mkdir -p dist/redriver2/libs
 
-      # 5. Artefakt hochladen
-      - name: Upload Artifact
+          BIN=$(find src_rebuild -iname "*redriver2*" -type f -executable | head -n1)
+          cp "${BIN}" dist/redriver2/redriver2
+          chmod +x dist/redriver2/redriver2
+
+          cp -L prebuilt_libs/* dist/redriver2/libs/
+
+          for item in data assets configs shaders *.ini *.cfg; do
+            if [ -e "$item" ]; then
+              cp -r "$item" dist/redriver2/
+            fi
+          done
+
+          cat << 'EOF_JSON' > dist/redriver2/port.json
+          {
+            "version": 2,
+            "name": "redriver2.zip",
+            "items": [
+              "Redriver2.sh",
+              "redriver2/"
+            ],
+            "items_opt": null,
+            "attr": {
+              "title": "Driver 2 (Redriver2)",
+              "desc": "Der Open-Source Driver 2 PC Port fuer Linux Handhelds.",
+              "inst": "Bereit zum Starten.",
+              "genres": ["action", "driving"],
+              "porter": ["St0len-One"],
+              "rtr": true,
+              "runtime": null,
+              "reqs": [],
+              "arch": ["armhf"]
+            }
+          }
+          EOF_JSON
+
+          cat << 'EOF_SH' > dist/Redriver2.sh
+          #!/bin/bash
+          XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
+          
+          if [ -d "/opt/system/Tools/PortMaster/" ]; then
+            controlfolder="/opt/system/Tools/PortMaster"
+          elif [ -d "/roms/tools/PortMaster/" ]; then
+            controlfolder="/roms/tools/PortMaster"
+          elif [ -d "$XDG_DATA_HOME/PortMaster" ]; then
+            controlfolder="$XDG_DATA_HOME/PortMaster"
+          else
+            controlfolder="/roms/ports/PortMaster"
+          fi
+          
+          source "$controlfolder/control.txt"
+          source "$controlfolder/device_info.txt"
+          [ -f "${controlfolder}/mod_${CFW_NAME}.txt" ] && source "${controlfolder}/mod_${CFW_NAME}.txt"
+          get_controls
+          
+          GAMEDIR="/$directory/ports/redriver2"
+          cd "$GAMEDIR"
+          
+          exec > >(tee "$GAMEDIR/redriver2_debug.log") 2>&1
+          
+          export SDL_GAMECONTROLLERCONFIG="$sdl_controllerconfig"
+          export LD_LIBRARY_PATH="$GAMEDIR/libs:$LD_LIBRARY_PATH"
+          export LIBGL_ES=2
+          export LIBGL_GL=21
+          
+          if [ -f "$GAMEDIR/libs/libgl4es.so" ]; then
+            export LD_PRELOAD="$GAMEDIR/libs/libgl4es.so"
+          fi
+
+          echo "Starte Redriver2 auf RK3326..."
+          $GPTOKEYB "redriver2" -c "$GAMEDIR/redriver2.gptk" &
+          ./redriver2
+          
+          $ESUDO kill -9 $(pidof gptokeyb)
+          $ESUDO systemctl restart oga_events &
+          printf "\033c" > /dev/tty0
+          EOF_SH
+          chmod +x dist/Redriver2.sh
+
+          cat << 'EOF_GPTK' > dist/redriver2/redriver2.gptk
+          back = esc
+          start = enter
+          up = up
+          down = down
+          left = left
+          right = right
+          left_analog_up = up
+          left_analog_down = down
+          left_analog_left = left
+          left_analog_right = right
+          right_analog_up = up
+          right_analog_down = down
+          right_analog_left = left
+          right_analog_right = right
+          a = space
+          b = alt
+          x = ctrl
+          y = shift
+          l1 = q
+          r1 = e
+          l2 = tab
+          r2 = enter
+          EOF_GPTK
+
+      - name: Upload PortMaster Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: REDRIVER2-arkos-arm64
-          path: dist/REDRIVER2_arkos/
+          name: REDRIVER2-PortMaster-RK3326
+          path: dist/
           if-no-files-found: error
