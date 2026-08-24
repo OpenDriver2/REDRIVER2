@@ -59,7 +59,7 @@ jobs:
             set -euo pipefail
             mkdir -p /workspace/prebuilt_libs
 
-            # 1. GL4ES bauen (mit Policy Minimum Flag fuer Abwaertskompatibilitaet)
+            # 1. GL4ES bauen
             git clone --branch "${{ env.GL4ES_VERSION }}" --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es
             cd /tmp/gl4es && mkdir build && cd build
             cmake .. -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_SYSTEM_NAME=Linux -DSTATICLIB=OFF -DNOX11=ON -DGBM=OFF -DDEFAULT_ES=2
@@ -85,10 +85,10 @@ jobs:
             cd build
             make config=release_arm -j$(nproc)
 
-            # 5. Automatische Verifikation aller Bibliotheken
+            # 5. Automatische Verifikation aller Bibliotheken (Unbound Variable Fix angewendet)
             echo "===== PRUEFE DYNAMISCHE SYMBOLE UND DEPENDENCIES ====="
             BIN=$(find . -iname "*redriver2*" -type f -executable | head -n1)
-            export LD_LIBRARY_PATH="/workspace/prebuilt_libs:$LD_LIBRARY_PATH"
+            export LD_LIBRARY_PATH="/workspace/prebuilt_libs:${LD_LIBRARY_PATH:-}"
             
             MISSING=$(ldd "$BIN" | grep "not found" || true)
             if [ -n "$MISSING" ]; then
