@@ -1,0 +1,57 @@
+name: create REDRIVER2 for R36S (RK3326 Optimized)
+
+on:
+  workflow_dispatch: 
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: ARM64 Kompilierung in QEMU (Cortex-A35 optimiert)
+        uses: uraimo/run-on-arch-action@v2
+        with:
+          arch: aarch64
+          distro: ubuntu20.04
+          run: |
+            apt-get update
+            apt-get install -y g++ gcc make libsdl2-dev libopenal-dev libjpeg-turbo8-dev git curl
+            
+            # 1. Premake5 für ARM64 kompilieren
+            git clone https://github.com/premake/premake-core.git --depth 1
+            cd premake-core
+            make -f Bootstrap.mak linux
+            cp bin/release/premake5 /usr/local/bin/
+            cd ..
+            
+            # 2. In das Source-Verzeichnis wechseln
+            cd src_rebuild
+            
+            # 3. Architektur im Build-Skript patchen (x86 durch ARM64 ersetzen)
+            sed -i 's/"x86_64"/"arm64"/g' premake5.lua
+            sed -i 's/"x86"/"arm"/g' premake5.lua
+            
+            # 4. Makefiles generieren
+            premake5 gmake2
+            
+            # 5. R36S / RK3326 Hardware-Optimierungen setzen
+            export CFLAGS="-mcpu=cortex-a35 -mtune=cortex-a35 -O3 -pipe"
+            export CXXFLAGS="-mcpu=cortex-a35 -mtune=cortex-a35 -O3 -pipe"
+            
+            # 6. Kompilieren (Die Fallbacks stellen sicher, dass der richtige Config-Name getroffen wird)
+            cd build
+            make config=release_arm64 -j$(nproc) || make config=release_dev_arm64 -j$(nproc) || make -j$(nproc)
+            
+            # 7. Datei für den Upload vorbereiten
+            mkdir -p ../../R36S-Output
+            find . -type f -name "REDRIVER2" -exec cp {} ../../R36S-Output/ \;
+            
+      - name: Optimiertes Spiel hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: REDRIVER2-PortMaster-RK3326
+          path: R36S-Output/REDRIVER2

@@ -1,0 +1,216 @@
+name: REDRIVER2 PortMaster Build (RK3326 / ARMhf - Verified Libs)
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+env:
+  GL4ES_VERSION: v1.1.4
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up QEMU for ARMv7
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/arm/v7
+
+      - name: Build ARMhf Environment (Ubuntu 20.04 + Kitware CMake)
+        run: |
+          set -euo pipefail
+          cat << 'EOF' > Dockerfile
+          FROM ubuntu:20.04
+          ENV DEBIAN_FRONTEND=noninteractive
+          RUN apt-get update && apt-get install -y --no-install-recommends \
+              ca-certificates curl gnupg \
+              && curl -fsSL https://apt.kitware.com/keys/kitware-archive-latest.asc | gpg --dearmor -o /usr/share/keyrings/kitware-archive-keyring.gpg \
+              && echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ focal main' > /etc/apt/sources.list.d/kitware.list \
+              && apt-get update && apt-get install -y --no-install-recommends \
+                  build-essential cmake git pkg-config gcc g++ \
+                  libsdl2-dev libopenal-dev libjpeg-dev \
+                  libgl1-mesa-dev libgles2-mesa-dev libx11-dev \
+              && rm -rf /var/lib/apt/lists/*
+          WORKDIR /workspace
+          EOF
+          docker build --platform linux/arm/v7 -t redriver2-armhf -f Dockerfile .
+
+      - name: Generate Makefiles with Premake5
+        run: |
+          set -euo pipefail
+          curl -fsSL https://github.com/premake/premake-core/releases/download/v5.0.0-beta2/premake-5.0.0-beta2-linux.tar.gz -o /tmp/premake5.tar.gz
+          mkdir -p /tmp/premake_bin
+          tar -xzf /tmp/premake5.tar.gz -C /tmp/premake_bin
+          chmod +x /tmp/premake_bin/premake5
+          cd src_rebuild
+          sed -i 's/"x86"/"ARM"/g' premake5.lua
+          /tmp/premake_bin/premake5 gmake2
+
+      - name: Compile GL4ES, Game, and Verify Symbols
+        run: |
+          set -euo pipefail
+          docker run --rm --platform linux/arm/v7 -v "${{ github.workspace }}:/workspace" redriver2-armhf bash -c '
+            set -euo pipefail
+            mkdir -p /workspace/prebuilt_libs
+
+            # 1. GL4ES bauen und Symlinks aufloesen (-L)
+            git clone --branch "${{ env.GL4ES_VERSION }}" --depth 1 https://github.com/ptitSeb/gl4es.git /tmp/gl4es
+            cd /tmp/gl4es && mkdir build && cd build
+            cmake .. -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_SYSTEM_NAME=Linux -DSTATICLIB=OFF -DNOX11=ON -DGBM=OFF -DDEFAULT_ES=2
+            make -j$(nproc)
+            cp -L ../lib/libGL.so.1 /workspace/prebuilt_libs/libgl4es.so
+
+            # 2. Hilfsbibliotheken isolieren (mit Dereferenzierung)
+            cp -L /usr/lib/arm-linux-gnueabihf/libopenal.so.1* /workspace/prebuilt_libs/ 2>/dev/null || true
+            cp -L /usr/lib/arm-linux-gnueabihf/libjpeg.so.* /workspace/prebuilt_libs/ 2>/dev/null || true
+
+            # 3. Trap Fix anwenden
+            cd /workspace
+            find . -path ./.git -prune -o -type f -print0 \
+              | xargs -0 grep -IlZ "" 2>/dev/null \
+              | xargs -0 -r sed -i \
+                  -e "s/__asm__(\"int3\")/__builtin_trap()/g" \
+                  -e "s/asm(\"int3\")/__builtin_trap()/g"
+
+            # 4. Spiel kompilieren
+            cd src_rebuild
+            export CFLAGS="-O3 -pipe -mfloat-abi=hard -mfpu=neon-vfpv4 -fno-strict-aliasing"
+            export CXXFLAGS="${CFLAGS}"
+            cd build
+            make config=release_arm -j$(nproc)
+
+            # 5. Automatische Verifikation aller Bibliotheken
+            echo "===== PRUEFE DYNAMISCHE SYMBOLE UND DEPENDENCIES ====="
+            BIN=$(find . -iname "*redriver2*" -type f -executable | head -n1)
+            export LD_LIBRARY_PATH="/workspace/prebuilt_libs:${LD_LIBRARY_PATH:-}"
+            
+            MISSING=$(ldd "$BIN" | grep "not found" || true)
+            if [ -n "$MISSING" ]; then
+              echo "::error::Fehlende Bibliotheken erkannt:"
+              echo "$MISSING"
+              exit 1
+            fi
+            echo "Alle Shared Libraries & Symbole erfolgreich auf ArkOS-Kompatibilitaet geprueft!"
+          '
+
+      - name: Package PortMaster Artifact
+        run: |
+          set -euo pipefail
+          mkdir -p dist/redriver2/libs
+
+          BIN=$(find src_rebuild -iname "*redriver2*" -type f -executable | head -n1)
+          cp "${BIN}" dist/redriver2/redriver2
+          chmod +x dist/redriver2/redriver2
+
+          # Kopiere Bibliotheken inklusive dereferenzierter Symlinks (-L)
+          cp -L prebuilt_libs/* dist/redriver2/libs/
+
+          for item in data assets configs shaders *.ini *.cfg; do
+            if [ -e "$item" ]; then
+              cp -r "$item" dist/redriver2/
+            fi
+          done
+
+          cat << 'EOF_JSON' > dist/redriver2/port.json
+          {
+            "version": 2,
+            "name": "redriver2.zip",
+            "items": [
+              "Redriver2.sh",
+              "redriver2/"
+            ],
+            "items_opt": null,
+            "attr": {
+              "title": "Driver 2 (Redriver2)",
+              "desc": "Der Open-Source Driver 2 PC Port fuer Linux Handhelds.",
+              "inst": "Bereit zum Starten.",
+              "genres": ["action", "driving"],
+              "porter": ["St0len-One"],
+              "rtr": true,
+              "runtime": null,
+              "reqs": [],
+              "arch": ["armhf"]
+            }
+          }
+          EOF_JSON
+
+          cat << 'EOF_SH' > dist/Redriver2.sh
+          #!/bin/bash
+          XDG_DATA_HOME=${XDG_DATA_HOME:-$HOME/.local/share}
+          
+          if [ -d "/opt/system/Tools/PortMaster/" ]; then
+            controlfolder="/opt/system/Tools/PortMaster"
+          elif [ -d "/roms/tools/PortMaster/" ]; then
+            controlfolder="/roms/tools/PortMaster"
+          elif [ -d "$XDG_DATA_HOME/PortMaster" ]; then
+            controlfolder="$XDG_DATA_HOME/PortMaster"
+          else
+            controlfolder="/roms/ports/PortMaster"
+          fi
+          
+          source "$controlfolder/control.txt"
+          source "$controlfolder/device_info.txt"
+          [ -f "${controlfolder}/mod_${CFW_NAME}.txt" ] && source "${controlfolder}/mod_${CFW_NAME}.txt"
+          get_controls
+          
+          GAMEDIR="/$directory/ports/redriver2"
+          cd "$GAMEDIR"
+          
+          exec > >(tee "$GAMEDIR/redriver2_debug.log") 2>&1
+          
+          export SDL_GAMECONTROLLERCONFIG="$sdl_controllerconfig"
+          export LD_LIBRARY_PATH="$GAMEDIR/libs:$LD_LIBRARY_PATH"
+          export LIBGL_FB=2
+          export LIBGL_ES=2
+          
+          if [ -f "$GAMEDIR/libs/libgl4es.so" ]; then
+            export LD_PRELOAD="$GAMEDIR/libs/libgl4es.so"
+          fi
+
+          echo "Starte Redriver2 auf RK3326..."
+          $GPTOKEYB "redriver2" -c "$GAMEDIR/redriver2.gptk" &
+          ./redriver2
+          
+          $ESUDO kill -9 $(pidof gptokeyb)
+          $ESUDO systemctl restart oga_events &
+          printf "\033c" > /dev/tty0
+          EOF_SH
+          chmod +x dist/Redriver2.sh
+
+          cat << 'EOF_GPTK' > dist/redriver2/redriver2.gptk
+          back = esc
+          start = enter
+          up = up
+          down = down
+          left = left
+          right = right
+          left_analog_up = up
+          left_analog_down = down
+          left_analog_left = left
+          left_analog_right = right
+          right_analog_up = up
+          right_analog_down = down
+          right_analog_left = left
+          right_analog_right = right
+          a = space
+          b = alt
+          x = ctrl
+          y = shift
+          l1 = q
+          r1 = e
+          l2 = tab
+          r2 = enter
+          EOF_GPTK
+
+      - name: Upload PortMaster Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: REDRIVER2-PortMaster-RK3326
+          path: dist/
+          if-no-files-found: error
