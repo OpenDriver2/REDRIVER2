@@ -686,15 +686,15 @@ void DoMissionSound(void)
 			break;
 		case 52:	// Havana sounds
 		case 53:
-			if (bodgevar == 1)
+			if (bodgevar > 0 && bodgevar <= 2)
 			{
-				channel = GetFreeChannel();
-				Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, 0, pos[0], pos[1], pos[2], -1000, 4096);
-				bodgevar = 2;
-			}
-			else if(bodgevar == 2)
-			{
-				if(channel > -1)
+				// garage door sound or elevator
+				if(channel == -1)
+				{
+					channel = GetFreeChannel();
+					Start3DSoundVolPitch(channel, SOUND_BANK_MISSION, 2 - bodgevar, pos[0], pos[1], pos[2], -1000, 4096);
+				}
+				else
 					SetChannelPosition3(channel, (VECTOR*)pos, NULL, -1000, 4096, 0 );
 			}
 			else if (bodgevar == 3)

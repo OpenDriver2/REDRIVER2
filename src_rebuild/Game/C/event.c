@@ -3557,7 +3557,7 @@ VECTOR* TriggerEvent(int i)
 						event[1].node++;
 					}
 
-					SetMSoundVar(1, &event[1].position);
+					SetMSoundVar(2, &event[1].position);
 
 					event[1].timer = 0;
 					events.cameraEvent = &event[1];
