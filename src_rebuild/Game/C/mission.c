@@ -740,7 +740,7 @@ void LoadMission(int missionnum)
 		// MISSION SCRIPT DUMP
 		u_int* script = MissionScript;
 
-		while (true)
+		while (script < MissionStrings)
 		{
 			u_int* value = script;
 
@@ -750,13 +750,10 @@ void LoadMission(int missionnum)
 
 			switch (*value & 0xff000000)
 			{
-				case 0x0:
-				case 0x2000000:
-				case 0xff000000:
-				{
-					//printInfo("MR: push %d\n", *value);
+				case 0x0:			// NOP
+				case 0x2000000:		// push variable
+				case 0xff000000:	// push param
 					break;
-				}
 				case 0x1000000:
 				{
 					printInfo("ADDR %.3d ", script - MissionScript);
@@ -811,12 +808,12 @@ void LoadMission(int missionnum)
 
 							break;
 						}
-						case 0x1000001:			// BranchIf
+						case 0x1000001:			// JumpIf
 						{
 							val1 = *--value;
 							val2 = *--value;
 
-							printWarning("MR command: BranchIf result != 0 TO %d\n", val1, val2);
+							printWarning("MR command: JumpIf %d != 0 TO %d\n", val2, val1);
 
 							break;
 						}
@@ -877,7 +874,7 @@ void LoadMission(int missionnum)
 						}
 						case 0x1001000:			// StopThread
 						{
-							printWarning("MR command: StopThread\n");
+							printWarning("MR command: StopThread\n\n");
 
 							break;
 						}
@@ -885,7 +882,7 @@ void LoadMission(int missionnum)
 						{
 							val1 = *--value;
 
-							printWarning("MR command: StartThreadForPlayer(%d)\n", (value - MissionScript) + val1 + 1);
+							printWarning("MR command: StartThreadForPlayer(%d)\n", (value - MissionScript) + val1 + 2);
 
 							break;
 						}
@@ -955,7 +952,7 @@ void LoadMission(int missionnum)
 							sprintf(opValue1, "%d", val1);
 							break;
 						}
-						case 0x2000000:
+						default:
 						{
 							// MRGetVariable
 							switch (val1)
@@ -975,10 +972,10 @@ void LoadMission(int missionnum)
 								case 0x2000103:
 									sprintf(opValue1, "maxCopCars");
 									break;
+								default:
+									sprintf(opValue1, "result (%x)", val1);
 							}
 						}
-						default:
-							sprintf(opValue1, "result");
 					}
 
 					val2 = *--value;
@@ -992,7 +989,7 @@ void LoadMission(int missionnum)
 							sprintf(opValue2, "%d", val2);
 							break;
 						}
-						case 0x2000000:
+						default:
 						{
 							// MRGetVariable
 							switch (val2)
@@ -1012,10 +1009,10 @@ void LoadMission(int missionnum)
 								case 0x2000103:
 									sprintf(opValue2, "maxCopCars");
 									break;
+								default:
+									sprintf(opValue2, "[RESULT]");
 							}
 						}
-						default:
-							sprintf(opValue2, "result");
 					}
 
 					value += 2;
@@ -1056,7 +1053,7 @@ void LoadMission(int missionnum)
 					if (*value == 0x4000020)
 					{
 						val1 = *--value;
-						printWarning("MR: function MRProcessTarget %d\n", val1);
+						printWarning("MR: call MRProcessTarget %d\n", val1);
 					}
 
 					
@@ -1545,7 +1542,7 @@ int MRCommand(MR_THREAD *thread, u_int cmd)
 
 		return MRJump(thread, val1);
 	}
-	else if (cmd == 0x1000001)			// BranchIf
+	else if (cmd == 0x1000001)			// JumpIf
 	{
 		val1 = MRPop(thread);
 		val2 = MRPop(thread);
