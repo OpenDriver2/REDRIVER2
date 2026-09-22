@@ -1708,6 +1708,7 @@ void PrintCommandLineArguments()
 		"  -players <count> : Set player count (1 or 2)\n"
 		"  -playercar <number>, -player2car <number> : set player wanted car\n"
 		"  -chase <number> : using specified chase number for mission\n"
+		"  -gametype <number> : sets the game type ID\n"
 		"  -mission <number> : starts specified mission\n"
 #endif // DEBUG_OPTIONS
 		"  -replay <filename.d2rp> : starts replay from file\n"
@@ -1905,7 +1906,9 @@ int redriver2_main(int argc, char** argv)
 	
 #ifndef PSX	
 	int commandLinePropsShown;
+	int gameTypeSelected;
 	commandLinePropsShown = 0;
+	gameTypeSelected = GAME_TAKEADRIVE;
 
 	for (int i = 1; i < argc; i++)
 	{
@@ -1982,6 +1985,10 @@ int redriver2_main(int argc, char** argv)
 			gChaseNumber = atoi(argv[i + 1]);
 			i++;
 		}
+		else if (!strcmp(argv[i], "-gametype"))
+		{
+			gameTypeSelected = atoi(argv[i + 1]);
+		}
 		else if (!strcmp(argv[i], "-mission"))
 		{
 			if (argc - i < 2)
@@ -1998,7 +2005,7 @@ int redriver2_main(int argc, char** argv)
 			gCurrentMissionNumber = atoi(argv[i + 1]);
 			i++;
 
-			GameType = GAME_TAKEADRIVE;
+			GameType = (GAMETYPE)gameTypeSelected;
 			SetState(STATE_GAMELAUNCH);
 		}
 #endif // _DEBUG_OPTIONS
