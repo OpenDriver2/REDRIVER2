@@ -2005,7 +2005,7 @@ int redriver2_main(int argc, char** argv)
 			gCurrentMissionNumber = atoi(argv[i + 1]);
 			i++;
 
-			GameType = gameTypeSelected;
+			GameType = (GAMETYPE)gameTypeSelected;
 			SetState(STATE_GAMELAUNCH);
 		}
 #endif // _DEBUG_OPTIONS
