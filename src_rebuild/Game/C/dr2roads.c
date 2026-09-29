@@ -16,11 +16,8 @@ sdPlane sea_plane = { SURF_DEEPWATER, 0, 16384, 0, 2048 }; // a default surface 
 
 sdPlane* GetSeaPlane()
 {
-#ifdef DEBUG_OPTIONS
+	// [A] player ghost cheat - don't fall into sea where there's no surface
 	return playerghost ? &default_plane : &sea_plane;
-#else
-	return &sea_plane;
-#endif
 }
 
 ROAD_MAP_LUMP_DATA roadMapLumpData;

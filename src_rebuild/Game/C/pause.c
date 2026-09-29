@@ -15,6 +15,7 @@
 #include "platform.h"
 #include "loadsave.h"
 #include "cutrecorder.h"
+#include "players.h"
 
 #define REPLAY_NAME_LEN		16
 #define SCORE_NAME_LEN		5
@@ -106,37 +107,78 @@ enum MenuItemType
 	PAUSE_TYPE_ENDITEMS		= (1 << 7),
 };
 
-#if defined(_DEBUG) || defined(DEBUG_OPTIONS)
-
+// [A] Cheats menu - available in all builds
 void SetRightWayUp(int direction)
 {
 	extern char gRightWayUp;
+
+	// [A] only when player is driving a valid car (Tanner on foot has playerCarId -1)
+	if (MainPlayer.playerType != PLAYER_TYPE_CAR || MainPlayer.playerCarId < 0)
+		return;
+
 	gRightWayUp = 1;
 	PauseReturnValue = MENU_QUIT_CONTINUE;
-}
-
-void SetDisplayPosition(int direction)
-{
-	extern int gDisplayPosition;
-	gDisplayPosition ^= 1;
 }
 
 void ToggleInvincibility(int direction)
 {
 	extern int gInvincibleCar;
 	gInvincibleCar ^= 1;
+	ActiveCheats.cheat3 = gInvincibleCar;	// [A] same as frontend cheat, keeps damage bar visible
 }
 
 void ToggleImmunity(int direction)
 {
 	extern int gPlayerImmune;
 	gPlayerImmune ^= 1;
+	ActiveCheats.cheat4 = gPlayerImmune;	// [A] same as frontend cheat, keeps felony bar visible
 }
 
 void TogglePlayerGhost(int direction)
 {
 	extern int playerghost;
 	playerghost ^= 1;
+}
+
+void TogglePuppyDogCops(int direction)
+{
+	gPuppyDogCop ^= 1;
+}
+
+static char CheatInvincibilityText[32];
+static char CheatImmunityText[32];
+static char CheatPlayerGhostText[32];
+static char CheatPuppyDogCopsText[32];
+
+void UpdateCheatsMenuText(void)
+{
+	sprintf(CheatInvincibilityText, "Invincibility %s", gInvincibleCar ? "ON" : "OFF");
+	sprintf(CheatImmunityText, "Cop Immunity %s", gPlayerImmune ? "ON" : "OFF");
+	sprintf(CheatPlayerGhostText, "Ghost Mode %s", playerghost ? "ON" : "OFF");
+	sprintf(CheatPuppyDogCopsText, "Puppy Dog Cops %s", gPuppyDogCop ? "ON" : "OFF");
+}
+
+MENU_ITEM CheatsItems[] =
+{
+	{ CheatInvincibilityText,	PAUSE_TYPE_FUNC,	2,	ToggleInvincibility,	MENU_QUIT_NONE,		NULL },
+	{ CheatImmunityText,		PAUSE_TYPE_FUNC,	2,	ToggleImmunity,			MENU_QUIT_NONE,		NULL },
+	{ CheatPlayerGhostText,		PAUSE_TYPE_FUNC,	2,	TogglePlayerGhost,		MENU_QUIT_NONE,		NULL },
+	{ CheatPuppyDogCopsText,	PAUSE_TYPE_FUNC,	2,	TogglePuppyDogCops,		MENU_QUIT_NONE,		NULL },
+	{ "Flip Car Upright",		PAUSE_TYPE_FUNC,	2,	SetRightWayUp,			MENU_QUIT_NONE,		NULL },
+	{ "Resume Game",			1u,					2,	NULL,					MENU_QUIT_CONTINUE,	NULL },
+	{ "Back",					1u,					2,	NULL,					MENU_QUIT_BACKMENU,	NULL },
+	{ NULL, PAUSE_TYPE_ENDITEMS, 0u, NULL, MENU_QUIT_NONE, NULL }
+};
+
+MENU_HEADER CheatsHeader =
+{ "Cheats", { 0, 0, 0, 0 }, 0u, CheatsItems };
+
+#if defined(_DEBUG) || defined(DEBUG_OPTIONS)
+
+void SetDisplayPosition(int direction)
+{
+	extern int gDisplayPosition;
+	gDisplayPosition ^= 1;
 }
 
 void ToggleOverlays(int direction)
@@ -177,11 +219,6 @@ void ToggleSecretCarFun(int direction)
 void ToggleJerichoMode(int direction)
 {
 	ActiveCheats.cheat12 ^= 1;
-}
-
-void TogglePuppyDogCops(int direction)
-{
-	gPuppyDogCop ^= 1;
 }
 
 extern void LoadSky(void);
@@ -307,6 +344,7 @@ MENU_ITEM MainPauseItems[] =
 	{ G_LTXT_ID(GTXT_MusicVolume), PAUSE_TYPE_MUSICVOLUME | PAUSE_TYPE_DIRFUNC, 2u, (pauseFunc)&MusicVolume, MENU_QUIT_NONE, NULL },
 	{ G_LTXT_ID(GTXT_FilmDirector), 1u, 2u, NULL, MENU_QUIT_DIRECTOR, NULL},
 	{ G_LTXT_ID(GTXT_QuickReplay),1u,2u,NULL,MENU_QUIT_QUICKREPLAY,NULL},
+	{ "Cheats", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &CheatsHeader },
 #if defined(_DEBUG) || defined(DEBUG_OPTIONS)
 	{ "Debug Options", PAUSE_TYPE_SUBMENU, 2u, NULL, MENU_QUIT_NONE, &DebugOptionsHeader },
 #endif
@@ -849,6 +887,10 @@ void SetupMenu(MENU_HEADER *menu, int back)
 	ActiveMenu = menu;
 	ActiveMenu->NumItems = numItems;
 
+	// [A] refresh cheat states before measuring menu width
+	if (menu == &CheatsHeader)
+		UpdateCheatsMenuText();
+
 	len = MaxMenuStringLength(ActiveMenu);
 
 	ActiveMenu->Bound.x = ((304 - len) / 2) - 4;
@@ -1285,6 +1327,10 @@ void ControlMenu(void)
 		if (pItem->Type & PAUSE_TYPE_FUNC)
 			(*pItem->func)(0);
 			
+		// [A] refresh cheat states after toggling
+		if (ActiveMenu == &CheatsHeader)
+			UpdateCheatsMenuText();
+
 		if (pItem->ExitValue == MENU_QUIT_NONE)
 			return;
 
