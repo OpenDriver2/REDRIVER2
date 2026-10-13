@@ -1726,7 +1726,10 @@ void SpecClutsSpooled(void)
 		
 		for (int j = 0; j < tpage_texamts[tpage]; j++)
 		{
-			LoadImage2(&specCluts, (u_long*)loadaddr);
+			// LoadImage2(&specCluts, (u_long*)loadaddr);
+            // this runs on the CD thread, which has no GL context;
+            // LoadImage2 would flush GL here and crash
+            LoadImage(&specCluts, (u_long*)loadaddr);
 			loadaddr += 32;
 
 			texture_cluts[tpage][j] = GetClut(specCluts.x, specCluts.y);
