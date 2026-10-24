@@ -1,0 +1,27 @@
+#!/bin/sh
+# REDRIVER2 AppImage entry point.
+# Game data is read-only inside the image, so the game runs from a writable
+# state directory that links back to it.
+set -e
+
+APPDIR=${APPDIR:-$(dirname "$(readlink -f "$0")")}
+STATE=${REDRIVER2_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}/redriver2}
+
+mkdir -p "$STATE/Replays"
+[ -f "$STATE/config.ini" ] || cp "$APPDIR/usr/share/redriver2/config.ini" "$STATE/config.ini"
+chmod u+w "$STATE/config.ini"
+
+# the mount point changes every launch
+rm -f "$STATE/DRIVER2"
+ln -s "$APPDIR/usr/share/redriver2/DRIVER2" "$STATE/DRIVER2"
+
+# bundled Mesa / glvnd
+export LIBGL_DRIVERS_PATH="$APPDIR/usr/lib/dri"
+export __EGL_VENDOR_LIBRARY_FILENAMES="$APPDIR/usr/share/glvnd/egl_vendor.d/50_mesa.json"
+export __GLX_VENDOR_LIBRARY_NAME=mesa
+# bundled pipewire/alsa plugins point into /nix; pulse works everywhere
+export ALSOFT_DRIVERS="${ALSOFT_DRIVERS:-pulse,alsa}"
+
+cd "$STATE"
+exec "$APPDIR/usr/lib/ld-linux-x86-64.so.2" --library-path "$APPDIR/usr/lib" \
+	"$APPDIR/usr/bin/REDRIVER2" "$@"

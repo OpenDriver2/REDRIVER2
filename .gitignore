@@ -43,3 +43,11 @@ src_rebuild/obj/*
 src_rebuild/build*
 src_rebuild/*.make
 src_rebuild/Makefile
+
+# AppImage build
+/build/
+/result*
+*.AppImage
+# user-supplied disc images (never commit)
+/Driver*/
+*.cue
