@@ -97,10 +97,21 @@ int FEGetHiresBakedQuad(int char_index, float scale, float* xpos, float* ypos, F
 	float ipw = 1.0f / (float)HIRES_FONT_SIZE_W;
 	float iph = 1.0f / (float)HIRES_FONT_SIZE_H;
 
-	const int idx = char_index - gHiresFEFontRanges[0].start;
-	if (idx < 0)
+	const OUT_FN2INFO* b = NULL;
+
+	for (int i = 0; i < gHiresFEFontRangeCount; i++)
+	{
+		int idx = char_index - gHiresFEFontRanges[i].start;
+
+		if (idx >= 0 && idx < gHiresFEFontRanges[i].count)
+		{
+			b = gHiresFEFontCharData[i] + idx;
+			break;
+		}
+	}
+
+	if (b == NULL)
 		return 0;
-	const OUT_FN2INFO* b = gHiresFEFontCharData[0] + idx;
 
 	float fscale = 0.5f * scale;
 
@@ -144,18 +155,21 @@ void SetHiresFEFontTexture(int enabled)
 int FEStringWidthHires(char* string)
 {
 	char* pString = string;
-	u_char c = 0;
 
 	int w = 0;
 
-	while ((c = *pString++) != 0)
+	while (*pString)
 	{
+		int characterSize;
+		int c = DecodeUTF8Character(pString, &characterSize);
+		pString += characterSize;
+
 		float fx, fy;
 		fx = 0;
 		fy = 0;
 		FEFONT_QUAD q;
 		if (!FEGetHiresBakedQuad(c, 1.0f, &fx, &fy, &q))
-			continue;
+			FEGetHiresBakedQuad('?', 1.0f, &fx, &fy, &q);
 
 		w += fx;
 	}
@@ -170,15 +184,18 @@ int FEPrintStringSizedHires(char* string, int x, int y, int scale, int transpare
 
 	POLY_FT4* shadow;
 	POLY_FT4* font;
-	u_char let;
 	int w;
 	int h;
 
 	SetHiresFEFontTexture(0);
 	font = (POLY_FT4*)current->primptr;
 
-	while ((let = *string++) != 0)
+	while (*string)
 	{
+		int characterSize;
+		int let = DecodeUTF8Character(string, &characterSize);
+		string += characterSize;
+
 		if (let == '\n')
 			continue;
 
@@ -187,7 +204,7 @@ int FEPrintStringSizedHires(char* string, int x, int y, int scale, int transpare
 		fy = y;
 		FEFONT_QUAD q;
 		if (!FEGetHiresBakedQuad(let, scale / 4096.0f, &fx, &fy, &q))
-			continue;
+			FEGetHiresBakedQuad('?', scale / 4096.0f, &fx, &fy, &q);
 
 		setPolyFT4(font);
 		setSemiTrans(font, 1);
@@ -225,7 +242,6 @@ int FEPrintStringHires(char* string, float x, float y, int justification, int r,
 {
 	POLY_FT4* shadow;
 	POLY_FT4* font;
-	u_char let;
 
 	if (justification & 4)
 	{
@@ -237,13 +253,18 @@ int FEPrintStringHires(char* string, float x, float y, int justification, int r,
 
 	int counter = 0;
 
-	while ((let = *string++) != 0)
+	while (*string)
 	{
+		int characterSize;
+		int let = DecodeUTF8Character(string, &characterSize);
+		string += characterSize;
+
 		float fx, fy;
 		fx = x;
 		fy = y;
 		FEFONT_QUAD q;
-		FEGetHiresBakedQuad(let, 1.0f, &fx, &fy, &q);
+		if (!FEGetHiresBakedQuad(let, 1.0f, &fx, &fy, &q))
+			FEGetHiresBakedQuad('?', 1.0f, &fx, &fy, &q);
 
 		setPolyFT4(font);
 		setSemiTrans(font, 1);

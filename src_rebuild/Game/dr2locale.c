@@ -17,13 +17,14 @@ char* gGameLanguageBuffer = NULL;
 char* gGameLangTable[MAX_LANGUAGE_TEXT];
 char* gMissionLangTable[MAX_LANGUAGE_TEXT];
 
-char* LanguageNames[5] =
+char* LanguageNames[6] =
 {
 	"EN",
 	"IT",
 	"GE",
 	"FR",
 	"SP",
+	"RU",
 };
 
 #ifndef PSX

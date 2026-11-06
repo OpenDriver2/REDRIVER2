@@ -259,6 +259,8 @@ enum MissionStrId
 
 extern char* gGameLangTable[MAX_LANGUAGE_TEXT];
 extern char* gMissionLangTable[MAX_LANGUAGE_TEXT];
+extern char* LanguageNames[6];
+extern int gUserLanguage;
 
 // get Game string ID in as string pointer
 #define G_LTXT_ID(id)		(char*)(id)

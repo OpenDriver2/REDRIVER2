@@ -123,6 +123,31 @@ int gNumXASubtitles = 0;
 int gXASubtitleTime = 0;
 int gXASubtitlePauseTime = 0;
 
+void LoadXASubtitleText(char* filename)
+{
+	char line[256];
+	FILE* fp = fopen(filename, "rb");
+
+	if (fp == NULL)
+		return;
+
+	for (int i = 0; i < gNumXASubtitles && fgets(line, sizeof(line), fp); i++)
+	{
+		size_t length = strcspn(line, "\r\n");
+		line[length] = 0;
+
+		if (length >= sizeof(gXASubtitles[i].text))
+		{
+			printWarning("WARN - XA subtitle line %d is too long in '%s'\n", i + 1, filename);
+			continue;
+		}
+
+		strcpy(gXASubtitles[i].text, line);
+	}
+
+	fclose(fp);
+}
+
 void PrintXASubtitles(int yPos)
 {
 	if (gSubtitles == 0 || pauseflag)
@@ -307,6 +332,7 @@ void PlayXA(int num, int index)
 		sprintf(fileName, "%sXA\\XABNK0%d.XA[%d].SBN", gDataFolder, num + 1, index);
 		FS_FixPathSlashes(fileName);
 
+		gNumXASubtitles = 0;
 		FILE* fp = fopen(fileName, "rb");
 
 		if (fp)
@@ -314,6 +340,10 @@ void PlayXA(int num, int index)
 			fread(&gNumXASubtitles, sizeof(int), 1, fp);
 			fread(gXASubtitles, sizeof(XA_SUBTITLE), gNumXASubtitles, fp);
 			fclose(fp);
+
+			sprintf(fileName, "%sXA\\%s\\XABNK0%d.XA[%d].LTXT", gDataFolder, LanguageNames[gUserLanguage], num + 1, index);
+			FS_FixPathSlashes(fileName);
+			LoadXASubtitleText(fileName);
 		}
 
 		gPlaying = 1;
@@ -485,8 +515,3 @@ void PauseXA(void)
 	}
 #endif
 }
-
-
-
-
-
