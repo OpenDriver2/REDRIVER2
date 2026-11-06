@@ -564,6 +564,7 @@ void InitCredits(const char* filename)
 void PrintSubtitleText(SUBTITLE* sub)
 {
 	char sourceText[33];
+	char normalizedText[33];
 	memcpy(sourceText, sub->text, 32);
 	sourceText[32] = 0;
 
@@ -577,6 +578,31 @@ void PrintSubtitleText(SUBTITLE* sub)
 	char* end = str + strlen(str);
 	while (end > str && isspace(end[-1]))
 		*--end = 0;
+
+	char* read = str;
+	char* write = normalizedText;
+	int pendingSpace = 0;
+
+	while (*read)
+	{
+		if (isspace((unsigned char)*read))
+		{
+			pendingSpace = 1;
+		}
+		else
+		{
+			if (pendingSpace && write != normalizedText)
+				*write++ = ' ';
+
+			*write++ = *read;
+			pendingSpace = 0;
+		}
+
+		read++;
+	}
+
+	*write = 0;
+	str = normalizedText;
 
 	char* translated = GetTranslatedFMVMessage(str);
 	if (translated != str && g_HiresFMVFontTexture)
