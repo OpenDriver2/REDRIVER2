@@ -1,4 +1,6 @@
 # REDRIVER2 (Reverse-Engineered Driver 2)
+[Русская локализация и инструкция по установке](README_RU.md)
+
 [![Build status (Master)](https://ci.appveyor.com/api/projects/status/p3smpt14elwlpcad/branch/master?svg=true)](https://ci.appveyor.com/project/SoapyMan/redriver2/branch/master)
 
 Windows
