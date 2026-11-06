@@ -275,6 +275,7 @@ extern int gUserLanguage;
 extern int InitStringMng();
 extern void DeinitStringMng();
 extern int InitStringLanguage(char* filename, int mission);
+extern char* GetTranslatedMissionMessage(char* message);
 
 #else
 
@@ -289,6 +290,7 @@ extern int InitStringLanguage(char* filename, int mission);
 
 #define GET_GAME_TXT(st)		#st
 #define GET_MISSION_TXT(st)		#st
+#define GetTranslatedMissionMessage(message)	(message)
 
 #endif
 

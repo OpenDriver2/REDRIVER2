@@ -1194,6 +1194,8 @@ void SetMissionMessage(char *message, int priority, int seconds)
 	if (message == MissionStrings - 1 || message == NULL || NumPlayers == 0)
 		return;
 
+	message = GetTranslatedMissionMessage(message);
+
 	for (i = 0; i < NumPlayers; i++)
 	{
 		if (Mission.message_timer[i] == 0 || Mission.message_priority[i] <= priority)
@@ -1218,6 +1220,8 @@ void SetPlayerMessage(int player, char *message, int priority, int seconds)
 {
 	if (message == MissionStrings-1 || message == NULL)
 		return;
+
+	message = GetTranslatedMissionMessage(message);
 
 	if (Mission.message_timer[player] != 0 && Mission.message_priority[player] > priority)
 		return;

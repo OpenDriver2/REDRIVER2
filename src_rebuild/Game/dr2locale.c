@@ -13,6 +13,20 @@ int gUserLanguage = 0;
 
 char* gMisssionLanguageBuffer = NULL;
 char* gGameLanguageBuffer = NULL;
+static char* gMissionMessageLanguageBuffer = NULL;
+
+#define MAX_MISSION_MESSAGE_TEXT 256
+
+typedef struct _MISSION_MESSAGE_TEXT
+{
+	char* source;
+	char* translation;
+} MISSION_MESSAGE_TEXT;
+
+static MISSION_MESSAGE_TEXT gMissionMessageText[MAX_MISSION_MESSAGE_TEXT];
+static int gMissionMessageTextCount = 0;
+
+static int InitMissionMessageLanguage(char* filename);
 
 char* gGameLangTable[MAX_LANGUAGE_TEXT];
 char* gMissionLangTable[MAX_LANGUAGE_TEXT];
@@ -47,6 +61,10 @@ int InitStringMng()
 	
 	if(InitStringLanguage(filename, 1) == -1)
 		return 0;
+
+	sprintf(filename, "%sLANG\\%s_MISSION_MESSAGES.LTXT", gDataFolder, LanguageNames[gUserLanguage]);
+	FS_FixPathSlashes(filename);
+	InitMissionMessageLanguage(filename);
 
 #ifdef DEBUG_OPTIONS
 	{
@@ -113,8 +131,79 @@ void DeinitStringMng()
 	if (gMisssionLanguageBuffer)
 		free(gMisssionLanguageBuffer);
 
+	if (gMissionMessageLanguageBuffer)
+		free(gMissionMessageLanguageBuffer);
+
 	gGameLanguageBuffer = NULL;
 	gMisssionLanguageBuffer = NULL;
+	gMissionMessageLanguageBuffer = NULL;
+	gMissionMessageTextCount = 0;
+}
+
+static int InitMissionMessageLanguage(char* filename)
+{
+	char* buffer;
+	char* cursor;
+	char* line;
+	char* separator;
+	int size;
+	FILE* fp;
+
+	gMissionMessageTextCount = 0;
+
+	fp = fopen(filename, "rb");
+	if (!fp)
+		return 0;
+
+	fseek(fp, 0, SEEK_END);
+	size = ftell(fp);
+	fseek(fp, 0, SEEK_SET);
+
+	buffer = (char*)malloc(size + 1);
+	fread(buffer, 1, size, fp);
+	fclose(fp);
+	buffer[size] = 0;
+
+	gMissionMessageLanguageBuffer = buffer;
+	cursor = buffer;
+
+	while (*cursor && gMissionMessageTextCount < MAX_MISSION_MESSAGE_TEXT)
+	{
+		line = cursor;
+
+		while (*cursor && *cursor != '\r' && *cursor != '\n')
+			cursor++;
+
+		while (*cursor == '\r' || *cursor == '\n')
+			*cursor++ = 0;
+
+		if (*line == 0 || *line == '#')
+			continue;
+
+		separator = strchr(line, '\t');
+		if (!separator)
+			continue;
+
+		*separator++ = 0;
+		gMissionMessageText[gMissionMessageTextCount].source = line;
+		gMissionMessageText[gMissionMessageTextCount].translation = separator;
+		gMissionMessageTextCount++;
+	}
+
+	return gMissionMessageTextCount;
+}
+
+char* GetTranslatedMissionMessage(char* message)
+{
+	int i;
+
+	for (i = 0; i < gMissionMessageTextCount; i++)
+	{
+		if (!strcmp(message, gMissionMessageText[i].source))
+			return gMissionMessageText[i].translation;
+	}
+
+	return message;
 }
 
 // [D] Driver 1 PC function
