@@ -342,6 +342,124 @@ enum FEButtonAction
 PSXSCREEN PsxScreens[42];
 #endif
 
+#ifndef PSX
+struct FE_LOCALIZED_TEXT
+{
+	const char* original;
+	const char* translated;
+};
+
+static const FE_LOCALIZED_TEXT RussianFrontendText[] =
+{
+	{ "Accept", "Принять" },
+	{ "Auto Testing", "Автотест" },
+	{ "Cabrini Green", "Кабрини-Грин" },
+	{ "Capture the Flag", "Захват флага" },
+	{ "Center Screen", "Центрировать" },
+	{ "Centro", "Сентро" },
+	{ "Checkpoint", "Контр. точки" },
+	{ "Chicago", "Чикаго" },
+	{ "Choose A Cutscene", "Выбор сцены" },
+	{ "Choose A Ride", "Выбор машины" },
+	{ "Controller", "Управление" },
+	{ "Cop Difficulty", "Сложность копов" },
+	{ "Cops 'n' Robbers", "Копы и воры" },
+	{ "Day", "День" },
+	{ "Director's Cut", "Режим режиссёра" },
+	{ "Downtown", "Центр" },
+	{ "Driving Games", "Игры за рулём" },
+	{ "Easy", "Легко" },
+	{ "Flamengo", "Фламенго" },
+	{ "Game 1", "Игра 1" },
+	{ "Game 2", "Игра 2" },
+	{ "Gameplay", "Игра" },
+	{ "Gate Racing", "Гонка по воротам" },
+	{ "Hard", "Сложно" },
+	{ "Havana", "Гавана" },
+	{ "HighScores", "Рекорды" },
+	{ "Immunity", "Иммунитет" },
+	{ "Invincibility", "Неуязвимость" },
+	{ "Lenny gets caught", "Ленни пойман" },
+	{ "Load Game", "Загрузить игру" },
+	{ "Load Replay", "Загрузить повтор" },
+	{ "Load Settings", "Загрузить настр." },
+	{ "Medium", "Средне" },
+	{ "Mountain Pass", "Горный перевал" },
+	{ "Multiplayer", "Два игрока" },
+	{ "Music", "Музыка" },
+	{ "New Game", "Новая игра" },
+	{ "Next", "Далее" },
+	{ "Night", "Ночь" },
+	{ "Not Available", "Недоступно" },
+	{ "Off", "Выкл." },
+	{ "Old Havana", "Старая Гавана" },
+	{ "On", "Вкл." },
+	{ "Options", "Настройки" },
+	{ "Plaza de Revolucion", "Пласа Революции" },
+	{ "Previous", "Назад" },
+	{ "Quick Chase", "Быстрая погоня" },
+	{ "Quick Getaway", "Быстрый побег" },
+	{ "Race Track", "Гоночная трасса" },
+	{ "Replay Mission", "Повтор миссии" },
+	{ "Replays", "Повторы" },
+	{ "Rio", "Рио" },
+	{ "River North", "Ривер-Норт" },
+	{ "Save Settings", "Сохранить настр." },
+	{ "Secret", "Секрет" },
+	{ "Select", "Выбрать" },
+	{ "Set Volume Levels", "Громкость" },
+	{ "Sfx", "Эффекты" },
+	{ "Show Chase 1", "Погоня 1" },
+	{ "Show Chase 2", "Погоня 2" },
+	{ "Show Chase 3", "Погоня 3" },
+	{ "Show Chase 4", "Погоня 4" },
+	{ "Single Player", "Один игрок" },
+	{ "Sound", "Звук" },
+	{ "Subtitles", "Субтитры" },
+	{ "Surveillance tip off", "Слежка" },
+	{ "Survival", "Выживание" },
+	{ "Take A Ride", "Свободная езда" },
+	{ "The Lakes", "Озёра" },
+	{ "To Move Screen", "Двигать экран" },
+	{ "Trailblazer", "Слалом" },
+	{ "Undercover", "Сюжет" },
+	{ "Use directional buttons", "Кнопки-стрелки" },
+	{ "Vegas", "Лас-Вегас" },
+	{ "Vibration", "Вибрация" },
+	{ "View Cutscenes", "Смотреть сцены" },
+};
+
+static void ApplyRussianFrontendText()
+{
+	if (gUserLanguage != 5)
+		return;
+
+	for (int screenIndex = 0; screenIndex < 42; screenIndex++)
+	{
+		PSXSCREEN* screen = &PsxScreens[screenIndex];
+
+		for (int buttonIndex = 0; buttonIndex < screen->numButtons; buttonIndex++)
+		{
+			char* name = screen->buttons[buttonIndex].Name;
+
+			for (int textIndex = 0; textIndex < sizeof(RussianFrontendText) / sizeof(RussianFrontendText[0]); textIndex++)
+			{
+				const FE_LOCALIZED_TEXT* text = &RussianFrontendText[textIndex];
+				int originalLength = strlen(text->original);
+
+				if (!strncmp(name, text->original, originalLength) &&
+					(name[originalLength] == '\0' || (u_char)name[originalLength] >= 128))
+				{
+					strncpy(name, text->translated, sizeof(screen->buttons[buttonIndex].Name) - 1);
+					name[sizeof(screen->buttons[buttonIndex].Name) - 1] = '\0';
+					break;
+				}
+			}
+		}
+	}
+}
+#endif
+
 #define FE_OTSIZE 16
 
 struct FE_CHARDATA
@@ -1368,6 +1486,11 @@ void LoadFrontendScreens(int full)
 		PsxScreens[40].buttons[1].var = FE_MAKEVAR(15, 0);
 #endif
 	}
+#endif
+
+#ifndef PSX
+	if (full)
+		ApplyRussianFrontendText();
 #endif
 
 	rect.w = 64;
