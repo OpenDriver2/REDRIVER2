@@ -14,8 +14,10 @@ int gUserLanguage = 0;
 char* gMisssionLanguageBuffer = NULL;
 char* gGameLanguageBuffer = NULL;
 static char* gMissionMessageLanguageBuffer = NULL;
+static char* gFMVMessageLanguageBuffer = NULL;
 
 #define MAX_MISSION_MESSAGE_TEXT 256
+#define MAX_FMV_MESSAGE_TEXT 512
 
 typedef struct _MISSION_MESSAGE_TEXT
 {
@@ -25,8 +27,11 @@ typedef struct _MISSION_MESSAGE_TEXT
 
 static MISSION_MESSAGE_TEXT gMissionMessageText[MAX_MISSION_MESSAGE_TEXT];
 static int gMissionMessageTextCount = 0;
+static MISSION_MESSAGE_TEXT gFMVMessageText[MAX_FMV_MESSAGE_TEXT];
+static int gFMVMessageTextCount = 0;
 
 static int InitMissionMessageLanguage(char* filename);
+static int InitFMVMessageLanguage(char* filename);
 
 char* gGameLangTable[MAX_LANGUAGE_TEXT];
 char* gMissionLangTable[MAX_LANGUAGE_TEXT];
@@ -65,6 +70,10 @@ int InitStringMng()
 	sprintf(filename, "%sLANG\\%s_MISSION_MESSAGES.LTXT", gDataFolder, LanguageNames[gUserLanguage]);
 	FS_FixPathSlashes(filename);
 	InitMissionMessageLanguage(filename);
+
+	sprintf(filename, "%sLANG\\%s_FMV_MESSAGES.LTXT", gDataFolder, LanguageNames[gUserLanguage]);
+	FS_FixPathSlashes(filename);
+	InitFMVMessageLanguage(filename);
 
 #ifdef DEBUG_OPTIONS
 	{
@@ -134,10 +143,15 @@ void DeinitStringMng()
 	if (gMissionMessageLanguageBuffer)
 		free(gMissionMessageLanguageBuffer);
 
+	if (gFMVMessageLanguageBuffer)
+		free(gFMVMessageLanguageBuffer);
+
 	gGameLanguageBuffer = NULL;
 	gMisssionLanguageBuffer = NULL;
 	gMissionMessageLanguageBuffer = NULL;
+	gFMVMessageLanguageBuffer = NULL;
 	gMissionMessageTextCount = 0;
+	gFMVMessageTextCount = 0;
 }
 
 static int InitMissionMessageLanguage(char* filename)
@@ -201,6 +215,72 @@ char* GetTranslatedMissionMessage(char* message)
 	{
 		if (!strcmp(message, gMissionMessageText[i].source))
 			return gMissionMessageText[i].translation;
+	}
+
+	return message;
+}
+
+static int InitFMVMessageLanguage(char* filename)
+{
+	char* buffer;
+	char* cursor;
+	char* line;
+	char* separator;
+	int size;
+	FILE* fp;
+
+	gFMVMessageTextCount = 0;
+
+	fp = fopen(filename, "rb");
+	if (!fp)
+		return 0;
+
+	fseek(fp, 0, SEEK_END);
+	size = ftell(fp);
+	fseek(fp, 0, SEEK_SET);
+
+	buffer = (char*)malloc(size + 1);
+	fread(buffer, 1, size, fp);
+	fclose(fp);
+	buffer[size] = 0;
+
+	gFMVMessageLanguageBuffer = buffer;
+	cursor = buffer;
+
+	while (*cursor && gFMVMessageTextCount < MAX_FMV_MESSAGE_TEXT)
+	{
+		line = cursor;
+
+		while (*cursor && *cursor != '\r' && *cursor != '\n')
+			cursor++;
+
+		while (*cursor == '\r' || *cursor == '\n')
+			*cursor++ = 0;
+
+		if (*line == 0 || *line == '#')
+			continue;
+
+		separator = strchr(line, '\t');
+		if (!separator)
+			continue;
+
+		*separator++ = 0;
+		gFMVMessageText[gFMVMessageTextCount].source = line;
+		gFMVMessageText[gFMVMessageTextCount].translation = separator;
+		gFMVMessageTextCount++;
+	}
+
+	return gFMVMessageTextCount;
+}
+
+char* GetTranslatedFMVMessage(char* message)
+{
+	int i;
+
+	for (i = 0; i < gFMVMessageTextCount; i++)
+	{
+		if (!strcmp(message, gFMVMessageText[i].source))
+			return gFMVMessageText[i].translation;
 	}
 
 	return message;
