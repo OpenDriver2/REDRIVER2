@@ -429,33 +429,33 @@ static const FE_LOCALIZED_TEXT RussianFrontendText[] =
 	{ "View Cutscenes", "Смотреть сцены" },
 };
 
-static void ApplyRussianFrontendText()
+static void TranslateRussianFrontendText(char* name)
 {
 	if (gUserLanguage != 5)
 		return;
 
+	for (int textIndex = 0; textIndex < sizeof(RussianFrontendText) / sizeof(RussianFrontendText[0]); textIndex++)
+	{
+		const FE_LOCALIZED_TEXT* text = &RussianFrontendText[textIndex];
+		int originalLength = strlen(text->original);
+
+		if (!strncmp(name, text->original, originalLength))
+		{
+			strncpy(name, text->translated, sizeof(((PSXBUTTON*)0)->Name) - 1);
+			name[sizeof(((PSXBUTTON*)0)->Name) - 1] = '\0';
+			return;
+		}
+	}
+}
+
+static void ApplyRussianFrontendText()
+{
 	for (int screenIndex = 0; screenIndex < 42; screenIndex++)
 	{
 		PSXSCREEN* screen = &PsxScreens[screenIndex];
 
 		for (int buttonIndex = 0; buttonIndex < screen->numButtons; buttonIndex++)
-		{
-			char* name = screen->buttons[buttonIndex].Name;
-
-			for (int textIndex = 0; textIndex < sizeof(RussianFrontendText) / sizeof(RussianFrontendText[0]); textIndex++)
-			{
-				const FE_LOCALIZED_TEXT* text = &RussianFrontendText[textIndex];
-				int originalLength = strlen(text->original);
-
-				if (!strncmp(name, text->original, originalLength) &&
-					(name[originalLength] == '\0' || (u_char)name[originalLength] >= 128))
-				{
-					strncpy(name, text->translated, sizeof(screen->buttons[buttonIndex].Name) - 1);
-					name[sizeof(screen->buttons[buttonIndex].Name) - 1] = '\0';
-					break;
-				}
-			}
-		}
+			TranslateRussianFrontendText(screen->buttons[buttonIndex].Name);
 	}
 }
 #endif
@@ -1137,6 +1137,10 @@ void DisplayOnScreenText(void)
 
 void DrawButton(PSXBUTTON* pBtn, int i)
 {
+#ifndef PSX
+	TranslateRussianFrontendText(pBtn->Name);
+#endif
+
 	int status = pBtn->action >> 8;
 
 	int draw = (status != BTN_HIDDEN);
