@@ -379,6 +379,7 @@ static const FE_LOCALIZED_TEXT RussianFrontendText[] =
 	{ "HighScores", "Рекорды" },
 	{ "Immunity", "Иммунитет" },
 	{ "Invincibility", "Неуязвимость" },
+	{ "Las Vegas", "Лас-Вегас" },
 	{ "Lenny gets caught", "Ленни пойман" },
 	{ "Load Game", "Загрузить игру" },
 	{ "Load Replay", "Загрузить повтор" },
