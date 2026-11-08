@@ -2006,11 +2006,12 @@ void DoCivHead(LPPEDESTRIAN pPed, SVECTOR* vert1, SVECTOR* vert2)
 	gte_SetTransVector(&pos);
 
 	int flags = PLOT_NO_SHADE;
+	int headPalette = (pPed->pallet & 0xf) % 3;
 
-	if (pPed->pallet & 0xf)
+	if (headPalette)
 	{
 		flags |= PLOT_CUSTOM_PALETTE; // set custom palette flag
-		plotContext.clut = civ_clut[0][texturePedHead.texture_number][pPed->pallet & 15];
+		plotContext.clut = civ_clut[0][texturePedHead.texture_number][headPalette];
 	}
 
 	oldcombointensity = combointensity;

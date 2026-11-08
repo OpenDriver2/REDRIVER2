@@ -242,7 +242,7 @@ void LoadTPageFromTIMs(int tpage2send)
 			int cpal = GetCarPalIndex(tpage2send);
 			int clutN;
 
-			if (j > 0 && cpal > 0)
+			if (j > 0 && civ_clut[cpal][i][j] != 0)
 				clutN = civ_clut[cpal][i][j];
 			else
 				clutN = texture_cluts[tpage2send][i];
