@@ -166,6 +166,7 @@ workspace "REDRIVER2"
 
 	filter "system:Windows"
 		disablewarnings { "4996", "4554", "4244", "4101", "4838", "4309" }
+		buildoptions { "/utf-8" }
 
     filter "configurations:Debug"
         defines { 

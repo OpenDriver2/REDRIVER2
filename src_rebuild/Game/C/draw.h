@@ -8,6 +8,7 @@ enum PlotFlags
 	PLOT_NO_CULL = (1 << 2),
 	PLOT_NO_SHADE = (1 << 3),
 	PLOT_CUSTOM_PALETTE = (1 << 4),
+	PLOT_CUSTOM_TEXTURE = (1 << 5),
 };
 
 // Primitive plot context used in scratchpad
@@ -27,6 +28,10 @@ struct _pct
 	u_int flags;
 	u_short clut;
 	u_short tpage;
+#ifndef PSX
+	u_int customTexture;
+	RECT16 customTextureRect;
+#endif
 };
 
 #ifdef DYNAMIC_LIGHTING

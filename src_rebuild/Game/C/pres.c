@@ -137,12 +137,26 @@ void SetHiresDigitsTexture(int enabled)
 	current->primptr += sizeof(DR_PSYX_TEX);
 }
 
-void GetHiresBakedQuad(int char_index, float* xpos, float* ypos, FONT_QUAD* q)
+int GetHiresBakedQuad(int char_index, float* xpos, float* ypos, FONT_QUAD* q)
 {
 	float ipw = 1.0f / (float)HIRES_FONT_SIZE_W;
 	float iph = 1.0f / (float)HIRES_FONT_SIZE_H;
 
-	const OUT_FN2INFO* b = gHiresFontCharData[0] + char_index - gHiresFontRanges[0].start;
+	const OUT_FN2INFO* b = NULL;
+
+	for (int i = 0; i < gHiresFontRangeCount; i++)
+	{
+		int idx = char_index - gHiresFontRanges[i].start;
+
+		if (idx >= 0 && idx < gHiresFontRanges[i].count)
+		{
+			b = gHiresFontCharData[i] + idx;
+			break;
+		}
+	}
+
+	if (b == NULL)
+		return 0;
 
 	float scale = 0.275f;
 
@@ -162,29 +176,33 @@ void GetHiresBakedQuad(int char_index, float* xpos, float* ypos, FONT_QUAD* q)
 	q->y0 += 14.0f;
 
 	*xpos += b->xadvance * scale;
+
+	return 1;
 }
 
 int StrighWidthHires(char* string)
 {
-	u_char chr;
 	float width;
 	width = 0;
 
-	while ((chr = *string++) != 0)
+	while (*string)
 	{
+		int characterSize;
+		int chr = DecodeUTF8Character(string, &characterSize);
+		string += characterSize;
+
 		if (chr >= 128 && chr <= 138)
 		{
 			width += 24;
 			continue;
 		}
 
-		chr = (chr >= 32 && chr < 128 || chr > 138) ? chr : '?';
-
 		float fx, fy;
 		fx = 0.0f;
 		fy = 0.0f;
 		FONT_QUAD q;
-		GetHiresBakedQuad(chr, &fx, &fy, &q);
+		if (!GetHiresBakedQuad(chr, &fx, &fy, &q))
+			GetHiresBakedQuad('?', &fx, &fy, &q);
 		width += fx;
 	}
 	return width;
@@ -196,7 +214,6 @@ extern short fonttpage;
 
 int PrintStringHires(char* string, int x, int y)
 {
-	u_char chr;
 	float width;
 	u_int index;
 	int showMap;
@@ -206,8 +223,12 @@ int PrintStringHires(char* string, int x, int y)
 
 	SetHiresFontTexture(showMap);
 
-	while ((chr = *string++) != 0)
+	while (*string)
 	{
+		int characterSize;
+		int chr = DecodeUTF8Character(string, &characterSize);
+		string += characterSize;
+
 		if (chr >= 128 && chr <= 138)
 		{
 			if(showMap)
@@ -227,15 +248,14 @@ int PrintStringHires(char* string, int x, int y)
 			continue;
 		}
 
-		chr = (chr >= 32 && chr < 128 || chr > 138) ? chr : '?';
-
 		POLY_FT4* fontFT4;
 		POLY_FT4* shadowFT4;
 		float fx, fy;
 		fx = width;
 		fy = y;
 		FONT_QUAD q;
-		GetHiresBakedQuad(chr, &fx, &fy, &q);
+		if (!GetHiresBakedQuad(chr, &fx, &fy, &q))
+			GetHiresBakedQuad('?', &fx, &fy, &q);
 
 		fontFT4 = (POLY_FT4*)current->primptr;
 
@@ -1055,8 +1075,3 @@ void* SetFontTPage(void *prim)
 
 	return null+1;
 }
-
-
-
-
-

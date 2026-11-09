@@ -16,6 +16,11 @@
 #include "cars.h"
 #include "convert.h"
 
+#ifndef PSX
+#include "PsyX/PsyX_render.h"
+#include "../utils/targa.h"
+#endif
+
 #if USE_PGXP
 #include <math.h>
 #endif
@@ -434,6 +439,35 @@ MODEL* gPed1HeadModelPtr;
 MODEL* gPed2HeadModelPtr;
 MODEL* gPed3HeadModelPtr;
 MODEL* gPed4HeadModelPtr;
+
+#ifndef PSX
+static TextureID pedHeadTextures[3] = { 0 };
+
+void InitPedHeadTextures()
+{
+	for (int i = 0; i < 3; i++)
+	{
+		if (pedHeadTextures[i])
+			continue;
+
+		char filename[128];
+		u_char* data = NULL;
+		int width, height, bpp;
+		sprintf(filename, "%sGFX\\NPC\\friend-%d.tga", gDataFolder, i + 1);
+		FS_FixPathSlashes(filename);
+
+		if (LoadTGAImage(filename, &data, width, height, bpp))
+		{
+			if (bpp == 32 && width > 0 && height > 0)
+			{
+				pedHeadTextures[i] = GR_CreateRGBATexture(width, height, data);
+				printInfo("Loaded custom NPC face %d (%dx%d)\n", i + 1, width, height);
+			}
+			free(data);
+		}
+	}
+}
+#endif
 
 char* MotionCaptureData[MAX_MOTION_CAPTURE];	// [A] actually, pointers
 int ThisMotion;
@@ -1232,7 +1266,13 @@ void newShowTanner(LPPEDESTRIAN pDrawingPed)
 			// draw HEAD
 			BONE* pBone = &Skel[HEAD];
 
-			if (switch_detail_distance >> 2 < gCurrentZ)
+			int drawLowDetailHead = (switch_detail_distance >> 2) < gCurrentZ;
+#ifndef PSX
+			if (pedHeadTextures[(pDrawingPed->pallet & 0xf) % 3])
+				drawLowDetailHead = 0;
+#endif
+
+			if (drawLowDetailHead)
 			{
 				DrawSprite(pDrawingPed, pBone, vJPos);
 			}
@@ -1523,6 +1563,11 @@ void DrawCiv(LPPEDESTRIAN pPed)
 	if (gCurrentZ > switch_detail_distance)
 		return;
 
+	int hasCustomHead = 0;
+#ifndef PSX
+	hasCustomHead = pedHeadTextures[(pPed->pallet & 0xf) % 3] != 0;
+#endif
+
 	// translate bones to screen and draw sprites
 	j = 0;
 	for (i = 0; i < 15; i++)
@@ -1543,7 +1588,7 @@ void DrawCiv(LPPEDESTRIAN pPed)
 
 		boneId = boneIdvals[i];
 		
-		if (boneId == HEAD && szList[0] <= switch_detail_distance / 2)
+		if (boneId == HEAD && (szList[0] <= switch_detail_distance / 2 || hasCustomHead))
 			bHeadModel = 1;
 		else
 			DrawBodySprite(pPed, boneId, (VERTTYPE*)&sxyList[i*2], (VERTTYPE*)&sxyList[i*2 + 1], szList[i*2], szList[i*2+1]);
@@ -2006,12 +2051,25 @@ void DoCivHead(LPPEDESTRIAN pPed, SVECTOR* vert1, SVECTOR* vert2)
 	gte_SetTransVector(&pos);
 
 	int flags = PLOT_NO_SHADE;
+	int headPalette = (pPed->pallet & 0xf) % 3;
 
-	if (pPed->pallet & 0xf)
+	if (headPalette)
 	{
 		flags |= PLOT_CUSTOM_PALETTE; // set custom palette flag
-		plotContext.clut = civ_clut[0][texturePedHead.texture_number][pPed->pallet & 15];
+		plotContext.clut = civ_clut[0][texturePedHead.texture_number][headPalette];
 	}
+
+#ifndef PSX
+	if (pedHeadTextures[headPalette])
+	{
+		flags |= PLOT_CUSTOM_TEXTURE;
+		plotContext.customTexture = pedHeadTextures[headPalette];
+		plotContext.customTextureRect.x = texturePedHead.coords.u0;
+		plotContext.customTextureRect.y = texturePedHead.coords.v0;
+		plotContext.customTextureRect.w = texturePedHead.coords.u1 - texturePedHead.coords.u0;
+		plotContext.customTextureRect.h = texturePedHead.coords.v2 - texturePedHead.coords.v0;
+	}
+#endif
 
 	oldcombointensity = combointensity;
 

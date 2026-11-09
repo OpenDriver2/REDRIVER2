@@ -24,4 +24,31 @@ struct OUT_FN2HEADER
 	u_short range_count;
 };
 
+static int DecodeUTF8Character(const char* text, int* characterSize)
+{
+	const u_char* bytes = (const u_char*)text;
+
+	*characterSize = 1;
+
+	if (bytes[0] < 0x80)
+		return bytes[0];
+
+	if (bytes[0] >= 0xC2 && bytes[0] <= 0xDF &&
+		(bytes[1] & 0xC0) == 0x80)
+	{
+		*characterSize = 2;
+		return ((bytes[0] & 0x1F) << 6) | (bytes[1] & 0x3F);
+	}
+
+	if (bytes[0] >= 0xE0 && bytes[0] <= 0xEF &&
+		(bytes[1] & 0xC0) == 0x80 && (bytes[2] & 0xC0) == 0x80)
+	{
+		*characterSize = 3;
+		return ((bytes[0] & 0x0F) << 12) | ((bytes[1] & 0x3F) << 6) | (bytes[2] & 0x3F);
+	}
+
+	// Preserve legacy single-byte text and controller button codes.
+	return bytes[0];
+}
+
 #endif // HQFONT_H

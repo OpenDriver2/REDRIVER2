@@ -15,6 +15,8 @@
 #include <AL/al.h>
 #include <jpeglib.h>
 #include "platform.h"
+#include "../targa.h"
+#include "../hqfont.h"
 
 // Partially decompiled function from FMV EXE
 void InitFMVFont()
@@ -119,6 +121,177 @@ void PrintFMVText(char *str, int x, short y, int brightness)
 		}
 	}
 
+	DrawOTag((u_long*)&ot);
+}
+
+struct FMVFONT_QUAD
+{
+	float x0, y0, s0, t0;
+	float x1, y1, s1, t1;
+};
+
+TextureID g_HiresFMVFontTexture = 0;
+OUT_FN2RANGE g_HiresFMVFontRanges[4];
+OUT_FN2INFO g_HiresFMVFontCharData[4][224];
+int g_HiresFMVFontRangeCount = 0;
+
+POLY_FT4 g_HiresFMVTextPolys[512];
+DR_PSYX_TEX g_HiresFMVTextTextures[2];
+
+void InitHiresFMVFont()
+{
+	char filename[128];
+	u_char* data;
+	int width;
+	int height;
+	int bpp;
+	FILE* fp;
+
+	if (g_HiresFMVFontTexture)
+		return;
+
+	g_HiresFMVFontRangeCount = 0;
+	sprintf(filename, "%sGFX\\HQ\\fefont.fn2", gDataFolder);
+	FS_FixPathSlashes(filename);
+
+	fp = fopen(filename, "rb");
+	if (fp)
+	{
+		OUT_FN2HEADER header;
+		fread(&header, sizeof(header), 1, fp);
+
+		g_HiresFMVFontRangeCount = header.range_count;
+		if (g_HiresFMVFontRangeCount > 4)
+			g_HiresFMVFontRangeCount = 4;
+
+		for (int i = 0; i < g_HiresFMVFontRangeCount; i++)
+		{
+			fread(&g_HiresFMVFontRanges[i], sizeof(OUT_FN2RANGE), 1, fp);
+			fread(g_HiresFMVFontCharData[i], sizeof(OUT_FN2INFO), g_HiresFMVFontRanges[i].count, fp);
+		}
+
+		fclose(fp);
+	}
+
+	sprintf(filename, "%sGFX\\HQ\\fefont.tga", gDataFolder);
+	FS_FixPathSlashes(filename);
+
+	if (LoadTGAImage(filename, &data, width, height, bpp))
+	{
+		if (bpp == 32)
+			g_HiresFMVFontTexture = GR_CreateRGBATexture(width, height, data);
+
+		free(data);
+	}
+}
+
+int GetHiresFMVBakedQuad(int character, float* xpos, float* ypos, FMVFONT_QUAD* q)
+{
+	const OUT_FN2INFO* glyph = NULL;
+
+	for (int i = 0; i < g_HiresFMVFontRangeCount; i++)
+	{
+		int index = character - g_HiresFMVFontRanges[i].start;
+
+		if (index >= 0 && index < g_HiresFMVFontRanges[i].count)
+		{
+			glyph = g_HiresFMVFontCharData[i] + index;
+			break;
+		}
+	}
+
+	if (!glyph)
+		return 0;
+
+	const float scale = 0.25f;
+	const float textureScale = 255.0f / (float)HIRES_FONT_SIZE_W;
+
+	q->x0 = *xpos + glyph->xoff * scale;
+	q->y0 = *ypos + glyph->yoff * scale + 16.0f;
+	q->x1 = (glyph->xoff2 - glyph->xoff) * scale;
+	q->y1 = (glyph->yoff2 - glyph->yoff) * scale;
+	q->s0 = glyph->x0 * textureScale;
+	q->t0 = glyph->y0 * textureScale;
+	q->s1 = (glyph->x1 - glyph->x0) * textureScale;
+	q->t1 = (glyph->y1 - glyph->y0) * textureScale;
+
+	*xpos += glyph->xadvance * scale;
+	return 1;
+}
+
+float GetHiresFMVTextWidth(const char* text)
+{
+	float x = 0.0f;
+	float y = 0.0f;
+
+	while (*text)
+	{
+		int characterSize;
+		int character = DecodeUTF8Character(text, &characterSize);
+		text += characterSize;
+
+		FMVFONT_QUAD q;
+		if (!GetHiresFMVBakedQuad(character, &x, &y, &q))
+			GetHiresFMVBakedQuad('?', &x, &y, &q);
+	}
+
+	return x;
+}
+
+void PrintHiresFMVText(const char* text, int x, short y, int brightness)
+{
+	OTTYPE ot;
+	POLY_FT4* poly = g_HiresFMVTextPolys;
+	int drawnChars = 0;
+	float xOffset = x - GetHiresFMVTextWidth(text) * 0.5f;
+
+	if (brightness > 128)
+		brightness = 128;
+
+	ClearOTagR((u_long*)&ot, 1);
+	SetPsyXTexture(&g_HiresFMVTextTextures[0], 0, 0, 0);
+	addPrim(&ot, &g_HiresFMVTextTextures[0]);
+
+	while (*text && drawnChars < 256)
+	{
+		int characterSize;
+		int character = DecodeUTF8Character(text, &characterSize);
+		text += characterSize;
+
+		float nextX = xOffset;
+		float nextY = y;
+		FMVFONT_QUAD q;
+
+		if (!GetHiresFMVBakedQuad(character, &nextX, &nextY, &q) &&
+			!GetHiresFMVBakedQuad('?', &nextX, &nextY, &q))
+			continue;
+
+		xOffset = nextX;
+
+		if (q.x1 <= 0.0f || q.y1 <= 0.0f)
+			continue;
+
+		setPolyFT4(poly);
+		setSemiTrans(poly, 1);
+		setRGB0(poly, brightness, brightness, brightness);
+		setUVWH(poly, q.s0, q.t0, q.s1, q.t1);
+		setXYWH(poly, q.x0, q.y0, q.x1, q.y1);
+		poly->clut = 0;
+		poly->tpage = 0;
+		addPrim(&ot, poly);
+
+		POLY_FT4* shadow = poly + 1;
+		memcpy(shadow, poly, sizeof(POLY_FT4));
+		setRGB0(shadow, 10, 10, 10);
+		setXYWH(shadow, q.x0 + 1.0f, q.y0 + 1.0f, q.x1, q.y1);
+		addPrim(&ot, shadow);
+
+		poly += 2;
+		drawnChars++;
+	}
+
+	SetPsyXTexture(&g_HiresFMVTextTextures[1], g_HiresFMVFontTexture, 255, 255);
+	addPrim(&ot, &g_HiresFMVTextTextures[1]);
 	DrawOTag((u_long*)&ot);
 }
 
@@ -261,6 +434,8 @@ u_char* g_FMVDecodedImageBuffer = NULL;
 
 void FMVPlayerInitGL()
 {
+	InitHiresFMVFont();
+
 	g_FMVDecodedImageBuffer = (u_char*)malloc(DECODE_BUFFER_ALLOC);	
 	memset(g_FMVDecodedImageBuffer, 0, DECODE_BUFFER_ALLOC);
 	// FIXME: double buffering?
@@ -301,6 +476,12 @@ void FMVPlayerShutdownGL()
 	GR_SwapWindow();
 
 	GR_DestroyTexture(g_FMVTexture);
+
+	if (g_HiresFMVFontTexture)
+	{
+		GR_DestroyTexture(g_HiresFMVFontTexture);
+		g_HiresFMVFontTexture = 0;
+	}
 }
 
 struct SUBTITLE
@@ -382,14 +563,52 @@ void InitCredits(const char* filename)
 
 void PrintSubtitleText(SUBTITLE* sub)
 {
-	char* str = sub->text;
+	char sourceText[33];
+	char normalizedText[33];
+	memcpy(sourceText, sub->text, 32);
+	sourceText[32] = 0;
 
-	// skip some trailing spaces
+	char* str = sourceText;
+
+	// skip leading spaces used by the original subtitle positioning
 	while (isspace(*str)) {
 		str++;
 	}
 
-	PrintFMVText(str, 256, sub->y - 25, 128);
+	char* end = str + strlen(str);
+	while (end > str && isspace(end[-1]))
+		*--end = 0;
+
+	char* read = str;
+	char* write = normalizedText;
+	int pendingSpace = 0;
+
+	while (*read)
+	{
+		if (isspace((unsigned char)*read))
+		{
+			pendingSpace = 1;
+		}
+		else
+		{
+			if (pendingSpace && write != normalizedText)
+				*write++ = ' ';
+
+			*write++ = *read;
+			pendingSpace = 0;
+		}
+
+		read++;
+	}
+
+	*write = 0;
+	str = normalizedText;
+
+	char* translated = GetTranslatedFMVMessage(str);
+	if (translated != str && g_HiresFMVFontTexture)
+		PrintHiresFMVText(translated, 256, sub->y - 25, 128);
+	else
+		PrintFMVText(str, 256, sub->y - 25, 128);
 }
 
 void DisplaySubtitles(int frame_number)

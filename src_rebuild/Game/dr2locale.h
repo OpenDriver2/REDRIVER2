@@ -259,6 +259,8 @@ enum MissionStrId
 
 extern char* gGameLangTable[MAX_LANGUAGE_TEXT];
 extern char* gMissionLangTable[MAX_LANGUAGE_TEXT];
+extern char* LanguageNames[6];
+extern int gUserLanguage;
 
 // get Game string ID in as string pointer
 #define G_LTXT_ID(id)		(char*)(id)
@@ -273,6 +275,8 @@ extern char* gMissionLangTable[MAX_LANGUAGE_TEXT];
 extern int InitStringMng();
 extern void DeinitStringMng();
 extern int InitStringLanguage(char* filename, int mission);
+extern char* GetTranslatedMissionMessage(char* message);
+extern char* GetTranslatedFMVMessage(char* message);
 
 #else
 
@@ -287,6 +291,8 @@ extern int InitStringLanguage(char* filename, int mission);
 
 #define GET_GAME_TXT(st)		#st
 #define GET_MISSION_TXT(st)		#st
+#define GetTranslatedMissionMessage(message)	(message)
+#define GetTranslatedFMVMessage(message)		(message)
 
 #endif
 

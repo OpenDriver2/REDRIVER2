@@ -97,10 +97,21 @@ int FEGetHiresBakedQuad(int char_index, float scale, float* xpos, float* ypos, F
 	float ipw = 1.0f / (float)HIRES_FONT_SIZE_W;
 	float iph = 1.0f / (float)HIRES_FONT_SIZE_H;
 
-	const int idx = char_index - gHiresFEFontRanges[0].start;
-	if (idx < 0)
+	const OUT_FN2INFO* b = NULL;
+
+	for (int i = 0; i < gHiresFEFontRangeCount; i++)
+	{
+		int idx = char_index - gHiresFEFontRanges[i].start;
+
+		if (idx >= 0 && idx < gHiresFEFontRanges[i].count)
+		{
+			b = gHiresFEFontCharData[i] + idx;
+			break;
+		}
+	}
+
+	if (b == NULL)
 		return 0;
-	const OUT_FN2INFO* b = gHiresFEFontCharData[0] + idx;
 
 	float fscale = 0.5f * scale;
 
@@ -144,18 +155,21 @@ void SetHiresFEFontTexture(int enabled)
 int FEStringWidthHires(char* string)
 {
 	char* pString = string;
-	u_char c = 0;
 
 	int w = 0;
 
-	while ((c = *pString++) != 0)
+	while (*pString)
 	{
+		int characterSize;
+		int c = DecodeUTF8Character(pString, &characterSize);
+		pString += characterSize;
+
 		float fx, fy;
 		fx = 0;
 		fy = 0;
 		FEFONT_QUAD q;
 		if (!FEGetHiresBakedQuad(c, 1.0f, &fx, &fy, &q))
-			continue;
+			FEGetHiresBakedQuad('?', 1.0f, &fx, &fy, &q);
 
 		w += fx;
 	}
@@ -170,15 +184,18 @@ int FEPrintStringSizedHires(char* string, int x, int y, int scale, int transpare
 
 	POLY_FT4* shadow;
 	POLY_FT4* font;
-	u_char let;
 	int w;
 	int h;
 
 	SetHiresFEFontTexture(0);
 	font = (POLY_FT4*)current->primptr;
 
-	while ((let = *string++) != 0)
+	while (*string)
 	{
+		int characterSize;
+		int let = DecodeUTF8Character(string, &characterSize);
+		string += characterSize;
+
 		if (let == '\n')
 			continue;
 
@@ -187,7 +204,7 @@ int FEPrintStringSizedHires(char* string, int x, int y, int scale, int transpare
 		fy = y;
 		FEFONT_QUAD q;
 		if (!FEGetHiresBakedQuad(let, scale / 4096.0f, &fx, &fy, &q))
-			continue;
+			FEGetHiresBakedQuad('?', scale / 4096.0f, &fx, &fy, &q);
 
 		setPolyFT4(font);
 		setSemiTrans(font, 1);
@@ -225,7 +242,6 @@ int FEPrintStringHires(char* string, float x, float y, int justification, int r,
 {
 	POLY_FT4* shadow;
 	POLY_FT4* font;
-	u_char let;
 
 	if (justification & 4)
 	{
@@ -237,13 +253,18 @@ int FEPrintStringHires(char* string, float x, float y, int justification, int r,
 
 	int counter = 0;
 
-	while ((let = *string++) != 0)
+	while (*string)
 	{
+		int characterSize;
+		int let = DecodeUTF8Character(string, &characterSize);
+		string += characterSize;
+
 		float fx, fy;
 		fx = x;
 		fy = y;
 		FEFONT_QUAD q;
-		FEGetHiresBakedQuad(let, 1.0f, &fx, &fy, &q);
+		if (!FEGetHiresBakedQuad(let, 1.0f, &fx, &fy, &q))
+			FEGetHiresBakedQuad('?', 1.0f, &fx, &fy, &q);
 
 		setPolyFT4(font);
 		setSemiTrans(font, 1);
@@ -319,6 +340,125 @@ enum FEButtonAction
 #include "FEscreens.inc"
 #else
 PSXSCREEN PsxScreens[42];
+#endif
+
+#ifndef PSX
+struct FE_LOCALIZED_TEXT
+{
+	const char* original;
+	const char* translated;
+};
+
+static const FE_LOCALIZED_TEXT RussianFrontendText[] =
+{
+	{ "Accept", "Принять" },
+	{ "Auto Testing", "Автотест" },
+	{ "Cabrini Green", "Кабрини-Грин" },
+	{ "Capture the Flag", "Захват флага" },
+	{ "Center Screen", "Центрировать" },
+	{ "Centro", "Сентро" },
+	{ "Checkpoint", "Контр. точки" },
+	{ "Chicago", "Чикаго" },
+	{ "Choose A Cutscene", "Выбор сцены" },
+	{ "Choose A Ride", "Выбор машины" },
+	{ "Controller", "Управление" },
+	{ "Cop Difficulty", "Сложность копов" },
+	{ "Cops 'n' Robbers", "Копы и воры" },
+	{ "Day", "День" },
+	{ "Director's Cut", "Режим режиссёра" },
+	{ "Downtown", "Центр" },
+	{ "Driving Games", "Игры за рулём" },
+	{ "Easy", "Легко" },
+	{ "Flamengo", "Фламенго" },
+	{ "Game 1", "Игра 1" },
+	{ "Game 2", "Игра 2" },
+	{ "Gameplay", "Игра" },
+	{ "Gate Racing", "Гонка по воротам" },
+	{ "Hard", "Сложно" },
+	{ "Havana", "Гавана" },
+	{ "HighScores", "Рекорды" },
+	{ "Immunity", "Иммунитет" },
+	{ "Invincibility", "Неуязвимость" },
+	{ "Las Vegas", "Лас-Вегас" },
+	{ "Lenny gets caught", "Ленни пойман" },
+	{ "Load Game", "Загрузить игру" },
+	{ "Load Replay", "Загрузить повтор" },
+	{ "Load Settings", "Загрузить настр." },
+	{ "Medium", "Средне" },
+	{ "Mountain Pass", "Горный перевал" },
+	{ "Multiplayer", "Два игрока" },
+	{ "Music", "Музыка" },
+	{ "New Game", "Новая игра" },
+	{ "Next", "Далее" },
+	{ "Night", "Ночь" },
+	{ "Not Available", "Недоступно" },
+	{ "Off", "Выкл." },
+	{ "Old Havana", "Старая Гавана" },
+	{ "On", "Вкл." },
+	{ "Options", "Настройки" },
+	{ "Plaza de Revolucion", "Пласа Революции" },
+	{ "Previous", "Назад" },
+	{ "Quick Chase", "Быстрая погоня" },
+	{ "Quick Getaway", "Быстрый побег" },
+	{ "Race Track", "Гоночная трасса" },
+	{ "Replay Mission", "Повтор миссии" },
+	{ "Replays", "Повторы" },
+	{ "Rio", "Рио" },
+	{ "River North", "Ривер-Норт" },
+	{ "Save Settings", "Сохранить настр." },
+	{ "Secret", "Секрет" },
+	{ "Select", "Выбрать" },
+	{ "Set Volume Levels", "Громкость" },
+	{ "Sfx", "Эффекты" },
+	{ "Show Chase 1", "Погоня 1" },
+	{ "Show Chase 2", "Погоня 2" },
+	{ "Show Chase 3", "Погоня 3" },
+	{ "Show Chase 4", "Погоня 4" },
+	{ "Single Player", "Один игрок" },
+	{ "Sound", "Звук" },
+	{ "Subtitles", "Субтитры" },
+	{ "Surveillance tip off", "Слежка" },
+	{ "Survival", "Выживание" },
+	{ "Take A Ride", "Свободная езда" },
+	{ "The Lakes", "Озёра" },
+	{ "To Move Screen", "Двигать экран" },
+	{ "Trailblazer", "Слалом" },
+	{ "Undercover", "Сюжет" },
+	{ "Use directional buttons", "Кнопки-стрелки" },
+	{ "Vegas", "Лас-Вегас" },
+	{ "Vibration", "Вибрация" },
+	{ "View Cutscenes", "Смотреть сцены" },
+};
+
+static void TranslateRussianFrontendText(char* name)
+{
+	if (gUserLanguage != 5)
+		return;
+
+	for (int textIndex = 0; textIndex < sizeof(RussianFrontendText) / sizeof(RussianFrontendText[0]); textIndex++)
+	{
+		const FE_LOCALIZED_TEXT* text = &RussianFrontendText[textIndex];
+		int originalLength = strlen(text->original);
+
+		if (!strncmp(name, text->original, originalLength))
+		{
+			strncpy(name, text->translated, sizeof(((PSXBUTTON*)0)->Name) - 1);
+			name[sizeof(((PSXBUTTON*)0)->Name) - 1] = '\0';
+			return;
+		}
+	}
+}
+
+static void ApplyRussianFrontendText()
+{
+	for (int screenIndex = 0; screenIndex < 42; screenIndex++)
+	{
+		PSXSCREEN* screen = &PsxScreens[screenIndex];
+
+		for (int buttonIndex = 0; buttonIndex < screen->numButtons; buttonIndex++)
+			TranslateRussianFrontendText(screen->buttons[buttonIndex].Name);
+	}
+}
 #endif
 
 #define FE_OTSIZE 16
@@ -998,6 +1138,10 @@ void DisplayOnScreenText(void)
 
 void DrawButton(PSXBUTTON* pBtn, int i)
 {
+#ifndef PSX
+	TranslateRussianFrontendText(pBtn->Name);
+#endif
+
 	int status = pBtn->action >> 8;
 
 	int draw = (status != BTN_HIDDEN);
@@ -1347,6 +1491,11 @@ void LoadFrontendScreens(int full)
 		PsxScreens[40].buttons[1].var = FE_MAKEVAR(15, 0);
 #endif
 	}
+#endif
+
+#ifndef PSX
+	if (full)
+		ApplyRussianFrontendText();
 #endif
 
 	rect.w = 64;
