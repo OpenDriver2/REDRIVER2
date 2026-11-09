@@ -12,6 +12,10 @@ extern MODEL* gPed2HeadModelPtr;
 extern MODEL* gPed3HeadModelPtr;
 extern MODEL* gPed4HeadModelPtr;
 
+#ifndef PSX
+extern void InitPedHeadTextures();
+#endif
+
 extern int ThisMotion;
 
 extern void ProcessMotionLump(char *lump_ptr, int lump_size); // 0x00069A38

@@ -444,6 +444,7 @@ void LoadGameLevel(void)
 	{
 		// [A] override textures
 		LoadPermanentTPagesFromTIM();
+		InitPedHeadTextures();
 	}
 #endif
 	

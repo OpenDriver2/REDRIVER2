@@ -16,6 +16,11 @@
 #include "cars.h"
 #include "convert.h"
 
+#ifndef PSX
+#include "PsyX/PsyX_render.h"
+#include "../utils/targa.h"
+#endif
+
 #if USE_PGXP
 #include <math.h>
 #endif
@@ -434,6 +439,35 @@ MODEL* gPed1HeadModelPtr;
 MODEL* gPed2HeadModelPtr;
 MODEL* gPed3HeadModelPtr;
 MODEL* gPed4HeadModelPtr;
+
+#ifndef PSX
+static TextureID pedHeadTextures[3] = { 0 };
+
+void InitPedHeadTextures()
+{
+	for (int i = 0; i < 3; i++)
+	{
+		if (pedHeadTextures[i])
+			continue;
+
+		char filename[128];
+		u_char* data = NULL;
+		int width, height, bpp;
+		sprintf(filename, "%sGFX\\NPC\\friend-%d.tga", gDataFolder, i + 1);
+		FS_FixPathSlashes(filename);
+
+		if (LoadTGAImage(filename, &data, width, height, bpp))
+		{
+			if (bpp == 32 && width > 0 && height > 0)
+			{
+				pedHeadTextures[i] = GR_CreateRGBATexture(width, height, data);
+				printInfo("Loaded custom NPC face %d (%dx%d)\n", i + 1, width, height);
+			}
+			free(data);
+		}
+	}
+}
+#endif
 
 char* MotionCaptureData[MAX_MOTION_CAPTURE];	// [A] actually, pointers
 int ThisMotion;
@@ -1232,7 +1266,13 @@ void newShowTanner(LPPEDESTRIAN pDrawingPed)
 			// draw HEAD
 			BONE* pBone = &Skel[HEAD];
 
-			if (switch_detail_distance >> 2 < gCurrentZ)
+			int drawLowDetailHead = (switch_detail_distance >> 2) < gCurrentZ;
+#ifndef PSX
+			if (pedHeadTextures[(pDrawingPed->pallet & 0xf) % 3])
+				drawLowDetailHead = 0;
+#endif
+
+			if (drawLowDetailHead)
 			{
 				DrawSprite(pDrawingPed, pBone, vJPos);
 			}
@@ -2013,6 +2053,18 @@ void DoCivHead(LPPEDESTRIAN pPed, SVECTOR* vert1, SVECTOR* vert2)
 		flags |= PLOT_CUSTOM_PALETTE; // set custom palette flag
 		plotContext.clut = civ_clut[0][texturePedHead.texture_number][headPalette];
 	}
+
+#ifndef PSX
+	if (pedHeadTextures[headPalette])
+	{
+		flags |= PLOT_CUSTOM_TEXTURE;
+		plotContext.customTexture = pedHeadTextures[headPalette];
+		plotContext.customTextureRect.x = texturePedHead.coords.u0;
+		plotContext.customTextureRect.y = texturePedHead.coords.v0;
+		plotContext.customTextureRect.w = texturePedHead.coords.u1 - texturePedHead.coords.u0;
+		plotContext.customTextureRect.h = texturePedHead.coords.v2 - texturePedHead.coords.v0;
+	}
+#endif
 
 	oldcombointensity = combointensity;
 

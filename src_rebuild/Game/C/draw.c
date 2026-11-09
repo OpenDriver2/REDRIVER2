@@ -1130,6 +1130,20 @@ void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 				uv3 = *(ushort*)&polys->uv3;
 			}
 
+#ifndef PSX
+			if (pc->flags & PLOT_CUSTOM_TEXTURE)
+			{
+				ushort* uvs[] = { &uv0, &uv1, &uv2, &uv3 };
+				for (int vertex = 0; vertex < 4; vertex++)
+				{
+					int u = ((*uvs[vertex] & 255) - pc->customTextureRect.x) * 255 / pc->customTextureRect.w;
+					int v = ((*uvs[vertex] >> 8) - pc->customTextureRect.y) * 255 / pc->customTextureRect.h;
+					*uvs[vertex] = u | (v << 8);
+				}
+				n = 0;
+			}
+#endif
+
 			if (n == 0 || diff << 2 <= minZ - 350)
 			{
 				prims = (POLY_FT4*)pc->primptr;
@@ -1157,9 +1171,24 @@ void PlotModelSubdivNxN(MODEL* model, int rot, _pct* pc, int n)
 				*(ushort*)&prims->u2 = uv3;
 				*(ushort*)&prims->u3 = uv2;
 
-				addPrim(pc->ot + (Z >> 1), prims);
-
 				pc->primptr += sizeof(POLY_FT4);
+
+#ifndef PSX
+				if (pc->flags & PLOT_CUSTOM_TEXTURE)
+				{
+					DR_PSYX_TEX* enable = (DR_PSYX_TEX*)pc->primptr;
+					DR_PSYX_TEX* reset = enable + 1;
+					SetPsyXTexture(enable, pc->customTexture, 255, 255);
+					SetPsyXTexture(reset, 0, 0, 0);
+					// Each depth bucket must restore VRAM textures before other objects draw.
+					addPrim(pc->ot + (Z >> 1), reset);
+					addPrim(pc->ot + (Z >> 1), prims);
+					addPrim(pc->ot + (Z >> 1), enable);
+					pc->primptr += sizeof(DR_PSYX_TEX) * 2;
+				}
+				else
+#endif
+					addPrim(pc->ot + (Z >> 1), prims);
 			}
 			else
 			{
