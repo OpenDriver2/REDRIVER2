@@ -1563,6 +1563,11 @@ void DrawCiv(LPPEDESTRIAN pPed)
 	if (gCurrentZ > switch_detail_distance)
 		return;
 
+	int hasCustomHead = 0;
+#ifndef PSX
+	hasCustomHead = pedHeadTextures[(pPed->pallet & 0xf) % 3] != 0;
+#endif
+
 	// translate bones to screen and draw sprites
 	j = 0;
 	for (i = 0; i < 15; i++)
@@ -1583,7 +1588,7 @@ void DrawCiv(LPPEDESTRIAN pPed)
 
 		boneId = boneIdvals[i];
 		
-		if (boneId == HEAD && szList[0] <= switch_detail_distance / 2)
+		if (boneId == HEAD && (szList[0] <= switch_detail_distance / 2 || hasCustomHead))
 			bHeadModel = 1;
 		else
 			DrawBodySprite(pPed, boneId, (VERTTYPE*)&sxyList[i*2], (VERTTYPE*)&sxyList[i*2 + 1], szList[i*2], szList[i*2+1]);
